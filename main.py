@@ -32,7 +32,7 @@ def parse_args():
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(description="LLM-RPG: D&D-style game with LLM-powered NPCs")
     parser.add_argument("--model", default="llama3", help="LLM model to use (default: llama3)")
-    parser.add_argument("--ui", choices=["terminal", "gui"], default="gui" if has_pygame else "terminal", 
+    parser.add_argument("--ui", choices=["terminal", "gui"], default="gui" if has_pygame else "terminal",
                       help="User interface to use (default: gui if available, otherwise terminal)")
     parser.add_argument("--width", type=int, default=1200, help="Window width for GUI (default: 1200)")
     parser.add_argument("--height", type=int, default=800, help="Window height for GUI (default: 800)")
@@ -43,16 +43,16 @@ def main():
     """Main entry point for the game"""
     # Parse command line arguments
     args = parse_args()
-    
+
     # Set logging level
     if args.debug:
         logger.setLevel(logging.DEBUG)
-    
+
     logger.info(f"Starting LLM-RPG with model: {args.model}")
-    
+
     # Initialize game engine
     engine = GameEngine(llm_model=args.model)
-    
+
     # Initialize UI based on user choice
     if args.ui == "gui":
         if has_pygame:
@@ -62,24 +62,24 @@ def main():
             ui = TerminalUI(engine)
     else:
         ui = TerminalUI(engine)
-    
+
     # Start the game
     try:
         ui.start()
-        
+
         # If terminal UI, need to run the main loop here
         if args.ui == "terminal" or (args.ui == "gui" and not has_pygame):
             # Main game loop - UI handles most of the interaction
             while engine.running:
-                # Process NPC actions
-                engine.process_npc_turns()
-                
+                # Process NPC actions asynchronously
+                engine.process_npc_turns_async()
+
                 # Update UI
                 ui.update()
-                
+
                 # Small delay to prevent CPU overuse
                 time.sleep(0.1)
-    
+
     except KeyboardInterrupt:
         logger.info("Game terminated by user")
     except Exception as e:

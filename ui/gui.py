@@ -331,9 +331,19 @@ class GameGUI:
         # Clear input field
         self.dialog_input.set_text("")
 
+        # Show waiting status
+        self.dialog_status = "Waiting for response..."
+        self.add_message(self.dialog_status)
+
+        # Need to render to show status
+        self.render()
+
         # Get response from NPC
         npc = self.engine.npc_manager.get_npc(self.dialog_target)
         response = self.engine.interact_with_npc(self.dialog_target, message)
+
+        # Clear waiting status
+        self.dialog_status = ""
 
         # Display messages
         self.add_message(f"You: {message}")
@@ -538,6 +548,9 @@ class GameGUI:
         frame_count = 0
         frame_timer = time.time()
 
+        # Dialog status message
+        self.dialog_status = ""
+
         while self.running:
             # Limit frame rate while still processing events
             time_delta = clock.tick(60) / 1000.0
@@ -578,11 +591,8 @@ class GameGUI:
                         if event.ui_element == self.submit_button:
                             self.submit_dialog()
 
-            # Update game state (use async processing if available)
-            if hasattr(self.engine, 'process_npc_turns_async'):
-                self.engine.process_npc_turns_async()
-            else:
-                self.engine.process_npc_turns()
+            # Update game state (use async processing)
+            self.engine.process_npc_turns_async()
 
             # Update UI manager
             self.ui_manager.update(time_delta)

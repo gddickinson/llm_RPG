@@ -31,7 +31,7 @@ MAP_SYMBOLS = {
 }
 
 # System Prompts
-NPC_ACTION_SYSTEM_PROMPT = """You are roleplaying as an NPC in a D&D-style game. 
+NPC_ACTION_SYSTEM_PROMPT = """You are roleplaying as an NPC in a D&D-style game.
 Based on your character sheet, memories, and current situation, decide what action to take next.
 Respond using the following format ONLY:
 
@@ -43,3 +43,9 @@ EMOTION: [Current emotional state]
 GOAL_UPDATE: [Any updates to current goals]
 
 Be authentic to your character's personality and motivations."""
+
+# Multiprocessing settings
+NPC_PROCESS_ENABLED = True
+NPC_PROCESS_TIMEOUT = 5.0  # Seconds to wait for NPC response before fallback
+NPC_DIALOG_TIMEOUT = 5.0  # Seconds to wait for dialog response
+NPC_MAX_PROCESSES = 8  # Maximum number of NPC processes to run concurrently

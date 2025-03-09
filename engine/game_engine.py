@@ -6,13 +6,15 @@ Coordinates all game components and manages game state
 import logging
 import time
 from typing import Dict, Any, List, Optional
+import config
 
 from world.world import World
 from characters.npc_manager import NPCManager
 from characters.character import Character
 from llm.llm_interface import LLMInterface
 from engine.memory_manager import MemoryManager
-import config
+from engine.npc_process_manager import NPCProcessManager
+
 
 logger = logging.getLogger("llm_rpg.engine")
 
@@ -25,16 +27,8 @@ class GameEngine:
         self.npc_manager = NPCManager()
         self.memory_manager = MemoryManager()
 
-        # Use the threaded LLM interface instead of the basic one
-        try:
-            from llm.threaded_llm_interface import ThreadedLLMInterface
-            self.llm_interface = ThreadedLLMInterface(model_name=llm_model, num_threads=2)
-            logger.info("Using threaded LLM interface")
-        except ImportError:
-            # Fallback to basic interface if threaded version is not available
-            from llm.llm_interface import LLMInterface
-            self.llm_interface = LLMInterface(model_name=llm_model)
-            logger.info("Using basic LLM interface (threaded version not found)")
+        # Regular LLM interface for player interactions
+        self.llm_interface = LLMInterface(model_name=llm_model)
 
         self.player = None
         self.running = False
@@ -43,6 +37,12 @@ class GameEngine:
 
         # Initialize simple demo world
         self.initialize_demo_game()
+
+        # Start NPC processes after the world is created
+        self.process_manager = NPCProcessManager(list(self.npc_manager.npcs.values()), llm_model=llm_model)
+        self.process_manager.start_processes()
+
+        logger.info("Game Engine initialized with Process Manager")
 
     def initialize_demo_game(self):
         """Set up a simple demo game"""
@@ -344,9 +344,23 @@ class GameEngine:
             # Add the player's message to history
             self.memory_manager.add_event(f"You say to {npc.name}: \"{message}\"")
 
-            # Have NPC respond using the LLM
-            # This would be a more complex version of get_npc_action specialized for dialog
-            response = self._get_npc_dialog_response(npc, message)
+            # Get recent conversation history
+            recent_history = self.memory_manager.get_character_history(npc.name, count=5)
+
+            # Send dialog request to NPC's process
+            self.process_manager.send_command(npc_id, "get_dialog", {
+                "message": message,
+                "recent_history": recent_history
+            })
+
+            # Wait for response with timeout
+            response_data = self.process_manager.get_response(npc_id, timeout=5.0)
+
+            # Default response if no response received
+            if not response_data or response_data.get("type") != "dialog":
+                response = f"Hmm... {npc.name} seems lost in thought."
+            else:
+                response = response_data["response"]
 
             # Add NPC's response to history
             self.memory_manager.add_event(f"{npc.name} says: \"{response}\"")
@@ -354,19 +368,28 @@ class GameEngine:
             # Add to NPC's memory
             npc.add_memory(f"Player said: \"{message}\". I replied: \"{response}\"", 2)
 
+            # Update the NPC data in its process
+            self.process_manager.send_command(npc_id, "update_npc", npc.to_dict())
+
             # Advance turn
             self.advance_turn()
 
             return response
         else:
-            # Just a basic interaction without dialog
-            self.memory_manager.add_event(f"You approach {npc.name}.")
+            # For initial greeting, use the same approach but with no player message
+            self.process_manager.send_command(npc_id, "get_dialog", {
+                "message": "Hello",  # Simple greeting
+                "recent_history": []
+            })
 
-            # Add to NPC's memory
-            npc.add_memory(f"Player approached me", 1)
+            # Wait for response with timeout
+            response_data = self.process_manager.get_response(npc_id, timeout=3.0)
 
-            # Get initial greeting from NPC
-            greeting = self._get_npc_greeting(npc)
+            # Default greeting if no response received
+            if not response_data or response_data.get("type") != "dialog":
+                greeting = f"Hello there, traveler."
+            else:
+                greeting = response_data["response"]
 
             # Add greeting to history
             self.memory_manager.add_event(f"{npc.name} says: \"{greeting}\"")
@@ -451,80 +474,66 @@ The player approaches you. What's your initial greeting?
 
 
     def process_npc_turns_async(self):
-        """Process NPC actions asynchronously"""
-        # Only process NPC turns periodically to reduce LLM calls
+        """Process NPC actions asynchronously using separate processes"""
+        # Only process NPC turns periodically
         if self.turn_counter % config.NPC_ACTION_INTERVAL != 0:
             return
 
-        # Check if we're using the threaded interface
-        if not hasattr(self.llm_interface, 'get_response'):
-            # Fallback to synchronous processing if we don't have a threaded interface
-            return self.process_npc_turns()
-
         logger.debug("Processing NPC turns asynchronously")
 
-        # Process each NPC
+        # Update shared game state
+        game_state = {
+            "time_of_day": self.world.get_time_of_day(),
+            "turn_counter": self.turn_counter,
+            "player_position": self.player.position
+        }
+        self.process_manager.update_shared_state("game_state", game_state)
+
+        # Check process health and restart any dead processes
+        self.process_manager.check_process_health()
+
+        # Collect any existing responses from NPCs
+        responses = self.process_manager.get_responses()
+        for npc_id, response in responses.items():
+            if response["type"] == "action":
+                # Process the NPC's action
+                npc = self.npc_manager.get_npc(npc_id)
+                if npc:
+                    self._process_npc_action(npc, response["action_data"])
+            elif response["type"] == "error":
+                logger.error(f"Error from NPC process {npc_id}: {response['error']}")
+
+        # Send action requests to NPC processes
         for npc_id, npc in self.npc_manager.npcs.items():
+            # Skip if NPC is too far from player
+            npc_x, npc_y = npc.position
+            player_x, player_y = self.player.position
+            distance = ((npc_x - player_x) ** 2 + (npc_y - player_y) ** 2) ** 0.5
+
+            if distance > config.DEFAULT_VISIBILITY_RANGE * 2:
+                continue
+
             # Skip if this NPC is already being processed
             if npc_id in self.processing_npcs:
                 continue
 
-            try:
-                # Skip NPCs that are too far from the player (optimization)
-                npc_x, npc_y = npc.position
-                player_x, player_y = self.player.position
-                distance = ((npc_x - player_x) ** 2 + (npc_y - player_y) ** 2) ** 0.5
+            # Add to processing set
+            self.processing_npcs.add(npc_id)
 
-                # Only process NPCs within a certain range of the player
-                if distance > config.DEFAULT_VISIBILITY_RANGE * 2:
-                    continue
+            # Get data needed for NPC decision
+            visible_map = self.world.map.get_visible_description(npc_x, npc_y)
+            world_state = {
+                "current_location": self.world.get_location_at(npc_x, npc_y).name if self.world.get_location_at(npc_x, npc_y) else "wilderness",
+                "time_of_day": self.world.get_time_of_day()
+            }
+            game_history = self.memory_manager.get_recent_history()
 
-                # Add this NPC to processing set
-                self.processing_npcs.add(npc_id)
-
-                # Get visible environment for the NPC
-                visible_map = self.world.map.get_visible_description(npc_x, npc_y)
-
-                # Get game state information
-                world_state = {
-                    "current_location": self.world.get_location_at(npc_x, npc_y).name if self.world.get_location_at(npc_x, npc_y) else "wilderness",
-                    "time_of_day": self.world.get_time_of_day()
-                }
-
-                # Get recent history
-                game_history = self.memory_manager.get_recent_history()
-
-                # Define callback for when NPC action is ready
-                def on_npc_action_ready(action_data, npc_id=npc_id):
-                    try:
-                        # Process the action
-                        npc = self.npc_manager.get_npc(npc_id)
-                        if npc:
-                            self._process_npc_action(npc, action_data)
-                    except Exception as e:
-                        logger.error(f"Error processing async NPC action for {npc_id}: {str(e)}")
-                    finally:
-                        # Always remove from processing set
-                        self.processing_npcs.discard(npc_id)
-
-                # Get NPC action from LLM asynchronously
-                try:
-                    self.llm_interface.get_npc_action(
-                        npc,
-                        world_state,
-                        game_history,
-                        visible_map,
-                        callback=on_npc_action_ready
-                    )
-                except TypeError as e:
-                    # In case the LLM interface doesn't support callbacks
-                    logger.warning(f"Async NPC processing not supported: {str(e)}")
-                    self.processing_npcs.discard(npc_id)
-                    return self.process_npc_turns()
-
-            except Exception as e:
-                logger.error(f"Error processing NPC {npc_id}: {str(e)}")
-                self.processing_npcs.discard(npc_id)
+            # Send command to NPC process
+            self.process_manager.send_command(npc_id, "get_action", {
+                "world_state": world_state,
+                "game_history": game_history,
+                "visible_map": visible_map
+            })
 
     # Update the shutdown method to clean up the threaded LLM interface
     def end_game(self):
@@ -534,7 +543,11 @@ The player approaches you. What's your initial greeting?
         # Add game end event
         self.memory_manager.add_event("The adventure has ended.")
 
-        # Shutdown the threaded LLM interface if available
+        # Shutdown NPC processes
+        if hasattr(self, 'process_manager'):
+            self.process_manager.stop_processes()
+
+        # Shutdown any threaded resources
         if hasattr(self.llm_interface, 'shutdown'):
             self.llm_interface.shutdown()
 
