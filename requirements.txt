@@ -1,0 +1,6 @@
+requests>=2.28.0
+colorama>=0.4.6
+dataclasses-json>=0.5.7
+readchar>=4.0.0
+pygame>=2.1.2
+pygame_gui>=0.6.8
