@@ -25,8 +25,10 @@ class CharacterClass(Enum):
     WARLOCK = "warlock"
     BARBARIAN = "barbarian"
     ARTIFICER = "artificer"
+    TROLL = "troll"  # New class
+    BRIGAND = "brigand"  # New class
 
-
+# Update the CharacterRace enum
 class CharacterRace(Enum):
     """Enumeration of character races"""
     HUMAN = "human"
@@ -40,6 +42,7 @@ class CharacterRace(Enum):
     DRAGONBORN = "dragonborn"
     HALF_ELF = "half-elf"
     HALF_ORC = "half-orc"
+    TROLL = "troll"  # New race
 
 
 class Alignment(Enum):

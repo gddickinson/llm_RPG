@@ -9,6 +9,8 @@ import os
 import sys
 from typing import Dict, Any
 
+from config import NPC_ACTION_ENHANCED_PROMPT
+
 # Configure logging for the NPC process
 logging.basicConfig(
     level=logging.INFO,
@@ -46,6 +48,27 @@ def npc_process_main(npc_id, command_queue, response_queue, shared_state, llm_mo
                     elif command["command"] == "update_npc":
                         npc_data = command["data"]
                         logger.info(f"NPC {npc_id} data updated: {npc_data.get('name', 'unknown')}")
+
+
+                    elif command["command"] == "set_status":
+                        # Update character status directly
+                        if npc_data:
+                            npc_data["status"] = command["data"]
+                            logger.info(f"NPC {npc_id} status updated to: {command['data']}")
+                        else:
+                            logger.warning(f"Cannot update status for NPC {npc_id}: No NPC data")
+
+
+                    elif command["command"] == "get_action":
+                        # Skip generating actions for non-active NPCs
+                        if npc_data and npc_data.get("status") != "alive":
+                            logger.debug(f"Skipping action generation for non-active NPC {npc_id} (status: {npc_data.get('status')})")
+                            response_queue.put({
+                                "type": "status",
+                                "status": npc_data.get("status", "unknown")
+                            })
+                            continue
+
 
                     elif command["command"] == "get_action":
                         # Skip if we don't have NPC data yet
@@ -91,7 +114,12 @@ def npc_process_main(npc_id, command_queue, response_queue, shared_state, llm_mo
                                 char.memories = npc_data["memories"]
 
                             # Generate action
-                            action = llm.get_npc_action(char, world_state, game_history, visible_map)
+                            try:
+                                # First try with the enhanced prompt (for ThreadedLLMInterface which supports system_prompt)
+                                action = llm.get_npc_action(char, world_state, game_history, visible_map, system_prompt=NPC_ACTION_ENHANCED_PROMPT)
+                            except TypeError:
+                                # Fallback to original method (for LLMInterface which doesn't support system_prompt)
+                                action = llm.get_npc_action(char, world_state, game_history, visible_map)
 
                             # Send response back to main process
                             response_queue.put({
@@ -171,6 +199,50 @@ def npc_process_main(npc_id, command_queue, response_queue, shared_state, llm_mo
                                 "type": "dialog",
                                 "response": "Hmm... Let me think about that."
                             })
+
+
+                    elif command["command"] == "suspend":
+                        # Enter a low-activity state to save resources
+                        # Just acknowledge the command and wait for further instructions
+                        logger.info(f"NPC process {npc_id} suspended")
+                        response_queue.put({
+                            "type": "status",
+                            "status": "suspended"
+                        })
+
+                        # Wait for unsuspend or shutdown command
+                        suspended = True
+                        while suspended and shared_state.get("game_running", True):
+                            try:
+                                if not command_queue.empty():
+                                    cmd = command_queue.get()
+
+                                    if cmd["command"] == "shutdown":
+                                        # Exit suspend mode and terminate
+                                        logger.info(f"NPC process {npc_id} shutdown while suspended")
+                                        running = False
+                                        suspended = False
+                                    elif cmd["command"] == "unsuspend" or cmd["command"] == "update_npc":
+                                        # Exit suspend mode and continue
+                                        logger.info(f"NPC process {npc_id} resuming from suspension")
+                                        suspended = False
+
+                                        # If this was an update_npc command, process it
+                                        if cmd["command"] == "update_npc":
+                                            npc_data = cmd["data"]
+                                            logger.info(f"NPC {npc_id} data updated during unsuspend")
+
+                                    # Acknowledge the command
+                                    response_queue.put({
+                                        "type": "status",
+                                        "status": "acknowledged"
+                                    })
+                            except Exception as e:
+                                logger.error(f"Error during suspension for NPC {npc_id}: {str(e)}")
+
+                            # Sleep longer while suspended to save resources
+                            time.sleep(0.5)
+
 
                 # Small delay to prevent CPU overuse
                 time.sleep(0.01)

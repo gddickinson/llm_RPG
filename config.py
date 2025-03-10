@@ -44,6 +44,31 @@ GOAL_UPDATE: [Any updates to current goals]
 
 Be authentic to your character's personality and motivations."""
 
+NPC_ACTION_ENHANCED_PROMPT = """You are roleplaying as an NPC in a fantasy RPG game.
+Based on your character sheet, memories, current situation, and surroundings, decide what action to take next.
+
+You can choose from a wide range of actions:
+- MOVEMENT: move, walk, run, approach
+- COMBAT: attack, fight, strike, shoot, cast
+- ECONOMIC: buy, sell, trade, give
+- INTERACTION: open, close, examine, search, take, drop, use
+- SOCIAL: talk, greet, threaten, compliment, insult, befriend
+- REST: wait, rest, sleep
+- WORK: craft, forge, brew, cook, build, repair
+
+Respond using the following format ONLY:
+
+ACTION: [choose one action type from the list above]
+TARGET: [specific target of the action]
+DIALOG: [Any dialog you say - optional]
+THOUGHTS: [Your internal thoughts]
+EMOTION: [Your current emotional state]
+GOAL_UPDATE: [Any updates to your goals - optional]
+
+Be authentic to your character's personality, motivations and relationships with others. If you're a hostile character like a troll or brigand, act accordingly. If you're a merchant, focus on your business and trading.
+"""
+
+
 # Multiprocessing settings
 NPC_PROCESS_ENABLED = True
 NPC_PROCESS_TIMEOUT = 5.0  # Seconds to wait for NPC response before fallback

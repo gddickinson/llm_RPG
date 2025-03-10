@@ -163,3 +163,67 @@ class NPCProcessManager:
                     self.send_command(npc_id, "update_npc", npc.to_dict())
 
                     logger.info(f"Restarted process for NPC: {npc.name}")
+
+    # Add a method to check and update NPC statuses
+    def update_npc_statuses(self):
+        """Check and update the status of all NPC processes"""
+        # Handle the case where npcs is a list
+        if isinstance(self.npcs, list):
+            for npc in self.npcs:
+                # Skip if NPC doesn't have an ID
+                if not hasattr(npc, 'id'):
+                    continue
+
+                npc_id = npc.id
+
+                # Skip if NPC doesn't have a process
+                if npc_id not in self.processes:
+                    continue
+
+                # Check if NPC is active
+                is_active = npc.is_active() if hasattr(npc, 'is_active') else True
+
+                if not is_active:
+                    # Update the process with the current status
+                    status = getattr(npc, 'status', 'unknown')
+                    self.send_command(npc_id, "set_status", status)
+                    logger.debug(f"Updated process status for {npc.name}: {status}")
+
+    # Add a method to stop processes for specific NPCs
+    def stop_npc_process(self, npc_id):
+        """Stop the process for a specific NPC"""
+        if npc_id in self.processes:
+            # Send shutdown command
+            self.send_command(npc_id, "shutdown")
+
+            # Wait for process to terminate
+            self.processes[npc_id].join(timeout=1.0)
+            if self.processes[npc_id].is_alive():
+                logger.warning(f"Terminating process for NPC: {npc_id}")
+                self.processes[npc_id].terminate()
+
+            # Remove process and queues
+            del self.processes[npc_id]
+            del self.command_queues[npc_id]
+            del self.response_queues[npc_id]
+
+            logger.info(f"Stopped process for NPC: {npc_id}")
+            return True
+
+        return False
+
+    # Add a method to pause/suspend processes for inactive NPCs
+    def suspend_inactive_npcs(self):
+        """Suspend processes for inactive NPCs to save resources"""
+        for npc_id, npc in self.npcs.items():
+            # Skip if NPC doesn't have a process
+            if npc_id not in self.processes:
+                continue
+
+            # Check if NPC is active
+            is_active = npc.is_active() if hasattr(npc, 'is_active') else True
+
+            if not is_active:
+                # Instead of stopping, we can put the process in a suspended state
+                self.send_command(npc_id, "suspend")
+                logger.debug(f"Suspended process for inactive NPC: {npc.name}")

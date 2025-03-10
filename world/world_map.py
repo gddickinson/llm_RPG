@@ -283,3 +283,13 @@ class WorldMap:
             result += "".join(row) + "\n"
 
         return result
+
+    def remove_character(self, character):
+        """Remove a character from the map without updating its position"""
+        for pos, char in list(self.characters.items()):
+            if char.id == character.id:
+                del self.characters[pos]
+                logger.debug(f"Removed character {character.name} from map at {pos}")
+                return True
+
+        return False

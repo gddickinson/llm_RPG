@@ -37,6 +37,7 @@ class Character:
     goals: List[str] = field(default_factory=list)
     relationships: Dict[str, int] = field(default_factory=dict)
     memories: List[Dict[str, Any]] = field(default_factory=list)
+    status: str = field(default="alive")  # alive, defeated, dead
 
     def add_memory(self, event: str, importance: int = 1) -> None:
         """Add a memory to the character's memory list"""
@@ -153,6 +154,51 @@ class Character:
             return True
         logger.debug(f"{self.name} failed to remove goal: {goal} (not found)")
         return False
+
+    def defeat(self):
+        """Mark character as defeated"""
+        old_status = getattr(self, 'status', 'alive')
+        self.hp = 0
+        self.status = "defeated"
+        logger.debug(f"Character {self.name} was defeated")
+
+        # If we have a process manager, update the process
+        if hasattr(self, 'engine') and hasattr(self.engine, 'process_manager'):
+            if old_status == "alive":
+                # Either suspend or stop the process
+                self.engine.process_manager.send_command(self.id, "suspend")
+
+        return old_status
+
+    def kill(self):
+        """Mark character as permanently dead"""
+        self.hp = 0
+        self.status = "dead"
+        logger.debug(f"Character {self.name} was killed")
+
+    def revive(self, hp_percent=0.5):
+        """Revive a defeated character"""
+        if self.status != "dead":  # Can't revive permanently dead characters
+            old_status = self.status
+            self.status = "alive"
+            self.hp = int(self.max_hp * hp_percent)
+            logger.debug(f"Character {self.name} was revived with {self.hp} HP")
+
+            # If we have a process manager, update the process
+            if hasattr(self, 'engine') and hasattr(self.engine, 'process_manager'):
+                if old_status != "alive":
+                    # Unsuspend the process
+                    self.engine.process_manager.send_command(self.id, "unsuspend")
+                    # And update the NPC data
+                    self.engine.process_manager.send_command(self.id, "update_npc", self.to_dict())
+
+            return True
+        return False
+
+    def is_active(self):
+        """Check if character is active in the game (alive)"""
+        return getattr(self, "status", "alive") == "alive"
+
 
     def get_stat_modifier(self, stat: str) -> int:
         """Get the modifier for a stat"""
