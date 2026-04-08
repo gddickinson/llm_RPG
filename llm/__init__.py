@@ -1,4 +1,7 @@
-# characters/__init__.py
+# llm/__init__.py
 """
-Characters package for LLM-RPG
+LLM integration package for LLM-RPG.
+
+Contains:
+- llm_interface: LLMInterface (Ollama-based LLM communication)
 """
