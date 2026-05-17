@@ -1,2 +1,19 @@
 /_archive
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# macOS
+.DS_Store
 world/.DS_Store
+
+# Runtime artifacts
+*.log
+/saves/
+
+# Claude Code session metadata
+.claude/

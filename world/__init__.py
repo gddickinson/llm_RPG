@@ -1,9 +1,22 @@
-# world/__init__.py
-"""
-World package for LLM-RPG.
+"""World package for LLM-RPG.
 
-Contains:
-- world: World class (game world, locations, NPCs placement)
-- world_map: WorldMap (grid-based map generation and rendering)
-- location: Location dataclass (named places with descriptions)
+Public API:
+- World: top-level world state
+- WorldMap, TerrainType: grid and terrain
+- Location, LocationFactory: named regions
+- Biome, BIOME_TERRAIN: biome enum and mapping
+- WorldGenerator: procedural map gen
 """
+
+from world.world import World
+from world.world_map import WorldMap, TerrainType
+from world.location import Location, LocationFactory
+from world.biome import Biome, BIOME_TERRAIN, BIOME_DESCRIPTION
+from world.world_generator import WorldGenerator
+
+__all__ = [
+    "World", "WorldMap", "TerrainType",
+    "Location", "LocationFactory",
+    "Biome", "BIOME_TERRAIN", "BIOME_DESCRIPTION",
+    "WorldGenerator",
+]

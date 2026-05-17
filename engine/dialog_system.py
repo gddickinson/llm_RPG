@@ -1,0 +1,113 @@
+"""Dialog system — player↔NPC conversation through the LLM provider."""
+
+import logging
+from typing import Optional
+
+logger = logging.getLogger("llm_rpg.dialog")
+
+
+class DialogSystem:
+    """Player-NPC dialog with the LLM provider in the loop.
+
+    Falls back to a hard-coded greeting if the provider yields nothing.
+    """
+
+    def __init__(self, engine):
+        self.engine = engine
+
+    def player_to_npc(self, npc_id: str, message: str = None) -> str:
+        npc = self.engine.npc_manager.get_npc(npc_id)
+        if not npc:
+            return f"NPC with ID {npc_id} not found."
+
+        if not self._adjacent_to_player(npc):
+            return f"{npc.name} is too far away to talk to."
+
+        if not message:
+            return self._greet(npc)
+
+        # Player speaks ---------------------------------------------------
+        self.engine.memory_manager.add_event(
+            f"You say to {npc.name}: \"{message}\"")
+
+        # Use NPC process if available (multiprocess)
+        recent = self.engine.memory_manager.get_character_history(npc.name, count=5)
+        response = self._via_process(npc_id, message, recent) \
+            or self._via_inline(npc, message, recent)
+
+        if not response:
+            response = "..."
+
+        # Append quest offers / turn-in prompts
+        response = self._append_quest_prompts(npc_id, response)
+
+        self.engine.memory_manager.add_event(
+            f"{npc.name} says: \"{response}\"")
+        npc.add_memory(
+            f"Player said: \"{message}\". I replied: \"{response}\"", 2)
+
+        # Quest hook
+        if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
+            self.engine.quest_manager.on_npc_talked(npc_id)
+
+        self.engine.advance_turn()
+        return response
+
+    # ---- internals ---------------------------------------------------
+
+    def _greet(self, npc) -> str:
+        recent = []
+        response = self._via_process(npc.id, "Hello", recent) \
+            or self._via_inline(npc, "Hello", recent)
+        if not response:
+            response = "Hello there, traveler."
+
+        # Append quest offers / turn-in prompts
+        response = self._append_quest_prompts(npc.id, response)
+
+        self.engine.memory_manager.add_event(f"{npc.name} says: \"{response}\"")
+        self.engine.advance_turn()
+        return response
+
+    def _append_quest_prompts(self, npc_id: str, base: str) -> str:
+        qm = getattr(self.engine, "quest_manager", None)
+        if not qm:
+            return base
+        offered = qm.offered_by(npc_id)
+        ready = qm.ready_for_turn_in(npc_id)
+        if not offered and not ready:
+            return base
+
+        extras = [base]
+        for i, q in enumerate(offered, start=1):
+            extras.append(f"  [Quest available] {q.title}  (press {i} to accept)")
+        for j, q in enumerate(ready, start=len(offered) + 1):
+            extras.append(f"  [Quest complete!] {q.title}  (press {j} to turn in)")
+        return "\n".join(extras)
+
+    def _via_process(self, npc_id: str, message: str, recent) -> Optional[str]:
+        pm = getattr(self.engine, "process_manager", None)
+        if not pm:
+            return None
+        try:
+            pm.send_command(npc_id, "get_dialog",
+                            {"message": message, "recent_history": recent})
+            resp = pm.get_response(npc_id, timeout=3.0)
+            if resp and resp.get("type") == "dialog":
+                return resp["response"]
+        except Exception as e:
+            logger.warning(f"Process-based dialog failed: {e}")
+        return None
+
+    def _via_inline(self, npc, message: str, recent) -> str:
+        try:
+            return self.engine.llm_interface.generate_npc_dialog(
+                npc, message, recent)
+        except Exception as e:
+            logger.warning(f"Inline LLM dialog failed: {e}")
+            return ""
+
+    def _adjacent_to_player(self, npc) -> bool:
+        px, py = self.engine.player.position
+        nx, ny = npc.position
+        return ((px - nx) ** 2 + (py - ny) ** 2) ** 0.5 <= 1.5

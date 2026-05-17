@@ -1,271 +1,174 @@
 # LLM-RPG
 
-A sophisticated D&D-style roleplaying game powered by local Large Language Models, featuring dynamic NPCs that make independent decisions, engage in combat, trade items, and interact with the game world.
+A locally-runnable, D&D-style RPG with optional LLM-powered NPCs.
+The default mode requires **no LLM at all** — a heuristic NPC engine
+keeps the world alive — but you can plug in Ollama, Anthropic Claude,
+or OpenAI for richer character behavior.
 
-![LLM-RPG Game](https://via.placeholder.com/800x400?text=LLM-RPG+Game)
+## Highlights
 
-## Overview
+- **Local-first**: Single-process Pygame game; runs on any modern Mac/Linux/Windows.
+- **No mandatory LLM**: Heuristic provider gives NPCs personality, combat
+  behavior, and dialog patterns out of the box.
+- **Pluggable LLM**: One flag to switch between heuristic / Ollama / Anthropic / OpenAI.
+- **Real items**: Weapons, armor, potions, quest items — with stats, rarity, value.
+- **Quest system**: Kill / fetch / talk / explore / deliver / survive objectives.
+- **Save / load**: One-key F5/F9 JSON saves.
+- **Procedural worldgen**: Forest borders, river, mountains, village with shops.
+- **Sprite-based renderer**: All sprites generated procedurally — no asset files.
+- **D&D skill checks**: 18 skills with ability modifiers, advantage / disadvantage.
+- **NPC processes**: Optional multiprocess NPC AI for parallel LLM calls.
 
-LLM-RPG creates an immersive fantasy world where non-player characters (NPCs) are controlled by local LLMs. Each NPC has its own personality, goals, memories, and can make decisions based on its character sheet and current game state. The game runs entirely on your local machine, using Ollama to interact with models like Llama 3.
+## Quick Start
 
-### Key Features
+```bash
+pip install -r requirements.txt
+python main.py                                  # Pygame GUI, heuristic AI
+python main.py --ui terminal                    # Terminal mode
+python main.py --provider ollama --model llama3 # Ollama backend
+python main.py --provider anthropic \
+       --model claude-haiku-4-5-20251001        # Anthropic Claude
+python main.py --load                           # Resume quicksave
+python main.py --no-quests --no-npc-processes   # Minimal mode
+```
 
-- **LLM-Powered NPCs**: Each NPC runs in its own process with a dedicated LLM, allowing for parallel, non-blocking decision making
-- **Dynamic World**: NPCs move around, interact with each other, engage in combat, and trade items
-- **Memory System**: Characters remember past events and interactions, influencing future decisions
-- **Combat System**: Turn-based combat with stats-based outcomes, health tracking, and defeat mechanics
-- **Economy**: NPCs can buy, sell, and trade items with each other and the player
-- **Revival System**: Defeated characters can be revived at special shrines in the game world
-- **Multiprocess Architecture**: Responsive gameplay even with multiple NPCs active at once
-- **Graphical Interface**: Easy-to-use UI with map visualization, character stats, and inventory management
+For LLM modes, install the matching SDK:
+```bash
+pip install anthropic        # for --provider anthropic
+pip install openai           # for --provider openai
+# Ollama: see https://ollama.ai/
+```
+
+## Controls (GUI)
+
+| Key                    | Action                          |
+|------------------------|---------------------------------|
+| WASD / Arrows          | Move                            |
+| SPACE / F              | Attack adjacent enemy           |
+| T                      | Talk to adjacent NPC            |
+| G / E                  | Pick up item                    |
+| H                      | Drink potion                    |
+| I                      | Inventory overlay               |
+| Q                      | Quest log                       |
+| C                      | Character sheet                 |
+| F5 / F9                | Save / Load                     |
+| F1 / `/`               | Help                            |
+| ESC                    | Close menu / quit               |
+
+In dialog mode: type your message, Enter to send, Esc to leave.
+
+## Project Layout
+
+See [`INTERFACE.md`](INTERFACE.md) for the full navigation map.
+
+```
+llm_RPG/
+├── main.py                 # Entry point
+├── config.py
+├── INTERFACE.md            # Project map (READ FIRST)
+├── SESSION_LOG.md          # Development history
+├── README.md / ROADMAP.md
+├── engine/                 # Core game logic
+│   ├── game_engine.py      # Orchestrator (363 LOC)
+│   ├── combat_system.py
+│   ├── economy_system.py
+│   ├── dialog_system.py
+│   ├── action_router.py
+│   ├── player_actions.py
+│   ├── save_load.py        # JSON persistence
+│   ├── skills.py           # D&D skill checks
+│   ├── memory_manager.py
+│   └── npc_process*.py     # Multiprocess NPC AI (optional)
+├── characters/             # Character + NPC system
+├── world/                  # World, map, biomes, procedural gen
+├── items/                  # Item system (NEW)
+├── quests/                 # Quest system (NEW)
+├── llm/                    # LLM facade + providers
+│   ├── llm_interface.py
+│   └── providers/
+│       ├── base.py
+│       ├── heuristic.py    # default (no LLM)
+│       ├── ollama.py
+│       ├── anthropic.py
+│       └── openai_provider.py
+├── ui/                     # Pygame + terminal UIs
+│   ├── gui.py              # Thin orchestrator (237 LOC)
+│   ├── renderer.py         # Map rendering
+│   ├── sprite_loader.py    # Procedural sprites
+│   ├── hud.py              # Status panels, minimap, log
+│   ├── input_handler.py    # Input routing
+│   └── terminal_ui.py
+├── tests/                  # 44+ unit tests
+└── saves/                  # Created at runtime
+```
+
+## Game Systems
+
+### Combat
+- Player vs NPC vs NPC, weapon damage + armor reduction.
+- Stat-vs-stat hit chance, randomized damage.
+- Defeated characters drop class-appropriate loot via `items/loot_tables.py`.
+- Player kills grant XP (tracked in `player.metadata["xp"]`).
+
+### Items
+- Real `Item` class — weapons, armor, shields, consumables, quest items.
+- Effects: damage, armor, heal_amount, value, rarity.
+- 35+ predefined items in `items/item_registry.py`. Add more there.
+
+### Quests
+- 6 starter quests (kill troll, fetch herbs, deliver sword, explore cave, ...).
+- Event hooks wire automatically to engine actions:
+  defeating an NPC, picking up an item, talking to someone,
+  entering a location, surviving turns, delivering items.
+
+### NPC AI
+- **Heuristic mode**: rule-based behavior keyed on class + visible state.
+  Brigands attack on sight, merchants greet customers, guards patrol.
+- **LLM mode**: NPCs run in their own processes, decide actions every
+  N turns based on full character context, visible map, history, memories.
+
+### World
+- 30x20 default; procedural generation with forest/river/mountain/village.
+- Day-night cycle visible as color overlay.
+- Revival shrines that bring back defeated NPCs.
+
+### Saves
+- JSON, one file per slot. `saves/quicksave.json` by default.
+- Captures world, player, all NPCs, ground items, quests, history.
+
+## Running Tests
+
+```bash
+python -m unittest discover tests/
+```
+
+44 tests cover items, quests, save/load, combat, world gen, skills, engine.
+
+## Configuration
+
+Edit `config.py` to tune:
+- `DEFAULT_PROVIDER`: heuristic | ollama | anthropic | openai
+- `DEFAULT_MODEL`: model name for the chosen provider
+- `DEFAULT_MAP_WIDTH` / `_HEIGHT`
+- `NPC_ACTION_INTERVAL`: turns between NPC LLM calls
+- `MAX_HISTORY_ITEMS`: event log retention
+
+## Adding Content
+
+Quick recipes (see INTERFACE.md for details):
+- **New item**: append to `items/item_registry.py`.
+- **New quest**: add template in `quests/quest_templates.py`.
+- **New NPC class**: extend `CharacterClass` enum.
+- **New action**: add handler in `engine/action_router.py`.
+- **New terrain**: extend `TerrainType` + add sprite in `ui/sprite_loader.py`.
 
 ## Requirements
 
-- Python 3.8 or higher
-- Ollama with Llama 3 model installed
-- M1/M2 Mac, Windows, or Linux machine (32GB RAM recommended for best performance)
-- Required Python packages (see requirements.txt)
-
-## Installation
-
-1. **Clone the repository**:
-   ```
-   git clone https://github.com/yourusername/llm-rpg.git
-   cd llm-rpg
-   ```
-
-2. **Install dependencies**:
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. **Download and start Ollama**:
-   - Install from [ollama.ai](https://ollama.ai)
-   - Pull the Llama 3 model:
-     ```
-     ollama pull llama3
-     ```
-
-## Usage
-
-### Starting the Game
-
-Run the game with the graphical interface (recommended):
-```
-python main.py --ui gui
-```
-
-Or use the terminal interface:
-```
-python main.py --ui terminal
-```
-
-### Command Line Options
-
-- `--model MODEL`: Specify which LLM model to use (default: llama3)
-- `--ui [gui|terminal]`: Choose the user interface (default: gui if available)
-- `--width WIDTH`: Set window width for the GUI (default: 1200)
-- `--height HEIGHT`: Set window height for the GUI (default: 800)
-- `--debug`: Enable debug logging
-
-## Game Controls
-
-### GUI Mode
-
-- **Movement**: WASD or arrow keys
-- **Combat**:
-  - SPACE: Attack nearest hostile character
-  - F: Attack any character (with selection for multiple targets)
-- **Interaction**:
-  - T: Talk to nearby NPC
-  - E: Examine/Interact with objects
-  - I: Open inventory
-  - C: View character sheet
-  - M: View map
-  - ESC: Settings/Cancel dialog
-
-### Terminal Mode
-
-- **Movement**: WASD or arrow keys
-- **Interaction**:
-  - T: Talk to NPC
-  - I: Show inventory
-  - C: Show character
-  - M: Show map
-  - L: Look around
-  - H: Show help
-  - Q: Quit game
-
-## Project Architecture
-
-### Modular Design
-
-The project uses a modular architecture for easy maintenance and extension:
-
-```
-llm_rpg/
-├── main.py                   # Main entry point
-├── config.py                 # Configuration settings
-├── engine/                   # Core game engine
-│   ├── game_engine.py        # Main game logic
-│   ├── memory_manager.py     # Game history tracking
-│   ├── npc_process.py        # NPC process module
-│   └── npc_process_manager.py # Multi-process management
-├── world/                    # World representation
-│   ├── world.py              # World management
-│   ├── world_map.py          # Map and movement
-│   └── location.py           # Location definitions
-├── characters/               # Character system
-│   ├── character.py          # Character class
-│   ├── character_types.py    # Character enums
-│   └── npc_manager.py        # NPC management
-├── llm/                      # LLM integration
-│   ├── llm_interface.py      # Basic LLM interface
-│   └── threaded_llm_interface.py # Threaded LLM interface
-└── ui/                       # User interfaces
-    ├── gui.py                # Graphical interface
-    ├── gui_interface.py      # GUI launcher
-    └── terminal_ui.py        # Terminal interface
-```
-
-### Multi-Process Architecture
-
-LLM-RPG uses a multi-process architecture to ensure responsive gameplay:
-
-1. **Main Process**: Handles game state, player input, and UI rendering
-2. **NPC Processes**: Each NPC runs in its own separate process with:
-   - Dedicated LLM instance
-   - Command/response queues for communication
-   - Independent decision making
-
-This approach allows NPCs to "think" in parallel without blocking the main game loop, resulting in a more responsive experience.
-
-## NPC System
-
-### Character Components
-
-Each character (including NPCs) has:
-
-- **Basic Attributes**: Name, class, race, level, stats (STR, DEX, CON, INT, WIS, CHA)
-- **Status**: HP, max HP, status (alive, defeated, dead)
-- **Inventory**: Items, gold
-- **Personality**: Traits, likes, dislikes
-- **Relationships**: How they feel about other characters
-- **Goals**: What they're trying to accomplish
-- **Memories**: Important events they remember
-
-### NPC Decision Making
-
-NPCs make decisions based on:
-
-1. Their character sheet and personality
-2. Current game state and visible environment
-3. Recent game history
-4. Their memories of past events
-5. Their goals and motivations
-
-The LLM generates structured actions including:
-- Movement (where to go)
-- Combat (who to attack)
-- Dialog (what to say)
-- Economic actions (buying/selling)
-- World interactions (using items, searching)
-
-## Combat System
-
-The combat system includes:
-
-- **Attack Logic**: Based on character stats and weapon types
-- **Damage Calculation**: Influenced by strength, dexterity, and other factors
-- **Health Tracking**: Characters have HP that decreases when damaged
-- **Defeat Mechanics**: Characters at 0 HP are defeated and removed from play
-- **Relationships**: Combat affects how characters feel about each other
-
-## Revival System
-
-The game includes a revival system:
-
-1. **Revival Shrines**: Special locations on the map
-2. **Body Items**: Defeated characters leave behind body items
-3. **Resurrection Mechanics**: Bodies near shrines can be revived after time
-4. **Health Recovery**: Revived characters return with partial health
-
-## Extending the Game
-
-### Adding New NPCs
-
-1. Create a new NPC in `npc_manager.py`:
-   ```python
-   def create_custom_npc(self, position=(x, y)):
-       npc = Character(
-           id="custom_npc_01",
-           name="CustomName",
-           character_class=CharacterClass.CHOSEN_CLASS,
-           race=CharacterRace.CHOSEN_RACE,
-           # Other attributes...
-       )
-       self.add_npc(npc)
-       return npc
-   ```
-
-2. Call this method when initializing the world.
-
-### Adding New Locations
-
-1. Modify `world.py` to add new locations:
-   ```python
-   # In create_simple_world method
-   self.map.add_terrain_feature(TerrainType.CHOSEN_TYPE, x, y, width, height)
-   self.add_location(Location("Location Name", "Description", x, y, width, height))
-   ```
-
-### Creating New Character Classes/Races
-
-1. Add new options to the enums in `character_types.py`:
-   ```python
-   class CharacterClass(Enum):
-       # Existing classes...
-       NEW_CLASS = "new_class"
-
-   class CharacterRace(Enum):
-       # Existing races...
-       NEW_RACE = "new_race"
-   ```
-
-## Performance Considerations
-
-- **Memory Usage**: Each NPC process uses memory for its LLM instance
-- **CPU Usage**: Multiple LLM instances will use significant CPU resources
-- **Process Suspension**: Inactive NPCs have their processes suspended to save resources
-- **Distance-Based Processing**: Only NPCs near the player are actively processed
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Game Freezes**:
-   - Check if Ollama is running
-   - Reduce the number of active NPCs
-   - Increase `NPC_ACTION_INTERVAL` in config.py
-
-2. **NPCs Not Moving**:
-   - Verify LLM is generating valid actions
-   - Check debug logs for movement failures
-
-3. **Memory Usage Too High**:
-   - Reduce `NUM_LLM_THREADS` in config.py
-   - Use a smaller LLM model
+- Python 3.8+
+- pygame (or pygame-ce) — for GUI mode
+- requests — for Ollama
+- (optional) anthropic, openai — for cloud providers
 
 ## License
 
-MIT License
-
-## Acknowledgments
-
-- This project uses Ollama for local LLM integration
-- Pygame and pygame_gui for the graphical interface
-- The multiprocessing library for parallel NPC processing
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+MIT

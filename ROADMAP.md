@@ -1,35 +1,61 @@
-# LLM-RPG (v1) — Roadmap
+# LLM-RPG — Roadmap
 
-## Current State
-Original version of the LLM-powered D&D RPG, superseded by `llm_RPG_2`. Uses argparse CLI, standard logging, pygame GUI, and Ollama-only LLM integration. Modular structure with `engine/`, `characters/`, `world/`, `llm/`, and `ui/` packages. Has a `threaded_llm_interface.py` for async NPC processing. No tests, no web UI, Ollama-only. The project has been largely replaced by v2 but may still serve as a simpler reference implementation.
+## Current state (2026-05-17)
+
+The codebase was overhauled in a single session to be a fully-functional,
+locally-runnable game with optional LLM backends. Key additions:
+
+- LLM provider abstraction (`llm/providers/`) with heuristic fallback
+- Real items system (`items/`) and loot tables
+- Quest system (`quests/`) — kill / fetch / talk / explore / deliver / survive
+- Save / load (`engine/save_load.py`) — JSON
+- Skills (`engine/skills.py`) — D&D-style checks
+- Refactored 1566-LOC `game_engine.py` into 8 focused modules
+- Refactored 1104-LOC `gui.py` into renderer + sprite loader + HUD + input
+- Procedural world generation with biomes and named locations
+- Procedural sprite rendering (no PNG assets)
+- 44-test suite covering items, quests, save/load, combat, world gen, skills, engine
+
+All source files now under 500 lines. INTERFACE.md and SESSION_LOG.md created.
 
 ## Short-term Improvements
-- [ ] Add a deprecation notice in README pointing to `llm_RPG_2` as the active version
-- [ ] Remove `test_pygame.py` if it is just a sanity check, or move it to a `tests/` directory
-- [ ] Clean up `npc_process_4743.log` — should be in a `logs/` directory or gitignored
-- [ ] Add `requirements.txt` version pins (currently unpinned)
-- [ ] Add error handling in `main.py` game loop — the `time.sleep(0.1)` busy loop could be more robust
-- [ ] Add docstrings to `engine/game_engine.py`, `engine/npc_process_manager.py`
+
+- [ ] **Quest UI**: Click-to-accept available quests at NPCs that offer them.
+- [ ] **Inventory equipping**: Currently weapons/armor are auto-summed; add equip slots.
+- [ ] **Level-up**: Convert XP to level/HP/stat increases.
+- [ ] **More NPC variety**: Random NPC spawns in towns + wandering monsters.
+- [ ] **Skill-gated dialog**: PERSUASION / INTIMIDATION checks in conversations.
+- [ ] **Crafting**: Use INGREDIENT items at the forge to produce weapons.
+- [ ] **Mouse input**: Click to move / click on NPC to interact.
+- [ ] **Sound**: pygame.mixer-based ambient + combat SFX.
+- [ ] **Tiled minimap**: Show explored vs unexplored.
 
 ## Feature Enhancements
-- [ ] Backport web UI from v2 if this version is to be maintained independently
-- [ ] Add support for additional LLM providers (Anthropic, OpenAI) via `llm/llm_interface.py`
-- [ ] Add save/load game functionality
-- [ ] Improve `ui/gui.py` pygame rendering: add minimap, better sprite rendering, inventory panel
-- [ ] Add NPC personality customization via config files instead of hardcoded values
-- [ ] Add sound effects using `pygame.mixer`
+
+- [ ] **Larger world**: Multiple regions (forest, desert, mountains) connected by roads.
+- [ ] **Dungeons**: BSP / cellular-automata dungeons (concepts from autonomous_world).
+- [ ] **Day/night gameplay**: Monster spawns at night, NPCs return home.
+- [ ] **Faction system**: NPCs grouped by allegiance affecting combat AI.
+- [ ] **Persistent NPC schedules**: Each NPC has a daily routine.
+- [ ] **Animated sprites**: Per-frame animation in `sprite_loader.py`.
+- [ ] **Better worldgen**: Perlin/simplex noise via numpy.
+- [ ] **Localization**: Strings out of code into a JSON.
+- [ ] **Speech-to-text**: Dictate dialog with the player's voice (e.g. via Whisper).
 
 ## Long-term Vision
-- [ ] **Decision point**: either archive this project in favor of `llm_RPG_2`, or differentiate it as the "lightweight/offline" version
-- [ ] If maintaining: strip down to a minimal, well-tested single-LLM RPG engine
-- [ ] If archiving: add clear documentation about what was learned and what changed in v2
-- [ ] Consider extracting the core RPG engine as a shared library used by both v1 and v2
+
+- [ ] **Module system**: Load campaigns from external JSON/YAML packs.
+- [ ] **Co-op**: Local hotseat multiplayer.
+- [ ] **Networked multiplayer**: Stretch goal — port the FastAPI server from llm_RPG_2.
+- [ ] **3D mode**: OpenGL viewer inspired by autonomous_world's renderer_3d.
+- [ ] **Web UI**: Headless engine + static HTML frontend.
+- [ ] **LLM-driven world events**: Random events generated nightly by the LLM.
 
 ## Technical Debt
-- [ ] `ui/gui_interface.py` and `ui/gui.py` have unclear separation — consolidate or document the boundary
-- [ ] `llm/threaded_llm_interface.py` vs `llm/llm_interface.py` — naming inconsistency, should clarify sync vs async
-- [ ] `config.py` uses mutable module globals (same issue as v2)
-- [ ] No `__init__.py` content in most packages — missing re-exports and docstrings
-- [ ] `engine/npc_process_manager.py` (v1) vs `engine/process_manager.py` (v2) — naming divergence
-- [ ] No tests at all — add at minimum smoke tests for engine initialization and character creation
-- [ ] Stale log file `npc_process_4743.log` committed to repo
+
+- [ ] `characters/npc_manager.py` is at 499 LOC — split presets into a data file.
+- [ ] `ui/terminal_ui.py` predates the new engine API — rewrite to use modular subsystems.
+- [ ] `engine/npc_process_manager.py` is intricate — write integration tests against it.
+- [ ] `ui/threaded_llm_interface.py` is legacy — confirm and remove if unused.
+- [ ] Properly support pygame_gui (currently imported via legacy code only).
+- [ ] `_archive/` should be moved to a separate branch or deleted before release.

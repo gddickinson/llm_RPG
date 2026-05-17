@@ -1,0 +1,126 @@
+"""Player-driven actions: pickup/drop/use/attack.
+
+Extracted from the legacy monolithic game_engine.py.
+"""
+
+import logging
+from typing import Optional
+
+logger = logging.getLogger("llm_rpg.player_actions")
+
+
+class PlayerActions:
+    """All actions the player can take, separated from engine internals."""
+
+    def __init__(self, engine):
+        self.engine = engine
+
+    # ---- inventory ----------------------------------------------------
+
+    def pickup(self, item_name: str = None) -> str:
+        player = self.engine.player
+        x, y = player.position
+        ground = self.engine.world.get_items_at(x, y)
+        if not ground:
+            return "There's nothing here to pick up."
+
+        candidates = []
+        if item_name:
+            for it in ground:
+                it_name = it.name if hasattr(it, "name") else str(it)
+                if item_name.lower() in it_name.lower():
+                    candidates.append(it)
+        else:
+            candidates = list(ground)
+
+        if not candidates:
+            return f"You can't find {item_name} here."
+
+        item = candidates[0]
+        item_name_str = item.name if hasattr(item, "name") else str(item)
+        player.inventory.append(item)
+        self.engine.world.remove_item_from_ground(item, x, y)
+        msg = f"You pick up {item_name_str}."
+        self.engine.memory_manager.add_event(msg)
+
+        # Quest hook
+        if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
+            item_id = getattr(item, "id", None) or item_name_str.lower().replace(" ", "_")
+            self.engine.quest_manager.on_item_acquired(item_id)
+
+        self.engine.advance_turn()
+        return msg
+
+    def drop(self, item_name: str) -> str:
+        if not item_name:
+            return "Specify which item to drop."
+        player = self.engine.player
+        if not player.inventory:
+            return "You have nothing to drop."
+
+        for it in player.inventory:
+            it_name = it.name if hasattr(it, "name") else str(it)
+            if item_name.lower() in it_name.lower():
+                player.inventory.remove(it)
+                self.engine.world.add_item_to_ground(it, *player.position)
+                msg = f"You drop {it_name}."
+                self.engine.memory_manager.add_event(msg)
+                self.engine.advance_turn()
+                return msg
+        return f"You don't have {item_name}."
+
+    def use(self, item_name: str) -> str:
+        if not item_name:
+            return "Specify which item to use."
+        player = self.engine.player
+        for it in player.inventory:
+            it_name = it.name if hasattr(it, "name") else str(it)
+            if item_name.lower() not in it_name.lower():
+                continue
+            heal = getattr(it, "heal_amount", 0)
+            if heal and player.hp < player.max_hp:
+                player.heal(heal)
+                player.inventory.remove(it)
+                msg = f"You use {it_name} and heal {heal} HP."
+                self.engine.memory_manager.add_event(msg)
+                self.engine.advance_turn()
+                return msg
+            elif heal:
+                return "You're already at full health."
+            else:
+                # Generic use — e.g. for quest items / keys
+                msg = f"You use {it_name}."
+                self.engine.memory_manager.add_event(msg)
+                self.engine.advance_turn()
+                return msg
+        return f"You don't have {item_name}."
+
+    # ---- combat -------------------------------------------------------
+
+    def attack(self, target_name: str) -> str:
+        result = self.engine.combat_system.player_attack(target_name)
+        self.engine.memory_manager.add_event(result)
+        self.engine.advance_turn()
+        return result
+
+    # ---- movement -----------------------------------------------------
+
+    def move(self, dx: int, dy: int) -> bool:
+        player = self.engine.player
+        if not self.engine.running:
+            return False
+        nx, ny = player.position[0] + dx, player.position[1] + dy
+        if not self.engine.world.map.move_character(player, nx, ny):
+            return False
+
+        loc = self.engine.world.get_location_at(nx, ny)
+        loc_name = loc.name if loc else "wilderness"
+        self.engine.memory_manager.add_event(
+            f"You move to {loc_name} ({nx}, {ny}).")
+
+        # Quest hooks
+        if hasattr(self.engine, "quest_manager") and self.engine.quest_manager and loc:
+            self.engine.quest_manager.on_location_entered(loc.name)
+
+        self.engine.advance_turn()
+        return True

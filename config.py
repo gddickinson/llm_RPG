@@ -5,8 +5,13 @@ Configuration settings for LLM-RPG
 # LLM Settings
 LLM_API_URL = "http://localhost:11434/api/generate"
 DEFAULT_MODEL = "llama3"
+DEFAULT_PROVIDER = "heuristic"  # heuristic | ollama | anthropic | openai
 DEFAULT_TEMPERATURE = 0.7
 DEFAULT_MAX_TOKENS = 1000
+
+# Save/Load
+SAVE_DIRECTORY = "saves"
+DEFAULT_SAVE_FILE = "quicksave.json"
 
 # Game Settings
 DEFAULT_MAP_WIDTH = 30

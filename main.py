@@ -1,93 +1,133 @@
 #!/usr/bin/env python3
-"""
-LLM-RPG: A D&D-style RPG with LLM-powered NPCs
-Main entry point for the game
+"""LLM-RPG entry point.
+
+Examples:
+    python main.py                                  # Pygame GUI, heuristic AI
+    python main.py --ui terminal                    # Terminal UI
+    python main.py --provider ollama --model llama3 # Use local Ollama
+    python main.py --provider anthropic \\
+        --model claude-haiku-4-5-20251001           # Use Anthropic
+    python main.py --load                           # Resume last save
 """
 
-import logging
 import argparse
-import time
+import logging
 import sys
+import time
 
 from engine.game_engine import GameEngine
-from ui.terminal_ui import TerminalUI
+from llm.providers import available_providers
+
 try:
     from ui.gui import GameGUI
     has_pygame = True
 except ImportError:
     has_pygame = False
 
-# Set up logging
+from ui.terminal_ui import TerminalUI
+
+
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler("llm_rpg.log"),
-        logging.StreamHandler()
-    ]
+        logging.StreamHandler(),
+    ],
 )
 logger = logging.getLogger("llm_rpg")
 
+
 def parse_args():
-    """Parse command line arguments"""
-    parser = argparse.ArgumentParser(description="LLM-RPG: D&D-style game with LLM-powered NPCs")
-    parser.add_argument("--model", default="llama3", help="LLM model to use (default: llama3)")
-    parser.add_argument("--ui", choices=["terminal", "gui"], default="gui" if has_pygame else "terminal",
-                      help="User interface to use (default: gui if available, otherwise terminal)")
-    parser.add_argument("--width", type=int, default=1200, help="Window width for GUI (default: 1200)")
-    parser.add_argument("--height", type=int, default=800, help="Window height for GUI (default: 800)")
-    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
-    return parser.parse_args()
+    p = argparse.ArgumentParser(
+        description="LLM-RPG: D&D-style game with LLM-powered NPCs",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    p.add_argument("--ui", choices=["terminal", "gui"],
+                   default="gui" if has_pygame else "terminal",
+                   help="User interface (default: gui if pygame installed)")
+    p.add_argument("--provider", default="heuristic",
+                   choices=available_providers(),
+                   help="LLM provider (default: heuristic, no LLM needed)")
+    p.add_argument("--model", default="llama3",
+                   help="Model name for the provider (default: llama3)")
+    p.add_argument("--width", type=int, default=1280,
+                   help="Window width for GUI")
+    p.add_argument("--height", type=int, default=800,
+                   help="Window height for GUI")
+    p.add_argument("--tile-size", type=int, default=32,
+                   help="Tile size in pixels")
+    p.add_argument("--load", nargs="?", const="quicksave.json",
+                   default=None,
+                   help="Load a save file at startup (defaults to quicksave.json)")
+    p.add_argument("--no-quests", action="store_true",
+                   help="Disable quest system")
+    p.add_argument("--no-npc-processes", action="store_true",
+                   help="Disable multiprocess NPC actions (uses sync calls instead)")
+    p.add_argument("--debug", action="store_true",
+                   help="Enable debug logging")
+    return p.parse_args()
 
-def main():
-    """Main entry point for the game"""
-    # Parse command line arguments
+
+def main() -> int:
     args = parse_args()
-
-    # Set logging level
     if args.debug:
         logger.setLevel(logging.DEBUG)
+        logging.getLogger().setLevel(logging.DEBUG)
 
-    logger.info(f"Starting LLM-RPG with model: {args.model}")
+    logger.info(
+        f"Starting LLM-RPG (provider={args.provider}, model={args.model}, "
+        f"ui={args.ui})"
+    )
 
-    # Initialize game engine
-    engine = GameEngine(llm_model=args.model)
+    # Build engine
+    engine = GameEngine(
+        llm_model=args.model,
+        llm_provider=args.provider,
+        enable_npc_processes=(not args.no_npc_processes
+                              and args.provider != "heuristic"),
+        enable_quests=(not args.no_quests),
+    )
 
-    # Initialize UI based on user choice
-    if args.ui == "gui":
-        if has_pygame:
-            ui = GameGUI(engine, width=args.width, height=args.height)
+    # Optional load
+    if args.load:
+        if engine.load_game(args.load):
+            logger.info(f"Loaded save: {args.load}")
         else:
-            logger.warning("GUI requested but pygame not available. Falling back to terminal UI.")
+            logger.warning(f"Could not load save: {args.load}")
+
+    # UI selection
+    if args.ui == "gui":
+        if not has_pygame:
+            logger.warning("pygame not available, falling back to terminal")
             ui = TerminalUI(engine)
+        else:
+            ui = GameGUI(engine, width=args.width, height=args.height,
+                         tile_size=args.tile_size)
     else:
         ui = TerminalUI(engine)
 
-    # Start the game
     try:
         ui.start()
-
-        # If terminal UI, need to run the main loop here
-        if args.ui == "terminal" or (args.ui == "gui" and not has_pygame):
-            # Main game loop - UI handles most of the interaction
+        if args.ui == "terminal":
             while engine.running:
-                # Process NPC actions asynchronously
                 engine.process_npc_turns_async()
-
-                # Update UI
                 ui.update()
-
-                # Small delay to prevent CPU overuse
                 time.sleep(0.1)
-
     except KeyboardInterrupt:
-        logger.info("Game terminated by user")
+        logger.info("Interrupted by user")
     except Exception as e:
-        logger.exception(f"Error in main game loop: {str(e)}")
+        logger.exception(f"Fatal: {e}")
+        return 1
     finally:
-        # Clean up
-        ui.shutdown()
+        try:
+            ui.shutdown()
+        except Exception as e:
+            logger.warning(f"Shutdown warning: {e}")
         logger.info("Game ended")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

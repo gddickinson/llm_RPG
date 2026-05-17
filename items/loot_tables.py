@@ -1,0 +1,140 @@
+"""Loot drop tables.
+
+Given a defeated character (or just class+level), produce a list of
+items to drop on the ground.
+"""
+
+import logging
+import random
+from typing import Any, List
+
+from items.item import Item
+from items.item_registry import create_item
+
+logger = logging.getLogger("llm_rpg.items.loot")
+
+
+# Map character class value -> list of (item_id, weight)
+LOOT_BY_CLASS = {
+    "brigand": [
+        ("crude_axe", 3),
+        ("dagger", 2),
+        ("tattered_armor", 2),
+        ("coins", 5),
+        ("stolen_jewelry", 1),
+        ("potion", 2),
+    ],
+    "troll": [
+        ("crude_axe", 3),
+        ("tattered_armor", 1),
+        ("troll_tooth", 4),
+        ("stolen_jewelry", 2),
+        ("coins", 3),
+    ],
+    "monster": [
+        ("wolf_pelt", 4),
+        ("coins", 2),
+    ],
+    "warrior": [
+        ("sword", 3),
+        ("leather", 2),
+        ("shield", 2),
+        ("potion", 2),
+        ("coins", 3),
+    ],
+    "guard": [
+        ("sword", 4),
+        ("chainmail", 1),
+        ("shield", 2),
+        ("whistle", 1),
+        ("coins", 2),
+    ],
+    "wizard": [
+        ("staff", 2),
+        ("spellbook", 1),
+        ("potion", 3),
+        ("greater_potion", 1),
+        ("coins", 2),
+    ],
+    "rogue": [
+        ("dagger", 3),
+        ("lockpicks", 2),
+        ("leather", 1),
+        ("coins", 4),
+    ],
+    "cleric": [
+        ("holy_symbol", 1),
+        ("potion", 4),
+        ("bandage", 3),
+        ("coins", 2),
+    ],
+    "merchant": [
+        ("goods", 4),
+        ("ledger", 1),
+        ("coins", 5),
+    ],
+    "bard": [
+        ("lute", 1),
+        ("flute", 2),
+        ("wine", 2),
+        ("coins", 2),
+    ],
+    "villager": [
+        ("bread", 3),
+        ("personal_items", 4),
+        ("coins", 1),
+    ],
+}
+
+# Generic fallback table
+DEFAULT_LOOT = [
+    ("coins", 3),
+    ("bread", 2),
+    ("personal_items", 1),
+]
+
+
+def _weighted_choice(table, rng):
+    total = sum(w for _, w in table)
+    if total <= 0:
+        return None
+    pick = rng.uniform(0, total)
+    upto = 0.0
+    for item_id, weight in table:
+        upto += weight
+        if upto >= pick:
+            return item_id
+    return table[-1][0]
+
+
+def generate_loot(character: Any, rng: random.Random = None,
+                  drop_count: int = None) -> List[Item]:
+    """Roll loot for a defeated character.
+
+    Parameters
+    ----------
+    character : Character
+        Defeated character (uses .character_class, .level).
+    rng : random.Random
+        Optional RNG for reproducible drops.
+    drop_count : int
+        How many items to drop. Default: 1 + level // 3.
+    """
+    rng = rng or random.Random()
+    klass = getattr(getattr(character, "character_class", None), "value", "villager")
+    table = LOOT_BY_CLASS.get(klass, DEFAULT_LOOT)
+
+    if drop_count is None:
+        level = getattr(character, "level", 1)
+        drop_count = 1 + max(0, level // 3)
+
+    drops = []
+    for _ in range(drop_count):
+        item_id = _weighted_choice(table, rng)
+        if not item_id:
+            continue
+        item = create_item(item_id)
+        if item:
+            drops.append(item)
+
+    return drops
