@@ -8,16 +8,20 @@ or OpenAI for richer character behavior.
 ## Highlights
 
 - **Local-first**: Single-process Pygame game; runs on any modern Mac/Linux/Windows.
-- **No mandatory LLM**: Heuristic provider gives NPCs personality, combat
-  behavior, and dialog patterns out of the box.
+- **No mandatory LLM**: Heuristic provider gives NPCs personality, daily routines, schedules, combat behavior, and branching dialog out of the box.
 - **Pluggable LLM**: One flag to switch between heuristic / Ollama / Anthropic / OpenAI.
-- **Real items**: Weapons, armor, potions, quest items — with stats, rarity, value.
-- **Quest system**: Kill / fetch / talk / explore / deliver / survive objectives.
+- **Living world**: NPC daily schedules + needs (hunger, fatigue), seasons, calendar, day/night cycle.
+- **Real items + crafting**: Weapons, armor, potions, quest items; recipes for ingredients.
+- **Quests**: 6 quest types (kill / fetch / talk / explore / deliver / survive). Accept from NPC dialog or the tavern's quest board.
+- **Factions**: 8 factions with reputation tracking; kills shift your standing across factions.
+- **Companions**: Recruit followers who fight alongside you.
+- **Building interiors**: Walk into the tavern, forge, shop, or temple — switch to an indoor mini-map.
+- **Random encounters**: Wilderness monster spawns away from town.
+- **Banking**: Deposit gold safely at the temple or shop.
 - **Save / load**: One-key F5/F9 JSON saves.
 - **Procedural worldgen**: Forest borders, river, mountains, village with shops.
 - **Sprite-based renderer**: All sprites generated procedurally — no asset files.
-- **D&D skill checks**: 18 skills with ability modifiers, advantage / disadvantage.
-- **NPC processes**: Optional multiprocess NPC AI for parallel LLM calls.
+- **D&D skill checks + leveling**: 18 skills with ability modifiers; XP curve with class-favored stat gains.
 
 ## Quick Start
 
@@ -29,7 +33,6 @@ python main.py --provider ollama --model llama3 # Ollama backend
 python main.py --provider anthropic \
        --model claude-haiku-4-5-20251001        # Anthropic Claude
 python main.py --load                           # Resume quicksave
-python main.py --no-quests --no-npc-processes   # Minimal mode
 ```
 
 For LLM modes, install the matching SDK:
@@ -46,6 +49,7 @@ pip install openai           # for --provider openai
 | WASD / Arrows          | Move                            |
 | SPACE / F              | Attack adjacent enemy           |
 | T                      | Talk to adjacent NPC            |
+| 1–9 (in dialog)        | Accept / turn in offered quests |
 | G / E                  | Pick up item                    |
 | H                      | Drink potion                    |
 | I                      | Inventory overlay               |
@@ -57,84 +61,71 @@ pip install openai           # for --provider openai
 
 In dialog mode: type your message, Enter to send, Esc to leave.
 
+## Game Systems
+
+### NPCs — daily schedules + needs
+
+Peaceful NPCs follow class-specific daily routines: villagers and merchants work during the day, eat at the tavern at meals, drink in the evening, sleep at night. Bards play music in the tavern; clerics pray at the temple. NPCs accumulate hunger and fatigue as time passes; starving or exhausted NPCs break from their schedule to find food or rest.
+
+Hostile NPCs (brigands, trolls, monsters) hunt the player on sight.
+
+### Combat
+
+- Player vs NPC vs NPC; stat-vs-stat hit chance with weapon damage / armor reduction.
+- Defeated characters drop class-keyed loot via `items/loot_tables.py`.
+- Player kills grant XP and shift faction reputation.
+
+### Factions + reputation
+
+Eight factions: villagers, guards, merchants, brigands, monsters, temple, bardic, neutral. Killing a brigand pleases villagers, guards, and temple — and hardens the brigand-rep further. Attacking a villager turns the town hostile.
+
+Reputation labels: revered ▶ honored ▶ friendly ▶ warming ▶ neutral ▶ wary ▶ hostile ▶ hated.
+
+### Quests
+
+Quests start AVAILABLE — discover them through NPC dialog (accept with 1-9) or the **quest board** at the tavern. Turn in completed quests at the giver for gold, items, and XP.
+
+Objective types: KILL, FETCH, TALK, EXPLORE, DELIVER, SURVIVE.
+
+### Items + crafting
+
+- 35+ predefined items with type, rarity, value, effects.
+- Recipes turn ingredients into output items (`items/crafting.py`).
+- Some recipes are forge-gated — visit Durgan's Forge to craft weapons.
+
+### Banking
+
+Visit the Temple of Light or General Store to deposit/withdraw gold. Balance is stored in `player.metadata["bank"]`.
+
+### Companions
+
+Recruit certain NPC classes (warrior, bard, cleric, wizard, ranger, paladin) once you've built up enough relationship (≥30). Up to 3 party members. They follow you and fight adjacent hostiles automatically.
+
+### Building interiors
+
+Step on a tavern / forge / shop / temple tile and press E (or the interact button) to enter the indoor mini-map. Each interior has furniture and NPC spots. Step on the door tile to leave.
+
+### Random encounters
+
+When you wander far from town through grass or forest tiles, monsters (wolves, bandits, goblins, wandering trolls) may spawn nearby. Cooldown between encounters keeps them from being constant.
+
+### Calendar + seasons
+
+12 months × 30 days = 360-day year. Four seasons (spring/summer/autumn/winter) each tint the world's colors. The current date is shown in the HUD.
+
+### Skills + leveling
+
+- D&D-style skill checks: 1d20 + ability modifier (+ proficiency) vs DC, with advantage/disadvantage.
+- XP curve: cumulative `50 * N * (N-1)` per level.
+- On level-up: +5 max HP, full heal, +1 to two class-favored stats (e.g. Warrior STR+CON, Wizard INT+WIS).
+
+### Save / load
+
+One-key save (F5) and load (F9). Captures world, time, all NPCs, ground items, quests, player progress.
+
 ## Project Layout
 
 See [`INTERFACE.md`](INTERFACE.md) for the full navigation map.
-
-```
-llm_RPG/
-├── main.py                 # Entry point
-├── config.py
-├── INTERFACE.md            # Project map (READ FIRST)
-├── SESSION_LOG.md          # Development history
-├── README.md / ROADMAP.md
-├── engine/                 # Core game logic
-│   ├── game_engine.py      # Orchestrator (363 LOC)
-│   ├── combat_system.py
-│   ├── economy_system.py
-│   ├── dialog_system.py
-│   ├── action_router.py
-│   ├── player_actions.py
-│   ├── save_load.py        # JSON persistence
-│   ├── skills.py           # D&D skill checks
-│   ├── memory_manager.py
-│   └── npc_process*.py     # Multiprocess NPC AI (optional)
-├── characters/             # Character + NPC system
-├── world/                  # World, map, biomes, procedural gen
-├── items/                  # Item system (NEW)
-├── quests/                 # Quest system (NEW)
-├── llm/                    # LLM facade + providers
-│   ├── llm_interface.py
-│   └── providers/
-│       ├── base.py
-│       ├── heuristic.py    # default (no LLM)
-│       ├── ollama.py
-│       ├── anthropic.py
-│       └── openai_provider.py
-├── ui/                     # Pygame + terminal UIs
-│   ├── gui.py              # Thin orchestrator (237 LOC)
-│   ├── renderer.py         # Map rendering
-│   ├── sprite_loader.py    # Procedural sprites
-│   ├── hud.py              # Status panels, minimap, log
-│   ├── input_handler.py    # Input routing
-│   └── terminal_ui.py
-├── tests/                  # 44+ unit tests
-└── saves/                  # Created at runtime
-```
-
-## Game Systems
-
-### Combat
-- Player vs NPC vs NPC, weapon damage + armor reduction.
-- Stat-vs-stat hit chance, randomized damage.
-- Defeated characters drop class-appropriate loot via `items/loot_tables.py`.
-- Player kills grant XP (tracked in `player.metadata["xp"]`).
-
-### Items
-- Real `Item` class — weapons, armor, shields, consumables, quest items.
-- Effects: damage, armor, heal_amount, value, rarity.
-- 35+ predefined items in `items/item_registry.py`. Add more there.
-
-### Quests
-- 6 starter quests (kill troll, fetch herbs, deliver sword, explore cave, ...).
-- Event hooks wire automatically to engine actions:
-  defeating an NPC, picking up an item, talking to someone,
-  entering a location, surviving turns, delivering items.
-
-### NPC AI
-- **Heuristic mode**: rule-based behavior keyed on class + visible state.
-  Brigands attack on sight, merchants greet customers, guards patrol.
-- **LLM mode**: NPCs run in their own processes, decide actions every
-  N turns based on full character context, visible map, history, memories.
-
-### World
-- 30x20 default; procedural generation with forest/river/mountain/village.
-- Day-night cycle visible as color overlay.
-- Revival shrines that bring back defeated NPCs.
-
-### Saves
-- JSON, one file per slot. `saves/quicksave.json` by default.
-- Captures world, player, all NPCs, ground items, quests, history.
 
 ## Running Tests
 
@@ -142,7 +133,7 @@ llm_RPG/
 python -m unittest discover tests/
 ```
 
-44 tests cover items, quests, save/load, combat, world gen, skills, engine.
+107 tests cover items, quests, save/load, combat, world gen, skills, leveling, factions, calendar, schedules, needs, encounters, banking, crafting, interiors, quest boards, companions, dialog trees, engine.
 
 ## Configuration
 
@@ -150,17 +141,19 @@ Edit `config.py` to tune:
 - `DEFAULT_PROVIDER`: heuristic | ollama | anthropic | openai
 - `DEFAULT_MODEL`: model name for the chosen provider
 - `DEFAULT_MAP_WIDTH` / `_HEIGHT`
-- `NPC_ACTION_INTERVAL`: turns between NPC LLM calls
+- `NPC_ACTION_INTERVAL`: turns between NPC actions
 - `MAX_HISTORY_ITEMS`: event log retention
 
 ## Adding Content
 
 Quick recipes (see INTERFACE.md for details):
 - **New item**: append to `items/item_registry.py`.
-- **New quest**: add template in `quests/quest_templates.py`.
-- **New NPC class**: extend `CharacterClass` enum.
-- **New action**: add handler in `engine/action_router.py`.
-- **New terrain**: extend `TerrainType` + add sprite in `ui/sprite_loader.py`.
+- **New recipe**: append to `items/crafting.py` `RECIPES` dict.
+- **New quest**: add template in `quests/quest_templates.py`; post to a board in `quests/quest_board.py`.
+- **New NPC class**: extend `CharacterClass`; add schedule in `characters/schedules.py`; add to `CLASS_TO_FACTION`.
+- **New dialog tree**: add factory in `engine/dialog_trees.py`.
+- **New encounter monster**: add entry in `world/encounters.py`.
+- **New LLM provider**: subclass `LLMProvider` in `llm/providers/`.
 
 ## Requirements
 

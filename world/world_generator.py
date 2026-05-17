@@ -137,7 +137,19 @@ class WorldGenerator:
         for yy in range(y, y2):
             for xx in range(x, x2):
                 self.world.map.terrain[yy][xx] = TerrainType.BUILDING
-        self.world.add_location(Location(name, desc, x, y, x2 - x, y2 - y))
+        loc = Location(name, desc, x, y, x2 - x, y2 - y)
+        # Auto-tag locations by name keywords
+        low = name.lower()
+        if "forge" in low or "smith" in low:
+            loc.add_property("type", "forge")
+            loc.add_property("forge", True)
+        elif "tavern" in low:
+            loc.add_property("type", "tavern")
+        elif "temple" in low or "shrine" in low:
+            loc.add_property("type", "temple")
+        elif "shop" in low or "store" in low:
+            loc.add_property("type", "shop")
+        self.world.add_location(loc)
 
     def _add_cave(self) -> None:
         # Cave entrance in mountain region

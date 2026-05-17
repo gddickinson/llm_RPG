@@ -31,6 +31,19 @@ class InputHandler:
             self.gui.running = False
             return True
 
+        # Death popup: only R / Q / ESC respond ----------------------------
+        if self.gui.mode == "death":
+            if event.type != pygame.KEYDOWN:
+                return True
+            if event.key == pygame.K_r:
+                self.gui.restart()
+                return True
+            if event.key in (pygame.K_q, pygame.K_ESCAPE):
+                self.engine.end_game()
+                self.gui.running = False
+                return True
+            return True
+
         # Dialog typing mode -----------------------------------------------
         if self.gui.mode == "dialog":
             return self._handle_dialog_input(event)

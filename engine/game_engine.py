@@ -61,11 +61,33 @@ class GameEngine:
             from quests.quest_manager import QuestManager
             self.quest_manager = QuestManager()
 
+        # Encounter manager (wilderness monster spawns)
+        from world.encounters import EncounterManager
+        self.encounter_manager = EncounterManager(self)
+
+        # Bank
+        from engine.banking import Bank
+        self.bank = Bank(self)
+
+        # Quest boards
+        from quests.quest_board import QuestBoardManager
+        self.quest_board_manager = QuestBoardManager(self)
+
+        # Interiors (built after world generation in initialize_demo_game)
+        self.interiors = {}
+        self.current_interior = None
+        self.exterior_return_pos = None
+
+        # Companion / party
+        from characters.companions import CompanionManager
+        self.companion_manager = CompanionManager(self)
+
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
         self.running = False
         self.turn_counter = 0
         self.processing_npcs = set()
+        self.player_dead = False  # set by combat_system when player defeated
 
         # Initialize demo world
         self.initialize_demo_game()
@@ -92,86 +114,9 @@ class GameEngine:
 
     def initialize_demo_game(self) -> None:
         """Set up a starter world + NPCs + player + initial quests."""
-        # Try procedural world gen first, fall back to legacy
-        try:
-            from world.world_generator import WorldGenerator
-            WorldGenerator(self.world).generate()
-        except Exception as e:
-            logger.warning(f"Procedural world gen failed ({e}); using legacy.")
-            self.world.create_simple_world()
-
-        # Revival shrine on the map
-        try:
-            self.world.add_revival_shrine(2, 12, radius=2)
-        except Exception:
-            pass
-        self.world.npc_manager = self.npc_manager
-        self.world.memory_manager = self.memory_manager
-
-        # NPCs
-        npcs = self.npc_manager.create_simple_npcs()
-        for npc in npcs:
-            # Replace string inventories with real Items
-            npc.inventory = [
-                self._upgrade_item_string(it) for it in npc.inventory
-            ]
-            self.world.map.place_character(npc, *npc.position)
-
-        # Player
-        self.create_default_player()
-
-        # Initial event
-        self.memory_manager.add_event("You arrive at the outskirts of Oakvale Village.")
-
-        # Offer starter quests (player must accept via NPC dialog)
-        if self.quest_manager:
-            for qid in ("tavern_intro", "troll_hunt", "herb_gathering",
-                        "cave_exploration", "deliver_sword"):
-                self.quest_manager.offer_quest(qid)
-
+        from engine.demo_setup import initialize_demo_world
+        initialize_demo_world(self)
         logger.info("Demo game initialized")
-
-    def _upgrade_item_string(self, item_or_str) -> Any:
-        """Try to convert a bare string inventory item to a real Item."""
-        if not isinstance(item_or_str, str):
-            return item_or_str
-        # Direct id lookup
-        item = create_item(item_or_str)
-        if item:
-            return item
-        # Try replacing spaces with underscores ("crude axe" -> "crude_axe")
-        item = create_item(item_or_str.replace(" ", "_").lower())
-        if item:
-            return item
-        # Fuzzy name lookup
-        from items.item_registry import item_by_name
-        item = item_by_name(item_or_str)
-        return item if item else item_or_str
-
-    def create_default_player(self) -> None:
-        self.player = Character(
-            id="player",
-            name="Player",
-            character_class=CharacterClass.WARRIOR,
-            race=CharacterRace.HUMAN,
-            level=1,
-            strength=14, dexterity=12, constitution=14,
-            intelligence=10, wisdom=10, charisma=12,
-            hp=25, max_hp=25,
-            position=(15, 5),
-            inventory=[
-                create_item("sword"), create_item("shield"),
-                create_item("potion", quantity=2),
-            ],
-            gold=50,
-            symbol="@",
-            description="A brave adventurer",
-            personality={"traits": ["brave", "curious"]},
-            goals=["Explore the world", "Find adventure"],
-        )
-        self.player.metadata = {"xp": 0}
-        self.world.map.place_character(
-            self.player, *self.player.position)
 
     # ====================================================================
     # Loop / turn
@@ -180,6 +125,7 @@ class GameEngine:
     def start_game(self) -> None:
         self.running = True
         self.turn_counter = 0
+        self.player_dead = False
         self.memory_manager.add_event("The adventure begins.")
 
     def end_game(self) -> None:
@@ -195,6 +141,30 @@ class GameEngine:
         self.world.advance_time(1)
         if self.quest_manager:
             self.quest_manager.on_turn_advanced()
+
+        # Tick NPC needs (game minutes pass)
+        try:
+            from characters.needs import tick_needs
+            for npc in self.npc_manager.npcs.values():
+                if npc.is_active():
+                    tick_needs(npc, elapsed_minutes=1)
+        except Exception as e:
+            logger.debug(f"Needs tick error: {e}")
+
+        # Random wilderness encounter
+        try:
+            msg = self.encounter_manager.maybe_spawn()
+            if msg:
+                self.memory_manager.add_event(msg)
+        except Exception as e:
+            logger.debug(f"Encounter spawn error: {e}")
+
+        # Companions follow / fight
+        try:
+            self.companion_manager.update()
+        except Exception as e:
+            logger.debug(f"Companion update error: {e}")
+
         if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
             self.process_npc_turns_async()
 
@@ -241,6 +211,86 @@ class GameEngine:
         if quest:
             self.memory_manager.add_event(f"Quest accepted: {quest.title}")
         return True
+
+    # ---- party API ----------------------------------------------------
+
+    def recruit(self, npc_id: str) -> str:
+        return self.companion_manager.recruit(npc_id)
+
+    def dismiss_companion(self, npc_id: str) -> str:
+        return self.companion_manager.dismiss(npc_id)
+
+    def party_members(self):
+        return self.companion_manager.members()
+
+    # ---- interiors API used by UI ------------------------------------
+
+    def enter_building(self) -> str:
+        """Step into a building interior at the player's current location."""
+        if self.current_interior:
+            return "You are already inside."
+        loc = self.world.get_location_at(*self.player.position)
+        if not loc:
+            return "There's no building here."
+        inter = self.interiors.get(loc.name)
+        if not inter:
+            return f"You can't enter the {loc.name}."
+        self.exterior_return_pos = self.player.position
+        self.current_interior = inter
+        # Place player at the door
+        self.player.position = inter.door
+        msg = f"You enter the {loc.name}. {inter.description}"
+        self.memory_manager.add_event(msg)
+        return msg
+
+    def exit_building(self) -> str:
+        if not self.current_interior:
+            return "You are already outside."
+        name = self.current_interior.name
+        self.current_interior = None
+        if self.exterior_return_pos:
+            self.player.position = self.exterior_return_pos
+            self.world.map.place_character(self.player, *self.player.position)
+            self.exterior_return_pos = None
+        msg = f"You leave the {name}."
+        self.memory_manager.add_event(msg)
+        return msg
+
+    # ---- quest board API ---------------------------------------------
+
+    def quest_board_at_player(self):
+        return self.quest_board_manager.board_at_player()
+
+    def accept_quest_from_board(self, quest_id: str) -> bool:
+        ok = self.quest_board_manager.accept_from_board(quest_id)
+        if ok:
+            self.memory_manager.add_event(f"Accepted quest from board: {quest_id}")
+        return ok
+
+    # ---- banking + crafting API used by UI ---------------------------
+
+    def deposit_gold(self, amount: int) -> str:
+        return self.bank.deposit(amount)
+
+    def withdraw_gold(self, amount: int) -> str:
+        return self.bank.withdraw(amount)
+
+    def bank_balance(self) -> int:
+        return self.bank.balance()
+
+    def can_craft_at_player(self, output_id: str) -> str:
+        from items.crafting import can_craft
+        loc = self.world.get_location_at(*self.player.position)
+        props = dict(loc.properties) if loc else {}
+        return can_craft(self.player, output_id, props)
+
+    def craft(self, output_id: str) -> str:
+        from items.crafting import craft
+        loc = self.world.get_location_at(*self.player.position)
+        props = dict(loc.properties) if loc else {}
+        msg = craft(self.player, output_id, props)
+        self.memory_manager.add_event(msg)
+        return msg
 
     def turn_in_quest(self, quest_id: str) -> bool:
         if not self.quest_manager:

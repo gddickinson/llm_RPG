@@ -78,6 +78,8 @@ class GameGUI:
     # ---- main loop ---------------------------------------------------
 
     def start(self) -> None:
+        # Mark engine so combat_system knows there's a GUI to show death popup
+        self.engine._has_gui = True
         self.engine.start_game()
         self.running = True
         self._loop()
@@ -85,13 +87,17 @@ class GameGUI:
 
     def _loop(self) -> None:
         while self.running and self.engine.running:
+            # Auto-enter death mode when the player has been defeated
+            if getattr(self.engine, "player_dead", False) and self.mode != "death":
+                self.mode = "death"
             for event in pygame.event.get():
                 self.input_handler.handle_event(event)
-            # Drive NPC processes (non-blocking)
-            try:
-                self.engine.process_npc_turns_async()
-            except Exception as e:
-                logger.warning(f"NPC async tick error: {e}")
+            # Drive NPC processes only while alive
+            if self.mode != "death":
+                try:
+                    self.engine.process_npc_turns_async()
+                except Exception as e:
+                    logger.warning(f"NPC async tick error: {e}")
             self._render()
             self.clock.tick(30)
 
@@ -131,7 +137,87 @@ class GameGUI:
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
 
+        if self.mode == "death":
+            self._draw_death_popup()
+
         pygame.display.flip()
+
+    def _draw_death_popup(self) -> None:
+        """Centered popup with Restart / Quit options."""
+        screen_rect = self.screen.get_rect()
+        # Dim the world behind the popup
+        veil = pygame.Surface(screen_rect.size, pygame.SRCALPHA)
+        veil.fill((0, 0, 0, 170))
+        self.screen.blit(veil, (0, 0))
+
+        # Popup box
+        w, h = 460, 220
+        box = pygame.Rect((screen_rect.width - w) // 2,
+                          (screen_rect.height - h) // 2, w, h)
+        pygame.draw.rect(self.screen, (25, 10, 12), box)
+        pygame.draw.rect(self.screen, (200, 60, 60), box, 3)
+
+        # Title
+        if self.hud.big_font:
+            title_surf = self.hud.big_font.render(
+                "You have been defeated!", True, (255, 90, 90))
+            self.screen.blit(
+                title_surf,
+                (box.centerx - title_surf.get_width() // 2, box.y + 28),
+            )
+        if self.hud.font:
+            xp = (self.engine.player.metadata or {}).get("xp", 0)
+            level = self.engine.player.level
+            sub = self.hud.font.render(
+                f"Final level: {level}    XP: {xp}    Turn: {self.engine.turn_counter}",
+                True, (220, 220, 220))
+            self.screen.blit(
+                sub,
+                (box.centerx - sub.get_width() // 2, box.y + 72),
+            )
+            opt1 = self.hud.font.render(
+                "[R] Restart", True, (160, 230, 160))
+            self.screen.blit(
+                opt1,
+                (box.centerx - opt1.get_width() // 2, box.y + 120),
+            )
+            opt2 = self.hud.font.render(
+                "[Q] Quit", True, (230, 160, 160))
+            self.screen.blit(
+                opt2,
+                (box.centerx - opt2.get_width() // 2, box.y + 150),
+            )
+            hint = self.hud.font.render(
+                "(or press ESC to quit)", True, (160, 160, 180))
+            self.screen.blit(
+                hint,
+                (box.centerx - hint.get_width() // 2, box.y + 184),
+            )
+
+    def restart(self) -> None:
+        """Rebuild the engine and resume play. Called from the death popup."""
+        old = self.engine
+        provider = old.llm_interface.provider_name
+        model = old.llm_interface.model_name
+        try:
+            old.end_game()
+        except Exception:
+            pass
+        from engine.game_engine import GameEngine
+        self.engine = GameEngine(
+            llm_model=model,
+            llm_provider=provider,
+            enable_npc_processes=False,
+            enable_quests=True,
+        )
+        self.engine._has_gui = True
+        self.engine.start_game()
+        self.input_handler.engine = self.engine
+        self.mode = "play"
+        self.overlay = None
+        self.dialog_npc_id = None
+        self.dialog_pending_reply = None
+        self.dialog_input = ""
 
     # ---- overlays ---------------------------------------------------
 

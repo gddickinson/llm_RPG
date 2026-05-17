@@ -104,11 +104,10 @@ class HeuristicProvider(LLMProvider):
         """Heuristic NPC behavior.
 
         Strategy:
-        - Hostile classes (BRIGAND/MONSTER) move toward and attack the player if visible.
-        - Merchants tend to stay put and occasionally call out wares.
-        - Guards patrol — move in a random cardinal direction.
-        - Bards sing/talk a lot.
-        - Everyone else wanders gently.
+        - Hostile classes (BRIGAND/MONSTER) attack the player on sight.
+        - Peaceful NPCs follow a daily schedule based on the in-game hour;
+          urgent needs (starving / exhausted) override the schedule.
+        - Otherwise: greet the player, idle, or wander.
         """
         klass = getattr(getattr(character, "character_class", None), "value", "villager")
         emotion = self.rng.choice(_EMOTIONS)
@@ -117,15 +116,53 @@ class HeuristicProvider(LLMProvider):
         player_in_view = "player" in (visible_map or "").lower() or \
                          "@" in (visible_map or "")
 
+        # Hostile classes — same as before
         if klass in ("brigand", "monster", "troll"):
             if player_in_view:
                 action, target = "attack", "player"
                 dialog = self.rng.choice(_GREETINGS.get("brigand", [""]))
                 emotion = "angry"
             else:
-                action, target = "move", self.rng.choice(["north", "south", "east", "west"])
+                action, target = "move", self.rng.choice(
+                    ["north", "south", "east", "west"])
                 emotion = "wary"
-        elif klass == "merchant":
+            return self._wrap(character, action, target, dialog, emotion)
+
+        # Peaceful NPCs — check urgent needs first, then schedule
+        try:
+            from characters.needs import (
+                get_hunger, get_fatigue,
+                HUNGER_STARVING, FATIGUE_EXHAUSTED,
+            )
+            if get_fatigue(character) >= FATIGUE_EXHAUSTED:
+                return self._wrap(character, "sleep", "home",
+                                  "(I need rest...)", "exhausted")
+            if get_hunger(character) >= HUNGER_STARVING:
+                return self._wrap(character, "move", "tavern",
+                                  "(I must eat soon.)", "hungry")
+        except Exception:
+            pass
+
+        # Schedule-driven behavior
+        try:
+            from characters.schedules import current_entry, activity_to_action
+            hour = self._parse_hour(world_state)
+            entry = current_entry(klass, hour)
+            if entry is not None:
+                _, activity, loc_keyword = entry
+                act, tgt = activity_to_action(activity, loc_keyword)
+                # Add a greeting when peaceful NPC sees the player
+                if player_in_view and self.rng.random() < 0.25:
+                    greet = self.rng.choice(
+                        _GREETINGS.get(klass, _GREETINGS["villager"]))
+                    return self._wrap(character, "greet", "player",
+                                      greet, "calm")
+                return self._wrap(character, act, tgt, "", emotion)
+        except Exception:
+            pass
+
+        # Fallback to old behavior
+        if klass == "merchant":
             if self.rng.random() < 0.3:
                 action, target = "talk", "passerby"
                 dialog = self.rng.choice(_GREETINGS["merchant"])
@@ -136,15 +173,16 @@ class HeuristicProvider(LLMProvider):
                 action, target = "greet", "player"
                 dialog = self.rng.choice(_GREETINGS["guard"])
             else:
-                action, target = "move", self.rng.choice(["north", "south", "east", "west"])
+                action, target = "move", self.rng.choice(
+                    ["north", "south", "east", "west"])
         elif klass == "bard":
             if self.rng.random() < 0.5:
                 action, target = "talk", "anyone listening"
                 dialog = self.rng.choice(_GREETINGS["bard"])
             else:
-                action, target = "move", self.rng.choice(["north", "south", "east", "west"])
+                action, target = "move", self.rng.choice(
+                    ["north", "south", "east", "west"])
         else:
-            # Villagers, warriors, etc — gentle wander
             if self.rng.random() < 0.4:
                 action, target = "move", self.rng.choice(
                     ["north", "south", "east", "west"])
@@ -152,20 +190,25 @@ class HeuristicProvider(LLMProvider):
                 action, target = "greet", "player"
                 dialog = self.rng.choice(_GREETINGS.get(klass, _GREETINGS["villager"]))
 
-        goal_update = ""
-        if getattr(character, "goals", None):
-            # Occasionally surface a goal as thoughts
-            goal_update = ""  # leave goals stable
-        thoughts = f"({character.name} acts on instinct.)"
+        return self._wrap(character, action, target, dialog, emotion)
 
+    def _wrap(self, character, action, target, dialog, emotion):
         return {
             "action": action,
             "target": target,
             "dialog": dialog,
-            "thoughts": thoughts,
+            "thoughts": f"({character.name} acts on instinct.)",
             "emotion": emotion,
-            "goal_update": goal_update,
+            "goal_update": "",
         }
+
+    def _parse_hour(self, world_state: Dict[str, Any]) -> int:
+        """Best-effort extraction of the current hour."""
+        tod = (world_state or {}).get("time_of_day", "")
+        # Map to representative hours
+        mapping = {"morning": 9, "afternoon": 14,
+                   "evening": 19, "night": 23}
+        return mapping.get(tod, 12)
 
     # Dialog -----------------------------------------------------------------
 

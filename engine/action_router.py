@@ -226,7 +226,15 @@ class ActionRouter:
     # --------------- rest --------------------------------------------
 
     def _handle_rest(self, npc, target: str, action: str) -> bool:
+        try:
+            from characters.needs import rest, feed
+        except Exception:
+            rest = feed = lambda *a, **k: None
+
         if "sleep" in (target.lower() + " " + action.lower()):
+            rest(npc, amount=60)
+            npc.metadata = getattr(npc, "metadata", None) or {}
+            npc.metadata["activity"] = "sleep"
             heal = min(2, npc.max_hp - npc.hp)
             if heal > 0:
                 npc.heal(heal)
@@ -234,6 +242,15 @@ class ActionRouter:
                 f"{npc.name} sleeps {('and recovers ' + str(heal) + ' HP') if heal else 'peacefully'}."
             )
             return True
+        if action in ("rest", "sit", "wait") and "tavern" in target.lower():
+            # Probably eating
+            feed(npc, amount=40)
+            self.engine.memory_manager.add_event(
+                f"{npc.name} eats at the {target}.")
+            return True
+        if "activity" in (getattr(npc, "metadata", None) or {}):
+            # NPC was sleeping — wake up now
+            npc.metadata.pop("activity", None)
         self.engine.memory_manager.add_event(f"{npc.name} {action}s {target}.")
         return True
 

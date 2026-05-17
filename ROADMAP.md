@@ -2,60 +2,65 @@
 
 ## Current state (2026-05-17)
 
-The codebase was overhauled in a single session to be a fully-functional,
-locally-runnable game with optional LLM backends. Key additions:
+The game has grown into a mature locally-runnable RPG. Major systems:
 
-- LLM provider abstraction (`llm/providers/`) with heuristic fallback
-- Real items system (`items/`) and loot tables
-- Quest system (`quests/`) — kill / fetch / talk / explore / deliver / survive
-- Save / load (`engine/save_load.py`) — JSON
-- Skills (`engine/skills.py`) — D&D-style checks
-- Refactored 1566-LOC `game_engine.py` into 8 focused modules
-- Refactored 1104-LOC `gui.py` into renderer + sprite loader + HUD + input
-- Procedural world generation with biomes and named locations
-- Procedural sprite rendering (no PNG assets)
-- 44-test suite covering items, quests, save/load, combat, world gen, skills, engine
+- LLM provider abstraction with heuristic fallback (Ollama/Anthropic/OpenAI optional)
+- Item system + crafting (35+ items, recipe registry)
+- Quest system (6 types) + quest board + NPC-offered quests
+- Combat with weapons/armor and loot tables
+- Skills (D&D-style) + leveling (class-favored stats)
+- Save/load (JSON)
+- Procedural worldgen + biomes
+- Procedural sprite renderer (no PNG assets), day/night overlay
+- 12-month calendar with seasons
+- NPC daily schedules + needs (hunger / fatigue)
+- Factions (8) with reputation tracking, kill-driven rep shifts
+- Companions (3-member party, auto follow + fight)
+- Building interiors (tavern / forge / shop / temple)
+- Random wilderness encounters
+- Banking at temple / shop
+- Branching dialog trees for heuristic NPCs
 
-All source files now under 500 lines. INTERFACE.md and SESSION_LOG.md created.
+**107 unit tests pass.** All source files under 500 LOC.
 
 ## Short-term Improvements
 
-- [ ] **Quest UI**: Click-to-accept available quests at NPCs that offer them.
-- [ ] **Inventory equipping**: Currently weapons/armor are auto-summed; add equip slots.
-- [ ] **Level-up**: Convert XP to level/HP/stat increases.
-- [ ] **More NPC variety**: Random NPC spawns in towns + wandering monsters.
-- [ ] **Skill-gated dialog**: PERSUASION / INTIMIDATION checks in conversations.
-- [ ] **Crafting**: Use INGREDIENT items at the forge to produce weapons.
-- [ ] **Mouse input**: Click to move / click on NPC to interact.
-- [ ] **Sound**: pygame.mixer-based ambient + combat SFX.
-- [ ] **Tiled minimap**: Show explored vs unexplored.
+- [ ] **Visual feedback for interiors**: the renderer currently shows the outdoor map even when `engine.current_interior` is set. Need to draw the interior grid when inside.
+- [ ] **Quest board overlay UI**: a hotkey to browse + accept board quests at the tavern (engine API exists, UI doesn't).
+- [ ] **Crafting UI overlay**: list available recipes at the player's location with a hotkey.
+- [ ] **Banking UI**: deposit/withdraw via a panel at the temple / shop.
+- [ ] **Recruit/dismiss UI**: dialog option to invite an adjacent NPC into the party.
+- [ ] **Faction reputation panel**: show all faction standings in the character sheet.
+- [ ] **Schedule-driven movement**: NPCs should actually walk to their schedule's target location (currently just emit "move" but the action router needs a known target).
 
 ## Feature Enhancements
 
-- [ ] **Larger world**: Multiple regions (forest, desert, mountains) connected by roads.
-- [ ] **Dungeons**: BSP / cellular-automata dungeons (concepts from autonomous_world).
-- [ ] **Day/night gameplay**: Monster spawns at night, NPCs return home.
-- [ ] **Faction system**: NPCs grouped by allegiance affecting combat AI.
-- [ ] **Persistent NPC schedules**: Each NPC has a daily routine.
-- [ ] **Animated sprites**: Per-frame animation in `sprite_loader.py`.
-- [ ] **Better worldgen**: Perlin/simplex noise via numpy.
-- [ ] **Localization**: Strings out of code into a JSON.
-- [ ] **Speech-to-text**: Dictate dialog with the player's voice (e.g. via Whisper).
+- [ ] **Larger world**: multiple regions (forest, desert, mountains) connected by roads.
+- [ ] **Dungeons**: BSP / cellular-automata dungeons.
+- [ ] **Better worldgen**: noise-based biomes.
+- [ ] **Animated sprites**: per-frame animation in `sprite_loader.py`.
+- [ ] **Sound**: pygame.mixer ambient + combat SFX.
+- [ ] **Mouse input**: click to move / click on NPC to interact.
+- [ ] **Skill-gated dialog**: PERSUASION / INTIMIDATION rolls inside dialog tree choices.
+- [ ] **Religion/divine system**: pantheon, prayers, blessings.
+- [ ] **Forageable plants**: gather herbs from forest tiles instead of just grass.
+- [ ] **NPC death persistence**: bodies survive across saves and rot.
 
 ## Long-term Vision
 
-- [ ] **Module system**: Load campaigns from external JSON/YAML packs.
-- [ ] **Co-op**: Local hotseat multiplayer.
-- [ ] **Networked multiplayer**: Stretch goal — port the FastAPI server from llm_RPG_2.
+- [ ] **Module system**: load campaigns from external JSON/YAML packs.
+- [ ] **Co-op**: local hotseat multiplayer.
+- [ ] **Networked multiplayer**: port the FastAPI server pattern from `llm_RPG_2`.
 - [ ] **3D mode**: OpenGL viewer inspired by autonomous_world's renderer_3d.
-- [ ] **Web UI**: Headless engine + static HTML frontend.
-- [ ] **LLM-driven world events**: Random events generated nightly by the LLM.
+- [ ] **Web UI**: headless engine + static HTML frontend.
+- [ ] **LLM-driven world events**: random events generated by the LLM nightly.
+- [ ] **Multi-year history simulation**: pre-game world simulation that creates faction relationships, ruins, and lore.
 
 ## Technical Debt
 
-- [ ] `characters/npc_manager.py` is at 499 LOC — split presets into a data file.
+- [ ] `characters/npc_manager.py` is at 499 LOC — split presets into a JSON data file.
 - [ ] `ui/terminal_ui.py` predates the new engine API — rewrite to use modular subsystems.
 - [ ] `engine/npc_process_manager.py` is intricate — write integration tests against it.
 - [ ] `ui/threaded_llm_interface.py` is legacy — confirm and remove if unused.
-- [ ] Properly support pygame_gui (currently imported via legacy code only).
-- [ ] `_archive/` should be moved to a separate branch or deleted before release.
+- [ ] `_archive/` should be moved to a separate branch or deleted before a release.
+- [ ] `engine/action_router._handle_move` looks up locations by name keyword ("home", "tavern", "village") but most NPCs don't have a `home_location` matching any of these; the router should fall back to searching by location.

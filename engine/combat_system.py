@@ -124,20 +124,26 @@ class CombatSystem:
             f"{defender.name}'s body", defender.position[0], defender.position[1]
         )
 
-        # Player defeated = game over
+        # Player defeated — flag for UI; UIs that don't handle it
+        # fall back to end_game (terminal mode).
         if defender.id == self.engine.player.id:
             self.engine.memory_manager.add_event("You have been defeated!")
-            self.engine.end_game()
+            self.engine.player_dead = True
+            # The GUI catches `player_dead` and shows a restart/quit menu.
+            # The terminal UI doesn't, so end the game as a safety net.
+            if not getattr(self.engine, "_has_gui", False):
+                self.engine.end_game()
         else:
             self.engine.world.map.remove_character(defender)
+            kls = getattr(getattr(defender, "character_class", None),
+                          "value", "")
             # Notify quest manager
             if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
-                kls = getattr(getattr(defender, "character_class", None),
-                              "value", "")
                 self.engine.quest_manager.on_npc_defeated(defender.id, kls)
-            # XP for player kills
+            # XP + faction rep changes for player kills
             if attacker.id == self.engine.player.id:
                 self._award_xp(defender)
+                self._update_faction_rep(kls)
 
         return msg
 
@@ -148,6 +154,17 @@ class CombatSystem:
         self.engine.memory_manager.add_event(f"You gain {xp} XP.")
         for m in msgs:
             self.engine.memory_manager.add_event(m)
+
+    def _update_faction_rep(self, victim_class: str) -> None:
+        try:
+            from characters.factions import on_defeat
+            deltas = on_defeat(self.engine.player, victim_class)
+            for faction, delta in deltas.items():
+                sign = "+" if delta > 0 else ""
+                self.engine.memory_manager.add_event(
+                    f"Reputation with {faction}: {sign}{delta}")
+        except Exception as e:
+            logger.warning(f"Faction rep update failed: {e}")
 
     # --------------------------------------------------------- helpers
 

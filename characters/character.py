@@ -38,6 +38,7 @@ class Character:
     relationships: Dict[str, int] = field(default_factory=dict)
     memories: List[Dict[str, Any]] = field(default_factory=list)
     status: str = field(default="alive")  # alive, defeated, dead
+    faction: str = field(default="neutral")
 
     def add_memory(self, event: str, importance: int = 1) -> None:
         """Add a memory to the character's memory list"""
@@ -229,7 +230,8 @@ class Character:
             "description": self.description,
             "personality": self.personality,
             "goals": self.goals,
-            "relationships": self.relationships
+            "relationships": self.relationships,
+            "faction": getattr(self, "faction", "neutral"),
         }
 
     def __str__(self) -> str:

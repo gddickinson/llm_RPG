@@ -26,34 +26,41 @@ class World:
         logger.debug(f"Added location: {location.name}")
 
     def get_location_at(self, x: int, y: int) -> Optional[Location]:
-        """Get the location at coordinates"""
-        for location in self.locations:
-            if location.contains(x, y):
-                return location
-        return None
+        """Get the most-specific (smallest) location containing the coords.
+
+        When a tile lies inside multiple locations (e.g. a building inside
+        a village area), we return the innermost one so callers can detect
+        the specific room/building.
+        """
+        candidates = [loc for loc in self.locations if loc.contains(x, y)]
+        if not candidates:
+            return None
+        # Smallest area wins (innermost / most specific)
+        candidates.sort(key=lambda l: l.width * l.height)
+        return candidates[0]
+
+    def get_locations_at(self, x: int, y: int) -> List[Location]:
+        """All locations containing the coords, sorted innermost-first."""
+        candidates = [loc for loc in self.locations if loc.contains(x, y)]
+        candidates.sort(key=lambda l: l.width * l.height)
+        return candidates
 
     def advance_time(self, minutes: int):
         """Advance game time by specified minutes"""
         self.time += minutes
 
+    def get_date(self):
+        from world.calendar import date_from_minutes
+        return date_from_minutes(self.time)
+
     def get_time_of_day(self) -> str:
-        """Get the current time of day"""
-        hours = (self.time // 60) % 24
-        if 6 <= hours < 12:
-            return "morning"
-        elif 12 <= hours < 17:
-            return "afternoon"
-        elif 17 <= hours < 21:
-            return "evening"
-        else:
-            return "night"
+        return self.get_date().time_of_day()
+
+    def get_season(self):
+        return self.get_date().season
 
     def get_formatted_time(self) -> str:
-        """Get a formatted string representing current time"""
-        days = self.time // (24 * 60)
-        hours = (self.time // 60) % 24
-        minutes = self.time % 60
-        return f"Day {days+1}, {hours:02d}:{minutes:02d} ({self.get_time_of_day()})"
+        return self.get_date().format()
 
     def create_simple_world(self):
         """Create a simple demo world"""

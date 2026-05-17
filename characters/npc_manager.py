@@ -23,8 +23,15 @@ class NPCManager:
 
     def add_npc(self, npc: Character) -> None:
         """Add an NPC to the manager"""
+        # Auto-assign faction by class if not already set
+        try:
+            from characters.factions import faction_of_class
+            if getattr(npc, "faction", "neutral") == "neutral":
+                npc.faction = faction_of_class(npc.character_class.value).value
+        except Exception:
+            pass
         self.npcs[npc.id] = npc
-        logger.info(f"Added NPC: {npc.name} (ID: {npc.id})")
+        logger.info(f"Added NPC: {npc.name} (ID: {npc.id}, faction: {getattr(npc, 'faction', '?')})")
 
     def get_npc(self, npc_id: str) -> Optional[Character]:
         """Get an NPC by ID"""
@@ -263,204 +270,19 @@ class NPCManager:
 
         return npc
 
-    def _create_original_npcs(self):
-        """Create the original set of NPCs from the previous implementation"""
-        # Tavern keeper
-        tavern_keeper = Character(
-            id="tavernkeeper_01",
-            name="Goren",
-            character_class=CharacterClass.MERCHANT,
-            race=CharacterRace.HUMAN,
-            level=3,
-            strength=12,
-            dexterity=10,
-            constitution=14,
-            intelligence=12,
-            wisdom=14,
-            charisma=16,
-            hp=20,
-            max_hp=20,
-            position=(13, 7),
-            inventory=["ale", "mead", "bread"],
-            gold=100,
-            symbol="T",
-            description="A jovial tavern keeper with a hearty laugh",
-            personality={
-                "traits": ["friendly", "gregarious", "opportunistic"],
-                "likes": ["gold", "stories", "ale"],
-                "dislikes": ["thieves", "troublemakers"]
-            },
-            goals=["Make a profit", "Keep customers happy", "Gather interesting stories"],
-            relationships={}
-        )
-        tavern_keeper.add_memory("Served a group of adventurers who talked about a dragon in the mountains", 3)
-        tavern_keeper.add_memory("Heard rumors of bandits on the east road", 2)
-        tavern_keeper.add_memory("There's a troll that has been causing trouble for travelers", 3)
-        tavern_keeper.home_location = "Oakvale Tavern"
-        self.add_npc(tavern_keeper)
-
-        # Blacksmith
-        blacksmith = Character(
-            id="blacksmith_01",
-            name="Durgan",
-            character_class=CharacterClass.MERCHANT,
-            race=CharacterRace.DWARF,
-            level=5,
-            strength=16,
-            dexterity=14,
-            constitution=16,
-            intelligence=12,
-            wisdom=12,
-            charisma=10,
-            hp=30,
-            max_hp=30,
-            position=(17, 7),
-            inventory=["sword", "shield", "armor"],
-            gold=200,
-            symbol="B",
-            description="A stout dwarf with muscular arms and a thick beard",
-            personality={
-                "traits": ["hardworking", "honest", "gruff"],
-                "likes": ["craftsmanship", "ale", "honesty"],
-                "dislikes": ["haggling", "shoddy work", "elves"]
-            },
-            goals=["Craft masterwork items", "Earn enough to expand the forge"],
-            relationships={"tavernkeeper_01": 60}
-        )
-        blacksmith.add_memory("A strange traveler commissioned an unusual silver blade", 3)
-        blacksmith.add_memory("The mines in the mountains have gone quiet", 2)
-        blacksmith.add_memory("I've been making stronger weapons since the troll attacks started", 2)
-        blacksmith.home_location = "Durgan's Forge"
-        self.add_npc(blacksmith)
-
-        # Wandering minstrel
-        minstrel = Character(
-            id="minstrel_01",
-            name="Melody",
-            character_class=CharacterClass.BARD,
-            race=CharacterRace.HUMAN,
-            level=2,
-            strength=8,
-            dexterity=14,
-            constitution=10,
-            intelligence=12,
-            wisdom=10,
-            charisma=16,
-            hp=15,
-            max_hp=15,
-            position=(15, 8),
-            inventory=["lute", "flute", "wine"],
-            gold=30,
-            symbol="M",
-            description="A cheerful young woman with a beautiful voice and colorful clothes",
-            personality={
-                "traits": ["cheerful", "curious", "flirtatious"],
-                "likes": ["music", "stories", "attractive people"],
-                "dislikes": ["silence", "boredom", "violence"]
-            },
-            goals=["Collect stories for songs", "Earn fame", "Find romance"],
-            relationships={"tavernkeeper_01": 50, "blacksmith_01": 30}
-        )
-        minstrel.add_memory("Heard a haunting melody from the forest at night", 3)
-        minstrel.add_memory("A noble from the capital is supposedly traveling incognito", 2)
-        minstrel.add_memory("I'm composing a song about a fearsome troll terrorizing the countryside", 2)
-        minstrel.home_location = "Oakvale Tavern"
-        self.add_npc(minstrel)
-
-        # Guard
-        guard = Character(
-            id="guard_01",
-            name="Karim",
-            character_class=CharacterClass.GUARD,
-            race=CharacterRace.HUMAN,
-            level=3,
-            strength=14,
-            dexterity=12,
-            constitution=14,
-            intelligence=10,
-            wisdom=12,
-            charisma=10,
-            hp=25,
-            max_hp=25,
-            position=(10, 7),
-            inventory=["sword", "shield", "jerky"],
-            gold=15,
-            symbol="G",
-            description="A stern-looking guard with a weathered face",
-            personality={
-                "traits": ["dutiful", "suspicious", "brave"],
-                "likes": ["order", "discipline", "recognition"],
-                "dislikes": ["troublemakers", "monsters", "laziness"]
-            },
-            goals=["Protect the village", "Advance in rank", "Enforce the laws", "Hunt down the troll brigand"],
-            relationships={"tavernkeeper_01": 40, "blacksmith_01": 60, "minstrel_01": 20}
-        )
-        guard.add_memory("Spotted strange lights in the mountains three nights ago", 3)
-        guard.add_memory("Merchants reported missing goods on the east road", 2)
-        guard.add_memory("I've been ordered to organize a hunt for the troll that's been attacking travelers", 3)
-        guard.home_location = "Oakvale Village"
-        self.add_npc(guard)
-
-        return [tavern_keeper, blacksmith, minstrel, guard]
-
-
-
     def create_simple_npcs(self):
-        """Create NPCs for the demo world"""
-        # Create the original NPCs first
-        npcs = self._create_original_npcs()
-
-        # Add the troll brigand
-        troll = self.create_troll_brigand()
-        npcs.append(troll)
-
+        """Create NPCs for the demo world (delegated to npc_presets)."""
+        from characters.npc_presets import all_presets
+        npcs = all_presets()
+        for npc in npcs:
+            self.add_npc(npc)
         logger.info(f"Created {len(npcs)} NPCs for the demo world")
         return npcs
 
     def create_troll_brigand(self, position=(25, 10)):
-        """Create a troll brigand NPC"""
-        troll = Character(
-            id="troll_brigand_01",
-            name="Gorkash",
-            character_class=CharacterClass.BRIGAND,
-            race=CharacterRace.TROLL,
-            level=5,
-            strength=18,
-            dexterity=10,
-            constitution=16,
-            intelligence=8,
-            wisdom=8,
-            charisma=6,
-            hp=40,
-            max_hp=40,
-            position=position,
-            inventory=["crude axe", "tattered armor", "stolen jewelry"],
-            gold=50,
-            symbol="X",
-            description="A massive troll with greenish skin and a menacing grin, wielding a crude axe",
-            personality={
-                "traits": ["aggressive", "greedy", "territorial"],
-                "likes": ["gold", "food", "fighting"],
-                "dislikes": ["knights", "villagers", "being outnumbered"]
-            },
-            goals=["Rob travelers on the road", "Collect valuable items", "Establish dominance in the area"],
-            relationships={}
-        )
-
-        # Add some memories
-        troll.add_memory("I ambushed a merchant caravan last week and got some shiny things", 3)
-        troll.add_memory("Villagers tried to drive me away with torches and pitchforks", 2)
-        troll.add_memory("I've been watching the road for easy prey", 1)
-
-        # Set negative relationships with villagers
-        troll.relationships["tavernkeeper_01"] = -60
-        troll.relationships["blacksmith_01"] = -70
-        troll.relationships["guard_01"] = -80
-
-        # Add to NPC manager
+        from characters.npc_presets import make_troll_brigand
+        troll = make_troll_brigand(position=position)
         self.add_npc(troll)
-
-        logger.info(f"Created troll brigand: {troll.name}")
         return troll
 
     def revive_npc(self, npc_id, position=None, hp_percent=0.5):

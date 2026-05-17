@@ -6,7 +6,7 @@ Top-level navigation map for the codebase. Read this **before** opening source f
 
 ```
 llm_RPG/
-├── main.py                     # Entry point — argparse, mode selection
+├── main.py                     # Entry point
 ├── config.py                   # Centralized config + system prompts
 ├── INTERFACE.md                # This file
 ├── SESSION_LOG.md              # Development progress log
@@ -15,72 +15,88 @@ llm_RPG/
 ├── requirements.txt
 │
 ├── engine/                     # Game engine — core game loop, turn logic
-├── characters/                 # Character/NPC classes, types
-├── world/                      # World, map, locations, biomes
-├── items/                      # Item system (NEW)
-├── quests/                     # Quest system (NEW)
+├── characters/                 # Characters, NPCs, factions, schedules, party
+├── world/                      # World, map, calendar, biomes, interiors
+├── items/                      # Item system + crafting
+├── quests/                     # Quest system + quest boards
 ├── llm/                        # LLM interface + providers
 ├── ui/                         # GUI (pygame) and terminal UI
 ├── saves/                      # Saved games (created at runtime)
-├── tests/                      # Unit tests
+├── tests/                      # Unit tests (107+)
 └── _archive/                   # Old/deprecated code
 ```
 
-## Module Index (by package)
+## Module Index
 
 ### engine/ — Core game logic
-- **`game_engine.py`** — `GameEngine` class; orchestrates world, NPCs, player. Main entry point for all game actions.
-- **`action_router.py`** — Routes NPC actions to specialized handlers (combat/social/economic/...).
-- **`combat_system.py`** — `CombatSystem`; player vs NPC vs NPC combat, damage rolls, death, loot.
-- **`economy_system.py`** — `EconomySystem`; buy/sell/trade/give between characters.
-- **`dialog_system.py`** — Player↔NPC dialog flow using LLM or heuristic provider.
-- **`memory_manager.py`** — `MemoryManager`; event history, save/load history.
-- **`save_load.py`** — `SaveManager`; serialize/deserialize full game state to JSON.
-- **`skills.py`** — `SkillSystem`; D&D-style skill checks with ability score modifiers.
-- **`npc_process.py`** — NPC subprocess main loop (multiprocess LLM calls).
-- **`npc_process_manager.py`** — `NPCProcessManager`; spawns/manages NPC processes.
 
-### characters/ — Characters & NPCs
-- **`character.py`** — `Character` dataclass (player + NPC); HP, stats, inventory, memories, relationships, skills.
-- **`character_types.py`** — `CharacterClass`, `CharacterRace`, `Alignment`, `CharacterTrait`, `CharacterStatus` enums.
-- **`npc_manager.py`** — `NPCManager`; create/track NPCs (presets + random generation).
+- **`game_engine.py`** — `GameEngine`; orchestrates world, NPCs, player, all subsystems.
+- **`action_router.py`** — Routes NPC actions to specialized handlers.
+- **`combat_system.py`** — Player vs NPC vs NPC combat, damage, defeat, loot, faction rep on kill.
+- **`economy_system.py`** — Buy/sell/trade/give between characters.
+- **`dialog_system.py`** — Player↔NPC dialog flow.
+- **`dialog_trees.py`** — Branching dialog tree templates for heuristic NPCs.
+- **`memory_manager.py`** — Event history.
+- **`save_load.py`** — JSON full-state save/load.
+- **`skills.py`** — D&D-style skill checks.
+- **`leveling.py`** — XP curve, auto level-up with HP/stat increases.
+- **`banking.py`** — Deposit/withdraw gold at temples/shops.
+- **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).
+- **`player_actions.py`** — Player-driven actions (pickup/drop/use/attack/move).
 
-### world/ — World, map, locations
-- **`world.py`** — `World`; high-level world state (time, locations, ground items, shrines).
+### characters/ — Characters, NPCs, social systems
+
+- **`character.py`** — `Character` dataclass (player + NPC).
+- **`character_types.py`** — Class/race/alignment/trait/status enums.
+- **`npc_manager.py`** — NPC creation + presets.
+- **`factions.py`** — `Faction` enum, reputation tracking, faction relationships, on-defeat hooks.
+- **`schedules.py`** — Daily routines per NPC class (work / eat / drink / sleep).
+- **`needs.py`** — Hunger and fatigue simulation for NPCs.
+- **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight behavior.
+
+### world/ — World, map, calendar, locations
+
+- **`world.py`** — `World`; high-level world state; `get_location_at` returns innermost.
 - **`world_map.py`** — `WorldMap`, `TerrainType`; tile grid, movement, FOV.
-- **`location.py`** — `Location`, `LocationFactory`; named regions (towns, taverns, shops...).
-- **`biome.py`** — `Biome` enum and biome→terrain mapping (NEW).
-- **`world_generator.py`** — `WorldGenerator`; procedural world generation w/ biomes (NEW).
+- **`location.py`** — `Location`, `LocationFactory`.
+- **`biome.py`** — `Biome` enum and biome→terrain mapping.
+- **`calendar.py`** — `Date`, `Season`; 12-month calendar, day-night clock, season tints.
+- **`world_generator.py`** — `WorldGenerator`; procedural world.
+- **`interiors.py`** — Building interior mini-maps (tavern, forge, shop, temple).
+- **`encounters.py`** — `EncounterManager`; wilderness monster spawns.
 
-### items/ — Item system (NEW)
-- **`item.py`** — `Item` dataclass; name, type, value, effect, rarity.
-- **`item_registry.py`** — `ITEM_REGISTRY`; predefined items by ID (potions, weapons, armor, ...).
-- **`loot_tables.py`** — Loot drop tables by enemy class/level.
+### items/ — Item system + crafting
 
-### quests/ — Quest system (NEW)
+- **`item.py`** — `Item` dataclass; types, rarity, effects.
+- **`item_registry.py`** — 35+ predefined items.
+- **`loot_tables.py`** — Drop tables by enemy class.
+- **`crafting.py`** — Recipe registry + `craft()` function (forge-gated, ingredients).
+
+### quests/ — Quest system
+
 - **`quest.py`** — `Quest`, `QuestObjective`, `QuestStatus`, `ObjectiveType`.
-- **`quest_manager.py`** — `QuestManager`; track active/completed quests, check progress.
-- **`quest_templates.py`** — Predefined quest templates (kill troll, fetch herbs, ...).
+- **`quest_manager.py`** — Tracks quests, event hooks for progress.
+- **`quest_templates.py`** — Predefined quests.
+- **`quest_board.py`** — `QuestBoardManager`; tavern bulletin board.
 
 ### llm/ — LLM integration
-- **`llm_interface.py`** — `LLMInterface`; high-level API used by engine. Delegates to a provider.
-- **`providers/`** — Provider implementations.
-  - **`base.py`** — `LLMProvider` abstract base class.
-  - **`heuristic.py`** — `HeuristicProvider`; rule-based fallback (no LLM needed). **Default.**
-  - **`ollama.py`** — Ollama HTTP provider (local).
-  - **`anthropic.py`** — Anthropic Claude provider (needs ANTHROPIC_API_KEY).
-  - **`openai.py`** — OpenAI provider (needs OPENAI_API_KEY).
-  - **`__init__.py`** — `get_provider(name)` factory.
+
+- **`llm_interface.py`** — `LLMInterface`; facade over providers.
+- **`providers/`** — Pluggable backends.
+  - **`base.py`** — `LLMProvider` ABC.
+  - **`heuristic.py`** — Rule-based default; honors NPC schedules + needs.
+  - **`ollama.py`** — Local Ollama HTTP.
+  - **`anthropic.py`** — Anthropic Claude.
+  - **`openai_provider.py`** — OpenAI.
 
 ### ui/ — User interfaces
-- **`gui.py`** — `GameGUI`; main pygame entry point (window, event loop, menus).
-- **`renderer.py`** — `MapRenderer`; draws the world map (tiles, sprites, lighting).
-- **`sprite_loader.py`** — `SpriteLoader`; procedural sprite generation (no PNG assets needed).
-- **`hud.py`** — `HUD`; status bars, mini-map, event log, dialog box.
-- **`input_handler.py`** — `InputHandler`; keyboard/mouse → game actions.
-- **`terminal_ui.py`** — `TerminalUI`; text-based interface.
-- **`gui_interface.py`** — Legacy launcher (kept for backward compat).
-- **`threaded_llm_interface.py`** — Threaded LLM (older variant, kept).
+
+- **`gui.py`** — `GameGUI`; pygame main window.
+- **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting.
+- **`sprite_loader.py`** — Procedural sprite generation (no PNG assets).
+- **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker.
+- **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys).
+- **`terminal_ui.py`** — Text-based UI.
 
 ## Key Classes — where to find them
 
@@ -89,49 +105,47 @@ llm_RPG/
 | `GameEngine`           | `engine/game_engine.py`             |
 | `Character`            | `characters/character.py`           |
 | `NPCManager`           | `characters/npc_manager.py`         |
+| `CompanionManager`     | `characters/companions.py`          |
+| `Faction`              | `characters/factions.py`            |
 | `World`                | `world/world.py`                    |
-| `WorldMap`             | `world/world_map.py`                |
 | `WorldGenerator`       | `world/world_generator.py`          |
+| `Interior`             | `world/interiors.py`                |
+| `EncounterManager`     | `world/encounters.py`               |
+| `Date`, `Season`       | `world/calendar.py`                 |
 | `Item`                 | `items/item.py`                     |
+| `Recipe`, `craft()`    | `items/crafting.py`                 |
 | `Quest`                | `quests/quest.py`                   |
-| `QuestManager`         | `quests/quest_manager.py`           |
-| `SaveManager`          | `engine/save_load.py`               |
+| `QuestBoard`           | `quests/quest_board.py`             |
+| `Bank`                 | `engine/banking.py`                 |
 | `CombatSystem`         | `engine/combat_system.py`           |
+| `DialogTree`           | `engine/dialog_trees.py`            |
 | `LLMProvider`          | `llm/providers/base.py`             |
 | `HeuristicProvider`    | `llm/providers/heuristic.py`        |
 | `MapRenderer`          | `ui/renderer.py`                    |
 | `SpriteLoader`         | `ui/sprite_loader.py`               |
 
-## Module dependency direction
+## Engine subsystems wired to the game loop
 
-```
-main.py
-  └── engine.game_engine
-        ├── world.world / world.world_map / world.world_generator
-        ├── characters.npc_manager → characters.character
-        ├── items.item_registry
-        ├── quests.quest_manager
-        ├── llm.llm_interface → llm.providers.*
-        ├── engine.combat_system / economy_system / dialog_system
-        ├── engine.memory_manager / save_load / skills
-        └── engine.npc_process_manager
-ui.gui
-  ├── ui.renderer → ui.sprite_loader
-  ├── ui.hud
-  └── ui.input_handler
-```
-
-Engine never depends on UI. UI depends on engine.
+Each turn (after a player move / dialog / action):
+1. `world.advance_time(1)` — calendar minute passes
+2. `quest_manager.on_turn_advanced()` — SURVIVE objectives tick
+3. NPC needs tick — hunger / fatigue grow
+4. `encounter_manager.maybe_spawn()` — chance of wilderness monster
+5. `companion_manager.update()` — party members follow / fight
+6. Every N turns: NPC actions (LLM or heuristic-based, including schedules)
 
 ## Adding new content — quick recipes
 
-- **New item**: add entry to `items/item_registry.py`.
-- **New quest**: add template to `quests/quest_templates.py`.
-- **New NPC type**: extend `CharacterClass` in `characters/character_types.py`, optionally add factory method to `npc_manager.py`.
-- **New action**: add handler method to `engine/action_router.py` (or specialized system).
+- **New item**: append to `items/item_registry.py`.
+- **New recipe**: append to `items/crafting.py` `RECIPES` dict.
+- **New quest**: add template in `quests/quest_templates.py`; post to a board via `default_boards()` if appropriate.
+- **New NPC class**: extend `CharacterClass` in `characters/character_types.py`; add schedule in `characters/schedules.py`; add to `CLASS_TO_FACTION` in `characters/factions.py`.
+- **New dialog tree**: add factory in `engine/dialog_trees.py` and register in `_TREE_BY_CLASS` or `_TREE_BY_NPC_ID`.
+- **New action**: add handler in `engine/action_router.py`.
+- **New terrain**: extend `TerrainType` + add sprite in `ui/sprite_loader.py`.
+- **New encounter monster**: add entry in `world/encounters.py` `_build_monster()` + `ENCOUNTER_TABLE`.
 - **New LLM provider**: subclass `LLMProvider` in `llm/providers/`, register in `llm/providers/__init__.py`.
-- **New terrain**: extend `TerrainType` in `world/world_map.py`, add sprite in `ui/sprite_loader.py`.
 
 ## File size policy
 
-All source files must stay **under 500 lines** (per global coding preferences). If you're adding code that pushes a file past this limit, split it first.
+All source files stay **under 500 lines** (per global coding preferences). Split modules before exceeding.

@@ -65,3 +65,71 @@ python main.py --load saves/quicksave.json
 ### Known issues / next steps
 
 - See ROADMAP.md.
+
+---
+
+## 2026-05-17 (later) — Phase 2 expansion: bring over all autonomous_world systems
+
+Brought across the entire high- and medium-impact wishlist from
+`/Users/george/Documents/GitHub/autonomous_world`:
+
+**Phase 1 — Foundations**
+- `world/calendar.py`: 12-month/30-day calendar, 4 seasons, hour-to-time-of-day, tint multipliers per season.
+- `characters/factions.py`: 8 factions with reputation tracking (-100..+100), kill-driven rep shifts, hostile pair detection, faction labels.
+
+**Phase 2 — World feel**
+- `characters/needs.py`: hunger and fatigue simulation, decay and feed/rest deltas.
+- `characters/schedules.py`: per-class daily schedules (wake/eat/work/drink/sleep/patrol/pray/play).
+- `world/encounters.py`: `EncounterManager` spawns wolves / bandits / goblins / wandering trolls in wilderness tiles, with cooldown and FOV-aware spawn positions.
+- Heuristic provider rewritten to honor schedules and urgent needs (starving/exhausted NPCs break routine).
+
+**Phase 3 — Economy depth**
+- `engine/banking.py`: deposit/withdraw gold at temple/shop locations.
+- `items/crafting.py`: recipe registry, ingredient + gold cost, forge-gated weapons. 6 starter recipes.
+
+**Phase 4 — Spaces**
+- `world/interiors.py`: indoor mini-maps for tavern/forge/shop/temple with furniture and NPC spots.
+- `quests/quest_board.py`: tavern bulletin board, browse + accept posted quests.
+
+**Phase 5 — Social**
+- `characters/companions.py`: 3-member party, recruit by relationship ≥30, auto-follow and attack adjacent hostiles.
+- `engine/dialog_trees.py`: branching dialog node graphs for tavernkeeper / merchant / guard / bard / cleric.
+
+**Integration**
+- `world.get_location_at()` now returns the innermost (most specific) location so banking and quest_board work inside the village.
+- Engine `advance_turn()` ticks needs, runs encounter spawn, updates companions.
+- Combat hooks faction reputation deltas through `on_defeat`.
+- World generator tags locations with `type` properties (tavern/forge/temple/shop) and a `forge` flag.
+
+**Tests** (10 new files, 50 new tests; total now 107 — all pass)
+- test_calendar.py, test_factions.py, test_needs_schedules.py
+- test_encounters.py, test_banking.py, test_crafting.py
+- test_interiors.py, test_quest_board.py, test_companions.py
+- test_dialog_trees.py
+
+**Docs**
+- INTERFACE.md, README.md, ROADMAP.md rewritten to reflect all new systems.
+
+All source files remain under 500 LOC.
+
+**Death popup (added near end of session)**
+- Player defeat in combat now sets `engine.player_dead` (instead of immediately calling `end_game`) when a GUI is attached.
+- `GameGUI` enters a `"death"` mode and overlays a centered popup with `[R] Restart` and `[Q] Quit` options. Restart rebuilds the engine in-place.
+- Terminal mode is unchanged (falls back to `end_game` on death so the loop exits).
+- 4 new tests in `tests/test_death.py` cover the flag, no-shutdown-with-GUI, and terminal fallback.
+
+### Refactors during Phase 6
+- Pulled `initialize_demo_game` + `create_default_player` + `_upgrade_item_string` out into `engine/demo_setup.py` to keep `game_engine.py` under 500 LOC.
+- Pulled preset NPCs (Goren / Durgan / Melody / Karim / Gorkash) out of `characters/npc_manager.py` into `characters/npc_presets.py`.
+
+### Did NOT port (out of scope)
+
+- Religion / divine system (gods, pantheon)
+- Vegetation / foraging (could be added later as part of Forest tile interaction)
+- Astronomy / constellations
+- Warfare / sieges
+- Multi-year world history simulation
+- 3D renderer mode
+- Player-built roads
+- Networked multiplayer
+
