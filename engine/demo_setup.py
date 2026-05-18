@@ -103,6 +103,71 @@ def create_default_player(spec=None) -> Character:
     return player
 
 
+def _resolve_npc_spawn(engine, npc) -> tuple:
+    """Compute a sensible spawn position for an NPC based on home_location.
+
+    Walks outward from the home's center to find a walkable tile not already
+    occupied. Falls back to the NPC's hardcoded position if there's no home.
+    """
+    from world.world_map import TerrainType
+
+    home_name = getattr(npc, "home_location", "")
+    if not home_name:
+        return npc.position
+
+    loc = None
+    for candidate in engine.world.locations:
+        if candidate.name == home_name:
+            loc = candidate
+            break
+    if loc is None:
+        return npc.position
+
+    cx, cy = loc.center()
+    wmap = engine.world.map
+    # Try expanding ring around the location's center
+    occupied = set(wmap.characters.keys())
+    blocked = (TerrainType.WATER, TerrainType.MOUNTAIN)
+    for radius in range(0, 6):
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                x, y = cx + dx, cy + dy
+                if not (0 <= x < wmap.width and 0 <= y < wmap.height):
+                    continue
+                if wmap.terrain[y][x] in blocked:
+                    continue
+                if (x, y) in occupied:
+                    continue
+                return (x, y)
+    return (cx, cy)
+
+
+def _resolve_player_spawn(engine) -> tuple:
+    """Player starts at the edge of Oakvale Village (or fallback)."""
+    from world.world_map import TerrainType
+    wmap = engine.world.map
+    oakvale = next((l for l in engine.world.locations
+                    if l.name == "Oakvale Village"), None)
+    if oakvale is None:
+        return (15, 5)
+    cx, cy = oakvale.center()
+    # Step a few tiles north to "arrive at the outskirts"
+    occupied = set(wmap.characters.keys())
+    for offset in range(2, 8):
+        candidate_y = cy - offset
+        for dx in (0, 1, -1, 2, -2):
+            x, y = cx + dx, candidate_y
+            if not (0 <= x < wmap.width and 0 <= y < wmap.height):
+                continue
+            if wmap.terrain[y][x] in (TerrainType.WATER, TerrainType.MOUNTAIN,
+                                      TerrainType.BUILDING):
+                continue
+            if (x, y) in occupied:
+                continue
+            return (x, y)
+    return (cx, cy)
+
+
 def initialize_demo_world(engine, player_spec=None) -> None:
     """Populate `engine` with world terrain, NPCs, player, and starter quests."""
     # World generation
@@ -121,14 +186,16 @@ def initialize_demo_world(engine, player_spec=None) -> None:
     engine.world.npc_manager = engine.npc_manager
     engine.world.memory_manager = engine.memory_manager
 
-    # NPCs
+    # NPCs — placed at their home_location (auto-adjusts to world size)
     npcs = engine.npc_manager.create_simple_npcs()
     for npc in npcs:
         npc.inventory = [upgrade_item_string(it) for it in npc.inventory]
+        npc.position = _resolve_npc_spawn(engine, npc)
         engine.world.map.place_character(npc, *npc.position)
 
-    # Player
+    # Player — spawn near Oakvale's center
     engine.player = create_default_player(spec=player_spec)
+    engine.player.position = _resolve_player_spawn(engine)
     engine.world.map.place_character(engine.player, *engine.player.position)
 
     engine.memory_manager.add_event(

@@ -44,9 +44,16 @@ class WorldGenerator:
         if self.w >= 50 and self.h >= 30:
             self._add_second_settlement()
             self._add_connecting_road()
+        if self.w >= 100 and self.h >= 60:
+            self._add_third_settlement()
+            self._add_third_road()
+            self._add_secondary_river()
         self._add_cave()
+        if self.w >= 100:
+            self._add_second_cave()
         self._add_wilderness_features()
-        logger.info(f"Procedural world generated ({self.w}x{self.h})")
+        logger.info(f"Procedural world generated ({self.w}x{self.h}) "
+                    f"with {len(self.world.locations)} locations")
 
     # ----- terrain ----------------------------------------------------
 
@@ -197,6 +204,75 @@ class WorldGenerator:
                         TerrainType.WATER, TerrainType.BUILDING):
                     self.world.map.terrain[y][bx] = TerrainType.ROAD
 
+    def _add_third_settlement(self) -> None:
+        """Stonepine Camp — a mining/lumber outpost near the mountains."""
+        # Place it on the eastern edge near the mountain range, but lower
+        # than the mountains themselves
+        vx = max(self.w - 16, self.w // 2 + 5)
+        vy = min(self.h - 10, int(self.h * 0.65))
+        vw, vh = 8, 5
+        self.world.add_location(Location(
+            "Stonepine Camp",
+            "A weathered logging and mining outpost at the mountain's foot.",
+            vx, vy, vw, vh,
+        ))
+        self._building(vx + 1, vy + 1, 2, 2,
+                       "Foreman's Hall",
+                       "A long log hall where the foreman keeps the ledgers.")
+        self._building(vx + 5, vy + 1, 2, 2,
+                       "Stonepine Smithy",
+                       "A small forge for repairing picks and saws.")
+        self._building(vx + 1, vy + 3, 2, 2,
+                       "Camp Tavern",
+                       "Rough-hewn benches, a barrel of strong ale.")
+
+    def _add_third_road(self) -> None:
+        """Connect Stonepine to the existing road network."""
+        oakvale = next((l for l in self.world.locations
+                        if l.name == "Oakvale Village"), None)
+        stonepine = next((l for l in self.world.locations
+                          if l.name == "Stonepine Camp"), None)
+        if not (oakvale and stonepine):
+            return
+        ax, ay = oakvale.center()
+        bx, by = stonepine.center()
+        # Vertical first, then horizontal
+        for y in range(min(ay, by), max(ay, by) + 1):
+            if 0 <= y < self.h and 0 <= ax < self.w:
+                if self.world.map.terrain[y][ax] not in (
+                        TerrainType.WATER, TerrainType.BUILDING,
+                        TerrainType.MOUNTAIN):
+                    self.world.map.terrain[y][ax] = TerrainType.ROAD
+        for x in range(min(ax, bx), max(ax, bx) + 1):
+            if 0 <= x < self.w and 0 <= by < self.h:
+                if self.world.map.terrain[by][x] not in (
+                        TerrainType.WATER, TerrainType.BUILDING,
+                        TerrainType.MOUNTAIN):
+                    self.world.map.terrain[by][x] = TerrainType.ROAD
+
+    def _add_secondary_river(self) -> None:
+        """A vertical tributary feeding the main river."""
+        # Pick a column in the right half, snake from the main river
+        # upward to the top edge
+        x = self.rng.randint(self.w * 3 // 5, self.w - 5)
+        # Find the river's y in this column
+        for y in range(self.h):
+            if self.world.map.terrain[y][x] == TerrainType.WATER:
+                start_y = y
+                break
+        else:
+            start_y = self.h // 2
+        # Snake upward
+        for y in range(start_y, 0, -1):
+            if 0 <= x < self.w:
+                if self.world.map.terrain[y][x] not in (
+                        TerrainType.BUILDING, TerrainType.MOUNTAIN,
+                        TerrainType.ROAD):
+                    self.world.map.terrain[y][x] = TerrainType.WATER
+            # Drift
+            if self.rng.random() < 0.4 and 1 <= x < self.w - 1:
+                x += self.rng.choice([-1, 0, 0, 1])
+
     def _add_cave(self) -> None:
         # Cave entrance in mountain region
         cx = self.w - 3
@@ -209,13 +285,49 @@ class WorldGenerator:
                 cx, cy, 1, 1,
             ))
 
+    def _add_second_cave(self) -> None:
+        """A second cave entrance, distinct from the first."""
+        # Look for a mountain tile not adjacent to the first cave
+        attempts = 50
+        while attempts > 0:
+            attempts -= 1
+            cx = self.rng.randint(self.w * 3 // 4, self.w - 2)
+            cy = self.rng.randint(0, max(2, self.h // 3 - 1))
+            if not (0 <= cx < self.w and 0 <= cy < self.h):
+                continue
+            terrain = self.world.map.terrain[cy][cx]
+            if terrain != TerrainType.MOUNTAIN:
+                continue
+            # Don't overwrite the existing Dark Cave or stack on top of it
+            existing = self.world.get_location_at(cx, cy)
+            if existing and existing.name == "Dark Cave":
+                continue
+            if abs(cx - (self.w - 3)) <= 2 and abs(cy - 3) <= 2:
+                continue
+            self.world.map.terrain[cy][cx] = TerrainType.CAVE
+            self.world.add_location(Location(
+                "Goblin Warrens",
+                "A foul-smelling cave entrance, rumored to house goblins.",
+                cx, cy, 1, 1,
+            ))
+            return
+
     def _add_wilderness_features(self) -> None:
-        # A few scattered forest blobs in wilderness
-        for _ in range(self.w // 4):
+        # Forest blobs — density scales with map area
+        area_factor = (self.w * self.h) // 600   # ~4 at 60x40, ~16 at 120x80
+        for _ in range(area_factor * 2):
             cx = self.rng.randint(2, self.w - 3)
             cy = self.rng.randint(2, self.h - 3)
             if self.world.map.terrain[cy][cx] == TerrainType.GRASS:
-                self._blob(cx, cy, 2, TerrainType.FOREST)
+                radius = self.rng.randint(2, 3)
+                self._blob(cx, cy, radius, TerrainType.FOREST)
+
+        # Mountain spurs (small clusters off the main range)
+        for _ in range(max(1, area_factor // 2)):
+            cx = self.rng.randint(self.w // 2, self.w - 4)
+            cy = self.rng.randint(2, self.h - 4)
+            if self.world.map.terrain[cy][cx] == TerrainType.GRASS:
+                self._blob(cx, cy, 2, TerrainType.MOUNTAIN)
 
     # ----- helpers ----------------------------------------------------
 

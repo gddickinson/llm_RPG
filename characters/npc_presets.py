@@ -239,6 +239,82 @@ def make_hamlet_wheelwright() -> Character:
     return npc
 
 
+def make_camp_foreman() -> Character:
+    npc = Character(
+        id="camp_foreman_01",
+        name="Bram",
+        character_class=CharacterClass.MERCHANT,
+        race=CharacterRace.HUMAN,
+        level=4,
+        strength=15, dexterity=12, constitution=14,
+        intelligence=12, wisdom=12, charisma=12,
+        hp=25, max_hp=25,
+        position=(105, 55),
+        inventory=["sword", "bread", "ledger"],
+        gold=120,
+        symbol="F",
+        description="A weathered foreman with calloused hands and a sharp tally eye.",
+        personality={"traits": ["practical", "blunt"],
+                     "likes": ["hard work", "honest dealings"],
+                     "dislikes": ["idleness"]},
+        goals=["Keep the camp running",
+               "Fill the next quota of timber and ore"],
+    )
+    npc.add_memory(
+        "A vein of silver was found deep in the western shaft last month", 3)
+    npc.add_memory(
+        "Two miners didn't return from the east shaft. Goblins, maybe.", 3)
+    npc.home_location = "Foreman's Hall"
+    return npc
+
+
+def make_camp_smith() -> Character:
+    npc = Character(
+        id="camp_smith_01",
+        name="Hilde",
+        character_class=CharacterClass.MERCHANT,
+        race=CharacterRace.DWARF,
+        level=3,
+        strength=15, dexterity=13, constitution=15,
+        intelligence=11, wisdom=11, charisma=11,
+        hp=22, max_hp=22,
+        position=(109, 55),
+        inventory=["sword", "shield", "bandage"],
+        gold=70,
+        symbol="K",
+        description="A wiry dwarven smith with soot-darkened hands.",
+        personality={"traits": ["focused", "terse"]},
+        goals=["Repair the miners' picks", "Master pattern-welded steel"],
+    )
+    npc.add_memory("Bram needs a new axe by week's end", 2)
+    npc.home_location = "Stonepine Smithy"
+    return npc
+
+
+def make_camp_taverner() -> Character:
+    npc = Character(
+        id="camp_taverner_01",
+        name="Wulf",
+        character_class=CharacterClass.MERCHANT,
+        race=CharacterRace.HUMAN,
+        level=2,
+        strength=12, dexterity=11, constitution=14,
+        intelligence=10, wisdom=10, charisma=13,
+        hp=18, max_hp=18,
+        position=(105, 57),
+        inventory=["ale", "ale", "mead"],
+        gold=45,
+        symbol="U",
+        description="A grizzled barkeep with a permanent half-smile.",
+        personality={"traits": ["genial", "patient"]},
+        goals=["Keep the ale flowing"],
+    )
+    npc.add_memory(
+        "A scout claimed to see a wolf the size of a horse", 2)
+    npc.home_location = "Camp Tavern"
+    return npc
+
+
 def all_presets() -> List[Character]:
     """Return all preset NPCs (peaceful first, then the troll)."""
     return [
@@ -249,5 +325,8 @@ def all_presets() -> List[Character]:
         make_hamlet_innkeeper(),
         make_hamlet_priest(),
         make_hamlet_wheelwright(),
+        make_camp_foreman(),
+        make_camp_smith(),
+        make_camp_taverner(),
         make_troll_brigand(),
     ]
