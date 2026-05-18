@@ -144,23 +144,88 @@ def make_default_interior(name: str) -> Interior:
     )
 
 
+def make_from_blueprint(loc_name: str, bp) -> Interior:
+    """Build an Interior from a Blueprint grid.
+
+    Maps blueprint cells (W/F/D/T/B/A/C/P/R/S) to terrain + furniture.
+    """
+    name = f"{loc_name} (interior)"
+    w, h = bp.width, bp.height
+    inter = Interior(name=name, width=w, height=h,
+                     description=bp.description)
+    # Pre-fill terrain
+    inter.terrain = [[TerrainType.GRASS for _ in range(w)] for _ in range(h)]
+    door_pos = None
+    for y in range(h):
+        for x in range(w):
+            cell = bp.cell(x, y)
+            if cell == "W":
+                inter.terrain[y][x] = TerrainType.BUILDING
+            elif cell == "D":
+                inter.terrain[y][x] = TerrainType.ROAD
+                door_pos = (x, y)
+            elif cell in ("F", "."):
+                pass  # grass / floor
+            else:
+                # Furniture: keep cell walkable (interior floor) but record
+                # the furniture object.
+                inter.terrain[y][x] = TerrainType.GRASS
+                cell_name_map = {
+                    "T": "Table", "B": "Bed", "A": "Anvil",
+                    "C": "Chest", "P": "Hearth", "R": "Barrel",
+                    "S": "Altar",
+                }
+                inter.furniture.append({
+                    "name": cell_name_map.get(cell, "Furniture"),
+                    "x": x, "y": y,
+                })
+    if door_pos is None:
+        door_pos = (w // 2, h - 1)
+        if 0 <= door_pos[1] < h:
+            inter.terrain[door_pos[1]][door_pos[0]] = TerrainType.ROAD
+    inter.door = door_pos
+    # NPC spot near the center (off-furniture)
+    spot = (w // 2, h // 2)
+    inter.npc_spots = [spot]
+    return inter
+
+
 def build_interiors_for_world(world) -> Dict[str, Interior]:
-    """Create matching interiors for each building in the world."""
+    """Create matching interiors for each building in the world.
+
+    Tries the blueprint library first; falls back to the old factory set.
+    """
+    try:
+        from world.blueprints import blueprint_for_location
+    except Exception:
+        blueprint_for_location = None
+
     interiors: Dict[str, Interior] = {}
     for loc in world.locations:
         ltype = loc.get_property("type", "")
         name_l = loc.name.lower()
-        if "tavern" in name_l:
-            inter = make_tavern_interior()
-        elif "forge" in name_l or "smith" in name_l:
-            inter = make_forge_interior()
-        elif "store" in name_l or "shop" in name_l:
-            inter = make_shop_interior()
-        elif "temple" in name_l or "shrine" in name_l:
-            inter = make_temple_interior()
-        elif ltype in ("tavern", "shop", "temple", "forge"):
-            inter = make_default_interior(loc.name)
-        else:
-            continue
+        inter = None
+
+        # Try blueprint first
+        if blueprint_for_location is not None:
+            bp = blueprint_for_location(loc.name)
+            if bp is not None:
+                inter = make_from_blueprint(loc.name, bp)
+
+        # Fallback to hand-built interior factories
+        if inter is None:
+            if "tavern" in name_l:
+                inter = make_tavern_interior()
+            elif "forge" in name_l or "smith" in name_l:
+                inter = make_forge_interior()
+            elif "store" in name_l or "shop" in name_l:
+                inter = make_shop_interior()
+            elif "temple" in name_l or "shrine" in name_l:
+                inter = make_temple_interior()
+            elif ltype in ("tavern", "shop", "temple", "forge"):
+                inter = make_default_interior(loc.name)
+            else:
+                continue
+
         interiors[loc.name] = inter
     return interiors

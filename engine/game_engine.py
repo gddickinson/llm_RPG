@@ -77,6 +77,18 @@ class GameEngine(GameAPIMixin):
         self.weather_system = WeatherSystem(self)
         self.forage_manager = ForageManager(self)
 
+        # Ranged combat (projectiles)
+        from engine.projectiles import ProjectileManager
+        self.projectile_manager = ProjectileManager(self)
+
+        # Combat visual effects (damage popups, hit flashes, particles)
+        self.combat_effects = None
+        try:
+            from ui.combat_effects import CombatEffects
+            self.combat_effects = CombatEffects(self)
+        except Exception as e:
+            logger.debug(f"Combat effects unavailable: {e}")
+
         # Dungeons (lazy — built when player enters a cave)
         self.dungeons = {}                # location_name -> Dungeon
         self.current_dungeon = None
@@ -199,6 +211,15 @@ class GameEngine(GameAPIMixin):
                 self.memory_manager.add_event(wmsg)
         except Exception as e:
             logger.debug(f"Weather tick error: {e}")
+
+        # Advance in-flight projectiles
+        try:
+            results = self.projectile_manager.tick(dt=1.0)
+            for r in results:
+                if r.message:
+                    self.memory_manager.add_event(r.message)
+        except Exception as e:
+            logger.debug(f"Projectile tick error: {e}")
 
         # Companions follow / fight
         try:

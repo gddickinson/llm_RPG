@@ -188,6 +188,14 @@ class SpellSystem:
 
         msg = " ".join(results) if results else f"{caster.name} casts {spell.name}."
         self.engine.memory_manager.add_event(msg)
+
+        # Visual particle burst at target position
+        try:
+            tx, ty = target.position
+            if hasattr(self.engine, "trigger_spell_visual"):
+                self.engine.trigger_spell_visual(spell_id, tx, ty)
+        except Exception:
+            pass
         return msg
 
     # ---- helpers -----------------------------------------------------

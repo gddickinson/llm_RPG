@@ -89,6 +89,23 @@ class InputHandler:
                 self.engine.memory_manager.add_event("No enemy adjacent.")
             return True
 
+        # Ranged attack (R)
+        if k == pygame.K_r:
+            msg = self.engine.shoot_ranged()
+            if msg:
+                pass  # already logged
+            return True
+
+        # Cast quick fireball (X) — wizards/sorcerers only
+        if k == pygame.K_x:
+            try:
+                msg = self.engine.cast_spell("fireball")
+                if msg:
+                    pass
+            except Exception:
+                pass
+            return True
+
         # Talk to adjacent NPC
         if k == pygame.K_t:
             npc = self._find_adjacent_npc()

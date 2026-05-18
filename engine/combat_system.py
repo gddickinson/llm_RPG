@@ -90,6 +90,14 @@ class CombatSystem:
         damage = max(1, base + self.rng.randint(-1, 1) - armor_red)
         defender.take_damage(damage)
 
+        # Visual effects (damage popup + hit flash + death FX)
+        try:
+            ce = getattr(self.engine, "combat_effects", None)
+            if ce:
+                ce.on_damage_dealt(defender, damage, is_kill=not defender.is_alive())
+        except Exception:
+            pass
+
         attacker.add_memory(
             f"I attacked {defender.name} and dealt {damage} damage", 2)
         if attacker.id != defender.id:

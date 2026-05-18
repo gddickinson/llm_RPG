@@ -82,7 +82,8 @@ class MapRenderer:
                             (view_rect.x + (gx - cam_x) * self.tile_size,
                              view_rect.y + (gy - cam_y) * self.tile_size))
 
-        # Characters (NPCs + player) — only active
+        # Characters (NPCs + player) — procedural body renderer
+        from ui.body_renderer import draw_body, update_anim, draw_projectile
         all_chars = list(engine.npc_manager.npcs.values()) + [engine.player]
         for char in all_chars:
             if hasattr(char, "is_active") and not char.is_active():
@@ -90,22 +91,35 @@ class MapRenderer:
             cx, cy = char.position
             if not (cam_x <= cx < cam_x + cols and cam_y <= cy < cam_y + rows):
                 continue
-            klass = getattr(getattr(char, "character_class", None), "value", "")
+            update_anim(char, 1.0 / 30.0)
+            sx = view_rect.x + (cx - cam_x) * self.tile_size
+            sy = view_rect.y + (cy - cam_y) * self.tile_size
             is_player = char.id == engine.player.id
-            is_hostile = klass in ("brigand", "troll", "monster")
-            surf = self.sprites.character(klass, is_player=is_player,
-                                          is_hostile=is_hostile)
-            target.blit(surf,
-                        (view_rect.x + (cx - cam_x) * self.tile_size,
-                         view_rect.y + (cy - cam_y) * self.tile_size))
-            # HP bar above hostile/non-player
-            if not is_player and char.max_hp > 0:
-                self._draw_hp_bar(target, char,
-                                  view_rect.x + (cx - cam_x) * self.tile_size,
-                                  view_rect.y + (cy - cam_y) * self.tile_size)
+            draw_body(target, char, sx, sy, self.tile_size, is_player=is_player)
+
+        # In-flight projectiles
+        try:
+            for proj in engine.projectile_manager.active:
+                if not (cam_x <= proj.x < cam_x + cols
+                        and cam_y <= proj.y < cam_y + rows):
+                    continue
+                psx = view_rect.x + int((proj.x - cam_x) * self.tile_size)
+                psy = view_rect.y + int((proj.y - cam_y) * self.tile_size)
+                draw_projectile(target, proj.kind, psx, psy, self.tile_size)
+        except Exception:
+            pass
 
         # Time-of-day overlay
         self._apply_tod_overlay(target, view_rect, engine.world.get_time_of_day())
+
+        # Combat effects overlay (damage popups, particles, hit flashes)
+        try:
+            ce = getattr(engine, "combat_effects", None)
+            if ce:
+                ce.update(1.0 / 30.0)
+                ce.draw(target, view_rect, cam_x, cam_y, self.tile_size)
+        except Exception:
+            pass
 
     # ---- helpers ------------------------------------------------------
 

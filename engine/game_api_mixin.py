@@ -106,6 +106,82 @@ class GameAPIMixin:
         from characters.equipment import get_equipment
         return get_equipment(self.player)
 
+    # ---- ranged combat -----------------------------------------------
+
+    def shoot_ranged(self, target_name: str = None) -> str:
+        """Fire a ranged attack at the named target (or nearest enemy)."""
+        from items.item import Item
+        # Find a bow / ranged weapon in inventory or equipment
+        weapon_type = "bow"
+        weapon_dmg = 4
+        try:
+            from characters.equipment import equipped_weapon
+            eq = equipped_weapon(self.player)
+            if eq is not None and eq.is_weapon():
+                name = (eq.name or "").lower()
+                if "bow" in name:
+                    weapon_type = "bow"
+                    weapon_dmg = max(weapon_dmg, eq.damage)
+                elif "sling" in name:
+                    weapon_type = "sling"
+                    weapon_dmg = max(weapon_dmg, eq.damage)
+                elif "crossbow" in name:
+                    weapon_type = "crossbow"
+                    weapon_dmg = max(weapon_dmg, eq.damage)
+        except Exception:
+            pass
+        # Fallback: any bow in inventory
+        for it in self.player.inventory:
+            if isinstance(it, Item) and "bow" in (it.name or "").lower():
+                weapon_dmg = max(weapon_dmg, it.damage)
+                weapon_type = "bow"
+                break
+
+        # Resolve target — explicit name first, else nearest hostile
+        target = None
+        if target_name:
+            target = self.find_character(target_name)
+        if target is None:
+            target = self._nearest_hostile()
+        if target is None:
+            return "No target in sight."
+
+        # DEX-based damage bonus
+        dex_bonus = max(0, (self.player.dexterity - 10) // 2)
+        damage = max(1, weapon_dmg + dex_bonus)
+        proj = self.projectile_manager.spawn(
+            self.player, target, damage, weapon_type=weapon_type)
+        msg = f"You loose a {proj.weapon_type} at {target.name}."
+        self.memory_manager.add_event(msg)
+        self.advance_turn()
+        return msg
+
+    def _nearest_hostile(self):
+        px, py = self.player.position
+        best = None
+        best_d = 999
+        for npc in self.npc_manager.npcs.values():
+            if not npc.is_active():
+                continue
+            klass = getattr(npc.character_class, "value", "")
+            if klass not in ("brigand", "troll", "monster"):
+                continue
+            d = ((npc.position[0] - px) ** 2 +
+                 (npc.position[1] - py) ** 2) ** 0.5
+            if d < best_d:
+                best_d, best = d, npc
+        return best
+
+    # ---- spell visual effects (used by spell system + UI) ------------
+
+    def trigger_spell_visual(self, spell_id: str, x: float, y: float) -> None:
+        if self.combat_effects is None:
+            return
+        try:
+            self.combat_effects.spawn_spell_burst(spell_id, x, y)
+        except Exception:
+            pass
+
     # ---- foraging / weather / dungeons -------------------------------
 
     def forage(self) -> str:
