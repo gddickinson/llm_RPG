@@ -146,3 +146,11 @@ def initialize_demo_world(engine, player_spec=None) -> None:
         engine.interiors = build_interiors_for_world(engine.world)
     except Exception as e:
         logger.warning(f"Interior build failed: {e}")
+
+    # Simulate pre-game history (lore + ruined keep + faction shifts)
+    try:
+        from world.history_sim import simulate, apply_history
+        events = simulate(years=5)
+        apply_history(engine, events)
+    except Exception as e:
+        logger.warning(f"History sim failed: {e}")

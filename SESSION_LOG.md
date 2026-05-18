@@ -200,3 +200,40 @@ C: NPC richness). Bundle A delivered in this session.
 - `tests/test_weather.py`, `tests/test_foraging.py`, `tests/test_dungeon.py`, `tests/test_world_breadth.py`.
 - 162 total tests pass.
 
+---
+
+## 2026-05-17 (continued) — Bundle C: NPC richness
+
+**Schedule-driven movement (action_router)**
+- `_resolve_location_target()` resolves keywords ("tavern", "forge", "home", "village", "shop", "temple", ...) to actual location coordinates.
+- Falls back to direct name match. If the NPC has a `home_location` matching the keyword's location type, prefer that one; otherwise pick the nearest.
+- NPC already at its target now correctly stays put instead of bouncing in random directions.
+
+**Families (`characters/families.py`)**
+- Static registry: spouse / siblings / parents / surname per preset NPC.
+- Goren (Oakvale Tavern) is married to Esra (Riverside Inn). Melody is Goren's sister. Durgan and Tova are dwarven siblings.
+- `family_of(npc_id)` and `relation_to(a, b)` helpers.
+
+**Gossip (`characters/gossip.py`)**
+- Static gossip pool of 8 lines (rumors about troll, mountains, river, etc.).
+- `gossip_for(npc, engine)` composes lines from: family ties, recent event-log lines mentioning other NPCs, and one filler static line.
+- Dialog system appends a gossip line in `_append_quest_prompts`.
+
+**History sim (`world/history_sim.py`)**
+- 5-event pre-game simulation drawn from 8 templates: bandit raids, plagues, troll attacks, festivals, druid blessings.
+- Each event has faction reputation impact applied to the player.
+- Plants a Ruined Keep (2x2 building) in the NE wilderness.
+- Two lore lines surface in the player's starting event log.
+- Wired into `engine/demo_setup.py`.
+
+**Tests (12 new tests across 3 files)**
+- `tests/test_families_gossip.py`, `tests/test_history_sim.py`, `tests/test_npc_movement.py`.
+- 179 total tests pass.
+
+### Bundle plan complete
+
+A, B, C all delivered:
+- **A**: start menu + character creator, equipment, spells, status effects.
+- **B**: bigger world, second settlement, dungeons, weather, foraging.
+- **C**: schedule-driven movement, families, gossip, history sim.
+

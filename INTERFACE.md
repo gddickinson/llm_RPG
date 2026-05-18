@@ -58,6 +58,8 @@ llm_RPG/
 - **`status_effects.py`** — Poison / paralyzed / blessed / cursed / etc. with duration ticks.
 - **`equipment.py`** — Worn weapon / armor / shield / amulet / ring / boots slots.
 - **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight.
+- **`families.py`** — Static family ties for preset NPCs.
+- **`gossip.py`** — Gossip lines pulled from family ties + recent memory events.
 
 ### world/ — World, map, calendar, locations
 
@@ -72,6 +74,7 @@ llm_RPG/
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
 - **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.
+- **`history_sim.py`** — Pre-game multi-year simulation: faction shifts, ruined keep, lore lines.
 
 ### items/ — Item system + crafting
 

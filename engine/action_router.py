@@ -6,7 +6,7 @@ to combat, economy, social, movement, interaction, rest, work handlers.
 
 import logging
 import random
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 
 logger = logging.getLogger("llm_rpg.action_router")
 
@@ -121,14 +121,15 @@ class ActionRouter:
                     target_pos = other.position
                     break
 
-        # Target is a location?
+        # Target is a location? Try by direct name first, then by keyword.
         if target_pos is None:
-            for loc in self.engine.world.locations:
-                if loc.name.lower() in text:
-                    target_pos = loc.center()
-                    break
+            target_pos = self._resolve_location_target(npc, text)
 
         if target_pos is None:
+            return (0, 0)
+
+        # If already at the target, don't move
+        if target_pos == npc.position:
             return (0, 0)
 
         dx = target_pos[0] - npc.position[0]
@@ -287,6 +288,65 @@ class ActionRouter:
         return True
 
     # --------------- internal helpers --------------------------------
+
+    def _resolve_location_target(self, npc, text: str) -> Optional[Tuple[int, int]]:
+        """Resolve keywords like 'tavern' / 'home' / 'village' / a location name."""
+        if not text:
+            return None
+        # Direct name match (exact or substring)
+        for loc in self.engine.world.locations:
+            if loc.name.lower() == text or loc.name.lower() in text or \
+                    text in loc.name.lower():
+                return loc.center()
+
+        # Generic keywords -> by location type
+        keyword_to_property = {
+            "tavern": "tavern",
+            "shop": "shop",
+            "store": "shop",
+            "forge": "forge",
+            "smith": "forge",
+            "temple": "temple",
+            "chapel": "temple",
+            "shrine": "temple",
+            "inn": "tavern",
+        }
+        for keyword, prop in keyword_to_property.items():
+            if keyword in text:
+                # Prefer one matching the NPC's home_location if set
+                home_name = getattr(npc, "home_location", "")
+                for loc in self.engine.world.locations:
+                    if loc.get_property("type", "") == prop and \
+                            loc.name == home_name:
+                        return loc.center()
+                # Otherwise nearest matching location
+                candidates = [
+                    loc for loc in self.engine.world.locations
+                    if loc.get_property("type", "") == prop]
+                if candidates:
+                    nearest = min(candidates,
+                                  key=lambda l: self._dist_to(npc, l.center()))
+                    return nearest.center()
+
+        # "home" -> the NPC's home_location
+        if "home" in text:
+            home_name = getattr(npc, "home_location", "")
+            if home_name:
+                for loc in self.engine.world.locations:
+                    if loc.name == home_name:
+                        return loc.center()
+
+        # "village" -> nearest village center
+        if "village" in text or "town" in text or "hamlet" in text:
+            for loc in self.engine.world.locations:
+                lname = loc.name.lower()
+                if "village" in lname or "hamlet" in lname:
+                    return loc.center()
+        return None
+
+    def _dist_to(self, npc, pos) -> float:
+        return ((npc.position[0] - pos[0]) ** 2 +
+                (npc.position[1] - pos[1]) ** 2) ** 0.5
 
     def _adjacent(self, a, b) -> bool:
         return ((a.position[0] - b.position[0]) ** 2 +

@@ -71,14 +71,21 @@ class DialogSystem:
 
     def _append_quest_prompts(self, npc_id: str, base: str) -> str:
         qm = getattr(self.engine, "quest_manager", None)
-        if not qm:
-            return base
-        offered = qm.offered_by(npc_id)
-        ready = qm.ready_for_turn_in(npc_id)
-        if not offered and not ready:
-            return base
+        offered = qm.offered_by(npc_id) if qm else []
+        ready = qm.ready_for_turn_in(npc_id) if qm else []
 
         extras = [base]
+        # Occasional gossip line from the NPC
+        npc = self.engine.npc_manager.get_npc(npc_id)
+        if npc is not None:
+            try:
+                from characters.gossip import gossip_for
+                lines = gossip_for(npc, self.engine, max_lines=1)
+                for line in lines:
+                    extras.append(f"  ({line})")
+            except Exception:
+                pass
+
         for i, q in enumerate(offered, start=1):
             extras.append(f"  [Quest available] {q.title}  (press {i} to accept)")
         for j, q in enumerate(ready, start=len(offered) + 1):

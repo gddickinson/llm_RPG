@@ -15,6 +15,9 @@ or OpenAI for richer character behavior.
 - **Procedural dungeons**: step onto a cave tile and descend into BSP-generated tunnels with rooms, monsters, loot.
 - **Weather**: clear / cloudy / rain / fog / snow / storm; biased by season; reduces visibility.
 - **Foraging**: pick herbs and berries from forest/grass tiles with regen cooldown.
+- **NPC families + gossip**: NPCs have spouses, siblings, and gossip lines drawn from family ties and recent world events.
+- **History sim**: a brief pre-game simulation gives the world lore — faction tensions, a ruined keep, and starting reputation shifts.
+- **Schedule-driven movement**: NPCs actually walk to their schedule's target location (keywords like "tavern", "forge", "home", "village" resolve to the nearest matching place).
 - **Living world**: NPC daily schedules + needs (hunger, fatigue), seasons, calendar, day/night cycle.
 - **Spells + mana**: Wizard / cleric / sorcerer / druid spells with mana pool, range, and status effects.
 - **Status effects**: Poison ticks damage; paralyzed skips turns; blessed/cursed shift damage.
