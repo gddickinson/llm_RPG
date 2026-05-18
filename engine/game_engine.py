@@ -29,16 +29,18 @@ from engine.economy_system import EconomySystem
 from engine.dialog_system import DialogSystem
 from engine.action_router import ActionRouter
 from engine.player_actions import PlayerActions
+from engine.game_api_mixin import GameAPIMixin
 
 logger = logging.getLogger("llm_rpg.engine")
 
 
-class GameEngine:
+class GameEngine(GameAPIMixin):
     """High-level game engine. UIs interact through this object."""
 
     def __init__(self, llm_model: str = None, llm_provider: str = None,
                  enable_npc_processes: bool = True,
-                 enable_quests: bool = True):
+                 enable_quests: bool = True,
+                 player_spec=None):
         # Core systems --------------------------------------------------
         self.world = World()
         self.npc_manager = NPCManager()
@@ -90,7 +92,7 @@ class GameEngine:
         self.player_dead = False  # set by combat_system when player defeated
 
         # Initialize demo world
-        self.initialize_demo_game()
+        self.initialize_demo_game(player_spec=player_spec)
 
         # NPC processes (optional) -------------------------------------
         self.process_manager = None
@@ -112,10 +114,10 @@ class GameEngine:
     # World / state setup
     # ====================================================================
 
-    def initialize_demo_game(self) -> None:
+    def initialize_demo_game(self, player_spec=None) -> None:
         """Set up a starter world + NPCs + player + initial quests."""
         from engine.demo_setup import initialize_demo_world
-        initialize_demo_world(self)
+        initialize_demo_world(self, player_spec=player_spec)
         logger.info("Demo game initialized")
 
     # ====================================================================
@@ -150,6 +152,26 @@ class GameEngine:
                     tick_needs(npc, elapsed_minutes=1)
         except Exception as e:
             logger.debug(f"Needs tick error: {e}")
+
+        # Tick status effects on all active characters (player + NPCs)
+        try:
+            from characters.status_effects import tick_effects
+            for char in [self.player] + list(self.npc_manager.npcs.values()):
+                if char and char.is_active():
+                    events = tick_effects(char, self)
+                    for ev in events:
+                        self.memory_manager.add_event(ev)
+        except Exception as e:
+            logger.debug(f"Status effects tick error: {e}")
+
+        # Slow mana regen for the player (1/turn while not in combat — simplified)
+        try:
+            from engine.spells import rest_recover_mana, ensure_mana
+            ensure_mana(self.player)
+            if self.turn_counter % 5 == 0:
+                rest_recover_mana(self.player, amount=1)
+        except Exception as e:
+            logger.debug(f"Mana regen error: {e}")
 
         # Random wilderness encounter
         try:
@@ -212,85 +234,8 @@ class GameEngine:
             self.memory_manager.add_event(f"Quest accepted: {quest.title}")
         return True
 
-    # ---- party API ----------------------------------------------------
-
-    def recruit(self, npc_id: str) -> str:
-        return self.companion_manager.recruit(npc_id)
-
-    def dismiss_companion(self, npc_id: str) -> str:
-        return self.companion_manager.dismiss(npc_id)
-
-    def party_members(self):
-        return self.companion_manager.members()
-
-    # ---- interiors API used by UI ------------------------------------
-
-    def enter_building(self) -> str:
-        """Step into a building interior at the player's current location."""
-        if self.current_interior:
-            return "You are already inside."
-        loc = self.world.get_location_at(*self.player.position)
-        if not loc:
-            return "There's no building here."
-        inter = self.interiors.get(loc.name)
-        if not inter:
-            return f"You can't enter the {loc.name}."
-        self.exterior_return_pos = self.player.position
-        self.current_interior = inter
-        # Place player at the door
-        self.player.position = inter.door
-        msg = f"You enter the {loc.name}. {inter.description}"
-        self.memory_manager.add_event(msg)
-        return msg
-
-    def exit_building(self) -> str:
-        if not self.current_interior:
-            return "You are already outside."
-        name = self.current_interior.name
-        self.current_interior = None
-        if self.exterior_return_pos:
-            self.player.position = self.exterior_return_pos
-            self.world.map.place_character(self.player, *self.player.position)
-            self.exterior_return_pos = None
-        msg = f"You leave the {name}."
-        self.memory_manager.add_event(msg)
-        return msg
-
-    # ---- quest board API ---------------------------------------------
-
-    def quest_board_at_player(self):
-        return self.quest_board_manager.board_at_player()
-
-    def accept_quest_from_board(self, quest_id: str) -> bool:
-        ok = self.quest_board_manager.accept_from_board(quest_id)
-        if ok:
-            self.memory_manager.add_event(f"Accepted quest from board: {quest_id}")
-        return ok
-
-    # ---- banking + crafting API used by UI ---------------------------
-
-    def deposit_gold(self, amount: int) -> str:
-        return self.bank.deposit(amount)
-
-    def withdraw_gold(self, amount: int) -> str:
-        return self.bank.withdraw(amount)
-
-    def bank_balance(self) -> int:
-        return self.bank.balance()
-
-    def can_craft_at_player(self, output_id: str) -> str:
-        from items.crafting import can_craft
-        loc = self.world.get_location_at(*self.player.position)
-        props = dict(loc.properties) if loc else {}
-        return can_craft(self.player, output_id, props)
-
-    def craft(self, output_id: str) -> str:
-        from items.crafting import craft
-        loc = self.world.get_location_at(*self.player.position)
-        props = dict(loc.properties) if loc else {}
-        msg = craft(self.player, output_id, props)
-        self.memory_manager.add_event(msg)
-        return msg
+    # Party / interior / spell / equipment / banking / crafting APIs are
+    # provided by GameAPIMixin (engine/game_api_mixin.py).
 
     def turn_in_quest(self, quest_id: str) -> bool:
         if not self.quest_manager:

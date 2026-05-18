@@ -80,7 +80,13 @@ class CombatSystem:
         if self.rng.random() > hit_chance:
             return f"{attacker.name} {verb} {defender.name} but misses!"
 
-        base = max(1, atk_stat // 3) + weapon_dmg
+        # Status effect modifier on attacker (blessed/cursed)
+        try:
+            from characters.status_effects import attack_damage_modifier
+            mod = attack_damage_modifier(attacker)
+        except Exception:
+            mod = 0
+        base = max(1, atk_stat // 3) + weapon_dmg + mod
         damage = max(1, base + self.rng.randint(-1, 1) - armor_red)
         defender.take_damage(damage)
 
@@ -169,6 +175,15 @@ class CombatSystem:
     # --------------------------------------------------------- helpers
 
     def _best_weapon_damage(self, char) -> int:
+        # Prefer equipped weapon
+        try:
+            from characters.equipment import weapon_damage
+            wd = weapon_damage(char)
+            if wd:
+                return wd
+        except Exception:
+            pass
+        # Fallback: best weapon in inventory
         from items.item import Item
         best = 0
         for it in char.inventory:
@@ -177,6 +192,15 @@ class CombatSystem:
         return best
 
     def _total_armor(self, char) -> int:
+        # Prefer equipped armor + shield
+        try:
+            from characters.equipment import total_armor
+            armor = total_armor(char)
+            if armor:
+                return armor
+        except Exception:
+            pass
+        # Fallback: sum all armor pieces in inventory (legacy behavior)
         from items.item import Item
         total = 0
         for it in char.inventory:

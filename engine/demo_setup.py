@@ -27,26 +27,68 @@ def upgrade_item_string(item_or_str: Any) -> Any:
     return item if item else item_or_str
 
 
-def create_default_player() -> Character:
-    """Build the default starting player character."""
+def create_default_player(spec=None) -> Character:
+    """Build the starting player character.
+
+    Parameters
+    ----------
+    spec : CharacterSpec | dict | None
+        Optional spec from the character creator. If None, builds the
+        legacy default warrior.
+    """
+    if spec is None:
+        name = "Player"
+        race = CharacterRace.HUMAN
+        klass = CharacterClass.WARRIOR
+        stats = {"strength": 14, "dexterity": 12, "constitution": 14,
+                 "intelligence": 10, "wisdom": 10, "charisma": 12}
+        starters = ["sword", "shield", "potion"]
+        gold = 50
+    else:
+        # Spec may be a CharacterSpec dataclass or a dict
+        name = getattr(spec, "name", None) or spec.get("name", "Player")
+        race = getattr(spec, "race", None) or CharacterRace(spec.get("race", "human"))
+        klass = getattr(spec, "character_class", None) or \
+                CharacterClass(spec.get("class", "warrior"))
+        stats = getattr(spec, "stats", None) or spec.get("stats", {})
+        # Starting items by class
+        try:
+            from ui.character_creator import CLASS_STARTERS
+            starter_ids, _ = CLASS_STARTERS.get(klass, (["sword"], "@"))
+        except Exception:
+            starter_ids = ["sword"]
+        starters = starter_ids
+        gold = 50
+
+    # Build inventory from item ids
+    inventory = []
+    for item_id in starters:
+        item = create_item(item_id, quantity=2 if item_id == "potion" else 1)
+        if item:
+            inventory.append(item)
+
+    # HP from CON
+    con = stats.get("constitution", 10)
+    max_hp = 18 + 2 * max(0, (con - 10) // 2) + 5  # baseline 23-31
+
     player = Character(
         id="player",
-        name="Player",
-        character_class=CharacterClass.WARRIOR,
-        race=CharacterRace.HUMAN,
+        name=name,
+        character_class=klass,
+        race=race,
         level=1,
-        strength=14, dexterity=12, constitution=14,
-        intelligence=10, wisdom=10, charisma=12,
-        hp=25, max_hp=25,
+        strength=stats.get("strength", 10),
+        dexterity=stats.get("dexterity", 10),
+        constitution=con,
+        intelligence=stats.get("intelligence", 10),
+        wisdom=stats.get("wisdom", 10),
+        charisma=stats.get("charisma", 10),
+        hp=max_hp, max_hp=max_hp,
         position=(15, 5),
-        inventory=[
-            create_item("sword"),
-            create_item("shield"),
-            create_item("potion", quantity=2),
-        ],
-        gold=50,
+        inventory=inventory,
+        gold=gold,
         symbol="@",
-        description="A brave adventurer",
+        description=f"A brave {race.value} {klass.value}",
         personality={"traits": ["brave", "curious"]},
         goals=["Explore the world", "Find adventure"],
     )
@@ -61,7 +103,7 @@ def create_default_player() -> Character:
     return player
 
 
-def initialize_demo_world(engine) -> None:
+def initialize_demo_world(engine, player_spec=None) -> None:
     """Populate `engine` with world terrain, NPCs, player, and starter quests."""
     # World generation
     try:
@@ -86,7 +128,7 @@ def initialize_demo_world(engine) -> None:
         engine.world.map.place_character(npc, *npc.position)
 
     # Player
-    engine.player = create_default_player()
+    engine.player = create_default_player(spec=player_spec)
     engine.world.map.place_character(engine.player, *engine.player.position)
 
     engine.memory_manager.add_event(

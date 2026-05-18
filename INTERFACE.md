@@ -31,6 +31,7 @@ llm_RPG/
 ### engine/ — Core game logic
 
 - **`game_engine.py`** — `GameEngine`; orchestrates world, NPCs, player, all subsystems.
+- **`demo_setup.py`** — `initialize_demo_world()`, `create_default_player(spec)`.
 - **`action_router.py`** — Routes NPC actions to specialized handlers.
 - **`combat_system.py`** — Player vs NPC vs NPC combat, damage, defeat, loot, faction rep on kill.
 - **`economy_system.py`** — Buy/sell/trade/give between characters.
@@ -40,6 +41,7 @@ llm_RPG/
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.
 - **`leveling.py`** — XP curve, auto level-up with HP/stat increases.
+- **`spells.py`** — `SpellSystem`, spell registry, mana mechanics.
 - **`banking.py`** — Deposit/withdraw gold at temples/shops.
 - **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).
 - **`player_actions.py`** — Player-driven actions (pickup/drop/use/attack/move).
@@ -48,11 +50,14 @@ llm_RPG/
 
 - **`character.py`** — `Character` dataclass (player + NPC).
 - **`character_types.py`** — Class/race/alignment/trait/status enums.
-- **`npc_manager.py`** — NPC creation + presets.
-- **`factions.py`** — `Faction` enum, reputation tracking, faction relationships, on-defeat hooks.
-- **`schedules.py`** — Daily routines per NPC class (work / eat / drink / sleep).
-- **`needs.py`** — Hunger and fatigue simulation for NPCs.
-- **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight behavior.
+- **`npc_manager.py`** — NPC creation + lifecycle.
+- **`npc_presets.py`** — Preset NPCs (Goren / Durgan / Melody / Karim / Gorkash).
+- **`factions.py`** — `Faction` enum, reputation tracking, on-defeat hooks.
+- **`schedules.py`** — Daily routines per NPC class.
+- **`needs.py`** — Hunger and fatigue simulation.
+- **`status_effects.py`** — Poison / paralyzed / blessed / cursed / etc. with duration ticks.
+- **`equipment.py`** — Worn weapon / armor / shield / amulet / ring / boots slots.
+- **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight.
 
 ### world/ — World, map, calendar, locations
 
@@ -91,11 +96,13 @@ llm_RPG/
 
 ### ui/ — User interfaces
 
-- **`gui.py`** — `GameGUI`; pygame main window.
+- **`gui.py`** — `GameGUI`; pygame main window + death popup mode.
+- **`start_menu.py`** — Title screen with New Game / Load / Quit; routes into the character creator.
+- **`character_creator.py`** — Multi-step character creation flow + `CharacterSpec`, race/class data.
 - **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting.
 - **`sprite_loader.py`** — Procedural sprite generation (no PNG assets).
 - **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker.
-- **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys).
+- **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
 - **`terminal_ui.py`** — Text-based UI.
 
 ## Key Classes — where to find them

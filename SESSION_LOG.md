@@ -122,14 +122,49 @@ All source files remain under 500 LOC.
 - Pulled `initialize_demo_game` + `create_default_player` + `_upgrade_item_string` out into `engine/demo_setup.py` to keep `game_engine.py` under 500 LOC.
 - Pulled preset NPCs (Goren / Durgan / Melody / Karim / Gorkash) out of `characters/npc_manager.py` into `characters/npc_presets.py`.
 
-### Did NOT port (out of scope)
+### Did NOT port (out of scope, may be added in Bundles B/C)
 
-- Religion / divine system (gods, pantheon)
-- Vegetation / foraging (could be added later as part of Forest tile interaction)
-- Astronomy / constellations
-- Warfare / sieges
-- Multi-year world history simulation
-- 3D renderer mode
-- Player-built roads
-- Networked multiplayer
+- Religion / divine system, vegetation/foraging, astronomy
+- Warfare / sieges, multi-year history sim, 3D renderer, networked multiplayer
+
+---
+
+## 2026-05-17 (continued) — Bundle A: Player depth
+
+Three-bundle expansion plan agreed (A: player depth, B: world breadth,
+C: NPC richness). Bundle A delivered in this session.
+
+**Start menu + character creator (`ui/start_menu.py`, `ui/character_creator.py`)**
+- Title screen with New Game / Load Game / Quit; arrow-key navigable.
+- New Game branches to Quick Start (default warrior) or Customize.
+- Multi-step creator: name → race (with stat bonuses) → class (with starting gear preview) → stats (4d6 keep best 3, re-roll on R) → confirm.
+- Load Game lists saves from `saves/`.
+- Wired through `main.py` (`--no-menu` flag added) and `GameEngine(player_spec=...)`.
+
+**Equipment slots (`characters/equipment.py`)**
+- 6 slots: weapon / armor / shield / amulet / ring / boots.
+- `equip()`, `unequip()`, `equipped_weapon`, `total_armor`, `weapon_damage` helpers.
+- Combat system now prefers equipped items over inventory scan.
+
+**Spells + mana (`engine/spells.py`)**
+- 7 spells: magic_missile, fireball, frost_ray, heal, bless, shock, poison_dart.
+- Each has mana_cost, damage/heal, range, optional status_effect+duration.
+- `SpellSystem.cast()` checks mana, range, target validity; integrates with status_effects.
+- Wizards/sorcerers/clerics/etc. start with class-appropriate spells.
+- Slow mana regen each turn via `rest_recover_mana`.
+
+**Status effects (`characters/status_effects.py`)**
+- poisoned (1 dmg/turn), paralyzed (skip turn), blessed (+1 atk), cursed (-1 atk), frightened, stunned.
+- `apply_effect`, `has_effect`, `tick_effects`, `can_act`, `attack_damage_modifier`.
+- Engine.advance_turn ticks all characters' effects.
+- Action router skips paralyzed NPCs' turns; combat damage modified by attacker's status.
+
+**Tests (33 new tests across 4 files)**
+- `tests/test_equipment.py`, `tests/test_spells.py`, `tests/test_status_effects.py`, `tests/test_character_creator.py`.
+- 144 total tests pass.
+
+### Coming next (Bundle B + C)
+
+- **Bundle B (World breadth)**: chunked / larger world, second settlement, procedural dungeons under cave tiles, weather, foraging from forest tiles.
+- **Bundle C (NPC richness)**: schedule-driven movement that actually walks NPCs to their target locations, NPC families, gossip in dialog, multi-year history sim.
 

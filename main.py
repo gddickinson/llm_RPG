@@ -65,6 +65,8 @@ def parse_args():
                    help="Disable quest system")
     p.add_argument("--no-npc-processes", action="store_true",
                    help="Disable multiprocess NPC actions (uses sync calls instead)")
+    p.add_argument("--no-menu", action="store_true",
+                   help="Skip the start menu and go straight to the game")
     p.add_argument("--debug", action="store_true",
                    help="Enable debug logging")
     return p.parse_args()
@@ -81,6 +83,23 @@ def main() -> int:
         f"ui={args.ui})"
     )
 
+    # Start menu (GUI only) — returns the user's choice
+    player_spec = None
+    load_save_name = args.load
+    if args.ui == "gui" and has_pygame and not args.no_menu \
+            and not args.load:
+        try:
+            from ui.start_menu import StartMenu
+            choice = StartMenu(width=args.width, height=args.height).run()
+            if choice["action"] == "quit":
+                return 0
+            if choice["action"] == "load":
+                load_save_name = choice["save_name"]
+            elif choice["action"] == "new":
+                player_spec = choice.get("spec")
+        except Exception as e:
+            logger.warning(f"Start menu failed, skipping: {e}")
+
     # Build engine
     engine = GameEngine(
         llm_model=args.model,
@@ -88,14 +107,15 @@ def main() -> int:
         enable_npc_processes=(not args.no_npc_processes
                               and args.provider != "heuristic"),
         enable_quests=(not args.no_quests),
+        player_spec=player_spec,
     )
 
     # Optional load
-    if args.load:
-        if engine.load_game(args.load):
-            logger.info(f"Loaded save: {args.load}")
+    if load_save_name:
+        if engine.load_game(load_save_name):
+            logger.info(f"Loaded save: {load_save_name}")
         else:
-            logger.warning(f"Could not load save: {args.load}")
+            logger.warning(f"Could not load save: {load_save_name}")
 
     # UI selection
     if args.ui == "gui":

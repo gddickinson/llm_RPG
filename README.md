@@ -8,20 +8,24 @@ or OpenAI for richer character behavior.
 ## Highlights
 
 - **Local-first**: Single-process Pygame game; runs on any modern Mac/Linux/Windows.
+- **Start menu + character creator**: Title screen with New Game / Load / Quit. Quick Start or full multi-step Customize (name → race → class → 4d6 stats → confirm).
 - **No mandatory LLM**: Heuristic provider gives NPCs personality, daily routines, schedules, combat behavior, and branching dialog out of the box.
 - **Pluggable LLM**: One flag to switch between heuristic / Ollama / Anthropic / OpenAI.
 - **Living world**: NPC daily schedules + needs (hunger, fatigue), seasons, calendar, day/night cycle.
+- **Spells + mana**: Wizard / cleric / sorcerer / druid spells with mana pool, range, and status effects.
+- **Status effects**: Poison ticks damage; paralyzed skips turns; blessed/cursed shift damage.
+- **Equipment slots**: Worn weapon / armor / shield / amulet / ring / boots, separate from the inventory bag.
 - **Real items + crafting**: Weapons, armor, potions, quest items; recipes for ingredients.
-- **Quests**: 6 quest types (kill / fetch / talk / explore / deliver / survive). Accept from NPC dialog or the tavern's quest board.
-- **Factions**: 8 factions with reputation tracking; kills shift your standing across factions.
+- **Quests**: 6 quest types. Accept from NPC dialog or the tavern's quest board.
+- **Factions**: 8 factions with reputation tracking.
 - **Companions**: Recruit followers who fight alongside you.
-- **Building interiors**: Walk into the tavern, forge, shop, or temple — switch to an indoor mini-map.
-- **Random encounters**: Wilderness monster spawns away from town.
-- **Banking**: Deposit gold safely at the temple or shop.
+- **Building interiors**: Walk into the tavern, forge, shop, or temple.
+- **Random encounters**: Wilderness monster spawns.
+- **Banking**: Deposit gold safely at temple or shop.
 - **Save / load**: One-key F5/F9 JSON saves.
-- **Procedural worldgen**: Forest borders, river, mountains, village with shops.
-- **Sprite-based renderer**: All sprites generated procedurally — no asset files.
-- **D&D skill checks + leveling**: 18 skills with ability modifiers; XP curve with class-favored stat gains.
+- **Death popup**: When the player dies, a popup offers Restart or Quit.
+- **Procedural worldgen + sprite renderer**: No PNG asset files needed.
+- **D&D skill checks + leveling**: 18 skills, XP curve with class-favored stat gains.
 
 ## Quick Start
 

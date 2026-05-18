@@ -28,6 +28,16 @@ class ActionRouter:
         self.engine = engine
 
     def process(self, npc, action_data: Dict[str, str]) -> bool:
+        # Skip the turn if paralyzed/stunned
+        try:
+            from characters.status_effects import can_act
+            if not can_act(npc):
+                self.engine.memory_manager.add_event(
+                    f"{npc.name} cannot move.")
+                return False
+        except Exception:
+            pass
+
         action = (action_data.get("action") or "").lower()
         target = action_data.get("target") or ""
         dialog = action_data.get("dialog") or ""
