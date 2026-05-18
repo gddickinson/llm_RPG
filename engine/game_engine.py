@@ -94,6 +94,9 @@ class GameEngine(GameAPIMixin):
         self.current_dungeon = None
         self.dungeon_return_pos = None
 
+        # Chunked-world streamer (region transitions)
+        self.world_streamer = None  # built lazily after world is initialized
+
         # Quest boards
         from quests.quest_board import QuestBoardManager
         self.quest_board_manager = QuestBoardManager(self)
@@ -141,6 +144,12 @@ class GameEngine(GameAPIMixin):
         """Set up a starter world + NPCs + player + initial quests."""
         from engine.demo_setup import initialize_demo_world
         initialize_demo_world(self, player_spec=player_spec)
+        # World streamer (needs the world built first)
+        try:
+            from world.chunked_world import WorldStreamer
+            self.world_streamer = WorldStreamer(self)
+        except Exception as e:
+            logger.debug(f"World streamer unavailable: {e}")
         logger.info("Demo game initialized")
 
     # ====================================================================

@@ -257,6 +257,71 @@ CAMP_TAVERN = Blueprint(
 )
 
 
+WATCHTOWER = Blueprint(
+    name="Watchtower", kind="watchtower",
+    description="A tall stone tower from which guards scan the road.",
+    npc_class="guard", npc_count=1,
+    grid=_g("WWWWW", "WCFFW", "WFFFW", "WFFFW", "WFFRW", "WWDWW"),
+)
+
+SMALL_FARMHOUSE = Blueprint(
+    name="Farmhouse", kind="farmhouse",
+    description="A modest farmhouse with a curl of chimney smoke.",
+    npc_class="villager", npc_count=2,
+    grid=_g("WWWWWWW", "WPFFFBW", "WFFTFFW", "WFFFFFW",
+            "WFFBFFW", "WWWDWWW"),
+)
+
+STABLE = Blueprint(
+    name="Stable", kind="stable",
+    description="The warm scent of hay and horses.",
+    npc_class="villager", npc_count=1,
+    grid=_g("WWWWWWWW", "WFFRFFFW", "WFFFFFFW",
+            "WFFFFFRW", "WFFFFFFW", "WWWDWWWW"),
+)
+
+LIBRARY = Blueprint(
+    name="Library", kind="library",
+    description="Shelves of books reach the ceiling.",
+    npc_class="wizard", npc_count=1,
+    grid=_g("WWWWWWWW", "WRRFFFRW", "WFFFTFFW",
+            "WFFFFFFW", "WFFCFFFW", "WRFFFFRW", "WWWDWWWW"),
+)
+
+MARKET_STALL = Blueprint(
+    name="Market Stall", kind="stall",
+    description="A canvas stall heaped with vegetables and pots.",
+    npc_class="merchant", npc_count=1,
+    grid=_g("WWWWWW", "WTRRTW", "WFFFFW", "WWDWWW"),
+)
+
+WELL_HOUSE = Blueprint(
+    name="Well", kind="well",
+    description="A round stone well — the village's water.",
+    grid=_g("WWWW", "WSSW", "WSSW", "WWDW"),
+)
+
+WIZARD_TOWER = Blueprint(
+    name="Wizard's Tower", kind="tower",
+    description="A slender tower with a faint blue glow at its peak.",
+    npc_class="wizard", npc_count=1,
+    grid=_g("WWWWW", "WSFCW", "WFFFW", "WFTFW", "WFFRW", "WWDWW"),
+)
+
+HUNTERS_LODGE = Blueprint(
+    name="Hunter's Lodge", kind="lodge",
+    description="Trophies on the walls; the scent of pine.",
+    npc_class="ranger", npc_count=1,
+    grid=_g("WWWWWW", "WPFFTW", "WFFFFW", "WFBFRW", "WWWDWW"),
+)
+
+ROADSIDE_SHRINE = Blueprint(
+    name="Wayside Shrine", kind="shrine",
+    description="A small wayside shrine. Lichen creeps over the stone.",
+    grid=_g("WWWW", "WSFW", "WFFW", "WWDW"),
+)
+
+
 BLUEPRINT_LIBRARY: Dict[str, Blueprint] = {
     "tavern": SMALL_TAVERN,
     "forge": SMALL_FORGE,
@@ -268,6 +333,15 @@ BLUEPRINT_LIBRARY: Dict[str, Blueprint] = {
     "hall": FOREMANS_HALL,
     "smithy": STONEPINE_SMITHY,
     "camp_tavern": CAMP_TAVERN,
+    "watchtower": WATCHTOWER,
+    "farmhouse": SMALL_FARMHOUSE,
+    "stable": STABLE,
+    "library": LIBRARY,
+    "stall": MARKET_STALL,
+    "well": WELL_HOUSE,
+    "tower": WIZARD_TOWER,
+    "lodge": HUNTERS_LODGE,
+    "shrine": ROADSIDE_SHRINE,
 }
 
 
@@ -282,6 +356,18 @@ def blueprint_for_location(loc_name: str) -> Optional[Blueprint]:
         ("foreman", "hall"),
         ("stonepine smithy", "smithy"),
         ("wheelwright", "wheelwright"),
+        ("watchtower", "watchtower"),
+        ("farmhouse", "farmhouse"),
+        ("stable", "stable"),
+        ("library", "library"),
+        ("market", "stall"),
+        ("stall", "stall"),
+        ("well", "well"),
+        ("wizard", "tower"),
+        ("tower", "tower"),
+        ("lodge", "lodge"),
+        ("hunter", "lodge"),
+        ("wayside", "shrine"),
         ("tavern", "tavern"),
         ("forge", "forge"),
         ("smith", "forge"),
@@ -289,7 +375,7 @@ def blueprint_for_location(loc_name: str) -> Optional[Blueprint]:
         ("store", "shop"),
         ("shop", "shop"),
         ("chapel", "chapel"),
-        ("shrine", "temple"),
+        ("shrine", "shrine"),
         ("inn", "inn"),
     )
     for keyword, key in keywords:

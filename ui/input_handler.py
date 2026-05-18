@@ -91,19 +91,55 @@ class InputHandler:
 
         # Ranged attack (R)
         if k == pygame.K_r:
-            msg = self.engine.shoot_ranged()
-            if msg:
-                pass  # already logged
+            self.engine.shoot_ranged()
             return True
 
-        # Cast quick fireball (X) — wizards/sorcerers only
+        # Cast quick fireball (X)
         if k == pygame.K_x:
             try:
-                msg = self.engine.cast_spell("fireball")
-                if msg:
-                    pass
+                self.engine.cast_spell("fireball")
             except Exception:
                 pass
+            return True
+
+        # Quick heal (V)
+        if k == pygame.K_v:
+            try:
+                self.engine.cast_spell("heal", "me")
+            except Exception:
+                pass
+            return True
+
+        # Forage (Z)
+        if k == pygame.K_z:
+            try:
+                self.engine.forage()
+            except Exception:
+                pass
+            return True
+
+        # Enter / exit building or dungeon (Tab)
+        if k == pygame.K_TAB:
+            self._handle_interact()
+            return True
+
+        # Bank deposit all (N) / withdraw all (M)
+        if k == pygame.K_n:
+            try:
+                self.engine.deposit_gold(self.engine.player.gold)
+            except Exception:
+                pass
+            return True
+        if k == pygame.K_m:
+            try:
+                self.engine.withdraw_gold(self.engine.bank_balance())
+            except Exception:
+                pass
+            return True
+
+        # Look around (L) — log the visible description
+        if k == pygame.K_l:
+            self._look_around()
             return True
 
         # Talk to adjacent NPC
@@ -229,6 +265,41 @@ class InputHandler:
         for it in self.engine.player.inventory:
             name = it.name if hasattr(it, "name") else str(it)
             if "potion" in name.lower():
-                msg = self.engine.use_item(name)
+                self.engine.use_item(name)
                 return
         self.engine.memory_manager.add_event("No potions in inventory.")
+
+    def _handle_interact(self) -> None:
+        """Smart 'Tab' key — enter/exit building, or descend into a cave."""
+        try:
+            if self.engine.current_interior:
+                self.engine.exit_building()
+                return
+            if self.engine.current_dungeon:
+                self.engine.exit_dungeon()
+                return
+            # Cave?
+            from world.world_map import TerrainType
+            x, y = self.engine.player.position
+            if self.engine.world.map.get_terrain_at(x, y) == TerrainType.CAVE:
+                self.engine.enter_dungeon()
+                return
+            # Building?
+            loc = self.engine.world.get_location_at(x, y)
+            if loc and loc.name in self.engine.interiors:
+                self.engine.enter_building()
+                return
+            self.engine.memory_manager.add_event(
+                "There's nothing to enter here.")
+        except Exception:
+            pass
+
+    def _look_around(self) -> None:
+        try:
+            x, y = self.engine.player.position
+            visible = self.engine.world.map.get_visible_description(x, y)
+            for line in visible.split("\n"):
+                if line.strip():
+                    self.engine.memory_manager.add_event(line)
+        except Exception:
+            pass

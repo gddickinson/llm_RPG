@@ -38,6 +38,9 @@ class MapRenderer:
         # Time-of-day overlay cache
         self._tod_overlay = None
         self._tod_for = None
+        # Lighting + weather overlays (lazy)
+        self._lighting = None
+        self._weather_overlay = None
 
     def render(self, target: "pygame.Surface", engine, view_rect: "pygame.Rect"
                ) -> None:
@@ -109,8 +112,28 @@ class MapRenderer:
         except Exception:
             pass
 
-        # Time-of-day overlay
-        self._apply_tod_overlay(target, view_rect, engine.world.get_time_of_day())
+        # Lighting overlay (darkness at night, torchlight, window glow)
+        try:
+            if self._lighting is None:
+                from ui.lighting import LightingOverlay
+                self._lighting = LightingOverlay()
+            self._lighting.apply(target, view_rect, engine,
+                                 cam_x, cam_y, self.tile_size)
+        except Exception:
+            # Fall back to flat tod overlay
+            self._apply_tod_overlay(target, view_rect,
+                                    engine.world.get_time_of_day())
+
+        # Weather particle overlay
+        try:
+            if self._weather_overlay is None:
+                from ui.weather_overlay import WeatherOverlay
+                self._weather_overlay = WeatherOverlay()
+            weather_kind = engine.weather_system.state.current.value
+            self._weather_overlay.update(1.0 / 30.0, weather_kind, view_rect)
+            self._weather_overlay.draw(target, view_rect)
+        except Exception:
+            pass
 
         # Combat effects overlay (damage popups, particles, hit flashes)
         try:

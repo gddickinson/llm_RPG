@@ -110,7 +110,21 @@ class PlayerActions:
         if not self.engine.running:
             return False
         nx, ny = player.position[0] + dx, player.position[1] + dy
-        if not self.engine.world.map.move_character(player, nx, ny):
+
+        # Region transition if walking off the world edge
+        wmap = self.engine.world.map
+        if (nx < 0 or ny < 0 or nx >= wmap.width or ny >= wmap.height):
+            streamer = getattr(self.engine, "world_streamer", None)
+            if streamer is not None:
+                direction = ("west" if nx < 0 else
+                             "east" if nx >= wmap.width else
+                             "north" if ny < 0 else "south")
+                if streamer.transit(direction):
+                    self.engine.advance_turn()
+                    return True
+            return False
+
+        if not wmap.move_character(player, nx, ny):
             return False
 
         loc = self.engine.world.get_location_at(nx, ny)
