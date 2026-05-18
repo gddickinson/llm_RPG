@@ -170,6 +170,75 @@ def make_troll_brigand(position=(25, 10)) -> Character:
     return troll
 
 
+def make_hamlet_innkeeper() -> Character:
+    npc = Character(
+        id="hamlet_innkeeper_01",
+        name="Esra",
+        character_class=CharacterClass.MERCHANT,
+        race=CharacterRace.HUMAN,
+        level=2,
+        strength=11, dexterity=12, constitution=13,
+        intelligence=11, wisdom=13, charisma=14,
+        hp=18, max_hp=18,
+        position=(8, 28),
+        inventory=["ale", "bread", "wine"],
+        gold=60,
+        symbol="I",
+        description="The cheerful keeper of the Riverside Inn",
+        personality={"traits": ["welcoming", "curious"],
+                     "likes": ["travelers", "songs"],
+                     "dislikes": ["bandits"]},
+        goals=["Keep travelers fed", "Hear news from the road"],
+    )
+    npc.add_memory("A caravan from the east stopped here three nights ago", 2)
+    npc.home_location = "Riverside Inn"
+    return npc
+
+
+def make_hamlet_priest() -> Character:
+    npc = Character(
+        id="hamlet_priest_01",
+        name="Brother Anselm",
+        character_class=CharacterClass.CLERIC,
+        race=CharacterRace.HUMAN,
+        level=3,
+        strength=10, dexterity=10, constitution=12,
+        intelligence=13, wisdom=15, charisma=13,
+        hp=20, max_hp=20,
+        position=(8, 30),
+        inventory=["holy_symbol", "bandage"],
+        gold=20,
+        symbol="P",
+        description="A gentle priest tending the small chapel",
+        personality={"traits": ["devout", "patient"]},
+        goals=["Tend the chapel", "Bless travelers", "Comfort the sick"],
+    )
+    npc.home_location = "Hamlet Chapel"
+    return npc
+
+
+def make_hamlet_wheelwright() -> Character:
+    npc = Character(
+        id="hamlet_wheelwright_01",
+        name="Tova",
+        character_class=CharacterClass.MERCHANT,
+        race=CharacterRace.DWARF,
+        level=2,
+        strength=14, dexterity=12, constitution=14,
+        intelligence=12, wisdom=11, charisma=10,
+        hp=18, max_hp=18,
+        position=(12, 28),
+        inventory=["sword", "shield"],
+        gold=80,
+        symbol="H",
+        description="A no-nonsense dwarven wheelwright",
+        personality={"traits": ["practical", "stubborn"]},
+        goals=["Make sturdy wheels", "Earn coin"],
+    )
+    npc.home_location = "Wheelwright's Shop"
+    return npc
+
+
 def all_presets() -> List[Character]:
     """Return all preset NPCs (peaceful first, then the troll)."""
     return [
@@ -177,5 +246,8 @@ def all_presets() -> List[Character]:
         make_blacksmith(),
         make_minstrel(),
         make_guard(),
+        make_hamlet_innkeeper(),
+        make_hamlet_priest(),
+        make_hamlet_wheelwright(),
         make_troll_brigand(),
     ]

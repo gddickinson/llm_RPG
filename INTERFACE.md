@@ -66,9 +66,12 @@ llm_RPG/
 - **`location.py`** — `Location`, `LocationFactory`.
 - **`biome.py`** — `Biome` enum and biome→terrain mapping.
 - **`calendar.py`** — `Date`, `Season`; 12-month calendar, day-night clock, season tints.
-- **`world_generator.py`** — `WorldGenerator`; procedural world.
-- **`interiors.py`** — Building interior mini-maps (tavern, forge, shop, temple).
+- **`world_generator.py`** — `WorldGenerator`; procedural world. Two settlements (Oakvale + Riverside Hamlet) connected by road on 60×40+ maps.
+- **`interiors.py`** — Building interior mini-maps.
 - **`encounters.py`** — `EncounterManager`; wilderness monster spawns.
+- **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.
+- **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
+- **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.
 
 ### items/ — Item system + crafting
 

@@ -163,8 +163,40 @@ C: NPC richness). Bundle A delivered in this session.
 - `tests/test_equipment.py`, `tests/test_spells.py`, `tests/test_status_effects.py`, `tests/test_character_creator.py`.
 - 144 total tests pass.
 
-### Coming next (Bundle B + C)
+### Coming next (Bundle C)
 
-- **Bundle B (World breadth)**: chunked / larger world, second settlement, procedural dungeons under cave tiles, weather, foraging from forest tiles.
 - **Bundle C (NPC richness)**: schedule-driven movement that actually walks NPCs to their target locations, NPC families, gossip in dialog, multi-year history sim.
+
+---
+
+## 2026-05-17 (continued) — Bundle B: World breadth
+
+**Larger map**
+- DEFAULT_MAP_WIDTH/HEIGHT bumped to 60×40 (was 30×20).
+- World generator places a second settlement (Riverside Hamlet) in the SW quadrant on maps ≥50×30, with three buildings (Inn, Wheelwright's Shop, Hamlet Chapel) and a connecting road to Oakvale.
+- Three new preset NPCs: Esra (innkeeper), Brother Anselm (priest), Tova (wheelwright).
+
+**Weather (`world/weather.py`)**
+- 6 weather types: clear, cloudy, rain, fog, snow, storm.
+- Per-season distribution biases the roll (snow in winter, storms in summer, etc.).
+- Visibility multiplier (0.5–1.0) for renderer / encounter range.
+- Rolls every 4 game-hours; serializable.
+
+**Foraging (`world/foraging.py`)**
+- `ForageManager.forage()` picks an item from terrain-keyed drop tables.
+- 2-day cooldown per tile.
+- Notifies the quest manager on item acquisition (FETCH objectives).
+
+**Procedural dungeons (`world/dungeon.py`)**
+- BSP-lite room placement + carved corridors.
+- `engine.enter_dungeon()` checks player is on CAVE tile, generates and caches the dungeon, populates it with monsters and loot.
+- `engine.exit_dungeon()` returns the player to the overworld.
+
+**Engine integration**
+- `WeatherSystem` ticks each turn.
+- `enter_dungeon` / `exit_dungeon` / `forage` / `current_weather` added to `GameAPIMixin`.
+
+**Tests (18 new tests across 4 files)**
+- `tests/test_weather.py`, `tests/test_foraging.py`, `tests/test_dungeon.py`, `tests/test_world_breadth.py`.
+- 162 total tests pass.
 

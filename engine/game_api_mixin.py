@@ -106,6 +106,49 @@ class GameAPIMixin:
         from characters.equipment import get_equipment
         return get_equipment(self.player)
 
+    # ---- foraging / weather / dungeons -------------------------------
+
+    def forage(self) -> str:
+        return self.forage_manager.forage()
+
+    def current_weather(self) -> str:
+        return self.weather_system.state.current.value
+
+    def enter_dungeon(self) -> str:
+        from world.world_map import TerrainType
+        from world.dungeon import generate_dungeon, populate_dungeon
+        x, y = self.player.position
+        terrain = self.world.map.get_terrain_at(x, y)
+        if terrain != TerrainType.CAVE:
+            return "There's no cave entrance here."
+        loc = self.world.get_location_at(x, y)
+        name = loc.name if loc else f"cave_{x}_{y}"
+        if name not in self.dungeons:
+            dungeon = generate_dungeon(name=f"{name} (Depths)",
+                                       seed=hash(name) & 0xFFFFFFFF)
+            populate_dungeon(dungeon, self)
+            self.dungeons[name] = dungeon
+        self.current_dungeon = self.dungeons[name]
+        self.dungeon_return_pos = self.player.position
+        self.player.position = self.current_dungeon.exit_pos
+        msg = (f"You descend into {self.current_dungeon.name}. "
+               f"{self.current_dungeon.description}")
+        self.memory_manager.add_event(msg)
+        return msg
+
+    def exit_dungeon(self) -> str:
+        if not self.current_dungeon:
+            return "You aren't in a dungeon."
+        name = self.current_dungeon.name
+        self.current_dungeon = None
+        if self.dungeon_return_pos:
+            self.player.position = self.dungeon_return_pos
+            self.world.map.place_character(self.player, *self.player.position)
+            self.dungeon_return_pos = None
+        msg = f"You emerge from {name} into daylight."
+        self.memory_manager.add_event(msg)
+        return msg
+
     # ---- banking + crafting -----------------------------------------
 
     def deposit_gold(self, amount: int) -> str:

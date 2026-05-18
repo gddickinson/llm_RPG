@@ -71,6 +71,17 @@ class GameEngine(GameAPIMixin):
         from engine.banking import Bank
         self.bank = Bank(self)
 
+        # Weather + foraging
+        from world.weather import WeatherSystem
+        from world.foraging import ForageManager
+        self.weather_system = WeatherSystem(self)
+        self.forage_manager = ForageManager(self)
+
+        # Dungeons (lazy — built when player enters a cave)
+        self.dungeons = {}                # location_name -> Dungeon
+        self.current_dungeon = None
+        self.dungeon_return_pos = None
+
         # Quest boards
         from quests.quest_board import QuestBoardManager
         self.quest_board_manager = QuestBoardManager(self)
@@ -180,6 +191,14 @@ class GameEngine(GameAPIMixin):
                 self.memory_manager.add_event(msg)
         except Exception as e:
             logger.debug(f"Encounter spawn error: {e}")
+
+        # Weather changes
+        try:
+            wmsg = self.weather_system.tick()
+            if wmsg:
+                self.memory_manager.add_event(wmsg)
+        except Exception as e:
+            logger.debug(f"Weather tick error: {e}")
 
         # Companions follow / fight
         try:

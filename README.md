@@ -11,6 +11,10 @@ or OpenAI for richer character behavior.
 - **Start menu + character creator**: Title screen with New Game / Load / Quit. Quick Start or full multi-step Customize (name → race → class → 4d6 stats → confirm).
 - **No mandatory LLM**: Heuristic provider gives NPCs personality, daily routines, schedules, combat behavior, and branching dialog out of the box.
 - **Pluggable LLM**: One flag to switch between heuristic / Ollama / Anthropic / OpenAI.
+- **Bigger world** (60×40): two settlements (Oakvale Village + Riverside Hamlet) connected by a road.
+- **Procedural dungeons**: step onto a cave tile and descend into BSP-generated tunnels with rooms, monsters, loot.
+- **Weather**: clear / cloudy / rain / fog / snow / storm; biased by season; reduces visibility.
+- **Foraging**: pick herbs and berries from forest/grass tiles with regen cooldown.
 - **Living world**: NPC daily schedules + needs (hunger, fatigue), seasons, calendar, day/night cycle.
 - **Spells + mana**: Wizard / cleric / sorcerer / druid spells with mana pool, range, and status effects.
 - **Status effects**: Poison ticks damage; paralyzed skips turns; blessed/cursed shift damage.

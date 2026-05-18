@@ -41,6 +41,9 @@ class WorldGenerator:
         self._add_road()
         self._add_mountain_range()
         self._add_village()
+        if self.w >= 50 and self.h >= 30:
+            self._add_second_settlement()
+            self._add_connecting_road()
         self._add_cave()
         self._add_wilderness_features()
         logger.info(f"Procedural world generated ({self.w}x{self.h})")
@@ -150,6 +153,49 @@ class WorldGenerator:
         elif "shop" in low or "store" in low:
             loc.add_property("type", "shop")
         self.world.add_location(loc)
+
+    def _add_second_settlement(self) -> None:
+        """Riverside Hamlet — a second town in the south-west."""
+        vx = max(4, self.w // 8)
+        vy = min(self.h - 8, self.h // 2 + 8)
+        vw, vh = 9, 5
+        self.world.add_location(Location(
+            "Riverside Hamlet",
+            "A quiet hamlet by the river. Smoke curls from the chimneys.",
+            vx, vy, vw, vh,
+        ))
+        self._building(vx + 1, vy + 1, 2, 2,
+                       "Riverside Inn",
+                       "A small inn for road-weary travelers.")
+        self._building(vx + 5, vy + 1, 2, 2,
+                       "Wheelwright's Shop",
+                       "A shop full of axles and yokes.")
+        self._building(vx + 1, vy + 3, 2, 2,
+                       "Hamlet Chapel",
+                       "A modest chapel of the Light.")
+
+    def _add_connecting_road(self) -> None:
+        """Lay a road between Oakvale and Riverside Hamlet."""
+        # Find center of each by location bounds
+        oakvale = next((l for l in self.world.locations
+                        if l.name == "Oakvale Village"), None)
+        riverside = next((l for l in self.world.locations
+                          if l.name == "Riverside Hamlet"), None)
+        if not (oakvale and riverside):
+            return
+        ax, ay = oakvale.center()
+        bx, by = riverside.center()
+        # L-shape path: horizontal then vertical
+        for x in range(min(ax, bx), max(ax, bx) + 1):
+            if 0 <= x < self.w and 0 <= ay < self.h:
+                if self.world.map.terrain[ay][x] not in (
+                        TerrainType.WATER, TerrainType.BUILDING):
+                    self.world.map.terrain[ay][x] = TerrainType.ROAD
+        for y in range(min(ay, by), max(ay, by) + 1):
+            if 0 <= y < self.h and 0 <= bx < self.w:
+                if self.world.map.terrain[y][bx] not in (
+                        TerrainType.WATER, TerrainType.BUILDING):
+                    self.world.map.terrain[y][bx] = TerrainType.ROAD
 
     def _add_cave(self) -> None:
         # Cave entrance in mountain region
