@@ -77,10 +77,64 @@ class PlayerActions:
             it_name = it.name if hasattr(it, "name") else str(it)
             if item_name.lower() not in it_name.lower():
                 continue
+
+            # Scroll: cast embedded spell
+            use_eff = getattr(it, "use_effect", None) or {}
+            if "spell" in use_eff:
+                spell_id = use_eff["spell"]
+                try:
+                    msg = self.engine.cast_spell(spell_id)
+                except Exception:
+                    msg = f"You read the {it_name}."
+                self._remove_one(player, it)
+                self.engine.memory_manager.add_event(
+                    f"You read the {it_name}.")
+                self.engine.advance_turn()
+                return msg
+
+            # Permanent stat increase (training manual)
+            if "permanent_stat" in use_eff:
+                stat = use_eff["permanent_stat"]
+                amount = int(use_eff.get("amount", 1))
+                old = getattr(player, stat, 10)
+                setattr(player, stat, old + amount)
+                player.inventory.remove(it)
+                msg = (f"You study the {it_name}. "
+                       f"{stat.upper()[:3]} {old} -> {old + amount}.")
+                self.engine.memory_manager.add_event(msg)
+                self.engine.advance_turn()
+                return msg
+
+            # Temporary buff (potion of might / speed)
+            if "effect" in use_eff:
+                try:
+                    from characters.status_effects import apply_effect
+                    apply_effect(player, use_eff["effect"],
+                                 int(use_eff.get("duration", 5)))
+                except Exception:
+                    pass
+                self._remove_one(player, it)
+                msg = f"You drink the {it_name}."
+                self.engine.memory_manager.add_event(msg)
+                self.engine.advance_turn()
+                return msg
+
+            if "cure" in use_eff:
+                try:
+                    from characters.status_effects import remove_effect
+                    remove_effect(player, use_eff["cure"])
+                except Exception:
+                    pass
+                self._remove_one(player, it)
+                msg = f"You drink the {it_name}."
+                self.engine.memory_manager.add_event(msg)
+                self.engine.advance_turn()
+                return msg
+
             heal = getattr(it, "heal_amount", 0)
             if heal and player.hp < player.max_hp:
                 player.heal(heal)
-                player.inventory.remove(it)
+                self._remove_one(player, it)
                 msg = f"You use {it_name} and heal {heal} HP."
                 self.engine.memory_manager.add_event(msg)
                 self.engine.advance_turn()
@@ -94,6 +148,16 @@ class PlayerActions:
                 self.engine.advance_turn()
                 return msg
         return f"You don't have {item_name}."
+
+    def _remove_one(self, char, item) -> None:
+        """Decrement stack by 1, removing if depleted."""
+        if getattr(item, "stackable", False) and item.quantity > 1:
+            item.quantity -= 1
+        else:
+            try:
+                char.inventory.remove(item)
+            except ValueError:
+                pass
 
     # ---- combat -------------------------------------------------------
 

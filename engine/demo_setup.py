@@ -42,7 +42,7 @@ def create_default_player(spec=None) -> Character:
         klass = CharacterClass.WARRIOR
         stats = {"strength": 14, "dexterity": 12, "constitution": 14,
                  "intelligence": 10, "wisdom": 10, "charisma": 12}
-        starters = ["sword", "shield", "potion"]
+        starters = ["sword", "shield", "potion", "bow", "arrow"]
         gold = 50
     else:
         # Spec may be a CharacterSpec dataclass or a dict
@@ -63,7 +63,12 @@ def create_default_player(spec=None) -> Character:
     # Build inventory from item ids
     inventory = []
     for item_id in starters:
-        item = create_item(item_id, quantity=2 if item_id == "potion" else 1)
+        qty = 1
+        if item_id == "potion":
+            qty = 2
+        elif item_id in ("arrow", "bolt", "stone"):
+            qty = 20
+        item = create_item(item_id, quantity=qty)
         if item:
             inventory.append(item)
 
@@ -100,6 +105,15 @@ def create_default_player(spec=None) -> Character:
         },
         "bank": 0,
     }
+    # Auto-equip starter gear (first weapon + first armor + first shield)
+    try:
+        from characters.equipment import equip
+        for it in list(player.inventory):
+            if it.is_equippable():
+                equip(player, it)
+                # Stop after first item per slot type
+    except Exception:
+        pass
     return player
 
 

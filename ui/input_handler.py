@@ -48,14 +48,34 @@ class InputHandler:
         if self.gui.mode == "dialog":
             return self._handle_dialog_input(event)
 
-        # Menu mode (inventory / quest log) --------------------------------
+        # Menu mode (text overlay — help / character sheet / quest log)
         if self.gui.mode == "menu":
             if event.type == pygame.KEYDOWN and event.key in \
-                    (pygame.K_ESCAPE, pygame.K_i, pygame.K_q, pygame.K_c, pygame.K_m):
+                    (pygame.K_ESCAPE, pygame.K_q, pygame.K_c):
                 self.gui.mode = "play"
                 self.gui.overlay = None
                 return True
             return False
+
+        # Interactive inventory panel
+        if self.gui.mode == "inventory":
+            if event.type == pygame.KEYDOWN and event.key in \
+                    (pygame.K_ESCAPE, pygame.K_i):
+                self.gui.mode = "play"
+                return True
+            if self.gui.inventory_panel is not None:
+                return self.gui.inventory_panel.handle_key(event)
+            return True
+
+        # Shop panel
+        if self.gui.mode == "shop":
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.gui.mode = "play"
+                self.gui.shop_panel = None
+                return True
+            if self.gui.shop_panel is not None:
+                return self.gui.shop_panel.handle_key(event)
+            return True
 
         if event.type != pygame.KEYDOWN:
             return False
@@ -140,6 +160,11 @@ class InputHandler:
         # Look around (L) — log the visible description
         if k == pygame.K_l:
             self._look_around()
+            return True
+
+        # Open shop with adjacent merchant (S)
+        if k == pygame.K_s:
+            self._open_shop()
             return True
 
         # Talk to adjacent NPC
@@ -301,5 +326,18 @@ class InputHandler:
             for line in visible.split("\n"):
                 if line.strip():
                     self.engine.memory_manager.add_event(line)
+        except Exception:
+            pass
+
+    def _open_shop(self) -> None:
+        try:
+            from engine.shop import merchants_near
+            merchants = merchants_near(self.engine, self.engine.player,
+                                       radius=2.0)
+            if not merchants:
+                self.engine.memory_manager.add_event(
+                    "There's no merchant nearby.")
+                return
+            self.gui.show_shop(merchants[0])
         except Exception:
             pass

@@ -32,7 +32,8 @@ class GameGUI:
         self.height = height
         self.tile_size = tile_size
         self.running = False
-        self.mode = "play"               # "play" | "dialog" | "menu"
+        # "play" | "dialog" | "menu" | "death" | "inventory" | "shop"
+        self.mode = "play"
         self.overlay = None              # Title, lines tuple for overlays
 
         # Dialog state
@@ -40,6 +41,10 @@ class GameGUI:
         self.dialog_history: list = []   # list of strings (NPC last reply)
         self.dialog_input: str = ""
         self.dialog_pending_reply: Optional[str] = None
+
+        # Inventory + shop panels (lazy)
+        self.inventory_panel = None
+        self.shop_panel = None
 
         # Init pygame
         pygame.init()
@@ -137,6 +142,12 @@ class GameGUI:
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
 
+        if self.mode == "inventory" and self.inventory_panel is not None:
+            self.inventory_panel.draw(self.screen, self.screen.get_rect())
+
+        if self.mode == "shop" and self.shop_panel is not None:
+            self.shop_panel.draw(self.screen, self.screen.get_rect())
+
         if self.mode == "death":
             self._draw_death_popup()
 
@@ -222,27 +233,15 @@ class GameGUI:
     # ---- overlays ---------------------------------------------------
 
     def show_inventory(self) -> None:
-        p = self.engine.player
-        lines = [f"Gold: {p.gold}",
-                 f"HP: {p.hp}/{p.max_hp}",
-                 "", "Items:"]
-        for it in p.inventory:
-            name = it.name if hasattr(it, "name") else str(it)
-            qty = getattr(it, "quantity", 1)
-            extras = []
-            if getattr(it, "damage", 0):
-                extras.append(f"dmg {it.damage}")
-            if getattr(it, "armor", 0):
-                extras.append(f"arm {it.armor}")
-            if getattr(it, "heal_amount", 0):
-                extras.append(f"heal {it.heal_amount}")
-            tag = f" [{', '.join(extras)}]" if extras else ""
-            lines.append(f"  - {name}" +
-                         (f" x{qty}" if qty > 1 else "") + tag)
-        if not p.inventory:
-            lines.append("  (empty)")
-        self.overlay = ("Inventory", lines)
-        self.mode = "menu"
+        from ui.inventory_panel import InventoryPanel
+        if self.inventory_panel is None:
+            self.inventory_panel = InventoryPanel(self.engine)
+        self.mode = "inventory"
+
+    def show_shop(self, merchant_npc) -> None:
+        from ui.shop_panel import ShopPanel
+        self.shop_panel = ShopPanel(self.engine, merchant_npc)
+        self.mode = "shop"
 
     def show_quests(self) -> None:
         qm = self.engine.quest_manager
@@ -279,8 +278,8 @@ class GameGUI:
             "  L             : look around (describe what you see)",
             "",
             "COMBAT",
-            "  SPACE / F     : attack adjacent enemy",
-            "  R             : ranged attack (bow / sling)",
+            "  SPACE / F     : melee attack (uses equipped weapon)",
+            "  R             : ranged attack (needs equipped bow/sling/etc.)",
             "  X             : cast Fireball at nearest hostile",
             "  V             : cast Heal on self",
             "",
@@ -290,14 +289,19 @@ class GameGUI:
             "  Z             : forage (forest / grass)",
             "  T             : talk to adjacent NPC",
             "",
+            "INTERACTIVE OVERLAYS",
+            "  I             : inventory + equipment slots",
+            "                  (E equip/unequip, Q use, D drop)",
+            "  S             : open shop with adjacent merchant",
+            "                  (Left/Right column, Enter buy/sell)",
+            "  Q             : quest log",
+            "  C             : character sheet",
+            "",
             "BANKING",
             "  N             : deposit all gold (at temple/shop)",
             "  M             : withdraw all bank gold",
             "",
-            "MENUS",
-            "  I             : inventory",
-            "  Q             : quest log",
-            "  C             : character sheet",
+            "SYSTEM",
             "  F5 / F9       : save / load",
             "  F1 or /       : this help",
             "  ESC           : close menu / quit",

@@ -1,0 +1,122 @@
+"""Equipment bonus aggregator.
+
+Equipped items can carry an `equip_bonuses` dict that contributes to the
+wearer's effective stats. The base Character attributes never change;
+combat / UI code instead queries the `effective_*` helpers here.
+
+Recognized bonus keys:
+    strength, dexterity, constitution, intelligence, wisdom, charisma
+    max_hp, max_mana
+    armor (extra AC)
+    damage (extra weapon damage when this is the held weapon)
+    hp_regen, mana_regen
+    dodge (extra AC; treated identical to armor for hit resolution)
+
+Status effects (blessed / cursed) are layered on top via
+`characters.status_effects.attack_damage_modifier`.
+"""
+
+import logging
+from typing import Dict, Iterable
+
+logger = logging.getLogger("llm_rpg.effects")
+
+
+_ABILITY_KEYS = ("strength", "dexterity", "constitution",
+                 "intelligence", "wisdom", "charisma")
+
+
+def _gather_bonuses(character) -> Dict[str, int]:
+    """Sum equip_bonuses across all equipped items."""
+    try:
+        from characters.equipment import equipped_items
+    except Exception:
+        return {}
+    out: Dict[str, int] = {}
+    for it in equipped_items(character):
+        bonus = getattr(it, "equip_bonuses", None) or {}
+        for key, val in bonus.items():
+            out[key] = out.get(key, 0) + int(val)
+    return out
+
+
+def effective_stat(character, stat_name: str) -> int:
+    """Base + equipment for a single ability score."""
+    base = int(getattr(character, stat_name, 10))
+    bonuses = _gather_bonuses(character)
+    return base + int(bonuses.get(stat_name, 0))
+
+
+def ability_modifier(value: int) -> int:
+    return (value - 10) // 2
+
+
+def effective_ability_mod(character, stat_name: str) -> int:
+    return ability_modifier(effective_stat(character, stat_name))
+
+
+def proficiency_bonus(character) -> int:
+    """Standard D&D 5e proficiency by level."""
+    level = max(1, int(getattr(character, "level", 1)))
+    return 2 + (level - 1) // 4
+
+
+def effective_max_hp(character) -> int:
+    base = int(getattr(character, "max_hp", 10))
+    return base + int(_gather_bonuses(character).get("max_hp", 0))
+
+
+def effective_max_mana(character) -> int:
+    meta = getattr(character, "metadata", None) or {}
+    base = int(meta.get("max_mana", 0))
+    return base + int(_gather_bonuses(character).get("max_mana", 0))
+
+
+def total_armor_value(character) -> int:
+    """Sum of armor + shield AC contributions from equipped slots."""
+    try:
+        from characters.equipment import get_equipment
+    except Exception:
+        return 0
+    eq = get_equipment(character)
+    total = 0
+    for slot in ("armor", "shield"):
+        item = eq.get(slot)
+        if item:
+            total += int(getattr(item, "armor", 0))
+    return total
+
+
+def effective_ac(character) -> int:
+    """D&D-style AC: 10 + DEX_mod + armor + shield + ring/etc bonuses."""
+    dex_mod = effective_ability_mod(character, "dexterity")
+    armor = total_armor_value(character)
+    bonus_armor = _gather_bonuses(character).get("armor", 0)
+    bonus_dodge = _gather_bonuses(character).get("dodge", 0)
+    return 10 + dex_mod + armor + bonus_armor + bonus_dodge
+
+
+def effective_weapon_damage_bonus(character) -> int:
+    """Extra damage from item enchantments (e.g. flaming sword +3)."""
+    return _gather_bonuses(character).get("damage", 0)
+
+
+def list_equipment_bonuses(character) -> Dict[str, int]:
+    """Convenience for the UI: full bonus dict."""
+    return _gather_bonuses(character)
+
+
+def regen_tick(character) -> None:
+    """Apply HP / mana regen from equipment. Call once per turn."""
+    bonuses = _gather_bonuses(character)
+    hp_regen = int(bonuses.get("hp_regen", 0))
+    mana_regen = int(bonuses.get("mana_regen", 0))
+    if hp_regen > 0 and character.hp < effective_max_hp(character):
+        character.hp = min(effective_max_hp(character),
+                           character.hp + hp_regen)
+    if mana_regen > 0:
+        meta = getattr(character, "metadata", None)
+        if isinstance(meta, dict):
+            cur = meta.get("mana", 0)
+            cap = effective_max_mana(character)
+            meta["mana"] = min(cap, cur + mana_regen)

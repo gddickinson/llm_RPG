@@ -71,6 +71,10 @@ class GameEngine(GameAPIMixin):
         from engine.banking import Bank
         self.bank = Bank(self)
 
+        # Shop manager (merchant catalogs)
+        from engine.shop import ShopManager
+        self.shop_manager = ShopManager(self)
+
         # Weather + foraging
         from world.weather import WeatherSystem
         from world.foraging import ForageManager

@@ -32,6 +32,9 @@ ITEM_TYPE_TO_SLOT = {
     ItemType.WEAPON: EquipSlot.WEAPON,
     ItemType.ARMOR: EquipSlot.ARMOR,
     ItemType.SHIELD: EquipSlot.SHIELD,
+    ItemType.RING: EquipSlot.RING,
+    ItemType.AMULET: EquipSlot.AMULET,
+    ItemType.BOOTS: EquipSlot.BOOTS,
 }
 
 
@@ -81,6 +84,15 @@ def unequip(character, slot: EquipSlot) -> str:
 
 def equipped_weapon(character) -> Optional[Item]:
     return get_equipment(character)["weapon"]
+
+
+def equipped_shield(character) -> Optional[Item]:
+    return get_equipment(character)["shield"]
+
+
+def equipped_items(character):
+    """Return list of all currently-equipped (non-None) items."""
+    return [it for it in get_equipment(character).values() if it is not None]
 
 
 def total_armor(character) -> int:

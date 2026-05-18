@@ -109,35 +109,35 @@ class GameAPIMixin:
     # ---- ranged combat -----------------------------------------------
 
     def shoot_ranged(self, target_name: str = None) -> str:
-        """Fire a ranged attack at the named target (or nearest enemy)."""
+        """Fire a ranged attack at the named target (or nearest enemy).
+
+        Requires an equipped ranged weapon. Consumes ammo of the matching
+        ammo_type. Thrown weapons fire without ammo.
+        """
         from items.item import Item
-        # Find a bow / ranged weapon in inventory or equipment
-        weapon_type = "bow"
-        weapon_dmg = 4
+
         try:
             from characters.equipment import equipped_weapon
-            eq = equipped_weapon(self.player)
-            if eq is not None and eq.is_weapon():
-                name = (eq.name or "").lower()
-                if "bow" in name:
-                    weapon_type = "bow"
-                    weapon_dmg = max(weapon_dmg, eq.damage)
-                elif "sling" in name:
-                    weapon_type = "sling"
-                    weapon_dmg = max(weapon_dmg, eq.damage)
-                elif "crossbow" in name:
-                    weapon_type = "crossbow"
-                    weapon_dmg = max(weapon_dmg, eq.damage)
+            weapon = equipped_weapon(self.player)
         except Exception:
-            pass
-        # Fallback: any bow in inventory
-        for it in self.player.inventory:
-            if isinstance(it, Item) and "bow" in (it.name or "").lower():
-                weapon_dmg = max(weapon_dmg, it.damage)
-                weapon_type = "bow"
-                break
+            weapon = None
+        if weapon is None or not weapon.is_ranged_weapon():
+            msg = "You have no ranged weapon equipped."
+            self.memory_manager.add_event(msg)
+            return msg
 
-        # Resolve target — explicit name first, else nearest hostile
+        weapon_type = self._weapon_type_str(weapon)
+
+        # Ammo check (thrown weapons skip)
+        ammo_item = None
+        if weapon.weapon_kind == "ranged" and weapon.ammo_type:
+            ammo_item = self._find_ammo(weapon.ammo_type)
+            if ammo_item is None:
+                msg = f"You're out of {weapon.ammo_type}s!"
+                self.memory_manager.add_event(msg)
+                return msg
+
+        # Resolve target
         target = None
         if target_name:
             target = self.find_character(target_name)
@@ -146,15 +146,45 @@ class GameAPIMixin:
         if target is None:
             return "No target in sight."
 
-        # DEX-based damage bonus
+        from engine.effects import effective_weapon_damage_bonus
         dex_bonus = max(0, (self.player.dexterity - 10) // 2)
-        damage = max(1, weapon_dmg + dex_bonus)
+        damage = max(1, int(weapon.damage) + dex_bonus
+                     + effective_weapon_damage_bonus(self.player))
+
+        if ammo_item is not None:
+            self._consume_one_ammo(ammo_item)
+
         proj = self.projectile_manager.spawn(
             self.player, target, damage, weapon_type=weapon_type)
-        msg = f"You loose a {proj.weapon_type} at {target.name}."
+        ammo_label = f" ({weapon.ammo_type} -1)" if ammo_item is not None else ""
+        msg = f"You loose a {proj.weapon_type} at {target.name}{ammo_label}."
         self.memory_manager.add_event(msg)
         self.advance_turn()
         return msg
+
+    def _weapon_type_str(self, weapon) -> str:
+        name = (weapon.name or "").lower()
+        for key in ("longbow", "crossbow", "thrown knife", "javelin",
+                    "sling", "bow"):
+            if key in name or key.replace(" ", "_") in (weapon.id or ""):
+                return key.replace(" ", "_")
+        return "bow"
+
+    def _find_ammo(self, ammo_type: str):
+        from items.item import Item
+        for it in self.player.inventory:
+            if isinstance(it, Item) and it.is_ammo() and \
+                    it.ammo_type == ammo_type and it.quantity > 0:
+                return it
+        return None
+
+    def _consume_one_ammo(self, ammo_item) -> None:
+        ammo_item.quantity -= 1
+        if ammo_item.quantity <= 0:
+            try:
+                self.player.inventory.remove(ammo_item)
+            except ValueError:
+                pass
 
     def _nearest_hostile(self):
         px, py = self.player.position

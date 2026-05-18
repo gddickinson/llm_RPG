@@ -19,6 +19,12 @@ or OpenAI for richer character behavior.
 - **History sim**: a brief pre-game simulation gives the world lore — faction tensions, a ruined keep, and starting reputation shifts.
 - **Schedule-driven movement**: NPCs actually walk to their schedule's target location (keywords like "tavern", "forge", "home", "village" resolve to the nearest matching place).
 - **Living world**: NPC daily schedules + needs (hunger, fatigue), seasons, calendar, day/night cycle.
+- **Inventory-driven combat**: melee uses your equipped weapon (fists if none); ranged requires an equipped bow/sling/crossbow plus matching ammo (arrows/bolts/stones), consumed per shot.
+- **D&D-style hit rolls**: 1d20 + ability mod + proficiency vs AC. Nat-20 crits (double damage), nat-1 fumbles. +2 to hit when flanking.
+- **Equipment that matters**: 6 worn slots (weapon, armor, shield, amulet, ring, boots). Rings/amulets/boots grant real stat / AC / HP / mana bonuses while worn.
+- **Interactive inventory (I)**: equipment slots up top, scrollable bag below; E equips/unequips, Q uses, D drops.
+- **Shop UI (S)**: opens with the adjacent merchant. Two-column buy/sell with faction-rep–modified prices. Merchants stock themed inventories (smith = weapons/armor, apothecary = potions/scrolls, etc.).
+- **Magic items**: silver / flaming / holy / frost weapons deal type-appropriate bonus damage (silver +50% vs trolls, fire vs troll regen, holy vs monsters).
 - **Spells + mana**: Wizard / cleric / sorcerer / druid spells with mana pool, range, and status effects.
 - **Status effects**: Poison ticks damage; paralyzed skips turns; blessed/cursed shift damage.
 - **Equipment slots**: Worn weapon / armor / shield / amulet / ring / boots, separate from the inventory bag.

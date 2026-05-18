@@ -62,18 +62,28 @@ class TestCombat(unittest.TestCase):
         self.assertGreaterEqual(after_xp, before_xp)
 
     def test_weapon_damage_bonus(self):
+        # Combat now reads from equipped weapon, not bag scan.
         from engine.combat_system import CombatSystem
+        from characters.equipment import equip, get_equipment
         cs = CombatSystem(self.engine)
         p = self.engine.player
+        # Clear existing equipment
+        p.equipment = None
+        get_equipment(p)
         p.inventory = [create_item("longsword")]
+        equip(p, p.inventory[0])
         bonus = cs._best_weapon_damage(p)
         self.assertEqual(bonus, 8)
 
     def test_armor_reduction(self):
         from engine.combat_system import CombatSystem
+        from characters.equipment import equip, get_equipment
         cs = CombatSystem(self.engine)
         p = self.engine.player
+        p.equipment = None
+        get_equipment(p)
         p.inventory = [create_item("plate")]
+        equip(p, p.inventory[0])
         red = cs._total_armor(p)
         self.assertEqual(red, 6)
 

@@ -29,6 +29,17 @@ class CombatSystem:
         if ((px - tx) ** 2 + (py - ty) ** 2) ** 0.5 > 1.5:
             return f"{target.name} is too far away to attack."
 
+        # If the player has a ranged weapon equipped, melee uses fists
+        # (less damage). Otherwise use the equipped melee weapon.
+        try:
+            from characters.equipment import equipped_weapon
+            w = equipped_weapon(self.engine.player)
+            if w is not None and w.is_ranged_weapon():
+                self.engine.memory_manager.add_event(
+                    f"You strike with the butt of your {w.name}.")
+        except Exception:
+            pass
+
         return self._resolve(self.engine.player, target, "attack")
 
     # --------------------------------------------------------- npc attack
@@ -56,38 +67,65 @@ class CombatSystem:
     # --------------------------------------------------------- internals
 
     def _resolve(self, attacker, defender, action_type: str = "attack") -> str:
-        """Roll an attack, apply damage, possibly defeat the target."""
-        # Choose stats
+        """Roll an attack, apply damage, possibly defeat the target.
+
+        D&D-style:
+          - Attack roll = 1d20 + ability_mod + proficiency_bonus
+          - vs target effective_ac.
+          - Nat 20 = crit (double damage).
+          - Nat 1 = fumble (auto miss).
+          - Flanking adjacent ally on opposite side: +2 to hit.
+        """
+        from engine.effects import (
+            effective_ac, effective_ability_mod, proficiency_bonus,
+            effective_weapon_damage_bonus,
+        )
+
+        # Determine ability + verb by action type
         if action_type == "cast":
-            atk_stat = attacker.intelligence
-            def_stat = defender.wisdom
+            atk_ability = "intelligence"
             verb = "casts a spell at"
-        elif action_type == "shoot":
-            atk_stat = attacker.dexterity
-            def_stat = defender.dexterity
+        elif action_type in ("shoot",):
+            atk_ability = "dexterity"
             verb = "shoots at"
         else:
-            atk_stat = attacker.strength
-            def_stat = defender.constitution
+            atk_ability = "strength"
             verb = "attacks"
 
-        # Weapon damage bonus from inventory
+        atk_mod = effective_ability_mod(attacker, atk_ability)
+        prof = proficiency_bonus(attacker)
+
+        # Flanking bonus
+        flanking = self._flanking_bonus(attacker, defender)
+
+        # Roll attack
+        roll = self.rng.randint(1, 20)
+        natural_crit = (roll == 20)
+        natural_fumble = (roll == 1)
+        total_to_hit = roll + atk_mod + prof + flanking
+        ac = effective_ac(defender)
+
+        if natural_fumble or (not natural_crit and total_to_hit < ac):
+            kind = "fumbles" if natural_fumble else "misses"
+            return f"{attacker.name} {verb} {defender.name} but {kind}!"
+
+        # Damage roll: weapon-base + ability + enchant + status mod
         weapon_dmg = self._best_weapon_damage(attacker)
-        armor_red = self._total_armor(defender)
-
-        # Hit chance
-        hit_chance = max(0.1, min(0.9, 0.5 + 0.05 * (atk_stat - def_stat)))
-        if self.rng.random() > hit_chance:
-            return f"{attacker.name} {verb} {defender.name} but misses!"
-
-        # Status effect modifier on attacker (blessed/cursed)
+        enchant_dmg = effective_weapon_damage_bonus(attacker)
         try:
             from characters.status_effects import attack_damage_modifier
-            mod = attack_damage_modifier(attacker)
+            stat_mod = attack_damage_modifier(attacker)
         except Exception:
-            mod = 0
-        base = max(1, atk_stat // 3) + weapon_dmg + mod
-        damage = max(1, base + self.rng.randint(-1, 1) - armor_red)
+            stat_mod = 0
+        base = max(1, weapon_dmg + max(0, atk_mod) + enchant_dmg + stat_mod)
+        roll_dmg = self.rng.randint(1, max(1, weapon_dmg or 4))
+        damage = max(1, roll_dmg + max(0, atk_mod) + enchant_dmg + stat_mod)
+        if natural_crit:
+            damage *= 2
+
+        # Damage-type vs target weakness (e.g. silver vs trolls)
+        damage = self._apply_damage_type_modifier(attacker, defender, damage)
+
         defender.take_damage(damage)
 
         # Visual effects (damage popup + hit flash + death FX)
@@ -185,36 +223,95 @@ class CombatSystem:
     def _best_weapon_damage(self, char) -> int:
         # Prefer equipped weapon
         try:
-            from characters.equipment import weapon_damage
-            wd = weapon_damage(char)
-            if wd:
-                return wd
+            from characters.equipment import equipped_weapon
+            w = equipped_weapon(char)
+            if w is not None and w.is_weapon():
+                return int(w.damage)
         except Exception:
             pass
-        # Fallback: best weapon in inventory
+        # Fallback: best weapon in inventory (unarmed strikes deal 1)
         from items.item import Item
         best = 0
-        for it in char.inventory:
+        for it in getattr(char, "inventory", []):
             if isinstance(it, Item) and it.is_weapon() and it.damage > best:
                 best = it.damage
-        return best
+        return best  # 0 -> unarmed (still does 1 minimum via base clamp)
 
     def _total_armor(self, char) -> int:
-        # Prefer equipped armor + shield
+        # Prefer effects-aware AC contribution
         try:
-            from characters.equipment import total_armor
-            armor = total_armor(char)
-            if armor:
-                return armor
+            from engine.effects import total_armor_value
+            return total_armor_value(char)
         except Exception:
             pass
-        # Fallback: sum all armor pieces in inventory (legacy behavior)
         from items.item import Item
         total = 0
-        for it in char.inventory:
+        for it in getattr(char, "inventory", []):
             if isinstance(it, Item) and it.is_armor():
                 total += it.armor
         return total
+
+    def _flanking_bonus(self, attacker, defender) -> int:
+        """+2 to hit if an attacker has an ally on the opposite side of the
+        defender. Compares positions; checks both axes.
+        """
+        try:
+            ax, ay = attacker.position
+            dx, dy = defender.position
+            # Look for any active ally adjacent to the defender on the
+            # opposite side of attacker
+            opp_x = dx + (dx - ax)
+            opp_y = dy + (dy - ay)
+            # Use party + other non-hostile NPCs as allies-of-player
+            allies_iter = []
+            try:
+                if attacker.id == self.engine.player.id:
+                    allies_iter = self.engine.companion_manager.members()
+                else:
+                    klass = getattr(attacker.character_class, "value", "")
+                    # Hostile attackers can flank with other hostile NPCs
+                    if klass in ("brigand", "troll", "monster"):
+                        allies_iter = [
+                            n for n in self.engine.npc_manager.npcs.values()
+                            if n.id != attacker.id and n.is_active()
+                            and getattr(n.character_class, "value", "") in
+                            ("brigand", "troll", "monster")
+                        ]
+            except Exception:
+                allies_iter = []
+            for ally in allies_iter:
+                if not ally.is_active():
+                    continue
+                if ally.position == (opp_x, opp_y):
+                    return 2
+        except Exception:
+            pass
+        return 0
+
+    def _apply_damage_type_modifier(self, attacker, defender, damage: int) -> int:
+        """Silver vs trolls/undead, fire vs trolls, etc."""
+        try:
+            from characters.equipment import equipped_weapon
+            w = equipped_weapon(attacker)
+            if w is None:
+                return damage
+            kind = (w.damage_kind or "slash").lower()
+            target_class = getattr(defender.character_class, "value", "")
+            target_race = getattr(defender.race, "value", "")
+
+            # Silver / holy vs troll, monster
+            if "silver" in (w.id or "") or "silver" in (w.name.lower() or ""):
+                if target_race == "troll" or target_class in ("troll", "monster"):
+                    return int(damage * 1.5)
+            if kind == "holy" and target_class in ("monster", "brigand"):
+                return int(damage * 1.3)
+            # Fire vs troll (regenerator)
+            if kind == "fire" and target_race == "troll":
+                return int(damage * 1.5)
+            # Frost mildly weaker vs frost-naturalish? skip
+        except Exception:
+            pass
+        return damage
 
     def _step_toward(self, attacker, target) -> bool:
         dx = target.position[0] - attacker.position[0]
