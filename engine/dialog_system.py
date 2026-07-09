@@ -91,6 +91,26 @@ class DialogSystem:
         ready = qm.ready_for_turn_in(npc_id) if qm else []
 
         extras = [base]
+        # Heuristic mode: trusted NPCs share an unlocked secret outright
+        # (LLM mode reveals through the protocol action instead)
+        try:
+            if getattr(self.engine.llm_interface, "provider_name",
+                       "heuristic") == "heuristic":
+                from engine.secrets import (unlocked_secrets, reveal,
+                                            locked_count)
+                npc = self.engine.npc_manager.get_npc(npc_id)
+                if npc is not None:
+                    unlocked = unlocked_secrets(self.engine, npc)
+                    if unlocked:
+                        secret = unlocked[0]
+                        reveal(self.engine, npc, secret["id"])
+                        extras.append(
+                            f"  (leaning close) {secret['text']}")
+                    elif locked_count(self.engine, npc):
+                        extras.append(
+                            "  (They seem to be holding something back.)")
+        except Exception:
+            pass
         # Occasional gossip line from the NPC
         npc = self.engine.npc_manager.get_npc(npc_id)
         if npc is not None:

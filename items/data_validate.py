@@ -28,7 +28,35 @@ def validate_all() -> List[str]:
     problems += _check_npcs()
     problems += _check_gathering()
     problems += _check_diaries()
+    problems += _check_secrets()
     return problems
+
+
+def _check_secrets() -> List[str]:
+    from engine.secrets import SECRETS
+    from characters.npc_presets import NPC_SPECS
+    from quests.quest_templates import QUEST_TEMPLATES
+    from engine.skill_progression import SKILLS
+    out = []
+    seen_ids = set()
+    for npc_id, secrets in SECRETS.items():
+        if npc_id not in NPC_SPECS:
+            out.append(f"secrets: unknown NPC '{npc_id}'")
+        for s in secrets:
+            sid = s.get("id", "")
+            if sid in seen_ids:
+                out.append(f"secrets: duplicate secret id '{sid}'")
+            seen_ids.add(sid)
+            cond = s.get("condition", {})
+            if "quest" in cond and cond["quest"] not in QUEST_TEMPLATES:
+                out.append(f"secret {sid}: unknown quest "
+                           f"'{cond['quest']}'")
+            if "item" in cond and not _known_item(cond["item"]):
+                out.append(f"secret {sid}: unknown item '{cond['item']}'")
+            if "skill" in cond and cond["skill"] not in SKILLS:
+                out.append(f"secret {sid}: unknown skill "
+                           f"'{cond['skill']}'")
+    return out
 
 
 def _check_diaries() -> List[str]:

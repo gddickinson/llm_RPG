@@ -212,11 +212,15 @@ log, not per-NPC. Research consensus from every shipped LLM game:
   heuristically). Dialog prompt now carries retrieved memories + opinions +
   conversation history instead of the global-log substring scan. All state on
   Character.memories/metadata → saves free. 12 tests.)*
-- [ ] **P3.3 Secrets as gated tokens (Dead Meat pattern).** NPCs hold typed secrets
-  (location, recipe, dirt-on-someone, quest hook) with release conditions (affinity ≥ X,
-  item shown, faction rep, bribe). The prompt only ever contains secrets whose
-  conditions are met — structurally immune to prompt injection. Unreleased secrets add
-  a "seems to be holding something back" tell.
+- [x] **P3.3 Secrets as gated tokens (Dead Meat pattern).** *(done 2026-07-09 —
+  `engine/secrets.py` + `data/secrets.json`: 8 secrets across 6 NPCs, gated by
+  affinity / quest / carried item / skill. Locked secrets NEVER enter the
+  prompt (injection-proof by construction — tested with an injection attempt);
+  the model gets a "deflect, don't invent" instruction + the player sees a
+  "holding something back" tell. reveal_secret joined the action whitelist,
+  validated against the unlocked set. Heuristic mode shares an unlocked secret
+  outright once per talk, so it's a feature on every backend. Secrets seed real
+  goals: troll's silver weakness, mithril depths, the ruined keep. 11 tests.)*
 - [ ] **P3.4 LLM-adjudicated persuasion (Suck Up! pattern).** New dialog verbs:
   persuade / intimidate / deceive. LLM judges against NPC disposition + player CHA
   modifier, returns `{success, reason}`; failure worsens disposition and locks retry.

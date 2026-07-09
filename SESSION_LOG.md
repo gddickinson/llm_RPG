@@ -513,3 +513,17 @@ dialog-protocol prompt now feeds retrieved memories + settled opinions +
 conversation history instead of substring-scanning the global event log.
 All state rides Character.memories/metadata -> persists free. 12 tests.
 Suite: 404 tests, all pass.
+
+**Round 25 — P3.3 secrets as gated tokens (done).**
+New `engine/secrets.py` + `data/secrets.json`: 8 hand-written secrets across
+6 NPCs, gated by affinity / quest completion / carried item / skill level.
+The injection-immunity property is structural and tested: locked secret text
+NEVER enters the dialog prompt, so no jailbreak can extract it — the model
+only sees unlocked secrets plus "you are keeping N others; deflect, do NOT
+invent." reveal_secret joined the action whitelist (validated against the
+unlocked set; hallucinated ids are no-ops). In heuristic mode a trusted NPC
+leans in and shares an unlocked secret outright, with a "holding something
+back" tell otherwise — the information economy works on every backend.
+Secrets point at real content: Gorkash's silver weakness, the mithril
+depths, Melody's unlooted keep. 11 tests; validator covers secret targets.
+Suite: 415 tests, all pass.

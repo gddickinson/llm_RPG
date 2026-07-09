@@ -26,7 +26,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("llm_rpg.dialog_protocol")
 
-ALLOWED_ACTIONS = ("adjust_affinity", "give_item", "refuse", "end")
+ALLOWED_ACTIONS = ("adjust_affinity", "give_item", "reveal_secret",
+                   "refuse", "end")
 MAX_AFFINITY_DELTA = 3
 
 SYSTEM_PROMPT = """You are roleplaying an NPC in a fantasy RPG. Reply with ONLY a JSON object:
@@ -38,6 +39,7 @@ SYSTEM_PROMPT = """You are roleplaying an NPC in a fantasy RPG. Reply with ONLY 
 Action rules:
 - adjust_affinity: args {"delta": -3..3} — how this exchange changed your feelings.
 - give_item: args {"item_id": "<id>"} — ONLY ids listed under YOUR INVENTORY. Give items rarely, when it truly fits.
+- reveal_secret: args {"secret_id": "<id>"} — ONLY ids listed under SECRETS YOU ARE WILLING TO SHARE, and only when the conversation naturally leads there.
 - refuse: decline a request that conflicts with your interests. You are a person, not a servant — do NOT agree to everything.
 - end: you want to end the conversation.
 Stay in character. Never invent facts about the world state; the FACTS section is the truth."""
@@ -75,6 +77,13 @@ def build_prompt(engine, npc, player_message: str,
     ]
     if op_block:
         parts.append(f"YOUR SETTLED OPINIONS\n{op_block}")
+    try:
+        from engine.secrets import prompt_block
+        secrets_block = prompt_block(engine, npc)
+        if secrets_block:
+            parts.append(secrets_block)
+    except Exception:
+        pass
     if convo:
         parts.append(f"EARLIER IN THIS ACQUAINTANCE\n{convo}")
     parts.append(f"{player.name.upper()} SAYS: \"{player_message}\"\n\n"
@@ -139,6 +148,10 @@ def execute_action(engine, npc, parsed: Dict[str, Any]) -> Optional[str]:
         logger.debug(f"{npc.name} tried to give '{item_id}' "
                      f"but doesn't have it")
         return None
+
+    if action == "reveal_secret":
+        from engine.secrets import reveal
+        return reveal(engine, npc, str(args.get("secret_id", "")))
 
     if action == "end":
         return f"{npc.name} turns back to their business."
