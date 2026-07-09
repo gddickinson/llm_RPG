@@ -80,6 +80,7 @@ llm_RPG/
 - **`monsters.py`** — Monster templates from `data/monsters.json`; feeds encounters + dungeons; `build_monster()`.
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
+- **`gathering.py`** — `GatheringManager`; mining/woodcutting/fishing nodes from `data/gathering.json`, tier level gates, tool checks.
 - **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.
 - **`history_sim.py`** — Pre-game multi-year simulation: faction shifts, ruined keep, lore lines.
 

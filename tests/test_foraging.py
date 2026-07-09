@@ -35,13 +35,15 @@ class TestForaging(unittest.TestCase):
         self.assertIn("forage", msg.lower())
         self.assertGreater(len(self.engine.player.inventory), before)
 
-    def test_no_forage_on_water(self):
+    def test_water_teaches_fishing_instead_of_foraging(self):
+        # Water became a fishing node in P2.2: Z without a rod should
+        # teach the tool requirement, not claim there's nothing here.
         spot = self._find_terrain(TerrainType.WATER)
         if not spot:
             self.skipTest("no water tile")
         self.engine.player.position = spot
         msg = self.engine.forage()
-        self.assertIn("nothing", msg.lower())
+        self.assertIn("fishing rod", msg.lower())
 
     def test_cooldown(self):
         spot = self._find_terrain(TerrainType.FOREST)

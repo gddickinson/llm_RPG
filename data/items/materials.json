@@ -1,0 +1,128 @@
+{
+  "pickaxe": {
+    "id": "pickaxe",
+    "name": "Pickaxe",
+    "item_type": "weapon",
+    "value": 20,
+    "damage": 3,
+    "weapon_kind": "melee",
+    "damage_kind": "pierce",
+    "description": "A sturdy pick for breaking ore from rock."
+  },
+  "fishing_rod": {
+    "id": "fishing_rod",
+    "name": "Fishing Rod",
+    "item_type": "misc",
+    "value": 15,
+    "stackable": false,
+    "description": "A simple rod and line for river fishing."
+  },
+  "copper_ore": {
+    "id": "copper_ore",
+    "name": "Copper Ore",
+    "item_type": "ingredient",
+    "value": 5,
+    "stackable": true,
+    "description": "A lump of soft, greenish copper ore."
+  },
+  "iron_ore": {
+    "id": "iron_ore",
+    "name": "Iron Ore",
+    "item_type": "ingredient",
+    "value": 12,
+    "stackable": true,
+    "description": "Heavy rust-red ore, ready for the furnace."
+  },
+  "coal": {
+    "id": "coal",
+    "name": "Coal",
+    "item_type": "ingredient",
+    "value": 15,
+    "stackable": true,
+    "description": "Black fuel-stone that burns long and hot."
+  },
+  "mithril_ore": {
+    "id": "mithril_ore",
+    "name": "Mithril Ore",
+    "item_type": "ingredient",
+    "value": 60,
+    "rarity": "rare",
+    "stackable": true,
+    "description": "A faintly blue ore, light as a whisper."
+  },
+  "logs": {
+    "id": "logs",
+    "name": "Logs",
+    "item_type": "ingredient",
+    "value": 4,
+    "stackable": true,
+    "description": "Freshly-cut timber."
+  },
+  "oak_logs": {
+    "id": "oak_logs",
+    "name": "Oak Logs",
+    "item_type": "ingredient",
+    "value": 12,
+    "stackable": true,
+    "description": "Dense oak timber, prized by carpenters."
+  },
+  "yew_logs": {
+    "id": "yew_logs",
+    "name": "Yew Logs",
+    "item_type": "ingredient",
+    "value": 40,
+    "rarity": "uncommon",
+    "stackable": true,
+    "description": "Springy yew, the bowyer's favorite."
+  },
+  "raw_trout": {
+    "id": "raw_trout",
+    "name": "Raw Trout",
+    "item_type": "ingredient",
+    "value": 5,
+    "stackable": true,
+    "description": "A freshly-caught river trout."
+  },
+  "raw_salmon": {
+    "id": "raw_salmon",
+    "name": "Raw Salmon",
+    "item_type": "ingredient",
+    "value": 14,
+    "stackable": true,
+    "description": "A fat, silvery salmon."
+  },
+  "cooked_trout": {
+    "id": "cooked_trout",
+    "name": "Cooked Trout",
+    "item_type": "consumable",
+    "value": 10,
+    "heal_amount": 6,
+    "stackable": true,
+    "description": "Pan-fried trout. Restores 6 HP."
+  },
+  "cooked_salmon": {
+    "id": "cooked_salmon",
+    "name": "Cooked Salmon",
+    "item_type": "consumable",
+    "value": 24,
+    "heal_amount": 10,
+    "stackable": true,
+    "description": "Rich, flaky salmon. Restores 10 HP."
+  },
+  "bronze_bar": {
+    "id": "bronze_bar",
+    "name": "Bronze Bar",
+    "item_type": "ingredient",
+    "value": 14,
+    "stackable": true,
+    "description": "A smelted bar of workable bronze."
+  },
+  "iron_bar": {
+    "id": "iron_bar",
+    "name": "Iron Bar",
+    "item_type": "ingredient",
+    "value": 30,
+    "stackable": true,
+    "description": "A solid bar of refined iron."
+  }
+}

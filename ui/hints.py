@@ -99,8 +99,16 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
         try:
-            if engine.forage_manager.can_forage(x, y):
+            node = engine.gathering_manager.node_at(x, y)
+            if node is not None and engine.gathering_manager.has_tool_for(node):
+                _, spec, _ = node
+                hints.append(f"[Z] {spec['verb']} here")
+            elif engine.forage_manager.can_forage(x, y):
                 hints.append("[Z] forage for herbs")
+            elif node is not None:
+                _, spec, _ = node
+                hints.append(f"(you'd need {spec['tool_name']} to "
+                             f"{spec['verb']} here)")
         except Exception:
             pass
 

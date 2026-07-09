@@ -134,10 +134,14 @@ feeling. This directly fixes "content exhausted in under an hour."
   free. Live earners: forage→foraging, brew→alchemy, forge→smithing; character
   sheet shows per-skill levels + total. 12 tests. Mining/woodcutting/fishing/
   cooking earn XP once P2.2 adds gathering nodes.)*
-- [ ] **P2.2 Gathering nodes on the map.** Ore rocks (mountain edges), trees (forest),
-  fishing spots (river/lake) as interactable tiles with per-tier level gates and respawn
-  timers — generalize the existing `ForageManager` cooldown pattern. Unlock schedule:
-  a new resource tier every ~5 levels (copper→iron→coal→mithril…).
+- [x] **P2.2 Gathering nodes on the map.** *(done 2026-07-09 —
+  `world/gathering.py` + `data/gathering.json`: Z is now a smart gather verb.
+  Mining (mountain/cave, pickaxe): copper 1→iron 10→coal 20→mithril 35;
+  woodcutting (forest, any axe): logs 1→oak 12→yew 30; fishing (shoreline,
+  rod): trout 1→salmon 15. Per-tile regen cooldowns persist in saves; tools
+  sold at the general store; hint bar teaches tool needs; cooking + smelting
+  recipes train cooking/smithing via new `Recipe.skill`; 16 new material
+  items. 9 tests + validator coverage.)*
 - [ ] **P2.3 Production chains with mandatory consumption.** Ore→bar→weapon (forge),
   fish→cooked food (heals; the food player-needs from P0.6 consume it), herbs→potions.
   Rule from research: *every produced item needs a destination* — combat already eats

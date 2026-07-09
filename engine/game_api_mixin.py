@@ -215,6 +215,21 @@ class GameAPIMixin:
     # ---- foraging / weather / dungeons -------------------------------
 
     def forage(self) -> str:
+        """Z key: gather (mine/chop/fish) when tooled-up; herbs otherwise.
+
+        Priority: node + tool -> gather; foragable terrain -> herbs;
+        node without tool -> teach the tool requirement."""
+        gm = self.gathering_manager
+        node = gm.node_at(*self.player.position)
+        if node is not None and gm.has_tool_for(node):
+            return gm.gather()
+        x, y = self.player.position
+        from world.foraging import TERRAIN_FORAGE_TABLE
+        terrain = self.world.map.get_terrain_at(x, y)
+        if terrain in TERRAIN_FORAGE_TABLE:
+            return self.forage_manager.forage()
+        if node is not None:
+            return gm.tool_message(node)
         return self.forage_manager.forage()
 
     def current_weather(self) -> str:
@@ -293,12 +308,10 @@ class GameAPIMixin:
         return msg
 
     def _award_craft_xp(self, recipe) -> None:
-        """Forge recipes train smithing; brewed goods train alchemy."""
+        """Each recipe trains the skill declared in its data entry."""
         from engine.skill_progression import add_skill_xp
         if recipe is None:
             return
-        skill = "smithing" if recipe.required_property == "forge" \
-            else "alchemy"
         xp = 20 + recipe.gold_cost // 2
-        for note in add_skill_xp(self.player, skill, xp):
+        for note in add_skill_xp(self.player, recipe.skill, xp):
             self.memory_manager.add_event(note)

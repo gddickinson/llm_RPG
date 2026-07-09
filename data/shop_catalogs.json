@@ -60,7 +60,10 @@
     "arrow",
     "arrow",
     "bolt",
-    "stone"
+    "stone",
+    "pickaxe",
+    "fishing_rod",
+    "crude_axe"
   ],
   "wheelwright": [
     "leather",

@@ -26,7 +26,32 @@ def validate_all() -> List[str]:
     problems += _check_spells()
     problems += _check_quests()
     problems += _check_npcs()
+    problems += _check_gathering()
     return problems
+
+
+def _check_gathering() -> List[str]:
+    from world.gathering import GATHER_NODES
+    from world.world_map import TerrainType
+    from engine.skill_progression import SKILLS
+    out = []
+    for skill_id, spec in GATHER_NODES.items():
+        if skill_id not in SKILLS:
+            out.append(f"gathering: '{skill_id}' is not a defined skill")
+        for t in spec.get("terrain", []):
+            try:
+                TerrainType(t)
+            except ValueError:
+                out.append(f"gathering {skill_id}: unknown terrain '{t}'")
+        if not _known_item(spec.get("tool", "")) and \
+                spec.get("tool") != "axe":
+            out.append(f"gathering {skill_id}: unknown tool "
+                       f"'{spec.get('tool')}'")
+        for tier in spec.get("tiers", []):
+            if not _known_item(tier["item"]):
+                out.append(f"gathering {skill_id}: unknown tier item "
+                           f"'{tier['item']}'")
+    return out
 
 
 def _known_item(item_id: str) -> bool:

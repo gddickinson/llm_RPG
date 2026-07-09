@@ -78,8 +78,10 @@ class GameEngine(GameAPIMixin):
         # Weather + foraging
         from world.weather import WeatherSystem
         from world.foraging import ForageManager
+        from world.gathering import GatheringManager
         self.weather_system = WeatherSystem(self)
         self.forage_manager = ForageManager(self)
+        self.gathering_manager = GatheringManager(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager

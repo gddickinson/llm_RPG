@@ -4,7 +4,8 @@
     "ingredients": {
       "herb_bundle": 1
     },
-    "gold_cost": 5
+    "gold_cost": 5,
+    "skill": "alchemy"
   },
   "greater_potion": {
     "output_id": "greater_potion",
@@ -12,14 +13,16 @@
       "herb_bundle": 3,
       "potion": 1
     },
-    "gold_cost": 10
+    "gold_cost": 10,
+    "skill": "alchemy"
   },
   "bandage": {
     "output_id": "bandage",
     "ingredients": {
       "wolf_pelt": 1
     },
-    "gold_cost": 1
+    "gold_cost": 1,
+    "skill": "alchemy"
   },
   "sword": {
     "output_id": "sword",
@@ -27,7 +30,8 @@
       "coins": 3
     },
     "gold_cost": 20,
-    "required_property": "forge"
+    "required_property": "forge",
+    "skill": "smithing"
   },
   "iron_shield": {
     "output_id": "iron_shield",
@@ -36,7 +40,8 @@
       "coins": 2
     },
     "gold_cost": 25,
-    "required_property": "forge"
+    "required_property": "forge",
+    "skill": "smithing"
   },
   "silver_blade": {
     "output_id": "silver_blade",
@@ -46,6 +51,40 @@
       "stolen_jewelry": 1
     },
     "gold_cost": 100,
-    "required_property": "forge"
+    "required_property": "forge",
+    "skill": "smithing"
+  },
+  "bronze_bar": {
+    "output_id": "bronze_bar",
+    "ingredients": {
+      "copper_ore": 2
+    },
+    "gold_cost": 2,
+    "required_property": "forge",
+    "skill": "smithing"
+  },
+  "iron_bar": {
+    "output_id": "iron_bar",
+    "ingredients": {
+      "iron_ore": 2,
+      "coal": 1
+    },
+    "gold_cost": 5,
+    "required_property": "forge",
+    "skill": "smithing"
+  },
+  "cooked_trout": {
+    "output_id": "cooked_trout",
+    "ingredients": {
+      "raw_trout": 1
+    },
+    "skill": "cooking"
+  },
+  "cooked_salmon": {
+    "output_id": "cooked_salmon",
+    "ingredients": {
+      "raw_salmon": 1
+    },
+    "skill": "cooking"
   }
 }

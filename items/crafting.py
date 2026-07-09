@@ -21,6 +21,7 @@ class Recipe:
     ingredients: Dict[str, int] = field(default_factory=dict)
     gold_cost: int = 0
     required_property: Optional[str] = None  # e.g. "forge" -- location-keyed
+    skill: str = "alchemy"  # which skill this recipe trains
 
     def output_name(self) -> str:
         item = ITEM_REGISTRY.get(self.output_id)
@@ -39,6 +40,7 @@ def _build_recipes() -> Dict[str, Recipe]:
             ingredients=dict(entry.get("ingredients", {})),
             gold_cost=entry.get("gold_cost", 0),
             required_property=entry.get("required_property"),
+            skill=entry.get("skill", "alchemy"),
         )
     return out
 

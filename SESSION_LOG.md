@@ -400,3 +400,17 @@ Live XP earners wired: foraging (Z), alchemy (brew consumables), smithing
 shows all skill levels + progress + total level. 12 new tests.
 Suite: 327 tests, all pass. Gathering nodes for mining/woodcutting/fishing/
 cooking arrive with P2.2.
+
+**Round 16 — P2.2 gathering nodes (done).**
+Z is now a smart gather verb via `world/gathering.py` + `data/gathering.json`:
+mining on mountain/cave edges (pickaxe; copper 1 / iron 10 / coal 20 /
+mithril 35), woodcutting in forest (any axe; logs 1 / oak 12 / yew 30),
+fishing at shorelines (rod; trout 1 / salmon 15) — weighted toward common
+tiers, per-tile regen cooldowns that persist in saves. Priority routing:
+tooled node > herb foraging > tool lesson (water without a rod now teaches
+fishing instead of "nothing here"). 16 new material items incl. tools, ores,
+bars, logs, raw/cooked fish; general store sells pickaxe/rod/axe; new
+cooking + smelting recipes train cooking/smithing via Recipe.skill; hint
+bar announces "[Z] mine here" or the missing tool. All 8 skills now have
+live XP earners. 9 new tests; validator covers gathering data.
+Suite: 331 tests, all pass.
