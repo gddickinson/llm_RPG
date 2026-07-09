@@ -141,6 +141,30 @@ class SaveManager:
             "weather": self._subsystem_dict(engine, "weather_system"),
             "foraging": self._subsystem_dict(engine, "forage_manager"),
             "companions": self._subsystem_dict(engine, "companion_manager"),
+            "shops": self._subsystem_dict(engine, "shop_manager"),
+            "dungeons": {key: dg.to_dict()
+                         for key, dg in getattr(engine, "dungeons", {}).items()},
+            "place_state": self._serialize_place_state(engine),
+        }
+
+    @staticmethod
+    def _serialize_place_state(engine) -> Dict[str, Any]:
+        """Where the player 'is' beyond raw coordinates."""
+        cur_dungeon_key = None
+        for key, dg in getattr(engine, "dungeons", {}).items():
+            if dg is getattr(engine, "current_dungeon", None):
+                cur_dungeon_key = key
+                break
+        cur_interior_key = None
+        for key, inter in getattr(engine, "interiors", {}).items():
+            if inter is getattr(engine, "current_interior", None):
+                cur_interior_key = key
+                break
+        return {
+            "current_dungeon": cur_dungeon_key,
+            "dungeon_return_pos": getattr(engine, "dungeon_return_pos", None),
+            "current_interior": cur_interior_key,
+            "exterior_return_pos": getattr(engine, "exterior_return_pos", None),
         }
 
     @staticmethod
@@ -240,7 +264,8 @@ class SaveManager:
         # Subsystems (absent in pre-v2 saves — skip silently)
         for key, attr in (("weather", "weather_system"),
                           ("foraging", "forage_manager"),
-                          ("companions", "companion_manager")):
+                          ("companions", "companion_manager"),
+                          ("shops", "shop_manager")):
             sub = getattr(engine, attr, None)
             payload = data.get(key)
             if sub is not None and payload is not None and hasattr(sub, "from_dict"):
@@ -248,6 +273,26 @@ class SaveManager:
                     sub.from_dict(payload)
                 except Exception as e:
                     logger.warning(f"Could not restore {attr}: {e}")
+
+        # Dungeons + player place state (inside a dungeon / interior)
+        from world.dungeon import Dungeon
+        engine.dungeons = {}
+        for key, dd in data.get("dungeons", {}).items():
+            try:
+                engine.dungeons[key] = Dungeon.from_dict(dd)
+            except Exception as e:
+                logger.warning(f"Could not restore dungeon {key}: {e}")
+
+        place = data.get("place_state", {}) or {}
+        dg_key = place.get("current_dungeon")
+        engine.current_dungeon = engine.dungeons.get(dg_key) if dg_key else None
+        pos = place.get("dungeon_return_pos")
+        engine.dungeon_return_pos = tuple(pos) if pos else None
+        in_key = place.get("current_interior")
+        engine.current_interior = (
+            getattr(engine, "interiors", {}).get(in_key) if in_key else None)
+        pos = place.get("exterior_return_pos")
+        engine.exterior_return_pos = tuple(pos) if pos else None
 
 
 def _rebuild_character(d: Dict[str, Any]):

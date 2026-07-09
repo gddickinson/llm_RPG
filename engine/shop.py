@@ -140,6 +140,25 @@ class ShopManager:
                 if npc is not None:
                     self._stock(cat, npc)
 
+    # ----- persistence ---------------------------------------------------
+
+    def to_dict(self) -> Dict:
+        return {
+            npc_id: {
+                "items": [it.to_dict() for it in cat.items],
+                "last_refreshed_minute": cat.last_refreshed_minute,
+            }
+            for npc_id, cat in self.catalogs.items()
+        }
+
+    def from_dict(self, data: Dict) -> None:
+        self.catalogs = {}
+        for npc_id, cd in data.items():
+            cat = ShopCatalog(merchant_id=npc_id)
+            cat.items = [Item.from_dict(it) for it in cd.get("items", [])]
+            cat.last_refreshed_minute = cd.get("last_refreshed_minute", 0)
+            self.catalogs[npc_id] = cat
+
     # ----- price computation -------------------------------------------
 
     def buy_price(self, player, item: Item, merchant_npc) -> int:

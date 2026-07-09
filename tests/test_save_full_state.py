@@ -96,6 +96,63 @@ class TestFullStateRoundtrip(unittest.TestCase):
         self.assertEqual(self.engine.forage_manager.harvested_at.get((5, 5)), 999,
                          "forage cooldowns lost on load")
 
+    def test_shop_stock_survives_roundtrip(self):
+        # Build a catalog for some merchant-ish NPC, then consume an item
+        npc = next(iter(self.engine.npc_manager.npcs.values()))
+        cat = self.engine.shop_manager.catalog_for(npc)
+        self.assertTrue(cat.items)
+        removed = cat.items.pop(0)
+        count_after_sale = len(cat.items)
+
+        self.sm.save(self.engine, name="rt")
+        self.engine.shop_manager.catalogs = {}
+        self.assertTrue(self.sm.load(self.engine, name="rt"))
+
+        cat2 = self.engine.shop_manager.catalogs.get(npc.id)
+        self.assertIsNotNone(cat2, "shop catalog lost on load")
+        self.assertEqual(len(cat2.items), count_after_sale,
+                         "sold stock reappeared after load")
+
+    def test_dungeon_state_survives_roundtrip(self):
+        from world.dungeon import generate_dungeon
+        dungeon = generate_dungeon(name="Test Depths", seed=99)
+        dungeon.spawned = True
+        self.engine.dungeons["test_cave"] = dungeon
+        self.engine.current_dungeon = dungeon
+        self.engine.dungeon_return_pos = (10, 12)
+
+        self.sm.save(self.engine, name="rt")
+        self.engine.dungeons = {}
+        self.engine.current_dungeon = None
+        self.engine.dungeon_return_pos = None
+        self.assertTrue(self.sm.load(self.engine, name="rt"))
+
+        dg = self.engine.dungeons.get("test_cave")
+        self.assertIsNotNone(dg, "dungeon lost on load")
+        self.assertEqual(dg.name, "Test Depths")
+        self.assertTrue(dg.spawned, "dungeon would re-populate monsters")
+        self.assertEqual([[c.value for c in row] for row in dg.terrain],
+                         [[c.value for c in row] for row in dungeon.terrain])
+        self.assertIs(self.engine.current_dungeon, dg)
+        self.assertEqual(self.engine.dungeon_return_pos, (10, 12))
+
+    def test_interior_state_survives_roundtrip(self):
+        if not self.engine.interiors:
+            self.skipTest("no interiors in demo world")
+        key, interior = next(iter(self.engine.interiors.items()))
+        self.engine.current_interior = interior
+        self.engine.exterior_return_pos = (3, 4)
+
+        self.sm.save(self.engine, name="rt")
+        self.engine.current_interior = None
+        self.engine.exterior_return_pos = None
+        self.assertTrue(self.sm.load(self.engine, name="rt"))
+
+        self.assertIs(self.engine.current_interior,
+                      self.engine.interiors[key],
+                      "player no longer inside the building after load")
+        self.assertEqual(self.engine.exterior_return_pos, (3, 4))
+
     def test_old_save_without_new_keys_still_loads(self):
         """Pre-v3 saves lack metadata/equipment/subsystem keys."""
         self.sm.save(self.engine, name="rt")
@@ -106,7 +163,8 @@ class TestFullStateRoundtrip(unittest.TestCase):
             data = json.load(fp)
         data["player"].pop("metadata", None)
         data["player"].pop("equipment", None)
-        for key in ("weather", "foraging", "companions"):
+        for key in ("weather", "foraging", "companions", "shops",
+                    "dungeons", "place_state"):
             data.pop(key, None)
         with open(path, "w") as fp:
             json.dump(data, fp, default=str)

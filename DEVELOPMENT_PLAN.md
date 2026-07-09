@@ -40,8 +40,10 @@ they transform the experience.
   saved: party, weather, status effects, dungeon/interior state, forage cooldowns,
   quest boards, shop stock. Fix serialization end-to-end + add a round-trip test that
   asserts full player/world state equality. Add SAVE_VERSION migration stub.
-- [ ] **P0.1b Persist remaining engine state.** Dungeon/interior state, quest
-  boards, shop stock (deferred from P0.1).
+- [x] **P0.1b Persist remaining engine state.** *(done 2026-07-09 — dungeons
+  (terrain/rooms/spawned), current dungeon/interior + return positions, and shop
+  catalogs now round-trip; quest boards proved to be fully derived state (they
+  filter by persisted quest status) so need no serialization. +3 tests.)*
 - [ ] **P0.2 Fix the unreachable shop.** `K_s` is consumed by "move down" at
   `ui/input_handler.py:93`, so the shop handler at `:166` is dead code — the entire
   economy is inaccessible in the GUI. Rebind shop to `B` (or a context-sensitive

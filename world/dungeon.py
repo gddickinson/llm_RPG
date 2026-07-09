@@ -48,6 +48,31 @@ class Dungeon:
     spawned: bool = False                  # whether monsters/items placed
     description: str = ""
 
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "width": self.width,
+            "height": self.height,
+            "terrain": [[c.value for c in row] for row in self.terrain],
+            "rooms": [[r.x, r.y, r.w, r.h] for r in self.rooms],
+            "exit_pos": list(self.exit_pos),
+            "spawned": self.spawned,
+            "description": self.description,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Dungeon":
+        return cls(
+            name=d["name"],
+            width=d["width"],
+            height=d["height"],
+            terrain=[[TerrainType(v) for v in row] for row in d["terrain"]],
+            rooms=[DungeonRoom(*r) for r in d.get("rooms", [])],
+            exit_pos=tuple(d.get("exit_pos", (1, 1))),
+            spawned=d.get("spawned", False),
+            description=d.get("description", ""),
+        )
+
 
 def generate_dungeon(name: str = "Cave Tunnels",
                      width: int = 24, height: int = 16,

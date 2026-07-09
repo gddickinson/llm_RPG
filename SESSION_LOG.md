@@ -255,3 +255,10 @@ Save format v3 now round-trips character metadata + equipment and engine-level
 weather / forage cooldowns / companions, with pre-v3 saves still loading.
 `metadata` promoted to a real `Character` dataclass field.
 New: `tests/test_save_full_state.py` (6 regression tests). Suite: 253 tests, all pass.
+
+**Round 2 — P0.1b remaining engine state (done).**
+Dungeons gained `to_dict`/`from_dict` (terrain, rooms, spawned flag — so
+cleared dungeons don't re-populate); `ShopManager` catalogs persist (sold
+stock stays sold); saving inside a dungeon or building now restores the player
+there, with return positions. Quest boards were confirmed derived state (filter
+on persisted quest status) — no serialization needed. +3 round-trip tests.
