@@ -107,8 +107,12 @@ demo-scale: 6 quests, 6 recipes, 4 encounter monsters, 7 spells.
   `npc_presets.py` 332→70 lines, `quest_templates.py` API unchanged. Validation
   caught a real content bug: herb_gathering's giver `cleric_01` never existed, so
   the quest was un-turn-in-able — reassigned to Brother Anselm. +6 tests.)*
-- [ ] **P1.3** Validation test: load all data files, check cross-references (recipe
-  ingredients exist, loot table items exist, quest rewards exist).
+- [x] **P1.3 Unified content validator.** *(done 2026-07-09 —
+  `items/data_validate.py`: `validate_all()` + `python -m items.data_validate`
+  CLI (exit 1 on problems). Checks recipes, shops, forage, monsters, spells,
+  quests (givers, FETCH/KILL/TALK/DELIVER targets), NPCs (enums, relationships,
+  inventory-string resolvability). Wired into the test suite; also
+  self-tested against injected broken content.)*
 - [ ] **P1.4** (Stretch) A "module pack" folder convention — the ROADMAP's campaign
   packs fall out of this nearly for free.
 

@@ -86,6 +86,7 @@ llm_RPG/
 
 - **`item.py`** — `Item` dataclass; types, rarity, effects.
 - **`data_loader.py`** — `load_data_dir()`; merges `data/<subdir>/*.json` content files (Phase 1 data layer).
+- **`data_validate.py`** — `validate_all()` / `python -m items.data_validate`; cross-reference checks for all content.
 - **`item_registry.py`** — thin loader over `data/items/*.json` (69 items); `create_item()`, `item_by_name()`.
 - **`loot_tables.py`** — Drop tables by enemy class.
 - **`crafting.py`** — `craft()` + recipes loaded from `data/recipes.json` (forge-gated, ingredients).

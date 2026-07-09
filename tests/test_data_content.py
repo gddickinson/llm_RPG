@@ -202,6 +202,30 @@ class TestQuestAndNpcData(unittest.TestCase):
             self.assertGreater(min(hostile_ix), max(peaceful_ix))
 
 
+class TestUnifiedValidator(unittest.TestCase):
+    def test_validate_all_passes_on_shipped_content(self):
+        from items.data_validate import validate_all
+        self.assertEqual(validate_all(), [])
+
+    def test_validator_catches_broken_quest_giver(self):
+        """Sanity-check the validator actually detects problems."""
+        from items import data_validate
+        from quests.quest_templates import QUEST_TEMPLATES, _quest_from_entry
+        broken = _quest_from_entry("broken", {
+            "title": "Broken", "objectives": [],
+            "giver_id": "ghost_99", "reward_items": ["no_such_item"],
+        })
+        original = dict(QUEST_TEMPLATES)
+        QUEST_TEMPLATES["broken"] = lambda: broken
+        try:
+            problems = data_validate._check_quests()
+        finally:
+            QUEST_TEMPLATES.clear()
+            QUEST_TEMPLATES.update(original)
+        self.assertTrue(any("ghost_99" in p for p in problems))
+        self.assertTrue(any("no_such_item" in p for p in problems))
+
+
 class TestCrossReferences(unittest.TestCase):
     def assert_ids_exist(self, ids, source):
         missing = [i for i in ids if i not in ITEM_REGISTRY]

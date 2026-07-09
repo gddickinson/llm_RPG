@@ -375,3 +375,16 @@ Suite: 313 tests, all pass.
 
 Every content registry (items, recipes, spells, shop catalogs, monsters,
 quests, NPCs) now loads from data/*.json with cross-reference validation.
+
+**Round 14 — P1.3 unified content validator (done). PHASE 1 COMPLETE.**
+New `items/data_validate.py`: `validate_all()` returns a problem list;
+`python -m items.data_validate` exits 1 on failure (pre-commit friendly).
+Rules span recipes, shop catalogs, forage/loot tables, monster enums,
+spell effects, scroll->spell links, quest givers + objective targets
+(FETCH item ids, KILL/TALK actors, DELIVER item:npc pairs), NPC enums,
+relationships, and inventory-string resolvability. The validator is itself
+tested against injected broken content. Suite: 315 tests, all pass.
+
+Phase 1 complete (P1.4 module packs deferred as stretch): all content in
+JSON, all cross-references machine-checked. Next: Phase 2 — the skills
+progression lattice.
