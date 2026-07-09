@@ -47,8 +47,15 @@ class DialogSystem:
 
         self.engine.memory_manager.add_event(
             f"{npc.name} says: \"{response}\"")
-        npc.add_memory(
-            f"Player said: \"{message}\". I replied: \"{response}\"", 2)
+        try:
+            from engine.npc_memory import remember, log_exchange
+            remember(npc, f"{self.engine.player.name} said: \"{message}\". "
+                          f"I replied: \"{response}\"", 2,
+                     self.engine.world.time)
+            log_exchange(npc, message, response)
+        except Exception:
+            npc.add_memory(
+                f"Player said: \"{message}\". I replied: \"{response}\"", 2)
 
         # Friendly conversation slowly builds trust (recruit gate is 30)
         klass = getattr(npc.character_class, "value", "")

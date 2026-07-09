@@ -204,10 +204,14 @@ log, not per-NPC. Research consensus from every shipped LLM game:
   (inventory ids, relationship score, time/weather) + anti-sycophancy rules.
   Heuristic provider keeps the legacy path. reveal_secret arrives with P3.3,
   offer_quest with P4. 13 tests via mocked provider.)*
-- [ ] **P3.2 Per-NPC memory with retrieval.** Replace the global-log substring scan:
-  per-NPC memory store scored by recency × importance × relevance (Generative Agents
-  weights); last ~10 exchanges verbatim; a nightly summarization pass distills 1–3
-  durable "opinions" per named NPC. Persists in saves.
+- [x] **P3.2 Per-NPC memory with retrieval.** *(done 2026-07-09 —
+  `engine/npc_memory.py`: memories stamped with GAME time, retrieval scored
+  recency (half-life 1 day) × importance × word-overlap relevance; last 10
+  exchanges verbatim in `dialog_log`; nightly reflection on day change distills
+  fresh memories into ≤3 durable opinions (one LLM call per NPC, or a template
+  heuristically). Dialog prompt now carries retrieved memories + opinions +
+  conversation history instead of the global-log substring scan. All state on
+  Character.memories/metadata → saves free. 12 tests.)*
 - [ ] **P3.3 Secrets as gated tokens (Dead Meat pattern).** NPCs hold typed secrets
   (location, recipe, dirt-on-someone, quest hook) with release conditions (affinity ≥ X,
   item shown, faction rep, bribe). The prompt only ever contains secrets whose

@@ -51,8 +51,16 @@ def build_prompt(engine, npc, player_message: str,
     inv_ids = [getattr(it, "id", str(it)) for it in npc.inventory]
     traits = ", ".join(npc.personality.get("traits", [])) or "plain"
     goals = "; ".join(npc.goals[:3])
-    recent = "\n".join(str(h)[-200:] for h in recent_history[-4:])
-    return (
+
+    # Per-NPC memory: retrieval-scored memories, settled opinions,
+    # verbatim recent exchanges (P3.2)
+    from engine.npc_memory import retrieve, opinions, recent_exchanges
+    memories = retrieve(npc, player_message, engine.world.time, k=4)
+    mem_block = "\n".join(f"- {m}" for m in memories) or "- (nothing yet)"
+    op_block = "\n".join(f"- {o}" for o in opinions(npc))
+    convo = "\n".join(recent_exchanges(npc, k=4))
+
+    parts = [
         f"FACTS\n"
         f"You are {npc.name}, a {npc.race.value} "
         f"{npc.character_class.value}. Traits: {traits}.\n"
@@ -61,11 +69,17 @@ def build_prompt(engine, npc, player_message: str,
         f"Your feelings toward {player.name}: {rel} on a -100..100 scale "
         f"({npc.get_relationship_description(player.id)}).\n"
         f"Time: {engine.world.get_formatted_time()}  "
-        f"Weather: {engine.current_weather()}\n\n"
-        f"RECENT EVENTS\n{recent}\n\n"
-        f"{player.name.upper()} SAYS: \"{player_message}\"\n\n"
-        f"Reply with the JSON object only."
-    )
+        f"Weather: {engine.current_weather()}",
+        f"YOUR MEMORIES (most relevant to what they just said)\n"
+        f"{mem_block}",
+    ]
+    if op_block:
+        parts.append(f"YOUR SETTLED OPINIONS\n{op_block}")
+    if convo:
+        parts.append(f"EARLIER IN THIS ACQUAINTANCE\n{convo}")
+    parts.append(f"{player.name.upper()} SAYS: \"{player_message}\"\n\n"
+                 f"Reply with the JSON object only.")
+    return "\n\n".join(parts)
 
 
 def parse_response(raw: str) -> Dict[str, Any]:

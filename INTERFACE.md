@@ -37,6 +37,7 @@ llm_RPG/
 - **`economy_system.py`** — Buy/sell/trade/give between characters.
 - **`dialog_system.py`** — Player↔NPC dialog flow (routes through dialog_protocol for LLM providers).
 - **`dialog_protocol.py`** — Structured JSON dialog contract: whitelisted actions, engine-validated execution.
+- **`npc_memory.py`** — Per-NPC memory: recency×importance×relevance retrieval, verbatim dialog log, nightly reflection → opinions.
 - **`memory_manager.py`** — Event history.
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.

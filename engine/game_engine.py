@@ -133,6 +133,8 @@ class GameEngine(GameAPIMixin):
 
         # Initialize demo world
         self.initialize_demo_game(player_spec=player_spec)
+        # Baseline for the nightly-reflection day-change detector
+        self._last_reflection_day = self.world.time // (24 * 60)
 
         # NPC processes (optional) -------------------------------------
         self.process_manager = None
@@ -279,6 +281,16 @@ class GameEngine(GameAPIMixin):
                 self.diary_manager.check_and_claim()
         except Exception as e:
             logger.debug(f"Diary check error: {e}")
+
+        # Nightly reflection: NPCs distill fresh memories into opinions
+        try:
+            day = self.world.time // (24 * 60)
+            if day != getattr(self, "_last_reflection_day", day):
+                from engine.npc_memory import nightly_reflection
+                nightly_reflection(self)
+            self._last_reflection_day = day
+        except Exception as e:
+            logger.debug(f"Reflection error: {e}")
 
         # Advance in-flight projectiles
         try:

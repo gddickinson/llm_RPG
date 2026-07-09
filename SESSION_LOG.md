@@ -500,3 +500,16 @@ to agree to everything (anti-sycophancy). Heuristic mode keeps the legacy
 path untouched. 13 tests drive the full loop with a mocked provider,
 including an end-to-end "On the house!" ale handover reaching both the
 player's bag and the event log. Suite: 392 tests, all pass.
+
+**Round 24 — P3.2 per-NPC memory with retrieval (done).**
+New `engine/npc_memory.py` (Generative Agents lite). Memories now carry
+GAME time; retrieval scores recency (half-life = 1 game day) x importance
+x word-overlap relevance — asking Goren about "the troll" surfaces his
+Gorkash memories over this morning's mug-polishing. Last 10 dialog
+exchanges kept verbatim per NPC; on each day change, NPCs with 3+ fresh
+memories distill them into durable opinions (<=3 kept) — one small LLM
+call each when a provider is active, a template in heuristic mode. The
+dialog-protocol prompt now feeds retrieved memories + settled opinions +
+conversation history instead of substring-scanning the global event log.
+All state rides Character.memories/metadata -> persists free. 12 tests.
+Suite: 404 tests, all pass.
