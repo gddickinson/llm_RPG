@@ -541,3 +541,15 @@ grant a 20%-off haggle token wired into real shop pricing, intimidation
 applies the frightened combat debuff, deception builds false trust. NPCs
 remember attempts via P3.2 memory. Dialog box + help show the commands.
 10 new tests. Suite: 425 tests, all pass.
+
+**Round 27 — P3.5 heart events (done).**
+New `engine/heart_events.py` + `data/heart_events.json`: 6 authored scenes
+across 5 NPCs (Goren at 30 and 60, Durgan 40, Melody 30, Karim 40, Esra 30).
+The skeleton is authored truth — with an LLM the outline is re-rendered as
+warm prose under an "invent nothing new" instruction (short/junk output
+falls back to the outline verbatim). Scenes fire once, lowest threshold
+first, hooked into dialog exchanges and quest turn-ins; perks grant items
+or gold with flavor ("Karim hands you a guard whistle"). The NPC remembers
+the moment at importance 7, feeding nightly reflections. The scenes also
+carry world lore (the tavern fire, the uncollected silver blade).
+10 new tests; validator covers perk items. Suite: 435 tests, all pass.

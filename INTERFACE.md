@@ -40,6 +40,7 @@ llm_RPG/
 - **`npc_memory.py`** — Per-NPC memory: recency×importance×relevance retrieval, verbatim dialog log, nightly reflection → opinions.
 - **`secrets.py`** — Gated NPC secrets from `data/secrets.json`; locked secrets never reach the prompt (injection-proof).
 - **`persuasion.py`** — `/persuade` `/intimidate` `/deceive` social checks; LLM or dice adjudication, day-long lockouts, haggle tokens.
+- **`heart_events.py`** — Affinity-threshold scenes from `data/heart_events.json`; authored outlines, LLM-rendered prose, perks.
 - **`memory_manager.py`** — Event history.
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.

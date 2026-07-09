@@ -29,7 +29,30 @@ def validate_all() -> List[str]:
     problems += _check_gathering()
     problems += _check_diaries()
     problems += _check_secrets()
+    problems += _check_heart_events()
     return problems
+
+
+def _check_heart_events() -> List[str]:
+    from engine.heart_events import HEART_EVENTS
+    from characters.npc_presets import NPC_SPECS
+    out = []
+    seen = set()
+    for npc_id, events in HEART_EVENTS.items():
+        if npc_id not in NPC_SPECS:
+            out.append(f"heart_events: unknown NPC '{npc_id}'")
+        for e in events:
+            eid = e.get("id", "")
+            if eid in seen:
+                out.append(f"heart_events: duplicate id '{eid}'")
+            seen.add(eid)
+            if not e.get("outline"):
+                out.append(f"heart event {eid}: missing outline")
+            perk = e.get("perk", {})
+            if "item" in perk and not _known_item(perk["item"]):
+                out.append(f"heart event {eid}: unknown perk item "
+                           f"'{perk['item']}'")
+    return out
 
 
 def _check_secrets() -> List[str]:

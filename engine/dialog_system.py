@@ -77,6 +77,12 @@ class DialogSystem:
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             self.engine.quest_manager.on_npc_talked(npc_id)
 
+        # Crossing an affinity threshold may trigger a heart event
+        try:
+            self.engine.heart_events.maybe_trigger(npc)
+        except Exception:
+            pass
+
         self.engine.advance_turn()
         return response
 

@@ -91,7 +91,9 @@ class GameEngine(GameAPIMixin):
         self.diary_manager = DiaryManager(self)
         self.travel_system = TravelSystem(self)
         from engine.persuasion import PersuasionSystem
+        from engine.heart_events import HeartEventManager
         self.persuasion = PersuasionSystem(self)
+        self.heart_events = HeartEventManager(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
@@ -374,6 +376,10 @@ class GameEngine(GameAPIMixin):
                 if quest.giver_id else None
             if giver is not None:
                 giver.modify_relationship(self.player.id, 15)
+                try:
+                    self.heart_events.maybe_trigger(giver)
+                except Exception:
+                    pass
             # Surface level-ups in the game event log
             if self.player.level > level_before:
                 for lvl in range(level_before + 1, self.player.level + 1):
