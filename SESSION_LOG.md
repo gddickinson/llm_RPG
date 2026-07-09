@@ -470,3 +470,18 @@ region's merchants (matched by home_location keywords; verified not to
 leak across regions). J opens the diary overlay with live checkboxes.
 Claims persist via metadata; validator checks all diary targets.
 9 new tests. Suite: 370 tests, all pass.
+
+**Round 22 — P2.8 shortcuts + earned teleports (done). PHASE 2 COMPLETE.**
+New `engine/travel.py`. Agility shortcuts: level 15 clambers over mountain
+tiles, level 25 swims across water — every blocking terrain edge on the map
+becomes a potential shortcut, costing +3 minutes and granting Agility XP;
+walking into a wall below the level teaches the requirement. Teleports
+(U key): Oakvale always available; Riverside/Stonepine unlock by claiming
+their diary easy tier (the promised diary reward); non-home destinations
+cost a 15g toll; all share a 4-game-hour cooldown persisted in metadata.
+9 new tests. Suite: 379 tests, all pass.
+
+Phase 2 (progression lattice) complete: 8 skills with earners, gathering
+tiers, production chains, durability sink, balanced economy, collection
+log, pets, diaries, shortcuts + teleports. The game now has a genuine
+progression treadmill. Next: Phase 3 — the LLM as a gameplay pillar.

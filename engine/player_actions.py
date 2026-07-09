@@ -196,6 +196,14 @@ class PlayerActions:
 
         old_pos = player.position
         if not wmap.move_character(player, nx, ny):
+            # Blocked — maybe Agility can turn this into a shortcut
+            try:
+                msg = self.engine.travel_system.try_shortcut(nx, ny)
+                if msg is not None and player.position == (nx, ny):
+                    self.engine.advance_turn()
+                    return True
+            except Exception:
+                pass
             return False
         try:
             self.engine.pet_system.on_player_moved(old_pos)

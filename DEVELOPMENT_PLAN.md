@@ -175,9 +175,13 @@ feeling. This directly fixes "content exhausted in under an hour."
   stacking 5%-per-tier discount at that region's merchants (keyed by
   home_location). J-key overlay with live checkboxes; persists via metadata;
   validator covers diary targets. 9 tests. Teleport rewards land with P2.8.)* Doubles as a content tour guide.
-- [ ] **P2.8 Shortcuts + earned teleports.** Agility-gated map shortcuts (cliff climbs,
-  river crossings); tiered fast travel — home teleport with cooldown early, per-town
-  unlocks mid, a network from a flagship quest late. Never free at start.
+- [x] **P2.8 Shortcuts + earned teleports.** *(done 2026-07-09 —
+  `engine/travel.py`: Agility 15 clambers over mountains, 25 swims rivers —
+  blocking terrain becomes shortcuts map-wide, costing +3 min and granting
+  Agility XP (walking into a wall teaches the requirement). U-key travel menu:
+  Oakvale free; Riverside/Stonepine unlock via their diary easy tiers, 15g
+  toll (gold sink), shared 4-hour cooldown persisted in metadata. 9 tests.
+  **PHASE 2 COMPLETE.**)*
 
 **Exit criteria:** 10+ hours of self-directed progression; there is always a
 near-term unlock in some track.

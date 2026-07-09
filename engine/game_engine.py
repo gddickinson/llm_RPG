@@ -82,12 +82,14 @@ class GameEngine(GameAPIMixin):
         from engine.collection_log import CollectionLog
         from engine.pets import PetSystem
         from engine.diaries import DiaryManager
+        from engine.travel import TravelSystem
         self.weather_system = WeatherSystem(self)
         self.forage_manager = ForageManager(self)
         self.gathering_manager = GatheringManager(self)
         self.collection_log = CollectionLog(self)
         self.pet_system = PetSystem(self)
         self.diary_manager = DiaryManager(self)
+        self.travel_system = TravelSystem(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager

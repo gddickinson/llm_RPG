@@ -138,7 +138,7 @@ class GameGUI:
                 prompt=f"> {self.dialog_input}_   (Enter to send, Esc to leave)",
             )
 
-        if self.mode == "menu" and self.overlay:
+        if self.mode in ("menu", "travel") and self.overlay:
             title, lines = self.overlay
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
@@ -253,6 +253,14 @@ class GameGUI:
             self.crafting_panel = CraftingPanel(self.engine)
         self.mode = "crafting"
 
+    def show_travel(self) -> None:
+        try:
+            lines = self.engine.travel_system.overlay_lines()
+        except Exception:
+            lines = ["Travel unavailable."]
+        self.overlay = ("Travel", lines)
+        self.mode = "travel"
+
     def show_diaries(self) -> None:
         try:
             lines = self.engine.diary_manager.overlay_lines()
@@ -335,6 +343,8 @@ class GameGUI:
             "                  (they must trust you: chat + do their quests)",
             "  O             : collection log (items / foes / recipes / places)",
             "  J             : achievement diaries (regional tasks + rewards)",
+            "  U             : travel menu (teleports unlock via diaries)",
+            "                  (Agility 15/25 climbs mountains / swims rivers)",
             "  Q             : quest log",
             "  C             : character sheet",
             "",

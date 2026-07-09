@@ -48,6 +48,25 @@ class InputHandler:
         if self.gui.mode == "dialog":
             return self._handle_dialog_input(event)
 
+        # Travel menu: 1-9 teleports, Esc cancels
+        if self.gui.mode == "travel":
+            if event.type != pygame.KEYDOWN:
+                return True
+            if event.key in (pygame.K_ESCAPE, pygame.K_u):
+                self.gui.mode = "play"
+                self.gui.overlay = None
+                return True
+            if pygame.K_1 <= event.key <= pygame.K_9:
+                idx = event.key - pygame.K_1
+                try:
+                    self.engine.travel_system.teleport(idx)
+                except Exception:
+                    pass
+                self.gui.mode = "play"
+                self.gui.overlay = None
+                return True
+            return True
+
         # Menu mode (text overlay — help / character sheet / quest log)
         if self.gui.mode == "menu":
             if event.type == pygame.KEYDOWN and event.key in \
@@ -196,6 +215,11 @@ class InputHandler:
         # Achievement diaries (J)
         if k == pygame.K_j:
             self.gui.show_diaries()
+            return True
+
+        # Travel menu (U)
+        if k == pygame.K_u:
+            self.gui.show_travel()
             return True
 
         # Talk to adjacent NPC
