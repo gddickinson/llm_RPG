@@ -43,6 +43,7 @@ llm_RPG/
 - **`skill_progression.py`** — 8-skill lattice from `data/skills.json`; geometric curve, `add_skill_xp()`, levels 1–50.
 - **`collection_log.py`** — `CollectionLog`; unique items/kills/crafts/places vs registry totals (O-key overlay).
 - **`pets.py`** — `PetSystem`; rare skilling-pet rolls from `data/pets.json`, follower trails the player.
+- **`diaries.py`** — `DiaryManager`; regional task tiers from `data/diaries.json`, auto-claim rewards + shop discounts (J-key overlay).
 - **`spells.py`** — `SpellSystem`, spell registry, mana mechanics.
 - **`banking.py`** — Deposit/withdraw gold at temples/shops.
 - **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).

@@ -27,7 +27,34 @@ def validate_all() -> List[str]:
     problems += _check_quests()
     problems += _check_npcs()
     problems += _check_gathering()
+    problems += _check_diaries()
     return problems
+
+
+def _check_diaries() -> List[str]:
+    from engine.diaries import DIARIES
+    from engine.skill_progression import SKILLS
+    from items.crafting import RECIPES
+    out = []
+    for region, spec in DIARIES.items():
+        for tier, tspec in spec.get("tiers", {}).items():
+            for task in tspec.get("tasks", []):
+                ttype, target = task.get("type"), task.get("target", "")
+                where = f"diary {region}/{tier}"
+                if ttype == "collect" and not _known_item(target):
+                    out.append(f"{where}: unknown item '{target}'")
+                elif ttype == "craft" and target not in RECIPES:
+                    out.append(f"{where}: unknown recipe '{target}'")
+                elif ttype == "skill" and target not in SKILLS:
+                    out.append(f"{where}: unknown skill '{target}'")
+                elif ttype not in ("collect", "craft", "skill", "place",
+                                   "kill", "quest"):
+                    out.append(f"{where}: unknown task type '{ttype}'")
+            for iid in tspec.get("reward", {}).get("items", []):
+                if not _known_item(iid):
+                    out.append(f"diary {region}/{tier}: unknown reward "
+                               f"item '{iid}'")
+    return out
 
 
 def _check_gathering() -> List[str]:

@@ -253,6 +253,14 @@ class GameGUI:
             self.crafting_panel = CraftingPanel(self.engine)
         self.mode = "crafting"
 
+    def show_diaries(self) -> None:
+        try:
+            lines = self.engine.diary_manager.overlay_lines()
+        except Exception:
+            lines = ["Diaries unavailable."]
+        self.overlay = ("Achievement Diaries", lines)
+        self.mode = "menu"
+
     def show_collection_log(self) -> None:
         try:
             lines = self.engine.collection_log.overlay_lines()
@@ -326,6 +334,7 @@ class GameGUI:
             "  P             : party — recruit adjacent NPC / dismiss member",
             "                  (they must trust you: chat + do their quests)",
             "  O             : collection log (items / foes / recipes / places)",
+            "  J             : achievement diaries (regional tasks + rewards)",
             "  Q             : quest log",
             "  C             : character sheet",
             "",

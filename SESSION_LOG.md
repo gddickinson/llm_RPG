@@ -458,3 +458,15 @@ by the renderer, hooked on pre-move position for a correct one-step lag).
 No duplicates; jackpot announced with fanfare; pets counted in the
 collection log (n/8); ownership persists via metadata. 8 new tests.
 Suite: 361 tests, all pass.
+
+**Round 21 — P2.7 regional achievement diaries (done).**
+New `engine/diaries.py` + `data/diaries.json`: Oakvale / Riverside /
+Stonepine diaries, each easy/medium/hard with 3-4 themed tasks. Design win:
+tasks are pure predicates over state the game already tracks (collection
+log kills/items/crafts/places, skill levels, quest status) — zero new event
+plumbing. Completed tiers auto-claim from the turn loop with fanfare:
+gold, reward items, and a stacking 5%-per-tier purchase discount at that
+region's merchants (matched by home_location keywords; verified not to
+leak across regions). J opens the diary overlay with live checkboxes.
+Claims persist via metadata; validator checks all diary targets.
+9 new tests. Suite: 370 tests, all pass.

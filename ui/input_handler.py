@@ -193,6 +193,11 @@ class InputHandler:
             self.gui.show_collection_log()
             return True
 
+        # Achievement diaries (J)
+        if k == pygame.K_j:
+            self.gui.show_diaries()
+            return True
+
         # Talk to adjacent NPC
         if k == pygame.K_t:
             npc = self._find_adjacent_npc()

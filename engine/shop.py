@@ -167,9 +167,18 @@ class ShopManager:
         # Discount: at +50 score, prices are 0.85x for buying, 1.15x for selling
         # at -50, 1.20x for buying, 0.80x for selling
         delta = (combined / 100.0) * 0.20    # +-0.20
+
+        # Regional diary tiers stack a further discount on purchases
+        diary = 0.0
+        try:
+            diary = self.engine.diary_manager.discount_for_merchant(
+                merchant_npc)
+        except Exception:
+            pass
+
         if selling:
             return 1.0 + delta            # higher rep = higher sell price
-        return 1.0 - delta                # higher rep = lower buy price
+        return max(0.5, 1.0 - delta - diary)  # rep + diary lower buy price
 
 
 def merchants_near(engine, player, radius: float = 2.0):

@@ -168,9 +168,13 @@ feeling. This directly fixes "content exhausted in under an hour."
   1/60). Newest pet visibly trails one tile behind the player (renderer
   critter draw); no duplicates; announced with fanfare; listed in the
   collection log (n/8); persists via metadata. 8 tests.)*
-- [ ] **P2.7 Regional achievement diaries.** 10–15 tasks × 3 tiers × 3 settlements
-  (Oakvale, Riverside, Stonepine), rewarding region-specific convenience: free teleport
-  there, bank access at the mine, shop discounts. Doubles as a content tour guide.
+- [x] **P2.7 Regional achievement diaries.** *(done 2026-07-09 —
+  `engine/diaries.py` + `data/diaries.json`: 3 regions × 3 tiers × 3–4 tasks,
+  all predicates over already-tracked state (collection log, skills, quests) so
+  zero new event plumbing. Tiers auto-claim with fanfare: gold + items +
+  stacking 5%-per-tier discount at that region's merchants (keyed by
+  home_location). J-key overlay with live checkboxes; persists via metadata;
+  validator covers diary targets. 9 tests. Teleport rewards land with P2.8.)* Doubles as a content tour guide.
 - [ ] **P2.8 Shortcuts + earned teleports.** Agility-gated map shortcuts (cliff climbs,
   river crossings); tiered fast travel — home teleport with cooldown early, per-town
   unlocks mid, a network from a flagship quest late. Never free at start.
