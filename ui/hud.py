@@ -69,6 +69,13 @@ class HUD:
             f"Time: {engine.world.get_formatted_time()}",
         ]
         try:
+            from characters.needs import need_descriptor
+            condition = need_descriptor(p)
+            if condition != "comfortable":
+                more.append(f"Condition: {condition}")
+        except Exception:
+            pass
+        try:
             party = engine.companion_manager.members()
         except Exception:
             party = []

@@ -132,15 +132,21 @@ class PlayerActions:
                 return msg
 
             heal = getattr(it, "heal_amount", 0)
-            if heal and player.hp < player.max_hp:
+            if heal:
+                from characters.needs import get_hunger, feed
+                hungry = get_hunger(player) > 10
+                if player.hp >= player.max_hp and not hungry:
+                    return "You're already at full health."
                 player.heal(heal)
+                # Eating also satisfies hunger (bread -32, jerky -24, ...)
+                feed(player, amount=heal * 8)
                 self._remove_one(player, it)
-                msg = f"You use {it_name} and heal {heal} HP."
+                msg = f"You consume {it_name}" + (
+                    f" and heal {heal} HP." if player.hp <= player.max_hp
+                    else ".")
                 self.engine.memory_manager.add_event(msg)
                 self.engine.advance_turn()
                 return msg
-            elif heal:
-                return "You're already at full health."
             else:
                 # Generic use — e.g. for quest items / keys
                 msg = f"You use {it_name}."

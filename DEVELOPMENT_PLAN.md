@@ -60,9 +60,12 @@ they transform the experience.
   encounter chance scales ×(2−vis) so fog/storm ambushes are ~1.5× likelier;
   storms/snow cost +1 min per off-road step (roads immune); night light radius
   shrinks with visibility. 4 tests in `tests/test_weather_gameplay.py`.)*
-- [ ] **P0.6 Player needs: wire or cut.** `tick_needs` only runs for NPCs. Decision:
-  wire a *light* version for the player (food heals + staves off a "hungry" debuff —
-  this also gives cooking a consumer in Phase 2). Avoid punishing survival mechanics.
+- [x] **P0.6 Player needs: light hunger wired.** *(done 2026-07-09 — player hunger
+  ticks with game time; hungry = −1 dmg, starving = −2 dmg + HP drain floored at
+  1 (weakens, never kills); food now feeds (heal×8 satiety) and can be eaten at
+  full HP when hungry; HUD shows condition; stomach-growl warning on crossing the
+  hungry threshold. Food is now a real consumable → cooking gets its consumer in
+  P2. 6 tests in `tests/test_player_needs.py`.)*
 - [ ] **P0.7 Discoverability hint bar.** One-line contextual prompt above the HUD:
   "Press B — bank" at temple/shop, "Press R — craft" at forge, "Press Z — forage" on
   forest tiles, "Press TAB — enter" on cave/building tiles. Cheapest possible fix for

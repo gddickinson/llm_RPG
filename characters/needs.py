@@ -60,6 +60,23 @@ def rest(npc, amount: int = 50) -> None:
     meta["fatigue"] = max(0, meta["fatigue"] - amount)
 
 
+def tick_player_needs(player, elapsed_minutes: int) -> None:
+    """Player variant: hunger only (fatigue is an NPC-schedule concern)."""
+    meta = _ensure(player)
+    hours = elapsed_minutes / 60.0
+    meta["hunger"] = min(100, meta["hunger"] + HUNGER_PER_HOUR * hours)
+
+
+def hunger_attack_penalty(char) -> int:
+    """Damage penalty while hungry (-1) or starving (-2)."""
+    h = get_hunger(char)
+    if h >= HUNGER_STARVING:
+        return -2
+    if h >= HUNGER_HUNGRY:
+        return -1
+    return 0
+
+
 def need_descriptor(npc) -> str:
     h, f = get_hunger(npc), get_fatigue(npc)
     parts = []

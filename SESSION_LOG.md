@@ -298,3 +298,13 @@ so fog/storm ambushes are ~1.5x likelier; storm/snow cost +1 minute per
 off-road step (roads stay full speed — first gameplay reason to use roads);
 night-time torch radius shrinks with visibility. New
 `tests/test_weather_gameplay.py` (4 tests). Suite: 277 tests, all pass.
+
+**Round 7 — P0.6 player hunger, light version (done).**
+Player hunger now ticks with game time (NPC-only before). Hungry (>=60):
+-1 attack damage; starving (>=90): -2 and 1 HP drain per 30 game-min, floored
+at 1 HP — hunger weakens, never kills. Eating food feeds (heal x8 satiety),
+works at full HP when hungry, and heals as before. HUD shows a Condition line
+when not comfortable; a stomach-growl event fires when crossing the hungry
+threshold. This makes food a real consumable — the consumption side of the
+Phase 2 economy. New `tests/test_player_needs.py` (6 tests).
+Suite: 283 tests, all pass.

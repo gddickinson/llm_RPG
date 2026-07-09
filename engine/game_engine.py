@@ -189,6 +189,25 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"Needs tick error: {e}")
 
+        # Tick player hunger; starving drains HP (floored at 1 — hunger
+        # weakens, it doesn't kill)
+        try:
+            from characters.needs import (tick_player_needs, get_hunger,
+                                          HUNGER_STARVING, HUNGER_HUNGRY)
+            before = get_hunger(self.player)
+            tick_player_needs(self.player, elapsed_minutes=1)
+            hunger = get_hunger(self.player)
+            if hunger >= HUNGER_STARVING and self.world.time % 30 == 0:
+                if self.player.hp > 1:
+                    self.player.hp -= 1
+                self.memory_manager.add_event(
+                    "You are starving! Find something to eat.")
+            elif before < HUNGER_HUNGRY <= hunger:
+                self.memory_manager.add_event(
+                    "Your stomach growls. You should eat soon.")
+        except Exception as e:
+            logger.debug(f"Player needs tick error: {e}")
+
         # Tick status effects on all active characters (player + NPCs)
         try:
             from characters.status_effects import tick_effects
