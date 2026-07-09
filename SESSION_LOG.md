@@ -332,3 +332,15 @@ Suite: 286 tests, all pass.
 Phase 0 (Repair) is complete: save/load integrity, shop, crafting,
 companions, weather, hunger, and discoverability are all real, tested,
 player-reachable systems. Next: Phase 1 — data-driven content layer.
+
+**Round 10 — P1.1a data layer foundation: items ported to JSON (done).**
+New `items/data_loader.py`: `load_data_dir()` merges `data/<subdir>/*.json`,
+rejects duplicate ids, raises readable DataErrors. All 69 items generated
+from the live registry into `data/items/{weapons,armor,consumables,jewelry,
+misc,ammo_scrolls,books}.json` (entries carry only non-default fields);
+`item_registry.py` is now a thin loader with an unchanged public API.
+New `tests/test_data_content.py` (10 tests): registry integrity, migrated-value
+spot checks, duplicate-id rejection, and cross-reference validation — every
+item id used by recipes, loot tables, shop catalogs, forage tables, dungeon
+loot, and quest rewards must exist. Engine boot smoke-verified (starter gear
+identical). Suite: 296 tests, all pass. Remaining registries → P1.1b.

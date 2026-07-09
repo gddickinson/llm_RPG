@@ -1,0 +1,117 @@
+{
+  "ring_strength": {
+    "id": "ring_strength",
+    "name": "Ring of Strength",
+    "item_type": "ring",
+    "value": 200,
+    "description": "A heavy iron band engraved with runes of might.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "strength": 2
+    }
+  },
+  "ring_protection": {
+    "id": "ring_protection",
+    "name": "Ring of Protection",
+    "item_type": "ring",
+    "value": 220,
+    "description": "A silver band that wards off harm.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "armor": 1
+    }
+  },
+  "ring_intellect": {
+    "id": "ring_intellect",
+    "name": "Ring of Intellect",
+    "item_type": "ring",
+    "value": 240,
+    "description": "A copper ring inset with a sapphire.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "intelligence": 2,
+      "max_mana": 3
+    }
+  },
+  "ring_health": {
+    "id": "ring_health",
+    "name": "Ring of Vitality",
+    "item_type": "ring",
+    "value": 200,
+    "description": "A jade ring that pulses with warmth.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "constitution": 1,
+      "max_hp": 6
+    }
+  },
+  "amulet_health": {
+    "id": "amulet_health",
+    "name": "Amulet of Health",
+    "item_type": "amulet",
+    "value": 300,
+    "description": "A warm amulet of polished bone.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "max_hp": 12,
+      "hp_regen": 1
+    }
+  },
+  "amulet_mana": {
+    "id": "amulet_mana",
+    "name": "Amulet of Mana",
+    "item_type": "amulet",
+    "value": 320,
+    "description": "A crystal amulet that hums faintly.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "max_mana": 8,
+      "mana_regen": 1
+    }
+  },
+  "amulet_warding": {
+    "id": "amulet_warding",
+    "name": "Amulet of Warding",
+    "item_type": "amulet",
+    "value": 280,
+    "description": "An iron pendant on a leather cord.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "armor": 2
+    }
+  },
+  "swift_boots": {
+    "id": "swift_boots",
+    "name": "Boots of Swiftness",
+    "item_type": "boots",
+    "value": 260,
+    "description": "Boots that move almost of their own accord.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "dexterity": 1,
+      "dodge": 1
+    }
+  },
+  "silent_boots": {
+    "id": "silent_boots",
+    "name": "Boots of Silence",
+    "item_type": "boots",
+    "value": 240,
+    "description": "Boots that make no sound when worn.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "dexterity": 1
+    }
+  },
+  "iron_boots": {
+    "id": "iron_boots",
+    "name": "Iron Boots",
+    "item_type": "boots",
+    "value": 120,
+    "description": "Heavy iron-shod boots.",
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "armor": 1
+    }
+  }
+}

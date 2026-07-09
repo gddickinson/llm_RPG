@@ -1,0 +1,106 @@
+{
+  "potion": {
+    "id": "potion",
+    "name": "Healing Potion",
+    "item_type": "consumable",
+    "value": 20,
+    "description": "Restores 15 HP.",
+    "heal_amount": 15,
+    "stackable": true
+  },
+  "greater_potion": {
+    "id": "greater_potion",
+    "name": "Greater Healing Potion",
+    "item_type": "consumable",
+    "value": 80,
+    "description": "Restores 40 HP.",
+    "heal_amount": 40,
+    "stackable": true
+  },
+  "bandage": {
+    "id": "bandage",
+    "name": "Bandage",
+    "item_type": "consumable",
+    "value": 5,
+    "description": "A simple field dressing.",
+    "heal_amount": 5,
+    "stackable": true
+  },
+  "ale": {
+    "id": "ale",
+    "name": "Tankard of Ale",
+    "item_type": "consumable",
+    "value": 3,
+    "description": "A frothy ale. Restores 2 HP.",
+    "heal_amount": 2,
+    "stackable": true
+  },
+  "mead": {
+    "id": "mead",
+    "name": "Mead",
+    "item_type": "consumable",
+    "value": 5,
+    "heal_amount": 3,
+    "stackable": true
+  },
+  "bread": {
+    "id": "bread",
+    "name": "Loaf of Bread",
+    "item_type": "consumable",
+    "value": 4,
+    "heal_amount": 4,
+    "stackable": true
+  },
+  "jerky": {
+    "id": "jerky",
+    "name": "Dried Jerky",
+    "item_type": "consumable",
+    "value": 4,
+    "heal_amount": 3,
+    "stackable": true
+  },
+  "wine": {
+    "id": "wine",
+    "name": "Bottle of Wine",
+    "item_type": "consumable",
+    "value": 10,
+    "heal_amount": 4,
+    "stackable": true
+  },
+  "potion_might": {
+    "id": "potion_might",
+    "name": "Potion of Might",
+    "item_type": "consumable",
+    "value": 60,
+    "description": "Grants the Blessed status for 6 turns.",
+    "stackable": true,
+    "use_effect": {
+      "effect": "blessed",
+      "duration": 6
+    }
+  },
+  "potion_speed": {
+    "id": "potion_speed",
+    "name": "Potion of Swiftness",
+    "item_type": "consumable",
+    "value": 70,
+    "description": "Sharpens reflexes. +2 DEX for 8 turns.",
+    "stackable": true,
+    "use_effect": {
+      "temp_stat": "dexterity",
+      "amount": 2,
+      "duration": 8
+    }
+  },
+  "antidote": {
+    "id": "antidote",
+    "name": "Antidote",
+    "item_type": "consumable",
+    "value": 40,
+    "description": "Cures poison.",
+    "stackable": true,
+    "use_effect": {
+      "cure": "poisoned"
+    }
+  }
+}

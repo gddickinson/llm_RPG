@@ -87,10 +87,14 @@ All content (items, quests, recipes, monsters, spells, NPC presets, shop catalog
 is hardcoded Python. Every content addition means code edits, and content volume is
 demo-scale: 6 quests, 6 recipes, 4 encounter monsters, 7 spells.
 
-- [ ] **P1.1** Define JSON schemas + loaders for: items, recipes, monsters, spells,
-  NPC presets, quest templates, shop catalogs. Keep the Python dataclasses; they just
-  hydrate from `data/*.json`.
-- [ ] **P1.2** Port existing content to data files; registry modules become thin loaders.
+- [x] **P1.1a Data-layer foundation + items ported.** *(done 2026-07-09 —
+  `items/data_loader.py` (`load_data_dir` merges `data/<subdir>/*.json`, rejects
+  duplicate ids, clear DataError messages); all 69 items now live in
+  `data/items/*.json` split by category, entries only carry non-default fields;
+  `item_registry.py` is a thin loader with an unchanged API. 10 tests incl.
+  cross-reference validation of recipes/loot/shops/forage/quests.)*
+- [ ] **P1.1b** Port remaining registries to data files: recipes, monsters
+  (encounters + dungeon), spells, NPC presets, quest templates, shop catalogs.
 - [ ] **P1.3** Validation test: load all data files, check cross-references (recipe
   ingredients exist, loot table items exist, quest rewards exist).
 - [ ] **P1.4** (Stretch) A "module pack" folder convention — the ROADMAP's campaign

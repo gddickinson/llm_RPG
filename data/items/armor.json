@@ -1,0 +1,50 @@
+{
+  "leather": {
+    "id": "leather",
+    "name": "Leather Armor",
+    "item_type": "armor",
+    "value": 25,
+    "description": "Light, flexible protection.",
+    "armor": 2
+  },
+  "chainmail": {
+    "id": "chainmail",
+    "name": "Chainmail",
+    "item_type": "armor",
+    "value": 80,
+    "description": "Interlocking metal rings.",
+    "rarity": "uncommon",
+    "armor": 4
+  },
+  "plate": {
+    "id": "plate",
+    "name": "Plate Armor",
+    "item_type": "armor",
+    "value": 200,
+    "rarity": "rare",
+    "armor": 6
+  },
+  "tattered_armor": {
+    "id": "tattered_armor",
+    "name": "Tattered Armor",
+    "item_type": "armor",
+    "value": 5,
+    "description": "Better than nothing.",
+    "armor": 1
+  },
+  "shield": {
+    "id": "shield",
+    "name": "Wooden Shield",
+    "item_type": "shield",
+    "value": 15,
+    "armor": 2
+  },
+  "iron_shield": {
+    "id": "iron_shield",
+    "name": "Iron Shield",
+    "item_type": "shield",
+    "value": 40,
+    "rarity": "uncommon",
+    "armor": 3
+  }
+}
