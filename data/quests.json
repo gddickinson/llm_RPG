@@ -107,5 +107,89 @@
       "potion"
     ],
     "reward_xp": 150
+  },
+  "the_silver_edge": {
+    "title": "The Silver Edge",
+    "description": "Durgan will teach you his finest pattern: bring a plain sword, a troll's tooth, and stolen jewelry to his forge, and craft the silver blade yourself.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "silver_blade",
+        "required": 1,
+        "description": "Forge (or otherwise obtain) a Silver Blade"
+      }
+    ],
+    "giver_id": "blacksmith_01",
+    "reward_gold": 50,
+    "reward_items": [],
+    "reward_xp": 150,
+    "reward_unlocks": [
+      "topic:silver_blade"
+    ]
+  },
+  "roads_and_rivers": {
+    "title": "Roads and Rivers",
+    "description": "Karim wants word carried to the outlying settlements. Walk the roads to Riverside Hamlet and Stonepine Camp and learn the lay of the land.",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "Riverside Hamlet",
+        "required": 1,
+        "description": "Visit Riverside Hamlet"
+      },
+      {
+        "type": "explore",
+        "target": "Stonepine Camp",
+        "required": 1,
+        "description": "Visit Stonepine Camp"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 60,
+    "reward_items": [],
+    "reward_xp": 120,
+    "reward_unlocks": [
+      "teleport:riverside",
+      "teleport:stonepine"
+    ]
+  },
+  "supply_run": {
+    "title": "Supply Run",
+    "description": "Bram needs an iron bar carried to Hilde at the Stonepine smithy \u2014 the picks won't mend themselves.",
+    "objectives": [
+      {
+        "type": "deliver",
+        "target": "iron_bar:camp_smith_01",
+        "required": 1,
+        "description": "Deliver an iron bar to Hilde"
+      }
+    ],
+    "giver_id": "camp_foreman_01",
+    "reward_gold": 80,
+    "reward_items": [],
+    "reward_xp": 100,
+    "reward_unlocks": [
+      "topic:east_shaft"
+    ]
+  },
+  "the_healers_art": {
+    "title": "The Healer's Art",
+    "description": "Brother Anselm offers to teach the healing prayer to one who has proven they understand herbs \u2014 brew a healing potion with your own hands first.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "potion",
+        "required": 1,
+        "description": "Brew (or obtain) a Healing Potion"
+      }
+    ],
+    "giver_id": "hamlet_priest_01",
+    "reward_gold": 0,
+    "reward_items": [],
+    "reward_xp": 150,
+    "prereq_quest": "herb_gathering",
+    "reward_unlocks": [
+      "spell:heal"
+    ]
   }
 }

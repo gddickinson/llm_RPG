@@ -62,7 +62,8 @@ class QuestBoardManager:
         out = []
         for qid in board.posted_quest_ids:
             q = self.engine.quest_manager.get(qid)
-            if q and q.status == QuestStatus.AVAILABLE:
+            if q and q.status == QuestStatus.AVAILABLE and \
+                    self.engine.quest_manager.is_unlocked(q):
                 out.append(q)
         return out
 

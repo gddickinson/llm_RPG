@@ -93,10 +93,13 @@ class TravelSystem:
 
     def destinations(self) -> List[dict]:
         out = []
+        quest_unlocks = self.engine.player.metadata.get(
+            "teleport_unlocks", [])
         for key, name, loc_part, region in DESTINATIONS:
             pos = self._find_destination_pos(loc_part)
             unlocked = region is None or \
-                "easy" in self.engine.diary_manager.claimed(region)
+                "easy" in self.engine.diary_manager.claimed(region) or \
+                key in quest_unlocks
             out.append({
                 "key": key, "name": name, "pos": pos,
                 "unlocked": unlocked and pos is not None,

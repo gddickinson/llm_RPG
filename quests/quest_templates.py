@@ -28,6 +28,11 @@ def _quest_from_entry(quest_id: str, entry: dict) -> Quest:
         reward_gold=entry.get("reward_gold", 0),
         reward_items=list(entry.get("reward_items", [])),
         reward_xp=entry.get("reward_xp", 0),
+        metadata={
+            key: entry[key]
+            for key in ("prereq_quest", "reward_unlocks")
+            if key in entry
+        },
     )
 
 

@@ -215,10 +215,10 @@ def initialize_demo_world(engine, player_spec=None) -> None:
     engine.memory_manager.add_event(
         "You arrive at the outskirts of Oakvale Village.")
 
-    # Offer starter quests
+    # Offer every authored quest (locked ones hide behind their prereqs)
     if engine.quest_manager:
-        for qid in ("tavern_intro", "troll_hunt", "herb_gathering",
-                    "cave_exploration", "deliver_sword", "survive_night"):
+        from quests.quest_templates import all_quest_ids
+        for qid in all_quest_ids():
             engine.quest_manager.offer_quest(qid)
 
     # Build interiors for every building

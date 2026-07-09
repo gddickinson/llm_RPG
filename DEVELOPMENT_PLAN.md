@@ -282,10 +282,19 @@ and out of fights — and NPCs remember you across sessions.
   "[Board] New notice" events, real givers for turn-in. Cap 3 available; stale
   unaccepted notices withdrawn after 3 days (accepted ones never). Serialize
   through the quest manager. The world is never questless again. 10 tests.)*
-- [ ] **P4.2 8–12 handcrafted quests, one bespoke mechanic each.** OSRS lesson: 10
-  great quests beat 50 generated ones; use humor; skeleton authored, dialog
-  LLM-rendered. **Rewards are capability unlocks, not XP**: a teleport node, a map
-  shortcut, tool upgrades, area access, auto-pickup ammo, a companion.
+- [x] **P4.2a Quest capabilities + 4 new handcrafted quests.** *(done 2026-07-09 —
+  quest chains (`prereq_quest` hides quests until the prereq is turned in) +
+  capability unlocks (`reward_unlocks`: teleport:/topic:/spell:) applied at
+  turn-in. Fixed TWO dead paths: DELIVER objectives were player-uncompletable
+  (now talking to the recipient hands over carried quest items — the shipped
+  deliver_sword quest works for the first time), and crafting never counted
+  for FETCH objectives. New quests: The Silver Edge (craft the blade),
+  Roads and Rivers (explore → both teleports), Supply Run (deliver → east_shaft
+  topic), The Healer's Art (chain: herbs → brew → learn the heal spell).
+  9 tests.)*
+- [ ] **P4.2b** More handcrafted quests (target 8–12 total authored) — a
+  multi-stage keep expedition, a bandit-fence investigation using topics/secrets,
+  a humor quest. LLM-rendered giver dialog via the existing protocol.
 - [ ] **P4.3 Quest points + guild.** Each quest grants 1–3 QP; an Adventurers' Guild
   building unlocks at N QP with its own board, bank, shop, trainers.
 - [ ] **P4.4 Tutorial Island.** Small separate starter zone; one instructor NPC per

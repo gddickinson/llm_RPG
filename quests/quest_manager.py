@@ -40,9 +40,18 @@ class QuestManager:
         self.quests[quest_id] = quest
         return quest
 
+    def is_unlocked(self, quest: Quest) -> bool:
+        """A quest with a prerequisite hides until that quest is done."""
+        prereq = quest.metadata.get("prereq_quest")
+        if not prereq:
+            return True
+        done = self.quests.get(prereq)
+        return done is not None and done.status == QuestStatus.TURNED_IN
+
     def accept_quest(self, quest_id: str) -> bool:
         quest = self.quests.get(quest_id)
-        if not quest or quest.status != QuestStatus.AVAILABLE:
+        if not quest or quest.status != QuestStatus.AVAILABLE or \
+                not self.is_unlocked(quest):
             return False
         quest.status = QuestStatus.ACTIVE
         self._log(f"Quest accepted: {quest.title}")
@@ -81,16 +90,64 @@ class QuestManager:
             except Exception as e:
                 logger.warning(f"Level-up check failed: {e}")
 
+        # Capability unlocks: "teleport:<key>" / "topic:<id>" / "spell:<id>"
+        for unlock in quest.metadata.get("reward_unlocks", []):
+            self._apply_unlock(player, unlock)
+
         quest.status = QuestStatus.TURNED_IN
         self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")
         return True
 
+    def _apply_unlock(self, player, unlock: str) -> None:
+        kind, _, key = unlock.partition(":")
+        meta = player.metadata
+        if kind == "teleport":
+            bucket = meta.setdefault("teleport_unlocks", [])
+            if key not in bucket:
+                bucket.append(key)
+                self._log(f"Unlocked: fast travel to {key.title()}!")
+        elif kind == "topic":
+            bucket = meta.setdefault("topics_known", [])
+            if key not in bucket:
+                bucket.append(key)
+                self._log(f"New topic in your journal: {key}")
+        elif kind == "spell":
+            bucket = meta.setdefault("spells_known", [])
+            if key not in bucket:
+                bucket.append(key)
+                self._log(f"You have learned the {key} spell!")
+        else:
+            logger.warning(f"Unknown unlock kind: {unlock}")
+
+    def try_deliver(self, player, npc_id: str) -> List[str]:
+        """Talking to a DELIVER target hands over carried quest items."""
+        notes = []
+        for quest in self.active():
+            for obj in quest.objectives:
+                if obj.obj_type != ObjectiveType.DELIVER or \
+                        obj.is_complete():
+                    continue
+                item_id, _, recipient = obj.target.partition(":")
+                if recipient != npc_id:
+                    continue
+                for it in list(player.inventory):
+                    if getattr(it, "id", "") == item_id:
+                        player.inventory.remove(it)
+                        obj.increment(1)
+                        self._newly_completed(quest, obj)
+                        notes.append(
+                            f"You hand over {getattr(it, 'name', item_id)}.")
+                        break
+        return notes
+
     # ----- offered / turn-in queries (NPC-driven UI) ---------------------
 
     def offered_by(self, giver_id: str) -> List[Quest]:
-        """Quests in AVAILABLE state offered by this giver."""
+        """Unlocked AVAILABLE quests offered by this giver."""
         return [q for q in self.quests.values()
-                if q.giver_id == giver_id and q.status == QuestStatus.AVAILABLE]
+                if q.giver_id == giver_id and
+                q.status == QuestStatus.AVAILABLE and
+                self.is_unlocked(q)]
 
     def ready_for_turn_in(self, giver_id: str) -> List[Quest]:
         """Quests in COMPLETED state belonging to this giver."""

@@ -622,3 +622,19 @@ after 3 days (accepted ones never expire); everything serializes through
 the quest manager. The audit's "permanently questless after 6 quests"
 finding is closed — the director-to-radiant pipeline means overnight
 events become morning work. 10 new tests. Suite: 483 tests, all pass.
+
+**Round 33 — P4.2a quest chains, capability unlocks, 4 new quests (done).**
+Quests gained chains (prereq_quest hides a quest until its prerequisite is
+turned in — filtered from NPC offers, the board, and accept) and capability
+unlocks (reward_unlocks: teleport:/topic:/spell: applied at turn-in, all
+validator-checked). Fixed two dead paths: DELIVER objectives were
+player-uncompletable (the give path only existed for NPC actions) — talking
+to the recipient now hands over carried quest items, making the shipped
+deliver_sword quest completable for the first time; and crafted output
+never counted toward FETCH objectives. Four new authored quests: The
+Silver Edge (craft the silver blade — ties the Gorkash secret chain
+together), Roads and Rivers (explore both settlements -> both teleports),
+Supply Run (deliver iron to Hilde -> east_shaft topic), The Healer's Art
+(chain off herb_gathering -> brew a potion -> learn the heal spell, any
+class). All 10 authored quests now offered at world start. 9 new tests.
+Suite: 492 tests, all pass.

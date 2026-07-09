@@ -309,6 +309,11 @@ class GameAPIMixin:
                 self.collection_log.record_craft(output_id)
             except Exception:
                 pass
+            # Crafted output counts for FETCH objectives too
+            if self.quest_manager:
+                recipe = find_recipe(output_id)
+                if recipe:
+                    self.quest_manager.on_item_acquired(recipe.output_id)
         return msg
 
     def _award_craft_xp(self, recipe) -> None:

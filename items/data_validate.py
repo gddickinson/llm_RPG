@@ -208,6 +208,29 @@ def _check_quests() -> List[str]:
         for iid in quest.reward_items:
             if not _known_item(iid):
                 out.append(f"quest {qid}: unknown reward item '{iid}'")
+        prereq = quest.metadata.get("prereq_quest")
+        if prereq and prereq not in QUEST_TEMPLATES:
+            out.append(f"quest {qid}: unknown prereq '{prereq}'")
+        for unlock in quest.metadata.get("reward_unlocks", []):
+            kind, _, key = unlock.partition(":")
+            if kind == "spell":
+                from engine.spells import SPELL_REGISTRY
+                if key not in SPELL_REGISTRY:
+                    out.append(f"quest {qid}: unlock of unknown spell "
+                               f"'{key}'")
+            elif kind == "topic":
+                from engine.topics import TOPICS
+                if key not in TOPICS:
+                    out.append(f"quest {qid}: unlock of unknown topic "
+                               f"'{key}'")
+            elif kind == "teleport":
+                from engine.travel import DESTINATIONS
+                if key not in [d[0] for d in DESTINATIONS]:
+                    out.append(f"quest {qid}: unlock of unknown "
+                               f"teleport '{key}'")
+            else:
+                out.append(f"quest {qid}: unknown unlock kind "
+                           f"'{unlock}'")
         for obj in quest.objectives:
             t = obj.target
             if obj.obj_type == ObjectiveType.FETCH and not _known_item(t):

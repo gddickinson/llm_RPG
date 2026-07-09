@@ -75,9 +75,12 @@ class DialogSystem:
         if klass not in ("brigand", "troll", "monster"):
             npc.modify_relationship(self.engine.player.id, 2)
 
-        # Quest hook
+        # Quest hooks: TALK objectives + hand over DELIVER items
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             self.engine.quest_manager.on_npc_talked(npc_id)
+            for note in self.engine.quest_manager.try_deliver(
+                    self.engine.player, npc_id):
+                self.engine.memory_manager.add_event(note)
 
         # Crossing an affinity threshold may trigger a heart event
         try:
