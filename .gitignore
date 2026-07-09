@@ -17,3 +17,4 @@ world/.DS_Store
 
 # Claude Code session metadata
 .claude/
+.venv/

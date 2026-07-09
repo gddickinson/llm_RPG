@@ -1,183 +1,173 @@
 # LLM-RPG
 
-A locally-runnable, D&D-style RPG with optional LLM-powered NPCs.
-The default mode requires **no LLM at all** — a heuristic NPC engine
-keeps the world alive — but you can plug in Ollama, Anthropic Claude,
-or OpenAI for richer character behavior.
+**A locally-runnable, D&D-style role-playing game with LLM-powered NPCs.**
+Runs entirely offline out of the box (a heuristic AI keeps the world alive), and
+plugs into Ollama, Anthropic Claude, or OpenAI for richer NPC minds.
 
-## Highlights
-
-- **Local-first**: Single-process Pygame game; runs on any modern Mac/Linux/Windows.
-- **Start menu + character creator**: Title screen with New Game / Load / Quit. Quick Start or full multi-step Customize (name → race → class → 4d6 stats → confirm).
-- **No mandatory LLM**: Heuristic provider gives NPCs personality, daily routines, schedules, combat behavior, and branching dialog out of the box.
-- **Pluggable LLM**: One flag to switch between heuristic / Ollama / Anthropic / OpenAI.
-- **Bigger world** (120×80, 9,600 tiles): three settlements — Oakvale Village, Riverside Hamlet, and Stonepine Camp (mining/lumber outpost) — connected by roads. Two cave entrances. Mountain spurs, a tributary river, more forest patches.
-- **Procedural dungeons**: step onto a cave tile and descend into BSP-generated tunnels with rooms, monsters, loot.
-- **Weather**: clear / cloudy / rain / fog / snow / storm; biased by season; reduces visibility.
-- **Foraging**: pick herbs and berries from forest/grass tiles with regen cooldown.
-- **NPC families + gossip**: NPCs have spouses, siblings, and gossip lines drawn from family ties and recent world events.
-- **History sim**: a brief pre-game simulation gives the world lore — faction tensions, a ruined keep, and starting reputation shifts.
-- **Schedule-driven movement**: NPCs actually walk to their schedule's target location (keywords like "tavern", "forge", "home", "village" resolve to the nearest matching place).
-- **Living world**: NPC daily schedules + needs (hunger, fatigue), seasons, calendar, day/night cycle.
-- **Inventory-driven combat**: melee uses your equipped weapon (fists if none); ranged requires an equipped bow/sling/crossbow plus matching ammo (arrows/bolts/stones), consumed per shot.
-- **D&D-style hit rolls**: 1d20 + ability mod + proficiency vs AC. Nat-20 crits (double damage), nat-1 fumbles. +2 to hit when flanking.
-- **Equipment that matters**: 6 worn slots (weapon, armor, shield, amulet, ring, boots). Rings/amulets/boots grant real stat / AC / HP / mana bonuses while worn.
-- **Interactive inventory (I)**: equipment slots up top, scrollable bag below; E equips/unequips, Q uses, D drops.
-- **Shop UI (S)**: opens with the adjacent merchant. Two-column buy/sell with faction-rep–modified prices. Merchants stock themed inventories (smith = weapons/armor, apothecary = potions/scrolls, etc.).
-- **Magic items**: silver / flaming / holy / frost weapons deal type-appropriate bonus damage (silver +50% vs trolls, fire vs troll regen, holy vs monsters).
-- **Spells + mana**: Wizard / cleric / sorcerer / druid spells with mana pool, range, and status effects.
-- **Status effects**: Poison ticks damage; paralyzed skips turns; blessed/cursed shift damage.
-- **Equipment slots**: Worn weapon / armor / shield / amulet / ring / boots, separate from the inventory bag.
-- **Real items + crafting**: Weapons, armor, potions, quest items; recipes for ingredients.
-- **Quests**: 6 quest types. Accept from NPC dialog or the tavern's quest board.
-- **Factions**: 8 factions with reputation tracking.
-- **Companions**: Recruit followers who fight alongside you.
-- **Building interiors**: Walk into the tavern, forge, shop, or temple.
-- **Random encounters**: Wilderness monster spawns.
-- **Banking**: Deposit gold safely at temple or shop.
-- **Save / load**: One-key F5/F9 JSON saves.
-- **Death popup**: When the player dies, a popup offers Restart or Quit.
-- **Procedural worldgen + sprite renderer**: No PNG asset files needed.
-- **D&D skill checks + leveling**: 18 skills, XP curve with class-favored stat gains.
-
-## Quick Start
+![Gameplay — Oakvale Village in the rain](docs/img/gameplay.png)
+*Exploring Oakvale Village in the rain: procedural sprites, day/night lighting,
+live minimap, event log with world lore from the pre-game history simulation.*
 
 ```bash
 pip install -r requirements.txt
-python main.py                                  # Pygame GUI, heuristic AI
-python main.py --ui terminal                    # Terminal mode
-python main.py --provider ollama --model llama3 # Ollama backend
-python main.py --provider anthropic \
-       --model claude-haiku-4-5-20251001        # Anthropic Claude
-python main.py --load                           # Resume quicksave
+python main.py                                  # Pygame GUI, no LLM needed
+python main.py --provider anthropic --model claude-haiku-4-5-20251001
 ```
 
-For LLM modes, install the matching SDK:
-```bash
-pip install anthropic        # for --provider anthropic
-pip install openai           # for --provider openai
-# Ollama: see https://ollama.ai/
+---
+
+## The game today
+
+A living-world sandbox on a 120×80 tile map: three settlements (Oakvale Village,
+Riverside Hamlet, Stonepine Camp) joined by roads, wilderness, caves that descend
+into procedural dungeons, and ~11 named NPCs with families, schedules, needs, and
+gossip.
+
+![NPC dialog](docs/img/dialog.png)
+*Talking to Karim the guard — free-text conversation, with quest offers surfaced
+inline. Making dialog mechanically deep is the core of the development plan below.*
+
+### Systems overview
+
+```mermaid
+flowchart LR
+    subgraph World
+        WG[Procedural worldgen<br/>3 settlements, dungeons]
+        CAL[Calendar & seasons<br/>360-day year]
+        WX[Weather]
+        HIST[Pre-game history sim]
+    end
+    subgraph Characters
+        SCHED[NPC schedules & needs]
+        FAM[Families & gossip]
+        FAC[8 factions & reputation]
+        COMP[Companions]
+    end
+    subgraph Player
+        CBT[d20 combat<br/>crits, flanking, damage types]
+        EQ[6 equipment slots<br/>ammo, AC, bonuses]
+        SPL[Spells & mana]
+        QST[Quests & quest boards]
+        ECO[Shops, banking, crafting]
+    end
+    LLM[LLM providers<br/>heuristic / Ollama / Claude / OpenAI]
+    World --> Characters --> Player
+    LLM -.NPC actions & dialog.-> Characters
 ```
+
+![Inventory](docs/img/inventory.png)
+*The inventory overlay: worn equipment slots up top, scrollable bag below.*
+
+### What's under the hood
+
+| | |
+|---|---|
+| Engine | Python + pygame, single process, no asset files (procedural sprites) |
+| Codebase | ~19k lines, all modules < 500 lines, dependency-injected subsystems |
+| Tests | 247 unit tests across 44 files |
+| Combat | 1d20 + ability mod + proficiency vs AC; nat-20 crits, flanking, silver/fire/holy damage types |
+| World | Chunk-streamed 120×80 map, BSP dungeons, weather, foraging, interiors |
+| NPCs | Class schedules (work/eat/drink/sleep), hunger & fatigue, families, gossip, faction reputation |
+| LLM layer | Pluggable providers; the default heuristic needs no LLM at all |
+
+### An honest status note
+
+A July 2026 audit found that several built systems are **not yet wired to the
+player** (shop/crafting/companion UIs, some save/load state) and the LLM currently
+produces flavor text rather than driving game mechanics. Fixing that wiring is
+Phase 0 of the plan below — this branch (`v2-development`) is where that work
+happens, in small tested increments.
+
+---
+
+## The plan: from tech demo to professional RPG
+
+Full detail in [`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md). It was built from a
+line-level code audit plus design research into Old School RuneScape, Stardew
+Valley, Caves of Qud, Kenshi, and shipped LLM-NPC games (Suck Up!, Dead Meat,
+1001 Nights, the Generative Agents paper).
+
+```mermaid
+flowchart TD
+    P0["Phase 0 — Repair<br/>fix save/load data loss, unreachable shop,<br/>crafting & companion UIs, wire weather/needs,<br/>discoverability hints"]
+    P1["Phase 1 — Data-driven content<br/>items/quests/monsters/spells as JSON"]
+    P2["Phase 2 — Progression lattice (RuneScape layer)<br/>8–10 skills, gathering nodes, production chains,<br/>collection log, pets, diaries, shortcuts & teleports"]
+    P3["Phase 3 — LLM as gameplay pillar<br/>structured dialog protocol, per-NPC memory,<br/>gated secrets, LLM-judged persuasion,<br/>nightly world director"]
+    P4["Phase 4 — Quests & world<br/>radiant quest generation, 8–12 handcrafted quests,<br/>Tutorial Island, regional identity, history relics"]
+    P5["Phase 5 — Combat & feel<br/>enemy AI profiles, spell UI, tactical verbs,<br/>faction ticker, sound, day-summary loop"]
+    P0 --> P1 --> P2 --> P4
+    P0 --> P3 --> P4 --> P5
+```
+
+### The three design pillars
+
+1. **A RuneScape-style progression lattice.** Many parallel skill tracks with a
+   geometric XP curve and an unlock every few levels; gather → process → consume
+   chains in a closed "Ironman" economy where combat eats food, ammo, and potions;
+   collection log, skilling pets, and regional achievement diaries for long-tail
+   goals.
+2. **LLM NPCs that matter mechanically.** *Engine owns truth, LLM owns voice*:
+   structured JSON dialog actions, secrets held as gated tokens (immune to prompt
+   injection by construction), persuasion checks the LLM adjudicates against your
+   CHA with real stakes, per-NPC retrieval memory that survives saves, and one
+   nightly "director" call that spawns world events instead of costly per-NPC
+   simulation.
+3. **A handcrafted world worth exploring.** Quests whose rewards are capability
+   unlocks (teleports, shortcuts, access) rather than XP; a Tutorial Island of
+   LLM instructor NPCs; history simulation that leaves relics, ruins, and grudges
+   you can actually find.
+
+### Milestones
+
+| Milestone | Delivers |
+|---|---|
+| **M1 Repair** | Everything advertised actually works, zero save-data loss |
+| **M2 Foundation** | All content data-driven (JSON), scaling unblocked |
+| **M3 Progression** | 10+ hours of self-directed skill/collection play |
+| **M4 The Pillar** | Talk your way into secrets, discounts, quests, and out of fights |
+| **M5 The World** | Radiant + handcrafted quests, tutorial, themed regions |
+| **M6 Polish** | Tactical combat, spell UI, sound, day-loop hooks |
+
+---
+
+## Quick start
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python main.py                        # GUI, heuristic NPCs (no LLM)
+.venv/bin/python main.py --ui terminal          # terminal mode
+.venv/bin/python main.py --provider ollama --model llama3
+.venv/bin/python main.py --provider anthropic --model claude-haiku-4-5-20251001
+.venv/bin/python main.py --load                 # resume quicksave
+```
+
+For cloud providers: `pip install anthropic` or `pip install openai` and set the
+matching API key environment variable.
 
 ## Controls (GUI)
 
-| Key                    | Action                          |
-|------------------------|---------------------------------|
-| WASD / Arrows          | Move                            |
-| SPACE / F              | Attack adjacent enemy           |
-| T                      | Talk to adjacent NPC            |
-| 1–9 (in dialog)        | Accept / turn in offered quests |
-| G / E                  | Pick up item                    |
-| H                      | Drink potion                    |
-| I                      | Inventory overlay               |
-| Q                      | Quest log                       |
-| C                      | Character sheet                 |
-| F5 / F9                | Save / Load                     |
-| F1 / `/`               | Help                            |
-| ESC                    | Close menu / quit               |
+| Key | Action | Key | Action |
+|---|---|---|---|
+| WASD / arrows | Move | I | Inventory |
+| SPACE / F | Attack | Q | Quest log |
+| T | Talk to NPC | C | Character sheet |
+| 1–9 (dialog) | Accept / turn in quest | Z | Forage |
+| G / E | Pick up | X / V | Fireball / Heal |
+| H | Drink potion | N / M | Bank deposit / withdraw |
+| TAB | Enter building / cave | F5 / F9 | Save / Load |
+| F1 or `/` | Help | ESC | Close / quit |
 
-In dialog mode: type your message, Enter to send, Esc to leave.
-
-## Game Systems
-
-### NPCs — daily schedules + needs
-
-Peaceful NPCs follow class-specific daily routines: villagers and merchants work during the day, eat at the tavern at meals, drink in the evening, sleep at night. Bards play music in the tavern; clerics pray at the temple. NPCs accumulate hunger and fatigue as time passes; starving or exhausted NPCs break from their schedule to find food or rest.
-
-Hostile NPCs (brigands, trolls, monsters) hunt the player on sight.
-
-### Combat
-
-- Player vs NPC vs NPC; stat-vs-stat hit chance with weapon damage / armor reduction.
-- Defeated characters drop class-keyed loot via `items/loot_tables.py`.
-- Player kills grant XP and shift faction reputation.
-
-### Factions + reputation
-
-Eight factions: villagers, guards, merchants, brigands, monsters, temple, bardic, neutral. Killing a brigand pleases villagers, guards, and temple — and hardens the brigand-rep further. Attacking a villager turns the town hostile.
-
-Reputation labels: revered ▶ honored ▶ friendly ▶ warming ▶ neutral ▶ wary ▶ hostile ▶ hated.
-
-### Quests
-
-Quests start AVAILABLE — discover them through NPC dialog (accept with 1-9) or the **quest board** at the tavern. Turn in completed quests at the giver for gold, items, and XP.
-
-Objective types: KILL, FETCH, TALK, EXPLORE, DELIVER, SURVIVE.
-
-### Items + crafting
-
-- 35+ predefined items with type, rarity, value, effects.
-- Recipes turn ingredients into output items (`items/crafting.py`).
-- Some recipes are forge-gated — visit Durgan's Forge to craft weapons.
-
-### Banking
-
-Visit the Temple of Light or General Store to deposit/withdraw gold. Balance is stored in `player.metadata["bank"]`.
-
-### Companions
-
-Recruit certain NPC classes (warrior, bard, cleric, wizard, ranger, paladin) once you've built up enough relationship (≥30). Up to 3 party members. They follow you and fight adjacent hostiles automatically.
-
-### Building interiors
-
-Step on a tavern / forge / shop / temple tile and press E (or the interact button) to enter the indoor mini-map. Each interior has furniture and NPC spots. Step on the door tile to leave.
-
-### Random encounters
-
-When you wander far from town through grass or forest tiles, monsters (wolves, bandits, goblins, wandering trolls) may spawn nearby. Cooldown between encounters keeps them from being constant.
-
-### Calendar + seasons
-
-12 months × 30 days = 360-day year. Four seasons (spring/summer/autumn/winter) each tint the world's colors. The current date is shown in the HUD.
-
-### Skills + leveling
-
-- D&D-style skill checks: 1d20 + ability modifier (+ proficiency) vs DC, with advantage/disadvantage.
-- XP curve: cumulative `50 * N * (N-1)` per level.
-- On level-up: +5 max HP, full heal, +1 to two class-favored stats (e.g. Warrior STR+CON, Wizard INT+WIS).
-
-### Save / load
-
-One-key save (F5) and load (F9). Captures world, time, all NPCs, ground items, quests, player progress.
-
-## Project Layout
-
-See [`INTERFACE.md`](INTERFACE.md) for the full navigation map.
-
-## Running Tests
+## Development
 
 ```bash
-python -m unittest discover tests/
+.venv/bin/python -m unittest discover tests/    # 247 tests
 ```
 
-107 tests cover items, quests, save/load, combat, world gen, skills, leveling, factions, calendar, schedules, needs, encounters, banking, crafting, interiors, quest boards, companions, dialog trees, engine.
-
-## Configuration
-
-Edit `config.py` to tune:
-- `DEFAULT_PROVIDER`: heuristic | ollama | anthropic | openai
-- `DEFAULT_MODEL`: model name for the chosen provider
-- `DEFAULT_MAP_WIDTH` / `_HEIGHT`
-- `NPC_ACTION_INTERVAL`: turns between NPC actions
-- `MAX_HISTORY_ITEMS`: event log retention
-
-## Adding Content
-
-Quick recipes (see INTERFACE.md for details):
-- **New item**: append to `items/item_registry.py`.
-- **New recipe**: append to `items/crafting.py` `RECIPES` dict.
-- **New quest**: add template in `quests/quest_templates.py`; post to a board in `quests/quest_board.py`.
-- **New NPC class**: extend `CharacterClass`; add schedule in `characters/schedules.py`; add to `CLASS_TO_FACTION`.
-- **New dialog tree**: add factory in `engine/dialog_trees.py`.
-- **New encounter monster**: add entry in `world/encounters.py`.
-- **New LLM provider**: subclass `LLMProvider` in `llm/providers/`.
-
-## Requirements
-
-- Python 3.8+
-- pygame (or pygame-ce) — for GUI mode
-- requests — for Ollama
-- (optional) anthropic, openai — for cloud providers
+- [`INTERFACE.md`](INTERFACE.md) — codebase navigation map (read first)
+- [`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md) — the full phased plan
+- [`SESSION_LOG.md`](SESSION_LOG.md) — development history
+- All source files stay under 500 lines; content additions should go through the
+  (upcoming) JSON data layer.
 
 ## License
 
