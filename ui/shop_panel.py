@@ -39,9 +39,11 @@ class ShopPanel:
 
     # ---------------- data ------------------------------------------
 
+    def _catalog(self):
+        return self.engine.shop_manager.catalog_for(self.merchant)
+
     def _merchant_items(self):
-        cat = self.engine.shop_manager.catalog_for(self.merchant)
-        return cat.items
+        return self._catalog().items
 
     def _player_items(self):
         return list(self.engine.player.inventory)
@@ -89,6 +91,7 @@ class ShopPanel:
                 return
             # Pay; reduce stack if stackable, else remove
             player.gold -= price
+            self._catalog().gold += price
             if item.stackable:
                 # Take a single unit from the stack
                 from items.item_registry import create_item
@@ -113,6 +116,13 @@ class ShopPanel:
                 return
             item = items[self.cursor_right]
             price = sm.sell_price(player, item, self.merchant)
+            cat = self._catalog()
+            if cat.gold < price:
+                self.engine.memory_manager.add_event(
+                    f"{self.merchant.name} can't afford that right now "
+                    f"({cat.gold}g left). Try after they restock.")
+                return
+            cat.gold -= price
             # Transfer one unit
             if item.stackable and item.quantity > 1:
                 player.gold += price
@@ -155,7 +165,8 @@ class ShopPanel:
         except Exception:
             ac = 10
         stats = self._font.render(
-            f"Gold: {self.engine.player.gold}    AC: {ac}",
+            f"Gold: {self.engine.player.gold}    AC: {ac}    "
+            f"{self.merchant.name}'s purse: {self._catalog().gold}g",
             True, (200, 200, 220))
         target.blit(stats, (box.x + 16, box.y + 36))
 

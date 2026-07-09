@@ -425,3 +425,13 @@ by damage taken). Inventory shows wear labels; the K panel lists repair
 entries at the forge; durability rides item.metadata so persistence is free.
 Commons never degrade (worry-free starter gear). 8 new tests; 3 legacy
 recipe tests updated to the bar economy. Suite: 339 tests, all pass.
+
+**Round 18 — P2.4 economy balancing (done).**
+Two structural exploits closed: (1) shop restock existed but had zero
+callers — `refresh_all_if_due()` now runs daily from advance_turn (checked
+every 30 turns); (2) merchants had unlimited gold, allowing infinite
+sell-loops — each catalog now carries a finite purse (100g + wares/4),
+shown in the shop UI. Selling drains the purse and is refused when the
+merchant is broke; your purchases refill it (gold circulates); restock
+resets stock and purse; purse persists in saves. New
+`tests/test_economy_balance.py` (6 tests). Suite: 345 tests, all pass.

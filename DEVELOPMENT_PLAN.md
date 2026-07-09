@@ -149,9 +149,13 @@ feeling. This directly fixes "content exhausted in under an hour."
   hit (200/150), break to zero contribution, repair at forge for ~15% of value
   scaled by damage. Inventory shows [%]/[BROKEN]; crafting panel lists repairs
   at the forge; durability rides item.metadata so saves are free. 8 tests.)*
-- [ ] **P2.4 Economy balancing.** Shops buy at ~50% of value, carry limited stock that
-  restocks slowly, and stock is data-driven (P1). Gold sinks: repairs, tolls/shortcuts,
-  teleport unlocks, prestige purchases (skill capes at max level).
+- [x] **P2.4 Economy balancing.** *(done 2026-07-09 — restock was never wired
+  (`refresh_all_if_due` had zero callers): now runs daily via advance_turn.
+  Merchants have finite purses (100g + wares/4, shown in the shop UI) — selling
+  drains them, your purchases refill them, restock resets them: no infinite
+  sell-loop. Purse persists in saves. Buy/sell spread + data-driven stock were
+  already live; repair sink from P2.3. Remaining sinks (tolls, teleports, capes)
+  arrive with P2.6/P2.8. 6 tests.)*
 - [ ] **P2.5 Collection log.** One UI screen tracking unique items/kills/finds per
   category ("Dungeon: 4/12"). Pure bookkeeping over existing content; extremely sticky.
 - [ ] **P2.6 Skilling pets.** Tiny per-action roll `1/(B − level·k)` for a cosmetic

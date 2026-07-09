@@ -246,6 +246,13 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"Weather tick error: {e}")
 
+        # Shops restock daily (checked every 30 turns; cheap)
+        try:
+            if self.turn_counter % 30 == 0:
+                self.shop_manager.refresh_all_if_due()
+        except Exception as e:
+            logger.debug(f"Shop restock error: {e}")
+
         # Advance in-flight projectiles
         try:
             results = self.projectile_manager.tick(dt=1.0)

@@ -33,6 +33,7 @@ class ShopCatalog:
     merchant_id: str
     items: List[Item] = field(default_factory=list)
     last_refreshed_minute: int = 0
+    gold: int = 0  # merchant's buying budget; refills on restock
 
 
 def _category_for_npc(npc) -> str:
@@ -90,6 +91,8 @@ class ShopManager:
                 items.append(item)
         cat.items = items
         cat.last_refreshed_minute = self.engine.world.time
+        # Buying budget scales with the shop's wares; refills each restock
+        cat.gold = 100 + sum(it.value for it in items) // 4
 
     def refresh_all_if_due(self, minutes_between: int = 24 * 60) -> None:
         now = self.engine.world.time
@@ -106,6 +109,7 @@ class ShopManager:
             npc_id: {
                 "items": [it.to_dict() for it in cat.items],
                 "last_refreshed_minute": cat.last_refreshed_minute,
+                "gold": cat.gold,
             }
             for npc_id, cat in self.catalogs.items()
         }
@@ -116,6 +120,7 @@ class ShopManager:
             cat = ShopCatalog(merchant_id=npc_id)
             cat.items = [Item.from_dict(it) for it in cd.get("items", [])]
             cat.last_refreshed_minute = cd.get("last_refreshed_minute", 0)
+            cat.gold = cd.get("gold", 150)
             self.catalogs[npc_id] = cat
 
     # ----- price computation -------------------------------------------
