@@ -98,8 +98,12 @@ demo-scale: 6 quests, 6 recipes, 4 encounter monsters, 7 spells.
   modules are thin loaders, APIs unchanged. +5 validation tests incl. new
   cross-refs: scroll items must cast known spells, spell status effects must be
   valid.)*
-- [ ] **P1.1c** Port remaining registries: monsters (encounters + dungeon),
-  NPC presets, quest templates.
+- [x] **P1.1c-monsters** *(done 2026-07-09 — `data/monsters.json` +
+  `world/monsters.py`; one registry now feeds both wilderness encounters
+  (`encounter_weight`) and dungeon rooms (`dungeon` flag); optional per-monster
+  `stats` overrides. Adding a monster = one JSON entry. 6 tests.)*
+- [ ] **P1.1d** Port NPC presets and quest templates (the factory-shaped
+  registries) to data files.
 - [ ] **P1.3** Validation test: load all data files, check cross-references (recipe
   ingredients exist, loot table items exist, quest rewards exist).
 - [ ] **P1.4** (Stretch) A "module pack" folder convention — the ROADMAP's campaign

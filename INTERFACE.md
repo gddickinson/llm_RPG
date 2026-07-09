@@ -19,7 +19,7 @@ llm_RPG/
 ├── world/                      # World, map, calendar, biomes, interiors
 ├── items/                      # Item system + crafting
 ├── quests/                     # Quest system + quest boards
-├── data/                       # JSON content files (items, recipes, spells, shop catalogs)
+├── data/                       # JSON content files (items, recipes, spells, shops, monsters)
 ├── llm/                        # LLM interface + providers
 ├── ui/                         # GUI (pygame) and terminal UI
 ├── saves/                      # Saved games (created at runtime)
@@ -75,7 +75,8 @@ llm_RPG/
 - **`interiors.py`** — Building interior mini-maps.
 - **`blueprints.py`** — Building footprint blueprints used by the world generator.
 - **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming).
-- **`encounters.py`** — `EncounterManager`; wilderness monster spawns.
+- **`encounters.py`** — `EncounterManager`; wilderness monster spawns (weather-scaled chance).
+- **`monsters.py`** — Monster templates from `data/monsters.json`; feeds encounters + dungeons; `build_monster()`.
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
 - **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.
@@ -169,7 +170,7 @@ Each turn (after a player move / dialog / action):
 - **New NPC class**: extend `CharacterClass` in `characters/character_types.py`; add schedule in `characters/schedules.py`; add to `CLASS_TO_FACTION` in `characters/factions.py`.
 - **New action**: add handler in `engine/action_router.py`.
 - **New terrain**: extend `TerrainType` + add sprite in `ui/sprite_loader.py`.
-- **New encounter monster**: add entry in `world/encounters.py` `_build_monster()` + `ENCOUNTER_TABLE`.
+- **New monster**: add an entry to `data/monsters.json` (`encounter_weight` for wilderness, `"dungeon": true` for dungeons).
 - **New LLM provider**: subclass `LLMProvider` in `llm/providers/`, register in `llm/providers/__init__.py`.
 
 ## File size policy

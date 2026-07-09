@@ -100,6 +100,48 @@ class TestRecipeSpellShopData(unittest.TestCase):
                               f"'{spell.status_effect}'")
 
 
+class TestMonsterData(unittest.TestCase):
+    def test_templates_load(self):
+        from world.monsters import MONSTER_TEMPLATES
+        self.assertGreaterEqual(len(MONSTER_TEMPLATES), 4)
+        wolf = MONSTER_TEMPLATES["wolf"]
+        self.assertEqual((wolf["hp"], wolf["level"]), (10, 1))
+
+    def test_encounter_table_matches_data(self):
+        from world.monsters import encounter_table, MONSTER_TEMPLATES
+        table = dict(encounter_table())
+        self.assertEqual(table.get("wolf"), 4)
+        for tid in table:
+            self.assertIn(tid, MONSTER_TEMPLATES)
+
+    def test_dungeon_pool_excludes_non_dungeon_monsters(self):
+        from world.monsters import dungeon_pool
+        pool = dungeon_pool()
+        self.assertIn("goblin", pool)
+        self.assertNotIn("wandering_troll", pool)
+
+    def test_build_monster_produces_valid_character(self):
+        from world.monsters import build_monster
+        troll = build_monster("wandering_troll", (5, 5))
+        self.assertEqual(troll.name, "Wandering Troll")
+        self.assertEqual(troll.hp, 30)
+        self.assertEqual(troll.position, (5, 5))
+        self.assertEqual(
+            getattr(troll.character_class, "value", ""), "troll")
+
+    def test_build_monster_unknown_falls_back(self):
+        from world.monsters import build_monster
+        m = build_monster("no_such_monster", (1, 1))
+        self.assertEqual(m.name, "Wolf")
+
+    def test_monster_classes_and_races_are_valid_enums(self):
+        from world.monsters import MONSTER_TEMPLATES
+        from characters.character_types import CharacterClass, CharacterRace
+        for tid, spec in MONSTER_TEMPLATES.items():
+            CharacterClass(spec.get("class", "monster"))
+            CharacterRace(spec.get("race", "goblin"))
+
+
 class TestCrossReferences(unittest.TestCase):
     def assert_ids_exist(self, ids, source):
         missing = [i for i in ids if i not in ITEM_REGISTRY]

@@ -15,13 +15,10 @@ from world.world_map import TerrainType
 logger = logging.getLogger("llm_rpg.encounters")
 
 
-# Encounter table: (monster_template_id, weight)
-ENCOUNTER_TABLE = [
-    ("wolf", 4),
-    ("bandit", 2),
-    ("goblin", 2),
-    ("wandering_troll", 1),
-]
+# Encounter table: (monster_template_id, weight) — from data/monsters.json
+from world.monsters import encounter_table, build_monster
+
+ENCOUNTER_TABLE = encounter_table()
 
 
 # Distance from player at which a new spawn appears
@@ -45,46 +42,7 @@ def _weighted_pick(table, rng):
     return table[-1][0]
 
 
-def _build_monster(template_id: str, position: Tuple[int, int]):
-    """Create a Character instance for the spawned monster."""
-    from characters.character import Character
-    from characters.character_types import CharacterClass, CharacterRace
-
-    base = {
-        "wolf": dict(name="Wolf", klass=CharacterClass.MONSTER,
-                     race=CharacterRace.GOBLIN,  # use existing race; flavor only
-                     hp=10, max_hp=10, level=1, symbol="w",
-                     description="A snarling wolf with hungry eyes."),
-        "bandit": dict(name="Bandit", klass=CharacterClass.BRIGAND,
-                       race=CharacterRace.HUMAN,
-                       hp=14, max_hp=14, level=2, symbol="b",
-                       description="A scarred outlaw clutching a rusty blade."),
-        "goblin": dict(name="Goblin", klass=CharacterClass.MONSTER,
-                       race=CharacterRace.GOBLIN,
-                       hp=8, max_hp=8, level=1, symbol="g",
-                       description="A green-skinned scavenger."),
-        "wandering_troll": dict(name="Wandering Troll",
-                                klass=CharacterClass.TROLL,
-                                race=CharacterRace.TROLL,
-                                hp=30, max_hp=30, level=4, symbol="X",
-                                description="A solitary troll, lost from its kin."),
-    }
-    spec = base.get(template_id, base["wolf"])
-    nid = f"enc_{template_id}_{uuid.uuid4().hex[:6]}"
-    npc = Character(
-        id=nid, name=spec["name"],
-        character_class=spec["klass"], race=spec["race"],
-        level=spec["level"],
-        strength=12, dexterity=12, constitution=11,
-        intelligence=6, wisdom=8, charisma=6,
-        hp=spec["hp"], max_hp=spec["max_hp"],
-        position=position, symbol=spec["symbol"],
-        description=spec["description"],
-        personality={"traits": ["hostile"]},
-        goals=["Attack the player"],
-        inventory=[],
-    )
-    return npc
+_build_monster = build_monster  # local alias used by maybe_spawn
 
 
 class EncounterManager:

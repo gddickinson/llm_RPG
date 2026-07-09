@@ -353,3 +353,12 @@ loaders with unchanged APIs. Validation grew two new cross-reference rules:
 scroll items must cast spells that exist, and spell status effects must be
 in VALID_EFFECTS. Suite: 301 tests, all pass. Monsters/NPC presets/quest
 templates → P1.1c.
+
+**Round 12 — P1.1c monsters to JSON (done).**
+New `data/monsters.json` + `world/monsters.py`: one template registry now
+feeds both spawn systems — wilderness encounters read `encounter_weight`,
+dungeon rooms read the `dungeon` flag (the troll is wilderness-only, as
+before). Optional per-monster `stats` blocks override hostile defaults.
+`encounters.py` lost its 40-line hardcoded template dict; `dungeon.py` uses
+the shared pool. Adding a monster is now one JSON entry. +6 tests (enum
+validity of class/race included). Suite: 307 tests, all pass.

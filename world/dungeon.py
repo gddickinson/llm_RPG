@@ -152,7 +152,7 @@ def populate_dungeon(d: Dungeon, engine, rng: random.Random = None) -> None:
         return
 
     from items.item_registry import create_item
-    from world.encounters import _build_monster
+    from world.monsters import build_monster, dungeon_pool
     from characters.character import Character
 
     # Drop a few items + a monster in each non-entrance room
@@ -166,8 +166,8 @@ def populate_dungeon(d: Dungeon, engine, rng: random.Random = None) -> None:
             if item:
                 engine.world.add_item_to_ground(item, cx, cy)
         # Monster
-        template = rng.choice(["goblin", "wolf", "bandit"])
-        monster = _build_monster(template, (cx, cy))
+        template = rng.choice(dungeon_pool())
+        monster = build_monster(template, (cx, cy))
         engine.npc_manager.add_npc(monster)
         engine.world.map.place_character(monster, cx, cy)
     d.spawned = True

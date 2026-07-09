@@ -1,0 +1,46 @@
+{
+  "wolf": {
+    "name": "Wolf",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 10,
+    "level": 1,
+    "symbol": "w",
+    "description": "A snarling wolf with hungry eyes.",
+    "encounter_weight": 4,
+    "dungeon": true
+  },
+  "bandit": {
+    "name": "Bandit",
+    "class": "brigand",
+    "race": "human",
+    "hp": 14,
+    "level": 2,
+    "symbol": "b",
+    "description": "A scarred outlaw clutching a rusty blade.",
+    "encounter_weight": 2,
+    "dungeon": true
+  },
+  "goblin": {
+    "name": "Goblin",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 8,
+    "level": 1,
+    "symbol": "g",
+    "description": "A green-skinned scavenger.",
+    "encounter_weight": 2,
+    "dungeon": true
+  },
+  "wandering_troll": {
+    "name": "Wandering Troll",
+    "class": "troll",
+    "race": "troll",
+    "hp": 30,
+    "level": 4,
+    "symbol": "X",
+    "description": "A solitary troll, lost from its kin.",
+    "encounter_weight": 1,
+    "dungeon": false
+  }
+}
