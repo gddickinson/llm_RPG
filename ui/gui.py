@@ -135,7 +135,8 @@ class GameGUI:
                 self.screen, self.screen.get_rect(),
                 name,
                 self.dialog_pending_reply or "",
-                prompt=f"> {self.dialog_input}_   (Enter to send, Esc to leave)",
+                prompt=(f"> {self.dialog_input}_   (Enter send, Esc leave, "
+                        f"/persuade /intimidate /deceive <argument>)"),
             )
 
         if self.mode in ("menu", "travel") and self.overlay:
@@ -331,6 +332,8 @@ class GameGUI:
             "  H             : drink potion",
             "  Z             : forage (forest / grass)",
             "  T             : talk to adjacent NPC",
+            "                  (in dialog: /persuade /intimidate /deceive",
+            "                   <argument> — real stakes, no retry today)",
             "",
             "INTERACTIVE OVERLAYS",
             "  I             : inventory + equipment slots",

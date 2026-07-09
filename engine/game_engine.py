@@ -90,6 +90,8 @@ class GameEngine(GameAPIMixin):
         self.pet_system = PetSystem(self)
         self.diary_manager = DiaryManager(self)
         self.travel_system = TravelSystem(self)
+        from engine.persuasion import PersuasionSystem
+        self.persuasion = PersuasionSystem(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager

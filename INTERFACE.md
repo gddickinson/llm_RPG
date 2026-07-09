@@ -39,6 +39,7 @@ llm_RPG/
 - **`dialog_protocol.py`** — Structured JSON dialog contract: whitelisted actions, engine-validated execution.
 - **`npc_memory.py`** — Per-NPC memory: recency×importance×relevance retrieval, verbatim dialog log, nightly reflection → opinions.
 - **`secrets.py`** — Gated NPC secrets from `data/secrets.json`; locked secrets never reach the prompt (injection-proof).
+- **`persuasion.py`** — `/persuade` `/intimidate` `/deceive` social checks; LLM or dice adjudication, day-long lockouts, haggle tokens.
 - **`memory_manager.py`** — Event history.
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.

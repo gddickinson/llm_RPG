@@ -26,6 +26,17 @@ class DialogSystem:
         if not message:
             return self._greet(npc)
 
+        # Social checks: /persuade /intimidate /deceive <argument>
+        from engine.persuasion import parse_command
+        cmd = parse_command(message)
+        if cmd is not None:
+            verb, argument = cmd
+            self.engine.memory_manager.add_event(
+                f"You try to {verb} {npc.name}: \"{argument}\"")
+            result = self.engine.persuasion.attempt(npc, verb, argument)
+            self.engine.advance_turn()
+            return result
+
         # Player speaks ---------------------------------------------------
         self.engine.memory_manager.add_event(
             f"You say to {npc.name}: \"{message}\"")

@@ -176,9 +176,18 @@ class ShopManager:
         except Exception:
             pass
 
+        # A won /persuade haggle gives 20% off for a game-day
+        haggle = 0.0
+        try:
+            if self.engine.persuasion.haggle_active(merchant_npc):
+                haggle = 0.20
+        except Exception:
+            pass
+
         if selling:
             return 1.0 + delta            # higher rep = higher sell price
-        return max(0.5, 1.0 - delta - diary)  # rep + diary lower buy price
+        # rep + diary + haggle lower buy price (floor at half price)
+        return max(0.5, 1.0 - delta - diary - haggle)
 
 
 def merchants_near(engine, player, radius: float = 2.0):

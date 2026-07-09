@@ -221,10 +221,14 @@ log, not per-NPC. Research consensus from every shipped LLM game:
   validated against the unlocked set. Heuristic mode shares an unlocked secret
   outright once per talk, so it's a feature on every backend. Secrets seed real
   goals: troll's silver weakness, mithril depths, the ruined keep. 11 tests.)*
-- [ ] **P3.4 LLM-adjudicated persuasion (Suck Up! pattern).** New dialog verbs:
-  persuade / intimidate / deceive. LLM judges against NPC disposition + player CHA
-  modifier, returns `{success, reason}`; failure worsens disposition and locks retry.
-  Real stakes: haggling, talking past guards, extracting secrets, avoiding fights.
+- [x] **P3.4 LLM-adjudicated persuasion (Suck Up! pattern).** *(done 2026-07-09 —
+  `engine/persuasion.py`: `/persuade` (CHA) `/intimidate` (STR) `/deceive` (INT)
+  in dialog. LLM judges the actual argument vs NPC traits/relationship/stat mod
+  with `{success, reason}` (junk verdicts fall back to dice); heuristic mode:
+  d20 + stat + rapport vs DC 14. Stakes: failure = −6 affinity + verb locked
+  with that NPC for a game-day; success = merchant haggle token (real 20% off
+  in shop pricing), frightened combat debuff, or trust. NPCs remember attempts.
+  10 tests.)*
 - [ ] **P3.5 Affinity thresholds ("heart events").** Per-NPC affinity int (extends
   existing relationship values); crossing thresholds unlocks authored mini-scenes
   (outline hand-written, prose LLM-rendered) + perks (recipe, discount, companion

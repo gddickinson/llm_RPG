@@ -527,3 +527,17 @@ back" tell otherwise — the information economy works on every backend.
 Secrets point at real content: Gorkash's silver weakness, the mithril
 depths, Melody's unlooted keep. 11 tests; validator covers secret targets.
 Suite: 415 tests, all pass.
+
+**Round 26 — P3.4 persuasion with stakes (done).**
+New `engine/persuasion.py`. In dialog, `/persuade <argument>`,
+`/intimidate <argument>`, `/deceive <argument>` trigger a judged social
+check. LLM mode: the model judges the actual argument against the NPC's
+traits, likes, relationship, and the player's stat modifier, returning
+{success, reason} — junk verdicts fall back to dice; heuristic mode rolls
+d20 + stat mod + rapport vs DC 14 with the math shown. The stakes make it
+a mechanic, not chat: failure costs -6 affinity and locks that verb with
+that NPC for a full game-day (no retry spam); success pays out — merchants
+grant a 20%-off haggle token wired into real shop pricing, intimidation
+applies the frightened combat debuff, deception builds false trust. NPCs
+remember attempts via P3.2 memory. Dialog box + help show the commands.
+10 new tests. Suite: 425 tests, all pass.
