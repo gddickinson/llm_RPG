@@ -30,13 +30,18 @@ LLM to enrich.
 Audit findings that actively break the advertised game. Each fix is small; together
 they transform the experience.
 
-- [ ] **P0.1 Fix save/load data loss.** `character.to_dict()` (`characters/character.py:209`)
+- [x] **P0.1 Fix save/load data loss.** *(done 2026-07-09 — save v3: metadata,
+  equipment, symbol/faction, weather, foraging, companions all round-trip;
+  6 regression tests in `tests/test_save_full_state.py`. Remainder: dungeon/
+  interior state, quest boards, shop stock still not persisted — tracked as P0.1b.)* `character.to_dict()` (`characters/character.py:209`)
   omits `metadata` and `equipment`; `save_load._rebuild_character` never restores them.
   On every F9 load the player loses equipped gear (it's moved out of inventory by
   `equip()`), XP, faction reputation, bank balance, mana, and known spells. Also not
   saved: party, weather, status effects, dungeon/interior state, forage cooldowns,
   quest boards, shop stock. Fix serialization end-to-end + add a round-trip test that
   asserts full player/world state equality. Add SAVE_VERSION migration stub.
+- [ ] **P0.1b Persist remaining engine state.** Dungeon/interior state, quest
+  boards, shop stock (deferred from P0.1).
 - [ ] **P0.2 Fix the unreachable shop.** `K_s` is consumed by "move down" at
   `ui/input_handler.py:93`, so the shop handler at `:166` is dead code — the entire
   economy is inaccessible in the GUI. Rebind shop to `B` (or a context-sensitive

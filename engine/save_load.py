@@ -19,7 +19,7 @@ import config
 
 logger = logging.getLogger("llm_rpg.save_load")
 
-SAVE_VERSION = 2
+SAVE_VERSION = 3  # v3: +metadata, equipment, weather, foraging, companions
 
 
 class SaveManager:
@@ -138,7 +138,20 @@ class SaveManager:
             "quests": quests,
             "history": history,
             "turn_counter": getattr(engine, "turn_counter", 0),
+            "weather": self._subsystem_dict(engine, "weather_system"),
+            "foraging": self._subsystem_dict(engine, "forage_manager"),
+            "companions": self._subsystem_dict(engine, "companion_manager"),
         }
+
+    @staticmethod
+    def _subsystem_dict(engine, attr: str) -> Optional[Dict[str, Any]]:
+        sub = getattr(engine, attr, None)
+        if sub is not None and hasattr(sub, "to_dict"):
+            try:
+                return sub.to_dict()
+            except Exception as e:
+                logger.warning(f"Could not serialize {attr}: {e}")
+        return None
 
     def _serialize_item(self, item: Any) -> Any:
         if hasattr(item, "to_dict"):
@@ -147,6 +160,7 @@ class SaveManager:
 
     def _serialize_character(self, char: Any) -> Dict[str, Any]:
         from items.item import Item
+        from characters import equipment as eq
         d = char.to_dict()
         # Override inventory to support full Item objects
         inv = []
@@ -158,6 +172,7 @@ class SaveManager:
         d["inventory"] = inv
         d["memories"] = list(char.memories) if hasattr(char, "memories") else []
         d["status"] = getattr(char, "status", "alive")
+        d["equipment"] = eq.to_dict(char)
         return d
 
     # ---------------------------------------------------------------- restore
@@ -222,6 +237,18 @@ class SaveManager:
         engine.memory_manager.game_history = list(data.get("history", []))
         engine.turn_counter = data.get("turn_counter", 0)
 
+        # Subsystems (absent in pre-v2 saves — skip silently)
+        for key, attr in (("weather", "weather_system"),
+                          ("foraging", "forage_manager"),
+                          ("companions", "companion_manager")):
+            sub = getattr(engine, attr, None)
+            payload = data.get(key)
+            if sub is not None and payload is not None and hasattr(sub, "from_dict"):
+                try:
+                    sub.from_dict(payload)
+                except Exception as e:
+                    logger.warning(f"Could not restore {attr}: {e}")
+
 
 def _rebuild_character(d: Dict[str, Any]):
     """Rebuild a Character from a save dict."""
@@ -261,4 +288,9 @@ def _rebuild_character(d: Dict[str, Any]):
     )
     char.memories = list(d.get("memories", []))
     char.status = d.get("status", "alive")
+    char.faction = d.get("faction", "neutral")
+    char.metadata = dict(d.get("metadata", {}))
+    if d.get("equipment"):
+        from characters import equipment as eq
+        eq.from_dict(char, d["equipment"])
     return char

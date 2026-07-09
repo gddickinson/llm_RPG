@@ -39,6 +39,7 @@ class Character:
     memories: List[Dict[str, Any]] = field(default_factory=list)
     status: str = field(default="alive")  # alive, defeated, dead
     faction: str = field(default="neutral")
+    metadata: Dict[str, Any] = field(default_factory=dict)  # xp, bank, mana, spells, effects, faction_rep
 
     def add_memory(self, event: str, importance: int = 1) -> None:
         """Add a memory to the character's memory list"""
@@ -232,6 +233,8 @@ class Character:
             "goals": self.goals,
             "relationships": self.relationships,
             "faction": getattr(self, "faction", "neutral"),
+            "symbol": self.symbol,
+            "metadata": getattr(self, "metadata", {}),
         }
 
     def __str__(self) -> str:

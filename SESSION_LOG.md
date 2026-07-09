@@ -237,3 +237,21 @@ A, B, C all delivered:
 - **B**: bigger world, second settlement, dungeons, weather, foraging.
 - **C**: schedule-driven movement, families, gossip, history sim.
 
+
+---
+
+## 2026-07-09 — v2 development begins (branch `v2-development`)
+
+Full audit + game-design research (OSRS, Stardew, Qud, LLM-NPC games) produced
+`DEVELOPMENT_PLAN.md` (phases P0 Repair → P5 Polish). New illustrated README
+with headless-rendered screenshots (`docs/img/`). Improvement now proceeds in
+small tested rounds, one plan item per round.
+
+**Round 1 — P0.1 save/load data loss (fixed).**
+`Character.to_dict()` omitted `metadata` (XP, faction rep, bank, mana, spells,
+status effects), `equipment`, and `symbol`; `_rebuild_character` never restored
+them — every F9 load silently stripped the player's equipped gear and progress.
+Save format v3 now round-trips character metadata + equipment and engine-level
+weather / forage cooldowns / companions, with pre-v3 saves still loading.
+`metadata` promoted to a real `Character` dataclass field.
+New: `tests/test_save_full_state.py` (6 regression tests). Suite: 253 tests, all pass.
