@@ -70,9 +70,11 @@ they transform the experience.
   `context_hints()` (pure logic, testable) + HUD bar over the map's bottom edge.
   Covers talk/attack/barter/recruit/pickup/forage/bank/craft/enter/leave, capped
   at 3 prioritized hints. Verified live via headless screenshot. 7 tests.)*
-- [ ] **P0.8 Housekeeping.** Delete or wire `engine/dialog_trees.py` (193 orphaned
-  lines); remove `_archive/` from the working tree; update stale README/INTERFACE
-  claims (says 107 tests; there are 247).
+- [x] **P0.8 Housekeeping.** *(done 2026-07-09 — deleted orphans:
+  `engine/dialog_trees.py` (+ its tests; P3 rebuilds dialog around the LLM
+  protocol) and `ui/threaded_llm_interface.py`; removed `_archive/`; INTERFACE.md
+  updated (stale 107-test count, 16 undocumented modules added); ROADMAP.md
+  rewritten as a pointer to this plan with a phase-status table.)*
 
 **Exit criteria:** a new player can, unaided, buy/sell, craft, recruit a companion,
 save and load without losing anything, and discover every system via hints.

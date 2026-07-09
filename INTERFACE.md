@@ -22,8 +22,7 @@ llm_RPG/
 ├── llm/                        # LLM interface + providers
 ├── ui/                         # GUI (pygame) and terminal UI
 ├── saves/                      # Saved games (created at runtime)
-├── tests/                      # Unit tests (107+)
-└── _archive/                   # Old/deprecated code
+├── tests/                      # Unit tests (290+)
 ```
 
 ## Module Index
@@ -36,7 +35,6 @@ llm_RPG/
 - **`combat_system.py`** — Player vs NPC vs NPC combat, damage, defeat, loot, faction rep on kill.
 - **`economy_system.py`** — Buy/sell/trade/give between characters.
 - **`dialog_system.py`** — Player↔NPC dialog flow.
-- **`dialog_trees.py`** — Branching dialog tree templates for heuristic NPCs.
 - **`memory_manager.py`** — Event history.
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.
@@ -44,7 +42,11 @@ llm_RPG/
 - **`spells.py`** — `SpellSystem`, spell registry, mana mechanics.
 - **`banking.py`** — Deposit/withdraw gold at temples/shops.
 - **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).
-- **`player_actions.py`** — Player-driven actions (pickup/drop/use/attack/move).
+- **`player_actions.py`** — Player-driven actions (pickup/drop/use/attack/move); weather travel penalty.
+- **`game_api_mixin.py`** — `GameAPIMixin`; thin engine wrappers: party, interiors, dungeons, spells, banking, crafting, `effective_visibility()`.
+- **`shop.py`** — `ShopManager`; per-merchant catalogs, faction-aware prices, persistence.
+- **`effects.py`** — Effective AC / stat / damage bonuses from worn equipment.
+- **`projectiles.py`** — In-flight arrows/bolts + spell projectiles with per-turn ticks.
 
 ### characters/ — Characters, NPCs, social systems
 
@@ -70,6 +72,8 @@ llm_RPG/
 - **`calendar.py`** — `Date`, `Season`; 12-month calendar, day-night clock, season tints.
 - **`world_generator.py`** — `WorldGenerator`; procedural world. Two settlements (Oakvale + Riverside Hamlet) connected by road on 60×40+ maps.
 - **`interiors.py`** — Building interior mini-maps.
+- **`blueprints.py`** — Building footprint blueprints used by the world generator.
+- **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming).
 - **`encounters.py`** — `EncounterManager`; wilderness monster spawns.
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
@@ -112,6 +116,13 @@ llm_RPG/
 - **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker.
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
 - **`terminal_ui.py`** — Text-based UI.
+- **`inventory_panel.py`** — I-key equipment + bag overlay (equip/use/drop).
+- **`shop_panel.py`** — B-key two-column buy/sell overlay.
+- **`body_renderer.py`** — Layered character body sprites (race/class/equipment).
+- **`combat_effects.py`** — Damage popups, hit flashes, death particles.
+- **`lighting.py`** — Night darkness + torch/window light punches (weather-scaled).
+- **`weather_overlay.py`** — Rain/snow/fog particle overlays.
+- **`gui_interface.py`** — Minimal GUI-facing engine interface helpers.
 
 ## Key Classes — where to find them
 
@@ -133,7 +144,6 @@ llm_RPG/
 | `QuestBoard`           | `quests/quest_board.py`             |
 | `Bank`                 | `engine/banking.py`                 |
 | `CombatSystem`         | `engine/combat_system.py`           |
-| `DialogTree`           | `engine/dialog_trees.py`            |
 | `LLMProvider`          | `llm/providers/base.py`             |
 | `HeuristicProvider`    | `llm/providers/heuristic.py`        |
 | `MapRenderer`          | `ui/renderer.py`                    |
@@ -155,7 +165,6 @@ Each turn (after a player move / dialog / action):
 - **New recipe**: append to `items/crafting.py` `RECIPES` dict.
 - **New quest**: add template in `quests/quest_templates.py`; post to a board via `default_boards()` if appropriate.
 - **New NPC class**: extend `CharacterClass` in `characters/character_types.py`; add schedule in `characters/schedules.py`; add to `CLASS_TO_FACTION` in `characters/factions.py`.
-- **New dialog tree**: add factory in `engine/dialog_trees.py` and register in `_TREE_BY_CLASS` or `_TREE_BY_NPC_ID`.
 - **New action**: add handler in `engine/action_router.py`.
 - **New terrain**: extend `TerrainType` + add sprite in `ui/sprite_loader.py`.
 - **New encounter monster**: add entry in `world/encounters.py` `_build_monster()` + `ENCOUNTER_TABLE`.

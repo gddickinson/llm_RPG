@@ -318,3 +318,17 @@ bottom edge (hud.draw_hint_bar). Every previously-invisible system now
 advertises itself in context. Verified live via headless screenshot
 (docs/img refreshed). New `tests/test_hints.py` (7 tests).
 Suite: 290 tests, all pass.
+
+**Round 9 — P0.8 housekeeping (done). PHASE 0 COMPLETE.**
+Deleted confirmed orphans: `engine/dialog_trees.py` + tests (nothing imported
+it; P3 rebuilds dialog around the structured LLM protocol) and
+`ui/threaded_llm_interface.py` (no importers). Removed `_archive/` from disk
+(was gitignored). INTERFACE.md: fixed stale test count, documented 16
+previously-missing modules (shop, game_api_mixin, projectiles, panels,
+lighting, blueprints, chunked_world, ...). ROADMAP.md rewritten as a pointer
+to DEVELOPMENT_PLAN.md with a phase-status table and resolved-debt list.
+Suite: 286 tests, all pass.
+
+Phase 0 (Repair) is complete: save/load integrity, shop, crafting,
+companions, weather, hunger, and discoverability are all real, tested,
+player-reachable systems. Next: Phase 1 — data-driven content layer.
