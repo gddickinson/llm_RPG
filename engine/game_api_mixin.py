@@ -305,6 +305,10 @@ class GameAPIMixin:
         self.memory_manager.add_event(msg)
         if msg.startswith("You craft"):
             self._award_craft_xp(find_recipe(output_id))
+            try:
+                self.collection_log.record_craft(output_id)
+            except Exception:
+                pass
         return msg
 
     def _award_craft_xp(self, recipe) -> None:

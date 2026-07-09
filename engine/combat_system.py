@@ -199,6 +199,10 @@ class CombatSystem:
             if attacker.id == self.engine.player.id:
                 self._award_xp(defender)
                 self._update_faction_rep(kls)
+                try:
+                    self.engine.collection_log.record_kill(defender)
+                except Exception:
+                    pass
 
         return msg
 

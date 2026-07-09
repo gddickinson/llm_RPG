@@ -79,9 +79,11 @@ class GameEngine(GameAPIMixin):
         from world.weather import WeatherSystem
         from world.foraging import ForageManager
         from world.gathering import GatheringManager
+        from engine.collection_log import CollectionLog
         self.weather_system = WeatherSystem(self)
         self.forage_manager = ForageManager(self)
         self.gathering_manager = GatheringManager(self)
+        self.collection_log = CollectionLog(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
@@ -252,6 +254,12 @@ class GameEngine(GameAPIMixin):
                 self.shop_manager.refresh_all_if_due()
         except Exception as e:
             logger.debug(f"Shop restock error: {e}")
+
+        # Collection log scan (items in bag + current place)
+        try:
+            self.collection_log.tick()
+        except Exception as e:
+            logger.debug(f"Collection tick error: {e}")
 
         # Advance in-flight projectiles
         try:

@@ -188,6 +188,11 @@ class InputHandler:
             self._toggle_party()
             return True
 
+        # Collection log (O)
+        if k == pygame.K_o:
+            self.gui.show_collection_log()
+            return True
+
         # Talk to adjacent NPC
         if k == pygame.K_t:
             npc = self._find_adjacent_npc()

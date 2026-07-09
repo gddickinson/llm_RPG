@@ -156,8 +156,12 @@ feeling. This directly fixes "content exhausted in under an hour."
   sell-loop. Purse persists in saves. Buy/sell spread + data-driven stock were
   already live; repair sink from P2.3. Remaining sinks (tolls, teleports, capes)
   arrive with P2.6/P2.8. 6 tests.)*
-- [ ] **P2.5 Collection log.** One UI screen tracking unique items/kills/finds per
-  category ("Dungeon: 4/12"). Pure bookkeeping over existing content; extremely sticky.
+- [x] **P2.5 Collection log.** *(done 2026-07-09 — `engine/collection_log.py` +
+  O-key overlay: items / foes bested / recipes crafted / places found, each
+  "got/possible" against the live registries. Inventory+place scan runs from
+  advance_turn so every acquisition path counts; kills credit the player only;
+  "[Collection] Discovered:" / "First X defeated!" moments in the log; persists
+  via metadata. 8 tests.)*
 - [ ] **P2.6 Skilling pets.** Tiny per-action roll `1/(B − level·k)` for a cosmetic
   follower per skill/boss. The body renderer already exists — best delight-per-effort
   feature in the research.

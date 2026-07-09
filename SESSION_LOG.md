@@ -435,3 +435,14 @@ shown in the shop UI. Selling drains the purse and is refused when the
 merchant is broke; your purchases refill it (gold circulates); restock
 resets stock and purse; purse persists in saves. New
 `tests/test_economy_balance.py` (6 tests). Suite: 345 tests, all pass.
+
+**Round 19 — P2.5 collection log (done).**
+New `engine/collection_log.py` + O-key overlay: four categories (items,
+foes bested, recipes crafted, places found), each shown as got/possible
+against the live data registries. An inventory+location scan runs every
+turn from advance_turn, so pickups, purchases, gathering, loot, and quest
+rewards all register regardless of code path; kills only count when the
+player lands the killing blow; first-time discoveries surface as
+"[Collection] Discovered: Oakvale Tavern" / "First Wolf defeated!" events.
+Stored in player.metadata -> persists through saves. 8 new tests.
+Suite: 353 tests, all pass.

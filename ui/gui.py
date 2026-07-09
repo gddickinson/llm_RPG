@@ -253,6 +253,14 @@ class GameGUI:
             self.crafting_panel = CraftingPanel(self.engine)
         self.mode = "crafting"
 
+    def show_collection_log(self) -> None:
+        try:
+            lines = self.engine.collection_log.overlay_lines()
+        except Exception:
+            lines = ["Collection log unavailable."]
+        self.overlay = ("Collection Log", lines)
+        self.mode = "menu"
+
     def show_quests(self) -> None:
         qm = self.engine.quest_manager
         if not qm:
@@ -317,6 +325,7 @@ class GameGUI:
             "                  (forge recipes need Durgan's Forge)",
             "  P             : party — recruit adjacent NPC / dismiss member",
             "                  (they must trust you: chat + do their quests)",
+            "  O             : collection log (items / foes / recipes / places)",
             "  Q             : quest log",
             "  C             : character sheet",
             "",
