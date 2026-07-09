@@ -19,7 +19,7 @@ llm_RPG/
 ├── world/                      # World, map, calendar, biomes, interiors
 ├── items/                      # Item system + crafting
 ├── quests/                     # Quest system + quest boards
-├── data/                       # JSON content files (items, ... — the data-driven layer)
+├── data/                       # JSON content files (items, recipes, spells, shop catalogs)
 ├── llm/                        # LLM interface + providers
 ├── ui/                         # GUI (pygame) and terminal UI
 ├── saves/                      # Saved games (created at runtime)
@@ -87,7 +87,7 @@ llm_RPG/
 - **`data_loader.py`** — `load_data_dir()`; merges `data/<subdir>/*.json` content files (Phase 1 data layer).
 - **`item_registry.py`** — thin loader over `data/items/*.json` (69 items); `create_item()`, `item_by_name()`.
 - **`loot_tables.py`** — Drop tables by enemy class.
-- **`crafting.py`** — Recipe registry + `craft()` function (forge-gated, ingredients).
+- **`crafting.py`** — `craft()` + recipes loaded from `data/recipes.json` (forge-gated, ingredients).
 
 ### quests/ — Quest system
 
@@ -164,7 +164,7 @@ Each turn (after a player move / dialog / action):
 ## Adding new content — quick recipes
 
 - **New item**: add an entry to the matching `data/items/*.json` file (only non-default fields needed).
-- **New recipe**: append to `items/crafting.py` `RECIPES` dict.
+- **New recipe**: add an entry to `data/recipes.json`.
 - **New quest**: add template in `quests/quest_templates.py`; post to a board via `default_boards()` if appropriate.
 - **New NPC class**: extend `CharacterClass` in `characters/character_types.py`; add schedule in `characters/schedules.py`; add to `CLASS_TO_FACTION` in `characters/factions.py`.
 - **New action**: add handler in `engine/action_router.py`.

@@ -1,0 +1,51 @@
+{
+  "potion": {
+    "output_id": "potion",
+    "ingredients": {
+      "herb_bundle": 1
+    },
+    "gold_cost": 5
+  },
+  "greater_potion": {
+    "output_id": "greater_potion",
+    "ingredients": {
+      "herb_bundle": 3,
+      "potion": 1
+    },
+    "gold_cost": 10
+  },
+  "bandage": {
+    "output_id": "bandage",
+    "ingredients": {
+      "wolf_pelt": 1
+    },
+    "gold_cost": 1
+  },
+  "sword": {
+    "output_id": "sword",
+    "ingredients": {
+      "coins": 3
+    },
+    "gold_cost": 20,
+    "required_property": "forge"
+  },
+  "iron_shield": {
+    "output_id": "iron_shield",
+    "ingredients": {
+      "shield": 1,
+      "coins": 2
+    },
+    "gold_cost": 25,
+    "required_property": "forge"
+  },
+  "silver_blade": {
+    "output_id": "silver_blade",
+    "ingredients": {
+      "sword": 1,
+      "troll_tooth": 1,
+      "stolen_jewelry": 1
+    },
+    "gold_cost": 100,
+    "required_property": "forge"
+  }
+}

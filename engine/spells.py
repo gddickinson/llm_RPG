@@ -30,55 +30,28 @@ class Spell:
     classes: Tuple[str, ...] = ()   # who can learn it
 
 
-# Spell registry --------------------------------------------------------
+# Spell registry — loaded from data/spells.json --------------------------
 
-SPELL_REGISTRY: Dict[str, Spell] = {
-    "magic_missile": Spell(
-        id="magic_missile", name="Magic Missile",
-        mana_cost=2, damage=6, range=8.0,
-        description="An arrow of arcane force, never misses.",
-        classes=("wizard", "sorcerer", "warlock"),
-    ),
-    "fireball": Spell(
-        id="fireball", name="Fireball",
-        mana_cost=5, damage=12, range=6.0,
-        description="A roaring blast of flame.",
-        classes=("wizard", "sorcerer"),
-    ),
-    "frost_ray": Spell(
-        id="frost_ray", name="Frost Ray",
-        mana_cost=3, damage=5, range=6.0,
-        status_effect="paralyzed", duration=2,
-        description="Icy beam that may freeze the target.",
-        classes=("wizard", "sorcerer", "warlock"),
-    ),
-    "heal": Spell(
-        id="heal", name="Heal",
-        mana_cost=3, heal=12, range=1.0,
-        description="Restore health to yourself or an ally.",
-        classes=("cleric", "paladin", "druid"),
-    ),
-    "bless": Spell(
-        id="bless", name="Bless",
-        mana_cost=2, range=1.0,
-        status_effect="blessed", duration=4,
-        description="Grant a divine boon.",
-        classes=("cleric", "paladin"),
-    ),
-    "shock": Spell(
-        id="shock", name="Shock",
-        mana_cost=2, damage=4, range=2.0,
-        description="A jolt of lightning.",
-        classes=("druid", "wizard"),
-    ),
-    "poison_dart": Spell(
-        id="poison_dart", name="Poison Dart",
-        mana_cost=2, damage=2, range=4.0,
-        status_effect="poisoned", duration=3,
-        description="A toxic dart that lingers.",
-        classes=("druid", "warlock"),
-    ),
-}
+def _build_spells() -> Dict[str, Spell]:
+    from items.data_loader import load_data_file
+    out: Dict[str, Spell] = {}
+    for sid, entry in load_data_file("spells.json").items():
+        out[sid] = Spell(
+            id=entry.get("id", sid),
+            name=entry["name"],
+            mana_cost=entry["mana_cost"],
+            damage=entry.get("damage", 0),
+            heal=entry.get("heal", 0),
+            range=entry.get("range", 5.0),
+            description=entry.get("description", ""),
+            status_effect=entry.get("status_effect", ""),
+            duration=entry.get("duration", 0),
+            classes=tuple(entry.get("classes", ())),
+        )
+    return out
+
+
+SPELL_REGISTRY: Dict[str, Spell] = _build_spells()
 
 
 def starting_spells_for(class_value: str) -> List[Spell]:

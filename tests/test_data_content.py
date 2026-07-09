@@ -55,6 +55,51 @@ class TestItemData(unittest.TestCase):
                 load_data_dir("things", root=tmp)
 
 
+class TestRecipeSpellShopData(unittest.TestCase):
+    def test_recipes_load_from_json(self):
+        from items.crafting import RECIPES
+        self.assertGreaterEqual(len(RECIPES), 6)
+        silver = RECIPES["silver_blade"]
+        self.assertEqual(silver.gold_cost, 100)
+        self.assertEqual(silver.required_property, "forge")
+        self.assertEqual(silver.ingredients.get("troll_tooth"), 1)
+
+    def test_spells_load_from_json(self):
+        from engine.spells import SPELL_REGISTRY
+        self.assertGreaterEqual(len(SPELL_REGISTRY), 7)
+        fireball = SPELL_REGISTRY["fireball"]
+        self.assertEqual((fireball.mana_cost, fireball.damage), (5, 12))
+        self.assertIsInstance(fireball.classes, tuple)
+        self.assertIn("wizard", fireball.classes)
+        frost = SPELL_REGISTRY["frost_ray"]
+        self.assertEqual((frost.status_effect, frost.duration),
+                         ("paralyzed", 2))
+
+    def test_shop_catalogs_load_from_json(self):
+        from engine.shop import SHOP_CATALOGS
+        self.assertGreaterEqual(len(SHOP_CATALOGS), 10)
+        self.assertIn("blacksmith", SHOP_CATALOGS)
+        self.assertIn("sword", SHOP_CATALOGS["blacksmith"])
+
+    def test_scroll_spells_exist_in_spell_registry(self):
+        from engine.spells import SPELL_REGISTRY
+        for item in ITEM_REGISTRY.values():
+            spell_id = item.use_effect.get("spell")
+            if spell_id:
+                self.assertIn(spell_id, SPELL_REGISTRY,
+                              f"item {item.id} casts unknown spell "
+                              f"'{spell_id}'")
+
+    def test_spell_status_effects_are_known(self):
+        from engine.spells import SPELL_REGISTRY
+        from characters.status_effects import VALID_EFFECTS
+        for spell in SPELL_REGISTRY.values():
+            if spell.status_effect:
+                self.assertIn(spell.status_effect, VALID_EFFECTS,
+                              f"spell {spell.id} applies unknown effect "
+                              f"'{spell.status_effect}'")
+
+
 class TestCrossReferences(unittest.TestCase):
     def assert_ids_exist(self, ids, source):
         missing = [i for i in ids if i not in ITEM_REGISTRY]

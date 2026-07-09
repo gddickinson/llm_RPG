@@ -1,0 +1,90 @@
+{
+  "cleric": [
+    "potion",
+    "potion",
+    "greater_potion",
+    "bandage",
+    "bandage",
+    "antidote",
+    "scroll_heal",
+    "scroll_bless"
+  ],
+  "priest": [
+    "potion",
+    "bandage",
+    "scroll_heal",
+    "scroll_bless",
+    "holy_symbol"
+  ],
+  "blacksmith": [
+    "sword",
+    "longsword",
+    "battleaxe",
+    "warhammer",
+    "leather",
+    "chainmail",
+    "shield",
+    "iron_shield"
+  ],
+  "smithy": [
+    "dagger",
+    "sword",
+    "leather",
+    "shield",
+    "iron_boots"
+  ],
+  "tavern": [
+    "ale",
+    "ale",
+    "mead",
+    "wine",
+    "bread",
+    "jerky"
+  ],
+  "innkeeper": [
+    "ale",
+    "bread",
+    "jerky",
+    "wine",
+    "mead"
+  ],
+  "general": [
+    "potion",
+    "bandage",
+    "ale",
+    "bread",
+    "dagger",
+    "shield",
+    "lockpicks",
+    "old_map",
+    "arrow",
+    "arrow",
+    "bolt",
+    "stone"
+  ],
+  "wheelwright": [
+    "leather",
+    "shield",
+    "stone",
+    "personal_items"
+  ],
+  "wizard": [
+    "scroll_fireball",
+    "scroll_frost",
+    "scroll_heal",
+    "tome_arcana",
+    "potion_might",
+    "potion_speed",
+    "ring_intellect",
+    "amulet_mana"
+  ],
+  "ranger": [
+    "bow",
+    "longbow",
+    "arrow",
+    "arrow",
+    "bandage",
+    "wolf_pelt",
+    "swift_boots"
+  ]
+}

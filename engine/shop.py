@@ -15,57 +15,16 @@ from items.item_registry import create_item
 logger = logging.getLogger("llm_rpg.shop")
 
 
-# Merchant categories by NPC id pattern / name keyword
-# Each entry: list of (item_id, sell_price_override or None)
-# The shop's price is item.value * markup_factor for buy, value//2 for sell.
-SHOP_CATALOGS: Dict[str, List[str]] = {
-    # Apothecary / cleric: potions + bandages + scrolls
-    "cleric": [
-        "potion", "potion", "greater_potion",
-        "bandage", "bandage", "antidote",
-        "scroll_heal", "scroll_bless",
-    ],
-    "priest": [
-        "potion", "bandage", "scroll_heal", "scroll_bless",
-        "holy_symbol",
-    ],
-    # Smith / forge: weapons + armor
-    "blacksmith": [
-        "sword", "longsword", "battleaxe", "warhammer",
-        "leather", "chainmail", "shield", "iron_shield",
-    ],
-    "smithy": [
-        "dagger", "sword", "leather", "shield", "iron_boots",
-    ],
-    # Inn / tavern: food + drink
-    "tavern": [
-        "ale", "ale", "mead", "wine", "bread", "jerky",
-    ],
-    "innkeeper": [
-        "ale", "bread", "jerky", "wine", "mead",
-    ],
-    # General store: a bit of everything
-    "general": [
-        "potion", "bandage", "ale", "bread",
-        "dagger", "shield", "lockpicks", "old_map",
-        "arrow", "arrow", "bolt", "stone",
-    ],
-    # Wheelwright (in the hamlet): leathers + cart goods
-    "wheelwright": [
-        "leather", "shield", "stone", "personal_items",
-    ],
-    # Wizard / scholar
-    "wizard": [
-        "scroll_fireball", "scroll_frost", "scroll_heal",
-        "tome_arcana", "potion_might", "potion_speed",
-        "ring_intellect", "amulet_mana",
-    ],
-    # Ranger / hunter
-    "ranger": [
-        "bow", "longbow", "arrow", "arrow", "bandage",
-        "wolf_pelt", "swift_boots",
-    ],
-}
+# Merchant categories by NPC id pattern / name keyword — loaded from
+# data/shop_catalogs.json. Each entry: list of item ids (repeats = extra
+# stock). Buy price is item.value * rep multiplier; sell is value//2.
+def _build_catalogs() -> Dict[str, List[str]]:
+    from items.data_loader import load_data_file
+    return {cat: list(ids)
+            for cat, ids in load_data_file("shop_catalogs.json").items()}
+
+
+SHOP_CATALOGS: Dict[str, List[str]] = _build_catalogs()
 
 
 @dataclass

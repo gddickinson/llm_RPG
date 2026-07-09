@@ -93,8 +93,13 @@ demo-scale: 6 quests, 6 recipes, 4 encounter monsters, 7 spells.
   `data/items/*.json` split by category, entries only carry non-default fields;
   `item_registry.py` is a thin loader with an unchanged API. 10 tests incl.
   cross-reference validation of recipes/loot/shops/forage/quests.)*
-- [ ] **P1.1b** Port remaining registries to data files: recipes, monsters
-  (encounters + dungeon), spells, NPC presets, quest templates, shop catalogs.
+- [x] **P1.1b Recipes, spells, shop catalogs ported.** *(done 2026-07-09 —
+  `data/recipes.json`, `data/spells.json`, `data/shop_catalogs.json`; the three
+  modules are thin loaders, APIs unchanged. +5 validation tests incl. new
+  cross-refs: scroll items must cast known spells, spell status effects must be
+  valid.)*
+- [ ] **P1.1c** Port remaining registries: monsters (encounters + dungeon),
+  NPC presets, quest templates.
 - [ ] **P1.3** Validation test: load all data files, check cross-references (recipe
   ingredients exist, loot table items exist, quest rewards exist).
 - [ ] **P1.4** (Stretch) A "module pack" folder convention — the ROADMAP's campaign

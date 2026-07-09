@@ -1,0 +1,94 @@
+{
+  "magic_missile": {
+    "id": "magic_missile",
+    "name": "Magic Missile",
+    "mana_cost": 2,
+    "damage": 6,
+    "range": 8.0,
+    "description": "An arrow of arcane force, never misses.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  "fireball": {
+    "id": "fireball",
+    "name": "Fireball",
+    "mana_cost": 5,
+    "damage": 12,
+    "range": 6.0,
+    "description": "A roaring blast of flame.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  "frost_ray": {
+    "id": "frost_ray",
+    "name": "Frost Ray",
+    "mana_cost": 3,
+    "damage": 5,
+    "range": 6.0,
+    "description": "Icy beam that may freeze the target.",
+    "status_effect": "paralyzed",
+    "duration": 2,
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  "heal": {
+    "id": "heal",
+    "name": "Heal",
+    "mana_cost": 3,
+    "heal": 12,
+    "range": 1.0,
+    "description": "Restore health to yourself or an ally.",
+    "classes": [
+      "cleric",
+      "paladin",
+      "druid"
+    ]
+  },
+  "bless": {
+    "id": "bless",
+    "name": "Bless",
+    "mana_cost": 2,
+    "range": 1.0,
+    "description": "Grant a divine boon.",
+    "status_effect": "blessed",
+    "duration": 4,
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  "shock": {
+    "id": "shock",
+    "name": "Shock",
+    "mana_cost": 2,
+    "damage": 4,
+    "range": 2.0,
+    "description": "A jolt of lightning.",
+    "classes": [
+      "druid",
+      "wizard"
+    ]
+  },
+  "poison_dart": {
+    "id": "poison_dart",
+    "name": "Poison Dart",
+    "mana_cost": 2,
+    "damage": 2,
+    "range": 4.0,
+    "description": "A toxic dart that lingers.",
+    "status_effect": "poisoned",
+    "duration": 3,
+    "classes": [
+      "druid",
+      "warlock"
+    ]
+  }
+}

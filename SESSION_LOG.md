@@ -344,3 +344,12 @@ spot checks, duplicate-id rejection, and cross-reference validation — every
 item id used by recipes, loot tables, shop catalogs, forage tables, dungeon
 loot, and quest rewards must exist. Engine boot smoke-verified (starter gear
 identical). Suite: 296 tests, all pass. Remaining registries → P1.1b.
+
+**Round 11 — P1.1b recipes, spells, shop catalogs to JSON (done).**
+`data/recipes.json` (6), `data/spells.json` (7), `data/shop_catalogs.json`
+(10 categories) — all generated from the live registries for fidelity;
+`items/crafting.py`, `engine/spells.py`, `engine/shop.py` are now thin
+loaders with unchanged APIs. Validation grew two new cross-reference rules:
+scroll items must cast spells that exist, and spell status effects must be
+in VALID_EFFECTS. Suite: 301 tests, all pass. Monsters/NPC presets/quest
+templates → P1.1c.
