@@ -47,7 +47,8 @@ llm_RPG/
 - **`player_actions.py`** — Player-driven actions (pickup/drop/use/attack/move); weather travel penalty.
 - **`game_api_mixin.py`** — `GameAPIMixin`; thin engine wrappers: party, interiors, dungeons, spells, banking, crafting, `effective_visibility()`.
 - **`shop.py`** — `ShopManager`; per-merchant catalogs, faction-aware prices, persistence.
-- **`effects.py`** — Effective AC / stat / damage bonuses from worn equipment.
+- **`effects.py`** — Effective AC / stat / damage bonuses from worn equipment (broken gear contributes 0).
+- **`durability.py`** — Gear wear on uncommon+ weapons/armor; break, repair at forge, `durability_label()`.
 - **`projectiles.py`** — In-flight arrows/bolts + spell projectiles with per-turn ticks.
 
 ### characters/ — Characters, NPCs, social systems

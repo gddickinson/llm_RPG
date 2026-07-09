@@ -27,9 +27,9 @@
   "sword": {
     "output_id": "sword",
     "ingredients": {
-      "coins": 3
+      "iron_bar": 2
     },
-    "gold_cost": 20,
+    "gold_cost": 10,
     "required_property": "forge",
     "skill": "smithing"
   },
@@ -37,9 +37,9 @@
     "output_id": "iron_shield",
     "ingredients": {
       "shield": 1,
-      "coins": 2
+      "iron_bar": 1
     },
-    "gold_cost": 25,
+    "gold_cost": 10,
     "required_property": "forge",
     "skill": "smithing"
   },
@@ -86,5 +86,14 @@
       "raw_salmon": 1
     },
     "skill": "cooking"
+  },
+  "bronze_sword": {
+    "output_id": "bronze_sword",
+    "ingredients": {
+      "bronze_bar": 2
+    },
+    "gold_cost": 5,
+    "required_property": "forge",
+    "skill": "smithing"
   }
 }

@@ -213,6 +213,12 @@ class InventoryPanel:
             return f"  {label}"
         if kind == "equip":
             iname = item.name if item is not None else "(empty)"
+            if item is not None:
+                try:
+                    from engine.durability import durability_label
+                    iname += durability_label(item)
+                except Exception:
+                    pass
             return f"{prefix}[{label:7s}] {iname}"
         # bag
         name = item.name

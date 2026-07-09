@@ -183,5 +183,15 @@
       "damage": 1,
       "wisdom": 1
     }
+  },
+  "bronze_sword": {
+    "id": "bronze_sword",
+    "name": "Bronze Sword",
+    "item_type": "weapon",
+    "damage": 4,
+    "value": 18,
+    "weapon_kind": "melee",
+    "damage_kind": "slash",
+    "description": "A serviceable sword of smelted bronze."
   }
 }

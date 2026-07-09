@@ -89,7 +89,7 @@ class TestAwarding(unittest.TestCase):
         from items.item_registry import create_item
         from items.crafting import craft
         self.player.gold = 100
-        self.player.inventory.append(create_item("coins", quantity=5))
+        self.player.inventory.append(create_item("iron_bar", quantity=2))
         # Craft directly with forge props, then award through engine path
         loc_props = {"forge": True}
         msg = craft(self.player, "sword", loc_props)

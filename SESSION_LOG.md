@@ -414,3 +414,14 @@ cooking + smelting recipes train cooking/smithing via Recipe.skill; hint
 bar announces "[Z] mine here" or the missing tool. All 8 skills now have
 live XP earners. 9 new tests; validator covers gathering data.
 Suite: 331 tests, all pass.
+
+**Round 17 — P2.3 production chains + gear durability (done).**
+The ore->bar->weapon chain is complete: swords cost 2 iron bars (was 3 coins),
+bronze sword added at the copper tier, iron shields take a bar. New
+`engine/durability.py`: uncommon+ weapons wear 1/landed hit (200 max), armor
++ shields 1/hit absorbed (150); at 0 the item is [BROKEN] and contributes no
+damage/armor/enchant bonuses until repaired at a forge (~15% of value scaled
+by damage taken). Inventory shows wear labels; the K panel lists repair
+entries at the forge; durability rides item.metadata so persistence is free.
+Commons never degrade (worry-free starter gear). 8 new tests; 3 legacy
+recipe tests updated to the bar economy. Suite: 339 tests, all pass.

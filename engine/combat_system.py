@@ -129,6 +129,7 @@ class CombatSystem:
         damage = self._apply_damage_type_modifier(attacker, defender, damage)
 
         defender.take_damage(damage)
+        self._wear_gear(attacker, defender)
 
         # Visual effects (damage popup + hit flash + death FX)
         try:
@@ -222,13 +223,33 @@ class CombatSystem:
 
     # --------------------------------------------------------- helpers
 
+    def _wear_gear(self, attacker, defender) -> None:
+        """Landed hits wear the attacker's weapon and defender's armor."""
+        try:
+            from characters.equipment import equipped_weapon, get_equipment
+            from engine.durability import degrade
+            notes = []
+            w = equipped_weapon(attacker)
+            if w is not None:
+                notes.append(degrade(w))
+            eq = get_equipment(defender)
+            for slot in ("armor", "shield"):
+                if eq.get(slot) is not None:
+                    notes.append(degrade(eq[slot]))
+            for note in notes:
+                if note:
+                    self.engine.memory_manager.add_event(note)
+        except Exception:
+            pass
+
     def _best_weapon_damage(self, char) -> int:
         # Prefer equipped weapon
         try:
             from characters.equipment import equipped_weapon
+            from engine.durability import is_broken
             w = equipped_weapon(char)
             if w is not None and w.is_weapon():
-                return int(w.damage)
+                return 1 if is_broken(w) else int(w.damage)
         except Exception:
             pass
         # Fallback: best weapon in inventory (unarmed strikes deal 1)

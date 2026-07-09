@@ -56,29 +56,43 @@ class CraftingPanel:
         out.sort(key=lambda pair: (bool(pair[1]), pair[0].output_name()))
         return out
 
+    def repair_rows(self):
+        """(item, cost) for damaged equipped gear — only at a forge."""
+        if not self._location_props().get("forge"):
+            return []
+        from engine.durability import damaged_equipped_items, repair_cost
+        return [(it, repair_cost(it))
+                for it in damaged_equipped_items(self.engine.player)]
+
     # ---------------- input -----------------------------------------
 
     def handle_key(self, event) -> bool:
         if event.type != pygame.KEYDOWN:
             return False
         k = event.key
-        rows = self.rows()
+        total = len(self.rows()) + len(self.repair_rows())
         if k in (pygame.K_UP, pygame.K_w):
-            if rows:
-                self.cursor = (self.cursor - 1) % len(rows)
+            if total:
+                self.cursor = (self.cursor - 1) % total
         elif k in (pygame.K_DOWN, pygame.K_s):
-            if rows:
-                self.cursor = (self.cursor + 1) % len(rows)
+            if total:
+                self.cursor = (self.cursor + 1) % total
         elif k in (pygame.K_RETURN, pygame.K_SPACE):
-            self._craft_selected(rows)
+            self._activate_selected()
         return True
 
-    def _craft_selected(self, rows) -> None:
-        if not rows or self.cursor >= len(rows):
-            return
-        recipe, reason = rows[self.cursor]
-        # engine.craft re-validates and logs the outcome either way
-        self.engine.craft(recipe.output_id)
+    def _activate_selected(self) -> None:
+        rows = self.rows()
+        repairs = self.repair_rows()
+        if self.cursor < len(rows):
+            recipe, _ = rows[self.cursor]
+            # engine.craft re-validates and logs the outcome either way
+            self.engine.craft(recipe.output_id)
+        elif self.cursor < len(rows) + len(repairs):
+            from engine.durability import repair
+            item, _ = repairs[self.cursor - len(rows)]
+            msg = repair(self.engine.player, item, at_forge=True)
+            self.engine.memory_manager.add_event(msg)
 
     # ---------------- render ----------------------------------------
 
@@ -118,8 +132,18 @@ class CraftingPanel:
         target.blit(gold, (box.x + 16, box.y + 36))
 
         rows = self.rows()
-        if self.cursor >= len(rows):
-            self.cursor = max(0, len(rows) - 1)
+        repairs = self.repair_rows()
+        entries = []
+        for recipe, reason in rows:
+            craftable = not reason
+            detail = self._ingredient_line(recipe) if craftable else reason
+            entries.append((recipe.output_name(), detail, craftable))
+        for item, cost in repairs:
+            from engine.durability import durability_label
+            entries.append((f"Repair {item.name}{durability_label(item)}",
+                            f"{cost}g at the forge", True))
+        if self.cursor >= len(entries):
+            self.cursor = max(0, len(entries) - 1)
 
         line_h = 34
         max_rows = (box.height - 110) // line_h
@@ -127,19 +151,16 @@ class CraftingPanel:
         if self.cursor >= max_rows:
             scroll = self.cursor - max_rows + 1
         y = box.y + 62
-        for idx in range(scroll, min(len(rows), scroll + max_rows)):
-            recipe, reason = rows[idx]
+        for idx in range(scroll, min(len(entries), scroll + max_rows)):
+            name, detail, ok = entries[idx]
             selected = idx == self.cursor
-            craftable = not reason
             name_color = ((255, 240, 160) if selected else (220, 220, 220)) \
-                if craftable else \
+                if ok else \
                 ((200, 170, 140) if selected else (130, 130, 145))
             prefix = "> " if selected else "  "
-            head = f"{prefix}{recipe.output_name()}"
-            txt = self._font.render(head, True, name_color)
+            txt = self._font.render(f"{prefix}{name}", True, name_color)
             target.blit(txt, (box.x + 16, y))
-            detail = self._ingredient_line(recipe) if craftable else reason
-            det_color = (150, 200, 150) if craftable else (170, 130, 130)
+            det_color = (150, 200, 150) if ok else (170, 130, 130)
             det = self._font.render("    " + detail, True, det_color)
             target.blit(det, (box.x + 16, y + 15))
             y += line_h

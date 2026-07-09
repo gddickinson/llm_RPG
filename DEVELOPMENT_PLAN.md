@@ -142,11 +142,13 @@ feeling. This directly fixes "content exhausted in under an hour."
   sold at the general store; hint bar teaches tool needs; cooking + smelting
   recipes train cooking/smithing via new `Recipe.skill`; 16 new material
   items. 9 tests + validator coverage.)*
-- [ ] **P2.3 Production chains with mandatory consumption.** Ore→bar→weapon (forge),
-  fish→cooked food (heals; the food player-needs from P0.6 consume it), herbs→potions.
-  Rule from research: *every produced item needs a destination* — combat already eats
-  ammo; make it eat food and potions too. Top-tier gear degrades and costs
-  materials/gold to repair (the perpetual sink OSRS uses).
+- [x] **P2.3 Production chains with mandatory consumption.** *(done 2026-07-09 —
+  ore→bar→weapon complete: sword now costs 2 iron bars, bronze sword added,
+  iron shield takes a bar; fish→food and herbs→potions were live from P2.2/P0.6.
+  New `engine/durability.py`: uncommon+ weapons/armor wear per landed/absorbed
+  hit (200/150), break to zero contribution, repair at forge for ~15% of value
+  scaled by damage. Inventory shows [%]/[BROKEN]; crafting panel lists repairs
+  at the forge; durability rides item.metadata so saves are free. 8 tests.)*
 - [ ] **P2.4 Economy balancing.** Shops buy at ~50% of value, carry limited stock that
   restocks slowly, and stock is data-driven (P1). Gold sinks: repairs, tolls/shortcuts,
   teleport unlocks, prestige purchases (skill capes at max level).

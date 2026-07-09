@@ -73,7 +73,7 @@ class TestCraftingPanel(unittest.TestCase):
 
     def test_forge_recipe_blocked_away_from_forge(self):
         self.player.gold = 1000
-        self.player.inventory.append(create_item("coins", quantity=10))
+        self.player.inventory.append(create_item("iron_bar", quantity=2))
         rows = dict((r.output_id, reason) for r, reason in self.panel.rows())
         self.assertIn("forge", rows["sword"].lower(),
                       "sword should require a forge")
