@@ -289,3 +289,12 @@ threshold was unreachable — talking now builds +2 trust per exchange
 (non-hostiles only) and quest turn-in gives +15 with the giver. Companions
 also unlock the existing flanking bonus, previously impossible to trigger.
 New `tests/test_party_ui.py` (6 tests). Suite: 273 tests, all pass.
+
+**Round 6 — P0.5 weather wired into gameplay (done).**
+Weather was pure decoration (its visibility modifier had zero callers outside
+its own test). Now: `engine.effective_visibility()` scales the NPC
+awareness/LLM-processing radius; encounter spawn chance scales x(2 - vis_mod)
+so fog/storm ambushes are ~1.5x likelier; storm/snow cost +1 minute per
+off-road step (roads stay full speed — first gameplay reason to use roads);
+night-time torch radius shrinks with visibility. New
+`tests/test_weather_gameplay.py` (4 tests). Suite: 277 tests, all pass.

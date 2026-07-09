@@ -220,6 +220,16 @@ class GameAPIMixin:
     def current_weather(self) -> str:
         return self.weather_system.state.current.value
 
+    def effective_visibility(self) -> int:
+        """Visibility range in tiles, shrunk by fog / rain / snow / storm."""
+        import config
+        base = config.DEFAULT_VISIBILITY_RANGE
+        try:
+            mod = self.weather_system.visibility_modifier()
+        except Exception:
+            mod = 1.0
+        return max(2, round(base * mod))
+
     def enter_dungeon(self) -> str:
         from world.world_map import TerrainType
         from world.dungeon import generate_dungeon, populate_dungeon

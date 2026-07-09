@@ -83,12 +83,17 @@ class LightingOverlay:
 
         self._overlay.fill((0, 0, 30, darkness))
 
-        # Player torchlight (warm)
+        # Player torchlight (warm); fog/storm shrink the lit radius
+        try:
+            vis_mod = engine.weather_system.visibility_modifier()
+        except Exception:
+            vis_mod = 1.0
         player = engine.player
         if player and player.is_alive():
             self._punch_light(
                 player.position, view_rect, cam_x, cam_y, tile_size,
-                radius_tiles=4.5, color=(255, 200, 100), strength=darkness)
+                radius_tiles=max(2.0, 4.5 * vis_mod),
+                color=(255, 200, 100), strength=darkness)
 
         # Window glow on building tiles
         try:

@@ -200,5 +200,25 @@ class PlayerActions:
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager and loc:
             self.engine.quest_manager.on_location_entered(loc.name)
 
+        self._weather_travel_penalty(nx, ny)
         self.engine.advance_turn()
         return True
+
+    def _weather_travel_penalty(self, x: int, y: int) -> None:
+        """Storms and snow slow off-road travel: one extra minute per step."""
+        try:
+            from world.weather import Weather
+            from world.world_map import TerrainType
+            current = self.engine.weather_system.state.current
+            if current not in (Weather.STORM, Weather.SNOW):
+                return
+            terrain = self.engine.world.map.get_terrain_at(x, y)
+            if terrain == TerrainType.ROAD:
+                return
+            self.engine.world.advance_time(1)
+            self._slow_steps = getattr(self, "_slow_steps", 0) + 1
+            if self._slow_steps % 10 == 1:
+                self.engine.memory_manager.add_event(
+                    f"The {current.value} slows your travel.")
+        except Exception:
+            pass

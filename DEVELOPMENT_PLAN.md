@@ -55,9 +55,11 @@ they transform the experience.
   panel. Also fixed the deeper blocker: the player had NO way to reach the ≥30
   trust gate — now conversation gives +2 relationship (non-hostiles) and quest
   turn-in gives +15 with the giver. 6 tests in `tests/test_party_ui.py`.)*
-- [ ] **P0.5 Wire weather into gameplay.** `visibility_modifier()` is only used by
-  its own test. Apply it to FOV radius and encounter spawn odds; storms slow travel
-  on non-road tiles. (Small change; converts decoration into a system.)
+- [x] **P0.5 Wire weather into gameplay.** *(done 2026-07-09 —
+  `engine.effective_visibility()` shrinks NPC awareness range in bad weather;
+  encounter chance scales ×(2−vis) so fog/storm ambushes are ~1.5× likelier;
+  storms/snow cost +1 min per off-road step (roads immune); night light radius
+  shrinks with visibility. 4 tests in `tests/test_weather_gameplay.py`.)*
 - [ ] **P0.6 Player needs: wire or cut.** `tick_needs` only runs for NPCs. Decision:
   wire a *light* version for the player (food heals + staves off a "hungry" debuff —
   this also gives cooking a consumer in Phase 2). Avoid punishing survival mechanics.

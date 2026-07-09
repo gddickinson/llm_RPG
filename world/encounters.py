@@ -106,7 +106,7 @@ class EncounterManager:
         terrain = self.engine.world.map.get_terrain_at(*player.position)
         if terrain not in (TerrainType.FOREST, TerrainType.GRASS):
             return None
-        if self.rng.random() > ENCOUNTER_CHANCE:
+        if self.rng.random() > self.spawn_chance():
             return None
 
         spawn_pos = self._find_spawn_position()
@@ -120,6 +120,15 @@ class EncounterManager:
         self._cooldown_until = self.engine.turn_counter + ENCOUNTER_COOLDOWN_TURNS
         msg = f"A {monster.name} appears in the distance!"
         return msg
+
+    def spawn_chance(self) -> float:
+        """Base chance, raised in poor visibility — monsters ambush in
+        fog/storm (clear: x1.0, fog: x1.45, storm: x1.5)."""
+        try:
+            mod = self.engine.weather_system.visibility_modifier()
+        except Exception:
+            mod = 1.0
+        return ENCOUNTER_CHANCE * (2.0 - mod)
 
     def _find_spawn_position(self) -> Optional[Tuple[int, int]]:
         wmap = self.engine.world.map

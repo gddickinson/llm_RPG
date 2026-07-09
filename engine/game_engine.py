@@ -326,7 +326,7 @@ class GameEngine(GameAPIMixin):
             try:
                 npc_x, npc_y = npc.position
                 if self._distance_to_player(npc_x, npc_y) > \
-                        config.DEFAULT_VISIBILITY_RANGE * 2:
+                        self.effective_visibility() * 2:
                     continue
                 visible_map = self.world.map.get_visible_description(npc_x, npc_y)
                 world_state = self._world_state_for(npc_x, npc_y)
@@ -368,7 +368,7 @@ class GameEngine(GameAPIMixin):
                 continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \
-                    config.DEFAULT_VISIBILITY_RANGE * 2:
+                    self.effective_visibility() * 2:
                 continue
             self.processing_npcs.add(npc_id)
             self.process_manager.send_command(npc_id, "get_action", {
