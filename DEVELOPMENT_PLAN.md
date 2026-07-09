@@ -244,10 +244,14 @@ log, not per-NPC. Research consensus from every shipped LLM game:
   LLM mode injects it as grounding ("invent nothing beyond it"). Y-key journal
   with n/8 counter. Topics chain: Goren's secret teaches silver_blade, whose
   response teaches the recipe. 10 tests.)*
-- [ ] **P3.7 Nightly world director.** One LLM call per game-night reads the day's
-  event log + faction state and emits 1–3 structured events (rumor, shortage, feud,
-  caravan, monster sighting) that heuristics act out and gossip spreads. LLM-as-director
-  is dramatically cheaper than LLM-per-NPC and feeds Phase 4's radiant quests.
+- [x] **P3.7 Nightly world director.** *(done 2026-07-09 — `engine/director.py`:
+  one call per game-night emits 1–3 structured events from a 5-type whitelist —
+  rumor (→ gossip pool), shortage (×1.5 shop prices for a day), caravan
+  (merchant restock + purse), monster_sighting (real spawn away from the
+  player), feud (mutual −20 between NPCs). Invalid ids are no-ops; junk output
+  and heuristic mode roll template events, so the world moves overnight on
+  every backend. "[Overnight] …" morning lines; rumors surface through NPC
+  gossip; state persists. Feeds P4.1 radiant quests. 11 tests.)*
 - [ ] **P3.8 NPCs notice the player.** Inject a "recent player deeds" digest (kills,
   quests done, gear worn, levels) into every dialog prompt. Single cheapest
   living-world win in the research; substitutes for RuneScape's social status displays.

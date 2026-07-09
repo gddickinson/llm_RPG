@@ -42,6 +42,7 @@ llm_RPG/
 - **`persuasion.py`** — `/persuade` `/intimidate` `/deceive` social checks; LLM or dice adjudication, day-long lockouts, haggle tokens.
 - **`heart_events.py`** — Affinity-threshold scenes from `data/heart_events.json`; authored outlines, LLM-rendered prose, perks.
 - **`topics.py`** — `TopicJournal`; keywords heard anywhere become askable topics (Y-key journal), per-NPC authored answers.
+- **`director.py`** — `WorldDirector`; one nightly call emits structured events (rumor/shortage/caravan/sighting/feud) the systems act out.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.

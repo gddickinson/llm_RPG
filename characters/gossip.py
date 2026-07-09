@@ -83,7 +83,14 @@ def gossip_for(npc, engine, max_lines: int = 1) -> List[str]:
             max_lines=1, rng=rng)
         lines.extend(recent)
 
-    # Static line as filler
+    # Director rumors take priority over static filler
+    if len(lines) < max_lines:
+        try:
+            rumors = engine.world_director.rumors
+            if rumors and rng.random() < 0.6:
+                lines.append(rng.choice(rumors))
+        except Exception:
+            pass
     if len(lines) < max_lines:
         lines.append(random_gossip(rng))
 

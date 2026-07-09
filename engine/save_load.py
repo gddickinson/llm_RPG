@@ -142,6 +142,7 @@ class SaveManager:
             "foraging": self._subsystem_dict(engine, "forage_manager"),
             "companions": self._subsystem_dict(engine, "companion_manager"),
             "gathering": self._subsystem_dict(engine, "gathering_manager"),
+            "director": self._subsystem_dict(engine, "world_director"),
             "shops": self._subsystem_dict(engine, "shop_manager"),
             "dungeons": {key: dg.to_dict()
                          for key, dg in getattr(engine, "dungeons", {}).items()},
@@ -267,6 +268,7 @@ class SaveManager:
                           ("foraging", "forage_manager"),
                           ("companions", "companion_manager"),
                           ("gathering", "gathering_manager"),
+                          ("director", "world_director"),
                           ("shops", "shop_manager")):
             sub = getattr(engine, attr, None)
             payload = data.get(key)

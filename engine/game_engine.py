@@ -93,10 +93,12 @@ class GameEngine(GameAPIMixin):
         from engine.persuasion import PersuasionSystem
         from engine.heart_events import HeartEventManager
         from engine.topics import TopicJournal
+        from engine.director import WorldDirector
         self.persuasion = PersuasionSystem(self)
         self.heart_events = HeartEventManager(self)
         self.topic_journal = TopicJournal(self)
         self.memory_manager.on_event = self.topic_journal.scan
+        self.world_director = WorldDirector(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
@@ -289,15 +291,16 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"Diary check error: {e}")
 
-        # Nightly reflection: NPCs distill fresh memories into opinions
+        # Nightly: NPC reflection + the world director's overnight events
         try:
             day = self.world.time // (24 * 60)
             if day != getattr(self, "_last_reflection_day", day):
                 from engine.npc_memory import nightly_reflection
                 nightly_reflection(self)
+                self.world_director.run_night()
             self._last_reflection_day = day
         except Exception as e:
-            logger.debug(f"Reflection error: {e}")
+            logger.debug(f"Nightly systems error: {e}")
 
         # Advance in-flight projectiles
         try:

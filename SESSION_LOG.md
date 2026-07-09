@@ -567,3 +567,16 @@ injects it as prompt grounding with "invent nothing beyond it". Y opens
 the journal (n/8 + hints). Topics chain naturally: Goren's troll secret
 teaches silver_blade; Durgan's silver_blade response teaches the recipe.
 10 new tests. Suite: 445 tests, all pass.
+
+**Round 29 — P3.7 nightly world director (done).**
+New `engine/director.py` — LLM-as-director, not LLM-per-NPC. Each game
+night, one call (grounded in the day's event log + known item/monster/NPC
+ids) emits 1-3 structured events from a 5-type whitelist: rumor (joins the
+gossip pool with priority), shortage (that item costs x1.5 in every shop
+for a day), caravan (a merchant restocks + purse boost), monster_sighting
+(a real spawn placed in wilderness away from the player), feud (two NPCs
+drop -20 mutual). Invalid ids are silent no-ops; junk output and heuristic
+mode both roll from template events, so the world moves overnight on every
+backend. Mornings open with "[Overnight] Word spreads: ..." lines; rumors
+then circulate through NPC gossip. Rumors + shortages persist in saves.
+11 new tests. Suite: 456 tests, all pass.
