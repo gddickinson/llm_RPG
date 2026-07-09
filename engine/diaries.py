@@ -105,6 +105,12 @@ class DiaryManager:
         if reward.get("discount"):
             pct = int(self.region_discount(region) * 100)
             parts.append(f"{pct}% off at {spec['name'].split()[0]} shops")
+        try:
+            from engine.player_deeds import record_deed
+            record_deed(self.engine,
+                        f"completed the {spec['name']} ({tier} tier)")
+        except Exception:
+            pass
         return (f"*** {spec['name']} — {tier} tier complete! "
                 f"Reward: {', '.join(parts)} ***")
 

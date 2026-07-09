@@ -377,6 +377,11 @@ class GameEngine(GameAPIMixin):
             self.memory_manager.add_event(
                 f"Quest turned in: {quest.title} (+{quest.reward_gold}g, "
                 f"+{quest.reward_xp}xp)")
+            try:
+                from engine.player_deeds import record_deed
+                record_deed(self, f"completed '{quest.title}'")
+            except Exception:
+                pass
             # Completing someone's quest earns real trust
             giver = self.npc_manager.get_npc(quest.giver_id) \
                 if quest.giver_id else None

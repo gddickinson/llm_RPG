@@ -252,9 +252,13 @@ log, not per-NPC. Research consensus from every shipped LLM game:
   and heuristic mode roll template events, so the world moves overnight on
   every backend. "[Overnight] …" morning lines; rumors surface through NPC
   gossip; state persists. Feeds P4.1 radiant quests. 11 tests.)*
-- [ ] **P3.8 NPCs notice the player.** Inject a "recent player deeds" digest (kills,
-  quests done, gear worn, levels) into every dialog prompt. Single cheapest
-  living-world win in the research; substitutes for RuneScape's social status displays.
+- [x] **P3.8 NPCs notice the player.** *(done 2026-07-09 —
+  `engine/player_deeds.py`: rolling deeds ledger (kills, quest completions,
+  diary tiers; cap 12) + live-derived presence (level, wielded/worn gear,
+  trailing pet). Every LLM dialog prompt carries "WHAT PEOPLE KNOW OF THE
+  PLAYER" with a react-in-character instruction; heuristic NPCs comment
+  outright ~35% of the time ("Word travels — they say you slew Gorkash.").
+  9 tests.)*
 - [ ] **P3.9 Cost/latency discipline.** Heuristics keep running schedules/pathing/barks
   (never per-tick LLM); LLM fires only on player conversation, nightly reflection for
   ~10 named NPCs, and the director. Cache greetings; stream responses; per-NPC

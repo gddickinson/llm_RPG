@@ -123,6 +123,16 @@ class DialogSystem:
                         extras.append(f"  {line}")
         except Exception:
             pass
+        # Heuristic mode: NPCs occasionally comment on your deeds
+        try:
+            if getattr(self.engine.llm_interface, "provider_name",
+                       "heuristic") == "heuristic":
+                from engine.player_deeds import heuristic_comment
+                comment = heuristic_comment(self.engine)
+                if comment:
+                    extras.append(f"  {comment}")
+        except Exception:
+            pass
         # Heuristic mode: trusted NPCs share an unlocked secret outright
         # (LLM mode reveals through the protocol action instead)
         try:

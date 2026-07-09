@@ -580,3 +580,14 @@ mode both roll from template events, so the world moves overnight on every
 backend. Mornings open with "[Overnight] Word spreads: ..." lines; rumors
 then circulate through NPC gossip. Rumors + shortages persist in saves.
 11 new tests. Suite: 456 tests, all pass.
+
+**Round 30 — P3.8 NPCs notice the player (done).**
+New `engine/player_deeds.py`: a rolling ledger of notable deeds (player
+kills, quest completions, diary tiers; capped at 12) plus live-derived
+presence — level, wielded weapon, worn armor, the pet at your heel. Every
+LLM dialog prompt now carries a "WHAT PEOPLE KNOW OF THE PLAYER" block
+with a react-in-character instruction (respect, fear, curiosity); in
+heuristic mode NPCs comment outright about 35% of the time ("Word
+travels — they say you slew Gorkash."). The single-player substitute for
+RuneScape's status displays: your reputation precedes you. 9 new tests.
+Suite: 465 tests, all pass.

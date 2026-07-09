@@ -201,6 +201,8 @@ class CombatSystem:
                 self._update_faction_rep(kls)
                 try:
                     self.engine.collection_log.record_kill(defender)
+                    from engine.player_deeds import record_deed
+                    record_deed(self.engine, f"slew {defender.name}")
                 except Exception:
                     pass
 
