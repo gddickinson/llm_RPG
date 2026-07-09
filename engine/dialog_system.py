@@ -91,11 +91,15 @@ class DialogSystem:
     # ---- internals ---------------------------------------------------
 
     def _greet(self, npc) -> str:
-        recent = []
-        response = self._via_process(npc.id, "Hello", recent) \
-            or self._via_inline(npc, "Hello", recent)
-        if not response:
-            response = "Hello there, traveler."
+        from engine.llm_budget import cached_greeting, store_greeting
+        response = cached_greeting(self.engine, npc)
+        if response is None:
+            recent = []
+            response = self._via_process(npc.id, "Hello", recent) \
+                or self._via_inline(npc, "Hello", recent)
+            if not response:
+                response = "Hello there, traveler."
+            store_greeting(self.engine, npc, response)
 
         # Append quest offers / turn-in prompts
         response = self._append_quest_prompts(npc.id, response)

@@ -259,10 +259,13 @@ log, not per-NPC. Research consensus from every shipped LLM game:
   PLAYER" with a react-in-character instruction; heuristic NPCs comment
   outright ~35% of the time ("Word travels — they say you slew Gorkash.").
   9 tests.)*
-- [ ] **P3.9 Cost/latency discipline.** Heuristics keep running schedules/pathing/barks
-  (never per-tick LLM); LLM fires only on player conversation, nightly reflection for
-  ~10 named NPCs, and the director. Cache greetings; stream responses; per-NPC
-  anti-sycophancy rules in prompts ("you will NOT lower your price below X").
+- [x] **P3.9 Cost/latency discipline.** *(done 2026-07-09 —
+  `engine/llm_budget.py`: spawned monsters NEVER get LLM minds; named NPCs get
+  ≤1 LLM ambient action per 30 game-min (heuristic fallback between, both sync
+  + subprocess paths); plain greetings cached 60 game-min per NPC (real
+  conversation never cached); `llm_interface.call_counts` for observability.
+  Anti-sycophancy rules landed in P3.1's system prompt. Remaining call sites
+  are all player-initiated or once-nightly. 8 tests. **PHASE 3 COMPLETE.**)*
 
 **Exit criteria:** playing with `--provider anthropic/ollama` is *mechanically*
 different from heuristic mode: you can talk your way into secrets, discounts, quests,

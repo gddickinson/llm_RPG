@@ -591,3 +591,20 @@ heuristic mode NPCs comment outright about 35% of the time ("Word
 travels — they say you slew Gorkash."). The single-player substitute for
 RuneScape's status displays: your reputation precedes you. 9 new tests.
 Suite: 465 tests, all pass.
+
+**Round 31 — P3.9 LLM cost discipline (done). PHASE 3 COMPLETE.**
+New `engine/llm_budget.py`. Audit result: dialog/persuasion/heart-events
+are player-initiated, reflection+director are once-nightly — the one
+per-tick leak was NPC ambient actions (every named-or-spawned NPC in range
+burned an LLM call every 5 turns). Now: spawned monsters never get LLM
+minds; named NPCs get at most one LLM action per 30 game-minutes with the
+free heuristic provider acting between (enforced on both the sync and
+subprocess paths); plain greetings are cached per NPC for 60 game-minutes
+(real conversation is never cached — tested); llm_interface.call_counts
+gives per-kind observability. Anti-sycophancy prompt rules had already
+landed with P3.1. 8 new tests. Suite: 473 tests, all pass.
+
+Phase 3 complete: structured dialog actions, per-NPC retrieval memory,
+injection-proof secrets, judged persuasion, heart events, topic journal,
+nightly director, deed awareness, and a disciplined call budget. The LLM
+is now a gameplay pillar, not a flavor-text generator.

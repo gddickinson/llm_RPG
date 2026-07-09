@@ -44,6 +44,7 @@ llm_RPG/
 - **`topics.py`** — `TopicJournal`; keywords heard anywhere become askable topics (Y-key journal), per-NPC authored answers.
 - **`director.py`** — `WorldDirector`; one nightly call emits structured events (rumor/shortage/caravan/sighting/feud) the systems act out.
 - **`player_deeds.py`** — Rolling deeds ledger + presence digest; NPCs react to kills, quests, gear, level.
+- **`llm_budget.py`** — Cost discipline: NPC action cooldowns, monster exclusion, greeting cache.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.

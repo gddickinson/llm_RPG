@@ -417,8 +417,15 @@ class GameEngine(GameAPIMixin):
                 visible_map = self.world.map.get_visible_description(npc_x, npc_y)
                 world_state = self._world_state_for(npc_x, npc_y)
                 history = self.memory_manager.get_recent_history()
-                action = self.llm_interface.get_npc_action(
-                    npc, world_state, history, visible_map)
+                # Budget: monsters + cooling-down NPCs act heuristically
+                from engine.llm_budget import (llm_action_allowed,
+                                               heuristic_provider)
+                if llm_action_allowed(self, npc):
+                    action = self.llm_interface.get_npc_action(
+                        npc, world_state, history, visible_map)
+                else:
+                    action = heuristic_provider(self).get_npc_action(
+                        npc, world_state, history, visible_map)
                 self.action_router.process(npc, action)
             except Exception as e:
                 logger.error(f"NPC {npc_id} error: {e}")
@@ -449,12 +456,25 @@ class GameEngine(GameAPIMixin):
             self.processing_npcs.discard(npc_id)
 
         # Send new commands
+        from engine.llm_budget import llm_action_allowed, heuristic_provider
         for npc_id, npc in self.npc_manager.npcs.items():
             if not npc.is_active() or npc_id in self.processing_npcs:
                 continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \
                     self.effective_visibility() * 2:
+                continue
+            # Budget: only NPCs off cooldown burn a subprocess LLM call;
+            # the rest act heuristically inline (cheap)
+            if not llm_action_allowed(self, npc):
+                try:
+                    action = heuristic_provider(self).get_npc_action(
+                        npc, self._world_state_for(nx, ny),
+                        self.memory_manager.get_recent_history(),
+                        self.world.map.get_visible_description(nx, ny))
+                    self.action_router.process(npc, action)
+                except Exception as e:
+                    logger.debug(f"Heuristic fallback error: {e}")
                 continue
             self.processing_npcs.add(npc_id)
             self.process_manager.send_command(npc_id, "get_action", {
