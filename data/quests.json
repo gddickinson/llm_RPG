@@ -191,5 +191,84 @@
     "reward_unlocks": [
       "spell:heal"
     ]
+  },
+  "caer_aldwyn": {
+    "title": "The Cellars of Caer Aldwyn",
+    "description": "Melody's grandmother's songs say the ruined keep's treasury was never opened. Bandits nest in the ruins now \u2014 clear them out and walk the old halls, and she'll finish the last verse at last.",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "Ruined Keep",
+        "required": 1,
+        "description": "Set foot in the Ruined Keep"
+      },
+      {
+        "type": "kill",
+        "target": "brigand",
+        "required": 2,
+        "description": "Drive off 2 of the bandits squatting there"
+      }
+    ],
+    "giver_id": "minstrel_01",
+    "reward_gold": 120,
+    "reward_items": [
+      "amulet_warding"
+    ],
+    "reward_xp": 250,
+    "reward_unlocks": [
+      "topic:ruined_keep"
+    ]
+  },
+  "the_fence": {
+    "title": "The Fence",
+    "description": "Karim suspects someone respectable is fencing the bandits' loot. Take stolen jewelry off a bandit and bring it to him unfenced \u2014 the engraving will name the caravan it was robbed from.",
+    "objectives": [
+      {
+        "type": "deliver",
+        "target": "stolen_jewelry:guard_01",
+        "required": 1,
+        "description": "Bring stolen jewelry to Karim as evidence"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 90,
+    "reward_items": [
+      "lockpicks"
+    ],
+    "reward_xp": 180,
+    "prereq_quest": "roads_and_rivers",
+    "reward_unlocks": [
+      "topic:bandits"
+    ]
+  },
+  "ballad_of_you": {
+    "title": "The Ballad of You",
+    "description": "Melody insists your legend needs verses \u2014 and verses need witnesses. Introduce yourself to every barkeep in the region so they can corroborate her wilder claims. ('Artistic license requires signatures,' she says.)",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "tavernkeeper_01",
+        "required": 1,
+        "description": "Get Goren's account at the Oakvale Tavern"
+      },
+      {
+        "type": "talk",
+        "target": "hamlet_innkeeper_01",
+        "required": 1,
+        "description": "Get Esra's account at the Riverside Inn"
+      },
+      {
+        "type": "talk",
+        "target": "camp_taverner_01",
+        "required": 1,
+        "description": "Get Wulf's account at the Camp Tavern"
+      }
+    ],
+    "giver_id": "minstrel_01",
+    "reward_gold": 25,
+    "reward_items": [
+      "flute"
+    ],
+    "reward_xp": 80
   }
 }

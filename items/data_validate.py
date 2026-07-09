@@ -199,8 +199,12 @@ def _check_quests() -> List[str]:
     from quests.quest import ObjectiveType
     from characters.npc_presets import NPC_SPECS
     from world.monsters import MONSTER_TEMPLATES
+    from characters.character_types import CharacterClass
+    class_values = {c.value for c in CharacterClass}
     out = []
-    known_actor = lambda a: a in NPC_SPECS or a in MONSTER_TEMPLATES
+    # KILL matches npc id OR class; TALK matches npc id
+    known_actor = lambda a: (a in NPC_SPECS or a in MONSTER_TEMPLATES
+                             or a in class_values)
     for qid, factory in QUEST_TEMPLATES.items():
         quest = factory()
         if quest.giver_id and quest.giver_id not in NPC_SPECS:

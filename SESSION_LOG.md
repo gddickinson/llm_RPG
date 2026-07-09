@@ -638,3 +638,16 @@ Supply Run (deliver iron to Hilde -> east_shaft topic), The Healer's Art
 (chain off herb_gathering -> brew a potion -> learn the heal spell, any
 class). All 10 authored quests now offered at world start. 9 new tests.
 Suite: 492 tests, all pass.
+
+**Round 34 — P4.2b three more handcrafted quests (done). 13 authored total.**
+The Cellars of Caer Aldwyn: a multi-stage expedition to the history-sim's
+Ruined Keep (explore + clear 2 bandits -> warding amulet + ruined_keep
+topic) — pays off Melody's secret and her grandmother's songs. The Fence:
+an investigation chained off Roads and Rivers — loot stolen jewelry from a
+bandit and deliver it to Karim as evidence (the engraving names the
+caravan), tying the bandits topic thread together; rewards confiscated
+lockpicks. The Ballad of You: a humor quest — Melody needs all three
+barkeeps to corroborate her ballad's wilder claims ("artistic license
+requires signatures"), touring the player through every tavern. Validator
+learned that KILL targets may be class values (as radiant bounties already
+use). 6 end-to-end tests. Suite: 498 tests, all pass.

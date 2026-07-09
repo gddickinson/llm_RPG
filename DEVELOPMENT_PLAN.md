@@ -292,9 +292,14 @@ and out of fights — and NPCs remember you across sessions.
   Roads and Rivers (explore → both teleports), Supply Run (deliver → east_shaft
   topic), The Healer's Art (chain: herbs → brew → learn the heal spell).
   9 tests.)*
-- [ ] **P4.2b** More handcrafted quests (target 8–12 total authored) — a
-  multi-stage keep expedition, a bandit-fence investigation using topics/secrets,
-  a humor quest. LLM-rendered giver dialog via the existing protocol.
+- [x] **P4.2b Three more handcrafted quests — 13 authored total.** *(done
+  2026-07-09 — The Cellars of Caer Aldwyn (multi-stage keep expedition:
+  explore the history-sim's Ruined Keep + clear 2 bandits → warding amulet;
+  pays off Melody's secret + the ruined_keep topic), The Fence (investigation
+  chained off Roads and Rivers: deliver bandit-looted stolen jewelry to Karim,
+  ties the bandits topic thread together), The Ballad of You (humor: get all
+  three barkeeps to corroborate Melody's "artistic license"). Validator now
+  accepts class-valued KILL targets. 6 tests. P4.2 complete at 13 quests.)*
 - [ ] **P4.3 Quest points + guild.** Each quest grants 1–3 QP; an Adventurers' Guild
   building unlocks at N QP with its own board, bank, shop, trainers.
 - [ ] **P4.4 Tutorial Island.** Small separate starter zone; one instructor NPC per
