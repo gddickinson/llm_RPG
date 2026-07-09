@@ -319,3 +319,7 @@ class GameAPIMixin:
         xp = 20 + recipe.gold_cost // 2
         for note in add_skill_xp(self.player, recipe.skill, xp):
             self.memory_manager.add_event(note)
+        try:
+            self.pet_system.maybe_award(recipe.skill)
+        except Exception:
+            pass

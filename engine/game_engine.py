@@ -80,10 +80,12 @@ class GameEngine(GameAPIMixin):
         from world.foraging import ForageManager
         from world.gathering import GatheringManager
         from engine.collection_log import CollectionLog
+        from engine.pets import PetSystem
         self.weather_system = WeatherSystem(self)
         self.forage_manager = ForageManager(self)
         self.gathering_manager = GatheringManager(self)
         self.collection_log = CollectionLog(self)
+        self.pet_system = PetSystem(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
@@ -260,6 +262,12 @@ class GameEngine(GameAPIMixin):
             self.collection_log.tick()
         except Exception as e:
             logger.debug(f"Collection tick error: {e}")
+
+        # Pet follower trails the player
+        try:
+            self.pet_system.update()
+        except Exception as e:
+            logger.debug(f"Pet update error: {e}")
 
         # Advance in-flight projectiles
         try:

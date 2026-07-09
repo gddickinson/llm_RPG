@@ -162,9 +162,12 @@ feeling. This directly fixes "content exhausted in under an hour."
   advance_turn so every acquisition path counts; kills credit the player only;
   "[Collection] Discovered:" / "First X defeated!" moments in the log; persists
   via metadata. 8 tests.)*
-- [ ] **P2.6 Skilling pets.** Tiny per-action roll `1/(B − level·k)` for a cosmetic
-  follower per skill/boss. The body renderer already exists — best delight-per-effort
-  feature in the research.
+- [x] **P2.6 Skilling pets.** *(done 2026-07-09 — `engine/pets.py` +
+  `data/pets.json`: 8 named pets (Rocky the pebble golem, Bubbles the otter
+  pup, …), rolled `1/(400 − level·6)` per gather/craft/forage action (floor
+  1/60). Newest pet visibly trails one tile behind the player (renderer
+  critter draw); no duplicates; announced with fanfare; listed in the
+  collection log (n/8); persists via metadata. 8 tests.)*
 - [ ] **P2.7 Regional achievement diaries.** 10–15 tasks × 3 tiers × 3 settlements
   (Oakvale, Riverside, Stonepine), rewarding region-specific convenience: free teleport
   there, bank access at the mine, shop discounts. Doubles as a content tour guide.

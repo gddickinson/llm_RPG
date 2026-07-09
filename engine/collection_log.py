@@ -110,6 +110,14 @@ class CollectionLog:
         grand = sum(o for o, _ in totals.values())
         grand_max = sum(p for _, p in totals.values())
         out.append(f"Collected {grand}/{grand_max}")
+        try:
+            from engine.pets import PETS
+            owned = self.engine.player.metadata.get("pets", [])
+            names = [PETS[s]["name"] for s in owned if s in PETS]
+            out.append(f"Pets ({len(owned)}/{len(PETS)})" +
+                       (": " + ", ".join(names) if names else ""))
+        except Exception:
+            pass
         for cat in CATEGORIES:
             got, possible = totals[cat]
             out.append("")

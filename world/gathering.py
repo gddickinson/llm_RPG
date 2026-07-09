@@ -125,6 +125,10 @@ class GatheringManager:
         self.engine.memory_manager.add_event(msg)
         for note in notes:
             self.engine.memory_manager.add_event(note)
+        try:
+            self.engine.pet_system.maybe_award(skill_id)
+        except Exception:
+            pass
 
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             self.engine.quest_manager.on_item_acquired(item.id)

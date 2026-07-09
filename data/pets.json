@@ -1,0 +1,50 @@
+{
+  "mining": {
+    "name": "Rocky",
+    "kind": "pebble golem",
+    "color": [150, 140, 130],
+    "description": "A fist-sized pebble golem that clatters happily behind you."
+  },
+  "woodcutting": {
+    "name": "Acorn",
+    "kind": "squirrel",
+    "color": [170, 110, 60],
+    "description": "A glossy red squirrel that rides on fallen branches."
+  },
+  "fishing": {
+    "name": "Bubbles",
+    "kind": "otter pup",
+    "color": [110, 90, 70],
+    "description": "A tiny otter pup that smells faintly of the river."
+  },
+  "cooking": {
+    "name": "Cinder",
+    "kind": "kitchen imp",
+    "color": [220, 120, 60],
+    "description": "A soot-cheeked imp that steals crusts of bread."
+  },
+  "smithing": {
+    "name": "Ingot",
+    "kind": "iron sprite",
+    "color": [180, 180, 200],
+    "description": "A stubby iron sprite, still warm from the forge."
+  },
+  "alchemy": {
+    "name": "Fizz",
+    "kind": "bottled wisp",
+    "color": [140, 220, 140],
+    "description": "A softly glowing wisp that lives in a potion bottle."
+  },
+  "foraging": {
+    "name": "Bramble",
+    "kind": "hedgehog",
+    "color": [120, 100, 80],
+    "description": "A round hedgehog with a leaf stuck to one spine."
+  },
+  "agility": {
+    "name": "Zephyr",
+    "kind": "dust sprite",
+    "color": [200, 200, 240],
+    "description": "A whirl of dust that never quite settles."
+  }
+}

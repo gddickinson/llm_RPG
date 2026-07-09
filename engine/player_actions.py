@@ -194,8 +194,13 @@ class PlayerActions:
                     return True
             return False
 
+        old_pos = player.position
         if not wmap.move_character(player, nx, ny):
             return False
+        try:
+            self.engine.pet_system.on_player_moved(old_pos)
+        except Exception:
+            pass
 
         loc = self.engine.world.get_location_at(nx, ny)
         loc_name = loc.name if loc else "wilderness"

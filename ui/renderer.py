@@ -100,6 +100,18 @@ class MapRenderer:
             is_player = char.id == engine.player.id
             draw_body(target, char, sx, sy, self.tile_size, is_player=is_player)
 
+        # Skilling pet follower (small cosmetic critter behind the player)
+        try:
+            pet = engine.pet_system.active_pet()
+            pos = engine.pet_system.follow_pos
+            if pet and pos and cam_x <= pos[0] < cam_x + cols \
+                    and cam_y <= pos[1] < cam_y + rows:
+                psx = view_rect.x + (pos[0] - cam_x) * self.tile_size
+                psy = view_rect.y + (pos[1] - cam_y) * self.tile_size
+                self._draw_pet(target, pet, psx, psy)
+        except Exception:
+            pass
+
         # In-flight projectiles
         try:
             for proj in engine.projectile_manager.active:
@@ -145,6 +157,22 @@ class MapRenderer:
             pass
 
     # ---- helpers ------------------------------------------------------
+
+    def _draw_pet(self, target, pet: dict, x: int, y: int) -> None:
+        """A tiny bobbing critter: colored body + eyes."""
+        ts = self.tile_size
+        color = tuple(pet.get("color", (200, 200, 200)))
+        cx = x + ts // 2
+        cy = y + int(ts * 0.68)
+        r = max(3, ts // 5)
+        pygame.draw.circle(target, color, (cx, cy), r)
+        dark = tuple(max(0, c - 70) for c in color)
+        pygame.draw.circle(target, dark, (cx, cy), r, 1)
+        eye = max(1, ts // 20)
+        pygame.draw.circle(target, (20, 20, 25),
+                           (cx - r // 2, cy - eye), eye)
+        pygame.draw.circle(target, (20, 20, 25),
+                           (cx + r // 2, cy - eye), eye)
 
     def _draw_hp_bar(self, target, char, x: int, y: int) -> None:
         w = self.tile_size - 4

@@ -446,3 +446,15 @@ player lands the killing blow; first-time discoveries surface as
 "[Collection] Discovered: Oakvale Tavern" / "First Wolf defeated!" events.
 Stored in player.metadata -> persists through saves. 8 new tests.
 Suite: 353 tests, all pass.
+
+**Round 20 — P2.6 skilling pets (done).**
+New `engine/pets.py` + `data/pets.json`: 8 named cosmetic pets (Rocky the
+pebble golem, Acorn the squirrel, Bubbles the otter pup, Cinder the kitchen
+imp, Ingot the iron sprite, Fizz the bottled wisp, Bramble the hedgehog,
+Zephyr the dust sprite). Every gather/craft/forage action rolls
+1/(400 - level*6), floored at 1/60 — higher skill, better odds. The newest
+pet visibly trails one tile behind the player (small bobbing critter drawn
+by the renderer, hooked on pre-move position for a correct one-step lag).
+No duplicates; jackpot announced with fanfare; pets counted in the
+collection log (n/8); ownership persists via metadata. 8 new tests.
+Suite: 361 tests, all pass.

@@ -81,6 +81,7 @@ class ForageManager:
             from engine.skill_progression import add_skill_xp
             for note in add_skill_xp(self.engine.player, "foraging", 15):
                 self.engine.memory_manager.add_event(note)
+            self.engine.pet_system.maybe_award("foraging")
         except Exception:
             pass
         return msg
