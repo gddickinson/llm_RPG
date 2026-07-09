@@ -236,9 +236,14 @@ log, not per-NPC. Research consensus from every shipped LLM game:
   falls back to outline). Perks: items/gold with flavor notes. Fires once,
   lowest threshold first, hooked on dialog + quest turn-in; NPC remembers the
   moment (importance 7 → shapes reflections). 10 tests.)*
-- [ ] **P3.6 Topic journal (Moonring pattern).** Keywords heard in any dialog become
-  askable topics everywhere, tracked in a journal UI. Free-text chat gains a
-  lock-and-key structure; NPC knowledge becomes a collectible.
+- [x] **P3.6 Topic journal (Moonring pattern).** *(done 2026-07-09 —
+  `engine/topics.py` + `data/topics.json`: 8 topics with per-NPC authored
+  responses. Learning hooks the event-log observer, so dialog, secrets, lore,
+  and heart events all teach; saying a keyword yourself does NOT (knowledge
+  must be heard). Asking: heuristic mode appends the NPC's authored answer;
+  LLM mode injects it as grounding ("invent nothing beyond it"). Y-key journal
+  with n/8 counter. Topics chain: Goren's secret teaches silver_blade, whose
+  response teaches the recipe. 10 tests.)*
 - [ ] **P3.7 Nightly world director.** One LLM call per game-night reads the day's
   event log + faction state and emits 1–3 structured events (rumor, shortage, feud,
   caravan, monster sighting) that heuristics act out and gossip spreads. LLM-as-director

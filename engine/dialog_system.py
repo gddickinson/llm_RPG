@@ -14,6 +14,7 @@ class DialogSystem:
 
     def __init__(self, engine):
         self.engine = engine
+        self._last_player_message = None
 
     def player_to_npc(self, npc_id: str, message: str = None) -> str:
         npc = self.engine.npc_manager.get_npc(npc_id)
@@ -38,6 +39,7 @@ class DialogSystem:
             return result
 
         # Player speaks ---------------------------------------------------
+        self._last_player_message = message
         self.engine.memory_manager.add_event(
             f"You say to {npc.name}: \"{message}\"")
 
@@ -108,6 +110,19 @@ class DialogSystem:
         ready = qm.ready_for_turn_in(npc_id) if qm else []
 
         extras = [base]
+        # Known topics raised by the player get authored answers
+        # (heuristic mode; LLM mode grounds them via the prompt instead)
+        try:
+            if getattr(self.engine.llm_interface, "provider_name",
+                       "heuristic") == "heuristic" and \
+                    self._last_player_message:
+                npc0 = self.engine.npc_manager.get_npc(npc_id)
+                if npc0 is not None:
+                    for line in self.engine.topic_journal.heuristic_lines(
+                            npc0, self._last_player_message):
+                        extras.append(f"  {line}")
+        except Exception:
+            pass
         # Heuristic mode: trusted NPCs share an unlocked secret outright
         # (LLM mode reveals through the protocol action instead)
         try:

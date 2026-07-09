@@ -84,6 +84,13 @@ def build_prompt(engine, npc, player_message: str,
             parts.append(secrets_block)
     except Exception:
         pass
+    try:
+        topics_block = engine.topic_journal.prompt_block(
+            npc, player_message)
+        if topics_block:
+            parts.append(topics_block)
+    except Exception:
+        pass
     if convo:
         parts.append(f"EARLIER IN THIS ACQUAINTANCE\n{convo}")
     parts.append(f"{player.name.upper()} SAYS: \"{player_message}\"\n\n"

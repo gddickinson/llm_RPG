@@ -254,6 +254,14 @@ class GameGUI:
             self.crafting_panel = CraftingPanel(self.engine)
         self.mode = "crafting"
 
+    def show_topics(self) -> None:
+        try:
+            lines = self.engine.topic_journal.overlay_lines()
+        except Exception:
+            lines = ["Journal unavailable."]
+        self.overlay = ("Topic Journal", lines)
+        self.mode = "menu"
+
     def show_travel(self) -> None:
         try:
             lines = self.engine.travel_system.overlay_lines()
@@ -347,6 +355,7 @@ class GameGUI:
             "  O             : collection log (items / foes / recipes / places)",
             "  J             : achievement diaries (regional tasks + rewards)",
             "  U             : travel menu (teleports unlock via diaries)",
+            "  Y             : topic journal (mention topics to NPCs to ask)",
             "                  (Agility 15/25 climbs mountains / swims rivers)",
             "  Q             : quest log",
             "  C             : character sheet",

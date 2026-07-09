@@ -553,3 +553,17 @@ or gold with flavor ("Karim hands you a guard whistle"). The NPC remembers
 the moment at importance 7, feeding nightly reflections. The scenes also
 carry world lore (the tavern fire, the uncollected silver blade).
 10 new tests; validator covers perk items. Suite: 435 tests, all pass.
+
+**Round 28 — P3.6 topic journal (done).**
+New `engine/topics.py` + `data/topics.json`: 8 topics (Gorkash, the silver
+blade, the ruined keep, mithril, the east shaft, the bandits, the plague
+years, the blessed hollow), each with per-NPC authored responses + a
+default line. Learning rides a new event-log observer
+(memory_manager.on_event), so NPC replies, revealed secrets, lore lines,
+and heart-event prose all teach topics — but saying a keyword yourself
+does not (knowledge must be HEARD; tested). Asking works by mentioning a
+known topic: heuristic mode appends the NPC's authored answer, LLM mode
+injects it as prompt grounding with "invent nothing beyond it". Y opens
+the journal (n/8 + hints). Topics chain naturally: Goren's troll secret
+teaches silver_blade; Durgan's silver_blade response teaches the recipe.
+10 new tests. Suite: 445 tests, all pass.

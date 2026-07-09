@@ -222,6 +222,11 @@ class InputHandler:
             self.gui.show_travel()
             return True
 
+        # Topic journal (Y)
+        if k == pygame.K_y:
+            self.gui.show_topics()
+            return True
+
         # Talk to adjacent NPC
         if k == pygame.K_t:
             npc = self._find_adjacent_npc()

@@ -1,0 +1,82 @@
+{
+  "gorkash": {
+    "name": "Gorkash",
+    "keywords": ["gorkash"],
+    "hint": "A troll brigand terrorizing the east road.",
+    "responses": {
+      "guard_01": "Gorkash has ambushed three caravans this season. I've been ordered to organize a hunt — I'd pay good coin to see him finished.",
+      "tavernkeeper_01": "Gorkash? Keep your voice down. Travelers stopped coming by the east road because of that brute.",
+      "blacksmith_01": "Troll hide turns common steel. If you mean to fight Gorkash, you'll want silver."
+    },
+    "default_response": "The troll? Stay off the east road, that's all I know."
+  },
+  "silver_blade": {
+    "name": "The Silver Blade",
+    "keywords": ["silver blade", "silver sword"],
+    "hint": "A masterwork weapon that cuts troll-hide like cloth.",
+    "responses": {
+      "blacksmith_01": "Aye, I can forge one — my finest pattern. Bring me a plain sword, a troll's tooth, and silver enough: that stolen jewelry the bandits fence would smelt down nicely.",
+      "tavernkeeper_01": "Durgan forged a silver blade once for a stranger who never returned. He doesn't like to speak of it."
+    },
+    "default_response": "Silver weapons? That's smith's business — ask Durgan."
+  },
+  "ruined_keep": {
+    "name": "The Ruined Keep",
+    "keywords": ["ruined keep", "old keep"],
+    "hint": "A crumbling fortress in the north-east wilds; its cellars may be unlooted.",
+    "responses": {
+      "minstrel_01": "My grandmother's songs name it Caer Aldwyn. The last verse says the lord sealed his treasury before the siege — and no verse says anyone opened it.",
+      "guard_01": "The keep fell before my grandfather's time. Bandits shelter there now — go armed."
+    },
+    "default_response": "Old stones and older ghosts. Folk keep clear of it."
+  },
+  "mithril": {
+    "name": "Mithril",
+    "keywords": ["mithril"],
+    "hint": "A rare, feather-light ore said to lie in the deep shafts.",
+    "responses": {
+      "camp_foreman_01": "We found a vein of silver last month, but mithril runs deeper — past the sealed east shaft. Master miners only.",
+      "blacksmith_01": "Mithril takes a master's hand at the forge and a master's arm at the pick. Level your craft first."
+    },
+    "default_response": "Mithril's a miner's fairy tale... mostly."
+  },
+  "east_shaft": {
+    "name": "The East Shaft",
+    "keywords": ["east shaft", "sealed shaft"],
+    "hint": "A sealed mine tunnel at Stonepine where two miners vanished.",
+    "responses": {
+      "camp_foreman_01": "Two good men went down and didn't come up. Goblins, maybe worse. I sealed it — and I'd think twice before unsealing it for anyone.",
+      "camp_smith_01": "Bram won't say it, but the picks we recovered were bitten through. Bitten."
+    },
+    "default_response": "Mine business. Ask at Stonepine Camp."
+  },
+  "bandits": {
+    "name": "The Bandits",
+    "keywords": ["bandit", "brigand", "outlaws"],
+    "hint": "Outlaws working the roads — someone inside a settlement fences their loot.",
+    "responses": {
+      "guard_01": "They're organized — too organized. Someone tips them off about caravans. Watch who suddenly has coin to spend.",
+      "tavernkeeper_01": "I hear things over the bar. Ask me again when we know each other better."
+    },
+    "default_response": "Cutthroats on the roads. Travel by day."
+  },
+  "plague_years": {
+    "name": "The Plague Years",
+    "keywords": ["plague"],
+    "hint": "A sickness that swept the river hamlet years ago.",
+    "responses": {
+      "hamlet_priest_01": "I kept vigil forty nights. We buried too many, but the hamlet endured. The druid's blessed hollow gave us the herbs that saved the rest.",
+      "hamlet_innkeeper_01": "The hamlet took me in during the plague years. I owe these people everything — that's why I stayed."
+    },
+    "default_response": "Dark years. The river folk bore the worst of it."
+  },
+  "blessed_hollow": {
+    "name": "The Blessed Hollow",
+    "keywords": ["blessed hollow", "druid's hollow", "herb hollow"],
+    "hint": "A forest hollow south of the chapel where herbs grow unnaturally thick.",
+    "responses": {
+      "hamlet_priest_01": "An old druid blessed it before my time. The herbs there never fail, even in winter. Take only what you need."
+    },
+    "default_response": "Herbs grow strange and strong in some corners of the forest."
+  }
+}

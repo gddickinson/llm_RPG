@@ -92,8 +92,11 @@ class GameEngine(GameAPIMixin):
         self.travel_system = TravelSystem(self)
         from engine.persuasion import PersuasionSystem
         from engine.heart_events import HeartEventManager
+        from engine.topics import TopicJournal
         self.persuasion = PersuasionSystem(self)
         self.heart_events = HeartEventManager(self)
+        self.topic_journal = TopicJournal(self)
+        self.memory_manager.on_event = self.topic_journal.scan
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
