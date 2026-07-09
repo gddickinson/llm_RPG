@@ -308,3 +308,13 @@ when not comfortable; a stomach-growl event fires when crossing the hungry
 threshold. This makes food a real consumable — the consumption side of the
 Phase 2 economy. New `tests/test_player_needs.py` (6 tests).
 Suite: 283 tests, all pass.
+
+**Round 8 — P0.7 contextual hint bar (done).**
+New `ui/hints.py`: `context_hints(engine)` inspects the player's surroundings
+and returns up to 3 prioritized hints — [T] talk / [F] attack / [B] barter /
+[P] invite / [G] pick up / [Z] forage / [N][M] bank / [K] craft at forge /
+[TAB] enter-leave-descend. Rendered as a translucent bar along the map's
+bottom edge (hud.draw_hint_bar). Every previously-invisible system now
+advertises itself in context. Verified live via headless screenshot
+(docs/img refreshed). New `tests/test_hints.py` (7 tests).
+Suite: 290 tests, all pass.

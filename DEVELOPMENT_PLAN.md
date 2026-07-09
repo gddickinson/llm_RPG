@@ -66,10 +66,10 @@ they transform the experience.
   full HP when hungry; HUD shows condition; stomach-growl warning on crossing the
   hungry threshold. Food is now a real consumable → cooking gets its consumer in
   P2. 6 tests in `tests/test_player_needs.py`.)*
-- [ ] **P0.7 Discoverability hint bar.** One-line contextual prompt above the HUD:
-  "Press B — bank" at temple/shop, "Press R — craft" at forge, "Press Z — forage" on
-  forest tiles, "Press TAB — enter" on cave/building tiles. Cheapest possible fix for
-  near-zero feature discoverability.
+- [x] **P0.7 Discoverability hint bar.** *(done 2026-07-09 — `ui/hints.py`
+  `context_hints()` (pure logic, testable) + HUD bar over the map's bottom edge.
+  Covers talk/attack/barter/recruit/pickup/forage/bank/craft/enter/leave, capped
+  at 3 prioritized hints. Verified live via headless screenshot. 7 tests.)*
 - [ ] **P0.8 Housekeeping.** Delete or wire `engine/dialog_trees.py` (193 orphaned
   lines); remove `_archive/` from the working tree; update stale README/INTERFACE
   claims (says 107 tests; there are 247).

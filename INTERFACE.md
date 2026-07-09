@@ -108,6 +108,7 @@ llm_RPG/
 - **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting.
 - **`sprite_loader.py`** — Procedural sprite generation (no PNG assets).
 - **`crafting_panel.py`** — `CraftingPanel`; K-key recipe browser with have/need counts, crafts via `engine.craft()`.
+- **`hints.py`** — `context_hints(engine)`; contextual key hints (talk/barter/forage/enter/…) rendered as the HUD hint bar.
 - **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker.
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
 - **`terminal_ui.py`** — Text-based UI.

@@ -34,6 +34,28 @@ class HUD:
         self.draw_event_log(target, engine, layout["events"])
         self.draw_quest_panel(target, engine, layout["quests"])
         self.draw_minimap(target, engine, layout["minimap"])
+        if "map" in layout:
+            self.draw_hint_bar(target, engine, layout["map"])
+
+    def draw_hint_bar(self, target, engine, map_rect) -> None:
+        """Contextual key hints along the bottom edge of the map view."""
+        if not self.font:
+            return
+        try:
+            from ui.hints import context_hints
+            hints = context_hints(engine)
+        except Exception:
+            hints = []
+        if not hints:
+            return
+        text = "   ".join(hints)
+        surf = self.font.render(text, True, (255, 235, 170))
+        bar_h = surf.get_height() + 8
+        bar = pygame.Surface((map_rect.width, bar_h), pygame.SRCALPHA)
+        bar.fill((10, 10, 20, 190))
+        target.blit(bar, (map_rect.x, map_rect.bottom - bar_h))
+        target.blit(surf, (map_rect.x + 10,
+                           map_rect.bottom - bar_h + 4))
 
     def draw_status_panel(self, target, engine, rect) -> None:
         self._panel(target, rect, "Status")
