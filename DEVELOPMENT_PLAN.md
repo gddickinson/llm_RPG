@@ -47,9 +47,9 @@ they transform the experience.
 - [x] **P0.2 Fix the unreachable shop.** *(done 2026-07-09 — shop rebound to `B`
   (barter); help overlay + README updated; 4 regression tests incl. an
   end-to-end ShopPanel buy in `tests/test_input_bindings.py`.)*
-- [ ] **P0.3 Crafting UI.** `engine.craft()` exists but nothing in `ui/` calls it.
-  Add a crafting overlay (hotkey `R`), listing recipes with have/need ingredient
-  counts, forge-gated ones greyed out unless at the forge.
+- [x] **P0.3 Crafting UI.** *(done 2026-07-09 — `ui/crafting_panel.py`, hotkey `K`
+  (R was already ranged attack); live have/need counts, forge-gated recipes greyed
+  out with reason, craftable-first sort; 7 tests incl. end-to-end panel craft.)*
 - [ ] **P0.4 Companion recruit/dismiss UI.** `engine.recruit()` exists, no caller.
   Add a dialog option ("Ask to join you") when eligible, and a party panel row in
   the HUD. Companions enable the already-implemented flanking bonus — today the

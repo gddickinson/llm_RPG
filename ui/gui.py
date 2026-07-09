@@ -42,9 +42,10 @@ class GameGUI:
         self.dialog_input: str = ""
         self.dialog_pending_reply: Optional[str] = None
 
-        # Inventory + shop panels (lazy)
+        # Inventory + shop + crafting panels (lazy)
         self.inventory_panel = None
         self.shop_panel = None
+        self.crafting_panel = None
 
         # Init pygame
         pygame.init()
@@ -148,6 +149,9 @@ class GameGUI:
         if self.mode == "shop" and self.shop_panel is not None:
             self.shop_panel.draw(self.screen, self.screen.get_rect())
 
+        if self.mode == "crafting" and self.crafting_panel is not None:
+            self.crafting_panel.draw(self.screen, self.screen.get_rect())
+
         if self.mode == "death":
             self._draw_death_popup()
 
@@ -243,6 +247,12 @@ class GameGUI:
         self.shop_panel = ShopPanel(self.engine, merchant_npc)
         self.mode = "shop"
 
+    def show_crafting(self) -> None:
+        from ui.crafting_panel import CraftingPanel
+        if self.crafting_panel is None:
+            self.crafting_panel = CraftingPanel(self.engine)
+        self.mode = "crafting"
+
     def show_quests(self) -> None:
         qm = self.engine.quest_manager
         if not qm:
@@ -294,6 +304,8 @@ class GameGUI:
             "                  (E equip/unequip, Q use, D drop)",
             "  B             : barter — shop with adjacent merchant",
             "                  (Left/Right column, Enter buy/sell)",
+            "  K             : crafting — browse + craft recipes",
+            "                  (forge recipes need Durgan's Forge)",
             "  Q             : quest log",
             "  C             : character sheet",
             "",

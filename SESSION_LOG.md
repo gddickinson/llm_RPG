@@ -271,3 +271,12 @@ README updated. New `tests/test_input_bindings.py` drives the input handler
 with synthetic key events: S must move (never open shop), B must open the shop
 with an adjacent merchant, plus a full end-to-end ShopPanel buy (gold spent,
 item added). Suite: 260 tests, all pass.
+
+**Round 4 — P0.3 crafting UI (done).**
+New `ui/crafting_panel.py` (K key): lists every recipe with live have/need
+ingredient counts and gold cost; uncraftable recipes greyed out with the
+blocking reason (missing ingredients / gold / "need a forge"); craftable-first
+sort; Enter crafts via `engine.craft()`. Wired into gui mode machine + input
+handler; help overlay + README updated. New `tests/test_crafting_panel.py`
+(7 tests incl. end-to-end craft: herb consumed, gold paid, potion appears).
+Suite: 267 tests, all pass.

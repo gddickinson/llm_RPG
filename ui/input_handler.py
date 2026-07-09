@@ -77,6 +77,16 @@ class InputHandler:
                 return self.gui.shop_panel.handle_key(event)
             return True
 
+        # Crafting panel
+        if self.gui.mode == "crafting":
+            if event.type == pygame.KEYDOWN and event.key in \
+                    (pygame.K_ESCAPE, pygame.K_k):
+                self.gui.mode = "play"
+                return True
+            if self.gui.crafting_panel is not None:
+                return self.gui.crafting_panel.handle_key(event)
+            return True
+
         if event.type != pygame.KEYDOWN:
             return False
 
@@ -166,6 +176,11 @@ class InputHandler:
         # move-down, which shadowed the old binding and made shops unreachable)
         if k == pygame.K_b:
             self._open_shop()
+            return True
+
+        # Crafting overlay (K)
+        if k == pygame.K_k:
+            self.gui.show_crafting()
             return True
 
         # Talk to adjacent NPC

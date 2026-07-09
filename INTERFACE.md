@@ -107,6 +107,7 @@ llm_RPG/
 - **`character_creator.py`** — Multi-step character creation flow + `CharacterSpec`, race/class data.
 - **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting.
 - **`sprite_loader.py`** — Procedural sprite generation (no PNG assets).
+- **`crafting_panel.py`** — `CraftingPanel`; K-key recipe browser with have/need counts, crafts via `engine.craft()`.
 - **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker.
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
 - **`terminal_ui.py`** — Text-based UI.

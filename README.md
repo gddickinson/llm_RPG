@@ -155,6 +155,7 @@ matching API key environment variable.
 | G / E | Pick up | X / V | Fireball / Heal |
 | H | Drink potion | N / M | Bank deposit / withdraw |
 | B | Barter with adjacent merchant | R | Ranged attack |
+| K | Crafting menu | L | Look around |
 | TAB | Enter building / cave | F5 / F9 | Save / Load |
 | F1 or `/` | Help | ESC | Close / quit |
 
