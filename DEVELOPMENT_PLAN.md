@@ -127,11 +127,13 @@ tracks with geometric XP curves and a dense unlock schedule, cross-feeding each 
 in a closed (Ironman-style) economy. Melvor Idle proved the lattice alone carries the
 feeling. This directly fixes "content exhausted in under an hour."
 
-- [ ] **P2.1 Skills system.** 8–10 skills, levels 1–50, XP curve `xp(L) ≈ base·1.10^L`
-  (first 10 levels in minutes; 45→50 takes as long as 1→45). Suggested set, reusing
-  existing systems: **Mining, Woodcutting, Fishing, Cooking, Smithing, Alchemy
-  (herblore — extends foraging), Thieving, Agility**, plus combat XP mapped onto the
-  existing leveling. New module `engine/skill_progression.py` + HUD skill panel.
+- [x] **P2.1 Skills system.** *(done 2026-07-09 — `engine/skill_progression.py` +
+  `data/skills.json`: 8 skills (mining/woodcutting/fishing/cooking/smithing/
+  alchemy/foraging/agility), levels 1–50, geometric curve base 50 · 1.10^L (last
+  7 levels ≈ everything before). XP in `player.metadata["skills"]` → persists
+  free. Live earners: forage→foraging, brew→alchemy, forge→smithing; character
+  sheet shows per-skill levels + total. 12 tests. Mining/woodcutting/fishing/
+  cooking earn XP once P2.2 adds gathering nodes.)*
 - [ ] **P2.2 Gathering nodes on the map.** Ore rocks (mountain edges), trees (forest),
   fishing spots (river/lake) as interactable tiles with per-tier level gates and respawn
   timers — generalize the existing `ForageManager` cooldown pattern. Unlock schedule:

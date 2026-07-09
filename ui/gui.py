@@ -273,8 +273,17 @@ class GameGUI:
             f"Gold: {p.gold}",
             f"XP: {(p.metadata or {}).get('xp', 0)}",
             "",
-            "Goals:",
+            "Skills:",
         ]
+        try:
+            from engine.skill_progression import (skill_summary,
+                                                  total_skill_level)
+            for line in skill_summary(p):
+                lines.append(f"  {line}")
+            lines.append(f"  {'Total':<14} {total_skill_level(p):>3}")
+        except Exception:
+            lines.append("  (unavailable)")
+        lines += ["", "Goals:"]
         for g in p.goals:
             lines.append(f"  * {g}")
         self.overlay = ("Character Sheet", lines)

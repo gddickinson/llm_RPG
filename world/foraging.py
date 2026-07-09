@@ -77,6 +77,12 @@ class ForageManager:
                 self.engine.quest_manager.on_item_acquired(iid)
         msg = f"You forage and find {item.name}."
         self.engine.memory_manager.add_event(msg)
+        try:
+            from engine.skill_progression import add_skill_xp
+            for note in add_skill_xp(self.engine.player, "foraging", 15):
+                self.engine.memory_manager.add_event(note)
+        except Exception:
+            pass
         return msg
 
     def to_dict(self):

@@ -283,9 +283,22 @@ class GameAPIMixin:
         return can_craft(self.player, output_id, props)
 
     def craft(self, output_id: str) -> str:
-        from items.crafting import craft
+        from items.crafting import craft, find_recipe
         loc = self.world.get_location_at(*self.player.position)
         props = dict(loc.properties) if loc else {}
         msg = craft(self.player, output_id, props)
         self.memory_manager.add_event(msg)
+        if msg.startswith("You craft"):
+            self._award_craft_xp(find_recipe(output_id))
         return msg
+
+    def _award_craft_xp(self, recipe) -> None:
+        """Forge recipes train smithing; brewed goods train alchemy."""
+        from engine.skill_progression import add_skill_xp
+        if recipe is None:
+            return
+        skill = "smithing" if recipe.required_property == "forge" \
+            else "alchemy"
+        xp = 20 + recipe.gold_cost // 2
+        for note in add_skill_xp(self.player, skill, xp):
+            self.memory_manager.add_event(note)

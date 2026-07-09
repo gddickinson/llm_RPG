@@ -388,3 +388,15 @@ tested against injected broken content. Suite: 315 tests, all pass.
 Phase 1 complete (P1.4 module packs deferred as stretch): all content in
 JSON, all cross-references machine-checked. Next: Phase 2 — the skills
 progression lattice.
+
+**Round 15 — P2.1 skills system (done). Phase 2 begins.**
+New `engine/skill_progression.py` + `data/skills.json`: 8 parallel skill
+tracks (mining, woodcutting, fishing, cooking, smithing, alchemy, foraging,
+agility), levels 1-50 on a geometric curve (50 * 1.10^L per level — the
+OSRS-shaped "last 7 levels cost as much as the first 43", verified by test).
+XP lives in player.metadata["skills"], so save persistence came free.
+Live XP earners wired: foraging (Z), alchemy (brew consumables), smithing
+(forge recipes) — with level-up events in the log. Character sheet (C) now
+shows all skill levels + progress + total level. 12 new tests.
+Suite: 327 tests, all pass. Gathering nodes for mining/woodcutting/fishing/
+cooking arrive with P2.2.

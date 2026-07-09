@@ -40,6 +40,7 @@ llm_RPG/
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.
 - **`leveling.py`** — XP curve, auto level-up with HP/stat increases.
+- **`skill_progression.py`** — 8-skill lattice from `data/skills.json`; geometric curve, `add_skill_xp()`, levels 1–50.
 - **`spells.py`** — `SpellSystem`, spell registry, mana mechanics.
 - **`banking.py`** — Deposit/withdraw gold at temples/shops.
 - **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).
