@@ -300,6 +300,11 @@ class GameEngine(GameAPIMixin):
             self.memory_manager.add_event(
                 f"Quest turned in: {quest.title} (+{quest.reward_gold}g, "
                 f"+{quest.reward_xp}xp)")
+            # Completing someone's quest earns real trust
+            giver = self.npc_manager.get_npc(quest.giver_id) \
+                if quest.giver_id else None
+            if giver is not None:
+                giver.modify_relationship(self.player.id, 15)
             # Surface level-ups in the game event log
             if self.player.level > level_before:
                 for lvl in range(level_before + 1, self.player.level + 1):

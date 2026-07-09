@@ -306,6 +306,8 @@ class GameGUI:
             "                  (Left/Right column, Enter buy/sell)",
             "  K             : crafting — browse + craft recipes",
             "                  (forge recipes need Durgan's Forge)",
+            "  P             : party — recruit adjacent NPC / dismiss member",
+            "                  (they must trust you: chat + do their quests)",
             "  Q             : quest log",
             "  C             : character sheet",
             "",

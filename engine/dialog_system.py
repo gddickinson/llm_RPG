@@ -46,6 +46,11 @@ class DialogSystem:
         npc.add_memory(
             f"Player said: \"{message}\". I replied: \"{response}\"", 2)
 
+        # Friendly conversation slowly builds trust (recruit gate is 30)
+        klass = getattr(npc.character_class, "value", "")
+        if klass not in ("brigand", "troll", "monster"):
+            npc.modify_relationship(self.engine.player.id, 2)
+
         # Quest hook
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             self.engine.quest_manager.on_npc_talked(npc_id)

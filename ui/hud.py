@@ -67,9 +67,17 @@ class HUD:
             f"Gold: {p.gold}",
             f"Pos: {p.position}",
             f"Time: {engine.world.get_formatted_time()}",
-            "",
-            "Inventory:",
         ]
+        try:
+            party = engine.companion_manager.members()
+        except Exception:
+            party = []
+        if party:
+            more.append("Party:")
+            for member in party:
+                more.append(
+                    f"  - {member.name} ({member.hp}/{member.max_hp})")
+        more += ["", "Inventory:"]
         for it in p.inventory[:7]:
             name = it.name if hasattr(it, "name") else str(it)
             qty = getattr(it, "quantity", 1)

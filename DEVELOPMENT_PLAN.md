@@ -50,10 +50,11 @@ they transform the experience.
 - [x] **P0.3 Crafting UI.** *(done 2026-07-09 — `ui/crafting_panel.py`, hotkey `K`
   (R was already ranged attack); live have/need counts, forge-gated recipes greyed
   out with reason, craftable-first sort; 7 tests incl. end-to-end panel craft.)*
-- [ ] **P0.4 Companion recruit/dismiss UI.** `engine.recruit()` exists, no caller.
-  Add a dialog option ("Ask to join you") when eligible, and a party panel row in
-  the HUD. Companions enable the already-implemented flanking bonus — today the
-  player can never trigger it.
+- [x] **P0.4 Companion recruit/dismiss UI.** *(done 2026-07-09 — `P` key
+  recruits/dismisses the adjacent NPC; party members + HP shown in the HUD status
+  panel. Also fixed the deeper blocker: the player had NO way to reach the ≥30
+  trust gate — now conversation gives +2 relationship (non-hostiles) and quest
+  turn-in gives +15 with the giver. 6 tests in `tests/test_party_ui.py`.)*
 - [ ] **P0.5 Wire weather into gameplay.** `visibility_modifier()` is only used by
   its own test. Apply it to FOV radius and encounter spawn odds; storms slow travel
   on non-road tiles. (Small change; converts decoration into a system.)

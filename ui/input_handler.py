@@ -183,6 +183,11 @@ class InputHandler:
             self.gui.show_crafting()
             return True
 
+        # Party: recruit / dismiss adjacent NPC (P)
+        if k == pygame.K_p:
+            self._toggle_party()
+            return True
+
         # Talk to adjacent NPC
         if k == pygame.K_t:
             npc = self._find_adjacent_npc()
@@ -342,6 +347,24 @@ class InputHandler:
             for line in visible.split("\n"):
                 if line.strip():
                     self.engine.memory_manager.add_event(line)
+        except Exception:
+            pass
+
+    def _toggle_party(self) -> None:
+        """P key — dismiss an adjacent party member, or try to recruit."""
+        try:
+            npc = self._find_adjacent_npc()
+            if npc is None:
+                self.engine.memory_manager.add_event(
+                    "No one nearby to recruit.")
+                return
+            if npc.id in self.engine.companion_manager.party:
+                self.engine.dismiss_companion(npc.id)
+                return
+            msg = self.engine.recruit(npc.id)
+            # Success is logged by the manager; log refusals too
+            if "joins your party" not in msg:
+                self.engine.memory_manager.add_event(msg)
         except Exception:
             pass
 

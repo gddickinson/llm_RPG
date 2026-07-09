@@ -280,3 +280,12 @@ sort; Enter crafts via `engine.craft()`. Wired into gui mode machine + input
 handler; help overlay + README updated. New `tests/test_crafting_panel.py`
 (7 tests incl. end-to-end craft: herb consumed, gold paid, potion appears).
 Suite: 267 tests, all pass.
+
+**Round 5 — P0.4 companion recruit/dismiss UI (done).**
+`P` key now recruits an adjacent NPC (or dismisses a party member); party
+names + HP appear in the HUD status panel. The deeper blocker: relationship
+only ever changed via NPC-initiated actions or combat, so the >=30 recruit
+threshold was unreachable — talking now builds +2 trust per exchange
+(non-hostiles only) and quest turn-in gives +15 with the giver. Companions
+also unlock the existing flanking bonus, previously impossible to trigger.
+New `tests/test_party_ui.py` (6 tests). Suite: 273 tests, all pass.
