@@ -275,10 +275,13 @@ and out of fights — and NPCs remember you across sessions.
 
 ## Phase 4 — Quests, world, onboarding  (~2–3 weeks)
 
-- [ ] **P4.1 Radiant quest generation.** Procedural task quests (kill/fetch/deliver/
-  escort) generated from world state — director events (P3.7), shortages, faction
-  tension — posted to quest boards with level-scaled rewards. Fixes the permanently
-  questless world after the 6 templates are done.
+- [x] **P4.1 Radiant quest generation.** *(done 2026-07-09 — `quests/radiant.py`:
+  each morning 1–2 quests generate from real world state — director shortages
+  become FETCH quests, sighted/spawned monsters become bounties, gathering
+  templates fill in. Level-scaled rewards, posted to the tavern board with
+  "[Board] New notice" events, real givers for turn-in. Cap 3 available; stale
+  unaccepted notices withdrawn after 3 days (accepted ones never). Serialize
+  through the quest manager. The world is never questless again. 10 tests.)*
 - [ ] **P4.2 8–12 handcrafted quests, one bespoke mechanic each.** OSRS lesson: 10
   great quests beat 50 generated ones; use humor; skeleton authored, dialog
   LLM-rendered. **Rewards are capability unlocks, not XP**: a teleport node, a map

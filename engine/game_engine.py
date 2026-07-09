@@ -99,6 +99,8 @@ class GameEngine(GameAPIMixin):
         self.topic_journal = TopicJournal(self)
         self.memory_manager.on_event = self.topic_journal.scan
         self.world_director = WorldDirector(self)
+        from quests.radiant import RadiantQuestGenerator
+        self.radiant_quests = RadiantQuestGenerator(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
@@ -298,6 +300,7 @@ class GameEngine(GameAPIMixin):
                 from engine.npc_memory import nightly_reflection
                 nightly_reflection(self)
                 self.world_director.run_night()
+                self.radiant_quests.run_morning()
             self._last_reflection_day = day
         except Exception as e:
             logger.debug(f"Nightly systems error: {e}")

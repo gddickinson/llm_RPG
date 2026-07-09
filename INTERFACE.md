@@ -113,6 +113,7 @@ llm_RPG/
 - **`quest_manager.py`** — Tracks quests, event hooks for progress.
 - **`quest_templates.py`** — Quests loaded from `data/quests.json`; `create_quest(id)`.
 - **`quest_board.py`** — `QuestBoardManager`; tavern bulletin board.
+- **`radiant.py`** — `RadiantQuestGenerator`; morning task quests from shortages/sightings, level-scaled, board-posted.
 
 ### llm/ — LLM integration
 

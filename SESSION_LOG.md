@@ -608,3 +608,17 @@ Phase 3 complete: structured dialog actions, per-NPC retrieval memory,
 injection-proof secrets, judged persuasion, heart events, topic journal,
 nightly director, deed awareness, and a disciplined call budget. The LLM
 is now a gameplay pillar, not a flavor-text generator.
+
+**Round 32 — P4.1 radiant quest generation (done). Phase 4 begins.**
+New `quests/radiant.py`. Each morning (after the director's overnight
+events) 1-2 task quests generate from actual world state: an active
+shortage becomes a FETCH quest ("The Ale Shortage"), a sighted or spawned
+monster becomes a bounty ("Bounty: Wolf" — completable by killing that
+kind), with gathering templates (herbs, timber, ore, trout, wolf culls)
+as fallback. Rewards scale with player level; quests get real givers
+(turn-in + trust) and post to the tavern board with "[Board] New notice"
+events. At most 3 available at once; unaccepted notices are withdrawn
+after 3 days (accepted ones never expire); everything serializes through
+the quest manager. The audit's "permanently questless after 6 quests"
+finding is closed — the director-to-radiant pipeline means overnight
+events become morning work. 10 new tests. Suite: 483 tests, all pass.
