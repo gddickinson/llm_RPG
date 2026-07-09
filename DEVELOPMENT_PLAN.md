@@ -44,10 +44,9 @@ they transform the experience.
   (terrain/rooms/spawned), current dungeon/interior + return positions, and shop
   catalogs now round-trip; quest boards proved to be fully derived state (they
   filter by persisted quest status) so need no serialization. +3 tests.)*
-- [ ] **P0.2 Fix the unreachable shop.** `K_s` is consumed by "move down" at
-  `ui/input_handler.py:93`, so the shop handler at `:166` is dead code — the entire
-  economy is inaccessible in the GUI. Rebind shop to `B` (or a context-sensitive
-  interact key) and add a test that the binding fires.
+- [x] **P0.2 Fix the unreachable shop.** *(done 2026-07-09 — shop rebound to `B`
+  (barter); help overlay + README updated; 4 regression tests incl. an
+  end-to-end ShopPanel buy in `tests/test_input_bindings.py`.)*
 - [ ] **P0.3 Crafting UI.** `engine.craft()` exists but nothing in `ui/` calls it.
   Add a crafting overlay (hotkey `R`), listing recipes with have/need ingredient
   counts, forge-gated ones greyed out unless at the forge.

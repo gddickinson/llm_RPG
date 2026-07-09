@@ -262,3 +262,12 @@ cleared dungeons don't re-populate); `ShopManager` catalogs persist (sold
 stock stays sold); saving inside a dungeon or building now restores the player
 there, with return positions. Quest boards were confirmed derived state (filter
 on persisted quest status) — no serialization needed. +3 round-trip tests.
+
+**Round 3 — P0.2 unreachable shop (fixed).**
+The shop hotkey was S, but S is consumed by move-down earlier in
+`_handle_play_input`, so the entire shop UI (211-line panel + buy/sell
+economy) was dead code. Shop now opens on **B** (barter); help overlay and
+README updated. New `tests/test_input_bindings.py` drives the input handler
+with synthetic key events: S must move (never open shop), B must open the shop
+with an adjacent merchant, plus a full end-to-end ShopPanel buy (gold spent,
+item added). Suite: 260 tests, all pass.

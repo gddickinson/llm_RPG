@@ -162,8 +162,9 @@ class InputHandler:
             self._look_around()
             return True
 
-        # Open shop with adjacent merchant (S)
-        if k == pygame.K_s:
+        # Open shop with adjacent merchant (B for barter — S is taken by
+        # move-down, which shadowed the old binding and made shops unreachable)
+        if k == pygame.K_b:
             self._open_shop()
             return True
 

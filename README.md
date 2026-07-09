@@ -154,6 +154,7 @@ matching API key environment variable.
 | 1–9 (dialog) | Accept / turn in quest | Z | Forage |
 | G / E | Pick up | X / V | Fireball / Heal |
 | H | Drink potion | N / M | Bank deposit / withdraw |
+| B | Barter with adjacent merchant | R | Ranged attack |
 | TAB | Enter building / cave | F5 / F9 | Save / Load |
 | F1 or `/` | Help | ESC | Close / quit |
 

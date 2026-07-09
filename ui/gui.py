@@ -292,7 +292,7 @@ class GameGUI:
             "INTERACTIVE OVERLAYS",
             "  I             : inventory + equipment slots",
             "                  (E equip/unequip, Q use, D drop)",
-            "  S             : open shop with adjacent merchant",
+            "  B             : barter — shop with adjacent merchant",
             "                  (Left/Right column, Enter buy/sell)",
             "  Q             : quest log",
             "  C             : character sheet",
