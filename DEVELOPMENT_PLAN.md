@@ -1,0 +1,267 @@
+# LLM-RPG — Development Plan (2026-07-09)
+
+A phased plan to turn the current broad-but-shallow tech demo into a rich, playable
+game. Based on (a) a critical code audit of this repo, (b) research into RuneScape /
+OSRS design, and (c) research into living-world RPGs (Stardew Valley, Caves of Qud,
+Kenshi, Moonring) and shipped LLM-NPC games (Suck Up!, Dead Meat, 1001 Nights,
+Generative Agents, Mantella).
+
+## Thesis
+
+The project's effort so far went into **breadth of systems and engineering hygiene**
+(clean modules, 247 tests) at the expense of **wiring systems to the player and to
+each other**. Several advertised pillars are unreachable or inert from the player's
+seat. The fastest path to a real game is NOT more features — it is:
+
+1. **Repair** what's built but broken/unreachable (shop, save/load, crafting, companions).
+2. **Connect** inert systems into loops (weather, needs, factions, economy).
+3. **Deepen** with a RuneScape-style progression lattice (skills, unlocks, collection).
+4. **Differentiate** by making the LLM mechanically meaningful (secrets, persuasion,
+   memory, a world director) — currently it only produces throwaway flavor text.
+
+The unique selling point of this game is #4. Nothing else here does something a
+thousand pygame RPGs don't. But #1–#3 must come first or there is no game for the
+LLM to enrich.
+
+---
+
+## Phase 0 — Repair: make what exists real  (highest priority, ~1 week)
+
+Audit findings that actively break the advertised game. Each fix is small; together
+they transform the experience.
+
+- [ ] **P0.1 Fix save/load data loss.** `character.to_dict()` (`characters/character.py:209`)
+  omits `metadata` and `equipment`; `save_load._rebuild_character` never restores them.
+  On every F9 load the player loses equipped gear (it's moved out of inventory by
+  `equip()`), XP, faction reputation, bank balance, mana, and known spells. Also not
+  saved: party, weather, status effects, dungeon/interior state, forage cooldowns,
+  quest boards, shop stock. Fix serialization end-to-end + add a round-trip test that
+  asserts full player/world state equality. Add SAVE_VERSION migration stub.
+- [ ] **P0.2 Fix the unreachable shop.** `K_s` is consumed by "move down" at
+  `ui/input_handler.py:93`, so the shop handler at `:166` is dead code — the entire
+  economy is inaccessible in the GUI. Rebind shop to `B` (or a context-sensitive
+  interact key) and add a test that the binding fires.
+- [ ] **P0.3 Crafting UI.** `engine.craft()` exists but nothing in `ui/` calls it.
+  Add a crafting overlay (hotkey `R`), listing recipes with have/need ingredient
+  counts, forge-gated ones greyed out unless at the forge.
+- [ ] **P0.4 Companion recruit/dismiss UI.** `engine.recruit()` exists, no caller.
+  Add a dialog option ("Ask to join you") when eligible, and a party panel row in
+  the HUD. Companions enable the already-implemented flanking bonus — today the
+  player can never trigger it.
+- [ ] **P0.5 Wire weather into gameplay.** `visibility_modifier()` is only used by
+  its own test. Apply it to FOV radius and encounter spawn odds; storms slow travel
+  on non-road tiles. (Small change; converts decoration into a system.)
+- [ ] **P0.6 Player needs: wire or cut.** `tick_needs` only runs for NPCs. Decision:
+  wire a *light* version for the player (food heals + staves off a "hungry" debuff —
+  this also gives cooking a consumer in Phase 2). Avoid punishing survival mechanics.
+- [ ] **P0.7 Discoverability hint bar.** One-line contextual prompt above the HUD:
+  "Press B — bank" at temple/shop, "Press R — craft" at forge, "Press Z — forage" on
+  forest tiles, "Press TAB — enter" on cave/building tiles. Cheapest possible fix for
+  near-zero feature discoverability.
+- [ ] **P0.8 Housekeeping.** Delete or wire `engine/dialog_trees.py` (193 orphaned
+  lines); remove `_archive/` from the working tree; update stale README/INTERFACE
+  claims (says 107 tests; there are 247).
+
+**Exit criteria:** a new player can, unaided, buy/sell, craft, recruit a companion,
+save and load without losing anything, and discover every system via hints.
+
+---
+
+## Phase 1 — Data-driven content layer  (~1 week, prerequisite for scaling)
+
+All content (items, quests, recipes, monsters, spells, NPC presets, shop catalogs)
+is hardcoded Python. Every content addition means code edits, and content volume is
+demo-scale: 6 quests, 6 recipes, 4 encounter monsters, 7 spells.
+
+- [ ] **P1.1** Define JSON schemas + loaders for: items, recipes, monsters, spells,
+  NPC presets, quest templates, shop catalogs. Keep the Python dataclasses; they just
+  hydrate from `data/*.json`.
+- [ ] **P1.2** Port existing content to data files; registry modules become thin loaders.
+- [ ] **P1.3** Validation test: load all data files, check cross-references (recipe
+  ingredients exist, loot table items exist, quest rewards exist).
+- [ ] **P1.4** (Stretch) A "module pack" folder convention — the ROADMAP's campaign
+  packs fall out of this nearly for free.
+
+**Exit criteria:** adding an item/monster/recipe/quest = editing JSON only.
+
+---
+
+## Phase 2 — Progression lattice (the RuneScape layer)  (~2–3 weeks, biggest playability win)
+
+Research takeaway: the "RuneScape feeling" is a *lattice* — many parallel skill
+tracks with geometric XP curves and a dense unlock schedule, cross-feeding each other
+in a closed (Ironman-style) economy. Melvor Idle proved the lattice alone carries the
+feeling. This directly fixes "content exhausted in under an hour."
+
+- [ ] **P2.1 Skills system.** 8–10 skills, levels 1–50, XP curve `xp(L) ≈ base·1.10^L`
+  (first 10 levels in minutes; 45→50 takes as long as 1→45). Suggested set, reusing
+  existing systems: **Mining, Woodcutting, Fishing, Cooking, Smithing, Alchemy
+  (herblore — extends foraging), Thieving, Agility**, plus combat XP mapped onto the
+  existing leveling. New module `engine/skill_progression.py` + HUD skill panel.
+- [ ] **P2.2 Gathering nodes on the map.** Ore rocks (mountain edges), trees (forest),
+  fishing spots (river/lake) as interactable tiles with per-tier level gates and respawn
+  timers — generalize the existing `ForageManager` cooldown pattern. Unlock schedule:
+  a new resource tier every ~5 levels (copper→iron→coal→mithril…).
+- [ ] **P2.3 Production chains with mandatory consumption.** Ore→bar→weapon (forge),
+  fish→cooked food (heals; the food player-needs from P0.6 consume it), herbs→potions.
+  Rule from research: *every produced item needs a destination* — combat already eats
+  ammo; make it eat food and potions too. Top-tier gear degrades and costs
+  materials/gold to repair (the perpetual sink OSRS uses).
+- [ ] **P2.4 Economy balancing.** Shops buy at ~50% of value, carry limited stock that
+  restocks slowly, and stock is data-driven (P1). Gold sinks: repairs, tolls/shortcuts,
+  teleport unlocks, prestige purchases (skill capes at max level).
+- [ ] **P2.5 Collection log.** One UI screen tracking unique items/kills/finds per
+  category ("Dungeon: 4/12"). Pure bookkeeping over existing content; extremely sticky.
+- [ ] **P2.6 Skilling pets.** Tiny per-action roll `1/(B − level·k)` for a cosmetic
+  follower per skill/boss. The body renderer already exists — best delight-per-effort
+  feature in the research.
+- [ ] **P2.7 Regional achievement diaries.** 10–15 tasks × 3 tiers × 3 settlements
+  (Oakvale, Riverside, Stonepine), rewarding region-specific convenience: free teleport
+  there, bank access at the mine, shop discounts. Doubles as a content tour guide.
+- [ ] **P2.8 Shortcuts + earned teleports.** Agility-gated map shortcuts (cliff climbs,
+  river crossings); tiered fast travel — home teleport with cooldown early, per-town
+  unlocks mid, a network from a flagship quest late. Never free at start.
+
+**Exit criteria:** 10+ hours of self-directed progression; there is always a
+near-term unlock in some track.
+
+---
+
+## Phase 3 — Make the LLM a gameplay pillar  (~2–3 weeks, the differentiator)
+
+Audit: the LLM currently affects nothing — dialog is flavor text; quest offers are
+string-concatenated after the reply; "memory" is a substring scan of the global event
+log, not per-NPC. Research consensus from every shipped LLM game:
+**engine owns truth, LLM owns voice.**
+
+- [ ] **P3.1 Structured dialog protocol.** LLM returns JSON:
+  `{dialogue, mood, action?, action_args?}` with `action` from a per-context whitelist
+  of ≤6 verbs (offer_quest, adjust_affinity, reveal_secret, give_item, refuse, end).
+  Engine validates and executes; parse failure → canned fallback line. (Mantella's
+  lesson: small tool lists or models mismanage them.)
+- [ ] **P3.2 Per-NPC memory with retrieval.** Replace the global-log substring scan:
+  per-NPC memory store scored by recency × importance × relevance (Generative Agents
+  weights); last ~10 exchanges verbatim; a nightly summarization pass distills 1–3
+  durable "opinions" per named NPC. Persists in saves.
+- [ ] **P3.3 Secrets as gated tokens (Dead Meat pattern).** NPCs hold typed secrets
+  (location, recipe, dirt-on-someone, quest hook) with release conditions (affinity ≥ X,
+  item shown, faction rep, bribe). The prompt only ever contains secrets whose
+  conditions are met — structurally immune to prompt injection. Unreleased secrets add
+  a "seems to be holding something back" tell.
+- [ ] **P3.4 LLM-adjudicated persuasion (Suck Up! pattern).** New dialog verbs:
+  persuade / intimidate / deceive. LLM judges against NPC disposition + player CHA
+  modifier, returns `{success, reason}`; failure worsens disposition and locks retry.
+  Real stakes: haggling, talking past guards, extracting secrets, avoiding fights.
+- [ ] **P3.5 Affinity thresholds ("heart events").** Per-NPC affinity int (extends
+  existing relationship values); crossing thresholds unlocks authored mini-scenes
+  (outline hand-written, prose LLM-rendered) + perks (recipe, discount, companion
+  eligibility, secrets). Gives talking a progression spine.
+- [ ] **P3.6 Topic journal (Moonring pattern).** Keywords heard in any dialog become
+  askable topics everywhere, tracked in a journal UI. Free-text chat gains a
+  lock-and-key structure; NPC knowledge becomes a collectible.
+- [ ] **P3.7 Nightly world director.** One LLM call per game-night reads the day's
+  event log + faction state and emits 1–3 structured events (rumor, shortage, feud,
+  caravan, monster sighting) that heuristics act out and gossip spreads. LLM-as-director
+  is dramatically cheaper than LLM-per-NPC and feeds Phase 4's radiant quests.
+- [ ] **P3.8 NPCs notice the player.** Inject a "recent player deeds" digest (kills,
+  quests done, gear worn, levels) into every dialog prompt. Single cheapest
+  living-world win in the research; substitutes for RuneScape's social status displays.
+- [ ] **P3.9 Cost/latency discipline.** Heuristics keep running schedules/pathing/barks
+  (never per-tick LLM); LLM fires only on player conversation, nightly reflection for
+  ~10 named NPCs, and the director. Cache greetings; stream responses; per-NPC
+  anti-sycophancy rules in prompts ("you will NOT lower your price below X").
+
+**Exit criteria:** playing with `--provider anthropic/ollama` is *mechanically*
+different from heuristic mode: you can talk your way into secrets, discounts, quests,
+and out of fights — and NPCs remember you across sessions.
+
+---
+
+## Phase 4 — Quests, world, onboarding  (~2–3 weeks)
+
+- [ ] **P4.1 Radiant quest generation.** Procedural task quests (kill/fetch/deliver/
+  escort) generated from world state — director events (P3.7), shortages, faction
+  tension — posted to quest boards with level-scaled rewards. Fixes the permanently
+  questless world after the 6 templates are done.
+- [ ] **P4.2 8–12 handcrafted quests, one bespoke mechanic each.** OSRS lesson: 10
+  great quests beat 50 generated ones; use humor; skeleton authored, dialog
+  LLM-rendered. **Rewards are capability unlocks, not XP**: a teleport node, a map
+  shortcut, tool upgrades, area access, auto-pickup ammo, a companion.
+- [ ] **P4.3 Quest points + guild.** Each quest grants 1–3 QP; an Adventurers' Guild
+  building unlocks at N QP with its own board, bank, shop, trainers.
+- [ ] **P4.4 Tutorial Island.** Small separate starter zone; one instructor NPC per
+  system (fish→cook→mine→smith→fight→cast→bank), each teaching by one repetition;
+  one-way boat to the mainland. Instructors are the LLM-NPC showcase — narrow-domain
+  characters who answer freeform questions, with scripted fallback checklists.
+- [ ] **P4.5 Regional identity.** Give each region a theme, unique resources, unique
+  monsters, a 2–3 quest mini-arc, and its diary (P2.7). Add one new themed region
+  (swamp or highlands) to the 120×80 map. Interleave danger levels — a deadly pocket
+  near a safe road creates "I'll come back stronger" goals.
+- [ ] **P4.6 History with residue (Caves of Qud pattern).** Extend `history_sim` so
+  each generated event leaves physical artifacts: a named relic in a dungeon, a ruin,
+  an NPC grudge, a findable book; LLM renders the legend text. Expose a "Legends"
+  journal; NPCs cite events by name via gossip.
+- [ ] **P4.7 Failure-as-story.** On player defeat outside dungeons: robbed and dumped
+  at the nearest temple, or captured by brigands (escape mini-scenario) — death popup
+  becomes the fallback, not the only outcome (Kenshi lesson).
+
+---
+
+## Phase 5 — Combat depth & feel  (~1–2 weeks, interleave anytime)
+
+The resolution math (d20 + mods vs AC, crits, flanking, damage types) is genuinely
+good; the tactical layer is absent — enemies wander-or-attack, the player bump-attacks
+and heal-spams.
+
+- [ ] **P5.1 Enemy AI profiles** (data-driven per monster): pack-hunt flanking
+  (wolves), ranged kiting (goblin archers), flee-at-low-HP (bandits), guard-territory
+  (trolls), call-for-help. A few behavior flags each — not a new AI system.
+- [ ] **P5.2 Spell selection UI + spell growth.** Hotkey opens a spell menu (only 2 of
+  7 spells are castable today); learn spells from trainers/quests/scrolls; add ~8 more
+  spells via the data layer.
+- [ ] **P5.3 Player tactical verbs:** disengage/flee (opportunity-attack risk), shove,
+  aimed shot (ranged), drink-potion-as-turn. Small verb set, big texture.
+- [ ] **P5.4 Off-screen faction ticker.** One dice-resolved faction event per game-day
+  (patrol, raid, trade caravan) that moves stockpiles/rep and feeds gossip + radiant
+  quests. The world visibly doesn't wait for the player.
+- [ ] **P5.5 Sound.** pygame.mixer: ambient loops per biome/weather + combat/UI SFX.
+  (Procedurally generated or CC0 packs; big feel win, low effort.)
+- [ ] **P5.6 End-of-session hook.** Sleeping at an inn/home: heals, advances to
+  morning, and shows a "day summary" (skills gained, gold delta, director event
+  teaser) — Stardew's "tomorrow I'll…" engine, adapted lightly.
+
+---
+
+## Sequencing
+
+| Milestone | Contents | Cumulative outcome |
+|---|---|---|
+| **M1 Repair** (Phase 0) | fixes P0.1–P0.8 | Everything advertised actually works |
+| **M2 Foundation** (Phase 1) | data-driven content | Content scales without code edits |
+| **M3 Progression** (Phase 2) | skills, chains, collection, diaries | 10+ hours of self-directed play |
+| **M4 The Pillar** (Phase 3) | LLM protocol, secrets, persuasion, memory, director | The game nothing else is |
+| **M5 The World** (Phase 4) | radiant + handcrafted quests, tutorial, regions | Rich, guided, replayable |
+| **M6 Polish** (Phase 5) | combat AI, spells, sound, day loop | Feel and tactics |
+
+Dependencies: P0 before everything (fix before build). P1 before P2/P4 content work.
+P3 is independent of P2 and can run in parallel. P5 items can interleave anywhere.
+
+## Playtest checkpoints & success metrics
+
+- After M1: a fresh player completes buy→craft→recruit→save→load with zero data loss
+  and no reading of README.
+- After M3: playtester still has undone unlock goals after 5 hours; gold has scarcity
+  (they can't afford everything they want).
+- After M4: transcript test — a session where the player gains a quest, a discount,
+  and a secret purely through conversation; NPC recalls it after save/load.
+- After M5: a new player finishes Tutorial Island in ≤20 minutes and knows every core
+  verb.
+
+## What NOT to build (explicitly deferred)
+
+- Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
+  director + salient-interaction pattern captures 80% of the value.
+- Networked multiplayer, 3D mode, web UI — ROADMAP long-term, irrelevant to the
+  quality/richness goals.
+- LLM-generated main plot (AI Dungeon's trap) and voice I/O.
+- Punishing survival mechanics for the player (needs stay light).
