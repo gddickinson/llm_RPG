@@ -362,3 +362,16 @@ before). Optional per-monster `stats` blocks override hostile defaults.
 `encounters.py` lost its 40-line hardcoded template dict; `dungeon.py` uses
 the shared pool. Adding a monster is now one JSON entry. +6 tests (enum
 validity of class/race included). Suite: 307 tests, all pass.
+
+**Round 13 — P1.1d NPC presets + quest templates to JSON (done). All content data-driven.**
+`data/quests.json` (6 quests) and `data/npcs/{oakvale,riverside,stonepine,
+hostiles}.json` (11 NPCs, split by settlement to stay under 500 lines);
+`npc_presets.py` shrank 332→70 lines, `quest_templates.py` keeps its
+factory-dict API. The new giver-must-exist validation caught a real
+pre-existing bug: herb_gathering's giver was `cleric_01`, an id that never
+existed — the quest could be accepted from the tavern board but never turned
+in. Reassigned to Brother Anselm (hamlet_priest_01). +6 tests.
+Suite: 313 tests, all pass.
+
+Every content registry (items, recipes, spells, shop catalogs, monsters,
+quests, NPCs) now loads from data/*.json with cross-reference validation.

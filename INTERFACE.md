@@ -19,7 +19,7 @@ llm_RPG/
 ├── world/                      # World, map, calendar, biomes, interiors
 ├── items/                      # Item system + crafting
 ├── quests/                     # Quest system + quest boards
-├── data/                       # JSON content files (items, recipes, spells, shops, monsters)
+├── data/                       # JSON content — items, recipes, spells, shops, monsters, quests, NPCs
 ├── llm/                        # LLM interface + providers
 ├── ui/                         # GUI (pygame) and terminal UI
 ├── saves/                      # Saved games (created at runtime)
@@ -54,7 +54,7 @@ llm_RPG/
 - **`character.py`** — `Character` dataclass (player + NPC).
 - **`character_types.py`** — Class/race/alignment/trait/status enums.
 - **`npc_manager.py`** — NPC creation + lifecycle.
-- **`npc_presets.py`** — Preset NPCs (Goren / Durgan / Melody / Karim / Gorkash).
+- **`npc_presets.py`** — Preset NPCs loaded from `data/npcs/*.json`; `make_npc(id)`, `all_presets()`.
 - **`factions.py`** — `Faction` enum, reputation tracking, on-defeat hooks.
 - **`schedules.py`** — Daily routines per NPC class.
 - **`needs.py`** — Hunger and fatigue simulation.
@@ -94,7 +94,7 @@ llm_RPG/
 
 - **`quest.py`** — `Quest`, `QuestObjective`, `QuestStatus`, `ObjectiveType`.
 - **`quest_manager.py`** — Tracks quests, event hooks for progress.
-- **`quest_templates.py`** — Predefined quests.
+- **`quest_templates.py`** — Quests loaded from `data/quests.json`; `create_quest(id)`.
 - **`quest_board.py`** — `QuestBoardManager`; tavern bulletin board.
 
 ### llm/ — LLM integration
@@ -166,7 +166,8 @@ Each turn (after a player move / dialog / action):
 
 - **New item**: add an entry to the matching `data/items/*.json` file (only non-default fields needed).
 - **New recipe**: add an entry to `data/recipes.json`.
-- **New quest**: add template in `quests/quest_templates.py`; post to a board via `default_boards()` if appropriate.
+- **New quest**: add an entry to `data/quests.json`; post to a board via `default_boards()` if appropriate.
+- **New named NPC**: add an entry to the matching `data/npcs/*.json` file.
 - **New NPC class**: extend `CharacterClass` in `characters/character_types.py`; add schedule in `characters/schedules.py`; add to `CLASS_TO_FACTION` in `characters/factions.py`.
 - **New action**: add handler in `engine/action_router.py`.
 - **New terrain**: extend `TerrainType` + add sprite in `ui/sprite_loader.py`.

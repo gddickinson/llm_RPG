@@ -1,0 +1,274 @@
+{
+  "tavernkeeper_01": {
+    "name": "Goren",
+    "class": "merchant",
+    "race": "human",
+    "level": 3,
+    "stats": {
+      "strength": 12,
+      "dexterity": 10,
+      "constitution": 14,
+      "intelligence": 12,
+      "wisdom": 14,
+      "charisma": 16
+    },
+    "hp": 20,
+    "position": [
+      13,
+      7
+    ],
+    "inventory": [
+      "ale",
+      "mead",
+      "bread"
+    ],
+    "gold": 100,
+    "symbol": "T",
+    "description": "A jovial tavern keeper with a hearty laugh",
+    "personality": {
+      "traits": [
+        "friendly",
+        "gregarious",
+        "opportunistic"
+      ],
+      "likes": [
+        "gold",
+        "stories",
+        "ale"
+      ],
+      "dislikes": [
+        "thieves",
+        "troublemakers"
+      ]
+    },
+    "goals": [
+      "Make a profit",
+      "Keep customers happy",
+      "Gather interesting stories"
+    ],
+    "relationships": {},
+    "memories": [
+      {
+        "event": "Served a group of adventurers who talked about a dragon",
+        "importance": 3
+      },
+      {
+        "event": "A troll has been causing trouble for travelers",
+        "importance": 3
+      },
+      {
+        "event": "Heard rumors of bandits on the east road",
+        "importance": 2
+      }
+    ],
+    "home_location": "Oakvale Tavern",
+    "faction": "neutral"
+  },
+  "blacksmith_01": {
+    "name": "Durgan",
+    "class": "merchant",
+    "race": "dwarf",
+    "level": 5,
+    "stats": {
+      "strength": 16,
+      "dexterity": 14,
+      "constitution": 16,
+      "intelligence": 12,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "hp": 30,
+    "position": [
+      17,
+      7
+    ],
+    "inventory": [
+      "sword",
+      "shield",
+      "armor"
+    ],
+    "gold": 200,
+    "symbol": "B",
+    "description": "A stout dwarf with muscular arms and a thick beard",
+    "personality": {
+      "traits": [
+        "hardworking",
+        "honest",
+        "gruff"
+      ],
+      "likes": [
+        "craftsmanship",
+        "ale",
+        "honesty"
+      ],
+      "dislikes": [
+        "haggling",
+        "shoddy work",
+        "elves"
+      ]
+    },
+    "goals": [
+      "Craft masterwork items",
+      "Earn enough to expand the forge"
+    ],
+    "relationships": {
+      "tavernkeeper_01": 60
+    },
+    "memories": [
+      {
+        "event": "A strange traveler commissioned an unusual silver blade",
+        "importance": 3
+      },
+      {
+        "event": "The mines in the mountains have gone quiet",
+        "importance": 2
+      },
+      {
+        "event": "I've been making stronger weapons since troll attacks",
+        "importance": 2
+      }
+    ],
+    "home_location": "Durgan's Forge",
+    "faction": "neutral"
+  },
+  "minstrel_01": {
+    "name": "Melody",
+    "class": "bard",
+    "race": "human",
+    "level": 2,
+    "stats": {
+      "strength": 8,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 12,
+      "wisdom": 10,
+      "charisma": 16
+    },
+    "hp": 15,
+    "position": [
+      15,
+      8
+    ],
+    "inventory": [
+      "lute",
+      "flute",
+      "wine"
+    ],
+    "gold": 30,
+    "symbol": "M",
+    "description": "A cheerful young woman with a beautiful voice and colorful clothes",
+    "personality": {
+      "traits": [
+        "cheerful",
+        "curious",
+        "flirtatious"
+      ],
+      "likes": [
+        "music",
+        "stories",
+        "attractive people"
+      ],
+      "dislikes": [
+        "silence",
+        "boredom",
+        "violence"
+      ]
+    },
+    "goals": [
+      "Collect stories for songs",
+      "Earn fame",
+      "Find romance"
+    ],
+    "relationships": {
+      "tavernkeeper_01": 50,
+      "blacksmith_01": 30
+    },
+    "memories": [
+      {
+        "event": "Heard a haunting melody from the forest at night",
+        "importance": 3
+      },
+      {
+        "event": "A noble from the capital travels incognito",
+        "importance": 2
+      },
+      {
+        "event": "I'm composing a song about a fearsome troll",
+        "importance": 2
+      }
+    ],
+    "home_location": "Oakvale Tavern",
+    "faction": "neutral"
+  },
+  "guard_01": {
+    "name": "Karim",
+    "class": "guard",
+    "race": "human",
+    "level": 3,
+    "stats": {
+      "strength": 14,
+      "dexterity": 12,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 10
+    },
+    "hp": 25,
+    "position": [
+      10,
+      7
+    ],
+    "inventory": [
+      "sword",
+      "shield",
+      "jerky"
+    ],
+    "gold": 15,
+    "symbol": "G",
+    "description": "A stern-looking guard with a weathered face",
+    "personality": {
+      "traits": [
+        "dutiful",
+        "suspicious",
+        "brave"
+      ],
+      "likes": [
+        "order",
+        "discipline",
+        "recognition"
+      ],
+      "dislikes": [
+        "troublemakers",
+        "monsters",
+        "laziness"
+      ]
+    },
+    "goals": [
+      "Protect the village",
+      "Advance in rank",
+      "Enforce the laws",
+      "Hunt down the troll brigand"
+    ],
+    "relationships": {
+      "tavernkeeper_01": 40,
+      "blacksmith_01": 60,
+      "minstrel_01": 20
+    },
+    "memories": [
+      {
+        "event": "Spotted strange lights in the mountains three nights ago",
+        "importance": 3
+      },
+      {
+        "event": "I've been ordered to organize a hunt for the troll",
+        "importance": 3
+      },
+      {
+        "event": "Merchants reported missing goods on the east road",
+        "importance": 2
+      }
+    ],
+    "home_location": "Oakvale Village",
+    "faction": "neutral"
+  }
+}

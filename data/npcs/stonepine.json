@@ -1,0 +1,150 @@
+{
+  "camp_foreman_01": {
+    "name": "Bram",
+    "class": "merchant",
+    "race": "human",
+    "level": 4,
+    "stats": {
+      "strength": 15,
+      "dexterity": 12,
+      "constitution": 14,
+      "intelligence": 12,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "hp": 25,
+    "position": [
+      105,
+      55
+    ],
+    "inventory": [
+      "sword",
+      "bread",
+      "ledger"
+    ],
+    "gold": 120,
+    "symbol": "F",
+    "description": "A weathered foreman with calloused hands and a sharp tally eye.",
+    "personality": {
+      "traits": [
+        "practical",
+        "blunt"
+      ],
+      "likes": [
+        "hard work",
+        "honest dealings"
+      ],
+      "dislikes": [
+        "idleness"
+      ]
+    },
+    "goals": [
+      "Keep the camp running",
+      "Fill the next quota of timber and ore"
+    ],
+    "relationships": {},
+    "memories": [
+      {
+        "event": "A vein of silver was found deep in the western shaft last month",
+        "importance": 3
+      },
+      {
+        "event": "Two miners didn't return from the east shaft. Goblins, maybe.",
+        "importance": 3
+      }
+    ],
+    "home_location": "Foreman's Hall",
+    "faction": "neutral"
+  },
+  "camp_smith_01": {
+    "name": "Hilde",
+    "class": "merchant",
+    "race": "dwarf",
+    "level": 3,
+    "stats": {
+      "strength": 15,
+      "dexterity": 13,
+      "constitution": 15,
+      "intelligence": 11,
+      "wisdom": 11,
+      "charisma": 11
+    },
+    "hp": 22,
+    "position": [
+      109,
+      55
+    ],
+    "inventory": [
+      "sword",
+      "shield",
+      "bandage"
+    ],
+    "gold": 70,
+    "symbol": "K",
+    "description": "A wiry dwarven smith with soot-darkened hands.",
+    "personality": {
+      "traits": [
+        "focused",
+        "terse"
+      ]
+    },
+    "goals": [
+      "Repair the miners' picks",
+      "Master pattern-welded steel"
+    ],
+    "relationships": {},
+    "memories": [
+      {
+        "event": "Bram needs a new axe by week's end",
+        "importance": 2
+      }
+    ],
+    "home_location": "Stonepine Smithy",
+    "faction": "neutral"
+  },
+  "camp_taverner_01": {
+    "name": "Wulf",
+    "class": "merchant",
+    "race": "human",
+    "level": 2,
+    "stats": {
+      "strength": 12,
+      "dexterity": 11,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 13
+    },
+    "hp": 18,
+    "position": [
+      105,
+      57
+    ],
+    "inventory": [
+      "ale",
+      "ale",
+      "mead"
+    ],
+    "gold": 45,
+    "symbol": "U",
+    "description": "A grizzled barkeep with a permanent half-smile.",
+    "personality": {
+      "traits": [
+        "genial",
+        "patient"
+      ]
+    },
+    "goals": [
+      "Keep the ale flowing"
+    ],
+    "relationships": {},
+    "memories": [
+      {
+        "event": "A scout claimed to see a wolf the size of a horse",
+        "importance": 2
+      }
+    ],
+    "home_location": "Camp Tavern",
+    "faction": "neutral"
+  }
+}

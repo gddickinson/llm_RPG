@@ -102,8 +102,11 @@ demo-scale: 6 quests, 6 recipes, 4 encounter monsters, 7 spells.
   `world/monsters.py`; one registry now feeds both wilderness encounters
   (`encounter_weight`) and dungeon rooms (`dungeon` flag); optional per-monster
   `stats` overrides. Adding a monster = one JSON entry. 6 tests.)*
-- [ ] **P1.1d** Port NPC presets and quest templates (the factory-shaped
-  registries) to data files.
+- [x] **P1.1d NPC presets + quest templates ported.** *(done 2026-07-09 —
+  `data/quests.json` and `data/npcs/{oakvale,riverside,stonepine,hostiles}.json`;
+  `npc_presets.py` 332→70 lines, `quest_templates.py` API unchanged. Validation
+  caught a real content bug: herb_gathering's giver `cleric_01` never existed, so
+  the quest was un-turn-in-able — reassigned to Brother Anselm. +6 tests.)*
 - [ ] **P1.3** Validation test: load all data files, check cross-references (recipe
   ingredients exist, loot table items exist, quest rewards exist).
 - [ ] **P1.4** (Stretch) A "module pack" folder convention — the ROADMAP's campaign

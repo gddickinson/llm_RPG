@@ -1,0 +1,111 @@
+{
+  "troll_hunt": {
+    "title": "The Troll on the East Road",
+    "description": "A troll named Gorkash terrorizes travelers. Slay him.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "troll_brigand_01",
+        "required": 1,
+        "description": "Defeat Gorkash the troll brigand"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 100,
+    "reward_items": [
+      "longsword"
+    ],
+    "reward_xp": 200
+  },
+  "herb_gathering": {
+    "title": "Herbs for the Apothecary",
+    "description": "Gather healing herbs from the forest for Brother Anselm.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "herb_bundle",
+        "required": 3,
+        "description": "Collect 3 bundles of healing herbs"
+      }
+    ],
+    "giver_id": "hamlet_priest_01",
+    "reward_gold": 30,
+    "reward_items": [
+      "greater_potion"
+    ],
+    "reward_xp": 80
+  },
+  "tavern_intro": {
+    "title": "A Friendly Welcome",
+    "description": "Goren the tavern keeper wants to greet a newcomer.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "tavernkeeper_01",
+        "required": 1,
+        "description": "Speak with Goren in the tavern"
+      }
+    ],
+    "giver_id": "",
+    "reward_gold": 10,
+    "reward_items": [
+      "ale"
+    ],
+    "reward_xp": 15
+  },
+  "cave_exploration": {
+    "title": "The Dark Cave",
+    "description": "Investigate the mysterious cave in the mountains.",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "Dark Cave",
+        "required": 1,
+        "description": "Enter the Dark Cave"
+      }
+    ],
+    "giver_id": "minstrel_01",
+    "reward_gold": 50,
+    "reward_items": [
+      "old_map"
+    ],
+    "reward_xp": 120
+  },
+  "deliver_sword": {
+    "title": "A Forged Blade",
+    "description": "Bring a sword from the smith to the guard.",
+    "objectives": [
+      {
+        "type": "deliver",
+        "target": "sword:guard_01",
+        "required": 1,
+        "description": "Deliver a sword to Karim the guard"
+      }
+    ],
+    "giver_id": "blacksmith_01",
+    "reward_gold": 40,
+    "reward_items": [
+      "shield"
+    ],
+    "reward_xp": 50
+  },
+  "survive_night": {
+    "title": "Through the Night",
+    "description": "Survive until dawn while monsters roam.",
+    "objectives": [
+      {
+        "type": "survive",
+        "target": "dawn",
+        "required": 50,
+        "description": "Survive 50 turns"
+      }
+    ],
+    "giver_id": "",
+    "reward_gold": 80,
+    "reward_items": [
+      "potion",
+      "potion"
+    ],
+    "reward_xp": 150
+  }
+}

@@ -142,6 +142,66 @@ class TestMonsterData(unittest.TestCase):
             CharacterRace(spec.get("race", "goblin"))
 
 
+class TestQuestAndNpcData(unittest.TestCase):
+    def test_quests_load_from_json(self):
+        from quests.quest_templates import QUEST_TEMPLATES, create_quest
+        self.assertGreaterEqual(len(QUEST_TEMPLATES), 6)
+        quest = create_quest("troll_hunt")
+        self.assertEqual(quest.reward_gold, 100)
+        self.assertEqual(quest.objectives[0].target, "troll_brigand_01")
+        # Factories return fresh instances
+        self.assertIsNot(create_quest("troll_hunt"), quest)
+
+    def test_quest_givers_exist_in_npc_specs(self):
+        from quests.quest_templates import QUEST_TEMPLATES
+        from characters.npc_presets import NPC_SPECS
+        for qid, factory in QUEST_TEMPLATES.items():
+            quest = factory()
+            if quest.giver_id:
+                self.assertIn(quest.giver_id, NPC_SPECS,
+                              f"quest {qid} giver '{quest.giver_id}' "
+                              f"is not a preset NPC")
+
+    def test_npc_presets_load_from_json(self):
+        from characters.npc_presets import NPC_SPECS, all_presets, make_npc
+        self.assertGreaterEqual(len(NPC_SPECS), 11)
+        presets = all_presets()
+        self.assertEqual(len(presets), len(NPC_SPECS))
+        goren = make_npc("tavernkeeper_01")
+        self.assertEqual(goren.name, "Goren")
+        self.assertEqual(goren.charisma, 16)
+        self.assertEqual(goren.home_location, "Oakvale Tavern")
+        self.assertTrue(goren.memories)
+
+    def test_troll_position_override(self):
+        from characters.npc_presets import make_troll_brigand
+        troll = make_troll_brigand(position=(9, 9))
+        self.assertEqual(troll.position, (9, 9))
+        self.assertEqual(troll.name, "Gorkash")
+
+    def test_npc_classes_races_and_relationships_valid(self):
+        from characters.npc_presets import NPC_SPECS
+        from characters.character_types import CharacterClass, CharacterRace
+        for nid, spec in NPC_SPECS.items():
+            CharacterClass(spec.get("class", "villager"))
+            CharacterRace(spec.get("race", "human"))
+            for other in spec.get("relationships", {}):
+                self.assertIn(other, NPC_SPECS,
+                              f"NPC {nid} has relationship with unknown "
+                              f"NPC '{other}'")
+
+    def test_hostiles_ordered_after_peaceful(self):
+        from characters.npc_presets import all_presets
+        classes = [getattr(n.character_class, "value", "")
+                   for n in all_presets()]
+        hostile_ix = [i for i, c in enumerate(classes)
+                      if c in ("brigand", "troll", "monster")]
+        peaceful_ix = [i for i, c in enumerate(classes)
+                       if c not in ("brigand", "troll", "monster")]
+        if hostile_ix and peaceful_ix:
+            self.assertGreater(min(hostile_ix), max(peaceful_ix))
+
+
 class TestCrossReferences(unittest.TestCase):
     def assert_ids_exist(self, ids, source):
         missing = [i for i in ids if i not in ITEM_REGISTRY]
