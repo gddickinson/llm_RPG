@@ -485,3 +485,18 @@ Phase 2 (progression lattice) complete: 8 skills with earners, gathering
 tiers, production chains, durability sink, balanced economy, collection
 log, pets, diaries, shortcuts + teleports. The game now has a genuine
 progression treadmill. Next: Phase 3 — the LLM as a gameplay pillar.
+
+**Round 23 — P3.1 structured dialog protocol (done). Phase 3 begins.**
+New `engine/dialog_protocol.py` — the "engine owns truth, LLM owns voice"
+contract. With an LLM provider active, NPC dialog returns
+{dialogue, mood, action, action_args}; the ENGINE validates and executes
+actions from a 4-verb whitelist: adjust_affinity (clamped +-3), give_item
+(only items actually in the NPC's inventory — hallucinated ids are silent
+no-ops), refuse, end. Parsing is defensive: JSON mined out of markdown
+fences and chatter, prose accepted as plain dialogue, junk falls back
+safely. The prompt feeds engine facts (real inventory ids, relationship
+score + label, time, weather, recent events) and instructs the model NOT
+to agree to everything (anti-sycophancy). Heuristic mode keeps the legacy
+path untouched. 13 tests drive the full loop with a mocked provider,
+including an end-to-end "On the house!" ale handover reaching both the
+player's bag and the event log. Suite: 392 tests, all pass.

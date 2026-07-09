@@ -30,13 +30,17 @@ class DialogSystem:
         self.engine.memory_manager.add_event(
             f"You say to {npc.name}: \"{message}\"")
 
-        # Use NPC process if available (multiprocess)
+        # Structured protocol first (LLM providers), then legacy paths
         recent = self.engine.memory_manager.get_character_history(npc.name, count=5)
-        response = self._via_process(npc_id, message, recent) \
-            or self._via_inline(npc, message, recent)
+        response, action_note = self._via_protocol(npc, message, recent)
+        if response is None:
+            response = self._via_process(npc_id, message, recent) \
+                or self._via_inline(npc, message, recent)
 
         if not response:
             response = "..."
+        if action_note:
+            self.engine.memory_manager.add_event(action_note)
 
         # Append quest offers / turn-in prompts
         response = self._append_quest_prompts(npc_id, response)
@@ -96,6 +100,17 @@ class DialogSystem:
         for j, q in enumerate(ready, start=len(offered) + 1):
             extras.append(f"  [Quest complete!] {q.title}  (press {j} to turn in)")
         return "\n".join(extras)
+
+    def _via_protocol(self, npc, message: str, recent):
+        """Structured JSON dialog (P3.1). (None, '') = not applicable."""
+        try:
+            from engine.dialog_protocol import run_dialog
+            result = run_dialog(self.engine, npc, message, recent)
+            if result is not None:
+                return result
+        except Exception as e:
+            logger.warning(f"Dialog protocol failed: {e}")
+        return (None, "")
 
     def _via_process(self, npc_id: str, message: str, recent) -> Optional[str]:
         pm = getattr(self.engine, "process_manager", None)

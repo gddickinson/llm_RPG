@@ -195,11 +195,15 @@ string-concatenated after the reply; "memory" is a substring scan of the global 
 log, not per-NPC. Research consensus from every shipped LLM game:
 **engine owns truth, LLM owns voice.**
 
-- [ ] **P3.1 Structured dialog protocol.** LLM returns JSON:
-  `{dialogue, mood, action?, action_args?}` with `action` from a per-context whitelist
-  of ≤6 verbs (offer_quest, adjust_affinity, reveal_secret, give_item, refuse, end).
-  Engine validates and executes; parse failure → canned fallback line. (Mantella's
-  lesson: small tool lists or models mismanage them.)
+- [x] **P3.1 Structured dialog protocol.** *(done 2026-07-09 —
+  `engine/dialog_protocol.py`: LLM providers return
+  `{dialogue, mood, action?, action_args?}`; whitelist adjust_affinity
+  (clamped ±3) / give_item (only from the NPC's REAL inventory — hallucinated
+  items are no-ops) / refuse / end. Robust parsing: JSON mined from fences +
+  chatter, prose degrades to plain dialogue. Prompt carries engine facts
+  (inventory ids, relationship score, time/weather) + anti-sycophancy rules.
+  Heuristic provider keeps the legacy path. reveal_secret arrives with P3.3,
+  offer_quest with P4. 13 tests via mocked provider.)*
 - [ ] **P3.2 Per-NPC memory with retrieval.** Replace the global-log substring scan:
   per-NPC memory store scored by recency × importance × relevance (Generative Agents
   weights); last ~10 exchanges verbatim; a nightly summarization pass distills 1–3

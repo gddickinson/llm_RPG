@@ -35,7 +35,8 @@ llm_RPG/
 - **`action_router.py`** — Routes NPC actions to specialized handlers.
 - **`combat_system.py`** — Player vs NPC vs NPC combat, damage, defeat, loot, faction rep on kill.
 - **`economy_system.py`** — Buy/sell/trade/give between characters.
-- **`dialog_system.py`** — Player↔NPC dialog flow.
+- **`dialog_system.py`** — Player↔NPC dialog flow (routes through dialog_protocol for LLM providers).
+- **`dialog_protocol.py`** — Structured JSON dialog contract: whitelisted actions, engine-validated execution.
 - **`memory_manager.py`** — Event history.
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.
