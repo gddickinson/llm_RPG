@@ -698,11 +698,20 @@ its sprawl (economy split over 7 modules, combat over 6, a never-shipped
 procedural music system) as the cautionary tale. Port candidates ranked by
 value ÷ effort:
 
-- [ ] **P8.1 Astronomy** (`systems/astronomy.py`, 242 LOC, zero deps):
+- [x] **P8.1 Astronomy** (`systems/astronomy.py`, 242 LOC, zero deps):
   latitude/season day-length, dawn/dusk bands, solar intensity, TWO moons
   (28d + 47d) with phases and conjunction detection — conjunctions are a
   natural hook for world-director beats, rare spawns, heart events.
   Constants → JSON; pairs with our calendar/seasons. LOW effort.
+  *(done 2026-07-10 — world/astronomy.py, pure functions; constants in
+  data/astronomy.json with in-code defaults; year aligned to the
+  calendar's 360 days (solstice day 90). Silver Lunara (28d) + copper
+  Thal (47d) with proper phase names; `moonlight()` 0–1. Integrations:
+  conjunction nights are diegetic ([Realm] omen event + rumor via
+  `announce_conjunction` in the nightly stack), raise the wilderness
+  encounter chance ×1.5, and full moons LIGHTEN clear nights in
+  ui/lighting. solar_intensity ready as the P8.3 crops/temperature
+  input. 14 tests.)*
 - [ ] **P8.2 Disease & contagion** (`systems/health.py` template pattern):
   13 diseases as JSON content (severity/duration/spread/symptoms/immunity),
   staggered tick cadence, outbreaks + healer value; feeds gossip/needs.

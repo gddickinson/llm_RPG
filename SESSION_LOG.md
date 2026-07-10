@@ -1084,3 +1084,19 @@ kills raced assertions, unique-named focus fixture, wider log windows.
 8 new tests. Suite: 685 tests, ten consecutive greens. The world now
 cooperates (flanking companions), conspires (bounty ladders) and
 coordinates (surrounding packs).
+
+**Round 62 — P8.1 Astronomy (done) — first autonomous_world port.**
+The sky is real now. world/astronomy.py (pure functions, constants in
+data/astronomy.json) ports the best value-per-line module from the
+autonomous_world survey, aligned to our 360-day calendar: solar
+declination gives seasonal day length at the realm's 45°N (summer
+~15h, winter ~9h), dawn/dusk bands and a solar_intensity curve that
+will feed P8.3 crops. Two moons — silver Lunara on a 28-day cycle,
+copper Thal on 47 — carry proper phase names, and when both ride full
+together (a handful of nights in ~4 years, LCM 1316 days) the realm
+gets a Conjunction: a [Realm] omen event + village rumor from the
+nightly stack, wilderness encounter chance ×1.5 for the night, and on
+any clear night the fuller moon LIGHTENS the darkness overlay in
+ui/lighting. 14 new tests. Suite: 699 tests, green ×3. (Round 61's
+squad-tactics commit also landed this round after a transient
+infra error blocked its push last time.)

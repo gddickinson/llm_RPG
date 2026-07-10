@@ -103,7 +103,14 @@ class EncounterManager:
             mod = self.engine.weather_system.visibility_modifier()
         except Exception:
             mod = 1.0
-        return ENCOUNTER_CHANCE * (2.0 - mod)
+        mult = 1.0
+        try:
+            from world.astronomy import is_conjunction
+            if is_conjunction(self.engine.world.time // (24 * 60)):
+                mult = 1.5           # omen nights are dangerous
+        except Exception:
+            pass
+        return ENCOUNTER_CHANCE * (2.0 - mod) * mult
 
     def _find_spawn_position(self) -> Optional[Tuple[int, int]]:
         wmap = self.engine.world.map

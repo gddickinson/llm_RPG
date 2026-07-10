@@ -63,6 +63,15 @@ class LightingOverlay:
 
         tod = engine.world.get_time_of_day()
         darkness = TOD_DARKNESS.get(tod, 0)
+        # Full moons lighten clear nights (P8.1)
+        if tod == "night":
+            try:
+                from world.astronomy import moonlight
+                day = engine.world.time // (24 * 60)
+                darkness = max(100, darkness -
+                               int(60 * moonlight(day)))
+            except Exception:
+                pass
         # Weather adds darkness
         try:
             weather = engine.weather_system.state.current.value

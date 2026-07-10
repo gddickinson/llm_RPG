@@ -110,6 +110,7 @@ llm_RPG/
 - **`encounters.py`** — `EncounterManager`; wilderness monster spawns (weather-scaled chance).
 - **`monsters.py`** — Monster templates from `data/monsters.json`; terrain-filtered encounters + dungeons; `build_monster()`.
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.
+- **`astronomy.py`** — P8.1 pure sky math from `data/astronomy.json`: seasonal day length, solar intensity, two moons (Lunara 28d / Thal 47d) with phases, `moonlight()`, `is_conjunction()` + `announce_conjunction()` omen nights (brighter clear nights, ×1.5 encounters).
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
 - **`gathering.py`** — `GatheringManager`; mining/woodcutting/fishing nodes from `data/gathering.json`, tier level gates, tool checks.
 - **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.

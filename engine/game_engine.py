@@ -342,6 +342,11 @@ class GameEngine(GameAPIMixin):
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.retaliation.run_night()
+                try:
+                    from world.astronomy import announce_conjunction
+                    announce_conjunction(self, day)
+                except Exception:
+                    pass
                 self.radiant_quests.run_morning()
                 self.dm.run_scheduled()
                 try:
