@@ -8,6 +8,8 @@ from engine.dm_api import MUTATION_BUDGET, MAX_BRUSH
 
 class TestDMApi(unittest.TestCase):
     def setUp(self):
+        from tests import clean_dm_library
+        clean_dm_library()
         self.engine = GameEngine(
             llm_provider="heuristic", enable_npc_processes=False)
         self.engine.start_game()

@@ -111,6 +111,11 @@ class GameEngine(GameAPIMixin):
         self.faction_ticker = FactionTicker(self)
         self.dm = DMApi(self)
         self.dm_autonomous = AutonomousDM(self)
+        try:
+            from engine.dm_library import load_into_registries
+            load_into_registries()
+        except Exception as e:
+            logger.debug(f"Legendarium load skipped: {e}")
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager

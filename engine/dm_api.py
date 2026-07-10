@@ -125,6 +125,12 @@ class DMApi:
             return denied
         MONSTER_TEMPLATES[template_id] = dict(spec)
         self.defined_monsters[template_id] = dict(spec)
+        try:
+            from engine.dm_library import record_definition
+            record_definition("monsters", template_id, spec,
+                              self._day())
+        except Exception:
+            pass
         return self._log("define_monster", True,
                          f"{template_id}: {spec['name']}")
 
@@ -148,6 +154,11 @@ class DMApi:
             return denied
         ITEM_REGISTRY[item_id] = item
         self.defined_items[item_id] = entry
+        try:
+            from engine.dm_library import record_definition
+            record_definition("items", item_id, entry, self._day())
+        except Exception:
+            pass
         return self._log("define_item", True, f"{item_id}: {item.name}")
 
     # ---- world placement ---------------------------------------------------------

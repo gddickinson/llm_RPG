@@ -983,3 +983,22 @@ feature set, Phases 0-5 complete status, full controls table, --tutorial
 CLAUDE.md added (commands, hard rules, conventions, known flake). An
 Explore agent is surveying autonomous_world for unported systems/lessons
 (report next round). 7 new tests. Suite: 648 tests, all pass.
+
+**Round 57 — P6.7 The Legendarium (done) + autonomous_world survey.**
+George's compounding-world design: everything the DM defines is written
+to data/dm_library/ (gitignored, provenance-stamped, deduped, capped)
+and loaded into the runtime registries at every engine boot — a monster
+invented for tonight's adventure joins the bestiary of every future
+campaign. When a DM creation is slain it enters legendarium.json with
+its story, slayer and day, and the DM digest carries the legendarium
+tail so future DMs can resurface the past. Hard-won test-isolation
+lesson: the test package now pins a per-run temp library
+(LLM_RPG_DM_LIBRARY in tests/__init__.py) and DM tests wipe it in
+setUp; test_dm_library must RESTORE the env var rather than pop it —
+popping leaked real-library writes for every module discovered after
+it, which then poisoned the global registries on the next run.
+Separately: the autonomous_world survey (375 files / ~176k LOC) came
+back — Phase 8 added to the plan (astronomy with two moons, disease,
+crops/grazing, pantheon, tâtonnement economy math, shadowcasting FOV)
+plus standing anti-sprawl rules learned from its collapse modes.
+6 new tests. Suite: 654 tests, green twice consecutively.

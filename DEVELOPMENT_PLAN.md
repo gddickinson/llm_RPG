@@ -528,7 +528,7 @@ rumors) is never fed back as DM *instructions* (injection separation).
   round per George: README fully refreshed (features/status/controls/flags/
   screenshots) + project CLAUDE.md added.)*
 
-- [ ] **P6.7 The Legendarium — persistent generative library** (George,
+- [x] **P6.7 The Legendarium — persistent generative library** (George,
   2026-07-09): everything the DM defines (monsters, NPCs, magic items,
   buildings, quests, terrain variants — within the existing type system) is
   written to `data/dm_library/*.json`, loaded at startup alongside authored
@@ -543,6 +543,18 @@ rumors) is never fed back as DM *instructions* (injection separation).
   writes new legends the same way. Library curation: dedup by id, provenance
   stamps (which campaign/day created it), a size-capped "active set" the DM
   draws from so the world enriches without bloating prompts.
+  *(2026-07-10 — engine/dm_library.py: `data/dm_library/` (gitignored,
+  env-overridable via LLM_RPG_DM_LIBRARY), define_monster/define_item →
+  record_definition with provenance + dedup + cap 100;
+  load_into_registries() at every engine boot so new campaigns inherit the
+  grown bestiary/armory; a slain DM creation enters legendarium.json
+  (cap 200) with story + slayer + day; digest carries the legendarium tail
+  so future DMs can resurface the past. Test isolation hardened: the test
+  package pins a per-run temp library and DM tests wipe it in setUp;
+  test_dm_library restores (not pops) the env var — popping it had leaked
+  real-library writes for every module discovered after it. 6 tests;
+  suite green twice consecutively. NPC/building/terrain variants already
+  persist via the notebook/save path; quests via modules.)*
 
 - [x] **P6.8 Play+DM self-playtest — SESSION 1 run** (standing activity,
   repeat after major changes). *(2026-07-09 — full both-sides session:
@@ -626,6 +638,48 @@ become fixes or plan items. Track coverage per session.
 loop rounds immediately after Phase 5; P6.4 rides infrastructure that exists.
 P6.7 turns the DM from a session feature into a compounding one: the game
 gets permanently richer every time it's played.
+
+## Phase 8 — Mining `autonomous_world` (George, 2026-07-10)
+
+Survey of /Users/george/Documents/GitHub/autonomous_world (same author,
+375 files / ~176k LOC): mine the self-contained, pure-function wins; treat
+its sprawl (economy split over 7 modules, combat over 6, a never-shipped
+3D renderer, 48 committed throwaway viewers, a finished-but-never-wired
+procedural music system) as the cautionary tale. Port candidates ranked by
+value ÷ effort:
+
+- [ ] **P8.1 Astronomy** (`systems/astronomy.py`, 242 LOC, zero deps):
+  latitude/season day-length, dawn/dusk bands, solar intensity, TWO moons
+  (28d + 47d) with phases and conjunction detection — conjunctions are a
+  natural hook for world-director beats, rare spawns, heart events.
+  Constants → JSON; pairs with our calendar/seasons. LOW effort.
+- [ ] **P8.2 Disease & contagion** (`systems/health.py` template pattern):
+  13 diseases as JSON content (severity/duration/spread/symptoms/immunity),
+  staggered tick cadence, outbreaks + healer value; feeds gossip/needs.
+  MED effort (split to health_defs.json + <400-line module).
+- [ ] **P8.3 Crops + grazing** (`crop_system.py` 349 + `vegetation.py`
+  272): farmland visibly progresses fallow→planted→mature→harvested by
+  season; grazing degrades tile health. Closes the producer side of
+  foraging/economy. LOW-MED effort.
+- [ ] **P8.4 Pantheon** (`pantheon.py`, their best-tested system): gods
+  with domains, prayer→miracle loop, divine competition — a themed layer
+  for our nightly world director. HIGH effort; gods → JSON; souls/
+  reincarnation later if it earns its keep.
+- [ ] **P8.5 Economy algorithm only** (`world_economy.py`): tâtonnement
+  sticky-price discovery + settlement production so prices self-balance.
+  Extract the math (~300 lines), skip their 7-module sprawl. MED effort.
+- [ ] **P8.6 Shadowcasting FOV** (`world/fov.py`): octant-based LOS —
+  fog-of-war for dungeons, ranged line-of-sight, stealth. LOW effort.
+
+**Patterns adopted as standing rules** (no checkbox needed): staggered
+timer-gated ticks for every heavy system; status-effect templates with
+`__slots__` + clone; "every item must have a production source" as a
+content-validator rule (add to items/data_validate when P8.5 lands); LOD/
+dormancy (statistical sim beyond an active radius, with hysteresis) if the
+world ever grows past one region. **Anti-patterns to enforce**: every
+subsystem must have an owner in the tick loop verified by a smoke test (no
+dead code); consolidate a domain before splitting it; no speculative
+second renderer; throwaway viewers stay out of version control.
 
 ## What NOT to build (explicitly deferred)
 

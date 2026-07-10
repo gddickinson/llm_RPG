@@ -12,6 +12,8 @@ from engine.dm_bridge import DMBridge
 
 class TestDMBridge(unittest.TestCase):
     def setUp(self):
+        from tests import clean_dm_library
+        clean_dm_library()
         self.engine = GameEngine(
             llm_provider="heuristic", enable_npc_processes=False)
         self.engine.start_game()

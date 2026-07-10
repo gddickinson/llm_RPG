@@ -146,10 +146,16 @@ def _world(engine) -> Dict[str, Any]:
 
 def _dm(engine) -> Dict[str, Any]:
     dm = engine.dm
+    try:
+        from engine.dm_library import legendarium_tail
+        legends = legendarium_tail(5)
+    except Exception:
+        legends = []
     return {
         "budget_remaining": dm.budget_remaining(),
         "notebook_tail": dm.notebook[-NOTEBOOK_TAIL:],
         "scheduled_beats": list(dm.scheduled),
         "defined_monsters": list(dm.defined_monsters),
         "defined_items": list(dm.defined_items),
+        "legendarium": legends,
     }

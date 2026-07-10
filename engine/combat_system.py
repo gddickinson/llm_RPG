@@ -199,6 +199,23 @@ class CombatSystem:
                 record_deed(self.engine, f"slew {defender.name}")
             except Exception:
                 pass
+            # A fallen DM creation becomes legend (P6.7)
+            try:
+                parts = defender.id.split("_")
+                tid = "_".join(parts[1:-1]) if \
+                    defender.id.startswith("enc_") and len(parts) > 2 \
+                    else ""
+                if tid in self.engine.dm.defined_monsters:
+                    from engine.dm_library import record_legend
+                    record_legend({
+                        "name": defender.name,
+                        "kind": "monster",
+                        "story": self.engine.dm.defined_monsters[tid]
+                        .get("description", ""),
+                        "slain_by": self.engine.player.name,
+                        "day": self.engine.dm._day()})
+            except Exception:
+                pass
 
         return msg
 
