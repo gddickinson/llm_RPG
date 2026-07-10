@@ -34,7 +34,7 @@ class TestStructures(unittest.TestCase):
         self.assertTrue(crypt.dark, "crypts are dark")
         self.assertEqual(hall.stairs_down, crypt.stairs_up)
 
-    def test_inscriptions_are_readable(self):
+    def test_hall_inscriptions_carry_this_worlds_history(self):
         from engine.furniture import interact
         name, hall = self._keep()
         self.engine.current_interior = hall
@@ -42,7 +42,85 @@ class TestStructures(unittest.TestCase):
                      if f["name"] == "Inscription")
         self.engine.player.position = (stone["x"], stone["y"])
         msg = interact(self.engine)
-        self.assertIn("last steward", msg)
+        self.assertIn("Year", msg,
+                      "hall carvings must quote the history sim")
+        self.engine.current_interior = None
+
+    def test_crypt_inscription_is_authored(self):
+        from engine.furniture import interact
+        name, hall = self._keep()
+        crypt = hall.level_below
+        self.engine.current_interior = crypt
+        stone = next(f for f in crypt.furniture
+                     if f["name"] == "Inscription")
+        self.engine.player.position = (stone["x"], stone["y"])
+        msg = interact(self.engine)
+        self.assertIn("steward", msg)
+        self.engine.current_interior = None
+
+    def test_crypt_guardian_is_the_troll(self):
+        name, hall = self._keep()
+        crypt = hall.level_below
+        self.engine.structures.on_enter_level(crypt)
+        native = next(n for n in self.engine.npc_manager.npcs.values()
+                      if n.metadata.get("zone") == crypt.name)
+        self.assertIn("Troll", native.name)
+
+    def test_footprint_relics_moved_into_the_crypt_chest(self):
+        name, hall = self._keep()
+        loc = next(l for l in self.engine.world.locations
+                   if l.name == name)
+        for (x, y) in self.engine.world.ground_items:
+            self.assertFalse(
+                loc.contains(x, y),
+                "nothing may lie unreachable on the footprint")
+        crypt = hall.level_below
+        chest = next(f for f in crypt.furniture
+                     if f["name"] == "Chest")
+        key = f"ruined_keep:{chest['x']}:{chest['y']}"
+        contents = self.engine.structures.chest_contents.get(key, [])
+        if not contents:
+            self.skipTest("no keep-placed relic this worldgen")
+        self.assertTrue(all(hasattr(i, "id") for i in contents))
+
+    def test_chest_loots_exactly_once(self):
+        from engine.furniture import interact
+        name, hall = self._keep()
+        crypt = hall.level_below
+        chest = next(f for f in crypt.furniture
+                     if f["name"] == "Chest")
+        key = f"ruined_keep:{chest['x']}:{chest['y']}"
+        if not self.engine.structures.chest_contents.get(key):
+            from items.item_registry import create_item
+            self.engine.structures.chest_contents[key] = \
+                [create_item("potion")]
+        self.engine.current_interior = crypt
+        self.engine.player.position = (chest["x"], chest["y"])
+        msg = interact(self.engine)
+        self.assertIn("Inside the chest", msg)
+        msg = interact(self.engine)
+        self.assertIn("empty", msg)
+        self.engine.current_interior = None
+
+    def test_chest_contents_survive_save_load(self):
+        import shutil
+        import tempfile
+        from engine.save_load import SaveManager
+        from items.item_registry import create_item
+        key = "ruined_keep:6:1"
+        self.engine.structures.chest_contents[key] = \
+            [create_item("potion")]
+        tmp = tempfile.mkdtemp()
+        try:
+            sm = SaveManager(save_dir=tmp)
+            sm.save(self.engine, name="crypt")
+            self.engine.structures.chest_contents = {}
+            self.assertTrue(sm.load(self.engine, name="crypt"))
+            loaded = self.engine.structures.chest_contents.get(key)
+            self.assertTrue(loaded)
+            self.assertEqual(loaded[0].id, "potion")
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
 
     def test_first_visit_populates_the_crypt(self):
         name, hall = self._keep()
@@ -54,7 +132,7 @@ class TestStructures(unittest.TestCase):
                          before + 1)
         native = next(n for n in self.engine.npc_manager.npcs.values()
                       if n.metadata.get("zone") == crypt.name)
-        self.assertEqual(native.name, "Goblin")
+        self.assertEqual(native.name, "Wandering Troll")
         # second visit: the crypt stays as you left it
         self.assertEqual(
             self.engine.structures.on_enter_level(crypt), 0)

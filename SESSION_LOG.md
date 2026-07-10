@@ -1450,3 +1450,23 @@ a dark crypt with a goblin and a carved promise that "the crown
 sleeps deeper than the dead." The temple crypt (P9.3) and wizard's
 tower (P9.4) are now a JSON file away. 8 new tests. Suite: 851,
 green x3.
+
+**Round 79 — P9.2 The Ruined Keep, explorable (done).**
+The keep grew into its intended shape: a 14-tile-wide Great Hall
+with the collapsed barracks visible behind a spill of rubble wall —
+beds, a barrel, and a chest the garrison never came back for — and
+stairs descending to a DARK crypt (P8.6 fog-of-war) where a
+Wandering Troll stands guard over the treasure. The hall's
+'$history' inscriptions now quote THIS world's actual pre-game
+history: the builder substitutes the history-sim's lore lines at
+build time, so every campaign's keep tells that campaign's story
+("Year -2: Trolls came down from the mountains and burned a farm"),
+while the crypt's carving stays authored ("The crown sleeps deeper
+than the dead"). A latent regression died here too: the history
+sim drops era relics ON the keep footprint, which P9A.3b's solid
+walls had silently made unreachable — the builder now SWEEPS any
+footprint loot into the deepest level's chest, where it sits
+guarded by the troll and reveals its authored legend when looted
+(the legends system fires from chest loot exactly as from ground
+pickup). Chest contents and looted state ride save_load; a chest
+loots exactly once. 6 new tests. Suite: 856, green x3.

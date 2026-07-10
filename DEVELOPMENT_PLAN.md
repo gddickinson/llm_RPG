@@ -1049,10 +1049,23 @@ authored set-pieces. Plan:
   Blueprints as data (`data/structures.json`) — rooms, connections,
   spawn tables, loot tables, set-piece text. Generalizes
   interiors/dungeons into one system.
-- [ ] **P9.2 The Ruined Keep, explorable.** The history-sim's keep gets
+- [x] **P9.2 The Ruined Keep, explorable.** The history-sim's keep gets
   a real inside: great hall, collapsed barracks, a crypt below with the
   era-appropriate relic and a guardian. Lore lines from history_sim
   become readable inscriptions inside.
+  *(done 2026-07-10 — the keep grew into its P9.2 shape: a 14-wide
+  Great Hall with the collapsed barracks behind a rubble wall (beds,
+  a barrel, a chest the garrison left), stairs down to a DARK crypt
+  where a Wandering Troll stands guard over the treasure chest.
+  '$history' inscriptions now quote THIS world's actual history-sim
+  lore ("Year -2: Trolls came down from the mountains…"), different
+  every campaign; the crypt's carving stays authored. AND a latent
+  regression fixed: history-sim relics placed ON the keep footprint
+  became unreachable when walls went solid (P9A.3b) — the builder now
+  SWEEPS footprint loot into the deepest chest, guarded and
+  legend-revealing on looting (engine/legends fires from chest
+  loot). Chest contents + looted state persist via save_load;
+  chests loot exactly once. 6 new tests (13 total structure tests).)*
 - [ ] **P9.3 Temple + crypt.** Oakvale temple interior (shrine services,
   the priest's routine) over a crypt level — undead below, blessed
   rewards, ties into banking/blessing systems already present.

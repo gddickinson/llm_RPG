@@ -42,6 +42,9 @@ class StructureBuilder:
     def __init__(self, engine):
         self.engine = engine
         self.populated: Dict[str, List[str]] = {}
+        # (structure, x, y) -> [Item, ...]; looted keys
+        self.chest_contents: Dict[str, list] = {}
+        self.looted: List[str] = []
 
     # ------------------------------------------------------------ build
 
@@ -65,8 +68,70 @@ class StructureBuilder:
             self._link(levels, spec.get("levels", []))
             levels[0].ground = True
             self.engine.interiors[loc.name] = levels[0]
+            self._history_inscriptions(levels)
+            self._sweep_footprint_loot(loc, levels, sid)
             built += 1
         return built
+
+    def _history_inscriptions(self, levels) -> None:
+        """'$history' inscriptions carry this world's actual past
+        (P9.2): the history-sim's lore lines, oldest first."""
+        lore = [f"Year {ev.get('year')}: {ev.get('description')}"
+                for ev in getattr(self.engine, "world_history", [])]
+        i = 0
+        for level in levels:
+            for piece in level.furniture:
+                if piece.get("text") == "$history":
+                    piece["text"] = lore[i % len(lore)] if lore else \
+                        "The carving is too worn to read."
+                    i += 1
+
+    def _sweep_footprint_loot(self, loc, levels, sid: str) -> None:
+        """Relics the history sim dropped on the footprint (solid
+        walls made them unreachable) move into the DEEPEST chest —
+        guarded, findable, and legend-revealing when looted."""
+        ground = getattr(self.engine.world, "ground_items", {})
+        swept = []
+        for (x, y) in list(ground.keys()):
+            if loc.contains(x, y):
+                items = ground.pop((x, y), [])
+                swept += [i for i in items if hasattr(i, "id")]
+        if not swept:
+            return
+        deepest = levels[-1]
+        chest = next((f for f in deepest.furniture
+                      if f["name"] == "Chest"), None)
+        if chest is None:
+            return
+        key = f"{sid}:{chest['x']}:{chest['y']}"
+        self.chest_contents.setdefault(key, []).extend(swept)
+
+    def loot_chest(self, zone, piece) -> Optional[str]:
+        """Furniture hook: a structure chest with contents yields
+        them exactly once."""
+        sid = getattr(zone, "structure_id", None)
+        if sid is None or piece.get("name") != "Chest":
+            return None
+        key = f"{sid}:{piece['x']}:{piece['y']}"
+        if key in self.looted:
+            return "The chest stands empty — you've had its secrets."
+        items = self.chest_contents.get(key)
+        if not items:
+            return None
+        self.looted.append(key)
+        player = self.engine.player
+        names = []
+        for item in items:
+            player.inventory.append(item)
+            names.append(getattr(item, "name", str(item)))
+            try:
+                from engine.legends import on_item_picked_up
+                note = on_item_picked_up(self.engine, item)
+                if note:
+                    self.engine.memory_manager.add_event(note)
+            except Exception:
+                pass
+        return f"Inside the chest: {', '.join(names)}."
 
     def _build_level(self, spec: dict, sid: str):
         from world.interiors import Interior
@@ -146,9 +211,24 @@ class StructureBuilder:
     # ------------------------------------------------------ persistence
 
     def to_dict(self) -> dict:
+        chests = {}
+        for key, items in self.chest_contents.items():
+            chests[key] = [i.to_dict() for i in items
+                           if hasattr(i, "to_dict")]
         return {"populated": {k: list(v)
-                              for k, v in self.populated.items()}}
+                              for k, v in self.populated.items()},
+                "chests": chests,
+                "looted": list(self.looted)}
 
     def from_dict(self, data: dict) -> None:
+        from items.item import Item
         self.populated = {k: list(v) for k, v in
                           data.get("populated", {}).items()}
+        self.looted = list(data.get("looted", []))
+        self.chest_contents = {}
+        for key, dicts in data.get("chests", {}).items():
+            try:
+                self.chest_contents[key] = [Item.from_dict(d)
+                                            for d in dicts]
+            except Exception:
+                pass

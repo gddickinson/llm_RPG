@@ -184,6 +184,15 @@ def _drink(engine, interior) -> str:
 
 def _rummage(engine, interior) -> str:
     player = engine.player
+    # Structure chests carry authored/swept treasure (P9.2)
+    piece = piece_near(interior, *player.position)
+    if piece is not None:
+        try:
+            msg = engine.structures.loot_chest(interior, piece)
+            if msg is not None:
+                return msg
+        except Exception:
+            pass
     marks = player.metadata.setdefault("rummage_days", {})
     if marks.get(interior.name) == _day(engine):
         return "You've already been through everything here today."
