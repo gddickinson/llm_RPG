@@ -150,6 +150,10 @@ class GameEngine(GameAPIMixin):
         from characters.companions import CompanionManager
         self.companion_manager = CompanionManager(self)
 
+        # NPC-vs-NPC conflict (P7.1)
+        from engine.npc_conflict import NPCConflictSystem
+        self.npc_conflict = NPCConflictSystem(self)
+
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
         self.running = False
@@ -363,6 +367,12 @@ class GameEngine(GameAPIMixin):
             self.companion_manager.update()
         except Exception as e:
             logger.debug(f"Companion update error: {e}")
+
+        # The world fights its own battles (P7.1)
+        try:
+            self.npc_conflict.update()
+        except Exception as e:
+            logger.debug(f"NPC conflict error: {e}")
 
         if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
             self.process_npc_turns_async()

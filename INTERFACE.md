@@ -50,7 +50,8 @@ llm_RPG/
 - **`legends.py`** — Relic pickups reveal authored legends; Legends section of the Y journal; gossip citations.
 - **`defeat.py`** — Failure-as-story defeat outcomes: robbed / left for dead / slain.
 - **`tactics.py`** — Opportunity attacks, SHIFT+move disengage, SHIFT+F shove.
-- **`faction_ticker.py`** — Daily dice-resolved faction events; strength/stores drive encounters, shortages, rumors.
+- **`faction_ticker.py`** — Daily dice-resolved faction events; strength/stores drive encounters, shortages, rumors; repelled raids spawn a visible straggler.
+- **`npc_conflict.py`** — `NPCConflictSystem` (P7.1): guards fight hostiles they can see, hostiles raid civilians; `[Clash]` events near the player; the player's duel is never stolen.
 - **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.

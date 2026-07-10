@@ -632,9 +632,19 @@ become fixes or plan items. Track coverage per session.
 
 **New plan items from Session 2:**
 
-- [ ] **P7.1 NPC-vs-NPC conflict.** Guards engage hostiles they can see;
+- [x] **P7.1 NPC-vs-NPC conflict.** Guards engage hostiles they can see;
   brigands raid NPCs; ticker events occasionally play out ON SCREEN (a
   patrol fights a bandit near the road). Makes cooperation/conflict visible.
+  *(done 2026-07-10 — engine/npc_conflict.py: cheap distance scan every 3
+  turns, zero LLM. Guards/paladins close on and fight hostiles within
+  sight 8; hostiles raid civilians at a slower cadence; ≤3 engagements a
+  scan. `[Clash]` swings logged only within earshot of the player (14
+  tiles) so distant fights don't flood the log; defeats always news. The
+  player's duel is sacred — hostiles within 2 tiles of the player are
+  left alone (no kill-stealing/rescues); party members excluded (the
+  companion system owns them). Ticker tie-in: a repelled brigand raid
+  leaves a straggler bandit spawned near a guard's beat, so the morning
+  patrol fight actually happens on screen. 7 tests.)*
 - [ ] **P7.2 Conspiracy & retaliation.** Deep hostile faction rep spawns
   targeted responses: bounty hunters sent after an infamous player, ambush
   beats via the DM layer, the fence retaliating during The Fence quest.
@@ -689,6 +699,41 @@ world ever grows past one region. **Anti-patterns to enforce**: every
 subsystem must have an owner in the tick loop verified by a smoke test (no
 dead code); consolidate a domain before splitting it; no speculative
 second renderer; throwaway viewers stay out of version control.
+
+## Phase 9 — Fantastical structures (George, 2026-07-10)
+
+George: "Are there dungeons, castles, temples, wizards towers and other
+fantastical structures... richer in detail than the regular 2D mapped
+world?" Current truth: single-level BSP dungeons from cave tiles and
+simple one-room building interiors — nothing grander. The zone machinery
+(interiors/dungeons render + move via `_render_zone`/`_move_in_zone`)
+already supports richer spaces; what's missing is depth, theming, and
+authored set-pieces. Plan:
+
+- [ ] **P9.1 Structure framework.** A `Structure` = a named stack of
+  themed zone levels connected by stairs/ladders, entered from an
+  overworld footprint; locked doors + key items; per-level light levels.
+  Blueprints as data (`data/structures.json`) — rooms, connections,
+  spawn tables, loot tables, set-piece text. Generalizes
+  interiors/dungeons into one system.
+- [ ] **P9.2 The Ruined Keep, explorable.** The history-sim's keep gets
+  a real inside: great hall, collapsed barracks, a crypt below with the
+  era-appropriate relic and a guardian. Lore lines from history_sim
+  become readable inscriptions inside.
+- [ ] **P9.3 Temple + crypt.** Oakvale temple interior (shrine services,
+  the priest's routine) over a crypt level — undead below, blessed
+  rewards, ties into banking/blessing systems already present.
+- [ ] **P9.4 The Wizard's Tower.** A vertical structure — each floor
+  stranger than the last (library, menagerie, observatory), arcane
+  puzzles (lever/sigil, not pixel-hunts), a new spell or focus item at
+  the top. Introduces a wizard NPC with heart events.
+- [ ] **P9.5 Multi-level dungeons.** Depth 2–3 dungeons with stairs-down,
+  scaling monsters/loot per level, a boss floor; collection-log and
+  diary hooks ("clear depth 3").
+- [ ] **P9.6 DM + Legendarium structures.** `define_structure` DM command
+  (charter-capped size/level) + structures recorded in the Legendarium
+  so DM-built towers persist across campaigns; module packs may ship
+  structures.
 
 ## What NOT to build (explicitly deferred)
 

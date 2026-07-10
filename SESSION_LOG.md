@@ -1021,3 +1021,23 @@ validator now checks packs too (enums, resolvable giver, level-1 caps,
 allowed beat commands); the test package pins LLM_RPG_MODULE_PACKS to
 an empty temp dir so 650 engine boots don't each install the shipped
 pack. 7 new tests. Suite: 661 tests, all pass.
+
+**Round 59 — P7.1 NPC-vs-NPC conflict (done).**
+Playtest 2's biggest miss — the world's conflicts were invisible — now
+plays out on screen with zero LLM calls. engine/npc_conflict.py runs a
+cheap distance scan every 3 turns: guards and paladins close on and
+fight any hostile (brigand/monster/troll) within 8 tiles; hostiles raid
+civilians at a slower cadence; at most 3 engagements progress per scan.
+Swings are logged with a [Clash] prefix only when the player is within
+14 tiles (distant fights stay quiet; defeats are always news), the
+player's own duel is protected (hostiles within 2 tiles of the player
+are never poached), and party members are excluded — the companion
+system owns them. Ticker tie-in: when the nightly faction ticker rolls
+a REPELLED brigand raid, a straggler bandit now spawns near a guard's
+beat, so the morning patrol fight George's playtest matrix asked for
+("a patrol fights a bandit near the road") actually happens where the
+player can watch. Also this round per George: Phase 9 "Fantastical
+structures" added to the plan (structure framework, explorable ruined
+keep, temple+crypt, wizard's tower, multi-level dungeons, DM-defined
+structures in the Legendarium). 7 new tests. Suite: 668 tests, green
+(one known worldgen flake passed on rerun).

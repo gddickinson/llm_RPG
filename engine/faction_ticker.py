@@ -70,7 +70,41 @@ class FactionTicker:
                     "with the stores."]
         self.state["brigands"]["strength"] -= 6
         self.state["guards"]["strength"] += 2
+        self._spawn_raider()
         return ["The guard repelled a brigand raid on the farmsteads."]
+
+    def _spawn_raider(self) -> bool:
+        """A raid leaves a straggler near a guard's beat — the P7.1
+        conflict system makes the ensuing patrol fight visible."""
+        try:
+            from world.monsters import build_monster
+            from engine.npc_conflict import _cls, GUARD_CLASSES
+            guards = [n for n in self.engine.npc_manager.npcs.values()
+                      if n.is_active() and _cls(n) in GUARD_CLASSES]
+            if not guards:
+                return False
+            guard = self.rng.choice(guards)
+            gx, gy = guard.position
+            px, py = self.engine.player.position
+            wmap = self.engine.world.map
+            for dx, dy in ((5, 0), (-5, 0), (0, 5), (0, -5), (4, 4)):
+                x, y = gx + dx, gy + dy
+                if not (0 <= x < wmap.width and 0 <= y < wmap.height):
+                    continue
+                if abs(x - px) + abs(y - py) < 6:
+                    continue
+                if wmap.get_character_at(x, y) is not None:
+                    continue
+                raider = build_monster("bandit", (x, y))
+                self.engine.npc_manager.add_npc(raider)
+                wmap.place_character(raider, x, y)
+                self.engine.memory_manager.add_event(
+                    "[Realm] A raider straggler was seen skulking "
+                    "near the watch.")
+                return True
+        except Exception:
+            pass
+        return False
 
     def _guard_patrol(self) -> List[str]:
         if self._roll() + self.state["guards"]["strength"] // 10 >= 8:
