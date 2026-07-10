@@ -135,8 +135,14 @@ class TravelSystem:
         wmap.remove_character(player)
         player.position = dest["pos"]
         wmap.place_character(player, *dest["pos"])
+        cooldown = TELEPORT_COOLDOWN_MIN
+        try:
+            cooldown = int(cooldown *
+                           self.engine.guild.teleport_cooldown_multiplier())
+        except Exception:
+            pass
         player.metadata["teleport_ready_at"] = \
-            self.engine.world.time + TELEPORT_COOLDOWN_MIN
+            self.engine.world.time + cooldown
         toll_note = f" (toll {dest['toll']}g)" if dest["toll"] else ""
         msg = f"You travel to {dest['name']}{toll_note}."
         self.engine.memory_manager.add_event(msg)

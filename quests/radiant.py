@@ -71,13 +71,18 @@ class RadiantQuestGenerator:
                 self._unpost(quest.id)
                 notes.append(f"The notice '{quest.title}' was taken down.")
 
-        # Top up
+        # Top up (guild Members get extra notices on the board)
+        cap = MAX_ACTIVE
+        try:
+            cap += self.engine.guild.radiant_cap_bonus()
+        except Exception:
+            pass
         active = [q for q in qm.quests.values()
                   if q.id.startswith("radiant_") and
                   q.status == QuestStatus.AVAILABLE]
         want = self.rng.randint(1, 2)
         n = 0
-        while len(active) < MAX_ACTIVE and n < want:
+        while len(active) < cap and n < want:
             quest = self._generate(day, n)
             if quest is None:
                 break

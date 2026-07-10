@@ -30,7 +30,7 @@ def _quest_from_entry(quest_id: str, entry: dict) -> Quest:
         reward_xp=entry.get("reward_xp", 0),
         metadata={
             key: entry[key]
-            for key in ("prereq_quest", "reward_unlocks")
+            for key in ("prereq_quest", "reward_unlocks", "quest_points")
             if key in entry
         },
     )

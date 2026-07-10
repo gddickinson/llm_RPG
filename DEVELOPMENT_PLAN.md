@@ -300,8 +300,12 @@ and out of fights — and NPCs remember you across sessions.
   ties the bandits topic thread together), The Ballad of You (humor: get all
   three barkeeps to corroborate Melody's "artistic license"). Validator now
   accepts class-valued KILL targets. 6 tests. P4.2 complete at 13 quests.)*
-- [ ] **P4.3 Quest points + guild.** Each quest grants 1–3 QP; an Adventurers' Guild
-  building unlocks at N QP with its own board, bank, shop, trainers.
+- [x] **P4.3 Quest points + guild.** *(done 2026-07-09 — `engine/guild.py`:
+  authored quests grant 1–3 QP (23 total across 13 quests; radiants grant
+  none), awarded at turn-in with rank-up fanfare. Ranks with concrete perks:
+  Member (5 QP) = +2 radiant board notices; Veteran (10) = teleport cooldown
+  halved; Champion (15) = a 4th companion slot. Character sheet shows
+  QP + rank. 8 tests.)*
 - [ ] **P4.4 Tutorial Island.** Small separate starter zone; one instructor NPC per
   system (fish→cook→mine→smith→fight→cast→bank), each teaching by one repetition;
   one-way boat to the mainland. Instructors are the LLM-NPC showcase — narrow-domain

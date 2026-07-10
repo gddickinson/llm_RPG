@@ -39,8 +39,13 @@ class CompanionManager:
         # Need positive relationship
         if npc.get_relationship(self.engine.player.id) < 30:
             return f"{npc.name} doesn't trust you enough yet."
-        if len(self.party) >= 3:
-            return "Your party is full (3 max)."
+        cap = 3
+        try:
+            cap = self.engine.guild.companion_cap()
+        except Exception:
+            pass
+        if len(self.party) >= cap:
+            return f"Your party is full ({cap} max)."
         return ""
 
     def recruit(self, npc_id: str) -> str:

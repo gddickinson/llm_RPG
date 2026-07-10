@@ -651,3 +651,15 @@ barkeeps to corroborate her ballad's wilder claims ("artistic license
 requires signatures"), touring the player through every tavern. Validator
 learned that KILL targets may be class values (as radiant bounties already
 use). 6 end-to-end tests. Suite: 498 tests, all pass.
+
+**Round 35 — P4.3 quest points + Adventurers' Guild (done).**
+New `engine/guild.py`. Every authored quest now carries 1-3 quest points
+in its data entry (23 QP across the 13-quest book; radiant quests grant
+none), awarded at turn-in with running-total and rank-up announcements.
+Ranks buy concrete perks: Member (5 QP) adds two extra notices to the
+radiant board; Veteran (10 QP) halves the teleport cooldown; Champion
+(15 QP) opens a fourth companion slot — reaching Champion requires most
+of the questbook, making every small quest feed the meta-unlock (the OSRS
+quest-point pattern). Character sheet shows QP + rank. QP persists via
+metadata. 8 new tests. Suite: 503 tests, all pass (one non-reproducing
+flake observed once in a full-suite run — watching for recurrence).

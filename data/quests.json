@@ -15,7 +15,8 @@
     "reward_items": [
       "longsword"
     ],
-    "reward_xp": 200
+    "reward_xp": 200,
+    "quest_points": 3
   },
   "herb_gathering": {
     "title": "Herbs for the Apothecary",
@@ -33,7 +34,8 @@
     "reward_items": [
       "greater_potion"
     ],
-    "reward_xp": 80
+    "reward_xp": 80,
+    "quest_points": 1
   },
   "tavern_intro": {
     "title": "A Friendly Welcome",
@@ -51,7 +53,8 @@
     "reward_items": [
       "ale"
     ],
-    "reward_xp": 15
+    "reward_xp": 15,
+    "quest_points": 1
   },
   "cave_exploration": {
     "title": "The Dark Cave",
@@ -69,7 +72,8 @@
     "reward_items": [
       "old_map"
     ],
-    "reward_xp": 120
+    "reward_xp": 120,
+    "quest_points": 2
   },
   "deliver_sword": {
     "title": "A Forged Blade",
@@ -87,7 +91,8 @@
     "reward_items": [
       "shield"
     ],
-    "reward_xp": 50
+    "reward_xp": 50,
+    "quest_points": 1
   },
   "survive_night": {
     "title": "Through the Night",
@@ -106,7 +111,8 @@
       "potion",
       "potion"
     ],
-    "reward_xp": 150
+    "reward_xp": 150,
+    "quest_points": 1
   },
   "the_silver_edge": {
     "title": "The Silver Edge",
@@ -125,7 +131,8 @@
     "reward_xp": 150,
     "reward_unlocks": [
       "topic:silver_blade"
-    ]
+    ],
+    "quest_points": 3
   },
   "roads_and_rivers": {
     "title": "Roads and Rivers",
@@ -151,7 +158,8 @@
     "reward_unlocks": [
       "teleport:riverside",
       "teleport:stonepine"
-    ]
+    ],
+    "quest_points": 2
   },
   "supply_run": {
     "title": "Supply Run",
@@ -170,7 +178,8 @@
     "reward_xp": 100,
     "reward_unlocks": [
       "topic:east_shaft"
-    ]
+    ],
+    "quest_points": 1
   },
   "the_healers_art": {
     "title": "The Healer's Art",
@@ -190,7 +199,8 @@
     "prereq_quest": "herb_gathering",
     "reward_unlocks": [
       "spell:heal"
-    ]
+    ],
+    "quest_points": 2
   },
   "caer_aldwyn": {
     "title": "The Cellars of Caer Aldwyn",
@@ -217,7 +227,8 @@
     "reward_xp": 250,
     "reward_unlocks": [
       "topic:ruined_keep"
-    ]
+    ],
+    "quest_points": 3
   },
   "the_fence": {
     "title": "The Fence",
@@ -239,7 +250,8 @@
     "prereq_quest": "roads_and_rivers",
     "reward_unlocks": [
       "topic:bandits"
-    ]
+    ],
+    "quest_points": 2
   },
   "ballad_of_you": {
     "title": "The Ballad of You",
@@ -269,6 +281,7 @@
     "reward_items": [
       "flute"
     ],
-    "reward_xp": 80
+    "reward_xp": 80,
+    "quest_points": 1
   }
 }

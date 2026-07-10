@@ -305,9 +305,12 @@ class GameGUI:
             f"HP: {p.hp}/{p.max_hp}",
             f"Gold: {p.gold}",
             f"XP: {(p.metadata or {}).get('xp', 0)}",
-            "",
-            "Skills:",
         ]
+        try:
+            lines.append(self.engine.guild.status_line())
+        except Exception:
+            pass
+        lines += ["", "Skills:"]
         try:
             from engine.skill_progression import (skill_summary,
                                                   total_skill_level)

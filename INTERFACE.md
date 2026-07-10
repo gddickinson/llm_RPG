@@ -45,6 +45,7 @@ llm_RPG/
 - **`director.py`** — `WorldDirector`; one nightly call emits structured events (rumor/shortage/caravan/sighting/feud) the systems act out.
 - **`player_deeds.py`** — Rolling deeds ledger + presence digest; NPCs react to kills, quests, gear, level.
 - **`llm_budget.py`** — Cost discipline: NPC action cooldowns, monster exclusion, greeting cache.
+- **`guild.py`** — `GuildSystem`; quest points → ranks (Member/Veteran/Champion) with radiant/teleport/party perks.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.

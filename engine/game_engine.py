@@ -100,7 +100,9 @@ class GameEngine(GameAPIMixin):
         self.memory_manager.on_event = self.topic_journal.scan
         self.world_director = WorldDirector(self)
         from quests.radiant import RadiantQuestGenerator
+        from engine.guild import GuildSystem
         self.radiant_quests = RadiantQuestGenerator(self)
+        self.guild = GuildSystem(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
@@ -383,6 +385,13 @@ class GameEngine(GameAPIMixin):
             try:
                 from engine.player_deeds import record_deed
                 record_deed(self, f"completed '{quest.title}'")
+            except Exception:
+                pass
+            # Quest points + guild rank-ups
+            try:
+                qp = int(quest.metadata.get("quest_points", 0))
+                for note in self.guild.award_points(qp):
+                    self.memory_manager.add_event(note)
             except Exception:
                 pass
             # Completing someone's quest earns real trust
