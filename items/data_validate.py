@@ -216,7 +216,10 @@ def _check_quests() -> List[str]:
                              or a in class_values)
     for qid, factory in QUEST_TEMPLATES.items():
         quest = factory()
-        if quest.giver_id and quest.giver_id not in NPC_SPECS:
+        if not quest.giver_id:
+            out.append(f"quest {qid}: no giver — the GUI's only "
+                       f"turn-in path is dialog with the giver")
+        elif quest.giver_id not in NPC_SPECS:
             out.append(f"quest {qid}: unknown giver '{quest.giver_id}'")
         for iid in quest.reward_items:
             if not _known_item(iid):

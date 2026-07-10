@@ -947,3 +947,21 @@ piece is rolled back — definitions, spawns, quests, board postings —
 and the budget refunded (tested via injected create_quest failure).
 The playtest's hand-rolled Rot-King arc is now a one-command bundle.
 6 tests. Suite: 638 tests, all pass.
+
+**Round 55 — P6.8 playtest session 2: the full 12-point matrix (done).**
+Ran George's complete assessment charter in one scripted-and-judged
+campaign. Strong: progression (board->QP->rank), economy (haggle d20
+shown, shortage surge, repair sink), pack coordination verified LIVE
+(alpha wolf howled, beta closed 5 tiles on the alert), ranged + aimed +
+ammo + spells, persuasion stakes, DM module installed mid-session with
+diegetic announcement, log readability. FIXED: tavern_intro and
+survive_night had giver "" — completable but with NO GUI turn-in path
+(the only UI turn-in is dialog with the giver); both now have natural
+givers (Goren greets you and takes the turn-in in the same conversation;
+Karim watches the night), and the validator now REQUIRES every authored
+quest to have an existing giver. GAPS promoted to plan items P7.1-P7.3:
+NPC-vs-NPC conflict is absent (guards never fight brigands they can
+see), conspiracy is absent (hostile rep changes prices, never behavior
+— the player cannot make a true enemy), and mixed squad tactics don't
+exist. Scorecard committed to the plan. 3 regression tests.
+Suite: 641 tests, all pass.

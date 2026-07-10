@@ -585,6 +585,36 @@ become fixes or plan items. Track coverage per session.
 12. **Feel** — pacing, log readability, hint quality, day-loop rhythm,
     sound cues, anything confusing or dull.
 
+### Playtest Session 2 scorecard (2026-07-09 — full matrix run)
+
+| # | Dimension | Verdict |
+|---|---|---|
+| 1 | Progression | ✅ board→accept→complete→turn-in→QP works; **fixed: 2 giverless quests had no GUI turn-in path** |
+| 2 | Cooperation | ✅ recruit + companion fights; ⚠️ NPC↔NPC visible cooperation thin |
+| 3 | Conspiracy | ❌ **absent** — hostile rep changes prices only; nothing retaliates |
+| 4 | Economy | ✅ purse/haggle/shortage/repair/bank all bite |
+| 5 | Monsters | ✅ howl→alert→converge verified live (packmate closed 5 tiles) |
+| 6 | Quests | ✅ chains/unlocks/radiant/DM-module all flow |
+| 7 | Navigation | ✅ hints, earned teleports, 5 relics seeded |
+| 8 | Alliances/enemies | ✅ trust, recruit, persuasion stakes (−6 + day lockout) |
+| 9 | Combat | ✅ melee/ranged+ammo/aimed/spells/durability; defeat outcomes tested prior |
+| 10 | Coordination | ⚠️ wolves yes; **mixed NPC+player or guard-vs-brigand: none** |
+| 11 | DM layer | ✅ module installed live in 4 pieces with announcement |
+| 12 | Feel | ✅ log reads well (transparent dice); no flooding |
+
+**New plan items from Session 2:**
+
+- [ ] **P7.1 NPC-vs-NPC conflict.** Guards engage hostiles they can see;
+  brigands raid NPCs; ticker events occasionally play out ON SCREEN (a
+  patrol fights a bandit near the road). Makes cooperation/conflict visible.
+- [ ] **P7.2 Conspiracy & retaliation.** Deep hostile faction rep spawns
+  targeted responses: bounty hunters sent after an infamous player, ambush
+  beats via the DM layer, the fence retaliating during The Fence quest.
+  The player should be able to MAKE a real enemy.
+- [ ] **P7.3 Squad tactics.** Companions + guards coordinate with the
+  player in fights (focus fire, real flanking positions); monster packs
+  attempt surrounds rather than a queue.
+
 **Verdict:** feasible and the natural capstone — P6.1–P6.3 are buildable in
 loop rounds immediately after Phase 5; P6.4 rides infrastructure that exists.
 P6.7 turns the DM from a session feature into a compounding one: the game

@@ -48,7 +48,7 @@
         "description": "Speak with Goren in the tavern"
       }
     ],
-    "giver_id": "",
+    "giver_id": "tavernkeeper_01",
     "reward_gold": 10,
     "reward_items": [
       "ale"
@@ -105,7 +105,7 @@
         "description": "Survive 50 turns"
       }
     ],
-    "giver_id": "",
+    "giver_id": "guard_01",
     "reward_gold": 80,
     "reward_items": [
       "potion",
