@@ -764,9 +764,19 @@ value ÷ effort:
   occasionally marks the realm at night through the rumor mill.
   Favor rides player.metadata (saves free). Souls/reincarnation
   deferred as planned. 10 tests.)*
-- [ ] **P8.5 Economy algorithm only** (`world_economy.py`): tâtonnement
+- [x] **P8.5 Economy algorithm only** (`world_economy.py`): tâtonnement
   sticky-price discovery + settlement production so prices self-balance.
   Extract the math (~300 lines), skip their 7-module sprawl. MED effort.
+  *(done 2026-07-10 — engine/market.py: four market categories (arms /
+  provisions / goods / arcana) each carry a sticky price index. Player
+  purchases push demand, sales push supply; each night one tâtonnement
+  step (tanh-damped) then a 10% drift home; clamped [0.6, 1.6]. Village
+  stores add a supply signal (hungry village → dear provisions). The
+  index multiplies BOTH buy and sell prices so margins are preserved —
+  no arbitrage loop. Director shortages stack on top. Big moves hit the
+  rumor mill ("[Realm] Prices for arms climb at the market."). Wired
+  into shop_manager pricing + shop_panel transactions; persisted via
+  save_load. 9 tests.)*
 - [ ] **P8.6 Shadowcasting FOV** (`world/fov.py`): octant-based LOS —
   fog-of-war for dungeons, ranged line-of-sight, stealth. LOW effort.
 
@@ -779,6 +789,50 @@ world ever grows past one region. **Anti-patterns to enforce**: every
 subsystem must have an owner in the tick loop verified by a smoke test (no
 dead code); consolidate a domain before splitting it; no speculative
 second renderer; throwaway viewers stay out of version control.
+
+## Phase 9A — Buildings & living interiors (George, 2026-07-10 playtest) — PRIORITY
+
+George's playtest verdict: buildings are the most underdeveloped part
+of the game. "No doors/windows furniture etc. Only single levels…
+Doors need to be opened, locks need keys or to be picked/forced.
+Rooms should have functions. There should be consequences for
+entering certain buildings… Different buildings are likely to have
+different occupants depending on the style of building and the
+occupants occupation." Autonomous World prototyped much of this — an
+Explore survey of its building/interior/lock/trespass systems is
+running; fold its report in here. Takes priority over P8.6 and the
+fantastical-structures items below (which build on this framework).
+
+- [ ] **P9A.1 Doors & locks.** Interiors get real doorways: closed
+  doors block entry until opened (bump/E); locked doors need the key
+  item, a lockpick attempt (Dexterity/lockpicks tool, failure chance),
+  or forcing (Strength check, noisy — guards hear). Door state
+  persists. Locks as data on the building/interior spec.
+- [ ] **P9A.2 Furniture with functions.** Interior furnishing layer
+  (beds, chests, tables, forges, altars, bookshelves as interior
+  objects with sprites): beds = sleep/rest to heal anywhere indoors
+  you're permitted (extends engine/rest.py beyond inns); chests hold
+  loot (some locked); forges enable smithing; bookshelves surface
+  lore/topics. Furnishing sets by building style, as data.
+- [ ] **P9A.3 Occupants & homes.** Every named NPC gets a home
+  matched to their occupation (blacksmith sleeps at the forge house,
+  priest at the temple); schedules route them home at night;
+  buildings without owners get style-matched occupants or stand
+  empty/derelict. Knocking vs barging in.
+- [ ] **P9A.4 Trespass & consequences.** Entering a private home
+  uninvited (or breaking in) is witnessed: occupants object, guards
+  respond (P7.1 conflict system), faction rep drops, repeat offenders
+  meet P7.2 retaliation. Shops/taverns/temples stay public in
+  daytime; homes are private; everything locks at night.
+- [ ] **P9A.5 Multi-level buildings.** Stairs connect interior
+  levels (tavern bedrooms above the taproom, cellars below);
+  renderer/movement already zone-aware — extend Interior to a level
+  stack. This is also the foundation for P9.2–P9.5 fantastical
+  structures.
+- [ ] **P9A.6 Building-specific actions.** Per-style interactions
+  advertised on the hint bar: cook at a hearth, bank at the temple,
+  research at the wizard's shelves, repair at the forge — driven by
+  the furniture layer, not hardcoded per building.
 
 ## Phase 9 — Fantastical structures (George, 2026-07-10)
 

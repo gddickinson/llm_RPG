@@ -110,6 +110,10 @@ class ShopPanel:
                 self.cursor_left = max(0, self.cursor_left - 1)
             self.engine.memory_manager.add_event(
                 f"You buy {item.name} for {price}g.")
+            try:
+                self.engine.market.note_purchase(item)   # P8.5 demand
+            except Exception:
+                pass
         else:
             items = self._player_items()
             if not items or self.cursor_right >= len(items):
@@ -138,6 +142,10 @@ class ShopPanel:
                 self.cursor_right = max(0, self.cursor_right - 1)
             self.engine.memory_manager.add_event(
                 f"You sell {item.name} for {price}g.")
+            try:
+                self.engine.market.note_sale(item)   # P8.5 supply
+            except Exception:
+                pass
 
     # ---------------- render ----------------------------------------
 

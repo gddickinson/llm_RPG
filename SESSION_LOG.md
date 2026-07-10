@@ -1160,3 +1160,25 @@ marks the realm at night through the rumor mill ("Ravens circle the
 walls sunwise — Morrik watches a warrior."). Favor and cooldowns ride
 player.metadata so saves are free. Souls/reincarnation deferred as
 planned. 10 new tests. Suite: 726 tests, green x3.
+
+**Round 66 — P8.5 Market prices (done) + George's building verdict.**
+Fifth autonomous_world port: prices discover themselves. engine/
+market.py keeps a sticky tâtonnement index per market category (arms,
+provisions, goods, arcana): every player purchase nudges demand up,
+every sale nudges supply down; each night one tanh-damped step then a
+10% drift toward parity, clamped [0.6, 1.6]. Village stores add a
+supply signal — a hungry village makes provisions dear. The index
+multiplies BOTH buy and sell prices so margins are preserved and
+there's no buy-low-sell-high perpetual-motion machine; the director's
+targeted shortages stack on top. Big moves enter the rumor mill
+("[Realm] Prices for arms climb at the market."). Persisted via
+save_load. 9 new tests. Suite: 735 tests, green x3.
+ALSO this round: George playtested and judged buildings the weakest
+part of the game — no doors/locks/furniture, single levels, no
+trespass rules, occupants unmatched to buildings. Plan restructured:
+new PRIORITY Phase 9A "Buildings & living interiors" (doors & locks,
+functional furniture, occupants & homes, trespass consequences,
+multi-level buildings, building-specific actions) ahead of P8.6 and
+Phase 9; an Explore agent is surveying autonomous_world's building/
+interior/lock/trespass systems to inform the ports (report lands
+next round).

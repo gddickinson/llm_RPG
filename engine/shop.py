@@ -133,12 +133,20 @@ class ShopManager:
             mult *= self.engine.world_director.shortage_multiplier(item.id)
         except Exception:
             pass
+        try:
+            mult *= self.engine.market.multiplier(item)   # P8.5
+        except Exception:
+            pass
         return max(1, int(round(base * mult)))
 
     def sell_price(self, player, item: Item, merchant_npc) -> int:
         """Player sells at this price (merchant pays)."""
         base = max(1, int(item.value) // 2)
         mult = self._discount_multiplier(player, merchant_npc, selling=True)
+        try:
+            mult *= self.engine.market.multiplier(item)   # P8.5
+        except Exception:
+            pass
         return max(1, int(round(base * mult)))
 
     def _discount_multiplier(self, player, merchant_npc,
