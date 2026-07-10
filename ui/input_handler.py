@@ -221,6 +221,18 @@ class InputHandler:
             self._toggle_party()
             return True
 
+        # Sleep at an inn/tavern (Enter)
+        if k == pygame.K_RETURN:
+            try:
+                from engine.rest import sleep
+                lines = sleep(self.engine)
+                if lines:
+                    self.gui.overlay = ("A New Day", lines)
+                    self.gui.mode = "menu"
+            except Exception:
+                pass
+            return True
+
         # Collection log (O)
         if k == pygame.K_o:
             self.gui.show_collection_log()

@@ -51,6 +51,7 @@ llm_RPG/
 - **`defeat.py`** — Failure-as-story defeat outcomes: robbed / left for dead / slain.
 - **`tactics.py`** — Opportunity attacks, SHIFT+move disengage, SHIFT+F shove.
 - **`faction_ticker.py`** — Daily dice-resolved faction events; strength/stores drive encounters, shortages, rumors.
+- **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.

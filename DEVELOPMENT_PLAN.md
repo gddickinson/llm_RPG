@@ -415,9 +415,13 @@ and heal-spams.
   chimes, a defeat fall) driven by an event-log observer keyword map, plus
   rain/storm noise ambience looped by weather. Degrades silently headless;
   mixer re-inits to mono if pygame grabbed stereo first. 5 tests.)*
-- [ ] **P5.6 End-of-session hook.** Sleeping at an inn/home: heals, advances to
-  morning, and shows a "day summary" (skills gained, gold delta, director event
-  teaser) — Stardew's "tomorrow I'll…" engine, adapted lightly.
+- [x] **P5.6 Sleep + day summary.** *(done 2026-07-09 — `engine/rest.py`:
+  Enter at an inn/tavern sleeps to 6am for 5g — full heal/mana/hunger, and
+  crossing the day boundary fires the whole nightly stack (reflection,
+  director, ticker, radiant board). Wake to "A New Day": gold/XP/skill/quest/
+  kill deltas vs the dawn snapshot, the morning's freshest rumor as tomorrow's
+  hook, and a nudge toward the refreshed board. Hint bar advertises the bed.
+  8 tests. **PHASE 5 COMPLETE.**)*
 
 ---
 
@@ -473,7 +477,8 @@ rumors) is never fed back as DM *instructions* (injection separation).
 - [ ] **P6.1 DM Tool API** (`engine/dm_api.py`): typed, validated, budgeted
   commands — `spawn_npc(spec)`, `create_quest(spec)`, `add_building(loc)`,
   `edit_terrain(region, brush)` (bounded), `place_item`, `define_monster` /
-  `define_item` (runtime registries; serialized into saves), `adjust_faction`,
+  `define_item` / `define_recipe` / `define_spell` (new DEFINITIONS go to the
+  persistent DM library, see P6.7 — not just runtime state), `adjust_faction`,
   `plant_secret` / `teach_topic`, `schedule_beat(day, command)`, `narrate(text)`.
   Every command passes data_validate-style checks + charter caps; results +
   reasons logged to the DM notebook (persisted). No LLM in this step —
@@ -503,8 +508,26 @@ rumors) is never fed back as DM *instructions* (injection separation).
   vandalism), budget accounting via `llm_interface.call_counts`, injection
   separation, and a save/load round-trip of DM-created content.
 
+- [ ] **P6.7 The Legendarium — persistent generative library** (George,
+  2026-07-09): everything the DM defines (monsters, NPCs, magic items,
+  buildings, quests, terrain variants — within the existing type system) is
+  written to `data/dm_library/*.json`, loaded at startup alongside authored
+  content and validated identically. Creations OUTLIVE the session and the
+  save: a monster invented for tonight's adventure joins the world's bestiary
+  forever; new games inherit the grown world. Retired entities (slain
+  villains, lost relics, departed heroes) are recorded in a legendarium with
+  their stories — and any future DM can resurface them ("the blade thought
+  lost in the Murkfen turns up in a fence's stock"), so play accretes deep
+  history: heroes and monsters come and go, resurface, and build long-term
+  arcs. The history-sim/legends system (P4.6) becomes the template — the DM
+  writes new legends the same way. Library curation: dedup by id, provenance
+  stamps (which campaign/day created it), a size-capped "active set" the DM
+  draws from so the world enriches without bloating prompts.
+
 **Verdict:** feasible and the natural capstone — P6.1–P6.3 are buildable in
 loop rounds immediately after Phase 5; P6.4 rides infrastructure that exists.
+P6.7 turns the DM from a session feature into a compounding one: the game
+gets permanently richer every time it's played.
 
 ## What NOT to build (explicitly deferred)
 

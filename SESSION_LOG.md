@@ -834,3 +834,20 @@ re-inits the mixer to mono if pygame already grabbed a stereo device
 (this also fixed the sound tests skipping in full-suite runs; dummy SDL
 drivers now set package-wide in tests/__init__.py). 5 new tests.
 Suite: 586 tests, all pass, zero skips.
+
+**Round 48 — P5.6 sleep + day summary (done). PHASE 5 COMPLETE.**
+New `engine/rest.py`: Enter at an inn or tavern sleeps to 6am for 5g.
+Full heal, mana, and hunger restored (after the night tick, so nothing
+erodes it); crossing the day boundary fires the entire nightly stack —
+reflection, director, faction ticker, radiant board — so sleeping IS the
+"next day" button. You wake to "A New Day": gold/XP/skill/quest/kill
+deltas against the dawn snapshot, the morning's freshest rumor as
+tomorrow's hook, and a pointer at the refreshed tavern board. Dawn
+metrics snapshot at engine start and every day change. Hint bar
+advertises the bed inside inns. 8 tests. Suite: 594 tests, all pass.
+
+Phase 5 complete: enemy behavior profiles, the spellbook, tactical verbs
+with opportunity attacks, the faction ticker, procedural sound, and the
+day loop. Phases 0-5 of the original plan are DONE. Next: Phase 6 — the
+Dungeon Master (now including George's Legendarium: a persistent
+generative library so DM creations compound across campaigns).

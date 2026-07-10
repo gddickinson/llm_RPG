@@ -363,6 +363,8 @@ class GameGUI:
             "  WASD / Arrows : move (off-edge = enter a new region)",
             "  TAB           : enter / exit building or cave-dungeon",
             "  L             : look around (describe what you see)",
+            "  ENTER         : sleep at an inn/tavern (5g) — heals,",
+            "                  advances to dawn, shows your day summary",
             "",
             "COMBAT",
             "  SPACE / F     : melee attack (uses equipped weapon)",

@@ -46,6 +46,12 @@ def context_hints(engine) -> List[str]:
     # Inside somewhere? Leaving is the dominant hint
     if getattr(engine, "current_interior", None):
         hints.append("[TAB] leave the building")
+        try:
+            from engine.rest import can_sleep_here
+            if can_sleep_here(engine) is None:
+                hints.append("[Enter] sleep until morning")
+        except Exception:
+            pass
     elif getattr(engine, "current_dungeon", None):
         hints.append("[TAB] climb back to the surface")
 

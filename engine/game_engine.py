@@ -153,6 +153,8 @@ class GameEngine(GameAPIMixin):
         self.initialize_demo_game(player_spec=player_spec)
         # Baseline for the nightly-reflection day-change detector
         self._last_reflection_day = self.world.time // (24 * 60)
+        from engine.rest import snapshot
+        self._day_metrics = snapshot(self)
         if start_tutorial:
             self.tutorial_manager.start()
 
@@ -311,6 +313,8 @@ class GameEngine(GameAPIMixin):
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.radiant_quests.run_morning()
+                from engine.rest import snapshot
+                self._day_metrics = snapshot(self)
             self._last_reflection_day = day
         except Exception as e:
             logger.debug(f"Nightly systems error: {e}")
