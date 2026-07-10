@@ -259,7 +259,12 @@ class GameGUI:
             lines = self.engine.topic_journal.overlay_lines()
         except Exception:
             lines = ["Journal unavailable."]
-        self.overlay = ("Topic Journal", lines)
+        try:
+            from engine.legends import overlay_lines as legend_lines
+            lines += legend_lines(self.engine)
+        except Exception:
+            pass
+        self.overlay = ("Journal — Topics & Legends", lines)
         self.mode = "menu"
 
     def show_travel(self) -> None:

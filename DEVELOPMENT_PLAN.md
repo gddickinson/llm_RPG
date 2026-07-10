@@ -339,10 +339,15 @@ and out of fights — and NPCs remember you across sessions.
   (alchemy). Validator covers spawn terrains. The three settlements already
   carry identity via diaries/quests/secrets. 7 tests. Remaining: a Murkfen
   quest mini-arc can ride P4.6's history residue.)*
-- [ ] **P4.6 History with residue (Caves of Qud pattern).** Extend `history_sim` so
-  each generated event leaves physical artifacts: a named relic in a dungeon, a ruin,
-  an NPC grudge, a findable book; LLM renders the legend text. Expose a "Legends"
-  journal; NPCs cite events by name via gossip.
+- [x] **P4.6 History with residue (Caves of Qud pattern).** *(done 2026-07-09 —
+  every history event now leaves a themed relic on the ground (watchman's
+  signet by the keep, vigil candle at the chapel, the prince's letter at the
+  forge, …; 8 relic items in `data/items/relics.json`). Picking one up reveals
+  its authored legend — "[Legend] The Sack of the Watchtower: …" — which also
+  teaches journal topics via the event observer. The Y journal gained a Legends
+  section (found n/m, unfound show "its relic is still out there…"); NPC gossip
+  cites history by year. `engine.world_history` + `legends_known` persist.
+  7 tests.)*
 - [ ] **P4.7 Failure-as-story.** On player defeat outside dungeons: robbed and dumped
   at the nearest temple, or captured by brigands (escape mini-scenario) — death popup
   becomes the fallback, not the only outcome (Kenshi lesson).

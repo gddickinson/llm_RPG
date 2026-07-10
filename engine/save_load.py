@@ -143,6 +143,7 @@ class SaveManager:
             "companions": self._subsystem_dict(engine, "companion_manager"),
             "gathering": self._subsystem_dict(engine, "gathering_manager"),
             "director": self._subsystem_dict(engine, "world_director"),
+            "world_history": list(getattr(engine, "world_history", [])),
             "shops": self._subsystem_dict(engine, "shop_manager"),
             "dungeons": {key: dg.to_dict()
                          for key, dg in getattr(engine, "dungeons", {}).items()},
@@ -277,6 +278,8 @@ class SaveManager:
                     sub.from_dict(payload)
                 except Exception as e:
                     logger.warning(f"Could not restore {attr}: {e}")
+
+        engine.world_history = list(data.get("world_history", []))
 
         # Dungeons + player place state (inside a dungeon / interior)
         from world.dungeon import Dungeon

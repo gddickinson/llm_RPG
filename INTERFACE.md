@@ -47,6 +47,7 @@ llm_RPG/
 - **`llm_budget.py`** — Cost discipline: NPC action cooldowns, monster exclusion, greeting cache.
 - **`guild.py`** — `GuildSystem`; quest points → ranks (Member/Veteran/Champion) with radiant/teleport/party perks.
 - **`tutorial.py`** — `TutorialManager`; teach-by-doing steps, hint-bar lessons, one-way boat departure.
+- **`legends.py`** — Relic pickups reveal authored legends; Legends section of the Y journal; gossip citations.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.
@@ -98,7 +99,7 @@ llm_RPG/
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
 - **`gathering.py`** — `GatheringManager`; mining/woodcutting/fishing nodes from `data/gathering.json`, tier level gates, tool checks.
 - **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.
-- **`history_sim.py`** — Pre-game multi-year simulation: faction shifts, ruined keep, lore lines.
+- **`history_sim.py`** — Pre-game history: faction shifts, ruined keep, lore lines, themed relics per event.
 - **`tutorial_island.py`** — The starter isle grid + instructor cast (P4.4c).
 
 ### items/ — Item system + crafting

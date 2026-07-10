@@ -43,6 +43,13 @@ class PlayerActions:
         msg = f"You pick up {item_name_str}."
         self.engine.memory_manager.add_event(msg)
 
+        # Relics of history reveal their legends
+        try:
+            from engine.legends import on_item_picked_up
+            on_item_picked_up(self.engine, item)
+        except Exception:
+            pass
+
         # Quest hook
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             item_id = getattr(item, "id", None) or item_name_str.lower().replace(" ", "_")

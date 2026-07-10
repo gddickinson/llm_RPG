@@ -733,3 +733,19 @@ Swamp foraging yields dense herbs plus new bogcap mushrooms, which brew
 into antidotes (new alchemy recipe — poison finally has a craftable
 answer). Validator checks spawn terrains. 7 new tests.
 Suite: 535 tests, all pass.
+
+**Round 41 — P4.6 history with residue (done).**
+The Qud pattern: history now physically litters the world. Every event
+the pre-game sim generates leaves a themed relic as a ground item — the
+watchman's signet near the Ruined Keep, Brother Anselm's vigil candle at
+the chapel, the merchant prince's uncollected letter at Durgan's forge,
+a charred doll in the forest, a cracked riverstone on the dry bank...
+(8 relic items in data/items/relics.json, each carrying legend_id
+metadata). Picking a relic up reveals its authored legend ("[Legend] The
+Sack of the Watchtower: ...") exactly once — and because legends flow
+through the event log, they teach journal topics too (the prince's
+letter teaches silver_blade). The Y journal grew a Legends section:
+found legends show their full story, unfound ones tease "its relic is
+still out there...". NPCs cite history by year in gossip. world_history
+and legends_known persist in saves. New engine/legends.py; 7 tests.
+Suite: 542 tests, all pass.

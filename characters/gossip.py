@@ -83,6 +83,15 @@ def gossip_for(npc, engine, max_lines: int = 1) -> List[str]:
             max_lines=1, rng=rng)
         lines.extend(recent)
 
+    # History citations (Qud pattern: the past stays in circulation)
+    if len(lines) < max_lines:
+        try:
+            from engine.legends import gossip_line
+            cite = gossip_line(engine, rng)
+            if cite:
+                lines.append(cite)
+        except Exception:
+            pass
     # Director rumors take priority over static filler
     if len(lines) < max_lines:
         try:
