@@ -121,6 +121,19 @@ class HeuristicProvider(LLMProvider):
             return self._hostile_action(character, world_state,
                                         player_in_view)
 
+        # A peaceful NPC the player has ATTACKED fights back or flees
+        # like anyone would (George's playtest: assault must matter)
+        if getattr(character, "metadata", {}).get("provoked"):
+            meta = character.metadata
+            hp_frac = character.hp / max(1, character.max_hp)
+            if hp_frac <= meta.get("provoked_flee_below", 0.35):
+                return self._wrap(character, "flee", "the player",
+                                  "Help! Guards!", "terrified")
+            if player_in_view:
+                return self._wrap(character, "attack", "player",
+                                  "You'll regret that!", "furious")
+            meta.pop("provoked", None)   # player gone: stand down
+
         # Peaceful NPCs — check urgent needs first, then schedule
         try:
             from characters.needs import (

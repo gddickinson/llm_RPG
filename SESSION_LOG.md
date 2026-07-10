@@ -1204,3 +1204,27 @@ and player.metadata records the forced entry for the coming P9A.4
 trespass system. Forced doors stay broken until dawn, when every
 door resets to its policy. Door state persists via save_load.
 11 new tests. Suite: 746 tests, green x3.
+
+**Round 68 — P9A.2 Furniture with functions (done) + provocation fix.**
+The AW survey's top-ranked port: interiors' furniture — which already
+rendered but did nothing — now works. Press E beside a piece
+(hint-bar advertised): BEDS rest an hour and heal 30% of max HP once
+per game day (the P9A.1 doors already gate who reaches a bed); the
+HEARTH cooks the first cooking recipe you carry ingredients for (raw
+trout to cooked, on the spot); the ALTAR prays through the P8.4
+pantheon with the holy-place check overridden (you are definitionally
+somewhere holy); SHELVES surface the freshest rumor once a day — and
+the Library blueprint's shelf rows now map to actual Shelves instead
+of barrels; CHESTS, CRATES and BARRELS can be rummaged once per
+building per day for a few coppers or a common item; anvils, bars and
+counters answer with directional flavor pointing at [K] crafting and
+[B] wares. All cooldowns ride player.metadata so saves are free.
+SECOND FIX, from George's mid-round report: "attacking an NPC doesn't
+seem to make it hostile" — confirmed, a real gap. Now the first
+player swing at any peaceful NPC flags them provoked ("Bram turns on
+you!"): the heuristic provider makes them fight back on sight, flee
+below 35% HP crying "Help! Guards!", and stand down only if the
+player leaves; assault also costs −3 villager reputation immediately,
+once per provocation (kill penalties still stack on top). Guards
+converging on assaults joins P9A.4 trespass work. 16 new tests.
+Suite: 762 tests, green x3.

@@ -4,7 +4,7 @@ Keeps `engine/game_engine.py` under 500 LOC by housing the spell /
 equipment / banking / crafting / party / interior wrappers separately.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 class GameAPIMixin:
@@ -270,6 +270,11 @@ class GameAPIMixin:
     def pray(self) -> str:
         """SHIFT+P at a shrine/temple: prayer and (maybe) a miracle."""
         return self.pantheon.pray()
+
+    def use_furniture(self) -> Optional[str]:
+        """E beside interior furniture (P9A.2). None = nothing here."""
+        from engine.furniture import interact
+        return interact(self)
 
     def current_weather(self) -> str:
         return self.weather_system.state.current.value

@@ -833,12 +833,28 @@ diverged.
   player.metadata['forced_entry_day'], the P9A.4 trespass hook), and
   a forced door stays broken until dawn when every door resets to
   policy. State persists via save_load. 11 tests.)*
-- [ ] **P9A.2 Furniture with functions.** Interior furnishing layer
+- [x] **P9A.2 Furniture with functions.** Interior furnishing layer
   (beds, chests, tables, forges, altars, bookshelves as interior
   objects with sprites): beds = sleep/rest to heal anywhere indoors
   you're permitted (extends engine/rest.py beyond inns); chests hold
   loot (some locked); forges enable smithing; bookshelves surface
   lore/topics. Furnishing sets by building style, as data.
+  *(done 2026-07-10 — engine/furniture.py, the AW survey's top-ranked
+  port: interiors' already-rendered furniture now WORKS via E (hint-
+  bar advertised). BED rests an hour: +30% max HP once per day (doors
+  gate access; trespass costs come with P9A.4). HEARTH cooks the
+  first cooking recipe you carry ingredients for. ALTAR prays (holy-
+  place override — pantheon P8.4). SHELVES surface the freshest rumor
+  once a day (Library blueprint's shelf rows now map to Shelves, not
+  barrels). CHEST/CRATES/BARREL rummage once per building per day
+  (coins or a common item, deterministic per building+day). Anvils/
+  bars/counters give directional flavor ([K] craft, [B] wares).
+  Cooldowns ride player.metadata — saves free. 10 tests.
+  ALSO this round, George's report "attacking an NPC doesn't make it
+  hostile" CONFIRMED as a gap and FIXED: assault flags the victim
+  provoked — they fight back at full strength, flee below 35% HP
+  crying "Help! Guards!", stand down if you leave — plus an immediate
+  −3 villager reputation, once per provocation. 6 tests.)*
 - [ ] **P9A.3 Occupants & homes.** Every named NPC gets a home
   matched to their occupation (blacksmith sleeps at the forge house,
   priest at the temple); schedules route them home at night;

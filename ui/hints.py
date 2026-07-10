@@ -47,6 +47,14 @@ def context_hints(engine) -> List[str]:
     if getattr(engine, "current_interior", None):
         hints.append("[TAB] leave the building")
         try:
+            from engine.furniture import piece_near
+            piece = piece_near(engine.current_interior,
+                               *engine.player.position)
+            if piece:
+                hints.append(f"[E] {piece['name'].lower()}")
+        except Exception:
+            pass
+        try:
             from engine.rest import can_sleep_here
             if can_sleep_here(engine) is None:
                 hints.append("[Enter] sleep until morning")

@@ -65,12 +65,12 @@ class PantheonSystem:
 
     # ------------------------------------------------------------ pray
 
-    def pray(self) -> str:
+    def pray(self, at_altar: bool = False) -> str:
         engine = self.engine
         player = engine.player
         if not GODS:
             return "The heavens are empty."
-        if not self._at_holy_place():
+        if not at_altar and not self._at_holy_place():
             return "You murmur a prayer, but this is no holy place. " \
                    "Seek a shrine or temple."
         day = engine.world.time // (24 * 60)

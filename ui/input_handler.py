@@ -268,8 +268,12 @@ class InputHandler:
                 self.engine.memory_manager.add_event("No one nearby to talk to.")
             return True
 
-        # Pickup
+        # Use furniture indoors (P9A.2); pickup otherwise
         if k in (pygame.K_g, pygame.K_e):
+            if self.engine.current_interior:
+                msg = self.engine.use_furniture()
+                if msg:
+                    return True
             msg = self.engine.pickup_item()
             return True
 

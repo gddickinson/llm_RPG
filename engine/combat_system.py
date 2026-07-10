@@ -83,6 +83,26 @@ class CombatSystem:
             effective_weapon_damage_bonus,
         )
 
+        # Assault has consequences: a peaceful NPC the player attacks
+        # turns hostile (fight back or flee — heuristic provider) and
+        # word of it costs villager goodwill (P7 follow-up, George)
+        if attacker.id == self.engine.player.id:
+            kls = getattr(getattr(defender, "character_class", None),
+                          "value", "")
+            if kls not in ("brigand", "monster", "troll") and \
+                    not defender.metadata.get("provoked"):
+                defender.metadata["provoked"] = True
+                self.engine.memory_manager.add_event(
+                    f"{defender.name} turns on you!")
+                try:
+                    from characters.factions import Faction, modify_rep
+                    delta = modify_rep(self.engine.player,
+                                       Faction.VILLAGERS, -3)
+                    self.engine.memory_manager.add_event(
+                        f"Reputation with villagers: -3 ({delta})")
+                except Exception:
+                    pass
+
         # Determine ability + verb by action type
         if action_type == "cast":
             atk_ability = "intelligence"

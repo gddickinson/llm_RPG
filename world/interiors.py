@@ -75,6 +75,8 @@ def make_tavern_interior() -> Interior:
             {"name": "Hearth", "x": 8, "y": 1},
             {"name": "Table", "x": 4, "y": 3},
             {"name": "Table", "x": 6, "y": 3},
+            {"name": "Bed", "x": 8, "y": 5},
+            {"name": "Barrel", "x": 1, "y": 1},
             {"name": "Stairs up", "x": 1, "y": 5},
         ],
         npc_spots=[(2, 2), (5, 3), (6, 3)],
@@ -138,6 +140,8 @@ def make_default_interior(name: str) -> Interior:
         door=(4, 5),
         furniture=[
             {"name": "Bed", "x": 1, "y": 1},
+            {"name": "Hearth", "x": 6, "y": 1},
+            {"name": "Chest", "x": 1, "y": 3},
             {"name": "Chair", "x": 5, "y": 3},
         ],
         npc_spots=[],
@@ -175,6 +179,8 @@ def make_from_blueprint(loc_name: str, bp) -> Interior:
                     "C": "Chest", "P": "Hearth", "R": "Barrel",
                     "S": "Altar",
                 }
+                if getattr(bp, "kind", "") == "library":
+                    cell_name_map["R"] = "Shelves"
                 inter.furniture.append({
                     "name": cell_name_map.get(cell, "Furniture"),
                     "x": x, "y": y,
