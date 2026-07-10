@@ -1100,3 +1100,21 @@ any clear night the fuller moon LIGHTENS the darkness overlay in
 ui/lighting. 14 new tests. Suite: 699 tests, green ×3. (Round 61's
 squad-tactics commit also landed this round after a transient
 infra error blocked its push last time.)
+
+**Round 63 — P8.2 Disease & contagion (done).**
+Second autonomous_world port: sickness as a world event. engine/
+disease.py + data/diseases.json ship four authored diseases (Marsh
+Fever, Winter Grippe, Rot Cough, River Ague) as pure content —
+severity, duration, spread chance, season bias, cure item, immunity
+days — with validator checks (cure items must be real items). Each
+game night: season-matched outbreaks pick a patient zero and enter
+the rumor mill ("[Realm] A rattling cough is going around — folk
+whisper of Winter Grippe."), carriers infect people within 3 tiles
+(susceptible classes only — never monsters, never across zone grids),
+diseases run their course and leave timed immunity behind. The player
+can catch anything: a daily severity drain that weakens but never
+kills (floored at 1 HP like hunger), cured by drinking the RIGHT
+remedy through the normal item-use flow — herb bundles break fevers,
+potions clear coughs, giving foraging and shops a new reason to
+matter. All infection state rides character metadata, so save/load
+works for free. Zero LLM. 10 new tests. Suite: 709 tests, green x3.

@@ -157,6 +157,17 @@ class PlayerActions:
                 self.engine.advance_turn()
                 return msg
 
+            # The right remedy clears a disease (P8.2)
+            try:
+                from engine.disease import try_cure_with_item
+                cured = try_cure_with_item(self.engine, player, it)
+                if cured:
+                    self._remove_one(player, it)
+                    self.engine.advance_turn()
+                    return cured
+            except Exception:
+                pass
+
             heal = getattr(it, "heal_amount", 0)
             if heal:
                 from characters.needs import get_hunger, feed

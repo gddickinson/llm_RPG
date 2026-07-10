@@ -54,6 +54,7 @@ llm_RPG/
 - **`npc_conflict.py`** — `NPCConflictSystem` (P7.1): guards fight hostiles they can see, hostiles raid civilians; `[Clash]` events near the player; the player's duel is never stolen; overworld-grid NPCs only.
 - **`retaliation.py`** — `RetaliationSystem` (P7.2): deep hostile faction rep → warning rumor, then level-scaled bounty hunters converge on the player; nightly check, persisted, escalation ladder per faction.
 - **`squad_tactics.py`** — P7.3 positional helpers shared by companions/guards/packs: `surround_step` (fan out around targets), `flank_tile` (+2 flanking spot), `player_focus_target` (focus fire), `path_step` (BFS with greedy fallback), `greedy_step`.
+- **`disease.py`** — `DiseaseSystem` (P8.2): outbreaks/contagion/immunity from `data/diseases.json`; state in character metadata; player symptom drain (never kills); the right remedy cures via item use; nightly tick.
 - **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.

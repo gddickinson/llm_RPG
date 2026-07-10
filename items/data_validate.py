@@ -31,7 +31,29 @@ def validate_all() -> List[str]:
     problems += _check_secrets()
     problems += _check_heart_events()
     problems += _check_module_packs()
+    problems += _check_diseases()
     return problems
+
+
+def _check_diseases() -> List[str]:
+    from engine.disease import DISEASES
+    from items.item_registry import ITEM_REGISTRY
+    seasons = ("any", "spring", "summer", "autumn", "winter")
+    out = []
+    for did, spec in DISEASES.items():
+        if not spec.get("name") or not spec.get("symptom"):
+            out.append(f"disease {did}: needs name + symptom")
+        if spec.get("cure_item") not in ITEM_REGISTRY:
+            out.append(f"disease {did}: cure_item "
+                       f"'{spec.get('cure_item')}' is not a real item")
+        if spec.get("season", "any") not in seasons:
+            out.append(f"disease {did}: bad season "
+                       f"'{spec.get('season')}'")
+        if not (1 <= spec.get("duration_days", 0) <= 30):
+            out.append(f"disease {did}: duration_days out of range")
+        if not (0.0 < spec.get("spread_chance", 0) <= 1.0):
+            out.append(f"disease {did}: spread_chance out of range")
+    return out
 
 
 def _check_module_packs() -> List[str]:

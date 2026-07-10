@@ -1,0 +1,46 @@
+{
+  "marsh_fever": {
+    "name": "Marsh Fever",
+    "description": "A burning fever carried on swamp air.",
+    "symptom": "a burning fever",
+    "severity": 2,
+    "duration_days": 4,
+    "spread_chance": 0.15,
+    "season": "summer",
+    "cure_item": "herb_bundle",
+    "immunity_days": 30
+  },
+  "winter_grippe": {
+    "name": "Winter Grippe",
+    "description": "A rattling chill that empties the taverns.",
+    "symptom": "a rattling cough",
+    "severity": 1,
+    "duration_days": 3,
+    "spread_chance": 0.25,
+    "season": "winter",
+    "cure_item": "potion",
+    "immunity_days": 20
+  },
+  "rot_cough": {
+    "name": "Rot Cough",
+    "description": "A deep cough said to rise from old tunnels.",
+    "symptom": "a deep, wracking cough",
+    "severity": 2,
+    "duration_days": 5,
+    "spread_chance": 0.1,
+    "season": "any",
+    "cure_item": "greater_potion",
+    "immunity_days": 40
+  },
+  "river_ague": {
+    "name": "River Ague",
+    "description": "Chills and shakes that follow the spring floods.",
+    "symptom": "chills and shaking hands",
+    "severity": 1,
+    "duration_days": 3,
+    "spread_chance": 0.2,
+    "season": "spring",
+    "cure_item": "herb_bundle",
+    "immunity_days": 25
+  }
+}

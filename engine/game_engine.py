@@ -155,6 +155,8 @@ class GameEngine(GameAPIMixin):
         self.npc_conflict = NPCConflictSystem(self)
         from engine.retaliation import RetaliationSystem
         self.retaliation = RetaliationSystem(self)
+        from engine.disease import DiseaseSystem
+        self.disease = DiseaseSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -342,6 +344,7 @@ class GameEngine(GameAPIMixin):
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.retaliation.run_night()
+                self.disease.run_day()
                 try:
                     from world.astronomy import announce_conjunction
                     announce_conjunction(self, day)

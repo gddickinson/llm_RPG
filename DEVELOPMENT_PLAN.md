@@ -712,10 +712,22 @@ value ÷ effort:
   encounter chance ×1.5, and full moons LIGHTEN clear nights in
   ui/lighting. solar_intensity ready as the P8.3 crops/temperature
   input. 14 tests.)*
-- [ ] **P8.2 Disease & contagion** (`systems/health.py` template pattern):
+- [x] **P8.2 Disease & contagion** (`systems/health.py` template pattern):
   13 diseases as JSON content (severity/duration/spread/symptoms/immunity),
   staggered tick cadence, outbreaks + healer value; feeds gossip/needs.
   MED effort (split to health_defs.json + <400-line module).
+  *(done 2026-07-10 — engine/disease.py + data/diseases.json (4 authored
+  diseases: Marsh Fever, Winter Grippe, Rot Cough, River Ague — content
+  is data, add more by editing JSON; validator checks cure items/seasons/
+  ranges). Sickness is a world event: season-biased outbreaks pick a
+  patient zero and enter the rumor mill ([Realm] + whisper), contagion
+  spreads within 3 tiles between overworld people (never monsters, never
+  across zone grids), diseases run their course in days and leave timed
+  immunity. The player can catch anything — a daily severity drain that
+  weakens but never kills (floor 1 HP) — and the RIGHT remedy cures via
+  the normal item-use flow (herb bundle for fevers, potions for coughs).
+  All state rides character metadata so saves are free. One check per
+  game night, zero LLM. 10 tests.)*
 - [ ] **P8.3 Crops + grazing** (`crop_system.py` 349 + `vegetation.py`
   272): farmland visibly progresses fallow→planted→mature→harvested by
   season; grazing degrades tile health. Closes the producer side of
