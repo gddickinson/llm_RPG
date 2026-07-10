@@ -105,5 +105,98 @@
         ]
       }
     ]
+  },
+  "wizard_tower": {
+    "attach_to": "Wizard's Tower",
+    "levels": [
+      {
+        "name": "Wizard's Tower \u2014 Entry Hall",
+        "description": "Coats on hooks, a dozing cat of uncertain solidity, and a spiral stair.",
+        "grid": [
+          "WWWWWWW",
+          "WF...<W",
+          "WFK...W",
+          "WWWDWWW"
+        ],
+        "inscriptions": [
+          "Alzara's tower. Knock, or don't \u2014 the tower already knows."
+        ]
+      },
+      {
+        "name": "Wizard's Tower \u2014 Library",
+        "position": "above",
+        "description": "Shelves curve impossibly. Three sigils glow on the floor, and the stair above shimmers behind a ward.",
+        "grid": [
+          "WWWWWWW",
+          "W<...>W",
+          "WFKG..W",
+          "WFG.G.W",
+          "WWWWWWW"
+        ],
+        "inscriptions": [
+          "Moon before Sun, Sun before Stars \u2014 so the sky is read from below."
+        ],
+        "puzzle": {
+          "order": [
+            1,
+            0,
+            2
+          ],
+          "names": [
+            "Sun",
+            "Moon",
+            "Stars"
+          ],
+          "wards": "up"
+        }
+      },
+      {
+        "name": "Wizard's Tower \u2014 Menagerie",
+        "position": "above",
+        "dark": true,
+        "description": "Cages of brass and glass. Most are empty. Most.",
+        "grid": [
+          "WWWWWWW",
+          "W>...<W",
+          "WF....W",
+          "WF....W",
+          "WWWWWWW"
+        ],
+        "monsters": [
+          {
+            "template": "marsh_wisp",
+            "at": [
+              3,
+              2
+            ]
+          },
+          {
+            "template": "marsh_wisp",
+            "at": [
+              4,
+              3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Wizard's Tower \u2014 Observatory",
+        "position": "above",
+        "description": "The roof is glass and the night leans close. A chest waits beneath the great lens.",
+        "grid": [
+          "WWWWWWW",
+          "W>..C.W",
+          "WFK...W",
+          "WWWWWWW"
+        ],
+        "inscriptions": [
+          "To the patient reader of skies: take what you came for."
+        ],
+        "chest_loot": [
+          "scroll_fireball",
+          "potion_might"
+        ]
+      }
+    ]
   }
 }

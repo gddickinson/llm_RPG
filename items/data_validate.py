@@ -40,7 +40,7 @@ def validate_all() -> List[str]:
 def _check_structures() -> List[str]:
     from world.structures import STRUCTURES, CELL_FURNITURE
     from world.monsters import MONSTER_TEMPLATES
-    known = set("WFD.<>K") | set(CELL_FURNITURE)
+    known = set("WFD.<>KG") | set(CELL_FURNITURE)
     out = []
     for sid, spec in STRUCTURES.items():
         if not spec.get("attach_to"):
@@ -62,6 +62,19 @@ def _check_structures() -> List[str]:
                 if spawn.get("template") not in MONSTER_TEMPLATES:
                     out.append(f"structure {sid} level {i}: unknown "
                                f"monster '{spawn.get('template')}'")
+            puzzle = lv.get("puzzle")
+            if puzzle:
+                sigils = sum(r.count("G") for r in rows)
+                order = puzzle.get("order", [])
+                if sorted(order) != list(range(sigils)):
+                    out.append(f"structure {sid} level {i}: puzzle "
+                               f"order must permute {sigils} sigils")
+                if puzzle.get("wards") not in ("up", "down"):
+                    out.append(f"structure {sid} level {i}: puzzle "
+                               f"wards must be 'up' or 'down'")
+                if len(puzzle.get("names", [])) < sigils:
+                    out.append(f"structure {sid} level {i}: puzzle "
+                               f"needs a name per sigil")
             if lv.get("chest_loot"):
                 from items.item_registry import ITEM_REGISTRY
                 for iid in lv["chest_loot"]:

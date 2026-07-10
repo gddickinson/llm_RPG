@@ -60,6 +60,8 @@ def _kind(name: str) -> str:
         return "well"
     if "inscription" in low:
         return "inscription"
+    if "sigil" in low:
+        return "sigil"
     return low
 
 
@@ -84,6 +86,11 @@ def interact(engine) -> Optional[str]:
     if piece is None:
         return None
     kind = _kind(piece.get("name", ""))
+    if kind == "sigil":
+        try:
+            return engine.structures.touch_sigil(interior, piece)
+        except Exception:
+            return "The sigil is cold and inert."
     if kind == "inscription":
         msg = f"The carving reads: \"{piece.get('text', '...')}\""
         engine.memory_manager.add_event(msg)

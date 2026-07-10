@@ -265,6 +265,26 @@ class SpriteLoader:
         elif "pew" in low or "chair" in low:
             pygame.draw.rect(surf, wood, (6, ts // 2, ts - 12, 4))
             pygame.draw.rect(surf, wood, (6, ts // 4, 3, ts // 2))
+        elif "sigil" in low:
+            pygame.draw.circle(surf, (90, 60, 160),
+                               (ts // 2, ts // 2), ts // 3, 2)
+            pygame.draw.circle(surf, (150, 110, 230),
+                               (ts // 2, ts // 2), ts // 6, 2)
+            for ang in range(0, 360, 90):
+                import math as _m
+                px2 = ts // 2 + int((ts // 3) *
+                                    _m.cos(_m.radians(ang)))
+                py2 = ts // 2 + int((ts // 3) *
+                                    _m.sin(_m.radians(ang)))
+                pygame.draw.circle(surf, (170, 140, 255),
+                                   (px2, py2), 2)
+        elif "inscription" in low:
+            pygame.draw.rect(surf, (150, 148, 140),
+                             (ts // 4, ts // 4, ts // 2, ts // 2))
+            for row in range(ts // 4 + 3, 3 * ts // 4 - 2, 4):
+                pygame.draw.line(surf, (90, 88, 84),
+                                 (ts // 4 + 3, row),
+                                 (3 * ts // 4 - 3, row), 1)
         elif "statue" in low:
             pygame.draw.rect(surf, (170, 170, 180),
                              (ts // 3, ts // 4, ts // 3, ts // 2))

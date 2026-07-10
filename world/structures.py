@@ -45,6 +45,9 @@ class StructureBuilder:
         # (structure, x, y) -> [Item, ...]; looted keys
         self.chest_contents: Dict[str, list] = {}
         self.looted: List[str] = []
+        # Sigil puzzles (P9.4): touch progress + solved wards
+        self.puzzle_progress: Dict[str, list] = {}
+        self.solved: List[str] = []
 
     # ------------------------------------------------------------ build
 
@@ -185,13 +188,59 @@ class StructureBuilder:
                     inter.furniture.append(
                         {"name": "Inscription", "x": x, "y": y,
                          "text": text})
+                elif cell == "G":
+                    idx = sum(1 for f in inter.furniture
+                              if f["name"] == "Sigil")
+                    inter.furniture.append(
+                        {"name": "Sigil", "x": x, "y": y, "idx": idx})
                 elif cell in CELL_FURNITURE:
                     inter.furniture.append(
                         {"name": CELL_FURNITURE[cell], "x": x, "y": y})
         inter.dark = bool(spec.get("dark", False))
         inter.structure_id = sid
         inter.spawns = list(spec.get("monsters", []))
+        inter.puzzle = spec.get("puzzle")
         return inter
+
+    # --------------------------------------------------------- puzzles
+
+    def stairs_warded(self, zone, up: bool) -> bool:
+        """A shimmering ward until the level's sigils are solved."""
+        puzzle = getattr(zone, "puzzle", None)
+        if not puzzle or zone.name in self.solved:
+            return False
+        return puzzle.get("wards") == ("up" if up else "down")
+
+    def touch_sigil(self, zone, piece) -> str:
+        """E on a sigil: touch them in the inscription's order."""
+        puzzle = getattr(zone, "puzzle", None)
+        if not puzzle:
+            return "The sigil is cold and inert."
+        if zone.name in self.solved:
+            return "The sigils lie quiet; the ward is long gone."
+        names = puzzle.get("names", [])
+        order = puzzle.get("order", [])
+        idx = piece.get("idx", 0)
+        name = names[idx] if idx < len(names) else f"sigil {idx}"
+        progress = self.puzzle_progress.setdefault(zone.name, [])
+        expected = order[len(progress)] if len(progress) < len(order) \
+            else None
+        if idx == expected:
+            progress.append(idx)
+            if len(progress) == len(order):
+                self.solved.append(zone.name)
+                self.puzzle_progress.pop(zone.name, None)
+                msg = (f"The {name} sigil blazes — and the ward over "
+                       f"the stairs dissolves!")
+            else:
+                msg = f"The {name} sigil lights and holds. " \
+                      f"({len(progress)}/{len(order)})"
+        else:
+            self.puzzle_progress[zone.name] = []
+            msg = (f"The {name} sigil flares angrily; all the sigils "
+                   f"go dark. (Read the inscription.)")
+        self.engine.memory_manager.add_event(msg)
+        return msg
 
     def _link(self, levels, specs) -> None:
         for i in range(1, len(levels)):
@@ -237,13 +286,20 @@ class StructureBuilder:
         return {"populated": {k: list(v)
                               for k, v in self.populated.items()},
                 "chests": chests,
-                "looted": list(self.looted)}
+                "looted": list(self.looted),
+                "solved": list(self.solved),
+                "puzzle_progress": {k: list(v) for k, v in
+                                    self.puzzle_progress.items()}}
 
     def from_dict(self, data: dict) -> None:
         from items.item import Item
         self.populated = {k: list(v) for k, v in
                           data.get("populated", {}).items()}
         self.looted = list(data.get("looted", []))
+        self.solved = list(data.get("solved", []))
+        self.puzzle_progress = {k: list(v) for k, v in
+                                data.get("puzzle_progress",
+                                         {}).items()}
         self.chest_contents = {}
         for key, dicts in data.get("chests", {}).items():
             try:

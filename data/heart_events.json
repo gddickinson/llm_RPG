@@ -4,37 +4,52 @@
       "id": "goren_30",
       "threshold": 30,
       "outline": "Goren waves you to the quiet end of the bar after closing. He pours two ales without being asked and toasts 'to roads that bring good folk'. He tells you the tavern nearly burned down five winters ago, and that Karim the guard carried him out of the smoke.",
-      "perk": {"item": "ale", "note": "Goren slides you a tankard — friends drink free."}
+      "perk": {
+        "item": "ale",
+        "note": "Goren slides you a tankard \u2014 friends drink free."
+      }
     },
     {
       "id": "goren_60",
       "threshold": 60,
       "outline": "Goren shows you the cellar: a hidden hollow behind a loose stone holds his savings and a bottle of Dwarven Reserve. 'If anything happens to me, see Esra gets this.' He trusts you with the knowledge like family.",
-      "perk": {"gold": 40, "note": "Goren presses coins on you: 'For the road. No arguments.'"}
+      "perk": {
+        "gold": 40,
+        "note": "Goren presses coins on you: 'For the road. No arguments.'"
+      }
     }
   ],
   "blacksmith_01": [
     {
       "id": "durgan_40",
       "threshold": 40,
-      "outline": "Durgan lets the forge cool and shows you his masterwork wall: every blade a story. He admits the silver blade commission still haunts him — finest work of his life, never collected. He offers to teach you the temper of good iron.",
-      "perk": {"item": "iron_bar", "note": "Durgan gifts you a bar of his best iron stock."}
+      "outline": "Durgan lets the forge cool and shows you his masterwork wall: every blade a story. He admits the silver blade commission still haunts him \u2014 finest work of his life, never collected. He offers to teach you the temper of good iron.",
+      "perk": {
+        "item": "iron_bar",
+        "note": "Durgan gifts you a bar of his best iron stock."
+      }
     }
   ],
   "minstrel_01": [
     {
       "id": "melody_30",
       "threshold": 30,
-      "outline": "Melody plays you the unfinished song she's been writing about your deeds. She's shy about the last verse — 'it needs an ending worth singing.' She weaves your name into the chorus on the spot.",
-      "perk": {"gold": 10, "note": "The tavern crowd tosses coins; Melody splits the hat with you."}
+      "outline": "Melody plays you the unfinished song she's been writing about your deeds. She's shy about the last verse \u2014 'it needs an ending worth singing.' She weaves your name into the chorus on the spot.",
+      "perk": {
+        "gold": 10,
+        "note": "The tavern crowd tosses coins; Melody splits the hat with you."
+      }
     }
   ],
   "guard_01": [
     {
       "id": "karim_40",
       "threshold": 40,
-      "outline": "Karim shares his watch post at dusk and speaks plainly: the village council won't fund a second guard, and he can't be everywhere. He asks you — informally, off the record — to keep an eye on the east road. He shows you the guard's whistle signal.",
-      "perk": {"item": "whistle", "note": "Karim hands you a guard whistle: 'Three blasts means trouble.'"}
+      "outline": "Karim shares his watch post at dusk and speaks plainly: the village council won't fund a second guard, and he can't be everywhere. He asks you \u2014 informally, off the record \u2014 to keep an eye on the east road. He shows you the guard's whistle signal.",
+      "perk": {
+        "item": "whistle",
+        "note": "Karim hands you a guard whistle: 'Three blasts means trouble.'"
+      }
     }
   ],
   "hamlet_innkeeper_01": [
@@ -42,7 +57,21 @@
       "id": "esra_30",
       "threshold": 30,
       "outline": "Esra sets a place for you at the family table instead of the common room. Over stew she tells you how she and Goren met at a harvest festival, and how the river hamlet took her in when the plague years were worst.",
-      "perk": {"item": "bread", "note": "Esra packs you bread for the road, still warm."}
+      "perk": {
+        "item": "bread",
+        "note": "Esra packs you bread for the road, still warm."
+      }
+    }
+  ],
+  "tower_wizard_01": [
+    {
+      "id": "alzara_30",
+      "threshold": 30,
+      "outline": "Alzara beckons you up to the observatory after dark. She shows you the two moons through the great lens and explains, talking mostly to herself, how a Conjunction bends the odds of everything. She admits she solved her own library ward twice by accident and once by crying. She gives you a scroll 'for the next locked sky.'",
+      "perk": {
+        "item": "scroll_frost",
+        "note": "Alzara presses a frost scroll into your hand \u2014 'for the next locked sky.'"
+      }
     }
   ]
 }

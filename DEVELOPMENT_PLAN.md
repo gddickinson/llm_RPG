@@ -1085,10 +1085,46 @@ authored set-pieces. Plan:
   shoot."); F is smart (adjacent → melee, else bow at the lock);
   and the hint bar finally advertises it all ("[R] shoot Wolf ·
   [ [/] ] switch · click to target"). 4 tests.)*
-- [ ] **P9.4 The Wizard's Tower.** A vertical structure — each floor
+- [x] **P9.4 The Wizard's Tower.** A vertical structure — each floor
   stranger than the last (library, menagerie, observatory), arcane
   puzzles (lever/sigil, not pixel-hunts), a new spell or focus item at
   the top. Introduces a wizard NPC with heart events.
+  *(done 2026-07-10 — four floors up: Entry Hall → Library, where
+  three glowing SIGILS (new puzzle framework: touch in the order the
+  inscription teaches — "Moon before Sun, Sun before Stars" — wrong
+  touches reset, success dissolves the ward sealing the stairs) →
+  dark Menagerie (two caged wisps wake on first visit) → Observatory
+  with scroll_fireball + potion_might in the chest. Puzzle
+  state/solved wards persist via save_load; validator checks order
+  permutations, ward directions, sigil names. ALZARA the tower
+  wizard joins the preset cast — home in the tower via P9A.3, a
+  30-affinity heart event at the great lens (frost scroll perk),
+  conjunction-obsessed goals for the LLM to chew on. Sigil +
+  inscription sprites. 9 tests.)*
+
+### Playtest Campaign 3 (George, 2026-07-10) — NEXT ROUNDS, PRIORITY
+
+George: "add a few rounds of intensive testing of the game by
+playing both the main character and the DM. Try to complete quests,
+get experience, explore distant regions, learn about the world, make
+friends and allies, defeat powerful monsters. Fix problems in the
+gameplay, fix bugs and add to the plan."
+
+- [ ] **PT3.1 The adventurer's arc.** Scripted both-sides session:
+  tutorial → boards → 2+ authored quests to completion → level up →
+  skill training → buy/sell/craft/repair loop → befriend an NPC to a
+  heart event → recruit a companion. Judge every step against the
+  Playtest Matrix; fix what breaks.
+- [ ] **PT3.2 The explorer's arc.** Distant regions (chunk streaming
+  east/west/north/south), the Murkfen, dungeons with fog-of-war, the
+  Ruined Keep crypt, temple crypt, the full Wizard's Tower climb,
+  teleports/diaries, region discovery. Fix what breaks.
+- [ ] **PT3.3 The war arc.** Powerful monsters (troll guardian,
+  conjunction-night spawns), ranged/spell targeting in anger, squad
+  tactics with companions, bounty-hunter retaliation, the DM running
+  a fresh module mid-session. Fix what breaks.
+- [ ] **PT3.4 Findings round.** Consolidate all findings into fixes +
+  new plan items; update the Playtest Matrix scorecard (Session 3).
 - [ ] **P9.5 Multi-level dungeons.** Depth 2–3 dungeons with stairs-down,
   scaling monsters/loot per level, a boss floor; collection-log and
   diary hooks ("clear depth 3").

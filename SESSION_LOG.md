@@ -1508,3 +1508,25 @@ HP ("Target: Wolf (6 tiles, 8/10 HP). [R] to shoot."); F became
 smart — adjacent enemy means melee, otherwise an equipped bow fires
 at the lock; and the hint bar advertises the whole kit when a lock
 is live. 9 new tests. Suite: 873, green x3.
+
+**Round 82 — P9.4 The Wizard's Tower (done) + Playtest Campaign 3
+queued.**
+Four floors of increasing strangeness, exactly as planned: an Entry
+Hall (with a possibly-solid cat), the Library where the new SIGIL
+PUZZLE framework debuts — three floor sigils that must be touched in
+the order the inscription teaches ("Moon before Sun, Sun before
+Stars — so the sky is read from below"); wrong touches flare and
+reset, the right sequence dissolves the shimmering ward that seals
+the stairs (wards gate stair movement engine-side; state and solved
+wards persist via save_load; the validator checks order
+permutations, ward directions and per-sigil names). Above: a dark
+Menagerie where two caged wisps wake on first visit, then the
+Observatory under the great lens, its chest holding a fireball
+scroll and a potion of might. ALZARA the tower wizard joins the
+preset cast — living in her tower via the P9A.3 homes system, with
+a 30-affinity heart event at the lens (frost-scroll perk) and
+conjunction-obsessed goals for the LLM providers to play with. New
+sigil and inscription sprites. Per George, PLAYTEST CAMPAIGN 3 is
+queued as the next rounds: the adventurer's arc, the explorer's
+arc, the war arc, then a findings round. 9 new tests. Suite: 882,
+green x3.

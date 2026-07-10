@@ -270,5 +270,53 @@
     ],
     "home_location": "Oakvale Village",
     "faction": "neutral"
+  },
+  "tower_wizard_01": {
+    "name": "Alzara",
+    "class": "wizard",
+    "race": "human",
+    "level": 4,
+    "stats": {
+      "strength": 8,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 17,
+      "wisdom": 14,
+      "charisma": 12
+    },
+    "hp": 18,
+    "position": [
+      30,
+      12
+    ],
+    "inventory": [
+      "spellbook",
+      "potion"
+    ],
+    "gold": 60,
+    "symbol": "Z",
+    "description": "A silver-braided wizard whose sleeves are full of chalk dust and starlight.",
+    "personality": {
+      "traits": [
+        "curious",
+        "absent-minded",
+        "kind"
+      ],
+      "likes": [
+        "puzzles",
+        "the night sky",
+        "good questions"
+      ],
+      "dislikes": [
+        "dust on books",
+        "small talk"
+      ]
+    },
+    "goals": [
+      "Chart the conjunction",
+      "Find an apprentice worth the name"
+    ],
+    "relationships": {},
+    "home_location": "Wizard's Tower"
   }
 }

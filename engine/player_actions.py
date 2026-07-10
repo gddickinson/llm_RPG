@@ -342,9 +342,13 @@ class PlayerActions:
         # the twin stair of the linked level
         if getattr(zone, "stairs_up", None) == (nx, ny) and \
                 getattr(zone, "level_above", None) is not None:
+            if self._warded(zone, up=True):
+                return False
             return self._take_stairs(zone.level_above, up=True)
         if getattr(zone, "stairs_down", None) == (nx, ny) and \
                 getattr(zone, "level_below", None) is not None:
+            if self._warded(zone, up=False):
+                return False
             return self._take_stairs(zone.level_below, up=False)
         # Interior visitors block (and swap) at their DISPLAYED
         # positions — never at overworld coordinates (George: walking
@@ -378,6 +382,18 @@ class PlayerActions:
             pass
         self.engine.advance_turn()
         return True
+
+    def _warded(self, zone, up: bool) -> bool:
+        """Sigil puzzles seal stairs until solved (P9.4)."""
+        try:
+            if self.engine.structures.stairs_warded(zone, up):
+                self.engine.memory_manager.add_event(
+                    "A shimmering ward seals the stairs. "
+                    "(The sigils hold the key.)")
+                return True
+        except Exception:
+            pass
+        return False
 
     def _can_swap(self, npc) -> bool:
         """Friendlies let you squeeze past; hostiles hold the line."""
