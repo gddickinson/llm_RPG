@@ -436,6 +436,66 @@ P3 is independent of P2 and can run in parallel. P5 items can interleave anywher
 - After M5: a new player finishes Tutorial Island in ≤20 minutes and knows every core
   verb.
 
+## Phase 6 — The Dungeon Master  (proposed 2026-07-09 by George; feasibility: HIGH)
+
+An AI game-master with campaign memory and the power to reshape the world —
+new NPCs, buildings, quests, monsters, terrain, history — **within the rules
+of the game**, staging multi-day adventures behind the scenes. Three
+interchangeable drivers: a live Claude Code session, the in-game LLM
+provider, or none (the game as it is today).
+
+**Why this is feasible now:** the architecture is already ~70% of a DM.
+The nightly world director (P3.7) *is* a micro-DM — one call, five
+whitelisted powers, engine-validated, heuristic fallback. Phase 1 made all
+content data-shaped and machine-validated, so "create a monster/quest/NPC"
+is a JSON spec the validator can referee. And "the LLM proposes, the engine
+disposes" is this codebase's proven safety pattern (dialog actions, secrets,
+persuasion, director). The DM is that pattern at world scope, with memory.
+
+**Non-negotiable rules (the DM charter):** the DM never touches the player
+directly (no teleporting/damaging/robbing the player, no deleting player
+property), never breaks an active quest, creates content within balance caps
+(monster level ≤ player+2, reward ceilings, budget of N mutations per
+game-day), and every act is validated and written to an audit log — the
+DM's notebook, which doubles as its campaign memory. World text (NPC dialog,
+rumors) is never fed back as DM *instructions* (injection separation).
+
+- [ ] **P6.1 DM Tool API** (`engine/dm_api.py`): typed, validated, budgeted
+  commands — `spawn_npc(spec)`, `create_quest(spec)`, `add_building(loc)`,
+  `edit_terrain(region, brush)` (bounded), `place_item`, `define_monster` /
+  `define_item` (runtime registries; serialized into saves), `adjust_faction`,
+  `plant_secret` / `teach_topic`, `schedule_beat(day, command)`, `narrate(text)`.
+  Every command passes data_validate-style checks + charter caps; results +
+  reasons logged to the DM notebook (persisted). No LLM in this step —
+  the API is testable pure Python.
+- [ ] **P6.2 World digest**: `engine.dm_digest()` → compact JSON of the table:
+  player sheet/skills/quests, NPC roster + relationships + opinions, region
+  summary, active systems state (shortages, rumors, weather), recent events,
+  and the DM notebook. This is what any DM driver reads.
+- [ ] **P6.3 Session-DM bridge** (`--dm-bridge`): file-based —
+  the game exports `saves/dm/digest.json` (each game-day + on demand) and
+  polls `saves/dm/inbox/*.json` for command bundles. Claude Code (a session
+  like this one) acts as the live DM: read digest → reason → write commands.
+  Human-supervised godhood; also the perfect test harness for P6.4.
+- [ ] **P6.4 Autonomous DM**: one planning call per game-day through the
+  existing provider abstraction — reads digest + notebook, maintains a
+  campaign arc in `dm_notes` (persisted in saves), emits a validated command
+  bundle (the director's JSON-list pattern, bigger toolset). Cost: same
+  order as reflection+director (~1 call/day). No provider → the director
+  keeps running unchanged; the game never depends on the DM existing.
+- [ ] **P6.5 Adventure modules**: the DM composes atomic bundles — a
+  location + NPCs + quest chain + secrets + topics + a finale beat —
+  validated as a unit and rolled back wholesale if any piece fails.
+  Modules are named in the notebook and announced diegetically (a rumor,
+  a stranger arriving, a new notice on the board).
+- [ ] **P6.6 Charter enforcement + safety tests**: unit tests that the API
+  refuses charter violations (player-touching, over-cap monsters, quest
+  vandalism), budget accounting via `llm_interface.call_counts`, injection
+  separation, and a save/load round-trip of DM-created content.
+
+**Verdict:** feasible and the natural capstone — P6.1–P6.3 are buildable in
+loop rounds immediately after Phase 5; P6.4 rides infrastructure that exists.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
