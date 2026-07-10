@@ -68,7 +68,8 @@ class EncounterManager:
             pass
         # Only spawn in wilderness terrain
         terrain = self.engine.world.map.get_terrain_at(*player.position)
-        if terrain not in (TerrainType.FOREST, TerrainType.GRASS):
+        if terrain not in (TerrainType.FOREST, TerrainType.GRASS,
+                           TerrainType.SWAMP):
             return None
         if self.rng.random() > self.spawn_chance():
             return None
@@ -77,7 +78,9 @@ class EncounterManager:
         if spawn_pos is None:
             return None
 
-        template = _weighted_pick(ENCOUNTER_TABLE, self.rng)
+        from world.monsters import encounter_table_for
+        table = encounter_table_for(terrain.value) or ENCOUNTER_TABLE
+        template = _weighted_pick(table, self.rng)
         monster = _build_monster(template, spawn_pos)
         self.engine.npc_manager.add_npc(monster)
         self.engine.world.map.place_character(monster, *spawn_pos)

@@ -121,5 +121,13 @@
     "item_type": "key",
     "value": 2,
     "description": "Opens some old, forgotten door."
+  },
+  "bogcap": {
+    "id": "bogcap",
+    "name": "Bogcap Mushroom",
+    "item_type": "ingredient",
+    "value": 9,
+    "stackable": true,
+    "description": "A pale swamp mushroom; alchemists prize its bitterness."
   }
 }

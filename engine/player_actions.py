@@ -258,14 +258,17 @@ class PlayerActions:
         return True
 
     def _weather_travel_penalty(self, x: int, y: int) -> None:
-        """Storms and snow slow off-road travel: one extra minute per step."""
+        """Storms/snow — and swamp muck — slow travel: +1 min per step."""
         try:
             from world.weather import Weather
             from world.world_map import TerrainType
+            terrain = self.engine.world.map.get_terrain_at(x, y)
+            if terrain == TerrainType.SWAMP:
+                self.engine.world.advance_time(1)
+                return
             current = self.engine.weather_system.state.current
             if current not in (Weather.STORM, Weather.SNOW):
                 return
-            terrain = self.engine.world.map.get_terrain_at(x, y)
             if terrain == TerrainType.ROAD:
                 return
             self.engine.world.advance_time(1)

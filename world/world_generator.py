@@ -54,6 +54,7 @@ class WorldGenerator:
         if self.w >= 100 and self.h >= 60:
             self._add_extra_civic_buildings()
             self._add_wilderness_buildings()
+            self._add_murkfen_swamp()
         self._add_wilderness_features()
         logger.info(f"Procedural world generated ({self.w}x{self.h}) "
                     f"with {len(self.world.locations)} locations")
@@ -117,6 +118,27 @@ class WorldGenerator:
             "Misty Mountains",
             "Tall mountains shrouded in mist.",
             mx, my, mw, mh,
+        ))
+
+    def _add_murkfen_swamp(self) -> None:
+        """The Murkfen — a brooding swamp in the south-central lowlands."""
+        sx, sy = self.w // 2 - 8, self.h - 18
+        sw, sh = 22, 13
+        for y in range(sy, min(self.h - 1, sy + sh)):
+            for x in range(sx, min(self.w - 1, sx + sw)):
+                current = self.world.map.terrain[y][x]
+                if current in (TerrainType.BUILDING, TerrainType.ROAD,
+                               TerrainType.CAVE):
+                    continue
+                roll = self.rng.random()
+                if roll < 0.72:
+                    self.world.map.terrain[y][x] = TerrainType.SWAMP
+                elif roll < 0.82:
+                    self.world.map.terrain[y][x] = TerrainType.WATER
+        self.world.add_location(Location(
+            "The Murkfen",
+            "A brooding swamp of black pools and whispering reeds.",
+            sx, sy, sw, sh,
         ))
 
     def _add_village(self) -> None:

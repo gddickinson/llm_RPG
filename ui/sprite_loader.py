@@ -32,6 +32,9 @@ PALETTE = {
     "building":   (140, 100, 60),
     "building2":  (90, 60, 30),
     "cave":       (30, 30, 35),
+    "swamp":      (62, 78, 52),
+    "swamp2":     (44, 62, 48),
+    "swamp_pool": (38, 58, 66),
     "shrine":     (210, 200, 130),
     "shrine_glow":(255, 220, 150),
     "outline":    (10, 10, 10),
@@ -68,6 +71,14 @@ class SpriteLoader:
         if terrain_name == "grass":
             surf.fill(PALETTE["grass"])
             self._dither(surf, PALETTE["grass2"], 0.25)
+        elif terrain_name == "swamp":
+            surf.fill(PALETTE["swamp"])
+            self._dither(surf, PALETTE["swamp2"], 0.35)
+            for _ in range(2):
+                px = self._rng.randint(2, ts - 8)
+                py = self._rng.randint(2, ts - 6)
+                pygame.draw.ellipse(surf, PALETTE["swamp_pool"],
+                                    (px, py, 7, 4))
         elif terrain_name == "forest":
             surf.fill(PALETTE["grass"])
             for _ in range(3):

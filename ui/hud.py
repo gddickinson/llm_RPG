@@ -174,6 +174,7 @@ class HUD:
             TerrainType.ROAD: (160, 130, 90),
             TerrainType.BUILDING: (140, 100, 60),
             TerrainType.CAVE: (30, 30, 35),
+            TerrainType.SWAMP: (62, 78, 52),
         }
         ox = rect.x + (rect.width - wmap.width * scale) // 2
         oy = rect.y + 20 + ((rect.height - 24) - wmap.height * scale) // 2

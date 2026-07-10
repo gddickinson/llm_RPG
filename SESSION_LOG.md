@@ -719,3 +719,17 @@ the cadence. Bonus: consecutive duplicate event lines ("Goren sleeps
 peacefully.") are suppressed at the log. 4 regression tests including a
 simulated 100-frame idle loop (must produce <15 events, was ~hundreds).
 Suite: 528 tests, all pass.
+
+**Round 40 — P4.5 regional identity: The Murkfen (done).**
+New SWAMP terrain end-to-end: enum, procedural sprite (murky dithered
+green with dark pools), minimap color, passable-but-slow movement
+(+1 minute per step — the swamp itself resists you). The world generator
+grows The Murkfen in the southern lowlands: ~72% swamp with scattered
+black pools and a named location. Monsters gained regionality via
+spawn_terrain: the Bog Lurker (level 3, STR/CON 14 — a genuine danger
+pocket) and Marsh Wisp haunt only the swamp, while wolves keep to meadow
+and forest — encounter tables now filter by the terrain underfoot.
+Swamp foraging yields dense herbs plus new bogcap mushrooms, which brew
+into antidotes (new alchemy recipe — poison finally has a craftable
+answer). Validator checks spawn terrains. 7 new tests.
+Suite: 535 tests, all pass.

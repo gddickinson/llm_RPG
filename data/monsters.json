@@ -42,5 +42,37 @@
     "description": "A solitary troll, lost from its kin.",
     "encounter_weight": 1,
     "dungeon": false
+  },
+  "bog_lurker": {
+    "name": "Bog Lurker",
+    "class": "monster",
+    "race": "troll",
+    "hp": 22,
+    "level": 3,
+    "symbol": "L",
+    "description": "A moss-hided thing that rises dripping from the pools.",
+    "encounter_weight": 3,
+    "dungeon": false,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "strength": 14,
+      "constitution": 14
+    }
+  },
+  "marsh_wisp": {
+    "name": "Marsh Wisp",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 8,
+    "level": 2,
+    "symbol": "w",
+    "description": "A flickering light with a hungry chill about it.",
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "swamp"
+    ]
   }
 }

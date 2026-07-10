@@ -18,6 +18,7 @@ class TerrainType(Enum):
     ROAD = "road"
     BUILDING = "building"
     CAVE = "cave"
+    SWAMP = "swamp"
 
 
 class WorldMap:

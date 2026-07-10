@@ -95,5 +95,13 @@
     "gold_cost": 5,
     "required_property": "forge",
     "skill": "smithing"
+  },
+  "antidote": {
+    "output_id": "antidote",
+    "ingredients": {
+      "bogcap": 2
+    },
+    "gold_cost": 3,
+    "skill": "alchemy"
   }
 }

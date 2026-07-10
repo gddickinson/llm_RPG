@@ -38,6 +38,21 @@ def encounter_table() -> List[Tuple[str, int]]:
             if t.get("encounter_weight", 0) > 0]
 
 
+DEFAULT_SPAWN_TERRAIN = ("grass", "forest")
+
+
+def encounter_table_for(terrain_value: str) -> List[Tuple[str, int]]:
+    """Encounter table filtered to a terrain (regional monsters)."""
+    out = []
+    for tid, t in MONSTER_TEMPLATES.items():
+        if t.get("encounter_weight", 0) <= 0:
+            continue
+        allowed = t.get("spawn_terrain", DEFAULT_SPAWN_TERRAIN)
+        if terrain_value in allowed:
+            out.append((tid, t["encounter_weight"]))
+    return out
+
+
 def dungeon_pool() -> List[str]:
     """Template ids eligible for dungeon rooms."""
     return [tid for tid, t in MONSTER_TEMPLATES.items()

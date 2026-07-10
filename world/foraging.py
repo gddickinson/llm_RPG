@@ -20,6 +20,7 @@ logger = logging.getLogger("llm_rpg.foraging")
 TERRAIN_FORAGE_TABLE = {
     TerrainType.FOREST: [("herb_bundle", 3), ("bread", 1)],
     TerrainType.GRASS: [("herb_bundle", 1)],
+    TerrainType.SWAMP: [("herb_bundle", 3), ("bogcap", 3)],
 }
 
 # Regen cooldown (game minutes)

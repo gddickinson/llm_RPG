@@ -165,6 +165,7 @@ def _check_forage() -> List[str]:
 
 def _check_monsters() -> List[str]:
     from world.monsters import MONSTER_TEMPLATES, encounter_table
+    from world.world_map import TerrainType
     from characters.character_types import CharacterClass, CharacterRace
     out = []
     for tid, spec in MONSTER_TEMPLATES.items():
@@ -173,6 +174,11 @@ def _check_monsters() -> List[str]:
             CharacterRace(spec.get("race", "goblin"))
         except ValueError as e:
             out.append(f"monster {tid}: {e}")
+        for t in spec.get("spawn_terrain", []):
+            try:
+                TerrainType(t)
+            except ValueError:
+                out.append(f"monster {tid}: unknown spawn terrain '{t}'")
     if not encounter_table():
         out.append("monsters: encounter table is empty")
     return out

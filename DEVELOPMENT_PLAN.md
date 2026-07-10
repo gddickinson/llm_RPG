@@ -330,10 +330,15 @@ and out of fights — and NPCs remember you across sessions.
   zone-aware to make island fishing work; encounters suppressed in zones;
   tutorial cast excluded from ambient AI. `--tutorial` CLI flag; survives
   save/load mid-lesson. 9 tests. P4.4 complete.)*
-- [ ] **P4.5 Regional identity.** Give each region a theme, unique resources, unique
-  monsters, a 2–3 quest mini-arc, and its diary (P2.7). Add one new themed region
-  (swamp or highlands) to the 120×80 map. Interleave danger levels — a deadly pocket
-  near a safe road creates "I'll come back stronger" goals.
+- [x] **P4.5 Regional identity — The Murkfen.** *(done 2026-07-09 — new SWAMP
+  terrain (sprite, minimap, passable-but-slow: +1 min/step) and a generated
+  Murkfen region in the southern lowlands. Monsters gained `spawn_terrain`
+  regionality: Bog Lurker (level 3, tough) and Marsh Wisp haunt only the swamp
+  — the danger pocket near safe roads — while wolves stay on the meadows.
+  Swamp foraging yields rich herbs + new bogcap mushrooms → antidote recipe
+  (alchemy). Validator covers spawn terrains. The three settlements already
+  carry identity via diaries/quests/secrets. 7 tests. Remaining: a Murkfen
+  quest mini-arc can ride P4.6's history residue.)*
 - [ ] **P4.6 History with residue (Caves of Qud pattern).** Extend `history_sim` so
   each generated event leaves physical artifacts: a named relic in a dungeon, a ruin,
   an NPC grudge, a findable book; LLM renders the legend text. Expose a "Legends"

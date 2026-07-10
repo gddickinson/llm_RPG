@@ -93,7 +93,7 @@ llm_RPG/
 - **`blueprints.py`** — Building footprint blueprints used by the world generator.
 - **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming).
 - **`encounters.py`** — `EncounterManager`; wilderness monster spawns (weather-scaled chance).
-- **`monsters.py`** — Monster templates from `data/monsters.json`; feeds encounters + dungeons; `build_monster()`.
+- **`monsters.py`** — Monster templates from `data/monsters.json`; terrain-filtered encounters + dungeons; `build_monster()`.
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
 - **`gathering.py`** — `GatheringManager`; mining/woodcutting/fishing nodes from `data/gathering.json`, tier level gates, tool checks.
