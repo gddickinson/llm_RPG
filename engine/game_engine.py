@@ -105,10 +105,12 @@ class GameEngine(GameAPIMixin):
         from engine.guild import GuildSystem
         from engine.faction_ticker import FactionTicker
         from engine.dm_api import DMApi
+        from engine.dm_autonomous import AutonomousDM
         self.radiant_quests = RadiantQuestGenerator(self)
         self.guild = GuildSystem(self)
         self.faction_ticker = FactionTicker(self)
         self.dm = DMApi(self)
+        self.dm_autonomous = AutonomousDM(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
@@ -325,6 +327,10 @@ class GameEngine(GameAPIMixin):
                 self.faction_ticker.run_day()
                 self.radiant_quests.run_morning()
                 self.dm.run_scheduled()
+                try:
+                    self.dm_autonomous.run_day()
+                except Exception as e:
+                    logger.debug(f"Autonomous DM error: {e}")
                 if self.dm_bridge is not None:
                     self.dm_bridge.export_digest()
                 from engine.rest import snapshot

@@ -893,3 +893,18 @@ malformed JSON, wrong kwargs, and charter violations are reported in
 receipts without ever crashing the game. A Claude Code session can now
 literally run adventures: read the digest, write bundles, watch the
 receipts. 8 tests. Suite: 621 tests, all pass.
+
+**Round 52 — P6.4 autonomous DM (done).**
+New `engine/dm_autonomous.py`: with an LLM provider active, one planning
+call per game-day — the model reads the world digest plus its own
+persisted campaign_notes (the arc memory added to DM state), updates the
+arc, and proposes up to 6 whitelisted commands executed through the same
+charter-enforced API as the session bridge. Charter refusals are
+reported and the bundle continues; unparseable plans are logged as a
+quiet day; heuristic mode never makes the call (zero cost). The DM
+system prompt teaches arc craft: foreshadow before striking, build on
+the player's quests and deeds, reuse your own creations, use
+schedule_beat to plant future payoffs. 8 tests incl. an end-to-end
+"define the Gloom, narrate the silence, schedule its emergence in two
+days" plan. Suite: 629 tests, all pass. (One non-reproducing world-gen
+flake observed once across 5 runs — watching.)

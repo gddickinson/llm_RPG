@@ -500,12 +500,14 @@ rumors) is never fed back as DM *instructions* (injection separation).
   Whitelisted commands only (to_dict/run_scheduled refused); malformed JSON,
   bad args, and charter refusals are reported, never crash. Claude Code can
   now sit behind the screen. 8 tests.)*
-- [ ] **P6.4 Autonomous DM**: one planning call per game-day through the
-  existing provider abstraction — reads digest + notebook, maintains a
-  campaign arc in `dm_notes` (persisted in saves), emits a validated command
-  bundle (the director's JSON-list pattern, bigger toolset). Cost: same
-  order as reflection+director (~1 call/day). No provider → the director
-  keeps running unchanged; the game never depends on the DM existing.
+- [x] **P6.4 Autonomous DM.** *(done 2026-07-09 — `engine/dm_autonomous.py`:
+  one planning call per game-day (LLM providers only; heuristic mode never
+  calls). The model reads the digest + its persisted `campaign_notes`, updates
+  the arc, and proposes ≤6 whitelisted commands — executed through the
+  charter-enforced API, refusals reported not fatal, junk output = a quiet
+  day. The DM prompt teaches arc craft: foreshadow before striking, build on
+  the player's deeds, reuse creations, schedule_beat future payoffs. Every
+  planning day logged to the notebook. 8 tests via mocked provider.)*
 - [ ] **P6.5 Adventure modules**: the DM composes atomic bundles — a
   location + NPCs + quest chain + secrets + topics + a finale beat —
   validated as a unit and rolled back wholesale if any piece fails.
@@ -531,6 +533,13 @@ rumors) is never fed back as DM *instructions* (injection separation).
   writes new legends the same way. Library curation: dedup by id, provenance
   stamps (which campaign/day created it), a size-capped "active set" the DM
   draws from so the world enriches without bloating prompts.
+
+- [ ] **P6.8 Play+DM self-playtest program** (George, 2026-07-09): Claude
+  Code drives the engine as the PLAYER (headless, via engine APIs: move,
+  talk, fight, quest, craft, sleep) while simultaneously acting as DM
+  (engine.dm commands) — a full both-sides-of-the-screen assessment. Output:
+  a playtest report (friction, bugs, balance, pacing), quick fixes, and new
+  plan items. Repeatable as a standing loop activity.
 
 **Verdict:** feasible and the natural capstone — P6.1–P6.3 are buildable in
 loop rounds immediately after Phase 5; P6.4 rides infrastructure that exists.

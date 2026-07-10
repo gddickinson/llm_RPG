@@ -38,6 +38,7 @@ class DMApi:
         self.scheduled: List[dict] = []          # {day, command, args}
         self.defined_monsters: Dict[str, dict] = {}
         self.defined_items: Dict[str, dict] = {}
+        self.campaign_notes: str = ""            # the DM's arc memory
         self._spent: Dict[int, int] = {}         # day -> mutations used
 
     # ---- bookkeeping ----------------------------------------------------
@@ -312,6 +313,7 @@ class DMApi:
                 "scheduled": list(self.scheduled),
                 "defined_monsters": dict(self.defined_monsters),
                 "defined_items": dict(self.defined_items),
+                "campaign_notes": self.campaign_notes,
                 "spent": {str(k): v for k, v in self._spent.items()}}
 
     def from_dict(self, d):
@@ -319,6 +321,7 @@ class DMApi:
         self.scheduled = list(d.get("scheduled", []))
         self.defined_monsters = dict(d.get("defined_monsters", {}))
         self.defined_items = dict(d.get("defined_items", {}))
+        self.campaign_notes = str(d.get("campaign_notes", ""))
         self._spent = {int(k): v
                        for k, v in d.get("spent", {}).items()}
         # Re-inject definitions into the runtime registries
