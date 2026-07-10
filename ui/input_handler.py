@@ -125,22 +125,29 @@ class InputHandler:
 
     def _handle_play_input(self, event) -> bool:
         k = event.key
-        # Movement
+        # SHIFT = tactical modifier: disengage / shove / aimed shot
+        shift = bool(getattr(event, "mod", 0) & pygame.KMOD_SHIFT)
+
+        # Movement (SHIFT+move = careful disengage, no opportunity strike)
         if k in (pygame.K_w, pygame.K_UP):
-            self.engine.move_player(0, -1)
+            self.engine.move_player(0, -1, careful=shift)
             return True
         if k in (pygame.K_s, pygame.K_DOWN):
-            self.engine.move_player(0, 1)
+            self.engine.move_player(0, 1, careful=shift)
             return True
         if k in (pygame.K_a, pygame.K_LEFT):
-            self.engine.move_player(-1, 0)
+            self.engine.move_player(-1, 0, careful=shift)
             return True
         if k in (pygame.K_d, pygame.K_RIGHT):
-            self.engine.move_player(1, 0)
+            self.engine.move_player(1, 0, careful=shift)
             return True
 
-        # Attack adjacent
+        # Attack adjacent (SHIFT+F = shove)
         if k in (pygame.K_SPACE, pygame.K_f):
+            if shift:
+                from engine.tactics import shove
+                shove(self.engine)
+                return True
             target = self._find_adjacent_enemy()
             if target:
                 self.engine.attack_character(target.name)
@@ -148,9 +155,9 @@ class InputHandler:
                 self.engine.memory_manager.add_event("No enemy adjacent.")
             return True
 
-        # Ranged attack (R)
+        # Ranged attack (R; SHIFT+R = aimed shot)
         if k == pygame.K_r:
-            self.engine.shoot_ranged()
+            self.engine.shoot_ranged(aimed=shift)
             return True
 
         # Spellbook (X)

@@ -201,7 +201,7 @@ class PlayerActions:
 
     # ---- movement -----------------------------------------------------
 
-    def move(self, dx: int, dy: int) -> bool:
+    def move(self, dx: int, dy: int, careful: bool = False) -> bool:
         player = self.engine.player
         if not self.engine.running:
             return False
@@ -230,6 +230,7 @@ class PlayerActions:
                     return True
             return False
 
+        pre_move = player.position
         old_pos = player.position
         if not wmap.move_character(player, nx, ny):
             # Blocked — maybe Agility can turn this into a shortcut
@@ -256,6 +257,16 @@ class PlayerActions:
             self.engine.quest_manager.on_location_entered(loc.name)
 
         self._weather_travel_penalty(nx, ny)
+        # Retreating from melee: careful disengage or eat a free strike
+        try:
+            from engine.tactics import (opportunity_attack,
+                                        disengage_cost)
+            if careful:
+                disengage_cost(self.engine)
+            else:
+                opportunity_attack(self.engine, pre_move)
+        except Exception:
+            pass
         self.engine.advance_turn()
         return True
 

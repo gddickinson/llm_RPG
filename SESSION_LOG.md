@@ -797,3 +797,14 @@ Regrowth) sold by wizard-stock merchants: studying one consumes it and
 teaches the spell, refused if already known. With quest spell: unlocks
 (Healer's Art) there are now three ways to learn magic. Validator checks
 teach_spell targets. 8 new tests. Suite: 566 tests, all pass.
+
+**Round 45 — P5.3 tactical verbs (done).**
+SHIFT is now the tactical modifier. Breaking away from melee provokes a
+free strike from the enemy you abandon ("lashes out as you turn to
+flee!") — retreat is a decision. SHIFT+move disengages carefully: no
+strike, +1 minute. SHIFT+F shoves: a STR contest that sends the enemy
+staggering back a tile (obstructions hold them); combos with bows and
+spells. SHIFT+R takes an aimed shot: +2 damage for an extra minute.
+Moving within melee reach (circling) never provokes. New
+`engine/tactics.py`; help overlay updated. 7 tests.
+Suite: 573 tests, all pass.

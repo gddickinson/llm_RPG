@@ -394,8 +394,12 @@ and heal-spams.
   the data layer; 3 spell-teaching tomes sold by wizard-stock merchants
   (consumed on study, refused if already known); quests already teach via
   `spell:` unlocks. 8 tests.)*
-- [ ] **P5.3 Player tactical verbs:** disengage/flee (opportunity-attack risk), shove,
-  aimed shot (ranged), drink-potion-as-turn. Small verb set, big texture.
+- [x] **P5.3 Player tactical verbs.** *(done 2026-07-09 — SHIFT is the
+  tactical modifier. Retreating from melee now provokes a free strike from the
+  abandoned enemy; SHIFT+move disengages safely (+1 min); SHIFT+F shoves (STR
+  contest, pushes the enemy a tile — blocked tiles hold); SHIFT+R takes an
+  aimed shot (+2 damage, +1 min). Drink-as-turn was already true. Moving
+  within melee reach never provokes. `engine/tactics.py`; 7 tests.)*
 - [ ] **P5.4 Off-screen faction ticker.** One dice-resolved faction event per game-day
   (patrol, raid, trade caravan) that moves stockpiles/rep and feeds gossip + radiant
   quests. The world visibly doesn't wait for the player.

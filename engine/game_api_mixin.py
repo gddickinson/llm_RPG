@@ -108,11 +108,13 @@ class GameAPIMixin:
 
     # ---- ranged combat -----------------------------------------------
 
-    def shoot_ranged(self, target_name: str = None) -> str:
+    def shoot_ranged(self, target_name: str = None,
+                     aimed: bool = False) -> str:
         """Fire a ranged attack at the named target (or nearest enemy).
 
         Requires an equipped ranged weapon. Consumes ammo of the matching
-        ammo_type. Thrown weapons fire without ammo.
+        ammo_type. Thrown weapons fire without ammo. `aimed` (SHIFT+R):
+        +2 damage for an extra minute spent lining up the shot.
         """
         from items.item import Item
 
@@ -150,6 +152,10 @@ class GameAPIMixin:
         dex_bonus = max(0, (self.player.dexterity - 10) // 2)
         damage = max(1, int(weapon.damage) + dex_bonus
                      + effective_weapon_damage_bonus(self.player))
+        if aimed:
+            damage += 2
+            self.world.advance_time(1)
+            self.memory_manager.add_event("You take careful aim...")
 
         if ammo_item is not None:
             self._consume_one_ammo(ammo_item)

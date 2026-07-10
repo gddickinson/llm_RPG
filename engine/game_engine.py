@@ -334,8 +334,8 @@ class GameEngine(GameAPIMixin):
     # Player API (delegates to PlayerActions)
     # ====================================================================
 
-    def move_player(self, dx: int, dy: int) -> bool:
-        return self.player_actions.move(dx, dy)
+    def move_player(self, dx: int, dy: int, careful: bool = False) -> bool:
+        return self.player_actions.move(dx, dy, careful=careful)
 
     def pickup_item(self, item_name: str = None) -> str:
         return self.player_actions.pickup(item_name)
