@@ -60,6 +60,12 @@ class EncounterManager:
         player = self.engine.player
         if not player:
             return None
+        # No ambushes inside dungeons/interiors/the tutorial isle
+        try:
+            if self.engine.active_zone() is not None:
+                return None
+        except Exception:
+            pass
         # Only spawn in wilderness terrain
         terrain = self.engine.world.map.get_terrain_at(*player.position)
         if terrain not in (TerrainType.FOREST, TerrainType.GRASS):

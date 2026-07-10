@@ -230,7 +230,8 @@ class MapRenderer:
         chars = [engine.player]
         if is_dungeon:
             chars += [n for n in engine.npc_manager.npcs.values()
-                      if n.is_active() and n.id.startswith("enc_")
+                      if n.is_active() and
+                      n.id.startswith(("enc_", "tut_"))
                       and 0 <= n.position[0] < zone.width
                       and 0 <= n.position[1] < zone.height]
         for char in chars:

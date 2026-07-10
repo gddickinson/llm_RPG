@@ -36,6 +36,13 @@ def context_hints(engine) -> List[str]:
     player = engine.player
     x, y = player.position
 
+    # Tutorial lessons lead everything
+    try:
+        from engine.tutorial import hint_lines
+        hints.extend(hint_lines(engine))
+    except Exception:
+        pass
+
     # Inside somewhere? Leaving is the dominant hint
     if getattr(engine, "current_interior", None):
         hints.append("[TAB] leave the building")

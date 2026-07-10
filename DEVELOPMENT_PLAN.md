@@ -320,9 +320,16 @@ and out of fights — and NPCs remember you across sessions.
   corridors. `_move_in_zone()` now enforces zone bounds, zone walls
   (mountain/water/building), doors, and character collision — with a test
   proving zone floor overrides overworld water. 6 tests.)*
-- [ ] **P4.4c Tutorial Island.** Small separate starter zone (zone render +
-  movement infra now complete); one instructor NPC per system, teach by one
-  repetition; one-way boat to the mainland; `--tutorial` flag / start-menu entry.
+- [x] **P4.4c Tutorial Island.** *(done 2026-07-09 —
+  `world/tutorial_island.py` + `engine/tutorial.py`: a hand-built isle
+  (grass/forest/rock/dock over water) with Old Willem, Sergeant Bors, and a
+  training dummy. Six teach-by-doing steps (talk → fish → cook → eat →
+  fight → sail) tracked as predicates over already-tracked state; the hint
+  bar carries "[Lesson] …"; TAB departs only from the boat tile (one-way:
+  cast removed, mainland placement, tutorial_done flag). Gathering became
+  zone-aware to make island fishing work; encounters suppressed in zones;
+  tutorial cast excluded from ambient AI. `--tutorial` CLI flag; survives
+  save/load mid-lesson. 9 tests. P4.4 complete.)*
 - [ ] **P4.5 Regional identity.** Give each region a theme, unique resources, unique
   monsters, a 2–3 quest mini-arc, and its diary (P2.7). Add one new themed region
   (swamp or highlands) to the 120×80 map. Interleave danger levels — a deadly pocket

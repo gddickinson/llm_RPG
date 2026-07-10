@@ -65,6 +65,8 @@ def parse_args():
                    help="Disable quest system")
     p.add_argument("--no-npc-processes", action="store_true",
                    help="Disable multiprocess NPC actions (uses sync calls instead)")
+    p.add_argument("--tutorial", action="store_true",
+                   help="Start on Tutorial Island (learn every system)")
     p.add_argument("--no-menu", action="store_true",
                    help="Skip the start menu and go straight to the game")
     p.add_argument("--debug", action="store_true",
@@ -108,6 +110,7 @@ def main() -> int:
                               and args.provider != "heuristic"),
         enable_quests=(not args.no_quests),
         player_spec=player_spec,
+        start_tutorial=args.tutorial,
     )
 
     # Optional load

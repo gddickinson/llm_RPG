@@ -691,3 +691,16 @@ indoors. A dedicated test proves zone floor overrides overworld water at
 the same coordinates. Dungeons are now genuinely playable spaces —
 rendered (R36) and enforced (R37). Tutorial Island (P4.4c) has its full
 infrastructure. 6 new tests. Suite: 515 tests, all pass.
+
+**Round 38 — P4.4c Tutorial Island (done). P4.4 complete.**
+`world/tutorial_island.py` + `engine/tutorial.py`: a hand-built isle
+(grass, forest corner, rock face, dock over water) with Old Willem,
+Sergeant Bors, and a training dummy. Six teach-by-doing lessons — talk,
+fish, cook, eat, fight, sail — tracked as predicates over state the game
+already records, surfaced through the hint bar as "[Lesson] ...". TAB
+departs only from the boat tile (one-way: the cast is removed, the player
+lands on the mainland, tutorial_done set). Supporting fixes: gathering is
+now zone-aware (island fishing works; dungeon shores would too),
+encounters are suppressed inside all zones, tutorial NPCs are excluded
+from ambient AI. `--tutorial` CLI flag; mid-lesson saves resume on the
+island. 9 tests. Suite: 524 tests, all pass.

@@ -49,18 +49,33 @@ class GatheringManager:
 
     # ---- resolution ---------------------------------------------------
 
+    def _grid(self):
+        """The grid that governs gathering: the active zone if inside
+        one (e.g. Tutorial Island's shore), else the world map."""
+        try:
+            zone = self.engine.active_zone()
+        except Exception:
+            zone = None
+        return zone if zone is not None else self.engine.world.map
+
+    def _terrain_at(self, grid, x: int, y: int):
+        if hasattr(grid, "get_terrain_at"):
+            return grid.get_terrain_at(x, y)
+        if 0 <= x < grid.width and 0 <= y < grid.height:
+            return grid.terrain[y][x]
+        return None
+
     def node_at(self, x: int, y: int) -> Optional[Tuple[str, dict, Tuple[int, int]]]:
         """Return (skill_id, spec, node_pos) for the player's position."""
-        wmap = self.engine.world.map
+        grid = self._grid()
         for skill_id, spec in GATHER_NODES.items():
             terrains = {TerrainType(t) for t in spec["terrain"]}
-            if wmap.get_terrain_at(x, y) in terrains:
+            if self._terrain_at(grid, x, y) in terrains:
                 return (skill_id, spec, (x, y))
             if spec.get("adjacent_ok"):
                 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                     nx, ny = x + dx, y + dy
-                    if 0 <= nx < wmap.width and 0 <= ny < wmap.height and \
-                            wmap.get_terrain_at(nx, ny) in terrains:
+                    if self._terrain_at(grid, nx, ny) in terrains:
                         return (skill_id, spec, (nx, ny))
         return None
 

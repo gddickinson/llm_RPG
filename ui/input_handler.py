@@ -357,6 +357,12 @@ class InputHandler:
     def _handle_interact(self) -> None:
         """Smart 'Tab' key — enter/exit building, or descend into a cave."""
         try:
+            # On Tutorial Island, TAB only departs at the boat
+            tm = getattr(self.engine, "tutorial_manager", None)
+            if tm is not None and tm.active:
+                msg = tm.try_depart()
+                self.engine.memory_manager.add_event(msg)
+                return
             if self.engine.current_interior:
                 self.engine.exit_building()
                 return

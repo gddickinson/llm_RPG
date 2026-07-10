@@ -40,7 +40,8 @@ class GameEngine(GameAPIMixin):
     def __init__(self, llm_model: str = None, llm_provider: str = None,
                  enable_npc_processes: bool = True,
                  enable_quests: bool = True,
-                 player_spec=None):
+                 player_spec=None,
+                 start_tutorial: bool = False):
         # Core systems --------------------------------------------------
         self.world = World()
         self.npc_manager = NPCManager()
@@ -145,9 +146,13 @@ class GameEngine(GameAPIMixin):
         self.player_dead = False  # set by combat_system when player defeated
 
         # Initialize demo world
+        from engine.tutorial import TutorialManager
+        self.tutorial_manager = TutorialManager(self)
         self.initialize_demo_game(player_spec=player_spec)
         # Baseline for the nightly-reflection day-change detector
         self._last_reflection_day = self.world.time // (24 * 60)
+        if start_tutorial:
+            self.tutorial_manager.start()
 
         # NPC processes (optional) -------------------------------------
         self.process_manager = None
@@ -421,6 +426,8 @@ class GameEngine(GameAPIMixin):
         for npc_id, npc in list(self.npc_manager.npcs.items()):
             if hasattr(npc, "is_active") and not npc.is_active():
                 continue
+            if npc_id.startswith("tut_"):
+                continue  # tutorial cast stands still
             try:
                 npc_x, npc_y = npc.position
                 if self._distance_to_player(npc_x, npc_y) > \
@@ -472,6 +479,8 @@ class GameEngine(GameAPIMixin):
         for npc_id, npc in self.npc_manager.npcs.items():
             if not npc.is_active() or npc_id in self.processing_npcs:
                 continue
+            if npc_id.startswith("tut_"):
+                continue  # tutorial cast stands still
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \
                     self.effective_visibility() * 2:
