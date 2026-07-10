@@ -153,6 +153,12 @@ class EconomySystem:
         return target_text.strip(), None
 
     def _adjacent(self, a, b) -> bool:
+        # Player pairs go through the interior-aware check (P9A.7)
+        player = self.engine.player
+        if a.id == player.id or b.id == player.id:
+            from engine.presence import npc_adjacent_to_player
+            other = b if a.id == player.id else a
+            return npc_adjacent_to_player(self.engine, other)
         return ((a.position[0] - b.position[0]) ** 2 +
                 (a.position[1] - b.position[1]) ** 2) ** 0.5 <= 1.5
 

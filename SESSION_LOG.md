@@ -1470,3 +1470,21 @@ guarded by the troll and reveals its authored legend when looted
 (the legends system fires from chest loot exactly as from ground
 pickup). Chest contents and looted state ride save_load; a chest
 loots exactly once. 6 new tests. Suite: 856, green x3.
+
+**Round 80 — Hotfix: talking to inhabitants indoors (George).**
+George: "When I enter a building I'm not able to talk to the
+inhabitants — the talk feature is trying to get me to talk to
+people outside that are out of range." Root cause: the T key
+correctly FOUND the visitor beside the player (presence-aware since
+round 74), but dialog_system._adjacent_to_player then re-checked
+adjacency with raw coordinates — the zone-local player vs the
+NPC's overworld position — and refused with "too far away to talk
+to." The same stale check lived in economy_system._adjacent,
+silently breaking give/trade indoors. Both now route player pairs
+through presence.npc_adjacent_to_player (visitors count at their
+displayed positions; walls block from outside). A full sweep found
+the remaining raw-distance checks are all NPC-vs-NPC (conflict,
+companions, npc-attack) where overworld coordinates are correct.
+3 regression tests: talking to an inhabitant beside you indoors,
+no talking through walls from the street, and indoor give/trade
+adjacency. Suite: 859 tests, green x3.

@@ -211,6 +211,9 @@ class DialogSystem:
             return ""
 
     def _adjacent_to_player(self, npc) -> bool:
-        px, py = self.engine.player.position
-        nx, ny = npc.position
-        return ((px - nx) ** 2 + (py - ny) ** 2) ** 0.5 <= 1.5
+        # Wall-aware and interior-aware (P9A.7): indoors, visitors
+        # count at their DISPLAYED positions — George's report of
+        # untalkable inhabitants was this check reading overworld
+        # coordinates from inside a building
+        from engine.presence import npc_adjacent_to_player
+        return npc_adjacent_to_player(self.engine, npc)

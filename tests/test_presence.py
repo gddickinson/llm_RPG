@@ -117,6 +117,46 @@ class TestPresence(unittest.TestCase):
         msg = self.engine.combat_system.player_attack(npc.name)
         self.assertNotIn("too far away", msg)
 
+    def test_talking_to_inhabitants_indoors(self):
+        """George's report: T indoors said everyone was too far away
+        — dialog_system read overworld coordinates from inside."""
+        loc = self._tavern_loc()
+        npc = self._put_npc_inside(loc)
+        inter = self.engine.interiors[loc.name]
+        self.engine.current_interior = inter
+        from engine.presence import assign_visitors, zone_position
+        assign_visitors(self.engine, inter, loc.name)
+        spot = zone_position(self.engine, npc)
+        self.player.position = (spot[0] + 1, spot[1])
+        msg = self.engine.dialog_system.player_to_npc(npc.id)
+        self.assertNotIn("too far away", msg)
+        self.engine.current_interior = None
+
+    def test_no_talking_through_walls(self):
+        loc = self._tavern_loc()
+        npc = self._put_npc_inside(loc)
+        wmap = self.engine.world.map
+        wmap.remove_character(self.player)
+        self.player.position = (loc.x - 1, loc.y)
+        wmap.place_character(self.player, *self.player.position)
+        msg = self.engine.dialog_system.player_to_npc(npc.id)
+        self.assertIn("too far away", msg)
+
+    def test_giving_items_works_indoors(self):
+        from items.item_registry import create_item
+        loc = self._tavern_loc()
+        npc = self._put_npc_inside(loc)
+        inter = self.engine.interiors[loc.name]
+        self.engine.current_interior = inter
+        from engine.presence import assign_visitors, zone_position
+        assign_visitors(self.engine, inter, loc.name)
+        spot = zone_position(self.engine, npc)
+        self.player.position = (spot[0], spot[1] + 1)
+        self.assertTrue(
+            self.engine.economy_system._adjacent(self.player, npc),
+            "trade adjacency must be interior-aware")
+        self.engine.current_interior = None
+
     def test_street_melee_cannot_reach_indoors(self):
         loc = self._tavern_loc()
         npc = self._put_npc_inside(loc)
