@@ -206,6 +206,7 @@ class SaveManager:
         d["memories"] = list(char.memories) if hasattr(char, "memories") else []
         d["status"] = getattr(char, "status", "alive")
         d["equipment"] = eq.to_dict(char)
+        d["home_location"] = getattr(char, "home_location", "")
         return d
 
     # ---------------------------------------------------------------- restore
@@ -354,6 +355,7 @@ def _rebuild_character(d: Dict[str, Any]):
     char.status = d.get("status", "alive")
     char.faction = d.get("faction", "neutral")
     char.metadata = dict(d.get("metadata", {}))
+    char.home_location = d.get("home_location", "")
     if d.get("equipment"):
         from characters import equipment as eq
         eq.from_dict(char, d["equipment"])

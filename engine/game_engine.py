@@ -165,6 +165,8 @@ class GameEngine(GameAPIMixin):
         self.market = MarketSystem(self)
         from engine.doors import DoorManager
         self.door_manager = DoorManager(self)
+        from characters.homes import HomeSystem
+        self.homes = HomeSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -237,6 +239,10 @@ class GameEngine(GameAPIMixin):
             self.farm_manager.ensure_plots()
         except Exception as e:
             logger.debug(f"Farm plots: {e}")
+        try:
+            self.homes.assign()
+        except Exception as e:
+            logger.debug(f"Home assignment: {e}")
         try:
             from engine.module_packs import install_packs
             install_packs(self)

@@ -855,11 +855,32 @@ diverged.
   provoked — they fight back at full strength, flee below 35% HP
   crying "Help! Guards!", stand down if you leave — plus an immediate
   −3 villager reputation, once per provocation. 6 tests.)*
-- [ ] **P9A.3 Occupants & homes.** Every named NPC gets a home
+- [x] **P9A.3 Occupants & homes.** Every named NPC gets a home
   matched to their occupation (blacksmith sleeps at the forge house,
   priest at the temple); schedules route them home at night;
   buildings without owners get style-matched occupants or stand
   empty/derelict. Knocking vs barging in.
+  *(done 2026-07-10 — characters/homes.py: occupants bound EXPLICITLY
+  at world start (the AW survey's correction — never by proximity).
+  Preset NPCs keep authored homes; guards "living" in the settlement
+  at large move into the watchtower; every other enterable building
+  takes residents from its blueprint's npc_class/npc_count with
+  generated names (farmhouses get villagers, the Library its wizard,
+  the Hunter's Lodge a ranger) — full NPCs who follow schedules home
+  at night (existing "home" activity), gossip, sicken, and will
+  witness (P9A.4). No-occupation buildings flagged DERELICT with
+  dusty interior descriptions. occupants_of/owner_of/is_derelict
+  feed P9A.4. FIXED pre-existing bug found by the round-trip test:
+  home_location was never serialized — every NPC lost their home on
+  save/load. Knock-vs-barge deferred into P9A.4. 8 tests.)*
+- [ ] **P9A.3b Buildings you can SEE (George: "I don't see any
+  difference in the buildings").** The 9A work so far is behavioral;
+  make it visible: draw a door glyph on building exteriors (state-
+  colored: open/closed/locked/broken), give furniture real procedural
+  sprites (bed/chest/hearth/anvil/altar/shelves) instead of fallback
+  rects, bump-into-locked-door feedback without pressing TAB, richer
+  multi-room blueprint interiors for the big buildings, and an
+  occupant nameplate line when entering ("Merta's farmhouse").
 - [ ] **P9A.4 Trespass & consequences.** Entering a private home
   uninvited (or breaking in) is witnessed: occupants object, guards
   respond (P7.1 conflict system), faction rep drops, repeat offenders

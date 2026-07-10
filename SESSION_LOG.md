@@ -1228,3 +1228,28 @@ player leaves; assault also costs −3 villager reputation immediately,
 once per provocation (kill penalties still stack on top). Guards
 converging on assaults joins P9A.4 trespass work. 16 new tests.
 Suite: 762 tests, green x3.
+
+**Round 69 — P9A.3 Occupants & homes (done) + a serialization bug.**
+Buildings belong to somebody now. characters/homes.py binds occupants
+EXPLICITLY at world start (applying the AW survey's correction —
+their proximity-based ownership meant the blacksmith lived at the
+forge only by luck): preset NPCs keep their authored homes, a guard
+whose "home" was just the settlement moves into the watchtower, and
+every other enterable building takes style-matched residents from
+its blueprint's npc_class/npc_count with generated names — the Old
+Farmhouse gets villagers, the Library its wizard, the Hunter's Lodge
+a ranger. Residents are full NPCs: the existing schedule system
+routes them home at 22:00, they gossip, catch diseases, and will be
+the witnesses the P9A.4 trespass system needs
+(occupants_of/owner_of/is_derelict are its API). Buildings matching
+no occupation stand DERELICT, flagged and dusty in their interior
+description. The round-trip test caught a real pre-existing bug:
+home_location was NEVER serialized — every NPC forgot where they
+lived on save/load; now it rides _serialize_character. Also hardened
+the provocation test (a crit-killed wolf granted +3 kill-rep and
+broke the assault-rep assertion — unkillable prop). George playtested
+again mid-round: "I don't see any difference in the buildings" —
+fair: everything so far is behavioral. P9A.3b added as the next
+item: visible doors on exteriors, real furniture sprites,
+bump-into-door feedback, occupant nameplates. 8 new tests.
+Suite: 770 tests, green x3.

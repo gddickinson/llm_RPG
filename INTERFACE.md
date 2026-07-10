@@ -100,6 +100,7 @@ llm_RPG/
 - **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight.
 - **`families.py`** — Static family ties for preset NPCs.
 - **`gossip.py`** — Gossip lines pulled from family ties + recent memory events.
+- **`homes.py`** — `HomeSystem` (P9A.3): explicit occupant binding at world start — preset homes kept, guards to the watchtower, blueprint npc_class residents for unowned buildings, derelict flags; `occupants_of`/`owner_of`/`is_derelict`.
 
 ### world/ — World, map, calendar, locations
 

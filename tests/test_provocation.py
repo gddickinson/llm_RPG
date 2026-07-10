@@ -74,6 +74,7 @@ class TestProvocation(unittest.TestCase):
         from world.monsters import build_monster
         wolf = build_monster("wolf", (self.player.position[0] + 1,
                                       self.player.position[1]))
+        wolf.hp = wolf.max_hp = 99   # a kill would grant +rep instead
         self.engine.npc_manager.add_npc(wolf)
         before = get_rep(self.player, Faction.VILLAGERS)
         self.engine.combat_system._resolve(self.player, wolf)
