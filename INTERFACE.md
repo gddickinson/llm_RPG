@@ -124,6 +124,7 @@ llm_RPG/
 - **`gathering.py`** — `GatheringManager`; mining/woodcutting/fishing nodes from `data/gathering.json`, tier level gates, tool checks.
 - **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.
 - **`fov.py`** — P8.6 recursive shadowcasting: `compute_fov`, `has_line_of_sight`, `zone_fov` (dungeon fog-of-war), `overworld_los` (ranged-shot gating; buildings/mountains block).
+- **`structures.py`** — `StructureBuilder` (P9.1): themed multi-level structures from `data/structures.json` (grid-string levels, twinned stairs, dark levels, inscriptions, populate-on-first-visit natives); ships the Ruined Keep; populated-set persists.
 - **`history_sim.py`** — Pre-game history: faction shifts, ruined keep, lore lines, themed relics per event.
 - **`tutorial_island.py`** — The starter isle grid + instructor cast (P4.4c).
 
