@@ -28,7 +28,7 @@ def default_boards() -> List[QuestBoard]:
         QuestBoard(
             location_name="Oakvale Tavern",
             posted_quest_ids=[
-                "herb_gathering", "cave_exploration",
+                "tavern_intro", "herb_gathering", "cave_exploration",
                 "deliver_sword", "survive_night",
             ],
             description="The tavern's adventurer board. Notices flutter in the breeze.",

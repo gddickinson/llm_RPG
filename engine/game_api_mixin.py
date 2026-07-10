@@ -224,15 +224,25 @@ class GameAPIMixin:
         """Z key: gather (mine/chop/fish) when tooled-up; herbs otherwise.
 
         Priority: node + tool -> gather; foragable terrain -> herbs;
-        node without tool -> teach the tool requirement."""
+        node without tool -> teach the tool requirement. A gather node
+        on cooldown falls through to herb foraging where the terrain
+        allows (playtest finding: an axe must not lock you out of the
+        forest's herbs)."""
         gm = self.gathering_manager
         node = gm.node_at(*self.player.position)
-        if node is not None and gm.has_tool_for(node):
-            return gm.gather()
         x, y = self.player.position
         from world.foraging import TERRAIN_FORAGE_TABLE
         terrain = self.world.map.get_terrain_at(x, y)
-        if terrain in TERRAIN_FORAGE_TABLE:
+        foragable = terrain in TERRAIN_FORAGE_TABLE
+
+        if node is not None and gm.has_tool_for(node):
+            skill_id, spec, pos = node
+            if gm._cooldown_ok(skill_id, spec, pos):
+                return gm.gather()
+            if foragable:
+                return self.forage_manager.forage()
+            return "This spot is picked clean. Come back later."
+        if foragable:
             return self.forage_manager.forage()
         if node is not None:
             return gm.tool_message(node)

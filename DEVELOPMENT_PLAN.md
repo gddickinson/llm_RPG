@@ -534,12 +534,19 @@ rumors) is never fed back as DM *instructions* (injection separation).
   stamps (which campaign/day created it), a size-capped "active set" the DM
   draws from so the world enriches without bloating prompts.
 
-- [ ] **P6.8 Play+DM self-playtest program** (George, 2026-07-09): Claude
-  Code drives the engine as the PLAYER (headless, via engine APIs: move,
-  talk, fight, quest, craft, sleep) while simultaneously acting as DM
-  (engine.dm commands) — a full both-sides-of-the-screen assessment. Output:
-  a playtest report (friction, bugs, balance, pacing), quick fixes, and new
-  plan items. Repeatable as a standing loop activity.
+- [x] **P6.8 Play+DM self-playtest — SESSION 1 run** (standing activity,
+  repeat after major changes). *(2026-07-09 — full both-sides session:
+  Tutorial Island (all six lessons + boat), Oakvale shopping/gathering, a
+  DM-staged two-day arc ("The Rot-King": define → narrate foreshadowing →
+  scheduled quest + spawn), herb quest, tavern sleep (nightly stack + day
+  summary), the hunt with shove tactics, turn-in. VERDICT: the loops hold
+  together and the DM arc landed perfectly. FIXED from findings: (1) owning
+  an axe locked you out of forest herb-foraging — the woodcutting node
+  shadowed foraging even on cooldown (quest-breaking; Z now falls through);
+  (2) tavern_intro was unreachable (no giver, not posted — now on the board).
+  QUEUED: tavernkeeper greeting uses merchant stock lines ("finest wares" —
+  flavor mismatch); consider 1 QP for DM-created quests; recurring
+  ~1-in-10-runs world-gen test flake still uncaught. 3 regression tests.)*
 
 **Verdict:** feasible and the natural capstone — P6.1–P6.3 are buildable in
 loop rounds immediately after Phase 5; P6.4 rides infrastructure that exists.

@@ -908,3 +908,28 @@ schedule_beat to plant future payoffs. 8 tests incl. an end-to-end
 "define the Gloom, narrate the silence, schedule its emergence in two
 days" plan. Suite: 629 tests, all pass. (One non-reproducing world-gen
 flake observed once across 5 runs — watching.)
+
+**Round 53 — P6.8 playtest session 1: both sides of the screen (done).**
+First full self-playtest: played headlessly through Tutorial Island (all
+six lessons, 11 moves to Willem, boat to mainland), bought tools from
+Bram, mined/chopped/fished, and — wearing the DM hat simultaneously —
+staged a two-day arc: defined "The Rot-King" (swamp ambusher), narrated
+the sour smell drifting up from the Murkfen as foreshadowing, and
+scheduled both a quest and the spawn for the next day. Slept at the
+tavern: the day summary reported the day's earnings, the beats fired
+overnight, Brother Anselm had the quest, the Rot-King waited at (55,65),
+the shove-and-slay hunt completed it, and the turn-in paid out with
+reputation and a collection first. The whole machine — tutorial,
+economy, skills, DM, nightly stack, radiant board, tactics, quests —
+interlocks.
+
+Findings fixed this round: (1) QUEST-BREAKER: owning an axe made forest
+herb-foraging impossible (the woodcutting node returned "picked clean"
+on cooldown instead of falling through to herbs — 0 herbs in 60
+attempts during play; now Z chops when ready and forages otherwise,
+verified 4 herbs post-fix); (2) tavern_intro was doubly unreachable
+(giver "" and never posted) — now on the tavern board. Queued:
+tavernkeeper greetings use merchant stock lines; consider QP for
+DM-created quests; the ~1-in-10 world-gen flake remains uncaught
+(9 consecutive green runs after one failure). 3 regression tests.
+Suite: 632 tests, all pass.
