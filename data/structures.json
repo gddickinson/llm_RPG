@@ -49,5 +49,61 @@
         ]
       }
     ]
+  },
+  "temple_crypt": {
+    "attach_to": "Temple of Light",
+    "levels": [
+      {
+        "name": "Temple of Light \u2014 Sanctuary",
+        "description": "Sunlight through stained glass; the altar glows. A narrow stair descends behind the chancel.",
+        "grid": [
+          "WWWWWWWWWWWW",
+          "WF...S....>W",
+          "WF.T....T.FW",
+          "WFK.......FW",
+          "WF.T....T.FW",
+          "WWWWWDWWWWWW"
+        ],
+        "inscriptions": [
+          "Light keeps the door; the faithful keep the light."
+        ]
+      },
+      {
+        "name": "Temple of Light \u2014 Crypt",
+        "position": "below",
+        "dark": true,
+        "description": "The priests of old sleep in stone drawers. Some sleep less soundly.",
+        "grid": [
+          "WWWWWWWWWWWW",
+          "WF...C....<W",
+          "WFK........W",
+          "WF.........W",
+          "WWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Brother Anselm's candle never burned out. It was carried below."
+        ],
+        "monsters": [
+          {
+            "template": "restless_bones",
+            "at": [
+              3,
+              2
+            ]
+          },
+          {
+            "template": "restless_bones",
+            "at": [
+              7,
+              3
+            ]
+          }
+        ],
+        "chest_loot": [
+          "scroll_heal",
+          "amulet_health"
+        ]
+      }
+    ]
   }
 }

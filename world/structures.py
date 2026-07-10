@@ -70,8 +70,27 @@ class StructureBuilder:
             self.engine.interiors[loc.name] = levels[0]
             self._history_inscriptions(levels)
             self._sweep_footprint_loot(loc, levels, sid)
+            self._authored_loot(levels, spec.get("levels", []), sid)
             built += 1
         return built
+
+    def _authored_loot(self, levels, specs, sid: str) -> None:
+        """`chest_loot` item ids fill that level's chest (once)."""
+        from items.item_registry import create_item
+        for level, spec in zip(levels, specs):
+            ids = spec.get("chest_loot", [])
+            if not ids:
+                continue
+            chest = next((f for f in level.furniture
+                          if f["name"] == "Chest"), None)
+            if chest is None:
+                continue
+            key = f"{sid}:{chest['x']}:{chest['y']}"
+            if key in self.looted or key in self.chest_contents:
+                continue
+            items = [create_item(i) for i in ids]
+            self.chest_contents[key] = [i for i in items
+                                        if i is not None]
 
     def _history_inscriptions(self, levels) -> None:
         """'$history' inscriptions carry this world's actual past

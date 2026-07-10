@@ -70,6 +70,14 @@ def context_hints(engine) -> List[str]:
 
     if enemies:
         hints.append(f"[F] attack {enemies[0].name}")
+    try:
+        tid = getattr(engine, "player_target_id", None)
+        lock = engine.npc_manager.npcs.get(tid) if tid else None
+        if lock is not None and lock.is_active():
+            hints.append(f"[R] shoot {lock.name} · [ [/] ] switch "
+                         f"· click to target")
+    except Exception:
+        pass
     if friendly:
         npc = friendly[0]
         hints.append(f"[T] talk to {npc.name}")

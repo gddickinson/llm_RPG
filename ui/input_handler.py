@@ -31,6 +31,14 @@ class InputHandler:
             self.gui.running = False
             return True
 
+        # Click-to-target (P8.7 UX): left-click a visible enemy
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 \
+                and self.gui.mode == "play":
+            tile = self._pixel_to_tile(event.pos)
+            if tile is not None:
+                self.engine.targeting.lock_tile(*tile)
+                return True
+
         # Death popup: only R / Q / ESC respond ----------------------------
         if self.gui.mode == "death":
             if event.type != pygame.KEYDOWN:
@@ -148,11 +156,7 @@ class InputHandler:
                 from engine.tactics import shove
                 shove(self.engine)
                 return True
-            target = self._find_adjacent_enemy()
-            if target:
-                self.engine.attack_character(target.name)
-            else:
-                self.engine.memory_manager.add_event("No enemy adjacent.")
+            self.engine.melee_or_shoot()
             return True
 
         # Ranged attack (R; SHIFT+R = aimed shot)
@@ -359,6 +363,32 @@ class InputHandler:
         return False
 
     # ---- helpers -----------------------------------------------------
+
+    def _pixel_to_tile(self, pos):
+        """Map-view pixel -> world/zone tile (mirrors the renderer's
+        camera math)."""
+        try:
+            rect = self.gui.layout["map"]
+            if not rect.collidepoint(pos):
+                return None
+            ts = self.gui.renderer.tile_size
+            engine = self.engine
+            zone = None
+            try:
+                zone = engine.active_zone()
+            except Exception:
+                pass
+            grid = zone if zone is not None else engine.world.map
+            cols = rect.width // ts
+            rows = rect.height // ts
+            px, py = engine.player.position
+            cam_x = max(0, min(grid.width - cols, px - cols // 2))
+            cam_y = max(0, min(grid.height - rows, py - rows // 2))
+            tx = cam_x + (pos[0] - rect.x) // ts
+            ty = cam_y + (pos[1] - rect.y) // ts
+            return (tx, ty)
+        except Exception:
+            return None
 
     def _find_adjacent_npc(self):
         from engine.presence import npc_adjacent_to_player

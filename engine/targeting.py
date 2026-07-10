@@ -108,6 +108,14 @@ class TargetingSystem:
 
     # -------------------------------------------------------- actions
 
+    def _announce(self, target) -> str:
+        tiles = int(round(_dist(self.engine.player.position,
+                                target.position)))
+        msg = (f"Target: {target.name} ({tiles} tiles, "
+               f"{target.hp}/{target.max_hp} HP). [R] to shoot.")
+        self.engine.memory_manager.add_event(msg)
+        return msg
+
     def cycle(self, step: int = 1) -> str:
         candidates = self.candidates()
         if not candidates:
@@ -120,8 +128,26 @@ class TargetingSystem:
         idx = (ids.index(tid) + step) % len(ids) if tid in ids else 0
         target = candidates[idx]
         self.engine.player_target_id = target.id
-        tiles = int(round(_dist(self.engine.player.position,
-                                target.position)))
-        msg = f"Target: {target.name} ({tiles} tiles)."
-        self.engine.memory_manager.add_event(msg)
-        return msg
+        return self._announce(target)
+
+    def lock_tile(self, x: int, y: int) -> str:
+        """Click-to-target: lock whatever stands at (or beside) the
+        tile — the most natural way to pick a target (George)."""
+        for npc in self.candidates():
+            nx, ny = self._display_pos(npc)
+            if abs(nx - x) <= 1 and abs(ny - y) <= 1:
+                self.engine.player_target_id = npc.id
+                return self._announce(npc)
+        return "Nothing to target there."
+
+    def _display_pos(self, npc) -> Tuple[int, int]:
+        return tuple(npc.position)
+
+    def refresh(self) -> None:
+        """Once per turn: keep the lock honest so the reticle shows
+        BEFORE you fire. Announces only on acquisition or switch."""
+        engine = self.engine
+        old = getattr(engine, "player_target_id", None)
+        target = self.current()
+        if target is not None and target.id != old:
+            self._announce(target)

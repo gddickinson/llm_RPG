@@ -1066,9 +1066,25 @@ authored set-pieces. Plan:
   legend-revealing on looting (engine/legends fires from chest
   loot). Chest contents + looted state persist via save_load;
   chests loot exactly once. 6 new tests (13 total structure tests).)*
-- [ ] **P9.3 Temple + crypt.** Oakvale temple interior (shrine services,
+- [x] **P9.3 Temple + crypt.** Oakvale temple interior (shrine services,
   the priest's routine) over a crypt level — undead below, blessed
   rewards, ties into banking/blessing systems already present.
+  *(done 2026-07-10 — temple_crypt structure: a Sanctuary (altar
+  prayer and N/M banking both verified working inside) with a narrow
+  stair behind the chancel down to a DARK crypt where two Restless
+  Bones (new undead monster) guard a chest of blessed rewards —
+  authored chest_loot (scroll_heal + amulet_health), a new framework
+  capability, validator-checked (loot ids must exist, a Chest cell
+  must exist). Crypt inscription ties to the plague-vigil history
+  event. The priest's routine was already live via P9A.3 homes.
+  5 tests. ALSO this round, George: "ranged combat and selection of
+  targets is difficult to use" — UX overhaul: the lock now
+  AUTO-ACQUIRES once per turn so the gold reticle appears BEFORE you
+  fire; CLICK any visible enemy to target it; lock announcements
+  carry HP and range ("Target: Wolf (6 tiles, 8/10 HP). [R] to
+  shoot."); F is smart (adjacent → melee, else bow at the lock);
+  and the hint bar finally advertises it all ("[R] shoot Wolf ·
+  [ [/] ] switch · click to target"). 4 tests.)*
 - [ ] **P9.4 The Wizard's Tower.** A vertical structure — each floor
   stranger than the last (library, menagerie, observatory), arcane
   puzzles (lever/sigil, not pixel-hunts), a new spell or focus item at

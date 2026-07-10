@@ -1488,3 +1488,23 @@ companions, npc-attack) where overworld coordinates are correct.
 3 regression tests: talking to an inhabitant beside you indoors,
 no talking through walls from the street, and indoor give/trade
 adjacency. Suite: 859 tests, green x3.
+
+**Round 81 — P9.3 Temple + crypt (done) + targeting UX overhaul.**
+The temple grew its underside: a Sanctuary where altar prayer and
+N/M banking both still work (verified from inside — the
+player_location plumbing pays off), and a narrow stair behind the
+chancel descending into a DARK crypt where two Restless Bones — a
+new undead monster — guard a chest of blessed rewards. Authored
+chest_loot is a new framework capability (scroll_heal +
+amulet_health here), validator-checked: loot ids must be real items
+and the level must actually have a Chest cell. The crypt's carving
+ties back to the history sim's plague-vigil event. Meanwhile George
+reported ranged targeting was hard to use — fair, the [ ] keys were
+never even advertised. UX overhaul: the lock AUTO-ACQUIRES once per
+turn, so the gold reticle appears on the nearest enemy BEFORE you
+fire; CLICKING any visible enemy targets it (pixel-to-tile through
+the renderer's own camera math); lock announcements carry range and
+HP ("Target: Wolf (6 tiles, 8/10 HP). [R] to shoot."); F became
+smart — adjacent enemy means melee, otherwise an equipped bow fires
+at the lock; and the hint bar advertises the whole kit when a lock
+is live. 9 new tests. Suite: 873, green x3.

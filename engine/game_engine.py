@@ -417,6 +417,12 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"NPC conflict error: {e}")
 
+        # Keep the ranged lock honest (P8.7 UX)
+        try:
+            self.targeting.refresh()
+        except Exception as e:
+            logger.debug(f"Targeting refresh error: {e}")
+
         if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
             self.process_npc_turns_async()
 

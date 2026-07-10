@@ -62,6 +62,15 @@ def _check_structures() -> List[str]:
                 if spawn.get("template") not in MONSTER_TEMPLATES:
                     out.append(f"structure {sid} level {i}: unknown "
                                f"monster '{spawn.get('template')}'")
+            if lv.get("chest_loot"):
+                from items.item_registry import ITEM_REGISTRY
+                for iid in lv["chest_loot"]:
+                    if iid not in ITEM_REGISTRY:
+                        out.append(f"structure {sid} level {i}: "
+                                   f"unknown chest_loot '{iid}'")
+                if not any("C" in r for r in rows):
+                    out.append(f"structure {sid} level {i}: "
+                               f"chest_loot without a Chest cell")
             if i > 0:
                 up = any("<" in r for r in rows)
                 down = any(">" in r for r in

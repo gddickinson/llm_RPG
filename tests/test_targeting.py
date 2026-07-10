@@ -113,6 +113,46 @@ class TestTargeting(unittest.TestCase):
         self.assertIn("in the way", msg)
         self.assertEqual(wolf.hp, 99, "spell must not land")
 
+    def test_turn_refresh_acquires_a_lock(self):
+        """P8.7 UX: the reticle appears BEFORE you fire."""
+        wolf = self._spawn("wolf", 4, 0)
+        self.assertIsNone(getattr(self.engine, "player_target_id",
+                                  None))
+        self.engine.targeting.refresh()
+        self.assertEqual(self.engine.player_target_id, wolf.id)
+        log = " ".join(str(e) for e in
+                       self.engine.memory_manager.game_history[-3:])
+        self.assertIn("Target:", log)
+        self.assertIn("HP", log)
+
+    def test_click_to_target(self):
+        wolf = self._spawn("wolf", 5, 1)
+        msg = self.engine.targeting.lock_tile(*wolf.position)
+        self.assertIn("Wolf", msg)
+        self.assertEqual(self.engine.player_target_id, wolf.id)
+        msg = self.engine.targeting.lock_tile(self.ox + 1,
+                                              self.oy + 1)
+        self.assertIn("Nothing to target", msg)
+
+    def test_smart_f_shoots_when_nothing_adjacent(self):
+        wolf = self._spawn("wolf", 5, 0)
+        bow = create_item("bow")
+        self.player.inventory.append(bow)
+        equip(self.player, bow)
+        ammo = create_item("arrow")
+        if ammo is not None:
+            ammo.quantity = 5
+            self.player.inventory.append(ammo)
+        self.engine.player_target_id = wolf.id
+        msg = self.engine.melee_or_shoot()
+        self.assertTrue("loose" in msg.lower() or
+                        "shoot" in msg.lower(), msg)
+
+    def test_smart_f_prefers_adjacent_melee(self):
+        near = self._spawn("wolf", 1, 0)
+        msg = self.engine.melee_or_shoot()
+        self.assertNotIn("No enemy adjacent", msg)
+
     def test_provoked_civilians_are_targetable(self):
         npc = next(n for n in self.engine.npc_manager.npcs.values()
                    if getattr(n.character_class, "value", "") ==

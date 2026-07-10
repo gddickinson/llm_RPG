@@ -326,6 +326,30 @@ class GameAPIMixin:
         """SHIFT+P at a shrine/temple: prayer and (maybe) a miracle."""
         return self.pantheon.pray()
 
+    def melee_or_shoot(self) -> str:
+        """Smart F (P8.7 UX): adjacent enemy -> melee; otherwise a
+        ranged weapon fires at the lock."""
+        from engine.presence import npc_adjacent_to_player
+        for npc in self.npc_manager.npcs.values():
+            if not npc.is_active():
+                continue
+            klass = getattr(npc.character_class, "value", "")
+            hostile = klass in ("brigand", "monster", "troll") or \
+                npc.metadata.get("provoked")
+            if hostile and npc_adjacent_to_player(self, npc):
+                return self.attack_character(npc.name)
+        try:
+            from characters.equipment import equipped_weapon
+            weapon = equipped_weapon(self.player)
+            if weapon is not None and weapon.is_ranged_weapon() and \
+                    self.targeting.current() is not None:
+                return self.shoot_ranged()
+        except Exception:
+            pass
+        msg = "No enemy adjacent."
+        self.memory_manager.add_event(msg)
+        return msg
+
     def player_location(self):
         """The Location the player occupies — interior-aware (P9A.6):
         inside a building (any level), that building's location."""

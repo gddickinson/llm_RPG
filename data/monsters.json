@@ -110,5 +110,19 @@
     "behavior": {
       "flee_below": 0.15
     }
+  },
+  "restless_bones": {
+    "name": "Restless Bones",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 12,
+    "level": 2,
+    "symbol": "s",
+    "description": "A clatter of old bones that will not stay at rest.",
+    "encounter_weight": 0,
+    "dungeon": true,
+    "behavior": {
+      "ambush": 2
+    }
   }
 }
