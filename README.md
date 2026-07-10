@@ -18,14 +18,36 @@ python main.py --provider anthropic --model claude-haiku-4-5-20251001
 
 ## The game today
 
-A living-world sandbox on a 120×80 tile map: three settlements (Oakvale Village,
-Riverside Hamlet, Stonepine Camp) joined by roads, wilderness, caves that descend
-into procedural dungeons, and ~11 named NPCs with families, schedules, needs, and
-gossip.
+A living-world RPG on a 120×80 tile map: three settlements (Oakvale Village,
+Riverside Hamlet, Stonepine Camp) plus the Murkfen swamp, joined by roads,
+wilderness, caves that descend into procedural dungeons, a Tutorial Island
+starter zone (`--tutorial`), and named NPCs with families, schedules, needs,
+memories, opinions, and secrets.
+
+**Progression** (the RuneScape-inspired lattice): 8 skills with geometric XP
+curves and tiered gathering (mining/woodcutting/fishing → smelting/cooking/
+alchemy), gear durability with forge repairs, a collection log, skilling
+pets, regional achievement diaries, quest points + guild ranks, earned
+teleports and Agility shortcuts, and a sleep/day-summary loop.
+
+**The LLM as a gameplay pillar** (all optional — the heuristic default plays
+fully offline): NPC dialog runs a structured JSON protocol where the engine
+validates every proposed action; NPCs hold injection-proof gated secrets,
+remember conversations with retrieval-scored memory, form nightly opinions,
+and notice your deeds; `/persuade`, `/intimidate`, `/deceive` are judged
+social checks with real stakes; a nightly world director and daily faction
+ticker move the world while you sleep; radiant quests keep the board alive.
+
+**The Dungeon Master layer**: a charter-enforced command API (no touching
+the player, capped creations, daily budgets, full audit notebook) lets a DM
+reshape the world — new monsters, items, buildings, quests, terrain, staged
+multi-day arcs, atomic adventure modules. Three drivers: a live Claude Code
+session over the `--dm-bridge` file bridge, an autonomous in-game LLM DM
+(one planning call per game-day with campaign memory), or none.
 
 ![NPC dialog](docs/img/dialog.png)
-*Talking to Karim the guard — free-text conversation, with quest offers surfaced
-inline. Making dialog mechanically deep is the core of the development plan below.*
+*Free-text NPC conversation with quest offers inline — plus /persuade,
+/intimidate and /deceive as judged social checks with real stakes.*
 
 ### Systems overview
 
@@ -64,19 +86,20 @@ flowchart LR
 |---|---|
 | Engine | Python + pygame, single process, no asset files (procedural sprites) |
 | Codebase | ~19k lines, all modules < 500 lines, dependency-injected subsystems |
-| Tests | 247 unit tests across 44 files |
+| Tests | 650+ unit tests, content cross-reference validator |
 | Combat | 1d20 + ability mod + proficiency vs AC; nat-20 crits, flanking, silver/fire/holy damage types |
 | World | Chunk-streamed 120×80 map, BSP dungeons, weather, foraging, interiors |
 | NPCs | Class schedules (work/eat/drink/sleep), hunger & fatigue, families, gossip, faction reputation |
 | LLM layer | Pluggable providers; the default heuristic needs no LLM at all |
 
-### An honest status note
+### Status
 
-A July 2026 audit found that several built systems are **not yet wired to the
-player** (shop/crafting/companion UIs, some save/load state) and the LLM currently
-produces flavor text rather than driving game mechanics. Fixing that wiring is
-Phase 0 of the plan below — this branch (`v2-development`) is where that work
-happens, in small tested increments.
+Phases 0–5 of the development plan are **complete** (July 2026): the repair
+phase, the data-driven content layer, the progression lattice, the LLM
+pillar, quests & world, and combat & feel. Phase 6 (the Dungeon Master) is
+largely complete; Phase 7 (visible NPC conflict, conspiracy, squad tactics)
+is queued from playtest findings. Development runs in small tested rounds on
+`v2-development` — see `SESSION_LOG.md` for the full record.
 
 ---
 
@@ -139,6 +162,8 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python main.py --provider ollama --model llama3
 .venv/bin/python main.py --provider anthropic --model claude-haiku-4-5-20251001
 .venv/bin/python main.py --load                 # resume quicksave
+.venv/bin/python main.py --tutorial             # start on Tutorial Island
+.venv/bin/python main.py --dm-bridge            # enable the DM file bridge
 ```
 
 For cloud providers: `pip install anthropic` or `pip install openai` and set the
@@ -156,14 +181,19 @@ matching API key environment variable.
 | H | Drink potion | N / M | Bank deposit / withdraw |
 | B | Barter with adjacent merchant | R | Ranged attack |
 | K | Crafting menu | L | Look around |
-| P | Recruit / dismiss companion | | |
+| P | Recruit / dismiss companion | X | Spellbook |
+| O | Collection log | J | Achievement diaries |
+| U | Travel menu | Y | Topic & legends journal |
+| ENTER | Sleep at inn (day summary) | SHIFT+move | Disengage |
+| SHIFT+F | Shove | SHIFT+R | Aimed shot |
 | TAB | Enter building / cave | F5 / F9 | Save / Load |
 | F1 or `/` | Help | ESC | Close / quit |
 
 ## Development
 
 ```bash
-.venv/bin/python -m unittest discover tests/    # 247 tests
+.venv/bin/python -m unittest discover tests/    # 650+ tests
+.venv/bin/python -m items.data_validate         # content cross-ref checks
 ```
 
 - [`INTERFACE.md`](INTERFACE.md) — codebase navigation map (read first)

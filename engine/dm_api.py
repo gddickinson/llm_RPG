@@ -64,6 +64,23 @@ class DMApi:
     def budget_remaining(self) -> int:
         return MUTATION_BUDGET - self._spent.get(self._day(), 0)
 
+    def _protected_region(self, x: int, y: int, w: int, h: int) -> str:
+        """Charter: never overwrite standing structures — refuse any
+        region touching BUILDING terrain or a typed POI location."""
+        from world.world_map import TerrainType
+        wmap = self.engine.world.map
+        for yy in range(y, min(y + h, wmap.height)):
+            for xx in range(x, min(x + w, wmap.width)):
+                if wmap.terrain[yy][xx] == TerrainType.BUILDING:
+                    return "overlaps an existing structure (charter)"
+        for loc in self.engine.world.locations:
+            if not (loc.properties or {}).get("type"):
+                continue
+            if x < loc.x + loc.width and loc.x < x + w and \
+                    y < loc.y + loc.height and loc.y < y + h:
+                return f"overlaps {loc.name} (charter)"
+        return ""
+
     def digest(self) -> dict:
         """The DM's view of the table (P6.2)."""
         from engine.dm_digest import build_digest
@@ -196,6 +213,9 @@ class DMApi:
         if x <= px < x + w and y <= py < y + h:
             return self._log("add_building", False,
                              "would bury the player (charter)")
+        protected = self._protected_region(x, y, w, h)
+        if protected:
+            return self._log("add_building", False, protected)
         denied = self._charge("add_building")
         if denied:
             return denied
@@ -226,6 +246,9 @@ class DMApi:
                 terrain in ("water", "mountain"):
             return self._log("edit_terrain", False,
                              "would trap the player (charter)")
+        protected = self._protected_region(x, y, w, h)
+        if protected:
+            return self._log("edit_terrain", False, protected)
         denied = self._charge("edit_terrain")
         if denied:
             return denied
