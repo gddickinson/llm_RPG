@@ -353,13 +353,10 @@ class InputHandler:
     # ---- helpers -----------------------------------------------------
 
     def _find_adjacent_npc(self):
-        px, py = self.engine.player.position
+        from engine.presence import npc_adjacent_to_player
         for npc in self.engine.npc_manager.npcs.values():
-            if not npc.is_active():
-                continue
-            d = ((npc.position[0] - px) ** 2 +
-                 (npc.position[1] - py) ** 2) ** 0.5
-            if d <= 1.5:
+            if npc.is_active() and \
+                    npc_adjacent_to_player(self.engine, npc):
                 return npc
         return None
 

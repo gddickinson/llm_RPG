@@ -24,9 +24,8 @@ class CombatSystem:
         if not target:
             return f"You don't see {target_name} here."
 
-        px, py = self.engine.player.position
-        tx, ty = target.position
-        if ((px - tx) ** 2 + (py - ty) ** 2) ** 0.5 > 1.5:
+        from engine.presence import npc_adjacent_to_player
+        if not npc_adjacent_to_player(self.engine, target):
             return f"{target.name} is too far away to attack."
 
         # If the player has a ranged weapon equipped, melee uses fists

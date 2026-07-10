@@ -41,6 +41,12 @@ class GameAPIMixin:
         self.exterior_return_pos = self.player.position
         self.current_interior = inter
         self.player.position = inter.door
+        # Everyone inside appears inside (P9A.7)
+        try:
+            from engine.presence import assign_visitors
+            assign_visitors(self, inter, loc.name)
+        except Exception:
+            pass
         # Whose place is this? (P9A.3b nameplate)
         plate = ""
         try:

@@ -14,15 +14,10 @@ MAX_HINTS = 3
 
 
 def _adjacent_npcs(engine, radius: float = 1.5):
-    px, py = engine.player.position
-    out = []
-    for npc in engine.npc_manager.npcs.values():
-        if not npc.is_active():
-            continue
-        d = ((npc.position[0] - px) ** 2 + (npc.position[1] - py) ** 2) ** 0.5
-        if d <= radius:
-            out.append(npc)
-    return out
+    from engine.presence import npc_adjacent_to_player
+    return [npc for npc in engine.npc_manager.npcs.values()
+            if npc.is_active()
+            and npc_adjacent_to_player(engine, npc, radius)]
 
 
 def _hostile(npc) -> bool:

@@ -1341,3 +1341,26 @@ inconsistent between maps, and walls are see-through from outside —
 filed as P9A.7 with an AW coherence survey (roof-reveal layer,
 create_interior_from_world) running to inform it. 9 new tests.
 Suite: 805 tests, green x4.
+
+**Round 74 — P9A.7 parts 2+3: presence & occlusion (done).**
+George's coherence report, and the AW survey landed mid-round to
+confirm the design: interior NPCs must be the SAME entities with
+translated positions (copies diverge), presence needs ONE function
+(AW had two that disagreed), and their roof-reveal should NOT be
+ported (separate interior grids give occlusion free — the real gap
+was that our interiors drew nobody but the player). engine/
+presence.py is that one module: an NPC standing within an enterable
+building's footprint is INDOORS — the street renderer hides them
+(no more seeing through walls) and they're unreachable from outside;
+enter the building and everyone inside appears at deterministic
+zone-local positions (npc_spots first, then free floor tiles),
+drawn in the interior view and fully interactable — the same
+objects, so relationships and memory carry over. Every adjacency
+check now routes through presence.npc_adjacent_to_player: talking
+(T), the hint bar, melee (F), and bartering (B) — with tests
+proving melee and barter work beside a visitor indoors and fail
+through a wall from the street. Also per George: P8.7 ranged
+combat & targeting (missiles + spells, on top of the P8.6 FOV
+port) added to Phase 8; P9A.7b (footprint-matched interior sizes,
+door-edge matching) is the remainder next round. 9 new tests
+(8 presence + 1 shop-indoors). Suite: 814 tests, green x3.

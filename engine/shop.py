@@ -204,15 +204,16 @@ class ShopManager:
 
 def merchants_near(engine, player, radius: float = 2.0):
     """Return a list of adjacent merchant NPCs (for opening a shop)."""
+    from engine.presence import npc_adjacent_to_player
     out = []
-    px, py = player.position
     for npc in engine.npc_manager.npcs.values():
         if not npc.is_active():
             continue
         klass = getattr(npc.character_class, "value", "")
         if klass not in ("merchant", "cleric", "wizard", "ranger"):
             continue
-        d = ((npc.position[0] - px) ** 2 + (npc.position[1] - py) ** 2) ** 0.5
-        if d <= radius:
+        if npc_adjacent_to_player(engine, npc, radius):
             out.append(npc)
     return out
+
+

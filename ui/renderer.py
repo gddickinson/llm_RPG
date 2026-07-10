@@ -112,10 +112,18 @@ class MapRenderer:
 
         # Characters (NPCs + player) — procedural body renderer
         from ui.body_renderer import draw_body, update_anim, draw_projectile
+        from engine.presence import is_indoors
         all_chars = list(engine.npc_manager.npcs.values()) + [engine.player]
         for char in all_chars:
             if hasattr(char, "is_active") and not char.is_active():
                 continue
+            # No seeing through walls (P9A.7): the indoors are hidden
+            try:
+                if char.id != engine.player.id and \
+                        is_indoors(engine, char):
+                    continue
+            except Exception:
+                pass
             cx, cy = char.position
             if not (cam_x <= cx < cam_x + cols and cam_y <= cy < cam_y + rows):
                 continue
@@ -280,16 +288,22 @@ class MapRenderer:
         except Exception:
             pass
 
-        # Characters: the player, plus spawned monsters in dungeons
-        chars = [engine.player]
+        # Characters: the player, monsters in dungeons, and everyone
+        # who is INSIDE this building (P9A.7 — same entities, shown
+        # at their interior positions)
+        chars = [(engine.player, engine.player.position)]
         if is_dungeon:
-            chars += [n for n in engine.npc_manager.npcs.values()
+            chars += [(n, n.position)
+                      for n in engine.npc_manager.npcs.values()
                       if n.is_active() and
                       n.id.startswith(("enc_", "tut_"))
                       and 0 <= n.position[0] < zone.width
                       and 0 <= n.position[1] < zone.height]
-        for char in chars:
-            cx, cy = char.position
+        for npc_id, spot in getattr(zone, "visitors", {}).items():
+            npc = engine.npc_manager.npcs.get(npc_id)
+            if npc is not None and npc.is_active():
+                chars.append((npc, spot))
+        for char, (cx, cy) in chars:
             if not (cam_x <= cx < cam_x + cols and
                     cam_y <= cy < cam_y + rows):
                 continue

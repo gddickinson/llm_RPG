@@ -779,6 +779,13 @@ value ÷ effort:
   save_load. 9 tests.)*
 - [ ] **P8.6 Shadowcasting FOV** (`world/fov.py`): octant-based LOS —
   fog-of-war for dungeons, ranged line-of-sight, stealth. LOW effort.
+- [ ] **P8.7 Ranged combat & targeting** (George, 2026-07-10):
+  extract AW's ranged-combat/targeting approach for BOTH missile
+  weapons and ranged spells — explicit target selection (cycle
+  targets / cursor), range + line-of-sight checks (build on P8.6
+  FOV), and clear on-screen feedback about what you're aiming at.
+  Survey AW's implementation first, then port the targeting UX onto
+  our existing projectile/ammo/spell systems.
 
 **Patterns adopted as standing rules** (no checkbox needed): staggered
 timer-gated ticks for every heavy system; status-effect templates with
@@ -962,8 +969,31 @@ diverged.
   characters/contents through walls from the main map — hide what's
   indoors unless there are windows/openings or magical sight (the
   advanced part can come later; hiding is the same mechanism as #2).
-  AW solved parts of this (roof-reveal layer, create_interior_from_
-  world) — coherence survey running; fold findings here.
+  **AW coherence survey (2026-07-10) key findings:** interior NPCs
+  must be the SAME entities, position-translated (copies diverge);
+  their two presence functions disagreed — use ONE; do NOT port the
+  roof-reveal (it solves a baked-overworld problem we don't have —
+  separate grids give occlusion free); for (1), size the interior
+  from the footprint aspect and put its door on the same edge, and
+  optionally port their furniture-based room flood-fill typing.
+  *(PARTS 2+3 DONE 2026-07-10 — engine/presence.py, ONE presence
+  module for everything: an NPC standing within an enterable
+  footprint is INDOORS — hidden from the street renderer (no seeing
+  through walls) and unreachable from outside; entering the building
+  assigns everyone inside a deterministic zone-local position
+  (npc_spots then free tiles), rendered in the interior view — the
+  SAME entities, so relationships/memory carry. ALL adjacency now
+  routes through npc_adjacent_to_player: talk (T), hint bar, melee
+  (F), barter (B) — melee/barter tested from both sides of a wall.
+  REMAINDER, part 1: interior sized from footprint aspect + door
+  edge matching + room typing — next 9A round. 8+1 tests.)*
+- [ ] **P9A.7b Footprint-matched interiors.** Part 1 of P9A.7 per
+  the AW survey: `interior_size_from_footprint(loc)` — interior
+  dimensions scale with the building's overworld footprint (wide
+  building → wide interior), the interior door sits on the same edge
+  as the exterior door glyph (south), and blueprint layouts adapt or
+  fall back to a sized default. Optional: furniture flood-fill room
+  typing for future occupant placement.
 
 ## Phase 9 — Fantastical structures (George, 2026-07-10)
 
