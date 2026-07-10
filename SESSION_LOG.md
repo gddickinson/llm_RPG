@@ -704,3 +704,18 @@ now zone-aware (island fishing works; dungeon shores would too),
 encounters are suppressed inside all zones, tutorial NPCs are excluded
 from ambient AI. `--tutorial` CLI flag; mid-lesson saves resume on the
 island. 9 tests. Suite: 524 tests, all pass.
+
+**Round 39 — HOTFIX: NPC message flood (playtest report from George).**
+Standing next to a talkative NPC flooded the event log too fast to read.
+Root cause: the GUI drives `process_npc_turns_async()` every FRAME
+(30/s), and the only gate was `turn_counter % NPC_ACTION_INTERVAL == 0` —
+which stays true indefinitely while the player stands still on a multiple
+of the interval, so every nearby NPC acted ~30 times per second. Fix:
+`_npc_turns_due()` — NPCs act when the turn counter crosses an interval
+boundary (once per crossing), plus a 3-second wall-clock idle tick so the
+world keeps moving at a readable pace while the player thinks. The
+subprocess path still collects responses every frame but only SENDS on
+the cadence. Bonus: consecutive duplicate event lines ("Goren sleeps
+peacefully.") are suppressed at the log. 4 regression tests including a
+simulated 100-frame idle loop (must produce <15 events, was ~hundreds).
+Suite: 528 tests, all pass.

@@ -23,6 +23,10 @@ class MemoryManager:
 
     def add_event(self, event: str):
         """Add an event to the game history"""
+        # Suppress consecutive duplicates (idle NPC barks repeat)
+        if self.game_history and \
+                self.game_history[-1].get("event") == event:
+            return
         # Add timestamp
         timestamped_event = {
             "timestamp": time.time(),

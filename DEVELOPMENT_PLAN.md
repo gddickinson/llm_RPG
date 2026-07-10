@@ -344,6 +344,17 @@ and out of fights — and NPCs remember you across sessions.
 
 ---
 
+### Playtest hotfixes (reported by George)
+
+- [x] **H1 Message-flood next to talkative NPCs.** *(fixed 2026-07-09 — the GUI
+  drives NPC processing every frame (30/s) and the only gate was
+  `turn_counter % INTERVAL == 0`, which stays true while standing still: every
+  nearby NPC acted ~30×/sec. New `_npc_turns_due()` guard: NPCs act on the turn
+  cadence, plus a 3-second wall-clock tick while idle so the world stays alive
+  at a readable pace; consecutive duplicate log lines ("Goren sleeps
+  peacefully.") are suppressed. 4 regression tests incl. a simulated 100-frame
+  idle loop.)*
+
 ## Phase 5 — Combat depth & feel  (~1–2 weeks, interleave anytime)
 
 The resolution math (d20 + mods vs AC, crits, flanking, damage types) is genuinely

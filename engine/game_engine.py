@@ -419,9 +419,28 @@ class GameEngine(GameAPIMixin):
     # NPC turn processing
     # ====================================================================
 
+    def _npc_turns_due(self) -> bool:
+        """NPCs act on the turn cadence — or a slow wall-clock tick while
+        the player idles. The GUI calls processing every FRAME (30/s);
+        without this guard a static turn counter resting on a multiple of
+        NPC_ACTION_INTERVAL made every nearby NPC act 30x per second,
+        flooding the log."""
+        import time
+        now = time.monotonic()
+        last_turn = getattr(self, "_npc_last_turn", None)
+        last_time = getattr(self, "_npc_last_time", 0.0)
+        turn_due = (self.turn_counter != last_turn and
+                    self.turn_counter % config.NPC_ACTION_INTERVAL == 0)
+        idle_due = (now - last_time) >= 3.0
+        if not (turn_due or idle_due):
+            return False
+        self._npc_last_turn = self.turn_counter
+        self._npc_last_time = now
+        return True
+
     def process_npc_turns(self) -> None:
         """Synchronous NPC turn (kept for terminal mode)."""
-        if self.turn_counter % config.NPC_ACTION_INTERVAL != 0:
+        if not self._npc_turns_due():
             return
         for npc_id, npc in list(self.npc_manager.npcs.items()):
             if hasattr(npc, "is_active") and not npc.is_active():
@@ -474,7 +493,9 @@ class GameEngine(GameAPIMixin):
                 logger.error(f"NPC {npc_id}: {resp.get('error')}")
             self.processing_npcs.discard(npc_id)
 
-        # Send new commands
+        # Send new commands — on the NPC cadence, not per frame
+        if not self._npc_turns_due():
+            return
         from engine.llm_budget import llm_action_allowed, heuristic_provider
         for npc_id, npc in self.npc_manager.npcs.items():
             if not npc.is_active() or npc_id in self.processing_npcs:
