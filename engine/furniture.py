@@ -54,6 +54,10 @@ def _kind(name: str) -> str:
         return "shelf"
     if "chest" in low or "crate" in low or "barrel" in low:
         return "stash"
+    if "anvil" in low:
+        return "anvil"
+    if "well" in low:
+        return "well"
     return low
 
 
@@ -79,7 +83,8 @@ def interact(engine) -> Optional[str]:
         return None
     kind = _kind(piece.get("name", ""))
     handler = {"bed": _rest, "hearth": _cook, "altar": _pray,
-               "shelf": _read, "stash": _rummage}.get(kind)
+               "shelf": _read, "stash": _rummage,
+               "anvil": _smith, "well": _drink}.get(kind)
     if handler is not None:
         msg = handler(engine, interior)
     else:
@@ -144,6 +149,31 @@ def _read(engine, interior) -> str:
         line = "Most of it is inventory ledgers and weather complaints."
     return f"You leaf through the shelves. One page catches your " \
            f"eye: \"{line}\""
+
+
+def _smith(engine, interior) -> str:
+    """E at the anvil: repair every damaged piece you carry (P9A.6)."""
+    from engine.durability import repair, repair_cost
+    from characters.equipment import equipped_items
+    player = engine.player
+    candidates = list(equipped_items(player)) + list(player.inventory)
+    damaged = [it for it in candidates
+               if it is not None and repair_cost(it) > 0]
+    if not damaged:
+        return "Your gear is in good order. ([K] to craft here.)"
+    lines = []
+    for item in damaged:
+        lines.append(repair(player, item, at_forge=True))
+    return " ".join(lines)
+
+
+def _drink(engine, interior) -> str:
+    player = engine.player
+    if player.metadata.get("well_drink_day") == _day(engine):
+        return "The water is cold and clear. You've had your fill."
+    player.metadata["well_drink_day"] = _day(engine)
+    player.hp = min(player.max_hp, player.hp + 2)
+    return "You draw up the bucket and drink deep (+2 HP)."
 
 
 def _rummage(engine, interior) -> str:

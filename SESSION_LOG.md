@@ -1317,3 +1317,27 @@ over adjacent pieces, so a barrel standing beside the stairs
 rummages instead of creaking. This is the structural foundation the
 Phase 9 fantastical structures (keep, temple crypt, wizard's tower)
 will stack on. 9 new tests. Suite: 796 tests, green x3.
+
+**Round 73 — P9A.6 Building services (done) — PHASE 9A COMPLETE.**
+The last 9A item, and it caught a regression the solid walls had
+quietly created: banking and forge-gated crafting resolved the
+player's location from OVERWORLD coordinates — meaningless once
+you're standing in an interior, and since P9A.3b you can't stand on
+building footprints at all, so both services had silently died. New
+engine.player_location() is interior-aware: any level of any
+building resolves to that building's Location. Banking now works
+where it should — INSIDE the temple (N/M keys, advertised on the
+hint bar in temples and shops) — and weapon-smithing recipes see the
+forge from the forge's own floor. New services: E at the ANVIL
+repairs every damaged piece you carry at standard forge prices;
+the Village Well (whose blueprint quirkily mapped its water cells to
+altars) became a real Well — drink once a day for +2 HP. Cooking,
+prayer and shelf-research were already live from P9A.2. George's
+building overhaul (Phase 9A) is COMPLETE: doors and locks, working
+furniture, matched occupants, witnessed trespass, lofts and cellars,
+and building services. His follow-up playtest found the next seam —
+interiors don't match exterior footprints, NPC presence is
+inconsistent between maps, and walls are see-through from outside —
+filed as P9A.7 with an AW coherence survey (roof-reveal layer,
+create_interior_from_world) running to inform it. 9 new tests.
+Suite: 805 tests, green x4.

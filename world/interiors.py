@@ -187,6 +187,8 @@ def make_from_blueprint(loc_name: str, bp) -> Interior:
                 }
                 if getattr(bp, "kind", "") == "library":
                     cell_name_map["R"] = "Shelves"
+                if getattr(bp, "kind", "") == "well":
+                    cell_name_map["S"] = "Well"
                 inter.furniture.append({
                     "name": cell_name_map.get(cell, "Furniture"),
                     "x": x, "y": y,

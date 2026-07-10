@@ -935,10 +935,35 @@ diverged.
   interaction prefers the piece underfoot over adjacent ones (a
   barrel beside stairs rummages, not creaks). Foundation laid for
   the Phase 9 fantastical structures. 9 tests.)*
-- [ ] **P9A.6 Building-specific actions.** Per-style interactions
+- [x] **P9A.6 Building-specific actions.** Per-style interactions
   advertised on the hint bar: cook at a hearth, bank at the temple,
   research at the wizard's shelves, repair at the forge — driven by
   the furniture layer, not hardcoded per building.
+  *(done 2026-07-10 — the missing services + a REGRESSION the solid
+  walls exposed: banking and forge-gated crafting read the player's
+  OVERWORLD position, which is zone-local nonsense once you're
+  indoors — and with walls you can't stand on footprints anymore, so
+  both services had silently died. New `engine.player_location()` is
+  interior-aware (any level of a building resolves to its Location);
+  banking (N/M, hint-bar advertised inside temples/shops) and craft()
+  now use it. E at the ANVIL repairs every damaged piece you carry at
+  the usual forge prices ("Your gear is in good order" when
+  pristine). The Village Well's blueprint quirk (altar cells) became
+  a real Well — drink once a day (+2 HP). Cook/pray/research were
+  already live via P9A.2. PHASE 9A COMPLETE — George's building
+  overhaul: doors, locks, furniture, occupants, trespass,
+  multi-level, services. 9 tests.)*
+- [ ] **P9A.7 Interior–exterior coherence (George, follow-up
+  playtest).** Three observed mismatches: (1) interiors don't match
+  the exterior footprint (stock blueprints regardless of building
+  size/shape); (2) NPCs visible on building tiles outside are absent
+  from the interior when you enter — presence must be consistent
+  (same entities, translated, interactable); (3) you can see
+  characters/contents through walls from the main map — hide what's
+  indoors unless there are windows/openings or magical sight (the
+  advanced part can come later; hiding is the same mechanism as #2).
+  AW solved parts of this (roof-reveal layer, create_interior_from_
+  world) — coherence survey running; fold findings here.
 
 ## Phase 9 — Fantastical structures (George, 2026-07-10)
 

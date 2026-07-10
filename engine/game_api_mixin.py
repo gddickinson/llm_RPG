@@ -308,6 +308,20 @@ class GameAPIMixin:
         """SHIFT+P at a shrine/temple: prayer and (maybe) a miracle."""
         return self.pantheon.pray()
 
+    def player_location(self):
+        """The Location the player occupies — interior-aware (P9A.6):
+        inside a building (any level), that building's location."""
+        if self.current_interior is not None:
+            zone = self.current_interior
+            for key, inter in self.interiors.items():
+                if inter is zone or inter.level_above is zone or \
+                        inter.level_below is zone:
+                    for loc in self.world.locations:
+                        if loc.name == key:
+                            return loc
+            return None
+        return self.world.get_location_at(*self.player.position)
+
     def use_furniture(self) -> Optional[str]:
         """E beside interior furniture (P9A.2). None = nothing here."""
         from engine.furniture import interact
@@ -385,7 +399,7 @@ class GameAPIMixin:
 
     def craft(self, output_id: str) -> str:
         from items.crafting import craft, find_recipe
-        loc = self.world.get_location_at(*self.player.position)
+        loc = self.player_location()
         props = dict(loc.properties) if loc else {}
         msg = craft(self.player, output_id, props)
         self.memory_manager.add_event(msg)

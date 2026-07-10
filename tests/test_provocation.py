@@ -41,6 +41,7 @@ class TestProvocation(unittest.TestCase):
 
     def test_assault_costs_villager_reputation(self):
         npc = self._villager_beside_player()
+        npc.hp = npc.max_hp = 99   # a kill adds kill-rep on top
         before = get_rep(self.player, Faction.VILLAGERS)
         self.engine.combat_system._resolve(self.player, npc)
         self.assertEqual(get_rep(self.player, Faction.VILLAGERS),

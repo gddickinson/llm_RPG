@@ -60,6 +60,12 @@ def context_hints(engine) -> List[str]:
                 hints.append("[Enter] sleep until morning")
         except Exception:
             pass
+        try:
+            allowed, _ = engine.bank.is_at_bank()
+            if allowed:
+                hints.append("[N] deposit gold  [M] withdraw")
+        except Exception:
+            pass
     elif getattr(engine, "current_dungeon", None):
         hints.append("[TAB] climb back to the surface")
 
