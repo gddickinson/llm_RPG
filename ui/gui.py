@@ -58,6 +58,15 @@ class GameGUI:
         self.renderer = MapRenderer(tile_size=tile_size)
         self.hud = HUD()
         self.input_handler = InputHandler(engine, self)
+        # Procedural sound (SFX via event observer, weather ambience)
+        try:
+            from ui.sound import SoundManager
+            self.sound = SoundManager()
+            if self.sound.enabled:
+                engine.memory_manager.add_observer(self.sound.on_event)
+        except Exception as e:
+            logger.debug(f"Sound unavailable: {e}")
+            self.sound = None
 
         # Layout
         self._compute_layout()
@@ -105,6 +114,12 @@ class GameGUI:
                     self.engine.process_npc_turns_async()
                 except Exception as e:
                     logger.warning(f"NPC async tick error: {e}")
+            if self.sound is not None:
+                try:
+                    self.sound.update_ambient(
+                        self.engine.current_weather())
+                except Exception:
+                    pass
             self._render()
             self.clock.tick(30)
 
@@ -113,6 +128,8 @@ class GameGUI:
         pass
 
     def shutdown(self) -> None:
+        if self.sound is not None:
+            self.sound.shutdown()
         try:
             self.engine.end_game()
         except Exception:

@@ -151,6 +151,7 @@ llm_RPG/
 - **`combat_effects.py`** — Damage popups, hit flashes, death particles.
 - **`lighting.py`** — Night darkness + torch/window light punches (weather-scaled).
 - **`weather_overlay.py`** — Rain/snow/fog particle overlays.
+- **`sound.py`** — Procedural SFX (numpy-synthesized) via event observer + weather ambience loops.
 - **`gui_interface.py`** — Minimal GUI-facing engine interface helpers.
 
 ## Key Classes — where to find them

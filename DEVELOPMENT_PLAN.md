@@ -409,8 +409,12 @@ and heal-spams.
   the director (prices rise → a radiant fetch quest follows); every event
   becomes a rumor NPCs repeat. "[Realm] …" morning lines; persists.
   8 tests.)*
-- [ ] **P5.5 Sound.** pygame.mixer: ambient loops per biome/weather + combat/UI SFX.
-  (Procedurally generated or CC0 packs; big feel win, low effort.)
+- [x] **P5.5 Sound.** *(done 2026-07-09 — `ui/sound.py`: fully procedural,
+  no audio files (true to the sprite ethos) — 9 synthesized effects (thudding
+  hits, pickup blips, coin pings, a level-up arpeggio, spell zaps, discovery
+  chimes, a defeat fall) driven by an event-log observer keyword map, plus
+  rain/storm noise ambience looped by weather. Degrades silently headless;
+  mixer re-inits to mono if pygame grabbed stereo first. 5 tests.)*
 - [ ] **P5.6 End-of-session hook.** Sleeping at an inn/home: heals, advances to
   morning, and shows a "day summary" (skills gained, gold delta, director event
   teaser) — Stardew's "tomorrow I'll…" engine, adapted lightly.

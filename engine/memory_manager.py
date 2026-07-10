@@ -16,9 +16,10 @@ class MemoryManager:
     def __init__(self, max_history=config.MAX_HISTORY_ITEMS):
         self.game_history = []
         self.max_history = max_history
-        # Optional observer — the topic journal scans every event the
-        # player sees (set by the engine; must not call add_event back)
-        self.on_event = None
+        # Observers — subsystems that react to every event the player
+        # sees (topic journal, sound). Must not call add_event back.
+        self.on_event = None          # legacy single-observer slot
+        self._observers = []
         logger.info(f"Memory Manager initialized with max history: {max_history}")
 
     def add_event(self, event: str):
@@ -37,11 +38,16 @@ class MemoryManager:
         self.game_history.append(timestamped_event)
         logger.debug(f"Added event: {event}")
 
-        if self.on_event is not None:
+        for observer in ([self.on_event] if self.on_event else []) + \
+                self._observers:
             try:
-                self.on_event(event)
+                observer(event)
             except Exception as e:
                 logger.debug(f"Event observer error: {e}")
+
+    def add_observer(self, fn) -> None:
+        if fn not in self._observers:
+            self._observers.append(fn)
         
         # Trim history if needed
         if len(self.game_history) > self.max_history:

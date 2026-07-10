@@ -820,3 +820,17 @@ shortage through the world director, raising real shop prices and seeding
 the next radiant fetch quest; every event lands as a "[Realm] ..." morning
 line and joins the rumor pool NPCs quote. State persists in saves.
 8 new tests. Suite: 581 tests, all pass.
+
+**Round 47 — P5.5 procedural sound (done).**
+New `ui/sound.py` — no audio asset files, matching the procedural-sprite
+ethos: nine effects synthesized with numpy at startup (square-wave thud
+for hits, rising blip for pickups/gathers, coin pings, a C-E-G level-up
+arpeggio, descending spell zap, discovery chime for legends/collection,
+a falling defeat sweep) plus rain and storm noise loops that follow the
+weather. SFX are event-driven: a second memory-manager observer maps log
+keywords to sounds (memory_manager grew multi-observer support). All of
+it degrades silently when the mixer is unavailable, and the manager
+re-inits the mixer to mono if pygame already grabbed a stereo device
+(this also fixed the sound tests skipping in full-suite runs; dummy SDL
+drivers now set package-wide in tests/__init__.py). 5 new tests.
+Suite: 586 tests, all pass, zero skips.
