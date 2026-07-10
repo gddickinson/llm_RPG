@@ -204,6 +204,54 @@ def make_from_blueprint(loc_name: str, bp) -> Interior:
     return inter
 
 
+def fit_to_footprint(inter: Interior, loc) -> Interior:
+    """P9A.7b: the inside matches the outside. Interior dimensions
+    scale with the building's overworld footprint (a hut opens into a
+    hut, a hall into a hall), the interior door sits at the south-face
+    center — the same edge as the exterior door glyph — and furniture
+    keeps its relative layout, remapped proportionally."""
+    tw = max(6, min(16, loc.width * 3 + 2))
+    th = max(5, min(12, loc.height * 3 + 2))
+    old_w, old_h = inter.width, inter.height
+
+    def remap(x: int, y: int) -> Tuple[int, int]:
+        nx = 1 + round((x - 1) * (tw - 3) / max(1, old_w - 3))
+        ny = 1 + round((y - 1) * (th - 3) / max(1, old_h - 3))
+        return (max(1, min(tw - 2, nx)), max(1, min(th - 2, ny)))
+
+    # Fresh shell: walls around floor, door at south-center
+    inter.width, inter.height = tw, th
+    inter.terrain = [[TerrainType.GRASS for _ in range(tw)]
+                     for _ in range(th)]
+    for x in range(tw):
+        inter.terrain[0][x] = TerrainType.BUILDING
+        inter.terrain[th - 1][x] = TerrainType.BUILDING
+    for y in range(th):
+        inter.terrain[y][0] = TerrainType.BUILDING
+        inter.terrain[y][tw - 1] = TerrainType.BUILDING
+    inter.door = (tw // 2, th - 1)
+    inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
+
+    # Remap furniture, nudging collisions to the next free tile
+    taken = {inter.door}
+    moved = []
+    for piece in inter.furniture:
+        spot = remap(piece.get("x", 1), piece.get("y", 1))
+        if spot in taken:
+            spot = next((t for t in _inner_tiles(tw, th)
+                         if t not in taken), spot)
+        taken.add(spot)
+        piece["x"], piece["y"] = spot
+        moved.append(piece)
+    inter.furniture = moved
+    inter.npc_spots = [remap(x, y) for x, y in inter.npc_spots]
+    return inter
+
+
+def _inner_tiles(w: int, h: int) -> List[Tuple[int, int]]:
+    return [(x, y) for y in range(1, h - 1) for x in range(1, w - 1)]
+
+
 def _free_tiles(inter: Interior) -> List[Tuple[int, int]]:
     """Inner floor tiles with no wall, door, or furniture on them."""
     taken = {(f.get("x"), f.get("y")) for f in inter.furniture}
@@ -312,6 +360,11 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
             else:
                 continue
 
+        # The inside matches the outside (P9A.7b)
+        try:
+            fit_to_footprint(inter, loc)
+        except Exception as e:
+            logger.debug(f"footprint fit for {loc.name}: {e}")
         interiors[loc.name] = inter
 
     # Multi-level pass (P9A.5): bedrooms above taverns and inns,

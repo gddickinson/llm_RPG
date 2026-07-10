@@ -960,7 +960,7 @@ diverged.
   already live via P9A.2. PHASE 9A COMPLETE — George's building
   overhaul: doors, locks, furniture, occupants, trespass,
   multi-level, services. 9 tests.)*
-- [ ] **P9A.7 Interior–exterior coherence (George, follow-up
+- [x] **P9A.7 Interior–exterior coherence (George, follow-up
   playtest).** Three observed mismatches: (1) interiors don't match
   the exterior footprint (stock blueprints regardless of building
   size/shape); (2) NPCs visible on building tiles outside are absent
@@ -987,13 +987,24 @@ diverged.
   (F), barter (B) — melee/barter tested from both sides of a wall.
   REMAINDER, part 1: interior sized from footprint aspect + door
   edge matching + room typing — next 9A round. 8+1 tests.)*
-- [ ] **P9A.7b Footprint-matched interiors.** Part 1 of P9A.7 per
+- [x] **P9A.7b Footprint-matched interiors.** Part 1 of P9A.7 per
   the AW survey: `interior_size_from_footprint(loc)` — interior
   dimensions scale with the building's overworld footprint (wide
   building → wide interior), the interior door sits on the same edge
   as the exterior door glyph (south), and blueprint layouts adapt or
   fall back to a sized default. Optional: furniture flood-fill room
   typing for future occupant placement.
+  *(done 2026-07-10 — `fit_to_footprint()` in world/interiors.py:
+  every interior is rebuilt to dimensions scaled from its overworld
+  footprint (w×3+2 / h×3+2, clamped 6–16 × 5–12) so a hut opens
+  into a hut and a hall into a hall, wide buildings open into wide
+  rooms; the interior door ALWAYS sits at the south-face center —
+  the same edge as the exterior door glyph — and furniture keeps
+  its relative layout, remapped proportionally with collision
+  nudging (no two pieces share a tile). Lofts and cellars inherit
+  the fitted dimensions since the multi-level pass runs after.
+  Room flood-fill typing deferred until occupant placement needs
+  it. 8 tests. GEORGE'S FULL COHERENCE REPORT NOW RESOLVED.)*
 
 ## Phase 9 — Fantastical structures (George, 2026-07-10)
 

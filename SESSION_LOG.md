@@ -1364,3 +1364,22 @@ combat & targeting (missiles + spells, on top of the P8.6 FOV
 port) added to Phase 8; P9A.7b (footprint-matched interior sizes,
 door-edge matching) is the remainder next round. 9 new tests
 (8 presence + 1 shop-indoors). Suite: 814 tests, green x3.
+
+**Round 75 — P9A.7b Footprint-matched interiors (done) — P9A.7
+complete.**
+The inside now matches the outside. fit_to_footprint() rebuilds
+every interior to dimensions scaled from its building's overworld
+footprint (3x the footprint plus walls, clamped 6-16 wide and
+5-12 tall): a 2x2 hut opens into a snug room, the keep into a hall,
+and wide buildings open into wide rooms. The interior door always
+sits at the south-face center — the same edge where the exterior
+door glyph is drawn and where bump-to-enter happens — so walking in
+and looking back reads spatially true. Furniture keeps its relative
+layout through a proportional remap with collision nudging (no two
+pieces share a tile, everything stays inside the walls), and the
+multi-level pass runs after the fit so tavern lofts and shop
+cellars inherit the corrected dimensions. With this, all three
+observations from George's coherence playtest are resolved:
+interiors match footprints, NPC presence is consistent between
+maps, and walls hide what's indoors. 8 new tests. Suite: 822,
+green x3.
