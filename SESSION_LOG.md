@@ -771,3 +771,16 @@ Phase 4 complete: radiant quests, 13 authored quests with chains and
 capability unlocks, quest points + guild, Tutorial Island (with zone
 rendering + movement fixed along the way), The Murkfen, history with
 findable relics, and defeat that tells stories.
+
+**Round 43 — P5.1 enemy AI profiles (done). Phase 5 begins.**
+Behavior flags in data/monsters.json, interpreted by the heuristic
+provider (world_state now carries player_position for directional moves):
+wolves HOWL on first sighting — a new router action that alerts same-kind
+packmates within 10 tiles, who then converge on your last known position;
+bandits and goblins break and run below 35%/25% HP (directionally away
+from you, "(breaks and runs!)"); marsh wisps flee at half; the wandering
+troll is territorial and lumbers back when drawn >8 tiles from its lair;
+the bog lurker lies utterly still until prey comes within 3 tiles — the
+swamp ambush made real. Combat stops being uniform bump-attack: packs
+swarm, cowards rout, trolls can be baited off their ground, and the fen
+is scary. 8 new tests. Suite: 558 tests, all pass.

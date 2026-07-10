@@ -116,17 +116,10 @@ class HeuristicProvider(LLMProvider):
         player_in_view = "player" in (visible_map or "").lower() or \
                          "@" in (visible_map or "")
 
-        # Hostile classes — same as before
+        # Hostile classes — behavior profiles from data/monsters.json
         if klass in ("brigand", "monster", "troll"):
-            if player_in_view:
-                action, target = "attack", "player"
-                dialog = self.rng.choice(_GREETINGS.get("brigand", [""]))
-                emotion = "angry"
-            else:
-                action, target = "move", self.rng.choice(
-                    ["north", "south", "east", "west"])
-                emotion = "wary"
-            return self._wrap(character, action, target, dialog, emotion)
+            return self._hostile_action(character, world_state,
+                                        player_in_view)
 
         # Peaceful NPCs — check urgent needs first, then schedule
         try:
@@ -191,6 +184,76 @@ class HeuristicProvider(LLMProvider):
                 dialog = self.rng.choice(_GREETINGS.get(klass, _GREETINGS["villager"]))
 
         return self._wrap(character, action, target, dialog, emotion)
+
+    # Hostile behavior profiles (P5.1) --------------------------------
+
+    @staticmethod
+    def _dir_between(src, dst) -> str:
+        dx, dy = dst[0] - src[0], dst[1] - src[1]
+        if abs(dx) >= abs(dy):
+            return "east" if dx > 0 else "west"
+        return "south" if dy > 0 else "north"
+
+    def _hostile_action(self, character, world_state, player_in_view):
+        meta = getattr(character, "metadata", {}) or {}
+        behavior = meta.get("behavior", {})
+        ppos = world_state.get("player_position")
+        mypos = getattr(character, "position", (0, 0))
+        hp_frac = character.hp / max(1, character.max_hp)
+
+        # Broken morale: run from the player
+        flee_below = behavior.get("flee_below", 0)
+        if flee_below and hp_frac <= flee_below and ppos:
+            away = self._dir_between(ppos, mypos)
+            return self._wrap(character, "move", away,
+                              "(breaks and runs!)", "terrified")
+
+        # Territorial: never stray far from the lair
+        radius = behavior.get("territorial", 0)
+        home = meta.get("home_pos")
+        if radius and home:
+            dist_home = abs(mypos[0] - home[0]) + abs(mypos[1] - home[1])
+            if dist_home > radius:
+                back = self._dir_between(mypos, tuple(home))
+                return self._wrap(character, "move", back,
+                                  "(lumbers back toward its lair)",
+                                  "sullen")
+
+        # Ambusher: lie motionless until prey comes close
+        ambush = behavior.get("ambush", 0)
+        if ambush and ppos:
+            dist = abs(mypos[0] - ppos[0]) + abs(mypos[1] - ppos[1])
+            if dist > ambush and not player_in_view:
+                return self._wrap(character, "wait",
+                                  "utterly still", "", "patient")
+
+        # Pack howl: first sighting calls the pack
+        if behavior.get("pack_howl") and player_in_view and \
+                not meta.get("howled"):
+            meta["howled"] = True
+            return self._wrap(character, "howl", "the pack",
+                              "(a chilling howl rises!)", "savage")
+
+        # Answering a pack alert: converge on the last known position
+        alert = meta.get("alert")
+        if alert and not player_in_view:
+            dist = abs(mypos[0] - alert[0]) + abs(mypos[1] - alert[1])
+            if dist <= 2:
+                meta.pop("alert", None)
+            else:
+                toward = self._dir_between(mypos, tuple(alert))
+                return self._wrap(character, "move", toward,
+                                  "", "hunting")
+
+        # Default hostility
+        if player_in_view:
+            return self._wrap(character, "attack", "player",
+                              self.rng.choice(_GREETINGS.get("brigand",
+                                                             [""])),
+                              "angry")
+        return self._wrap(character, "move",
+                          self.rng.choice(["north", "south", "east",
+                                           "west"]), "", "wary")
 
     def _wrap(self, character, action, target, dialog, emotion):
         return {

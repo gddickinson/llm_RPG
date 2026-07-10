@@ -598,4 +598,6 @@ class GameEngine(GameAPIMixin):
         return {
             "current_location": loc.name if loc else "wilderness",
             "time_of_day": self.world.get_time_of_day(),
+            "player_position": tuple(self.player.position)
+            if self.player else None,
         }

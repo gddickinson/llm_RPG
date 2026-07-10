@@ -73,10 +73,34 @@ class ActionRouter:
             return self._handle_rest(npc, target, action)
         if action in ("craft", "forge", "brew", "cook", "build", "repair", "work"):
             return self._handle_work(npc, target, action)
+        if action == "howl":
+            return self._handle_howl(npc)
 
         # Default — log as flavor
         self.engine.memory_manager.add_event(f"{npc.name} {action} {target}.")
         npc.add_memory(f"I {action} {target}", 1)
+        return True
+
+    def _handle_howl(self, npc) -> bool:
+        """Pack alert (P5.1): same-kind hostiles converge on the player."""
+        player = self.engine.player
+        if player is None:
+            return False
+        self.engine.memory_manager.add_event(
+            f"{npc.name}'s howl echoes across the wilds!")
+        px, py = player.position
+        nx, ny = npc.position
+        alerted = 0
+        for other in self.engine.npc_manager.npcs.values():
+            if other.id == npc.id or not other.is_active():
+                continue
+            if other.name != npc.name:
+                continue
+            ox, oy = other.position
+            if abs(ox - nx) + abs(oy - ny) <= 10:
+                other.metadata["alert"] = [px, py]
+                alerted += 1
+        logger.debug(f"{npc.name} alerted {alerted} packmates")
         return True
 
     # --------------- movement ----------------------------------------

@@ -377,9 +377,15 @@ The resolution math (d20 + mods vs AC, crits, flanking, damage types) is genuine
 good; the tactical layer is absent — enemies wander-or-attack, the player bump-attacks
 and heal-spams.
 
-- [ ] **P5.1 Enemy AI profiles** (data-driven per monster): pack-hunt flanking
-  (wolves), ranged kiting (goblin archers), flee-at-low-HP (bandits), guard-territory
-  (trolls), call-for-help. A few behavior flags each — not a new AI system.
+- [x] **P5.1 Enemy AI profiles.** *(done 2026-07-09 — `behavior` flags in
+  `data/monsters.json`, read by the heuristic provider: wolves howl on first
+  sighting (new router action alerts same-kind packmates within 10 tiles, who
+  converge on your last position); bandits/goblins/wisps break and run below an
+  HP fraction (directionally AWAY, using the new `player_position` in
+  world_state); the wandering troll never strays >8 tiles from its lair; the
+  bog lurker lies motionless until prey comes within 3. 8 tests. Also: answered
+  George's question — Tutorial Island starts via `--tutorial`; a start-menu
+  entry is queued.)*
 - [ ] **P5.2 Spell selection UI + spell growth.** Hotkey opens a spell menu (only 2 of
   7 spells are castable today); learn spells from trainers/quests/scrolls; add ~8 more
   spells via the data layer.

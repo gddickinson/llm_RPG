@@ -73,6 +73,7 @@ def build_monster(template_id: str, position: Tuple[int, int]):
 
     stats = dict(DEFAULT_STATS)
     stats.update(spec.get("stats", {}))
+    behavior = dict(spec.get("behavior", {}))
     hp = spec.get("hp", 10)
     nid = f"enc_{template_id}_{uuid.uuid4().hex[:6]}"
     return Character(
@@ -88,5 +89,7 @@ def build_monster(template_id: str, position: Tuple[int, int]):
         personality={"traits": ["hostile"]},
         goals=["Attack the player"],
         inventory=[],
+        metadata={"behavior": behavior,
+                  "home_pos": list(position)},
         **stats,
     )

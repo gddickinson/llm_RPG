@@ -8,7 +8,10 @@
     "symbol": "w",
     "description": "A snarling wolf with hungry eyes.",
     "encounter_weight": 4,
-    "dungeon": true
+    "dungeon": true,
+    "behavior": {
+      "pack_howl": true
+    }
   },
   "bandit": {
     "name": "Bandit",
@@ -19,7 +22,10 @@
     "symbol": "b",
     "description": "A scarred outlaw clutching a rusty blade.",
     "encounter_weight": 2,
-    "dungeon": true
+    "dungeon": true,
+    "behavior": {
+      "flee_below": 0.35
+    }
   },
   "goblin": {
     "name": "Goblin",
@@ -30,7 +36,10 @@
     "symbol": "g",
     "description": "A green-skinned scavenger.",
     "encounter_weight": 2,
-    "dungeon": true
+    "dungeon": true,
+    "behavior": {
+      "flee_below": 0.25
+    }
   },
   "wandering_troll": {
     "name": "Wandering Troll",
@@ -41,7 +50,10 @@
     "symbol": "X",
     "description": "A solitary troll, lost from its kin.",
     "encounter_weight": 1,
-    "dungeon": false
+    "dungeon": false,
+    "behavior": {
+      "territorial": 8
+    }
   },
   "bog_lurker": {
     "name": "Bog Lurker",
@@ -59,6 +71,9 @@
     "stats": {
       "strength": 14,
       "constitution": 14
+    },
+    "behavior": {
+      "ambush": 3
     }
   },
   "marsh_wisp": {
@@ -73,6 +88,9 @@
     "dungeon": false,
     "spawn_terrain": [
       "swamp"
-    ]
+    ],
+    "behavior": {
+      "flee_below": 0.5
+    }
   }
 }
