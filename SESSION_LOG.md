@@ -678,3 +678,16 @@ ghost in, camera clamped for rooms smaller than the viewport. A pixel-diff
 test proves the dungeon view differs from the overworld. This also gives
 Tutorial Island (P4.4b) its zone infrastructure. 6 new tests.
 Suite: 509 tests, all pass.
+
+**Round 37 — P4.4b zone-aware movement (done).**
+The companion bug to round 36's rendering fix: movement inside dungeons
+and interiors consulted the OVERWORLD grid — dungeon walls never blocked
+(walk through rock), and overworld water/mountains invisibly blocked
+dungeon corridors. New `PlayerActions._move_in_zone()` (via
+`engine.active_zone()`): zone bounds, zone walls (mountain=rock,
+building=interior walls, water), door tiles passable, character
+collision; pet trail maintained; no weather penalty or agility shortcuts
+indoors. A dedicated test proves zone floor overrides overworld water at
+the same coordinates. Dungeons are now genuinely playable spaces —
+rendered (R36) and enforced (R37). Tutorial Island (P4.4c) has its full
+infrastructure. 6 new tests. Suite: 515 tests, all pass.

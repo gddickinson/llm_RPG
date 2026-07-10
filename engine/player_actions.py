@@ -181,6 +181,16 @@ class PlayerActions:
             return False
         nx, ny = player.position[0] + dx, player.position[1] + dy
 
+        # Inside a dungeon/interior, the ZONE grid governs movement —
+        # its walls block, and the overworld terrain is irrelevant
+        zone = None
+        try:
+            zone = self.engine.active_zone()
+        except Exception:
+            pass
+        if zone is not None:
+            return self._move_in_zone(zone, nx, ny)
+
         # Region transition if walking off the world edge
         wmap = self.engine.world.map
         if (nx < 0 or ny < 0 or nx >= wmap.width or ny >= wmap.height):
@@ -220,6 +230,30 @@ class PlayerActions:
             self.engine.quest_manager.on_location_entered(loc.name)
 
         self._weather_travel_penalty(nx, ny)
+        self.engine.advance_turn()
+        return True
+
+    def _move_in_zone(self, zone, nx: int, ny: int) -> bool:
+        """Movement inside a dungeon/interior grid."""
+        from world.world_map import TerrainType
+        player = self.engine.player
+        if not (0 <= nx < zone.width and 0 <= ny < zone.height):
+            return False
+        terrain = zone.terrain[ny][nx]
+        if terrain in (TerrainType.MOUNTAIN, TerrainType.WATER,
+                       TerrainType.BUILDING):
+            return False
+        # Blocked by an active character standing there
+        for npc in self.engine.npc_manager.npcs.values():
+            if npc.is_active() and npc.position == (nx, ny):
+                return False
+
+        old_pos = player.position
+        player.position = (nx, ny)
+        try:
+            self.engine.pet_system.on_player_moved(old_pos)
+        except Exception:
+            pass
         self.engine.advance_turn()
         return True
 

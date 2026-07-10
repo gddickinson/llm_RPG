@@ -235,6 +235,11 @@ class GameAPIMixin:
     def current_weather(self) -> str:
         return self.weather_system.state.current.value
 
+    def active_zone(self):
+        """The alternate grid the player is inside (dungeon/interior)."""
+        return getattr(self, "current_dungeon", None) or \
+            getattr(self, "current_interior", None)
+
     def effective_visibility(self) -> int:
         """Visibility range in tiles, shrunk by fog / rain / snow / storm."""
         import config

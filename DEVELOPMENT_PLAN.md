@@ -314,11 +314,15 @@ and out of fights — and NPCs remember you across sessions.
   zone-local ground items, dungeon monsters (bounds-filtered), clamped camera
   for small rooms. Pixel-diff test proves the dungeon view differs from the
   overworld. 6 tests.)*
-- [ ] **P4.4b Tutorial Island.** Small separate starter zone; one instructor NPC
-  per system (fish→cook→mine→smith→fight→cast→bank), each teaching by one
-  repetition; one-way boat to the mainland. Instructors are the LLM-NPC
-  showcase — narrow-domain characters with scripted fallback checklists.
-  (Zone infra now exists via P4.4a.)
+- [x] **P4.4b Zone-aware movement (Tutorial Island prerequisite #2).** *(done
+  2026-07-09 — movement inside dungeons/interiors consulted the OVERWORLD
+  grid: dungeon walls didn't block and overworld water invisibly blocked
+  corridors. `_move_in_zone()` now enforces zone bounds, zone walls
+  (mountain/water/building), doors, and character collision — with a test
+  proving zone floor overrides overworld water. 6 tests.)*
+- [ ] **P4.4c Tutorial Island.** Small separate starter zone (zone render +
+  movement infra now complete); one instructor NPC per system, teach by one
+  repetition; one-way boat to the mainland; `--tutorial` flag / start-menu entry.
 - [ ] **P4.5 Regional identity.** Give each region a theme, unique resources, unique
   monsters, a 2–3 quest mini-arc, and its diary (P2.7). Add one new themed region
   (swamp or highlands) to the 120×80 map. Interleave danger levels — a deadly pocket
