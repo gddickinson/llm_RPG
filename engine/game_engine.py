@@ -157,6 +157,8 @@ class GameEngine(GameAPIMixin):
         self.retaliation = RetaliationSystem(self)
         from engine.disease import DiseaseSystem
         self.disease = DiseaseSystem(self)
+        from world.farming import FarmManager
+        self.farm_manager = FarmManager(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -225,6 +227,10 @@ class GameEngine(GameAPIMixin):
         self.turn_counter = 0
         self.player_dead = False
         self.memory_manager.add_event("The adventure begins.")
+        try:
+            self.farm_manager.ensure_plots()
+        except Exception as e:
+            logger.debug(f"Farm plots: {e}")
         try:
             from engine.module_packs import install_packs
             install_packs(self)
@@ -345,6 +351,7 @@ class GameEngine(GameAPIMixin):
                 self.faction_ticker.run_day()
                 self.retaliation.run_night()
                 self.disease.run_day()
+                self.farm_manager.run_day()
                 try:
                     from world.astronomy import announce_conjunction
                     announce_conjunction(self, day)

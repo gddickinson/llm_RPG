@@ -1118,3 +1118,22 @@ remedy through the normal item-use flow — herb bundles break fevers,
 potions clear coughs, giving foraging and shops a new reason to
 matter. All infection state rides character metadata, so save/load
 works for free. Zero LLM. 10 new tests. Suite: 709 tests, green x3.
+
+**Round 64 — P8.3 Crops (done; grazing deferred).**
+Third autonomous_world port: farmland lives by the calendar. New
+TerrainType.FARMLAND (furrowed sprite + minimap color); at new-game
+start every worldgen farm location ("Old Farmhouse", "Roadside Farm")
+claims a 4x3 field of adjacent grass. Fields cycle with the seasons —
+fallow -> planted in spring ("[Realm] Planting has begun in the
+fields"), growing after five days, mature when ripened, where the
+ripening speed comes straight from P8.1's solar-intensity curve
+(bright high-summer sun cuts up to 10 days off the base 22) -> and in
+late autumn whatever still stands is brought in by the farmers: the
+village stores rise in the faction ticker and the harvest enters the
+rumor mill. Winter turns everything fallow. The player harvests ripe
+tiles with the ordinary Z forage key (advertised in the hint bar,
+priority over nodes/herbs): two wheat sheaves (new item) + foraging
+XP, one harvest per field per season. Plot state persists through
+save_load with terrain re-stamped on load. Grazing from the AW module
+is DEFERRED with a note in the plan: this world has no herbivore
+wildlife yet. 7 new tests. Suite: 716 tests, green x3.

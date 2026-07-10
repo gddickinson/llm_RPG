@@ -129,5 +129,13 @@
     "value": 9,
     "stackable": true,
     "description": "A pale swamp mushroom; alchemists prize its bitterness."
+  },
+  "wheat_sheaf": {
+    "id": "wheat_sheaf",
+    "name": "Wheat Sheaf",
+    "item_type": "misc",
+    "value": 4,
+    "stackable": true,
+    "description": "A golden sheaf cut from a ripe field."
   }
 }

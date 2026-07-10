@@ -112,6 +112,11 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
         try:
+            if engine.farm_manager.state_at(x, y) == "mature":
+                hints.append("[Z] harvest the ripe wheat")
+        except Exception:
+            pass
+        try:
             node = engine.gathering_manager.node_at(x, y)
             if node is not None and engine.gathering_manager.has_tool_for(node):
                 _, spec, _ = node

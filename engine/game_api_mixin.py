@@ -231,6 +231,10 @@ class GameAPIMixin:
         gm = self.gathering_manager
         node = gm.node_at(*self.player.position)
         x, y = self.player.position
+        # A ripe field beats everything (P8.3)
+        crop = self.farm_manager.harvest(x, y)
+        if crop:
+            return crop
         from world.foraging import TERRAIN_FORAGE_TABLE
         terrain = self.world.map.get_terrain_at(x, y)
         foragable = terrain in TERRAIN_FORAGE_TABLE

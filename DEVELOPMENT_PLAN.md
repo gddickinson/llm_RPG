@@ -728,10 +728,23 @@ value ÷ effort:
   the normal item-use flow (herb bundle for fevers, potions for coughs).
   All state rides character metadata so saves are free. One check per
   game night, zero LLM. 10 tests.)*
-- [ ] **P8.3 Crops + grazing** (`crop_system.py` 349 + `vegetation.py`
+- [x] **P8.3 Crops + grazing** (`crop_system.py` 349 + `vegetation.py`
   272): farmland visibly progresses fallow→planted→mature→harvested by
   season; grazing degrades tile health. Closes the producer side of
   foraging/economy. LOW-MED effort.
+  *(done 2026-07-10 — world/farming.py + TerrainType.FARMLAND (furrow
+  sprite, minimap color). Every worldgen farm location claims a 4×3
+  field of grass at new-game start; fields run fallow → planted
+  (spring, "[Realm] Planting has begun") → growing → mature (ripening
+  speed driven by the P8.1 solar-intensity curve — bright summers
+  ripen fast) → harvested; winter turns all fallow. The player
+  harvests ripe tiles with the normal Z key (hint-bar advertised):
+  2 wheat sheaves + foraging XP; whatever stands in late autumn the
+  farmers bring in — villager stores rise in the faction ticker and
+  the harvest enters the rumor mill. Plot state persists via
+  save_load (terrain re-stamped on load). GRAZING DEFERRED: no
+  herbivore wildlife exists in this world yet — revisit if livestock/
+  wildlife land (note kept here).  7 tests.)*
 - [ ] **P8.4 Pantheon** (`pantheon.py`, their best-tested system): gods
   with domains, prayer→miracle loop, divine competition — a themed layer
   for our nightly world director. HIGH effort; gods → JSON; souls/

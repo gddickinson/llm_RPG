@@ -25,6 +25,7 @@ _TERRAIN_TO_SPRITE = {
     TerrainType.BUILDING: "building",
     TerrainType.CAVE: "cave",
     TerrainType.SWAMP: "swamp",
+    TerrainType.FARMLAND: "farmland",
 }
 
 
