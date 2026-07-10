@@ -90,5 +90,103 @@
       "druid",
       "warlock"
     ]
+  },
+  "firebolt": {
+    "id": "firebolt",
+    "name": "Firebolt",
+    "mana_cost": 1,
+    "damage": 3,
+    "range": 6.0,
+    "description": "A snap of flame \u2014 every apprentice's first trick.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  "smite": {
+    "id": "smite",
+    "name": "Smite",
+    "mana_cost": 4,
+    "damage": 9,
+    "range": 1.5,
+    "description": "A hammerblow of holy wrath.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  "entangle": {
+    "id": "entangle",
+    "name": "Entangle",
+    "mana_cost": 3,
+    "damage": 1,
+    "range": 5.0,
+    "status_effect": "paralyzed",
+    "duration": 3,
+    "description": "Roots burst from the earth and bind the target.",
+    "classes": [
+      "druid"
+    ]
+  },
+  "drain": {
+    "id": "drain",
+    "name": "Drain Life",
+    "mana_cost": 4,
+    "damage": 6,
+    "heal": 3,
+    "range": 3.0,
+    "description": "Steal the target's vitality for your own.",
+    "classes": [
+      "warlock"
+    ]
+  },
+  "regrowth": {
+    "id": "regrowth",
+    "name": "Regrowth",
+    "mana_cost": 2,
+    "heal": 8,
+    "range": 1.0,
+    "description": "Green life knits flesh like spring after frost.",
+    "classes": [
+      "druid"
+    ]
+  },
+  "war_cry": {
+    "id": "war_cry",
+    "name": "War Cry",
+    "mana_cost": 2,
+    "range": 1.0,
+    "status_effect": "blessed",
+    "duration": 3,
+    "description": "A bellow that steels your own arm.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  "hex": {
+    "id": "hex",
+    "name": "Hex",
+    "mana_cost": 3,
+    "damage": 2,
+    "range": 5.0,
+    "status_effect": "cursed",
+    "duration": 4,
+    "description": "A muttered curse that saps the target's strength.",
+    "classes": [
+      "warlock",
+      "sorcerer"
+    ]
+  },
+  "frost_armor": {
+    "id": "frost_armor",
+    "name": "Frost Armor",
+    "mana_cost": 3,
+    "range": 1.0,
+    "status_effect": "blessed",
+    "duration": 5,
+    "description": "A rime of protective ice over your skin.",
+    "classes": [
+      "wizard"
+    ]
   }
 }

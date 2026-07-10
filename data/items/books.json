@@ -34,5 +34,38 @@
       "permanent_stat": "dexterity",
       "amount": 1
     }
+  },
+  "tome_firebolt": {
+    "id": "tome_firebolt",
+    "name": "Primer of Flame",
+    "item_type": "book",
+    "value": 220,
+    "rarity": "uncommon",
+    "description": "A beginner's spellbook. Teaches Firebolt.",
+    "use_effect": {
+      "teach_spell": "firebolt"
+    }
+  },
+  "tome_hex": {
+    "id": "tome_hex",
+    "name": "Grimoire of Hexes",
+    "item_type": "book",
+    "value": 220,
+    "rarity": "uncommon",
+    "description": "Bound in something unpleasant. Teaches Hex.",
+    "use_effect": {
+      "teach_spell": "hex"
+    }
+  },
+  "tome_regrowth": {
+    "id": "tome_regrowth",
+    "name": "Herbal of Regrowth",
+    "item_type": "book",
+    "value": 220,
+    "rarity": "uncommon",
+    "description": "Pressed leaves mark every page. Teaches Regrowth.",
+    "use_effect": {
+      "teach_spell": "regrowth"
+    }
   }
 }

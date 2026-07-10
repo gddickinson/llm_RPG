@@ -42,10 +42,11 @@ class GameGUI:
         self.dialog_input: str = ""
         self.dialog_pending_reply: Optional[str] = None
 
-        # Inventory + shop + crafting panels (lazy)
+        # Inventory + shop + crafting + spell panels (lazy)
         self.inventory_panel = None
         self.shop_panel = None
         self.crafting_panel = None
+        self.spell_panel = None
 
         # Init pygame
         pygame.init()
@@ -153,6 +154,9 @@ class GameGUI:
         if self.mode == "crafting" and self.crafting_panel is not None:
             self.crafting_panel.draw(self.screen, self.screen.get_rect())
 
+        if self.mode == "spells" and self.spell_panel is not None:
+            self.spell_panel.draw(self.screen, self.screen.get_rect())
+
         if self.mode == "death":
             self._draw_death_popup()
 
@@ -254,6 +258,12 @@ class GameGUI:
             self.crafting_panel = CraftingPanel(self.engine)
         self.mode = "crafting"
 
+    def show_spellbook(self) -> None:
+        from ui.spell_panel import SpellPanel
+        if self.spell_panel is None:
+            self.spell_panel = SpellPanel(self.engine)
+        self.mode = "spells"
+
     def show_topics(self) -> None:
         try:
             lines = self.engine.topic_journal.overlay_lines()
@@ -340,8 +350,8 @@ class GameGUI:
             "COMBAT",
             "  SPACE / F     : melee attack (uses equipped weapon)",
             "  R             : ranged attack (needs equipped bow/sling/etc.)",
-            "  X             : cast Fireball at nearest hostile",
-            "  V             : cast Heal on self",
+            "  X             : spellbook — browse + cast any known spell",
+            "  V             : quick-cast Heal on self",
             "",
             "ITEMS & WORLD",
             "  G / E         : pick up item on the ground",

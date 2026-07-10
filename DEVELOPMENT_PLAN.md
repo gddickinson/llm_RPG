@@ -386,9 +386,14 @@ and heal-spams.
   bog lurker lies motionless until prey comes within 3. 8 tests. Also: answered
   George's question — Tutorial Island starts via `--tutorial`; a start-menu
   entry is queued.)*
-- [ ] **P5.2 Spell selection UI + spell growth.** Hotkey opens a spell menu (only 2 of
-  7 spells are castable today); learn spells from trainers/quests/scrolls; add ~8 more
-  spells via the data layer.
+- [x] **P5.2 Spell selection UI + spell growth.** *(done 2026-07-09 —
+  `ui/spell_panel.py`: X opens the Spellbook — every known spell with mana
+  cost/range/effect, Enter or 1–9 casts (heals self-target, attacks resolve to
+  the nearest hostile); V stays quick-heal. 8 new spells (firebolt, smite,
+  entangle, drain life, regrowth, war cry, hex, frost armor → 15 total) via
+  the data layer; 3 spell-teaching tomes sold by wizard-stock merchants
+  (consumed on study, refused if already known); quests already teach via
+  `spell:` unlocks. 8 tests.)*
 - [ ] **P5.3 Player tactical verbs:** disengage/flee (opportunity-attack risk), shove,
   aimed shot (ranged), drink-potion-as-turn. Small verb set, big texture.
 - [ ] **P5.4 Off-screen faction ticker.** One dice-resolved faction event per game-day

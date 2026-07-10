@@ -784,3 +784,16 @@ the bog lurker lies utterly still until prey comes within 3 tiles — the
 swamp ambush made real. Combat stops being uniform bump-attack: packs
 swarm, cowards rout, trolls can be baited off their ground, and the fen
 is scary. 8 new tests. Suite: 558 tests, all pass.
+
+**Round 44 — P5.2 spellbook + spell growth (done).**
+X now opens the Spellbook (`ui/spell_panel.py`): every known spell listed
+with mana cost, range, and effect; Enter or 1-9 casts — heals target
+yourself, attack spells resolve to the nearest hostile. V remains the
+quick-heal. Before this, only 2 of the game's spells were castable.
+Eight new spells via the data layer (firebolt, smite, entangle, drain
+life, regrowth, war cry, hex, frost armor — 15 total), and three
+spell-teaching tomes (Primer of Flame, Grimoire of Hexes, Herbal of
+Regrowth) sold by wizard-stock merchants: studying one consumes it and
+teaches the spell, refused if already known. With quest spell: unlocks
+(Healer's Art) there are now three ways to learn magic. Validator checks
+teach_spell targets. 8 new tests. Suite: 566 tests, all pass.

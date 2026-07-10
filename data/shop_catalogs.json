@@ -79,7 +79,10 @@
     "potion_might",
     "potion_speed",
     "ring_intellect",
-    "amulet_mana"
+    "amulet_mana",
+    "tome_firebolt",
+    "tome_hex",
+    "tome_regrowth"
   ],
   "ranger": [
     "bow",

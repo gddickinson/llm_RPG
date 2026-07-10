@@ -197,6 +197,9 @@ def _check_spells() -> List[str]:
         cast = item.use_effect.get("spell")
         if cast and cast not in SPELL_REGISTRY:
             out.append(f"item {iid}: casts unknown spell '{cast}'")
+        taught = item.use_effect.get("teach_spell")
+        if taught and taught not in SPELL_REGISTRY:
+            out.append(f"item {iid}: teaches unknown spell '{taught}'")
     return out
 
 

@@ -96,6 +96,16 @@ class InputHandler:
                 return self.gui.shop_panel.handle_key(event)
             return True
 
+        # Spellbook panel
+        if self.gui.mode == "spells":
+            if event.type == pygame.KEYDOWN and event.key in \
+                    (pygame.K_ESCAPE, pygame.K_x):
+                self.gui.mode = "play"
+                return True
+            if self.gui.spell_panel is not None:
+                return self.gui.spell_panel.handle_key(event)
+            return True
+
         # Crafting panel
         if self.gui.mode == "crafting":
             if event.type == pygame.KEYDOWN and event.key in \
@@ -143,12 +153,9 @@ class InputHandler:
             self.engine.shoot_ranged()
             return True
 
-        # Cast quick fireball (X)
+        # Spellbook (X)
         if k == pygame.K_x:
-            try:
-                self.engine.cast_spell("fireball")
-            except Exception:
-                pass
+            self.gui.show_spellbook()
             return True
 
         # Quick heal (V)

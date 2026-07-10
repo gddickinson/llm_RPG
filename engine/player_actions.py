@@ -99,6 +99,25 @@ class PlayerActions:
                 self.engine.advance_turn()
                 return msg
 
+            # Spell-teaching tome
+            if "teach_spell" in use_eff:
+                spell_id = use_eff["teach_spell"]
+                from engine.spells import SPELL_REGISTRY, ensure_mana
+                spell = SPELL_REGISTRY.get(spell_id)
+                if spell is None:
+                    return f"The {it_name} is gibberish."
+                ensure_mana(player)
+                known = player.metadata.setdefault("spells_known", [])
+                if spell_id in known:
+                    return f"You already know {spell.name}."
+                known.append(spell_id)
+                player.inventory.remove(it)
+                msg = (f"You study the {it_name} and learn "
+                       f"{spell.name}!")
+                self.engine.memory_manager.add_event(msg)
+                self.engine.advance_turn()
+                return msg
+
             # Permanent stat increase (training manual)
             if "permanent_stat" in use_eff:
                 stat = use_eff["permanent_stat"]
