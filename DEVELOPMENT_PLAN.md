@@ -1110,11 +1110,26 @@ get experience, explore distant regions, learn about the world, make
 friends and allies, defeat powerful monsters. Fix problems in the
 gameplay, fix bugs and add to the plan."
 
-- [ ] **PT3.1 The adventurer's arc.** Scripted both-sides session:
+- [x] **PT3.1 The adventurer's arc.** Scripted both-sides session:
   tutorial → boards → 2+ authored quests to completion → level up →
   skill training → buy/sell/craft/repair loop → befriend an NPC to a
   heart event → recruit a companion. Judge every step against the
   Playtest Matrix; fix what breaks.
+  *(done 2026-07-10 — 17-beat scripted session, 16 clean (the 17th
+  was a detector bug: Melody's heart event actually fired and split
+  the hat). VERIFIED WORKING: board accept → talk quest → turn-in
+  rewards; fetch quest tracks foraged herbs and pays; kills level
+  the player; market buy/sell with no arbitrage; hearth cooking;
+  anvil repair; heart event at threshold; recruitment + following;
+  DM-created quest accepted at the board completes by play. TWO
+  REAL BUGS FIXED: (1) GAME-BREAKING — the quest board was
+  unreachable since solid walls (board_at_player read raw overworld
+  coords; the board now hangs INSIDE the tavern via
+  player_location(), same fix applied to can_craft_at_player and
+  the pantheon's holy-place check); (2) ECONOMY — hopping fresh
+  forest tiles yielded ~290 herb bundles in one sweep; daily forage
+  fatigue added (yield thins per forage after a 5-find grace, floor
+  20%, resets at dawn) — sweep now ~40/day. 2 regression tests.)*
 - [ ] **PT3.2 The explorer's arc.** Distant regions (chunk streaming
   east/west/north/south), the Murkfen, dungeons with fog-of-war, the
   Ruined Keep crypt, temple crypt, the full Wizard's Tower climb,
@@ -1132,6 +1147,52 @@ gameplay, fix bugs and add to the plan."
   (charter-capped size/level) + structures recorded in the Legendarium
   so DM-built towers persist across campaigns; module packs may ship
   structures.
+
+## Phase 10 — A world you can break and shape (George, 2026-07-10)
+
+George: fireballs/lightning that take out GROUPS and burn buildings;
+floods; boulders from giants and trebuchets; giants smashing
+buildings, uprooting trees, and MOVING debris; humans cooperatively
+building and destroying (mining, foresting, digging, farming,
+damming). AW survey complete (2026-07-10): their durability.py
+(materials, tile HP, bash DCs, giants bypass DCs, RubbleTracker that
+MOVES debris rather than deleting it) and elemental_effects.py (fire
+spread, acid, scorch) are the crown jewels to port; both their AoE
+implementations are entity-only flat-radius (port + add tile damage);
+mining tunnels/floods/damming are GREENFIELD (their mining is
+abstract counters, flood a scripted tile-flip). Traps: our single
+BUILDING tile type (use a sparse material/HP overlay, add only
+RUBBLE + SCORCHED terrain); per-turn not dt-seconds; WorldMap needs
+set_terrain + tile callbacks for interior sync.
+
+- [ ] **P10.0 Enabling infra.** TerrainType.RUBBLE + SCORCHED (+
+  sprites/minimap); WorldMap.set_terrain(x, y, t) firing registered
+  tile callbacks. Tiny round.
+- [ ] **P10.1 AoE damage, entity-first.** Spell dataclass +
+  spells.json gain area/targets; fireball (area 2) damages everyone
+  near the impact except the caster (companions included — friendly
+  fire is real); siege-monster splash (troll boulders) via the same
+  helper. Uses the P8.7 lock as the impact point.
+- [ ] **P10.2 Destructible tiles.** Slim DurabilitySystem port:
+  sparse tile HP, materials (stone buildings resist fire, wooden
+  forests burn), TILE_DESTROYED map (BUILDING→RUBBLE, FOREST→GRASS);
+  AoE spells and siege damage tiles in radius.
+- [ ] **P10.3 Fire spread.** Per-turn ElementalEffects: fires spread
+  to adjacent combustibles, burn out to SCORCHED, damage anyone
+  standing in them; fireball ignites, lightning scorches.
+- [ ] **P10.4 Interior sync + rubble.** Exterior breach opens the
+  matched interior wall (tile callback); rubble depth blocks
+  movement until CLEARED — debris moves to a dump tile, never
+  vanishes.
+- [ ] **P10.5 Actors shape the world.** Giants bash buildings
+  (STR/size-scaled siege damage, no DC for the huge) and hurl
+  boulders (projectile + splash + tile damage); laborer tasks: chop
+  (forest→grass with regrowth), dig (grass→farmland), clear rubble;
+  minimal cooperative ConstructionProject (materials + workers →
+  stamped tiles).
+- [ ] **P10.6 Greenfield: water & tunnels.** Minimal cellular flood
+  spread + damming (blocking tiles stop the frontier); mining
+  tunnels (mountain→cave floor via dig actions). Small and tested.
 
 ## What NOT to build (explicitly deferred)
 

@@ -435,7 +435,7 @@ class GameAPIMixin:
 
     def can_craft_at_player(self, output_id: str) -> str:
         from items.crafting import can_craft
-        loc = self.world.get_location_at(*self.player.position)
+        loc = self.player_location()
         props = dict(loc.properties) if loc else {}
         return can_craft(self.player, output_id, props)
 

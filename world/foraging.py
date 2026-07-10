@@ -64,6 +64,21 @@ class ForageManager:
                 return "Nothing to forage here."
             return "You've recently picked clean this spot."
 
+        # Tired eyes find less (PT3.1 balance: hopping fresh tiles
+        # yielded ~290 herb bundles in one sweep — an economy breaker).
+        # Yield thins with each forage today, floor 20%.
+        meta = self.engine.player.metadata
+        day = self.engine.world.time // (24 * 60)
+        if meta.get("forage_day") != day:
+            meta["forage_day"] = day
+            meta["forage_count"] = 0
+        meta["forage_count"] = meta.get("forage_count", 0) + 1
+        fatigue = max(0.2, 1.0 - meta["forage_count"] / 25.0)
+        if meta["forage_count"] > 5 and self.rng.random() > fatigue:
+            self.harvested_at[(x, y)] = self.engine.world.time
+            return ("You search, but your eyes are tired and the "
+                    "good herbs elude you. (Rest until tomorrow.)")
+
         terrain = self.engine.world.map.get_terrain_at(x, y)
         table = TERRAIN_FORAGE_TABLE[terrain]
         item_id = _weighted_pick(table, self.rng)

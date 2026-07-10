@@ -1530,3 +1530,28 @@ sigil and inscription sprites. Per George, PLAYTEST CAMPAIGN 3 is
 queued as the next rounds: the adventurer's arc, the explorer's
 arc, the war arc, then a findings round. 9 new tests. Suite: 882,
 green x3.
+
+**Round 83 — PT3.1 The adventurer's arc (done) + Phase 10 planned.**
+George's playtest campaign opened with a 17-beat scripted both-sides
+session: board → tavern_intro (talk, turn-in, reward) →
+herb_gathering (forage 3 bundles, fetch tracking, priest pays) →
+leveling by wolf kills → market buy/sell (no arbitrage) → hearth
+cooking → anvil repair → Melody's heart event at 30 affinity (she
+weaves your name into a chorus and splits the hat) → recruitment →
+a DM-improvised quest accepted at the board and completed by play.
+16 of 17 beats clean; the 17th was the script's own detector.
+TWO REAL BUGS: (1) GAME-BREAKING — the quest board had been
+unreachable since solid walls landed: board_at_player read raw
+overworld coordinates, so you could neither stand on the footprint
+nor reach it from inside; the board now hangs INSIDE the tavern
+(player_location), and the same fix went to can_craft_at_player and
+the pantheon's holy-place check. (2) ECONOMY — fresh-tile hopping
+yielded ~290 herb bundles in one sweep; daily forage fatigue now
+thins the yield after a five-find grace (floor 20%, dawn reset):
+~40/day. ALSO: George's destructible-world request became Phase 10
+(AoE damage, tile durability/materials, fire spread, interior
+breach sync, rubble that MOVES, giants and laborers shaping the
+world, greenfield floods/tunnels), built from a completed AW
+destruction survey (their durability.py and elemental_effects.py
+are the port targets; mining/floods are greenfield). 2 regression
+tests. Suite: 884, green x3.

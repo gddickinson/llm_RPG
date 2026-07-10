@@ -50,7 +50,13 @@ class QuestBoardManager:
         return None
 
     def board_at_player(self) -> Optional[QuestBoard]:
-        loc = self.engine.world.get_location_at(*self.engine.player.position)
+        # Interior-aware (PT3.1 finding: solid walls made the tavern
+        # board unreachable — the board hangs INSIDE the tavern now)
+        try:
+            loc = self.engine.player_location()
+        except Exception:
+            loc = self.engine.world.get_location_at(
+                *self.engine.player.position)
         if not loc:
             return None
         return self.board_at(loc.name)

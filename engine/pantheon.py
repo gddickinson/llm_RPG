@@ -93,8 +93,7 @@ class PantheonSystem:
 
     def _at_holy_place(self) -> bool:
         try:
-            loc = self.engine.world.get_location_at(
-                *self.engine.player.position)
+            loc = self.engine.player_location()   # interior-aware
             name = (loc.name if loc else "").lower()
             return "shrine" in name or "temple" in name
         except Exception:
