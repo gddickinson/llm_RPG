@@ -96,7 +96,8 @@ class TestNPCConflict(unittest.TestCase):
     def test_clash_logged_only_near_player(self):
         self._park_player_far()
         self._put(self._guard(), 5, 5)
-        self._spawn("bandit", 6, 5)  # adjacent: resolves immediately
+        bandit = self._spawn("bandit", 6, 5)  # adjacent: resolves now
+        bandit.hp = bandit.max_hp = 99   # must survive both phases
         self.engine.turn_counter = TICK_INTERVAL - 1
         self.engine.turn_counter += 1
         self.engine.npc_conflict.update()

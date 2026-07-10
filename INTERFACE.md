@@ -53,6 +53,7 @@ llm_RPG/
 - **`faction_ticker.py`** — Daily dice-resolved faction events; strength/stores drive encounters, shortages, rumors; repelled raids spawn a visible straggler.
 - **`npc_conflict.py`** — `NPCConflictSystem` (P7.1): guards fight hostiles they can see, hostiles raid civilians; `[Clash]` events near the player; the player's duel is never stolen; overworld-grid NPCs only.
 - **`retaliation.py`** — `RetaliationSystem` (P7.2): deep hostile faction rep → warning rumor, then level-scaled bounty hunters converge on the player; nightly check, persisted, escalation ladder per faction.
+- **`squad_tactics.py`** — P7.3 positional helpers shared by companions/guards/packs: `surround_step` (fan out around targets), `flank_tile` (+2 flanking spot), `player_focus_target` (focus fire), `path_step` (BFS with greedy fallback), `greedy_step`.
 - **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.

@@ -145,7 +145,7 @@ class TestRouting(unittest.TestCase):
         ids = [getattr(i, "id", "") for i in self.engine.player.inventory]
         self.assertIn("ale", ids)
         log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-4:])
+                       self.engine.memory_manager.game_history[-10:])
         self.assertIn("hands you", log)
 
 

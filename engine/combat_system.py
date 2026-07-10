@@ -40,6 +40,8 @@ class CombatSystem:
         except Exception:
             pass
 
+        # Companions focus-fire the player's current target (P7.3)
+        self.engine.player_target_id = target.id
         return self._resolve(self.engine.player, target, "attack")
 
     # --------------------------------------------------------- npc attack
@@ -378,16 +380,9 @@ class CombatSystem:
         return damage
 
     def _step_toward(self, attacker, target) -> bool:
-        dx = target.position[0] - attacker.position[0]
-        dy = target.position[1] - attacker.position[1]
-        dx = (dx > 0) - (dx < 0)
-        dy = (dy > 0) - (dy < 0)
-        if dx and dy:
-            if abs(target.position[0] - attacker.position[0]) > \
-                    abs(target.position[1] - attacker.position[1]):
-                dy = 0
-            else:
-                dx = 0
-        nx = attacker.position[0] + dx
-        ny = attacker.position[1] + dy
-        return self.engine.world.map.move_character(attacker, nx, ny)
+        # Approach the nearest FREE tile beside the target rather than
+        # its exact square — packs fan out and surround (P7.3)
+        from engine.squad_tactics import surround_step, greedy_step
+        wmap = self.engine.world.map
+        goal = surround_step(wmap, attacker, target) or target.position
+        return greedy_step(wmap, attacker, goal)

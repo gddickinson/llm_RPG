@@ -668,9 +668,21 @@ become fixes or plan items. Track coverage per session.
   companion follow used greedy single-axis steps with no obstacle
   handling and stalled forever on water/walls/bystanders — now slides
   along obstacles; 6 consecutive full-suite greens after the fix.)*
-- [ ] **P7.3 Squad tactics.** Companions + guards coordinate with the
+- [x] **P7.3 Squad tactics.** Companions + guards coordinate with the
   player in fights (focus fire, real flanking positions); monster packs
   attempt surrounds rather than a queue.
+  *(done 2026-07-10 — engine/squad_tactics.py, pure geometry shared by
+  companions, P7.1 guards and monster packs: `surround_step` (approach
+  the free tile beside the target nearest you — attackers fan out
+  instead of queueing; combat_system._step_toward now routes through
+  it, so wolf packs and guards surround), `flank_tile` (the tile
+  opposite the player, earning the existing +2 _flanking_bonus;
+  companions sidestep onto it before swinging), `player_focus_target`
+  (player_attack records its target; companions within 8 tiles
+  prioritize it — focus fire), and `path_step` (real BFS pathfinding
+  with greedy fallback — companions no longer trap in concave
+  terrain). Phase 7 complete: the world cooperates, conspires and
+  coordinates. 8 tests; 10 consecutive full-suite greens.)*
 
 **Verdict:** feasible and the natural capstone — P6.1–P6.3 are buildable in
 loop rounds immediately after Phase 5; P6.4 rides infrastructure that exists.

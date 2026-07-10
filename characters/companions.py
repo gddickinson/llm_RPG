@@ -79,10 +79,38 @@ class CompanionManager:
 
     def update(self) -> None:
         """Move companions to follow the player and attack adjacent enemies."""
+        from engine.squad_tactics import (player_focus_target, flank_tile,
+                                          FOCUS_RADIUS)
         for npc in self.members():
             if not npc.is_active():
                 continue
-            # Attack adjacent enemy first
+            # Focus fire: the player's current target comes first (P7.3)
+            focus = player_focus_target(self.engine)
+            if focus is not None:
+                fx, fy = focus.position
+                cx, cy = npc.position
+                d = ((cx - fx) ** 2 + (cy - fy) ** 2) ** 0.5
+                if d <= 1.5:
+                    # One free sidestep onto the flanking tile first —
+                    # every later swing earns the +2
+                    goal = flank_tile(self.engine, npc, focus)
+                    if goal and goal != npc.position and \
+                            max(abs(goal[0] - cx),
+                                abs(goal[1] - cy)) <= 1 and \
+                            self.engine.world.map.move_character(
+                                npc, *goal):
+                        continue
+                    result = self.engine.combat_system._resolve(
+                        npc, focus, "attack")
+                    self.engine.memory_manager.add_event(result)
+                    continue
+                if d <= FOCUS_RADIUS:
+                    goal = flank_tile(self.engine, npc, focus)
+                    if goal and npc.position != goal:
+                        from engine.squad_tactics import path_step
+                        path_step(self.engine.world.map, npc, goal)
+                        continue
+            # Attack any adjacent enemy
             if self._companion_attack_nearby_enemy(npc):
                 continue
             # Otherwise, follow
@@ -114,29 +142,10 @@ class CompanionManager:
         d = ((cx - tx) ** 2 + (cy - ty) ** 2) ** 0.5
         if d <= 1.5:  # Already adjacent — stay put
             return
-        sx = (tx > cx) - (tx < cx)
-        sy = (ty > cy) - (ty < cy)
-        dx, dy = sx, sy
-        if dx and dy:
-            if abs(tx - cx) > abs(ty - cy):
-                dy = 0
-            else:
-                dx = 0
-        wmap = self.engine.world.map
-        if wmap.move_character(comp, cx + dx, cy + dy):
-            return
-        # Blocked (water, wall, someone standing there): slide along
-        # the obstacle — other axis toward the target first, then a
-        # perpendicular sidestep — instead of stalling forever.
-        if (sx, sy) != (dx, dy) and \
-                wmap.move_character(comp, cx + sx - dx, cy + sy - dy):
-            return
-        if dx:
-            _ = wmap.move_character(comp, cx, cy + 1) or \
-                wmap.move_character(comp, cx, cy - 1)
-        else:
-            _ = wmap.move_character(comp, cx + 1, cy) or \
-                wmap.move_character(comp, cx - 1, cy)
+        # Real pathfinding: greedy steps trap in concave terrain (the
+        # historic follow flake); BFS with a greedy fallback does not.
+        from engine.squad_tactics import path_step
+        path_step(self.engine.world.map, comp, (tx, ty))
 
     # ---- save / load ------------------------------------------------
 

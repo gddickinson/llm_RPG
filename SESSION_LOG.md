@@ -1064,3 +1064,23 @@ companion follow used greedy single-axis steps with no obstacle
 handling and stalled forever behind water/walls/bystanders — it now
 slides along obstacles (other axis first, then perpendicular).
 6 consecutive full-suite greens. 9 new tests. Suite: 677 tests.
+
+**Round 61 — P7.3 Squad tactics (done) — PHASE 7 COMPLETE.**
+Fights now read as coordinated rather than queued, via pure geometry
+shared across every combatant type (engine/squad_tactics.py, zero
+LLM). Monster packs and guards SURROUND: combat_system._step_toward
+now approaches the free tile beside the target nearest the attacker,
+so two wolves arriving from the same direction fan out to different
+adjacent tiles instead of queueing single-file. Companions FOCUS FIRE:
+player_attack records its target and companions within 8 tiles
+prioritize it, and they FLANK — they path to the tile directly
+opposite the player (earning the existing +2 flanking bonus), taking
+one free sidestep onto the flank spot even when already diagonally
+adjacent, so every subsequent swing is a flanking swing. Underneath:
+path_step, a real BFS pathfinder (greedy fallback) replacing companion
+greedy movement — companions no longer trap in concave water pockets,
+finishing round 60's job. Test hardening: unkillable props where RNG
+kills raced assertions, unique-named focus fixture, wider log windows.
+8 new tests. Suite: 685 tests, ten consecutive greens. The world now
+cooperates (flanking companions), conspires (bounty ladders) and
+coordinates (surrounding packs).
