@@ -65,6 +65,9 @@ def parse_args():
                    help="Disable quest system")
     p.add_argument("--no-npc-processes", action="store_true",
                    help="Disable multiprocess NPC actions (uses sync calls instead)")
+    p.add_argument("--dm-bridge", action="store_true",
+                   help="Enable the file-based Dungeon Master bridge "
+                        "(saves/dm/)")
     p.add_argument("--tutorial", action="store_true",
                    help="Start on Tutorial Island (learn every system)")
     p.add_argument("--no-menu", action="store_true",
@@ -111,6 +114,7 @@ def main() -> int:
         enable_quests=(not args.no_quests),
         player_spec=player_spec,
         start_tutorial=args.tutorial,
+        enable_dm_bridge=args.dm_bridge,
     )
 
     # Optional load

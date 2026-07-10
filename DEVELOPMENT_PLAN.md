@@ -492,11 +492,14 @@ rumors) is never fed back as DM *instructions* (injection separation).
   rumors, board notices, monster census, locations), recent events, and the
   DM's own notebook/schedule/budget. JSON round-trip tested — ready for the
   P6.3 bridge to write to disk. 7 tests.)*
-- [ ] **P6.3 Session-DM bridge** (`--dm-bridge`): file-based —
-  the game exports `saves/dm/digest.json` (each game-day + on demand) and
-  polls `saves/dm/inbox/*.json` for command bundles. Claude Code (a session
-  like this one) acts as the live DM: read digest → reason → write commands.
-  Human-supervised godhood; also the perfect test harness for P6.4.
+- [x] **P6.3 Session-DM bridge.** *(done 2026-07-09 — `engine/dm_bridge.py`
+  + `--dm-bridge`: the game maintains `saves/dm/` — `digest.json` refreshed
+  every ~10s + each dawn + after every bundle; `inbox/*.json` command bundles
+  polled every ~2s, executed in order through the charter-enforced API;
+  per-bundle `.result.json` receipts in `processed/`; a README for the DM.
+  Whitelisted commands only (to_dict/run_scheduled refused); malformed JSON,
+  bad args, and charter refusals are reported, never crash. Claude Code can
+  now sit behind the screen. 8 tests.)*
 - [ ] **P6.4 Autonomous DM**: one planning call per game-day through the
   existing provider abstraction — reads digest + notebook, maintains a
   campaign arc in `dm_notes` (persisted in saves), emits a validated command

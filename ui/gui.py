@@ -120,6 +120,11 @@ class GameGUI:
                         self.engine.current_weather())
                 except Exception:
                     pass
+            if getattr(self.engine, "dm_bridge", None) is not None:
+                try:
+                    self.engine.dm_bridge.tick()
+                except Exception:
+                    pass
             self._render()
             self.clock.tick(30)
 

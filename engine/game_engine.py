@@ -41,7 +41,8 @@ class GameEngine(GameAPIMixin):
                  enable_npc_processes: bool = True,
                  enable_quests: bool = True,
                  player_spec=None,
-                 start_tutorial: bool = False):
+                 start_tutorial: bool = False,
+                 enable_dm_bridge: bool = False):
         # Core systems --------------------------------------------------
         self.world = World()
         self.npc_manager = NPCManager()
@@ -157,6 +158,14 @@ class GameEngine(GameAPIMixin):
         self._last_reflection_day = self.world.time // (24 * 60)
         from engine.rest import snapshot
         self._day_metrics = snapshot(self)
+        self.dm_bridge = None
+        if enable_dm_bridge:
+            try:
+                from engine.dm_bridge import DMBridge
+                self.dm_bridge = DMBridge(self)
+                logger.info("DM bridge active at saves/dm/")
+            except Exception as e:
+                logger.warning(f"DM bridge unavailable: {e}")
         if start_tutorial:
             self.tutorial_manager.start()
 
@@ -316,6 +325,8 @@ class GameEngine(GameAPIMixin):
                 self.faction_ticker.run_day()
                 self.radiant_quests.run_morning()
                 self.dm.run_scheduled()
+                if self.dm_bridge is not None:
+                    self.dm_bridge.export_digest()
                 from engine.rest import snapshot
                 self._day_metrics = snapshot(self)
             self._last_reflection_day = day

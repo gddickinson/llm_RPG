@@ -880,3 +880,16 @@ notebook tail, scheduled beats, and remaining budget. JSON
 round-trip and <20KB size are tested — it's built to be written to disk
 by the P6.3 session bridge and pasted into a prompt by P6.4.
 7 new tests. Suite: 613 tests, all pass.
+
+**Round 51 — P6.3 session-DM bridge (done).**
+New `engine/dm_bridge.py` + `--dm-bridge` flag. The game maintains
+saves/dm/: digest.json (refreshed every ~10 seconds, at every dawn, and
+after each processed bundle), inbox/ (JSON command bundles polled every
+~2 seconds and executed in order through the charter-enforced DM API),
+processed/ (consumed bundles + per-bundle .result.json receipts listing
+each command's ok/note), and a README teaching the format. Only the ten
+DM commands are callable — introspection like to_dict is refused — and
+malformed JSON, wrong kwargs, and charter violations are reported in
+receipts without ever crashing the game. A Claude Code session can now
+literally run adventures: read the digest, write bundles, watch the
+receipts. 8 tests. Suite: 621 tests, all pass.
