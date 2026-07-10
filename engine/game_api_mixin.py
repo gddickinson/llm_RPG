@@ -206,6 +206,20 @@ class GameAPIMixin:
         if target is None:
             return "No target in sight."
 
+        # True line of sight (P8.6): walls stop arrows before flight
+        try:
+            from world.fov import overworld_los
+            if self.current_interior is None and \
+                    self.current_dungeon is None and \
+                    not overworld_los(self, self.player.position,
+                                      target.position):
+                msg = (f"No clear shot at {target.name} — "
+                       f"something solid is in the way.")
+                self.memory_manager.add_event(msg)
+                return msg
+        except Exception:
+            pass
+
         from engine.effects import effective_weapon_damage_bonus
         dex_bonus = max(0, (self.player.dexterity - 10) // 2)
         damage = max(1, int(weapon.damage) + dex_bonus

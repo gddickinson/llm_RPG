@@ -244,16 +244,40 @@ class MapRenderer:
         target.fill((12, 10, 14) if is_dungeon else (24, 18, 12),
                     view_rect)
 
+        # Dungeon fog-of-war (P8.6): shadowcast what the hero sees
+        visible = None
+        explored = None
+        if is_dungeon:
+            try:
+                from world.fov import zone_fov
+                visible = zone_fov(zone, (px, py), radius=8)
+                explored = getattr(zone, "explored", None)
+                if explored is None:
+                    explored = set()
+                    zone.explored = explored
+                explored.update(visible)
+            except Exception:
+                visible = None
+
         for sy in range(rows):
             for sx in range(cols):
                 wx, wy = cam_x + sx, cam_y + sy
                 if not (0 <= wx < zone.width and 0 <= wy < zone.height):
                     continue
+                if visible is not None and (wx, wy) not in visible:
+                    if (wx, wy) not in explored:
+                        continue                      # never seen: dark
                 terrain = zone.terrain[wy][wx]
                 sprite = _TERRAIN_TO_SPRITE.get(terrain, "grass")
-                target.blit(self.sprites.tile(sprite),
-                            (view_rect.x + sx * self.tile_size,
-                             view_rect.y + sy * self.tile_size))
+                dest = (view_rect.x + sx * self.tile_size,
+                        view_rect.y + sy * self.tile_size)
+                target.blit(self.sprites.tile(sprite), dest)
+                if visible is not None and (wx, wy) not in visible:
+                    dim = pygame.Surface(
+                        (self.tile_size, self.tile_size))
+                    dim.set_alpha(160)
+                    dim.fill((8, 6, 10))
+                    target.blit(dim, dest)            # remembered, dim
 
         # Furniture (interiors)
         for furn in getattr(zone, "furniture", []):
@@ -306,6 +330,10 @@ class MapRenderer:
         for char, (cx, cy) in chars:
             if not (cam_x <= cx < cam_x + cols and
                     cam_y <= cy < cam_y + rows):
+                continue
+            # Unseen monsters stay unseen (P8.6 fog-of-war)
+            if visible is not None and (cx, cy) not in visible and \
+                    char.id != engine.player.id:
                 continue
             update_anim(char, 1.0 / 30.0)
             draw_body(target, char,

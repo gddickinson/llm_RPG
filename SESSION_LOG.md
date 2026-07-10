@@ -1383,3 +1383,22 @@ observations from George's coherence playtest are resolved:
 interiors match footprints, NPC presence is consistent between
 maps, and walls hide what's indoors. 8 new tests. Suite: 822,
 green x3.
+
+**Round 76 — P8.6 Shadowcasting FOV (done).**
+The sixth autonomous_world port, their cleanest module, taken
+near-verbatim: Nystrom-style recursive shadowcasting — walls throw
+shadows, shadows merge, anything fully shadowed is unseen — with
+__slots__ shadow segments, a circular radius and early-out when an
+octant fills. world/fov.py adds has_line_of_sight and llm_RPG
+bindings: buildings and mountains block sight on the overworld,
+walls block in zones. Two systems wired on top. DUNGEON FOG-OF-WAR:
+what the hero sees is bright, remembered corridors are dimmed,
+the never-seen is black, and monsters outside your sight simply
+aren't drawn (zone.explored accumulates as you go — dungeon dives
+finally feel like exploring the dark). RANGED LINE-OF-SIGHT: a bow
+shot now checks true LOS before the arrow flies — "No clear shot at
+Wolf — something solid is in the way" — no more shooting through
+buildings; this is the foundation George's requested P8.7 targeting
+system (cycle targets, aim cursor, spells) builds on next.
+9 new tests including shadow-cone geometry and a
+bow-through-a-building refusal. Suite: 831 tests, green x3.

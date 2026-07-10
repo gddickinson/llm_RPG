@@ -777,8 +777,19 @@ value ÷ effort:
   rumor mill ("[Realm] Prices for arms climb at the market."). Wired
   into shop_manager pricing + shop_panel transactions; persisted via
   save_load. 9 tests.)*
-- [ ] **P8.6 Shadowcasting FOV** (`world/fov.py`): octant-based LOS —
+- [x] **P8.6 Shadowcasting FOV** (`world/fov.py`): octant-based LOS —
   fog-of-war for dungeons, ranged line-of-sight, stealth. LOW effort.
+  *(done 2026-07-10 — world/fov.py, the AW survey's cleanest module
+  ported near-verbatim (Nystrom-style octant shadowcasting, __slots__
+  shadows, circular radius, early-out on full shadow) plus
+  `has_line_of_sight` and llm_RPG bindings (buildings/mountains
+  opaque on the overworld; walls in zones). WIRED: dungeons get real
+  fog-of-war — visible bright, remembered-but-unseen dimmed,
+  never-seen black, monsters hidden outside your sight (zone.explored
+  accumulates); ranged shots check true LOS before flight ("No clear
+  shot — something solid is in the way"), the foundation P8.7
+  targeting builds on. 9 tests incl. shadow-cone geometry and a
+  bow-through-a-building refusal.)*
 - [ ] **P8.7 Ranged combat & targeting** (George, 2026-07-10):
   extract AW's ranged-combat/targeting approach for BOTH missile
   weapons and ranged spells — explicit target selection (cycle
