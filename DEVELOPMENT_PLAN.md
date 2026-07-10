@@ -873,7 +873,7 @@ diverged.
   feed P9A.4. FIXED pre-existing bug found by the round-trip test:
   home_location was never serialized — every NPC lost their home on
   save/load. Knock-vs-barge deferred into P9A.4. 8 tests.)*
-- [ ] **P9A.3b Buildings you can SEE (George: "I don't see any
+- [x] **P9A.3b Buildings you can SEE (George: "I don't see any
   difference in the buildings").** The 9A work so far is behavioral;
   make it visible: draw a door glyph on building exteriors (state-
   colored: open/closed/locked/broken), give furniture real procedural
@@ -881,6 +881,24 @@ diverged.
   rects, bump-into-locked-door feedback without pressing TAB, richer
   multi-room blueprint interiors for the big buildings, and an
   occupant nameplate line when entering ("Merta's farmhouse").
+  *(done 2026-07-10 — George's follow-up mid-round pinpointed the
+  ROOT problem: building footprints were walkable from any direction.
+  Now enterable buildings are SOLID: walls block the player ("The
+  walls of the Old Farmhouse. Its door faces south." — once/day),
+  and the single door tile at the building's south face is
+  bump-to-enter — walk into it and the P9A.1 lock decides (open →
+  you're inside, one keypress fewer than TAB; locked → refusal with
+  the pick/force teaching line). Door glyphs are drawn on every
+  enterable exterior, colored by state (open shows a dark doorway,
+  locked a brass lock-dot, broken a splintered slash). Furniture got
+  real procedural sprites — beds with pillow+blanket, banded chests,
+  flaming hearths, anvils, candle-lit altars, book-spined shelves,
+  barrels, tables, stairs. Entering names the occupant ("This is
+  Merta's place." / "Long abandoned."), and entering counts for
+  VISIT quest objectives. Multi-room blueprint interiors deferred to
+  P9A.5 (multi-level). NOTE follow-up: NPCs still ghost through
+  walls on the overworld — route their movement around footprints
+  when P9A.5 touches pathing. 9 tests.)*
 - [ ] **P9A.4 Trespass & consequences.** Entering a private home
   uninvited (or breaking in) is witnessed: occupants object, guards
   respond (P7.1 conflict system), faction rep drops, repeat offenders

@@ -212,6 +212,33 @@ class PlayerActions:
 
     # ---- movement -----------------------------------------------------
 
+    def _building_wall_check(self, nx: int, ny: int):
+        """Enterable buildings are SOLID except their door tile.
+        Returns None (not a building tile — proceed), False (wall),
+        or True (entered through the door — turn consumed)."""
+        engine = self.engine
+        loc = engine.world.get_location_at(nx, ny)
+        if loc is None or loc.name not in engine.interiors:
+            return None
+        door_tile = (loc.x + loc.width // 2, loc.y + loc.height - 1)
+        day = engine.world.time // (24 * 60)
+        marks = engine.player.metadata.setdefault("door_hints", {})
+        if (nx, ny) != door_tile:
+            if marks.get(f"wall:{loc.name}") != day:
+                marks[f"wall:{loc.name}"] = day
+                engine.memory_manager.add_event(
+                    f"The walls of the {loc.name}. Its door faces "
+                    f"south.")
+            return False
+        # The door: bump to enter (locks willing)
+        msg = engine.enter_building(loc)
+        if engine.current_interior is not None:
+            engine.advance_turn()
+            return True
+        if marks.get(f"locked:{loc.name}") != day:
+            marks[f"locked:{loc.name}"] = day
+        return False
+
     def move(self, dx: int, dy: int, careful: bool = False) -> bool:
         player = self.engine.player
         if not self.engine.running:
@@ -240,6 +267,13 @@ class PlayerActions:
                     self.engine.advance_turn()
                     return True
             return False
+
+        # Solid buildings (P9A.3b): walls block, the door tile admits.
+        # George: "I can just walk onto the building tile — shouldn't
+        # there be doors and walls?"
+        wall = self._building_wall_check(nx, ny)
+        if wall is not None:
+            return wall
 
         pre_move = player.position
         old_pos = player.position

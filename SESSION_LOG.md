@@ -1253,3 +1253,27 @@ fair: everything so far is behavioral. P9A.3b added as the next
 item: visible doors on exteriors, real furniture sprites,
 bump-into-door feedback, occupant nameplates. 8 new tests.
 Suite: 770 tests, green x3.
+
+**Round 70 — P9A.3b Buildings you can SEE (done).**
+George's mid-round follow-up nailed the root problem: "I can just
+walk onto the building tile — shouldn't there be doors and walls?"
+He was right — footprints were walkable from any direction, so all
+the door/lock work only gated the TAB transition nobody was forced
+to use. Now enterable buildings are SOLID: walls block the player
+with a once-a-day teaching line ("The walls of the Old Farmhouse.
+Its door faces south."), and the single door tile on the south face
+is BUMP-TO-ENTER — walking into it lets the P9A.1 lock decide: open
+buildings admit you in one step, locked ones refuse with the
+pick/force hint. Every enterable exterior now draws a door glyph
+colored by state — open shows a dark doorway, locked carries a
+brass lock-dot, broken a splintered slash — so you can read a
+street at a glance. Furniture went from anonymous brown rects to
+real procedural sprites: beds with pillow and blanket, banded
+chests with a gold clasp, flaming hearths, anvils, candle-lit
+altars, book-spined shelves, barrels, tables, stairs. Entering a
+building names its occupant ("This is Merta's place." / "Long
+abandoned."), and entering now counts for VISIT quest objectives
+(walking over footprints used to trigger those — walls would have
+broken them). Deferred: richer multi-room interiors ride P9A.5;
+NPCs still ghost through walls on the overworld — noted in the plan
+for the pathing pass. 9 new tests. Suite: 779 tests, green x3.

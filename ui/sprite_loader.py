@@ -194,6 +194,87 @@ class SpriteLoader:
         self._char_cache[key] = surf
         return surf
 
+    # ------------------------------------------------------------ furniture
+    def furniture(self, name: str) -> pygame.Surface:
+        """Recognizable procedural sprites for interior pieces (P9A.3b)."""
+        key = f"furn:{name.lower()}"
+        if key in self._tile_cache:
+            return self._tile_cache[key]
+        ts = self.tile_size
+        surf = pygame.Surface((ts, ts), pygame.SRCALPHA)
+        low = name.lower()
+        wood = PALETTE["building"]
+        dark = PALETTE["building2"]
+        if "bed" in low:
+            pygame.draw.rect(surf, dark, (3, ts // 3, ts - 6,
+                                          ts // 2), border_radius=3)
+            pygame.draw.rect(surf, (200, 200, 210),
+                             (5, ts // 3 + 2, ts // 3, ts // 2 - 4),
+                             border_radius=2)            # pillow
+            pygame.draw.rect(surf, (150, 40, 40),
+                             (5 + ts // 3, ts // 3 + 2,
+                              ts - 12 - ts // 3, ts // 2 - 4))  # blanket
+        elif "chest" in low or "crate" in low:
+            pygame.draw.rect(surf, wood, (4, ts // 3, ts - 8,
+                                          ts // 2), border_radius=2)
+            pygame.draw.line(surf, dark, (4, ts // 2),
+                             (ts - 4, ts // 2), 2)
+            pygame.draw.rect(surf, PALETTE["gold"],
+                             (ts // 2 - 2, ts // 2 - 2, 4, 5))  # clasp
+        elif "hearth" in low or "fire" in low:
+            pygame.draw.rect(surf, PALETTE["mountain"],
+                             (3, ts // 4, ts - 6, ts // 2 + 4))
+            pygame.draw.polygon(surf, (240, 140, 40), [
+                (ts // 2 - 5, ts // 2 + 6), (ts // 2, ts // 3),
+                (ts // 2 + 5, ts // 2 + 6)])                # flame
+            pygame.draw.polygon(surf, (255, 220, 90), [
+                (ts // 2 - 2, ts // 2 + 5), (ts // 2, ts // 2 - 2),
+                (ts // 2 + 2, ts // 2 + 5)])
+        elif "anvil" in low:
+            pygame.draw.rect(surf, (70, 70, 80),
+                             (ts // 4, ts // 2, ts // 2, 4))
+            pygame.draw.rect(surf, (100, 100, 112),
+                             (ts // 4 - 3, ts // 3 + 2, ts // 2 + 6, 6))
+        elif "altar" in low:
+            pygame.draw.rect(surf, (200, 195, 170),
+                             (ts // 4, ts // 3, ts // 2, ts // 2 - 2))
+            pygame.draw.circle(surf, PALETTE["shrine_glow"],
+                               (ts // 2, ts // 3), 4)      # candle glow
+        elif "shel" in low or "book" in low:
+            pygame.draw.rect(surf, wood, (3, 4, ts - 6, ts - 10))
+            for row in range(8, ts - 8, 7):
+                for bx in range(6, ts - 8, 5):
+                    color = ((150, 60, 50), (60, 90, 140),
+                             (170, 140, 60))[(bx + row) % 3]
+                    pygame.draw.rect(surf, color, (bx, row, 3, 5))
+        elif "barrel" in low:
+            pygame.draw.ellipse(surf, wood, (ts // 4, ts // 4,
+                                             ts // 2, ts // 2 + 4))
+            pygame.draw.line(surf, dark, (ts // 4, ts // 2),
+                             (3 * ts // 4, ts // 2), 2)
+        elif "table" in low or "counter" in low or "bar" == low or \
+                "workbench" in low:
+            pygame.draw.rect(surf, wood, (4, ts // 3, ts - 8, 5))
+            pygame.draw.rect(surf, dark, (6, ts // 3 + 5, 3, ts // 3))
+            pygame.draw.rect(surf, dark, (ts - 9, ts // 3 + 5, 3,
+                                          ts // 3))
+        elif "stairs" in low:
+            for i, step in enumerate(range(4, ts - 4, 5)):
+                pygame.draw.rect(surf, (140 - i * 12,) * 3,
+                                 (step, ts - 8 - i * 5, ts - step - 4, 4))
+        elif "pew" in low or "chair" in low:
+            pygame.draw.rect(surf, wood, (6, ts // 2, ts - 12, 4))
+            pygame.draw.rect(surf, wood, (6, ts // 4, 3, ts // 2))
+        elif "statue" in low:
+            pygame.draw.rect(surf, (170, 170, 180),
+                             (ts // 3, ts // 4, ts // 3, ts // 2))
+            pygame.draw.circle(surf, (190, 190, 200),
+                               (ts // 2, ts // 4), ts // 8)
+        else:
+            return self.item(name)
+        self._tile_cache[key] = surf
+        return surf
+
     # ---------------------------------------------------------------- items
     def item(self, name: str) -> pygame.Surface:
         ts = self.tile_size

@@ -23,10 +23,11 @@ class GameAPIMixin:
 
     # ---- interiors --------------------------------------------------
 
-    def enter_building(self) -> str:
+    def enter_building(self, loc=None) -> str:
         if self.current_interior:
             return "You are already inside."
-        loc = self.world.get_location_at(*self.player.position)
+        if loc is None:
+            loc = self.world.get_location_at(*self.player.position)
         if not loc:
             return "There's no building here."
         inter = self.interiors.get(loc.name)
@@ -40,8 +41,26 @@ class GameAPIMixin:
         self.exterior_return_pos = self.player.position
         self.current_interior = inter
         self.player.position = inter.door
-        msg = f"{note}You enter the {loc.name}. {inter.description}"
+        # Whose place is this? (P9A.3b nameplate)
+        plate = ""
+        try:
+            if self.homes.is_derelict(loc.name):
+                plate = " Long abandoned."
+            else:
+                owner = self.homes.owner_of(loc.name)
+                if owner is not None:
+                    plate = f" This is {owner.name}'s place."
+        except Exception:
+            pass
+        msg = f"{note}You enter the {loc.name}.{plate} " \
+              f"{inter.description}"
         self.memory_manager.add_event(msg)
+        # Entering counts as visiting (VISIT quest objectives)
+        try:
+            if self.quest_manager:
+                self.quest_manager.on_location_entered(loc.name)
+        except Exception:
+            pass
         return msg
 
     def force_door(self) -> str:

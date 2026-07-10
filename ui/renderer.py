@@ -28,6 +28,14 @@ _TERRAIN_TO_SPRITE = {
     TerrainType.FARMLAND: "farmland",
 }
 
+# Door glyph colors by lock state (P9A.3b)
+DOOR_STATE_COLORS = {
+    "open": (110, 75, 40),
+    "closed": (130, 95, 55),
+    "locked": (95, 70, 50),
+    "broken": (60, 45, 30),
+}
+
 
 class MapRenderer:
     """Draws the world map onto a target Surface."""
@@ -84,6 +92,10 @@ class MapRenderer:
                 dest = (view_rect.x + screen_x * self.tile_size,
                         view_rect.y + screen_y * self.tile_size)
                 target.blit(surf, dest)
+
+        # Building doors, colored by lock state (P9A.3b)
+        self._draw_door_glyphs(target, engine, view_rect,
+                               cam_x, cam_y, cols, rows)
 
         # Ground items
         if hasattr(world, "ground_items"):
@@ -171,6 +183,45 @@ class MapRenderer:
 
     # ---- helpers ------------------------------------------------------
 
+    def _draw_door_glyphs(self, target, engine, view_rect,
+                          cam_x, cam_y, cols, rows) -> None:
+        """A visible door on every enterable building's face, colored
+        by its lock state (P9A.3b)."""
+        ts = self.tile_size
+        for loc in getattr(engine.world, "locations", []):
+            if loc.name not in getattr(engine, "interiors", {}):
+                continue
+            dx = loc.x + loc.width // 2
+            dy = loc.y + loc.height - 1
+            if not (cam_x <= dx < cam_x + cols and
+                    cam_y <= dy < cam_y + rows):
+                continue
+            try:
+                door = engine.door_manager.door(loc.name)
+                state = engine.door_manager._effective_state(door)
+            except Exception:
+                state = "open"
+            color = DOOR_STATE_COLORS.get(state, (110, 75, 40))
+            sx = view_rect.x + (dx - cam_x) * ts
+            sy = view_rect.y + (dy - cam_y) * ts
+            w, h = max(6, ts // 3), max(9, ts // 2)
+            rect = (sx + (ts - w) // 2, sy + ts - h, w, h)
+            pygame.draw.rect(target, color, rect, border_radius=2)
+            pygame.draw.rect(target, (25, 18, 10), rect, 1,
+                             border_radius=2)
+            if state == "locked":
+                pygame.draw.circle(target, (210, 200, 90),
+                                   (rect[0] + w // 2,
+                                    rect[1] + h // 2), 2)
+            elif state == "open":
+                pygame.draw.rect(target, (15, 12, 8),
+                                 (rect[0] + 2, rect[1] + 2,
+                                  w - 4, h - 2))
+            elif state == "broken":
+                pygame.draw.line(target, (15, 12, 8),
+                                 (rect[0], rect[1]),
+                                 (rect[0] + w, rect[1] + h), 2)
+
     def _render_zone(self, target, engine, view_rect, zone) -> None:
         """Draw a dungeon / interior grid instead of the overworld."""
         from ui.body_renderer import draw_body, update_anim
@@ -205,8 +256,9 @@ class MapRenderer:
             dest_x = view_rect.x + (fx - cam_x) * self.tile_size
             dest_y = view_rect.y + (fy - cam_y) * self.tile_size
             try:
-                target.blit(self.sprites.item(furn.get("name", "?")),
-                            (dest_x, dest_y))
+                target.blit(
+                    self.sprites.furniture(furn.get("name", "?")),
+                    (dest_x, dest_y))
             except Exception:
                 pygame.draw.rect(
                     target, (120, 90, 50),
