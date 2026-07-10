@@ -899,11 +899,25 @@ diverged.
   P9A.5 (multi-level). NOTE follow-up: NPCs still ghost through
   walls on the overworld — route their movement around footprints
   when P9A.5 touches pathing. 9 tests.)*
-- [ ] **P9A.4 Trespass & consequences.** Entering a private home
+- [x] **P9A.4 Trespass & consequences.** Entering a private home
   uninvited (or breaking in) is witnessed: occupants object, guards
   respond (P7.1 conflict system), faction rep drops, repeat offenders
   meet P7.2 retaliation. Shops/taverns/temples stay public in
   daytime; homes are private; everything locks at night.
+  *(done 2026-07-10 — engine/trespass.py, chaining the whole 9A/P7
+  stack: taverns/temples and daytime shops are public, derelicts
+  don't care. Entering a private home (or an after-hours shop) is
+  TRESPASS: if the owner is home or within 8 tiles — and at night
+  everyone is home — they object aloud, remember it (NPC memory +
+  relationship −10), and villager rep drops −4. FORCING a door is a
+  CRIME: "Thief! The watch! THE WATCH!", villagers −6 AND guards −8,
+  and every guard within earshot (12) gets the pack-alert and
+  CONVERGES on the door, challenging "Who goes there?!" on arrival
+  (heuristic guard alert-following added). Repeat break-ins drive
+  guard rep past −30 and the P7.2 bounty ladder posts a price on
+  your head — proven end-to-end in a test. Slipping in unseen by
+  day is free but counted (unseen_break_ins) for future fence/heist
+  content. 8 tests.)*
 - [ ] **P9A.5 Multi-level buildings.** Stairs connect interior
   levels (tavern bedrooms above the taproom, cellars below);
   renderer/movement already zone-aware — extend Interior to a level

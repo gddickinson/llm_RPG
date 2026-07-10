@@ -167,6 +167,8 @@ class GameEngine(GameAPIMixin):
         self.door_manager = DoorManager(self)
         from characters.homes import HomeSystem
         self.homes = HomeSystem(self)
+        from engine.trespass import TrespassSystem
+        self.trespass = TrespassSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None

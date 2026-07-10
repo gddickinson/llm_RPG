@@ -61,6 +61,11 @@ class GameAPIMixin:
                 self.quest_manager.on_location_entered(loc.name)
         except Exception:
             pass
+        # Uninvited? Witnessed? (P9A.4)
+        try:
+            self.trespass.on_enter(loc)
+        except Exception:
+            pass
         return msg
 
     def force_door(self) -> str:

@@ -1277,3 +1277,23 @@ abandoned."), and entering now counts for VISIT quest objectives
 broken them). Deferred: richer multi-room interiors ride P9A.5;
 NPCs still ghost through walls on the overworld — noted in the plan
 for the pathing pass. 9 new tests. Suite: 779 tests, green x3.
+
+**Round 71 — P9A.4 Trespass & consequences (done).**
+The chain George asked for, assembled from the whole 9A/P7 stack.
+engine/trespass.py hooks enter_building: taverns, temples and
+daytime shops stay public; derelicts have no one left to care. A
+private home — or a shop after hours — is TRESPASS: if the owner is
+home or within 8 tiles (and at night everyone is home), they round
+on you aloud, remember it in NPC memory, drop their relationship by
+10, and word costs 4 villager reputation. FORCING a door is a crime,
+not a faux pas: "Thief! The watch! THE WATCH!" — villagers −6,
+guards −8, and every guard within earshot receives the pack-alert
+and physically CONVERGES on the splintered door (the heuristic
+provider now routes alerted guards, challenging "Who goes there?!"
+on arrival). Repeat break-ins push guard reputation past −30 and
+the P7.2 retaliation ladder takes over — the watch posts a price on
+your head, proven end-to-end in a test that breaks in and reads the
+bounty warning the next night. Slipping in and out unseen by day
+costs nothing — but the ledger counts it (unseen_break_ins) for
+future fence/heist content. Phase 9A is now 5-of-6 done; P9A.5
+multi-level buildings remains. 8 new tests. Suite: 787, green x3.

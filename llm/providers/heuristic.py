@@ -121,6 +121,22 @@ class HeuristicProvider(LLMProvider):
             return self._hostile_action(character, world_state,
                                         player_in_view)
 
+        # A guard answering an alarm converges on it (P9A.4 trespass)
+        if klass == "guard":
+            alert = getattr(character, "metadata", {}).get("alert")
+            if alert:
+                mypos = tuple(character.position)
+                dist = abs(mypos[0] - alert[0]) + \
+                    abs(mypos[1] - alert[1])
+                if dist <= 1:
+                    character.metadata.pop("alert", None)
+                    return self._wrap(character, "wait",
+                                      "at the door", "Who goes there?!",
+                                      "stern")
+                toward = self._dir_between(mypos, tuple(alert))
+                return self._wrap(character, "move", toward,
+                                  "", "alert")
+
         # A peaceful NPC the player has ATTACKED fights back or flees
         # like anyone would (George's playtest: assault must matter)
         if getattr(character, "metadata", {}).get("provoked"):

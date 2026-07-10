@@ -59,6 +59,7 @@ llm_RPG/
 - **`market.py`** — `MarketSystem` (P8.5): tâtonnement price indices per category (arms/provisions/goods/arcana); purchases/sales move prices, nights drift them home; multiplies buy AND sell in shop pricing; persisted.
 - **`doors.py`** — `DoorManager` (P9A.1): door policies from `data/doors.json` (homes locked, shops night-locked, taverns open); key/lockpick/SHIFT+TAB-force paths; forcing is noisy and remembered; dawn resets; persisted.
 - **`furniture.py`** — P9A.2: E beside interior furniture — beds rest (+30% HP/day), hearths cook, altars pray, shelves surface rumors, chests/barrels rummage; flavor for the rest; cooldowns in player.metadata.
+- **`trespass.py`** — `TrespassSystem` (P9A.4): private homes + after-hours shops; witnessed trespass costs rep/relationship/memory; forced entry is a crime — guards converge on the alert, repeat offenses reach the P7.2 bounty ladder.
 - **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.
