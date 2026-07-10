@@ -58,6 +58,7 @@ llm_RPG/
 - **`dm_autonomous.py`** — `AutonomousDM`; one planning call per game-day, campaign notes, ≤6 charter-checked commands.
 - **`dm_modules.py`** — Atomic adventure bundles: prevalidate → install → rollback-on-failure.
 - **`dm_library.py`** — The Legendarium (P6.7): DM definitions persist to `data/dm_library/` with provenance and load into the registries at every boot; slain DM creations enter `legendarium.json`. `record_definition` / `load_into_registries` / `record_legend` / `legendarium_tail`; root overridable via `LLM_RPG_DM_LIBRARY`.
+- **`module_packs.py`** — Module packs (P1.4): authored campaign packs from `data/module_packs/*.json` install at new-game start via the dm_modules pipeline — budget-free, inherited definitions tolerated, `"anchor": "wilderness"` resolved per map; folder overridable via `LLM_RPG_MODULE_PACKS`.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.
@@ -199,6 +200,7 @@ Each turn (after a player move / dialog / action):
 ## Adding new content — quick recipes
 
 - **New item**: add an entry to the matching `data/items/*.json` file (only non-default fields needed).
+- **New campaign pack**: drop a module JSON (monsters/items/spawns/quests/beats, see `engine/dm_modules.py` docstring) into `data/module_packs/`; use `"anchor": "wilderness"` instead of positions; run the validator.
 - **New recipe**: add an entry to `data/recipes.json`.
 - **New quest**: add an entry to `data/quests.json`; post to a board via `default_boards()` if appropriate.
 - **New named NPC**: add an entry to the matching `data/npcs/*.json` file.

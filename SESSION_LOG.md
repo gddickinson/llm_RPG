@@ -1002,3 +1002,22 @@ back — Phase 8 added to the plan (astronomy with two moons, disease,
 crops/grazing, pantheon, tâtonnement economy math, shadowcasting FOV)
 plus standing anti-sprawl rules learned from its collapse modes.
 6 new tests. Suite: 654 tests, green twice consecutively.
+
+**Round 58 — P1.4 Module packs (done) — Phase 1 fully complete.**
+The last unchecked pre-Phase-7 item, and it did fall out nearly for
+free: engine/module_packs.py installs authored campaign packs from
+data/module_packs/*.json at new-game start through the same atomic
+prevalidate → install → rollback pipeline the DM uses, with two
+authored-content courtesies — installation never consumes the DM's
+daily mutation budget (snapshot/restore), and definitions the world
+already inherited (from the Legendarium or an earlier campaign this
+session) are skipped rather than refused, so packs land in EVERY new
+campaign. Packs are world-agnostic: spawns/placements may say
+"anchor": "wilderness" and the loader resolves an open tile ≥12 from
+the player on whatever map was generated. Ships with a starter pack,
+"The Mire Beacon" (swamp stalker + relic lantern + board-posted kill
+quest via guard_01 + day-2 narrated beat + village rumor). The content
+validator now checks packs too (enums, resolvable giver, level-1 caps,
+allowed beat commands); the test package pins LLM_RPG_MODULE_PACKS to
+an empty temp dir so 650 engine boots don't each install the shipped
+pack. 7 new tests. Suite: 661 tests, all pass.

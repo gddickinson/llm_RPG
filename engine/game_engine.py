@@ -217,6 +217,11 @@ class GameEngine(GameAPIMixin):
         self.turn_counter = 0
         self.player_dead = False
         self.memory_manager.add_event("The adventure begins.")
+        try:
+            from engine.module_packs import install_packs
+            install_packs(self)
+        except Exception as e:
+            logger.warning(f"Module packs unavailable: {e}")
 
     def end_game(self) -> None:
         self.running = False

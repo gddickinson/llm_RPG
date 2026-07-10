@@ -13,6 +13,13 @@ _dm_lib = tempfile.mkdtemp(prefix="llm_rpg_test_dm_lib_")
 os.environ["LLM_RPG_DM_LIBRARY"] = _dm_lib
 atexit.register(shutil.rmtree, _dm_lib, ignore_errors=True)
 
+# Empty module-pack folder by default so the ~650 engine boots across the
+# suite don't each install the shipped packs; pack tests point the env at
+# their own fixtures (restore it afterwards, never pop).
+_packs = tempfile.mkdtemp(prefix="llm_rpg_test_packs_")
+os.environ["LLM_RPG_MODULE_PACKS"] = _packs
+atexit.register(shutil.rmtree, _packs, ignore_errors=True)
+
 
 def clean_dm_library():
     """Wipe the per-run DM library (tests that define ids call this in

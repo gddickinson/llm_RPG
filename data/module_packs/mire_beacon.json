@@ -1,0 +1,50 @@
+{
+  "module_id": "mire_beacon",
+  "title": "The Mire Beacon",
+  "announcement": "Fisherfolk swear a cold green light wanders the wilds at dusk.",
+  "monsters": {
+    "mire_stalker": {
+      "name": "Mire Stalker",
+      "class": "monster",
+      "race": "goblin",
+      "hp": 11,
+      "level": 2,
+      "symbol": "m",
+      "description": "A stooped, dripping shape that hunts by stolen lantern-light.",
+      "spawn_terrain": ["swamp"],
+      "behavior": {"ambush": 2}
+    }
+  },
+  "items": {
+    "beacon_lantern": {
+      "name": "Beacon Lantern",
+      "item_type": "misc",
+      "value": 90,
+      "rarity": "uncommon",
+      "description": "A storm-lantern of green glass, still warm to the touch."
+    }
+  },
+  "spawns": [
+    {"template_id": "mire_stalker", "anchor": "wilderness"}
+  ],
+  "placements": [
+    {"item_id": "beacon_lantern", "anchor": "wilderness"}
+  ],
+  "quests": {
+    "q_mire_beacon": {
+      "title": "The Mire Beacon",
+      "description": "Something out in the wilds carries a stolen lantern. Put the light out before it draws worse things to the road.",
+      "objectives": [
+        {"type": "kill", "target": "monster", "required": 1,
+         "description": "Slay the Mire Stalker"}
+      ],
+      "giver_id": "guard_01",
+      "reward_gold": 45,
+      "reward_xp": 80
+    }
+  },
+  "beats": [
+    {"day_offset": 2, "command": "narrate",
+     "args": {"text": "The marsh-light was seen again last night — closer to the road this time."}}
+  ]
+}

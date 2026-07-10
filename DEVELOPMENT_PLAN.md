@@ -113,8 +113,17 @@ demo-scale: 6 quests, 6 recipes, 4 encounter monsters, 7 spells.
   quests (givers, FETCH/KILL/TALK/DELIVER targets), NPCs (enums, relationships,
   inventory-string resolvability). Wired into the test suite; also
   self-tested against injected broken content.)*
-- [ ] **P1.4** (Stretch) A "module pack" folder convention — the ROADMAP's campaign
-  packs fall out of this nearly for free.
+- [x] **P1.4** (Stretch) A "module pack" folder convention — the ROADMAP's campaign
+  packs fall out of this nearly for free. *(done 2026-07-10 —
+  `engine/module_packs.py`: authored packs in `data/module_packs/*.json`
+  install at new-game start through the SAME atomic prevalidate→install→
+  rollback pipeline the DM uses (P6.5), with authored-content courtesies:
+  no DM budget consumed, inherited definitions (Legendarium/earlier
+  campaign) tolerated, and world-agnostic `"anchor": "wilderness"`
+  positions resolved per generated map. Ships with "The Mire Beacon"
+  starter pack (monster + relic + board quest + day-2 beat + rumor).
+  Validator now checks packs (enums, giver resolvable, level-1 caps,
+  allowed beats). Env `LLM_RPG_MODULE_PACKS` for isolation. 7 tests.)*
 
 **Exit criteria:** adding an item/monster/recipe/quest = editing JSON only.
 
