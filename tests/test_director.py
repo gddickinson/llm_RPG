@@ -72,14 +72,25 @@ class TestDirector(unittest.TestCase):
     def test_rumors_flow_into_gossip(self):
         self.director.rumors = ["The mill wheel broke overnight."]
         from characters.gossip import gossip_for
+        # Isolate from competing gossip sources: an NPC with no family,
+        # an empty event log, and no world history to cite
         goren = self.engine.npc_manager.get_npc("tavernkeeper_01")
-        found = False
-        for _ in range(30):  # gossip picks rumors at 60% odds
-            lines = gossip_for(goren, self.engine, max_lines=1)
-            if any("mill wheel" in ln for ln in lines):
-                found = True
-                break
-        self.assertTrue(found, "director rumor never surfaced in gossip")
+        self.engine.memory_manager.game_history = []
+        self.engine.world_history = []
+        from characters import families
+        original = families.family_of
+        families.family_of = lambda nid: None
+        try:
+            found = False
+            for _ in range(25):  # rumor slot hits at 60% per try
+                lines = gossip_for(goren, self.engine, max_lines=1)
+                if any("mill wheel" in ln for ln in lines):
+                    found = True
+                    break
+            self.assertTrue(found,
+                            "director rumor never surfaced in gossip")
+        finally:
+            families.family_of = original
 
     def test_llm_events_parsed_and_applied(self):
         self.engine.llm_interface.provider_name = "anthropic"

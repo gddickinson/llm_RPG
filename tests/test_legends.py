@@ -39,11 +39,15 @@ class TestLegends(unittest.TestCase):
         (pos, relic) = self._ground_relics()[0]
         legend_id = relic.metadata["legend_id"]
         self.player.position = pos
-        msg = self.engine.pickup_item()
-        self.assertIn("pick up", msg)
+        # Several relics may share a themed tile (keep hosts two) —
+        # pick up everything lying there
+        for _ in range(5):
+            if not self.engine.world.get_items_at(*pos):
+                break
+            self.engine.pickup_item()
         self.assertIn(legend_id, known_ids(self.player))
         log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-4:])
+                       self.engine.memory_manager.game_history[-10:])
         self.assertIn("[Legend]", log)
 
     def test_reveal_only_once(self):

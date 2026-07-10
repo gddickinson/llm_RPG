@@ -150,6 +150,10 @@ class CombatSystem:
         return f"{attacker.name} {verb} {defender.name} for {damage} damage!"
 
     def _handle_defeat(self, attacker, defender, damage: int) -> str:
+        # The player's defeat is a story beat, not always a game over
+        if defender.id == self.engine.player.id:
+            return self._handle_player_defeat(attacker, damage)
+
         defender.defeat()
         defender.last_position = defender.position
         msg = (
@@ -179,33 +183,47 @@ class CombatSystem:
             f"{defender.name}'s body", defender.position[0], defender.position[1]
         )
 
-        # Player defeated — flag for UI; UIs that don't handle it
-        # fall back to end_game (terminal mode).
-        if defender.id == self.engine.player.id:
-            self.engine.memory_manager.add_event("You have been defeated!")
-            self.engine.player_dead = True
-            # The GUI catches `player_dead` and shows a restart/quit menu.
-            # The terminal UI doesn't, so end the game as a safety net.
-            if not getattr(self.engine, "_has_gui", False):
-                self.engine.end_game()
-        else:
-            self.engine.world.map.remove_character(defender)
-            kls = getattr(getattr(defender, "character_class", None),
-                          "value", "")
-            # Notify quest manager
-            if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
-                self.engine.quest_manager.on_npc_defeated(defender.id, kls)
-            # XP + faction rep changes for player kills
-            if attacker.id == self.engine.player.id:
-                self._award_xp(defender)
-                self._update_faction_rep(kls)
-                try:
-                    self.engine.collection_log.record_kill(defender)
-                    from engine.player_deeds import record_deed
-                    record_deed(self.engine, f"slew {defender.name}")
-                except Exception:
-                    pass
+        self.engine.world.map.remove_character(defender)
+        kls = getattr(getattr(defender, "character_class", None),
+                      "value", "")
+        # Notify quest manager
+        if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
+            self.engine.quest_manager.on_npc_defeated(defender.id, kls)
+        # XP + faction rep changes for player kills
+        if attacker.id == self.engine.player.id:
+            self._award_xp(defender)
+            self._update_faction_rep(kls)
+            try:
+                self.engine.collection_log.record_kill(defender)
+                from engine.player_deeds import record_deed
+                record_deed(self.engine, f"slew {defender.name}")
+            except Exception:
+                pass
 
+        return msg
+
+    def _handle_player_defeat(self, attacker, damage: int) -> str:
+        """Defeat outcomes: robbed / left for dead / slain (P4.7)."""
+        player = self.engine.player
+        self.engine.memory_manager.add_event(
+            f"{attacker.name} strikes you down!")
+        try:
+            from engine.defeat import handle_player_defeat
+            survived, msg = handle_player_defeat(
+                self.engine, attacker, rng=self.rng)
+        except Exception as e:
+            logger.warning(f"Defeat outcome error: {e}")
+            survived, msg = (False, "You have been defeated!")
+
+        if survived:
+            return msg
+
+        # The classic end: popup in the GUI, game over in terminal
+        player.defeat()
+        self.engine.memory_manager.add_event(msg)
+        self.engine.player_dead = True
+        if not getattr(self.engine, "_has_gui", False):
+            self.engine.end_game()
         return msg
 
     def _award_xp(self, defeated) -> None:

@@ -749,3 +749,25 @@ found legends show their full story, unfound ones tease "its relic is
 still out there...". NPCs cite history by year in gossip. world_history
 and legends_known persist in saves. New engine/legends.py; 7 tests.
 Suite: 542 tests, all pass.
+
+**Round 42 — P4.7 failure-as-story (done). PHASE 4 COMPLETE.**
+New `engine/defeat.py` — the Kenshi lesson. Overworld defeat now rolls:
+Robbed (~60%): you wake at the nearest temple/chapel two hours later,
+30% of carried gold gone — banked gold is untouchable, giving banking
+its first real payoff; Left for Dead (~30%): 1 HP where you fell, six
+hours later, hunger spiked to 75; Slain (~10%, and ALWAYS inside
+dungeons — no one drags you out of the depths): the classic death popup.
+Victors record the win in their memories, so Gorkash can gloat about it
+later. Combat's defeat handler restructured so the player branch skips
+loot-drops/body-markers. Also this round: hunted down and fixed all
+three flaky tests (death tests assumed defeat always kills — now force
+the slain roll; two relics share the keep tile — pick up everything;
+gossip priority race starved the rumor test — fresh rumors now beat old
+legends, and the test isolates competing sources). The round-35 mystery
+flake is retroactively explained. 8 consecutive full-suite green runs.
+8 new tests. Suite: 550 tests.
+
+Phase 4 complete: radiant quests, 13 authored quests with chains and
+capability unlocks, quest points + guild, Tutorial Island (with zone
+rendering + movement fixed along the way), The Murkfen, history with
+findable relics, and defeat that tells stories.

@@ -48,6 +48,7 @@ llm_RPG/
 - **`guild.py`** — `GuildSystem`; quest points → ranks (Member/Veteran/Champion) with radiant/teleport/party perks.
 - **`tutorial.py`** — `TutorialManager`; teach-by-doing steps, hint-bar lessons, one-way boat departure.
 - **`legends.py`** — Relic pickups reveal authored legends; Legends section of the Y journal; gossip citations.
+- **`defeat.py`** — Failure-as-story defeat outcomes: robbed / left for dead / slain.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.

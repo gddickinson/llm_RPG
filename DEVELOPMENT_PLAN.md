@@ -348,9 +348,15 @@ and out of fights — and NPCs remember you across sessions.
   section (found n/m, unfound show "its relic is still out there…"); NPC gossip
   cites history by year. `engine.world_history` + `legends_known` persist.
   7 tests.)*
-- [ ] **P4.7 Failure-as-story.** On player defeat outside dungeons: robbed and dumped
-  at the nearest temple, or captured by brigands (escape mini-scenario) — death popup
-  becomes the fallback, not the only outcome (Kenshi lesson).
+- [x] **P4.7 Failure-as-story.** *(done 2026-07-09 — `engine/defeat.py`:
+  overworld defeat rolls Robbed (~60%: wake at the nearest temple, 30% of
+  carried gold gone — banked gold untouchable, so banking finally earns its
+  keep), Left for Dead (~30%: 1 HP where you fell, six hours later, ravenous),
+  or Slain (~10%, and ALWAYS inside dungeons/zones — the classic popup).
+  Victors remember besting you. Also stabilized the test suite: three flaky
+  tests fixed (death tests now force the slain roll; shared-tile relic pickup;
+  gossip-priority race — the round-35 mystery flake explained), 8 consecutive
+  green runs. 8 tests. **PHASE 4 COMPLETE.**)*
 
 ---
 

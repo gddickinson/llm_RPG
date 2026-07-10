@@ -11,6 +11,9 @@ class TestPlayerDeath(unittest.TestCase):
             llm_provider="heuristic", enable_npc_processes=False)
         self.engine.start_game()
         self.engine._has_gui = True  # simulate GUI presence
+        # P4.7 made overworld defeat usually survivable; these tests
+        # cover the FINAL outcome, so force the slain roll (< 0.10)
+        self.engine.combat_system.rng.random = lambda: 0.05
 
     def tearDown(self):
         try:
