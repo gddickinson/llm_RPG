@@ -508,11 +508,14 @@ rumors) is never fed back as DM *instructions* (injection separation).
   day. The DM prompt teaches arc craft: foreshadow before striking, build on
   the player's deeds, reuse creations, schedule_beat future payoffs. Every
   planning day logged to the notebook. 8 tests via mocked provider.)*
-- [ ] **P6.5 Adventure modules**: the DM composes atomic bundles — a
-  location + NPCs + quest chain + secrets + topics + a finale beat —
-  validated as a unit and rolled back wholesale if any piece fails.
-  Modules are named in the notebook and announced diegetically (a rumor,
-  a stranger arriving, a new notice on the board).
+- [x] **P6.5 Adventure modules.** *(done 2026-07-09 —
+  `engine/dm_modules.py` + `dm.install_module(module)` (bridge + autonomous
+  whitelisted): one bundle = monsters + items + optional building + spawns +
+  placements + quest chain + day-offset beats + a diegetic announcement
+  (rumor + narration). Prevalidation checks every piece against the charter
+  before anything mutates; a mid-install failure rolls back every applied
+  piece AND refunds the budget (tested by injected failure). Modules are
+  named in the notebook. 6 tests.)*
 - [ ] **P6.6 Charter enforcement + safety tests**: unit tests that the API
   refuses charter violations (player-touching, over-cap monsters, quest
   vandalism), budget accounting via `llm_interface.call_counts`, injection

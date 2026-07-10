@@ -933,3 +933,17 @@ tavernkeeper greetings use merchant stock lines; consider QP for
 DM-created quests; the ~1-in-10 world-gen flake remains uncaught
 (9 consecutive green runs after one failure). 3 regression tests.
 Suite: 632 tests, all pass.
+
+**Round 54 — P6.5 adventure modules (done).**
+New `engine/dm_modules.py` + `dm.install_module()` (callable from the
+bridge and the autonomous DM). A module is one coherent adventure in a
+single bundle: new monsters and items, an optional building, spawns,
+placements, a quest chain, day-offset beats, and a diegetic announcement
+that lands as both a rumor and a [DM] narration. Atomicity is absolute:
+prevalidation checks every piece against the charter (caps, bounds,
+player distance, id collisions, total ops vs remaining budget) before
+anything mutates, and if execution still fails midway, every applied
+piece is rolled back — definitions, spawns, quests, board postings —
+and the budget refunded (tested via injected create_quest failure).
+The playtest's hand-rolled Rot-King arc is now a one-command bundle.
+6 tests. Suite: 638 tests, all pass.

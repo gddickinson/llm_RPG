@@ -69,6 +69,11 @@ class DMApi:
         from engine.dm_digest import build_digest
         return build_digest(self.engine)
 
+    def install_module(self, module: dict) -> Tuple[bool, str]:
+        """Atomic adventure bundle (P6.5)."""
+        from engine.dm_modules import install_module
+        return install_module(self.engine, module)
+
     # ---- narration (free) --------------------------------------------------
 
     def narrate(self, text: str) -> Tuple[bool, str]:
