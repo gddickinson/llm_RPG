@@ -798,16 +798,41 @@ Doors need to be opened, locks need keys or to be picked/forced.
 Rooms should have functions. There should be consequences for
 entering certain buildings… Different buildings are likely to have
 different occupants depending on the style of building and the
-occupants occupation." Autonomous World prototyped much of this — an
-Explore survey of its building/interior/lock/trespass systems is
-running; fold its report in here. Takes priority over P8.6 and the
+occupants occupation." Takes priority over P8.6 and the
 fantastical-structures items below (which build on this framework).
 
-- [ ] **P9A.1 Doors & locks.** Interiors get real doorways: closed
+**AW survey findings (2026-07-10, full report in session transcript):**
+AW built buildings TWICE (baked-tiles vs zoom-interiors) with
+duplicated furniture logic — port ONE model. Openable doors/windows
+and door KEYS were never built there (new work); lockpick (d20+DEX vs
+DC) and STR-bash port cleanly. Best copy targets: the furniture
+face-tile dispatch (`actions_interact.py` — bed heals, chest loots,
+fireplace cooks, anvil crafts, bookshelf teaches), ~130 hand-authored
+`Blueprint` tile-array floor plans (`world/buildings.py` +
+`blueprint_library.py`, only depend on tile constants),
+`ROOM_TEMPLATES`/`BUILDING_ROOM_SETS`/`CONNECTIVITY_RULES` data, and
+`PlayerHouse` (self-contained player-owned housing). Cautions:
+occupancy was proximity-emergent (bind occupants explicitly at spawn
+instead); trespass was owner-only (add guard response + faction rep);
+their multi-floor stair code was the buggy corner (port the concept,
+rewrite transitions); near-zero test coverage was why the two models
+diverged.
+
+- [x] **P9A.1 Doors & locks.** Interiors get real doorways: closed
   doors block entry until opened (bump/E); locked doors need the key
   item, a lockpick attempt (Dexterity/lockpicks tool, failure chance),
   or forcing (Strength check, noisy — guards hear). Door state
   persists. Locks as data on the building/interior spec.
+  *(done 2026-07-10 — engine/doors.py + data/doors.json. Policies by
+  building-name match: homes/towers LOCKED, shops/forges lock at
+  night, taverns/temples/shrines open. TAB entry now goes through the
+  door: closed doors push open; locked doors yield to (in order) the
+  right key in your pack, a lockpick attempt (d20+DEX vs lock level;
+  failing by 5+ snaps your picks), or SHIFT+TAB forcing (d20+STR vs
+  level+3) — forcing is NOISY either way ("splintering wood" event +
+  player.metadata['forced_entry_day'], the P9A.4 trespass hook), and
+  a forced door stays broken until dawn when every door resets to
+  policy. State persists via save_load. 11 tests.)*
 - [ ] **P9A.2 Furniture with functions.** Interior furnishing layer
   (beds, chests, tables, forges, altars, bookshelves as interior
   objects with sprites): beds = sleep/rest to heal anywhere indoors

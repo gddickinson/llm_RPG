@@ -57,6 +57,7 @@ llm_RPG/
 - **`disease.py`** — `DiseaseSystem` (P8.2): outbreaks/contagion/immunity from `data/diseases.json`; state in character metadata; player symptom drain (never kills); the right remedy cures via item use; nightly tick.
 - **`pantheon.py`** — `PantheonSystem` (P8.4): five gods from `data/pantheon.json`; deeds build favor (player_deeds hook), SHIFT+P prayer at shrines/temples, favor-funded miracles (heal/bless/fortune/cure/insight), nightly omens at deep favor.
 - **`market.py`** — `MarketSystem` (P8.5): tâtonnement price indices per category (arms/provisions/goods/arcana); purchases/sales move prices, nights drift them home; multiplies buy AND sell in shop pricing; persisted.
+- **`doors.py`** — `DoorManager` (P9A.1): door policies from `data/doors.json` (homes locked, shops night-locked, taverns open); key/lockpick/SHIFT+TAB-force paths; forcing is noisy and remembered; dawn resets; persisted.
 - **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.

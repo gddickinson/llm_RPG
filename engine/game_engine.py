@@ -163,6 +163,8 @@ class GameEngine(GameAPIMixin):
         self.pantheon = PantheonSystem(self)
         from engine.market import MarketSystem
         self.market = MarketSystem(self)
+        from engine.doors import DoorManager
+        self.door_manager = DoorManager(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -358,6 +360,7 @@ class GameEngine(GameAPIMixin):
                 self.farm_manager.run_day()
                 self.pantheon.run_day()
                 self.market.run_day()
+                self.door_manager.run_day()
                 try:
                     from world.astronomy import announce_conjunction
                     announce_conjunction(self, day)

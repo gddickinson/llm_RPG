@@ -32,11 +32,26 @@ class GameAPIMixin:
         inter = self.interiors.get(loc.name)
         if not inter:
             return f"You can't enter the {loc.name}."
+        # The door has a say (P9A.1)
+        allowed, note = self.door_manager.try_enter(loc.name)
+        if not allowed:
+            self.memory_manager.add_event(note)
+            return note
         self.exterior_return_pos = self.player.position
         self.current_interior = inter
         self.player.position = inter.door
-        msg = f"You enter the {loc.name}. {inter.description}"
+        msg = f"{note}You enter the {loc.name}. {inter.description}"
         self.memory_manager.add_event(msg)
+        return msg
+
+    def force_door(self) -> str:
+        """SHIFT+TAB: force the door of the building underfoot."""
+        loc = self.world.get_location_at(*self.player.position)
+        if not loc or loc.name not in self.interiors:
+            return "There's no door here to force."
+        broke, msg = self.door_manager.force(loc.name)
+        if broke and "gives way" in msg:
+            return self.enter_building()
         return msg
 
     def exit_building(self) -> str:

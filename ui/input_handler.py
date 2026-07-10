@@ -181,9 +181,12 @@ class InputHandler:
                 pass
             return True
 
-        # Enter / exit building or dungeon (Tab)
+        # Enter / exit building or dungeon (Tab); force a door (SHIFT+TAB)
         if k == pygame.K_TAB:
-            self._handle_interact()
+            if shift and not self.engine.current_interior:
+                self.engine.force_door()
+            else:
+                self._handle_interact()
             return True
 
         # Bank deposit all (N) / withdraw all (M)

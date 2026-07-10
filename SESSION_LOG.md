@@ -1182,3 +1182,25 @@ multi-level buildings, building-specific actions) ahead of P8.6 and
 Phase 9; an Explore agent is surveying autonomous_world's building/
 interior/lock/trespass systems to inform the ports (report lands
 next round).
+
+**Round 67 — P9A.1 Doors & locks (done) — Phase 9A begins.**
+First round of George's building overhaul, informed by the completed
+autonomous_world buildings survey (headline findings folded into the
+plan: AW built buildings twice with duplicated logic — port one model;
+openable doors and KEYS were never built there, so those are new
+work; the furniture face-tile dispatch and ~130 blueprint floor plans
+are the best copy targets; bind occupants explicitly, not by
+proximity; their multi-floor stair code was the buggy corner). This
+round: you can no longer walk into any building at will. engine/
+doors.py + data/doors.json give every building a door policy by name
+match — homes and towers locked, shops and forges locked after dark,
+taverns/temples/shrines open. TAB entry now negotiates the door:
+closed doors push open; locked doors yield to the right key in your
+pack, a lockpick attempt (d20 + DEX vs lock level, failing by 5+
+snaps your picks — the lockpicks item finally has a job), or a
+SHIFT+TAB shoulder-charge (d20 + STR vs level+3) that is NOISY
+either way — "the crash of splintering wood echoes down the street,"
+and player.metadata records the forced entry for the coming P9A.4
+trespass system. Forced doors stay broken until dawn, when every
+door resets to its policy. Door state persists via save_load.
+11 new tests. Suite: 746 tests, green x3.
