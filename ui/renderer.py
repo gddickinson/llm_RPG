@@ -280,7 +280,7 @@ class MapRenderer:
         # Dungeon fog-of-war (P8.6): shadowcast what the hero sees
         visible = None
         explored = None
-        if is_dungeon:
+        if is_dungeon or getattr(zone, "dark", False):
             try:
                 from world.fov import zone_fov
                 visible = zone_fov(zone, (px, py), radius=8)
@@ -360,6 +360,13 @@ class MapRenderer:
             npc = engine.npc_manager.npcs.get(npc_id)
             if npc is not None and npc.is_active():
                 chars.append((npc, spot))
+        # Zone natives: structure monsters live at zone coords (P9.1)
+        zname = getattr(zone, "name", None)
+        if zname:
+            chars += [(n, n.position)
+                      for n in engine.npc_manager.npcs.values()
+                      if n.is_active()
+                      and n.metadata.get("zone") == zname]
         for char, (cx, cy) in chars:
             if not (cam_x <= cx < cam_x + cols and
                     cam_y <= cy < cam_y + rows):

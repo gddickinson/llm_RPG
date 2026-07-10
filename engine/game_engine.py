@@ -171,6 +171,8 @@ class GameEngine(GameAPIMixin):
         self.trespass = TrespassSystem(self)
         from engine.targeting import TargetingSystem
         self.targeting = TargetingSystem(self)
+        from world.structures import StructureBuilder
+        self.structures = StructureBuilder(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -247,6 +249,10 @@ class GameEngine(GameAPIMixin):
             self.homes.assign()
         except Exception as e:
             logger.debug(f"Home assignment: {e}")
+        try:
+            self.structures.build()
+        except Exception as e:
+            logger.debug(f"Structures: {e}")
         try:
             from engine.module_packs import install_packs
             install_packs(self)

@@ -68,8 +68,12 @@ def npc_adjacent_to_player(engine, npc,
     """Adjacency that respects walls: indoors uses the interior
     positions; from the street, someone indoors is out of reach."""
     px, py = engine.player.position
-    if getattr(engine, "current_interior", None) is not None:
+    interior = getattr(engine, "current_interior", None)
+    if interior is not None:
         zp = zone_position(engine, npc)
+        if zp is None and getattr(npc, "metadata", {}).get("zone") == \
+                getattr(interior, "name", None):
+            zp = npc.position          # zone native (P9.1)
         if zp is None:
             return False
         return ((zp[0] - px) ** 2 + (zp[1] - py) ** 2) ** 0.5 <= radius

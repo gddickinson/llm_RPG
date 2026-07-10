@@ -400,6 +400,10 @@ class PlayerActions:
         verb = "climb" if up else "descend"
         engine.memory_manager.add_event(
             f"You {verb} the stairs. {level.description}")
+        try:
+            engine.structures.on_enter_level(level)   # P9.1
+        except Exception:
+            pass
         engine.advance_turn()
         return True
 

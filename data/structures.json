@@ -1,0 +1,36 @@
+{
+  "ruined_keep": {
+    "attach_to": "Ruined Keep",
+    "levels": [
+      {
+        "name": "Ruined Keep — Great Hall",
+        "description": "Fallen beams and a cold hearth. Something scratched words into the stone.",
+        "grid": ["WWWWWWWWWW",
+                 "WF..T...FW",
+                 "WF.K.....W",
+                 "WF......>W",
+                 "WWWWDWWWWW"],
+        "inscriptions": [
+          "Here fell the last steward of the keep, sword in hand."
+        ]
+      },
+      {
+        "name": "Ruined Keep — Crypt",
+        "position": "below",
+        "dark": true,
+        "description": "Stone shelves and old bones. The air is very still.",
+        "grid": ["WWWWWWWWWW",
+                 "WF..C...FW",
+                 "WFK......W",
+                 "WF......<W",
+                 "WWWWWWWWWW"],
+        "inscriptions": [
+          "The crown sleeps deeper than the dead."
+        ],
+        "monsters": [
+          {"template": "goblin", "at": [2, 3]}
+        ]
+      }
+    ]
+  }
+}

@@ -47,6 +47,10 @@ class GameAPIMixin:
             assign_visitors(self, inter, loc.name)
         except Exception:
             pass
+        try:
+            self.structures.on_enter_level(inter)   # P9.1
+        except Exception:
+            pass
         # Whose place is this? (P9A.3b nameplate)
         plate = ""
         try:

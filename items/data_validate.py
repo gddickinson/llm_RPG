@@ -33,7 +33,44 @@ def validate_all() -> List[str]:
     problems += _check_module_packs()
     problems += _check_diseases()
     problems += _check_pantheon()
+    problems += _check_structures()
     return problems
+
+
+def _check_structures() -> List[str]:
+    from world.structures import STRUCTURES, CELL_FURNITURE
+    from world.monsters import MONSTER_TEMPLATES
+    known = set("WFD.<>K") | set(CELL_FURNITURE)
+    out = []
+    for sid, spec in STRUCTURES.items():
+        if not spec.get("attach_to"):
+            out.append(f"structure {sid}: needs attach_to")
+        levels = spec.get("levels", [])
+        if not levels:
+            out.append(f"structure {sid}: needs levels")
+        for i, lv in enumerate(levels):
+            rows = lv.get("grid", [])
+            if not rows:
+                out.append(f"structure {sid} level {i}: empty grid")
+                continue
+            for row in rows:
+                bad = set(row) - known
+                if bad:
+                    out.append(f"structure {sid} level {i}: unknown "
+                               f"cells {sorted(bad)}")
+            for spawn in lv.get("monsters", []):
+                if spawn.get("template") not in MONSTER_TEMPLATES:
+                    out.append(f"structure {sid} level {i}: unknown "
+                               f"monster '{spawn.get('template')}'")
+            if i > 0:
+                up = any("<" in r for r in rows)
+                down = any(">" in r for r in
+                           levels[i - 1].get("grid", []))
+                if lv.get("position", "below") == "below" and \
+                        not (up and down):
+                    out.append(f"structure {sid} level {i}: below-"
+                               f"level needs '<' and prior '>'")
+    return out
 
 
 def _check_pantheon() -> List[str]:

@@ -21,8 +21,12 @@ class TestFootprintFit(unittest.TestCase):
     def _pairs(self):
         for loc in self.engine.world.locations:
             inter = self.engine.interiors.get(loc.name)
-            if inter is not None:
-                yield loc, inter
+            if inter is None:
+                continue
+            # Authored structures (P9.1) keep their designed grids
+            if getattr(inter, "structure_id", None):
+                continue
+            yield loc, inter
 
     def test_interior_size_scales_with_footprint(self):
         for loc, inter in self._pairs():

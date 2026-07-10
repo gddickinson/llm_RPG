@@ -1427,3 +1427,26 @@ against zone tiles — phantom walls and walk-overs both; visitors
 now block and swap at their DISPLAYED positions only, and
 zone-native monsters at their real ones. 12 new tests. Suite: 843,
 green x3.
+
+**Round 78 — P9.1 Structure framework (done) — the Ruined Keep
+opens.**
+Fantastical structures as pure data. world/structures.py reads
+data/structures.json: a structure is a named stack of grid-string
+levels — W walls, D door, < and > twinned stairs, furniture letters,
+K inscription tiles carrying authored set-piece text (E to read) —
+attached to an overworld location and riding everything Phase 9A
+built: door policies, working furniture, level-stack stairs,
+interior presence. Levels can be DARK, which switches on the P8.6
+shadowcaster (fog-of-war inside a building level), and can list
+monsters that populate on FIRST VISIT as zone natives: fightable in
+their own level (presence and targeting both understand natives at
+zone coordinates), invisible and untargetable from other floors,
+and once cleared a level STAYS cleared — the populated-set rides
+save_load. The content validator checks grid cells, stair twinning
+between linked levels, and monster templates. As proof, the RUINED
+KEEP — until now just lore tiles from the history sim — actually
+opens: a Great Hall where the last steward's inscription waits over
+a dark crypt with a goblin and a carved promise that "the crown
+sleeps deeper than the dead." The temple crypt (P9.3) and wizard's
+tower (P9.4) are now a JSON file away. 8 new tests. Suite: 851,
+green x3.

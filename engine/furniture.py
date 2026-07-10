@@ -58,6 +58,8 @@ def _kind(name: str) -> str:
         return "anvil"
     if "well" in low:
         return "well"
+    if "inscription" in low:
+        return "inscription"
     return low
 
 
@@ -82,6 +84,10 @@ def interact(engine) -> Optional[str]:
     if piece is None:
         return None
     kind = _kind(piece.get("name", ""))
+    if kind == "inscription":
+        msg = f"The carving reads: \"{piece.get('text', '...')}\""
+        engine.memory_manager.add_event(msg)
+        return msg
     handler = {"bed": _rest, "hearth": _cook, "altar": _pray,
                "shelf": _read, "stash": _rummage,
                "anvil": _smith, "well": _drink}.get(kind)
