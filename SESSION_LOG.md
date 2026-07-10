@@ -867,3 +867,16 @@ tiles of the player, nothing buries or traps the player, and a budget of
 free). Every act AND every refusal is written to the DM notebook, which
 persists in saves. 12 tests covering all powers + every charter rule.
 Suite: 606 tests, all pass.
+
+**Round 50 — P6.2 world digest (done).**
+New `engine/dm_digest.py` (`engine.dm.digest()`): the Dungeon Master's
+view of the table as one compact JSON dict — player sheet with skills,
+active quests, equipment, deeds, topics and legends; the named-NPC roster
+with feelings toward the player and their latest reflected opinions
+(spawned monsters excluded, censused separately); world systems state
+(faction strength/stores, live shortages with minutes remaining, rumors,
+board notices, locations); the last 15 events; and the DM's own
+notebook tail, scheduled beats, and remaining budget. JSON
+round-trip and <20KB size are tested — it's built to be written to disk
+by the P6.3 session bridge and pasted into a prompt by P6.4.
+7 new tests. Suite: 613 tests, all pass.

@@ -485,10 +485,13 @@ rumors) is never fed back as DM *instructions* (injection separation).
   Definitions re-inject into registries on load. 12 tests. Remaining for
   later steps: plant_secret/teach_topic commands, dm_library persistence
   (P6.7). )*
-- [ ] **P6.2 World digest**: `engine.dm_digest()` → compact JSON of the table:
-  player sheet/skills/quests, NPC roster + relationships + opinions, region
-  summary, active systems state (shortages, rumors, weather), recent events,
-  and the DM notebook. This is what any DM driver reads.
+- [x] **P6.2 World digest.** *(done 2026-07-09 — `engine/dm_digest.py` +
+  `engine.dm.digest()`: one compact JSON dict (< 20KB, size-tested) — player
+  sheet/skills/quests/equipment/deeds, named-NPC roster with feelings +
+  latest opinions (spawns excluded), world systems (factions, shortages,
+  rumors, board notices, monster census, locations), recent events, and the
+  DM's own notebook/schedule/budget. JSON round-trip tested — ready for the
+  P6.3 bridge to write to disk. 7 tests.)*
 - [ ] **P6.3 Session-DM bridge** (`--dm-bridge`): file-based —
   the game exports `saves/dm/digest.json` (each game-day + on demand) and
   polls `saves/dm/inbox/*.json` for command bundles. Claude Code (a session

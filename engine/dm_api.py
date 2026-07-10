@@ -63,6 +63,11 @@ class DMApi:
     def budget_remaining(self) -> int:
         return MUTATION_BUDGET - self._spent.get(self._day(), 0)
 
+    def digest(self) -> dict:
+        """The DM's view of the table (P6.2)."""
+        from engine.dm_digest import build_digest
+        return build_digest(self.engine)
+
     # ---- narration (free) --------------------------------------------------
 
     def narrate(self, text: str) -> Tuple[bool, str]:
