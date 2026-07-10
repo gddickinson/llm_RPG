@@ -57,6 +57,7 @@ llm_RPG/
 - **`dm_bridge.py`** — `--dm-bridge` file bridge: digest export + inbox bundle polling + result receipts.
 - **`dm_autonomous.py`** — `AutonomousDM`; one planning call per game-day, campaign notes, ≤6 charter-checked commands.
 - **`dm_modules.py`** — Atomic adventure bundles: prevalidate → install → rollback-on-failure.
+- **`dm_library.py`** — The Legendarium (P6.7): DM definitions persist to `data/dm_library/` with provenance and load into the registries at every boot; slain DM creations enter `legendarium.json`. `record_definition` / `load_into_registries` / `record_legend` / `legendarium_tail`; root overridable via `LLM_RPG_DM_LIBRARY`.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks.
