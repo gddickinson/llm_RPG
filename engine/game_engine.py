@@ -103,9 +103,11 @@ class GameEngine(GameAPIMixin):
         from quests.radiant import RadiantQuestGenerator
         from engine.guild import GuildSystem
         from engine.faction_ticker import FactionTicker
+        from engine.dm_api import DMApi
         self.radiant_quests = RadiantQuestGenerator(self)
         self.guild = GuildSystem(self)
         self.faction_ticker = FactionTicker(self)
+        self.dm = DMApi(self)
 
         # Ranged combat (projectiles)
         from engine.projectiles import ProjectileManager
@@ -313,6 +315,7 @@ class GameEngine(GameAPIMixin):
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.radiant_quests.run_morning()
+                self.dm.run_scheduled()
                 from engine.rest import snapshot
                 self._day_metrics = snapshot(self)
             self._last_reflection_day = day

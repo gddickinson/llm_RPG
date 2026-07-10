@@ -851,3 +851,19 @@ with opportunity attacks, the faction ticker, procedural sound, and the
 day loop. Phases 0-5 of the original plan are DONE. Next: Phase 6 — the
 Dungeon Master (now including George's Legendarium: a persistent
 generative library so DM creations compound across campaigns).
+
+**Round 49 — P6.1 DM Tool API (done). Phase 6 begins.**
+New `engine/dm_api.py` — the Dungeon Master's hands, pure Python and
+fully testable before any LLM touches it. Ten commands: narrate (free),
+define_monster / define_item (runtime registries, persisted per save and
+re-injected on load), spawn_npc, place_item, add_building, edit_terrain,
+create_quest (auto-posts to the tavern board), adjust_faction, and
+schedule_beat — a future-day command queue fired by the day-change hook,
+so the DM can seed "in three days, the shade returns". The charter is
+CODE, not prompt: monster level <= player+2, item value <= 500, quest
+gold capped by level, 6x6 terrain brush max, nothing spawns within 6
+tiles of the player, nothing buries or traps the player, and a budget of
+12 world-changing acts per game-day (refills at dawn; narration always
+free). Every act AND every refusal is written to the DM notebook, which
+persists in saves. 12 tests covering all powers + every charter rule.
+Suite: 606 tests, all pass.

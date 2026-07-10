@@ -474,15 +474,17 @@ game-day), and every act is validated and written to an audit log — the
 DM's notebook, which doubles as its campaign memory. World text (NPC dialog,
 rumors) is never fed back as DM *instructions* (injection separation).
 
-- [ ] **P6.1 DM Tool API** (`engine/dm_api.py`): typed, validated, budgeted
-  commands — `spawn_npc(spec)`, `create_quest(spec)`, `add_building(loc)`,
-  `edit_terrain(region, brush)` (bounded), `place_item`, `define_monster` /
-  `define_item` / `define_recipe` / `define_spell` (new DEFINITIONS go to the
-  persistent DM library, see P6.7 — not just runtime state), `adjust_faction`,
-  `plant_secret` / `teach_topic`, `schedule_beat(day, command)`, `narrate(text)`.
-  Every command passes data_validate-style checks + charter caps; results +
-  reasons logged to the DM notebook (persisted). No LLM in this step —
-  the API is testable pure Python.
+- [x] **P6.1 DM Tool API.** *(done 2026-07-09 — `engine/dm_api.py`, pure
+  Python, no LLM: narrate / define_monster / define_item / spawn_npc /
+  place_item / add_building / edit_terrain / create_quest (auto-posts to the
+  board) / adjust_faction / schedule_beat (future-day queue, fired on day
+  change). Charter enforced in code and tested: monster level ≤ player+2,
+  item value ≤ 500, quest gold capped, 6×6 brush max, no spawning within 6
+  tiles of the player, no burying/trapping the player, 12 mutations per
+  game-day (narration free), every act + refusal in the persisted notebook.
+  Definitions re-inject into registries on load. 12 tests. Remaining for
+  later steps: plant_secret/teach_topic commands, dm_library persistence
+  (P6.7). )*
 - [ ] **P6.2 World digest**: `engine.dm_digest()` → compact JSON of the table:
   player sheet/skills/quests, NPC roster + relationships + opinions, region
   summary, active systems state (shortages, rumors, weather), recent events,
