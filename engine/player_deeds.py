@@ -30,6 +30,12 @@ def record_deed(engine, deed: str) -> None:
     deeds = engine.player.metadata.setdefault("recent_deeds", [])
     deeds.append(deed)
     del deeds[:-MAX_DEEDS]
+    # The gods notice deeds (P8.4)
+    try:
+        from engine.pantheon import on_deed
+        on_deed(engine, deed)
+    except Exception:
+        pass
 
 
 def recent_deeds(engine, k: int = 5) -> List[str]:

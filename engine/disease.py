@@ -137,6 +137,12 @@ class DiseaseSystem:
                 self.engine.memory_manager.add_event(
                     f"Your {spec['name']} has run its course. "
                     f"You feel yourself again.")
+                try:
+                    from engine.player_deeds import record_deed
+                    record_deed(self.engine,
+                                f"shook off {spec['name']}")
+                except Exception:
+                    pass
 
     def _spread(self, carrier, people) -> int:
         state = carrier.metadata.get("disease")

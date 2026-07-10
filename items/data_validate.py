@@ -32,7 +32,24 @@ def validate_all() -> List[str]:
     problems += _check_heart_events()
     problems += _check_module_packs()
     problems += _check_diseases()
+    problems += _check_pantheon()
     return problems
+
+
+def _check_pantheon() -> List[str]:
+    from engine.pantheon import GODS
+    kinds = ("heal", "bless", "fortune", "cure", "insight")
+    out = []
+    for gid, god in GODS.items():
+        for field in ("name", "title", "domain", "answer", "omen"):
+            if not god.get(field):
+                out.append(f"god {gid}: missing {field}")
+        if god.get("miracle") not in kinds:
+            out.append(f"god {gid}: unknown miracle "
+                       f"'{god.get('miracle')}'")
+        if not god.get("keywords"):
+            out.append(f"god {gid}: needs deed keywords")
+    return out
 
 
 def _check_diseases() -> List[str]:

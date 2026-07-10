@@ -159,6 +159,8 @@ class GameEngine(GameAPIMixin):
         self.disease = DiseaseSystem(self)
         from world.farming import FarmManager
         self.farm_manager = FarmManager(self)
+        from engine.pantheon import PantheonSystem
+        self.pantheon = PantheonSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -352,6 +354,7 @@ class GameEngine(GameAPIMixin):
                 self.retaliation.run_night()
                 self.disease.run_day()
                 self.farm_manager.run_day()
+                self.pantheon.run_day()
                 try:
                     from world.astronomy import announce_conjunction
                     announce_conjunction(self, day)

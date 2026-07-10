@@ -216,9 +216,12 @@ class InputHandler:
             self.gui.show_crafting()
             return True
 
-        # Party: recruit / dismiss adjacent NPC (P)
+        # Prayer at a shrine/temple (SHIFT+P); party toggle (P)
         if k == pygame.K_p:
-            self._toggle_party()
+            if shift:
+                self.engine.pray()
+            else:
+                self._toggle_party()
             return True
 
         # Sleep at an inn/tavern (Enter)

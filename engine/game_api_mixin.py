@@ -252,6 +252,10 @@ class GameAPIMixin:
             return gm.tool_message(node)
         return self.forage_manager.forage()
 
+    def pray(self) -> str:
+        """SHIFT+P at a shrine/temple: prayer and (maybe) a miracle."""
+        return self.pantheon.pray()
+
     def current_weather(self) -> str:
         return self.weather_system.state.current.value
 

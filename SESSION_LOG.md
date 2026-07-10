@@ -1137,3 +1137,26 @@ XP, one harvest per field per season. Plot state persists through
 save_load with terrain re-stamped on load. Grazing from the AW module
 is DEFERRED with a note in the plan: this world has no herbivore
 wildlife yet. 7 new tests. Suite: 716 tests, green x3.
+
+**Round 65 — P8.4 The Pantheon (done).**
+Fourth autonomous_world port, their best-tested system, rebuilt in
+llm_RPG idiom: five gods in data/pantheon.json — Morrik the
+Battle-Father (war), Solara the Golden Mother (harvest), Veyra the
+Way-Warden (roads and oaths), Grimble the Ledger-Keeper (coin and
+craft), and the Pale Lady (death and mercy) — each pure content with
+domain, deed keywords, one miracle and an omen line, validator-
+checked. The loop: DEEDS build favor through a hook in
+player_deeds.record_deed (slaying feeds Morrik, harvests Solara,
+finished quests Veyra, diary tiers Grimble, shaking off sickness the
+Pale Lady — farming and disease now record deeds so every god has a
+living feed). PRAYER is SHIFT+P at any shrine or temple, once per
+game day, advertised in the hint bar: the god who favors you most
+answers — below the threshold a quiet warmth and +1 favor; at 10
+favor the god SPENDS it on their miracle, engine-enforced and
+deliberately small (full heal, 60-turn blessing, +15 gold, disease
+cure, a whispered rumor). No LLM adjudication anywhere — code and
+dice, per the house rule. OMENS: a god holding 25+ favor occasionally
+marks the realm at night through the rumor mill ("Ravens circle the
+walls sunwise — Morrik watches a warrior."). Favor and cooldowns ride
+player.metadata so saves are free. Souls/reincarnation deferred as
+planned. 10 new tests. Suite: 726 tests, green x3.

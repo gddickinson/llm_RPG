@@ -1,0 +1,47 @@
+{
+  "morrik": {
+    "name": "Morrik",
+    "title": "the Battle-Father",
+    "domain": "war and valor",
+    "keywords": ["slew"],
+    "miracle": "bless",
+    "answer": "Your sword-arm tingles with borrowed strength.",
+    "omen": "Ravens circle the walls sunwise — Morrik watches a warrior."
+  },
+  "solara": {
+    "name": "Solara",
+    "title": "the Golden Mother",
+    "domain": "sun and harvest",
+    "keywords": ["harvested", "planting"],
+    "miracle": "heal",
+    "answer": "Warmth floods through you like noon sun.",
+    "omen": "The dawn came gold as ripe wheat — Solara smiles on the fields."
+  },
+  "veyra": {
+    "name": "Veyra",
+    "title": "the Way-Warden",
+    "domain": "roads and oaths kept",
+    "keywords": ["completed '"],
+    "miracle": "insight",
+    "answer": "The road ahead feels suddenly familiar.",
+    "omen": "Milestones on the east road were found garlanded — Veyra has passed."
+  },
+  "grimble": {
+    "name": "Grimble",
+    "title": "the Ledger-Keeper",
+    "domain": "coin and craft",
+    "keywords": ["tier)"],
+    "miracle": "fortune",
+    "answer": "Something clinks in your purse that was not there before.",
+    "omen": "Every scale in the market weighed true today — Grimble is pleased."
+  },
+  "pale_lady": {
+    "name": "The Pale Lady",
+    "title": "the Last Mercy",
+    "domain": "death and mercy",
+    "keywords": ["survived", "shook off"],
+    "miracle": "cure",
+    "answer": "A cool hand seems to rest on your brow, and the pain goes.",
+    "omen": "No one in the village died this week — the Pale Lady stayed her hand."
+  }
+}

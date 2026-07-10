@@ -130,6 +130,11 @@ class FarmManager:
                 self.engine.memory_manager.add_event(note)
         except Exception:
             pass
+        try:
+            from engine.player_deeds import record_deed
+            record_deed(self.engine, "harvested the ripe fields")
+        except Exception:
+            pass
         return msg
 
     # -------------------------------------------------------- internals

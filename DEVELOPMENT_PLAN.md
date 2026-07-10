@@ -745,10 +745,25 @@ value ÷ effort:
   save_load (terrain re-stamped on load). GRAZING DEFERRED: no
   herbivore wildlife exists in this world yet — revisit if livestock/
   wildlife land (note kept here).  7 tests.)*
-- [ ] **P8.4 Pantheon** (`pantheon.py`, their best-tested system): gods
+- [x] **P8.4 Pantheon** (`pantheon.py`, their best-tested system): gods
   with domains, prayer→miracle loop, divine competition — a themed layer
   for our nightly world director. HIGH effort; gods → JSON; souls/
   reincarnation later if it earns its keep.
+  *(done 2026-07-10 — engine/pantheon.py + data/pantheon.json: five
+  gods (Morrik war / Solara harvest / Veyra roads / Grimble coin /
+  the Pale Lady mercy), each with domain, deed keywords, one miracle,
+  an omen line — content is data, validator-checked. DEEDS build
+  favor via a player_deeds hook (slaying→Morrik, harvests→Solara,
+  quests→Veyra, diary tiers→Grimble, surviving sickness→Pale Lady;
+  farming + disease now record deeds). PRAYER: SHIFT+P at any shrine
+  or temple, once per game day, hint-bar advertised — the most-
+  favoring god answers; below threshold a quiet +1 favor, at 10 favor
+  the god SPENDS it on their engine-enforced small miracle (full
+  heal / blessing / +15 gold / cure disease / whispered rumor). No
+  LLM adjudication — all code and dice. OMENS: deep favor (25+)
+  occasionally marks the realm at night through the rumor mill.
+  Favor rides player.metadata (saves free). Souls/reincarnation
+  deferred as planned. 10 tests.)*
 - [ ] **P8.5 Economy algorithm only** (`world_economy.py`): tâtonnement
   sticky-price discovery + settlement production so prices self-balance.
   Extract the math (~300 lines), skip their 7-module sprawl. MED effort.
