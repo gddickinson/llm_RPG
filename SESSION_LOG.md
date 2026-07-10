@@ -663,3 +663,18 @@ of the questbook, making every small quest feed the meta-unlock (the OSRS
 quest-point pattern). Character sheet shows QP + rank. QP persists via
 metadata. 8 new tests. Suite: 503 tests, all pass (one non-reproducing
 flake observed once in a full-suite run — watching for recurrence).
+
+**Round 36 — P4.4a alternate-map rendering (done).**
+Preparing Tutorial Island exposed a serious pre-existing bug the audit
+missed (it sat in the OLD roadmap's short-term list): the renderer never
+checked current_dungeon/current_interior — entering a dungeon or building
+kept drawing the OVERWORLD while the player walked zone-local coordinates.
+Dungeons and interiors were visually unplayable. New
+`MapRenderer.active_zone()` + `_render_zone()`: themed backdrops (rock for
+dungeons, lamplit wood for interiors), zone terrain via the existing
+sprite table, interior furniture, zone-local ground items (dungeon loot
+finally visible), dungeon monsters bounds-filtered so overworld NPCs don't
+ghost in, camera clamped for rooms smaller than the viewport. A pixel-diff
+test proves the dungeon view differs from the overworld. This also gives
+Tutorial Island (P4.4b) its zone infrastructure. 6 new tests.
+Suite: 509 tests, all pass.

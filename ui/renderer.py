@@ -42,9 +42,20 @@ class MapRenderer:
         self._lighting = None
         self._weather_overlay = None
 
+    @staticmethod
+    def active_zone(engine):
+        """The alternate grid the player is inside, if any (dungeon or
+        building interior — both carry a `terrain` grid)."""
+        return getattr(engine, "current_dungeon", None) or \
+            getattr(engine, "current_interior", None)
+
     def render(self, target: "pygame.Surface", engine, view_rect: "pygame.Rect"
                ) -> None:
         """Render the map into `target` within `view_rect`."""
+        zone = self.active_zone(engine)
+        if zone is not None:
+            self._render_zone(target, engine, view_rect, zone)
+            return
         world = engine.world
         wmap = world.map
         px, py = engine.player.position
@@ -157,6 +168,82 @@ class MapRenderer:
             pass
 
     # ---- helpers ------------------------------------------------------
+
+    def _render_zone(self, target, engine, view_rect, zone) -> None:
+        """Draw a dungeon / interior grid instead of the overworld."""
+        from ui.body_renderer import draw_body, update_anim
+        px, py = engine.player.position
+        cols = view_rect.width // self.tile_size
+        rows = view_rect.height // self.tile_size
+        cam_x = max(0, min(zone.width - cols, px - cols // 2))
+        cam_y = max(0, min(zone.height - rows, py - rows // 2))
+
+        # Dungeons feel like rock; interiors like lamplit rooms
+        is_dungeon = hasattr(zone, "rooms")
+        target.fill((12, 10, 14) if is_dungeon else (24, 18, 12),
+                    view_rect)
+
+        for sy in range(rows):
+            for sx in range(cols):
+                wx, wy = cam_x + sx, cam_y + sy
+                if not (0 <= wx < zone.width and 0 <= wy < zone.height):
+                    continue
+                terrain = zone.terrain[wy][wx]
+                sprite = _TERRAIN_TO_SPRITE.get(terrain, "grass")
+                target.blit(self.sprites.tile(sprite),
+                            (view_rect.x + sx * self.tile_size,
+                             view_rect.y + sy * self.tile_size))
+
+        # Furniture (interiors)
+        for furn in getattr(zone, "furniture", []):
+            fx, fy = furn.get("x", -1), furn.get("y", -1)
+            if not (cam_x <= fx < cam_x + cols and
+                    cam_y <= fy < cam_y + rows):
+                continue
+            dest_x = view_rect.x + (fx - cam_x) * self.tile_size
+            dest_y = view_rect.y + (fy - cam_y) * self.tile_size
+            try:
+                target.blit(self.sprites.item(furn.get("name", "?")),
+                            (dest_x, dest_y))
+            except Exception:
+                pygame.draw.rect(
+                    target, (120, 90, 50),
+                    (dest_x + 4, dest_y + 4,
+                     self.tile_size - 8, self.tile_size - 8))
+
+        # Ground items at zone-local coordinates
+        try:
+            for (gx, gy), items in engine.world.ground_items.items():
+                if not items or not (cam_x <= gx < cam_x + cols and
+                                     cam_y <= gy < cam_y + rows):
+                    continue
+                if not (0 <= gx < zone.width and 0 <= gy < zone.height):
+                    continue
+                name = getattr(items[0], "name", str(items[0]))
+                target.blit(self.sprites.item(name),
+                            (view_rect.x + (gx - cam_x) * self.tile_size,
+                             view_rect.y + (gy - cam_y) * self.tile_size))
+        except Exception:
+            pass
+
+        # Characters: the player, plus spawned monsters in dungeons
+        chars = [engine.player]
+        if is_dungeon:
+            chars += [n for n in engine.npc_manager.npcs.values()
+                      if n.is_active() and n.id.startswith("enc_")
+                      and 0 <= n.position[0] < zone.width
+                      and 0 <= n.position[1] < zone.height]
+        for char in chars:
+            cx, cy = char.position
+            if not (cam_x <= cx < cam_x + cols and
+                    cam_y <= cy < cam_y + rows):
+                continue
+            update_anim(char, 1.0 / 30.0)
+            draw_body(target, char,
+                      view_rect.x + (cx - cam_x) * self.tile_size,
+                      view_rect.y + (cy - cam_y) * self.tile_size,
+                      self.tile_size,
+                      is_player=(char.id == engine.player.id))
 
     def _draw_pet(self, target, pet: dict, x: int, y: int) -> None:
         """A tiny bobbing critter: colored body + eyes."""

@@ -306,10 +306,19 @@ and out of fights — and NPCs remember you across sessions.
   Member (5 QP) = +2 radiant board notices; Veteran (10) = teleport cooldown
   halved; Champion (15) = a 4th companion slot. Character sheet shows
   QP + rank. 8 tests.)*
-- [ ] **P4.4 Tutorial Island.** Small separate starter zone; one instructor NPC per
-  system (fish→cook→mine→smith→fight→cast→bank), each teaching by one repetition;
-  one-way boat to the mainland. Instructors are the LLM-NPC showcase — narrow-domain
-  characters who answer freeform questions, with scripted fallback checklists.
+- [x] **P4.4a Alternate-map rendering (Tutorial Island prerequisite).** *(done
+  2026-07-09 — the renderer drew the OVERWORLD while the player walked
+  dungeon/interior-local coordinates (an old ROADMAP bug the audit missed):
+  dungeons and interiors were visually unplayable. `MapRenderer.active_zone()`
+  + `_render_zone()` now draw the zone grid — themed backdrops, furniture,
+  zone-local ground items, dungeon monsters (bounds-filtered), clamped camera
+  for small rooms. Pixel-diff test proves the dungeon view differs from the
+  overworld. 6 tests.)*
+- [ ] **P4.4b Tutorial Island.** Small separate starter zone; one instructor NPC
+  per system (fish→cook→mine→smith→fight→cast→bank), each teaching by one
+  repetition; one-way boat to the mainland. Instructors are the LLM-NPC
+  showcase — narrow-domain characters with scripted fallback checklists.
+  (Zone infra now exists via P4.4a.)
 - [ ] **P4.5 Regional identity.** Give each region a theme, unique resources, unique
   monsters, a 2–3 quest mini-arc, and its diary (P2.7). Add one new themed region
   (swamp or highlands) to the 120×80 map. Interleave danger levels — a deadly pocket
