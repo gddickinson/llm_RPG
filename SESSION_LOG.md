@@ -1402,3 +1402,28 @@ buildings; this is the foundation George's requested P8.7 targeting
 system (cycle targets, aim cursor, spells) builds on next.
 9 new tests including shadow-cone geometry and a
 bow-through-a-building refusal. Suite: 831 tests, green x3.
+
+**Round 77 — P8.7 Ranged targeting (done) + two trap fixes.**
+George's targeting request, built on last round's shadowcaster —
+one target model for missiles AND spells (engine/targeting.py):
+[ and ] cycle through valid targets — hostile or provoked, within
+range 12, with TRUE line of sight (dungeon walls block underground,
+buildings and mountains outdoors, and indoors is unreachable from
+the street) — each announced in the log ("Target: Wolf (6 tiles).")
+and marked on screen with gold corner brackets in both the
+overworld and dungeon views. R fires the bow at the lock; offensive
+spells from the X spellbook hit the lock and refuse without a clear
+line ("No clear shot — something solid is in the way"); and because
+the lock IS player_target_id, the P7.3 companions focus-fire
+whatever you're aiming at. Dead or blocked locks fall back to the
+nearest valid target automatically. TWO MORE GEORGE REPORTS FIXED:
+(1) getting boxed in by NPCs in narrow spaces could soft-lock the
+game — bumping a FRIENDLY character now swaps places with them
+("You squeeze past Merta."), the classic roguelike answer, while
+hostiles still hold the line; (2) indoor interactions were
+inconsistent (sometimes blocked, sometimes walking straight over
+people) because zone movement compared NPCs' OVERWORLD coordinates
+against zone tiles — phantom walls and walk-overs both; visitors
+now block and swap at their DISPLAYED positions only, and
+zone-native monsters at their real ones. 12 new tests. Suite: 843,
+green x3.

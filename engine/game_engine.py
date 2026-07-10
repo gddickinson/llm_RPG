@@ -169,6 +169,8 @@ class GameEngine(GameAPIMixin):
         self.homes = HomeSystem(self)
         from engine.trespass import TrespassSystem
         self.trespass = TrespassSystem(self)
+        from engine.targeting import TargetingSystem
+        self.targeting = TargetingSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None

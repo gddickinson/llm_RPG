@@ -278,6 +278,19 @@ class PlayerActions:
         pre_move = player.position
         old_pos = player.position
         if not wmap.move_character(player, nx, ny):
+            # Bumping a friendly NPC swaps places — nobody can box
+            # you into a dead end (George's trap report)
+            occupant = wmap.get_character_at(nx, ny)
+            if occupant is not None and self._can_swap(occupant):
+                wmap.remove_character(occupant)
+                if wmap.move_character(player, nx, ny):
+                    occupant.position = old_pos
+                    wmap.place_character(occupant, *old_pos)
+                    self.engine.memory_manager.add_event(
+                        f"You squeeze past {occupant.name}.")
+                    self.engine.advance_turn()
+                    return True
+                wmap.place_character(occupant, nx, ny)
             # Blocked — maybe Agility can turn this into a shortcut
             try:
                 msg = self.engine.travel_system.try_shortcut(nx, ny)
@@ -333,9 +346,28 @@ class PlayerActions:
         if getattr(zone, "stairs_down", None) == (nx, ny) and \
                 getattr(zone, "level_below", None) is not None:
             return self._take_stairs(zone.level_below, up=False)
-        # Blocked by an active character standing there
+        # Interior visitors block (and swap) at their DISPLAYED
+        # positions — never at overworld coordinates (George: walking
+        # over indoor NPCs)
+        for vid, spot in getattr(zone, "visitors", {}).items():
+            if tuple(spot) != (nx, ny):
+                continue
+            npc = self.engine.npc_manager.npcs.get(vid)
+            if npc is None or not npc.is_active():
+                continue
+            if self._can_swap(npc):
+                zone.visitors[vid] = tuple(player.position)
+                player.position = (nx, ny)
+                self.engine.memory_manager.add_event(
+                    f"You squeeze past {npc.name}.")
+                self.engine.advance_turn()
+                return True
+            return False
+        # Zone-native characters (dungeon monsters, tutorial cast)
+        # block at their real positions
         for npc in self.engine.npc_manager.npcs.values():
-            if npc.is_active() and npc.position == (nx, ny):
+            if npc.is_active() and npc.position == (nx, ny) and \
+                    npc.id.startswith(("enc_", "tut_")):
                 return False
 
         old_pos = player.position
@@ -346,6 +378,15 @@ class PlayerActions:
             pass
         self.engine.advance_turn()
         return True
+
+    def _can_swap(self, npc) -> bool:
+        """Friendlies let you squeeze past; hostiles hold the line."""
+        if not npc.is_active():
+            return False
+        klass = getattr(npc.character_class, "value", "")
+        if klass in ("brigand", "monster", "troll"):
+            return False
+        return not npc.metadata.get("provoked")
 
     def _take_stairs(self, level, up: bool) -> bool:
         """Clean level transition: land on the linked level's twin

@@ -128,6 +128,15 @@ class SpellSystem:
         d = self._distance(caster, target)
         if d > spell.range:
             return f"{spell.name}: target out of range."
+        # Player attack spells need true line of sight (P8.7)
+        if spell.damage and target.id != caster.id and \
+                caster.id == getattr(self.engine.player, "id", None):
+            try:
+                ok, why = self.engine.targeting.can_hit(target)
+                if not ok:
+                    return why
+            except Exception:
+                pass
 
         # Pay mana
         caster.metadata["mana"] = mana - spell.mana_cost
@@ -179,7 +188,16 @@ class SpellSystem:
             if not name or name.lower() in ("me", "self", caster.name.lower()):
                 return caster
         if not name:
-            # Nearest visible hostile, fallback to nearest character
+            # The player's ranged lock aims spells too (P8.7)
+            if caster.id == getattr(self.engine.player, "id", None):
+                try:
+                    locked = self.engine.targeting.current()
+                    if locked is not None and \
+                            self._distance(caster, locked) <= \
+                            spell.range:
+                        return locked
+                except Exception:
+                    pass
             return self._nearest_visible_hostile(caster, spell.range)
         return self.engine.find_character(name)
 

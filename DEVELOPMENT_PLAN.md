@@ -790,13 +790,29 @@ value ÷ effort:
   shot — something solid is in the way"), the foundation P8.7
   targeting builds on. 9 tests incl. shadow-cone geometry and a
   bow-through-a-building refusal.)*
-- [ ] **P8.7 Ranged combat & targeting** (George, 2026-07-10):
+- [x] **P8.7 Ranged combat & targeting** (George, 2026-07-10):
   extract AW's ranged-combat/targeting approach for BOTH missile
   weapons and ranged spells — explicit target selection (cycle
   targets / cursor), range + line-of-sight checks (build on P8.6
   FOV), and clear on-screen feedback about what you're aiming at.
   Survey AW's implementation first, then port the targeting UX onto
   our existing projectile/ammo/spell systems.
+  *(done 2026-07-10 — engine/targeting.py, ONE target model for
+  missiles and spells: [ / ] cycle valid targets (hostile or
+  provoked, in range 12, TRUE line of sight from P8.6 — dungeon
+  walls block underground, buildings/mountains outdoors, indoors is
+  unreachable from the street), announced "Target: Wolf (6 tiles)"
+  and marked with a gold corner-bracket reticle in both overworld
+  and dungeon views. R fires the bow at the lock, offensive
+  spellbook casts hit the lock and refuse without LOS; the lock IS
+  player_target_id, so P7.3 companions focus-fire what you aim at.
+  Stale locks self-clear to the nearest valid target. ALSO two
+  George bug reports fixed: (1) boxed-in soft-locks — bumping a
+  FRIENDLY NPC now swaps places ("You squeeze past Merta"), while
+  hostiles hold the line; (2) inconsistent indoor interactions —
+  zone movement blocked on NPCs' OVERWORLD coordinates (phantom
+  walls, walk-overs); visitors now block and swap at their
+  DISPLAYED positions only. 12 tests.)*
 
 **Patterns adopted as standing rules** (no checkbox needed): staggered
 timer-gated ticks for every heavy system; status-effect templates with

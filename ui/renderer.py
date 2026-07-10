@@ -133,6 +133,13 @@ class MapRenderer:
             is_player = char.id == engine.player.id
             draw_body(target, char, sx, sy, self.tile_size, is_player=is_player)
 
+        # The ranged lock (P8.7)
+        try:
+            self._draw_reticle(target, engine, view_rect,
+                               cam_x, cam_y, cols, rows)
+        except Exception:
+            pass
+
         # Skilling pet follower (small cosmetic critter behind the player)
         try:
             pet = engine.pet_system.active_pet()
@@ -190,6 +197,32 @@ class MapRenderer:
             pass
 
     # ---- helpers ------------------------------------------------------
+
+    def _draw_reticle(self, target, engine, view_rect,
+                      cam_x, cam_y, cols, rows) -> None:
+        """Gold corner brackets over the locked ranged target (P8.7)."""
+        tid = getattr(engine, "player_target_id", None)
+        if not tid:
+            return
+        npc = engine.npc_manager.npcs.get(tid)
+        if npc is None or not npc.is_active():
+            return
+        tx, ty = npc.position
+        if not (cam_x <= tx < cam_x + cols and
+                cam_y <= ty < cam_y + rows):
+            return
+        ts = self.tile_size
+        x = view_rect.x + (tx - cam_x) * ts
+        y = view_rect.y + (ty - cam_y) * ts
+        gold = (235, 195, 60)
+        arm = max(4, ts // 4)
+        for cx, cy, dx, dy in ((x, y, 1, 1), (x + ts, y, -1, 1),
+                               (x, y + ts, 1, -1),
+                               (x + ts, y + ts, -1, -1)):
+            pygame.draw.line(target, gold, (cx, cy),
+                             (cx + dx * arm, cy), 2)
+            pygame.draw.line(target, gold, (cx, cy),
+                             (cx, cy + dy * arm), 2)
 
     def _draw_door_glyphs(self, target, engine, view_rect,
                           cam_x, cam_y, cols, rows) -> None:
@@ -341,6 +374,13 @@ class MapRenderer:
                       view_rect.y + (cy - cam_y) * self.tile_size,
                       self.tile_size,
                       is_player=(char.id == engine.player.id))
+
+        # The ranged lock, underground too (P8.7)
+        try:
+            self._draw_reticle(target, engine, view_rect,
+                               cam_x, cam_y, cols, rows)
+        except Exception:
+            pass
 
     def _draw_pet(self, target, pet: dict, x: int, y: int) -> None:
         """A tiny bobbing critter: colored body + eyes."""

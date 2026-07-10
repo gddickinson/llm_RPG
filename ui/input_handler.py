@@ -208,6 +208,14 @@ class InputHandler:
             self._look_around()
             return True
 
+        # Cycle ranged targets ([ back, ] forward) (P8.7)
+        if k == pygame.K_RIGHTBRACKET:
+            self.engine.targeting.cycle(1)
+            return True
+        if k == pygame.K_LEFTBRACKET:
+            self.engine.targeting.cycle(-1)
+            return True
+
         # Open shop with adjacent merchant (B for barter — S is taken by
         # move-down, which shadowed the old binding and made shops unreachable)
         if k == pygame.K_b:
