@@ -114,15 +114,29 @@ class CompanionManager:
         d = ((cx - tx) ** 2 + (cy - ty) ** 2) ** 0.5
         if d <= 1.5:  # Already adjacent — stay put
             return
-        dx = (tx > cx) - (tx < cx)
-        dy = (ty > cy) - (ty < cy)
+        sx = (tx > cx) - (tx < cx)
+        sy = (ty > cy) - (ty < cy)
+        dx, dy = sx, sy
         if dx and dy:
             if abs(tx - cx) > abs(ty - cy):
                 dy = 0
             else:
                 dx = 0
-        nx, ny = cx + dx, cy + dy
-        self.engine.world.map.move_character(comp, nx, ny)
+        wmap = self.engine.world.map
+        if wmap.move_character(comp, cx + dx, cy + dy):
+            return
+        # Blocked (water, wall, someone standing there): slide along
+        # the obstacle — other axis toward the target first, then a
+        # perpendicular sidestep — instead of stalling forever.
+        if (sx, sy) != (dx, dy) and \
+                wmap.move_character(comp, cx + sx - dx, cy + sy - dy):
+            return
+        if dx:
+            _ = wmap.move_character(comp, cx, cy + 1) or \
+                wmap.move_character(comp, cx, cy - 1)
+        else:
+            _ = wmap.move_character(comp, cx + 1, cy) or \
+                wmap.move_character(comp, cx - 1, cy)
 
     # ---- save / load ------------------------------------------------
 

@@ -150,9 +150,11 @@ class GameEngine(GameAPIMixin):
         from characters.companions import CompanionManager
         self.companion_manager = CompanionManager(self)
 
-        # NPC-vs-NPC conflict (P7.1)
+        # NPC-vs-NPC conflict (P7.1) + retaliation (P7.2)
         from engine.npc_conflict import NPCConflictSystem
         self.npc_conflict = NPCConflictSystem(self)
+        from engine.retaliation import RetaliationSystem
+        self.retaliation = RetaliationSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -339,6 +341,7 @@ class GameEngine(GameAPIMixin):
                 nightly_reflection(self)
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
+                self.retaliation.run_night()
                 self.radiant_quests.run_morning()
                 self.dm.run_scheduled()
                 try:

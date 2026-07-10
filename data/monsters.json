@@ -92,5 +92,23 @@
     "behavior": {
       "flee_below": 0.5
     }
+  },
+  "bounty_hunter": {
+    "name": "Bounty Hunter",
+    "class": "brigand",
+    "race": "human",
+    "hp": 16,
+    "level": 2,
+    "symbol": "H",
+    "description": "A grim tracker in oiled leathers, here for the price on someone's head.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 13,
+      "dexterity": 14
+    },
+    "behavior": {
+      "flee_below": 0.15
+    }
   }
 }

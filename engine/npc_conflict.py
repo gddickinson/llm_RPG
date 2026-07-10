@@ -59,8 +59,13 @@ class NPCConflictSystem:
             party = set(engine.companion_manager.party)
         except Exception:
             party = set()
+        # Only combatants standing on the overworld map: zone NPCs
+        # (tutorial island, interiors) have coordinates in a different
+        # space and must never fight or be fought across grids.
+        wmap = engine.world.map
         npcs = [n for n in engine.npc_manager.npcs.values()
-                if n.is_active() and n.id not in party]
+                if n.is_active() and n.id not in party
+                and wmap.get_character_at(*n.position) is n]
         guards = [n for n in npcs if _cls(n) in GUARD_CLASSES]
         hostiles = [n for n in npcs if _cls(n) in HOSTILE_CLASSES]
         civilians = [n for n in npcs if _cls(n) in CIVILIAN_CLASSES]

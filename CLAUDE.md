@@ -46,5 +46,8 @@
   features should advertise themselves there.
 - Playtesting: run scripted-and-judged sessions per the Playtest Matrix in
   `DEVELOPMENT_PLAN.md` (12 dimensions); findings become fixes or plan items.
-- Known flake: ~1-in-10 full-suite runs fails on a worldgen-dependent test
-  and passes on rerun — rerun before diagnosing new failures as real.
+- The historic ~1-in-10 worldgen flake was root-caused (2026-07-10):
+  companion follow stalled on obstacles; fixed with obstacle-sliding in
+  `characters/companions.py`. If a new intermittent failure appears,
+  suspect NPC movement/worldgen randomness and rerun once — but don't
+  assume it's the old flake; that one is dead.

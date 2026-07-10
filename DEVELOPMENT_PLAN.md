@@ -645,10 +645,29 @@ become fixes or plan items. Track coverage per session.
   companion system owns them). Ticker tie-in: a repelled brigand raid
   leaves a straggler bandit spawned near a guard's beat, so the morning
   patrol fight actually happens on screen. 7 tests.)*
-- [ ] **P7.2 Conspiracy & retaliation.** Deep hostile faction rep spawns
+- [x] **P7.2 Conspiracy & retaliation.** Deep hostile faction rep spawns
   targeted responses: bounty hunters sent after an infamous player, ambush
   beats via the DM layer, the fence retaliating during The Fence quest.
   The player should be able to MAKE a real enemy.
+  *(done 2026-07-10 — engine/retaliation.py, checked once per game night
+  in the nightly stack. Escalating, TELEGRAPHED ladder per hunting
+  faction (brigands + guards, so both outlaw and lawbreaker playstyles
+  make enemies): rep ≤ −30 → warning rumor first ("a price on your
+  head"), never an ambush from nowhere; still hostile after a 3-day
+  cooldown → a level-scaled Bounty Hunter (new data/monsters.json
+  template) spawns 8–14 tiles out with the pack-alert converge behavior
+  pointed at the player's last position; rep ≤ −60 → a pair. Recovering
+  above the threshold stands the hunt down. State persists via
+  save_load. P7.1's guards will fight brigand-class hunters they see —
+  an infamous-but-lawful player can lure the hunt into the watch.
+  9 tests. ALSO fixed this round: (1) P7.1 regression — the tutorial
+  island's Training Dummy is MONSTER-class and Sergeant Bors would
+  cross the lesson to destroy it; conflict now only engages NPCs
+  standing on the overworld grid (zone NPCs have coords in another
+  space); (2) the long-standing ~1-in-10 worldgen flake ROOT-CAUSED:
+  companion follow used greedy single-axis steps with no obstacle
+  handling and stalled forever on water/walls/bystanders — now slides
+  along obstacles; 6 consecutive full-suite greens after the fix.)*
 - [ ] **P7.3 Squad tactics.** Companions + guards coordinate with the
   player in fights (focus fire, real flanking positions); monster packs
   attempt surrounds rather than a queue.

@@ -1041,3 +1041,26 @@ structures" added to the plan (structure framework, explorable ruined
 keep, temple+crypt, wizard's tower, multi-level dungeons, DM-defined
 structures in the Legendarium). 7 new tests. Suite: 668 tests, green
 (one known worldgen flake passed on rerun).
+
+**Round 60 — P7.2 Conspiracy & retaliation (done) + two real bugs dead.**
+The player can now MAKE an enemy. engine/retaliation.py runs once per
+game night: any hunting faction (brigands or guards — outlaws and
+lawbreakers both qualify) at rep ≤ −30 first posts a WARNING (rumor +
+[Realm] event: "a price on your head" — never an ambush from nowhere);
+if the player is still hostile after a 3-day cooldown, a level-scaled
+Bounty Hunter (new monsters.json template, encounter_weight 0) spawns
+8–14 tiles away with the pack-alert converge behavior pointed at the
+player's trail; at rep ≤ −60 they send a pair. Reputation recovering
+above the threshold stands the hunt down. State rides save_load.
+Emergent bonus: P7.1 guards will engage brigand-class hunters on
+sight, so a lawful-but-infamous player can kite the hunt into the
+watch. Two genuine bugs found and fixed while stabilizing: (1) a P7.1
+regression — the tutorial's Training Dummy is MONSTER-class, and
+Sergeant Bors would leave his post to destroy it mid-lesson; the
+conflict system now only engages NPCs physically standing on the
+overworld grid (zone NPCs' coordinates live in a different space);
+(2) the HISTORIC ~1-in-10 worldgen flake root-caused at last:
+companion follow used greedy single-axis steps with no obstacle
+handling and stalled forever behind water/walls/bystanders — it now
+slides along obstacles (other axis first, then perpendicular).
+6 consecutive full-suite greens. 9 new tests. Suite: 677 tests.
