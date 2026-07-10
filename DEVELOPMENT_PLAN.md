@@ -551,6 +551,40 @@ rumors) is never fed back as DM *instructions* (injection separation).
   flavor mismatch); consider 1 QP for DM-created quests; recurring
   ~1-in-10-runs world-gen test flake still uncaught. 3 regression tests.)*
 
+### The Playtest Matrix (George, 2026-07-09 — the standing P6.8 charter)
+
+Each playtest session evaluates as many of these as it can reach; findings
+become fixes or plan items. Track coverage per session.
+
+1. **Progression** — can the player complete every authored quest and
+   advance (levels, skills, QP, guild ranks)? Any dead ends?
+2. **Cooperation** — companions in fights; NPCs helping the player
+   (secrets, discounts, heart events); NPC↔NPC cooperation (guard patrols,
+   schedules, families).
+3. **Conspiracy** — can NPCs work AGAINST the player? (Brigand faction,
+   feuds, the fence storyline; does anything conspire, ambush, retaliate?)
+4. **Economy** — full loop: earn → spend → craft → repair → bank; can it
+   be broken (infinite money, dead sinks)? Do shortages/haggling matter?
+5. **Monsters** — are encounters interesting (pack howls, ambushes,
+   routing, territory)? Do they coordinate? Do they threaten appropriately
+   at each level?
+6. **Quests** — are they rich (chains, unlocks, multi-stage, humor)? Do
+   radiant + DM quests keep the board alive?
+7. **Navigation & discovery** — can the player find their way (hints,
+   minimap, landmarks)? Are there interesting things to stumble on
+   (relics, ruins, the Murkfen, caves, dungeons)?
+8. **Alliances & enemies** — trust building, party recruitment, faction
+   reputation consequences, persuasion/intimidation stakes; can the player
+   make a real enemy?
+9. **Combat completeness** — melee, ranged + ammo, spells, tactics
+   (shove/disengage/aimed), status effects, durability, defeat outcomes.
+10. **Coordination** — monsters and NPCs acting together (wolf packs,
+    guard + player vs brigand, companion + player flanking).
+11. **The DM layer** — arcs land diegetically; modules install; beats pay
+    off; the world remembers.
+12. **Feel** — pacing, log readability, hint quality, day-loop rhythm,
+    sound cues, anything confusing or dull.
+
 **Verdict:** feasible and the natural capstone — P6.1–P6.3 are buildable in
 loop rounds immediately after Phase 5; P6.4 rides infrastructure that exists.
 P6.7 turns the DM from a session feature into a compounding one: the game
