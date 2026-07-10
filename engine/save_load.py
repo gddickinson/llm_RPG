@@ -143,6 +143,7 @@ class SaveManager:
             "companions": self._subsystem_dict(engine, "companion_manager"),
             "gathering": self._subsystem_dict(engine, "gathering_manager"),
             "director": self._subsystem_dict(engine, "world_director"),
+            "factions_state": self._subsystem_dict(engine, "faction_ticker"),
             "world_history": list(getattr(engine, "world_history", [])),
             "shops": self._subsystem_dict(engine, "shop_manager"),
             "dungeons": {key: dg.to_dict()
@@ -270,6 +271,7 @@ class SaveManager:
                           ("companions", "companion_manager"),
                           ("gathering", "gathering_manager"),
                           ("director", "world_director"),
+                          ("factions_state", "faction_ticker"),
                           ("shops", "shop_manager")):
             sub = getattr(engine, attr, None)
             payload = data.get(key)

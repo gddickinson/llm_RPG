@@ -400,9 +400,15 @@ and heal-spams.
   contest, pushes the enemy a tile — blocked tiles hold); SHIFT+R takes an
   aimed shot (+2 damage, +1 min). Drink-as-turn was already true. Moving
   within melee reach never provokes. `engine/tactics.py`; 7 tests.)*
-- [ ] **P5.4 Off-screen faction ticker.** One dice-resolved faction event per game-day
-  (patrol, raid, trade caravan) that moves stockpiles/rep and feeds gossip + radiant
-  quests. The world visibly doesn't wait for the player.
+- [x] **P5.4 Off-screen faction ticker.** *(done 2026-07-09 —
+  `engine/faction_ticker.py`: factions carry strength + stores (0–100); one
+  dice-resolved event per game-day (raids resolved attacker-vs-defender,
+  patrols, caravans, incursions, harvests) moves the numbers whether or not
+  the player watches. Consequences are mechanical: strong brigands double
+  bandit encounter weight; hungry villages push a bread/ale shortage through
+  the director (prices rise → a radiant fetch quest follows); every event
+  becomes a rumor NPCs repeat. "[Realm] …" morning lines; persists.
+  8 tests.)*
 - [ ] **P5.5 Sound.** pygame.mixer: ambient loops per biome/weather + combat/UI SFX.
   (Procedurally generated or CC0 packs; big feel win, low effort.)
 - [ ] **P5.6 End-of-session hook.** Sleeping at an inn/home: heals, advances to

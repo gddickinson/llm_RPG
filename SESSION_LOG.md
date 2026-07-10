@@ -808,3 +808,15 @@ spells. SHIFT+R takes an aimed shot: +2 damage for an extra minute.
 Moving within melee reach (circling) never provokes. New
 `engine/tactics.py`; help overlay updated. 7 tests.
 Suite: 573 tests, all pass.
+
+**Round 46 — P5.4 off-screen faction ticker (done).**
+New `engine/faction_ticker.py`: five factions carry strength and stores
+(0-100). Each game-day one dice-resolved event moves the numbers — brigand
+raids resolved attacker-vs-defender against the guards, patrols, trade
+caravans (waylaid or safe), monster incursions, harvests. The world
+visibly doesn't wait: strong brigand bands (>65) double bandit encounter
+weight on the roads; villages dropping below 30 stores push a bread/ale
+shortage through the world director, raising real shop prices and seeding
+the next radiant fetch quest; every event lands as a "[Realm] ..." morning
+line and joins the rumor pool NPCs quote. State persists in saves.
+8 new tests. Suite: 581 tests, all pass.

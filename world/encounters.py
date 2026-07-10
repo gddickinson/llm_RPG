@@ -80,6 +80,14 @@ class EncounterManager:
 
         from world.monsters import encounter_table_for
         table = encounter_table_for(terrain.value) or ENCOUNTER_TABLE
+        try:
+            mult = self.engine.faction_ticker.bandit_weight_multiplier()
+            if mult != 1.0:
+                table = [(tid, max(1, int(w * mult))
+                          if tid == "bandit" else w)
+                         for tid, w in table]
+        except Exception:
+            pass
         template = _weighted_pick(table, self.rng)
         monster = _build_monster(template, spawn_pos)
         self.engine.npc_manager.add_npc(monster)
