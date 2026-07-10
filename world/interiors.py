@@ -30,6 +30,12 @@ class Interior:
     npc_spots: List[Tuple[int, int]] = field(default_factory=list)
     furniture: List[Dict] = field(default_factory=list)
     description: str = ""
+    # Multi-level buildings (P9A.5): linked level stack
+    ground: bool = True
+    stairs_up: Optional[Tuple[int, int]] = None
+    stairs_down: Optional[Tuple[int, int]] = None
+    level_above: Optional["Interior"] = None
+    level_below: Optional["Interior"] = None
 
     def init_grid(self) -> None:
         """Build the wall/floor grid and cut the current door."""
@@ -196,6 +202,77 @@ def make_from_blueprint(loc_name: str, bp) -> Interior:
     return inter
 
 
+def _free_tiles(inter: Interior) -> List[Tuple[int, int]]:
+    """Inner floor tiles with no wall, door, or furniture on them."""
+    taken = {(f.get("x"), f.get("y")) for f in inter.furniture}
+    taken.add(inter.door)
+    out = []
+    for y in range(1, inter.height - 1):
+        for x in range(1, inter.width - 1):
+            if inter.terrain[y][x] == TerrainType.BUILDING:
+                continue
+            if (x, y) in taken:
+                continue
+            out.append((x, y))
+    return out
+
+
+def add_upper_floor(inter: Interior) -> Optional[Interior]:
+    """Bedrooms above the taproom (P9A.5). Clean transitions: the
+    stair tile on each level carries you to its twin on the other."""
+    free = _free_tiles(inter)
+    if not free:
+        return None
+    spot = free[-1]                      # a corner, away from the door
+    loft = Interior(name=f"{inter.name} — upstairs",
+                    width=inter.width, height=inter.height,
+                    door=spot, ground=False,
+                    description="Creaking boards, low beams, and the "
+                                "quiet of the bedrooms.")
+    loft.init_grid()
+    loft.stairs_down = spot
+    loft.furniture.append({"name": "Stairs down",
+                           "x": spot[0], "y": spot[1]})
+    beds = [t for t in _free_tiles(loft) if t != spot][:3]
+    for i, (bx, by) in enumerate(beds):
+        loft.furniture.append(
+            {"name": "Bed" if i < 2 else "Chest", "x": bx, "y": by})
+    inter.stairs_up = spot
+    inter.furniture.append({"name": "Stairs up",
+                            "x": spot[0], "y": spot[1]})
+    inter.level_above = loft
+    loft.level_below = inter
+    return loft
+
+
+def add_cellar(inter: Interior) -> Optional[Interior]:
+    """Storage below the shop floor (P9A.5)."""
+    free = _free_tiles(inter)
+    if not free:
+        return None
+    spot = free[0]
+    cellar = Interior(name=f"{inter.name} — cellar",
+                      width=inter.width, height=inter.height,
+                      door=spot, ground=False,
+                      description="Cool dark air, dust, and stacked "
+                                  "stores.")
+    cellar.init_grid()
+    cellar.stairs_up = spot
+    cellar.furniture.append({"name": "Stairs up",
+                             "x": spot[0], "y": spot[1]})
+    stock = [t for t in _free_tiles(cellar) if t != spot][:3]
+    for i, (bx, by) in enumerate(stock):
+        cellar.furniture.append(
+            {"name": "Barrel" if i < 2 else "Chest",
+             "x": bx, "y": by})
+    inter.stairs_down = spot
+    inter.furniture.append({"name": "Stairs down",
+                            "x": spot[0], "y": spot[1]})
+    inter.level_below = cellar
+    cellar.level_above = inter
+    return cellar
+
+
 def build_interiors_for_world(world) -> Dict[str, Interior]:
     """Create matching interiors for each building in the world.
 
@@ -234,4 +311,17 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
                 continue
 
         interiors[loc.name] = inter
+
+    # Multi-level pass (P9A.5): bedrooms above taverns and inns,
+    # storage cellars below shops and forges
+    for name, inter in interiors.items():
+        low = name.lower()
+        try:
+            if "tavern" in low or "inn" in low:
+                add_upper_floor(inter)
+            elif any(k in low for k in ("store", "goods", "shop",
+                                        "smithy", "forge")):
+                add_cellar(inter)
+        except Exception as e:
+            logger.debug(f"level stack for {name}: {e}")
     return interiors

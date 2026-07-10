@@ -1297,3 +1297,23 @@ bounty warning the next night. Slipping in and out unseen by day
 costs nothing — but the ledger counts it (unseen_break_ins) for
 future fence/heist content. Phase 9A is now 5-of-6 done; P9A.5
 multi-level buildings remains. 8 new tests. Suite: 787, green x3.
+
+**Round 72 — P9A.5 Multi-level buildings (done).**
+Buildings gained a vertical dimension. Interior grew a linked level
+stack — ground floor, level_above, level_below — with TWINNED stair
+tiles: step onto the stairs and you arrive on the other level's twin
+stair. The AW survey flagged their stair code as the buggiest corner
+of their codebase (cache-key juggling, best-effort alignment), so
+transitions here were rewritten from scratch as a single rule with
+no caches. Taverns and inns now have bedroom lofts above the taproom
+(beds that rest via the P9A.2 furniture layer, plus a chest); shops,
+forges and smithies have storage cellars below (barrels to rummage
+in the cool dark). TAB from a loft or cellar takes you back to the
+ground floor first — only the ground floor exits to the street.
+Stairs draw with the P9A.3b sprite and announce themselves ("Step
+onto the stairs to climb them"). One interaction refinement shaken
+out by the tests: piece_near now prefers the furniture underfoot
+over adjacent pieces, so a barrel standing beside the stairs
+rummages instead of creaking. This is the structural foundation the
+Phase 9 fantastical structures (keep, temple crypt, wizard's tower)
+will stack on. 9 new tests. Suite: 796 tests, green x3.

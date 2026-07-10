@@ -918,11 +918,23 @@ diverged.
   your head — proven end-to-end in a test. Slipping in unseen by
   day is free but counted (unseen_break_ins) for future fence/heist
   content. 8 tests.)*
-- [ ] **P9A.5 Multi-level buildings.** Stairs connect interior
+- [x] **P9A.5 Multi-level buildings.** Stairs connect interior
   levels (tavern bedrooms above the taproom, cellars below);
   renderer/movement already zone-aware — extend Interior to a level
   stack. This is also the foundation for P9.2–P9.5 fantastical
   structures.
+  *(done 2026-07-10 — Interior grew a linked level stack (ground /
+  level_above / level_below with twinned stair tiles); the AW stair
+  code was their buggy corner so transitions were REWRITTEN clean:
+  step onto a stair tile and you arrive on the other level's twin
+  stair, one rule, no caches. Taverns and inns get bedroom lofts
+  (beds + a chest — upstairs beds rest via P9A.2); shops, forges and
+  smithies get storage cellars (barrels to rummage). TAB from a loft
+  or cellar returns you to the ground floor first; only the ground
+  floor exits. Stairs render with the P9A.3b sprite; furniture
+  interaction prefers the piece underfoot over adjacent ones (a
+  barrel beside stairs rummages, not creaks). Foundation laid for
+  the Phase 9 fantastical structures. 9 tests.)*
 - [ ] **P9A.6 Building-specific actions.** Per-style interactions
   advertised on the hint bar: cook at a hearth, bank at the temple,
   research at the wizard's shelves, repair at the forge — driven by

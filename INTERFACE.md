@@ -111,7 +111,7 @@ llm_RPG/
 - **`biome.py`** — `Biome` enum and biome→terrain mapping.
 - **`calendar.py`** — `Date`, `Season`; 12-month calendar, day-night clock, season tints.
 - **`world_generator.py`** — `WorldGenerator`; procedural world. Two settlements (Oakvale + Riverside Hamlet) connected by road on 60×40+ maps.
-- **`interiors.py`** — Building interior mini-maps.
+- **`interiors.py`** — Building interior mini-maps; multi-level stacks (P9A.5): tavern/inn bedroom lofts, shop/forge cellars, twinned stair tiles (`add_upper_floor`/`add_cellar`).
 - **`blueprints.py`** — Building footprint blueprints used by the world generator.
 - **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming).
 - **`encounters.py`** — `EncounterManager`; wilderness monster spawns (weather-scaled chance).

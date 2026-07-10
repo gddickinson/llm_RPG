@@ -325,6 +325,14 @@ class PlayerActions:
         if terrain in (TerrainType.MOUNTAIN, TerrainType.WATER,
                        TerrainType.BUILDING):
             return False
+        # Stairs between building levels (P9A.5): step on, arrive at
+        # the twin stair of the linked level
+        if getattr(zone, "stairs_up", None) == (nx, ny) and \
+                getattr(zone, "level_above", None) is not None:
+            return self._take_stairs(zone.level_above, up=True)
+        if getattr(zone, "stairs_down", None) == (nx, ny) and \
+                getattr(zone, "level_below", None) is not None:
+            return self._take_stairs(zone.level_below, up=False)
         # Blocked by an active character standing there
         for npc in self.engine.npc_manager.npcs.values():
             if npc.is_active() and npc.position == (nx, ny):
@@ -337,6 +345,21 @@ class PlayerActions:
         except Exception:
             pass
         self.engine.advance_turn()
+        return True
+
+    def _take_stairs(self, level, up: bool) -> bool:
+        """Clean level transition: land on the linked level's twin
+        stair (the AW stair code was their buggy corner — rewritten)."""
+        engine = self.engine
+        landing = level.stairs_down if up else level.stairs_up
+        if landing is None:
+            landing = level.door
+        engine.current_interior = level
+        engine.player.position = landing
+        verb = "climb" if up else "descend"
+        engine.memory_manager.add_event(
+            f"You {verb} the stairs. {level.description}")
+        engine.advance_turn()
         return True
 
     def _weather_travel_penalty(self, x: int, y: int) -> None:

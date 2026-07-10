@@ -36,8 +36,8 @@ FLAVOR = {
     "pew": "You sit a moment. The quiet does you good.",
     "statue": "A stern saint watches you without eyes.",
     "table": "A sturdy table, ringed with the ghosts of old tankards.",
-    "stairs up": "The stairs creak underfoot. The upper floor is "
-                 "shut up for now.",
+    "stairs up": "Step onto the stairs to climb them.",
+    "stairs down": "Step onto the stairs to descend.",
     "wall rack": "Spears and shields, all accounted for.",
 }
 
@@ -58,11 +58,15 @@ def _kind(name: str) -> str:
 
 
 def piece_near(interior, x: int, y: int) -> Optional[Dict]:
+    """The piece underfoot wins; otherwise the first adjacent one."""
+    adjacent = None
     for piece in getattr(interior, "furniture", []):
-        if abs(piece.get("x", -9) - x) <= 1 and \
-                abs(piece.get("y", -9) - y) <= 1:
+        px, py = piece.get("x", -9), piece.get("y", -9)
+        if (px, py) == (x, y):
             return piece
-    return None
+        if adjacent is None and abs(px - x) <= 1 and abs(py - y) <= 1:
+            adjacent = piece
+    return adjacent
 
 
 def interact(engine) -> Optional[str]:

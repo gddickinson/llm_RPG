@@ -81,6 +81,19 @@ class GameAPIMixin:
     def exit_building(self) -> str:
         if not self.current_interior:
             return "You are already outside."
+        # Not on the ground floor? Head back to it first (P9A.5)
+        zone = self.current_interior
+        if not getattr(zone, "ground", True):
+            level = zone.level_below or zone.level_above
+            if level is not None:
+                landing = (zone.level_below and level.stairs_up) or \
+                    (zone.level_above and level.stairs_down) or \
+                    level.door
+                self.current_interior = level
+                self.player.position = landing
+                msg = "You make your way back to the ground floor."
+                self.memory_manager.add_event(msg)
+                return msg
         name = self.current_interior.name
         self.current_interior = None
         if self.exterior_return_pos:
