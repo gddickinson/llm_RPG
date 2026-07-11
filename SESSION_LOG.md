@@ -2348,3 +2348,35 @@ nested-block call sites in test_hazards into syntax errors —
 repaired by hand, and the lesson from round 105 now extends to
 test surgery: anchored edits, not blind replaces. 5 new tests.
 Suite: 1144, green x3.
+
+**Round 117 — P13.4 Playtest Campaign 4 (done). Phase 13 complete —
+every box in the plan is ticked.**
+Four acts, fifteen beats, both sides played: my hands on the
+player's keys, my eyes as the judge. ACT A, THE WOUND: a crit cut
+turned septic, a sleepless night lost the race 48-13, a
+priest-assisted field dressing pulled it back 30, and one 15g inn
+night won it outright — with the DM's dream and the well_rested
+buff both firing on the same sleep. Five systems in one arc, no
+seams visible. ACT B, THE THIEF: the "quiet" break-in target
+turned out to be Karim's watchtower and Karim was HOME — "You have
+no business in my home!" — which is exactly right: witnessed and
+unwitnessed entries diverge properly. Theft flagged the bottle,
+Goren pushed it back across the counter, Wulf paid 6g behind the
+quiet-hands gate, leather armor walked the bounty right past the
+guard, plain clothes got the menu, and talk-then-pay cleared the
+slate at half price. ACT C, THE TRADER: buying out Durgan's swords
+raised the price, the haggle meter nodded 5%, and bread carries a
+0.8→1.3 margin from river to camp. ACT D, THE FRIEND: the cup
+minted 30 bond, trust opened a secret affinity had locked, and a
+despised merchant faction showed the door. The judge's poke:
+exhaustion 3 reached Persuasion through the check core, exactly as
+the P12.1+P12.3 composition promised. FINDINGS: zero expectation
+failures across all 15 beats; ONE real fix shipped — Battle
+Medicine would burn a bandage AND the patient's daily immunity for
++0 HP on a whole, uninfected patient; it now refuses ("No wounds
+worth a dressing — save the bandage") with a regression test. One
+emergent charm recorded and deliberately kept: the bond ceremony
+happily shares a STOLEN bottle of wine — Goren doesn't check
+provenance, and that feels true. No Phase 14 items forced: the
+Rules of Living hold together under play; the next phase should
+come from George's own sessions. Suite: 1145, green x3.

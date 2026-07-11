@@ -120,6 +120,18 @@ class TestSkillActions(unittest.TestCase):
         self.assertEqual(len(self.player.inventory), 1,
                          "no bandage wasted on a refusal")
 
+    def test_battle_medicine_saves_the_bandage_when_whole(self):
+        """PT4 finding: full HP + no infection = nothing to treat."""
+        self.player.inventory = [create_item("bandage")]
+        self.player.hp = self.player.max_hp
+        self.player.metadata["infection"] = None
+        msg = battle_medicine(self.engine)
+        self.assertIn("save the bandage", msg)
+        self.assertEqual(len(self.player.inventory), 1,
+                         "nothing burned")
+        self.assertNotIn("battle_med_day", self.player.metadata,
+                         "the daily immunity is not spent either")
+
     def test_battle_medicine_crit_fail_hurts(self):
         self.player.inventory = [create_item("bandage")]
         self.player.hp = 10

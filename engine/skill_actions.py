@@ -148,6 +148,15 @@ def battle_medicine(engine, target=None) -> str:
                     if getattr(i, "id", "") == "bandage"), None)
     if bandage is None:
         return "Battle Medicine needs a bandage."
+    # PT4 finding: don't burn the bandage (and the daily immunity)
+    # when there's nothing to treat
+    try:
+        from engine.infection import infected
+        clean = not infected(patient) if patient is player else True
+    except Exception:
+        clean = True
+    if patient.hp >= patient.max_hp and clean:
+        return ("No wounds worth a dressing — save the bandage.")
     from engine.item_use import _remove_one
     _remove_one(player, bandage)
     patient.metadata["battle_med_day"] = day

@@ -1794,11 +1794,31 @@ they are first-class items now, in dependency order.
   breath=0 presets (a blind sed mangled two nested call sites —
   repaired; anchored edits for test surgery too, noted again).
   5 tests. Suite 1144, green x3.)*
-- [ ] **P13.4 Playtest Campaign 4.** Both-sides scripted-and-judged
+- [x] **P13.4 Playtest Campaign 4.** Both-sides scripted-and-judged
   session per the Playtest Matrix, focused on the Phase 12 systems
   interacting (needs+rest+infection, crime+fence+disguise,
   economy+haggling+arbitrage, bond+thresholds); findings become
   fixes or Phase 14 items.
+  *(Round 117: four acts, 15 beats, both sides played. ACT A (the
+  wound): crit cut → sepsis → sleepless night loses the race →
+  priest-assisted Battle Medicine → the inn night wins it, with
+  the DM's dream and well_rested both firing on the same sleep.
+  ACT B (the thief): witnessed vs quiet break-ins behave
+  differently (Karim rounds on you at HIS watchtower — correct),
+  theft flags, honest refusal, fence at 60% behind quiet-hands,
+  armor disguise walks past the guard, plain clothes confronted,
+  talk-then-pay clears. ACT C (the trader): buyout raises the
+  smith's price, the haggle meter nods 5%, the bread run pays
+  0.8→1.3. ACT D (the friend): the cup mints 30 bond, trust opens
+  Goren's locked secret, despised merchants show the door, and
+  exhaustion-3 reaches Persuasion through the check core.
+  FINDINGS: 0 expectation failures; one real fix — Battle Medicine
+  burned a bandage + the daily immunity for +0 HP on a whole,
+  uninfected patient; it now refuses ("save the bandage") with a
+  regression test. One emergent charm noted, not fixed: the bond
+  ceremony happily shares a STOLEN bottle. No Phase 14 forced —
+  the next phase should come from George's own play. Suite 1145,
+  green x3.)*
 
 ## What NOT to build (explicitly deferred)
 
