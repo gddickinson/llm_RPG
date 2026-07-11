@@ -147,8 +147,8 @@ class TestModulePacks(unittest.TestCase):
         os.environ["LLM_RPG_MODULE_PACKS"] = os.path.join(
             "data", "module_packs")
         try:
-            from items.data_validate import _check_module_packs
-            self.assertEqual(_check_module_packs(), [])
+            from items.validate_packs import check_module_packs
+            self.assertEqual(check_module_packs(), [])
         finally:
             os.environ["LLM_RPG_MODULE_PACKS"] = self.tmp
 

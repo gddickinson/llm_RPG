@@ -27,6 +27,7 @@ logger = logging.getLogger("llm_rpg.start_menu")
 TITLE_OPTIONS = [
     ("New Game", "new"),
     ("Load Game", "load"),
+    ("Battle Testbed", "battle"),
     ("Quit", "quit"),
 ]
 
@@ -57,6 +58,7 @@ class StartMenu:
         self.selected = 0
         self.save_dir = save_dir or config.SAVE_DIRECTORY
         self.saves = []
+        self.scenarios = []
         self.creator: Optional[CharacterCreator] = None
 
     # ------------------------------------------------------------- main
@@ -91,6 +93,9 @@ class StartMenu:
 
         if self.state == "load_menu":
             return self._load_key(k)
+
+        if self.state == "battle_menu":
+            return self._battle_key(k)
 
         if self.state == "customize":
             done = self.creator.handle_key(event)
@@ -153,6 +158,24 @@ class StartMenu:
             self.selected = 0
         return None
 
+    def _battle_key(self, k) -> Optional[dict]:
+        if not self.scenarios:
+            if k == pygame.K_ESCAPE:
+                self.state = "title"
+                self.selected = 0
+            return None
+        if k in (pygame.K_UP, pygame.K_w):
+            self.selected = (self.selected - 1) % len(self.scenarios)
+        elif k in (pygame.K_DOWN, pygame.K_s):
+            self.selected = (self.selected + 1) % len(self.scenarios)
+        elif k in (pygame.K_RETURN, pygame.K_SPACE):
+            sid = self.scenarios[self.selected][0]
+            return {"action": "battle", "scenario": sid}
+        elif k == pygame.K_ESCAPE:
+            self.state = "title"
+            self.selected = 0
+        return None
+
     def _pick_title(self) -> Optional[dict]:
         label, code = TITLE_OPTIONS[self.selected]
         if code == "new":
@@ -162,6 +185,11 @@ class StartMenu:
         if code == "load":
             self._refresh_saves()
             self.state = "load_menu"
+            self.selected = 0
+            return None
+        if code == "battle":
+            self._refresh_scenarios()
+            self.state = "battle_menu"
             self.selected = 0
             return None
         if code == "quit":
@@ -177,6 +205,10 @@ class StartMenu:
         from engine.save_load import SaveManager
         self.saves = SaveManager(self.save_dir).list_saves()
 
+    def _refresh_scenarios(self) -> None:
+        from engine.battle.battle_scenario import list_scenarios
+        self.scenarios = list_scenarios()
+
     # --------------------------------------------------------- render
 
     def _render(self) -> None:
@@ -189,6 +221,8 @@ class StartMenu:
                               "Quick Start uses a default warrior")
         elif self.state == "load_menu":
             self._render_save_list()
+        elif self.state == "battle_menu":
+            self._render_scenario_list()
         elif self.state == "customize" and self.creator:
             self.creator.render()
         pygame.display.flip()
@@ -266,5 +300,34 @@ class StartMenu:
 
         hint = self.sub_font.render(
             "Enter to load  ·  Esc to go back", True, (130, 130, 150))
+        self.screen.blit(
+            hint, (self.width // 2 - hint.get_width() // 2, self.height - 40))
+
+    def _render_scenario_list(self) -> None:
+        title_surf = self.big_font.render(
+            "Battle Testbed", True, (240, 220, 140))
+        self.screen.blit(
+            title_surf,
+            (self.width // 2 - title_surf.get_width() // 2, 70))
+        sub = self.sub_font.render(
+            "Watch the tactical layer fight a staged battle",
+            True, (170, 170, 200))
+        self.screen.blit(
+            sub, (self.width // 2 - sub.get_width() // 2, 118))
+
+        y = 180
+        for i, (sid, name, desc) in enumerate(self.scenarios):
+            selected = (i == self.selected)
+            color = (255, 255, 255) if selected else (170, 170, 190)
+            text = ("> " if selected else "  ") + name
+            surf = self.font.render(text, True, color)
+            self.screen.blit(surf, (140, y))
+            if selected:
+                dsurf = self.sub_font.render(desc, True, (150, 170, 150))
+                self.screen.blit(dsurf, (160, y + 22))
+            y += 56
+
+        hint = self.sub_font.render(
+            "Enter to fight  ·  Esc to go back", True, (130, 130, 150))
         self.screen.blit(
             hint, (self.width // 2 - hint.get_width() // 2, self.height - 40))

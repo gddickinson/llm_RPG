@@ -95,7 +95,16 @@ def main() -> int:
             and not args.load:
         try:
             from ui.start_menu import StartMenu
-            choice = StartMenu(width=args.width, height=args.height).run()
+            while True:                       # menu loops for the testbed
+                choice = StartMenu(
+                    width=args.width, height=args.height).run()
+                if choice["action"] == "battle":
+                    from ui.battle_screen import run_battle_testbed
+                    run_battle_testbed(choice["scenario"],
+                                       width=args.width,
+                                       height=args.height)
+                    continue                  # back to the menu
+                break
             if choice["action"] == "quit":
                 return 0
             if choice["action"] == "load":

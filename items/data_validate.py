@@ -16,6 +16,9 @@ Rules:
 
 from typing import List
 
+from items.validate_battles import check_battles
+from items.validate_packs import check_module_packs
+
 
 def validate_all() -> List[str]:
     problems: List[str] = []
@@ -30,43 +33,14 @@ def validate_all() -> List[str]:
     problems += _check_diaries()
     problems += _check_secrets()
     problems += _check_heart_events()
-    problems += _check_module_packs()
+    problems += check_module_packs()
     problems += _check_diseases()
     problems += _check_pantheon()
     problems += _check_structures()
     problems += _check_traversal()
-    problems += _check_battles()
+    problems += check_battles()
     return problems
 
-
-def _check_battles() -> List[str]:
-    """battle tables: units have a category + core stats; formations
-    and fortifications well-formed; matchup keys reference known
-    categories."""
-    from engine.battle.battle_data import (FORMATIONS, FORTIFICATIONS,
-                                           MATCHUP, TERRAIN, UNITS)
-    out = []
-    cats = set()
-    for uid, st in UNITS.items():
-        if "category" not in st:
-            out.append(f"battle unit {uid}: missing category")
-        else:
-            cats.add(st["category"])
-        for field in ("melee", "ranged", "defense", "hp"):
-            if field not in st:
-                out.append(f"battle unit {uid}: missing {field}")
-    for key in MATCHUP:
-        if "|" not in key:
-            out.append(f"battle matchup '{key}': need 'atk|def'")
-    for fid, st in FORTIFICATIONS.items():
-        if "hp" not in st:
-            out.append(f"fortification {fid}: missing hp")
-    for fname, spec in FORMATIONS.items():
-        if "defense_mult" not in spec or "attack_mult" not in spec:
-            out.append(f"formation {fname}: needs def/atk mults")
-    if not TERRAIN:
-        out.append("battle terrain modifiers missing")
-    return out
 
 
 def _check_traversal() -> List[str]:
@@ -194,82 +168,6 @@ def _check_diseases() -> List[str]:
             out.append(f"disease {did}: duration_days out of range")
         if not (0.0 < spec.get("spread_chance", 0) <= 1.0):
             out.append(f"disease {did}: spread_chance out of range")
-    return out
-
-
-def _check_module_packs() -> List[str]:
-    """Packs must be installable on any new game: valid enums, resolvable
-    giver, charter-sized rewards, allowed beat commands, ≤ MAX_OPS."""
-    from engine.module_packs import discover_packs
-    from engine.dm_modules import _count_ops, MAX_OPS
-    from engine.dm_bridge import ALLOWED_COMMANDS
-    from engine.dm_api import MAX_ITEM_VALUE, MAX_QUEST_GOLD_BASE
-    from characters.npc_presets import NPC_SPECS
-    from characters.character_types import CharacterClass, CharacterRace
-    out = []
-    for pack in discover_packs():
-        pid = pack.get("module_id", "(unnamed)")
-        if not pack.get("module_id") or not pack.get("title"):
-            out.append(f"pack {pid}: needs module_id and title")
-        if _count_ops(pack) > MAX_OPS:
-            out.append(f"pack {pid}: too large ({_count_ops(pack)} ops)")
-        for tid, spec in pack.get("monsters", {}).items():
-            if not spec.get("name"):
-                out.append(f"pack {pid}: monster {tid} needs a name")
-            if spec.get("level", 1) > 3:
-                out.append(f"pack {pid}: monster {tid} over level 3 — "
-                           f"packs install for brand-new level-1 players")
-            try:
-                CharacterClass(spec.get("class", "monster"))
-                CharacterRace(spec.get("race", "goblin"))
-            except ValueError as e:
-                out.append(f"pack {pid}: monster {tid}: {e}")
-        for iid, spec in pack.get("items", {}).items():
-            if not spec.get("name"):
-                out.append(f"pack {pid}: item {iid} needs a name")
-            if spec.get("value", 1) > MAX_ITEM_VALUE:
-                out.append(f"pack {pid}: item {iid} over value cap")
-        known = set(pack.get("monsters", {}))
-        for spawn in pack.get("spawns", []):
-            if spawn.get("template_id") not in known and \
-                    "position" not in spawn and \
-                    spawn.get("anchor") != "wilderness":
-                out.append(f"pack {pid}: spawn needs a position or "
-                           f"anchor")
-        for qid, spec in pack.get("quests", {}).items():
-            giver = spec.get("giver_id", "")
-            if not giver or giver not in NPC_SPECS:
-                out.append(f"pack {pid}: quest {qid} giver "
-                           f"'{giver}' is not a preset NPC")
-            if spec.get("reward_gold", 0) > MAX_QUEST_GOLD_BASE:
-                out.append(f"pack {pid}: quest {qid} over the level-1 "
-                           f"reward cap ({MAX_QUEST_GOLD_BASE})")
-        for beat in pack.get("beats", []):
-            if beat.get("command") not in ALLOWED_COMMANDS:
-                out.append(f"pack {pid}: beat command "
-                           f"'{beat.get('command')}' not allowed")
-            if beat.get("day_offset", 0) < 1:
-                out.append(f"pack {pid}: beats need day_offset >= 1")
-        # P14.2b: shipped structures obey the same charter shapes
-        from world.structures import CELL_FURNITURE
-        from world.monsters import MONSTER_TEMPLATES as MT
-        from items.item_registry import ITEM_REGISTRY as IR
-        known = set("WFD.<>KG") | set(CELL_FURNITURE)
-        for sid, sspec in pack.get("structures", {}).items():
-            for i, lv in enumerate(sspec.get("levels", [])):
-                bad = set("".join(lv.get("grid", []))) - known
-                if bad:
-                    out.append(f"pack {pid}: structure {sid} level "
-                               f"{i} unknown cells {sorted(bad)}")
-                for spawn in lv.get("monsters", []):
-                    if spawn.get("template") not in MT:
-                        out.append(f"pack {pid}: structure {sid} "
-                                   f"unknown monster "
-                                   f"'{spawn.get('template')}'")
-                for iid in lv.get("chest_loot", []):
-                    if iid not in IR:
-                        out.append(f"pack {pid}: structure {sid} "
-                                   f"unknown item '{iid}'")
     return out
 
 

@@ -2190,11 +2190,41 @@ is shippable and testable, de-risking UI last:
   7 tests: converges to a winner, seed-deterministic, numbers win,
   lines close the distance, the broken side routs, archers trade
   well, result-shape matches P17.1. Suite 1251, green x3.)*
-- [ ] **P17.4 The battle screen + zoom/LOD.** `ui/battle_screen.py`
+- [x] **P17.4 The battle screen + zoom/LOD.** `ui/battle_screen.py`
   reusing MapRenderer with a variable tile_size {8,16,32,48} and a
   float camera; LOD blob-per-squad below ~16px. Reachable from the
   start menu ("Battle Testbed" → scenario picker). Render only —
   the sim already runs headless.
+  *(Round 130: `ui/battle_camera.py` — the pure zoom/pan/LOD math
+  (tile_size steps 8→16→32→48, float centre, world↔screen, visible
+  bounds, blob_mode < 16px), unit-tested headless. `ui/battle_screen.py`
+  — a standalone pygame view (no engine) that watches a
+  `BattleSession` tick, drawing terrain, soldiers-or-blobs by LOD,
+  and a HUD (tick, per-team strength bars, play/pause, winner banner);
+  SPACE play/pause · N step · R reset · +/- or wheel zoom · WASD pan.
+  `engine/battle/battle_scenario.py` + `data/battles/scenarios.json`
+  — four staged set-pieces the same builder feeds to the screen AND
+  the tests: open_field (even melee), numbers_tell (mass wins),
+  cavalry_raid (shock horse), storm_the_breach (garrison holds a
+  wall gap). Wired into the start menu (Battle Testbed → picker) and
+  main.py (menu loops back after a battle). Validator gained a
+  scenario cross-check; the module_pack + battle checks were lifted
+  to `items/validate_packs.py` + `items/validate_battles.py` to keep
+  data_validate under the line. NOTE: "reusing MapRenderer" proved
+  the wrong fit — MapRenderer is bound to the world engine/zone, so
+  the screen paints the battle's own string-terrain grid directly
+  with a shared tile_size concept. 12 tests; suite 1263 green.)*
+- [ ] **P17.4b Richer testbed (from playtest feedback).** The screen
+  works; make it show more. (a) UNIT-TYPE ICONS — a shape per
+  category (infantry/cavalry/archer/siege/beast/support) over the
+  team colour, so you read who's who, not just which side. (b)
+  RANGED TRACERS — the sim already resolves ranged strikes (reach 5);
+  surface them as short-lived attack events the screen draws as
+  arrow lines, so you can SEE the bows work. (c) BIGGER BATTLES —
+  a large-field scenario (100×70+, hundreds of soldiers) proving the
+  O(map) flow field + LOD blobs scale; raise no hard caps that block
+  it. (d) COVER remains for P17.6 (terrain that blunts ranged), and
+  richer commander tactics are P17.5.
 - [ ] **P17.5 Orders & commander overlay.** `battle_orders.py`
   (Move/Hold/Charge/FocusFire/FallBack/SetFormation + Objective
   types capture-point/breach/protect) and the command UI (select

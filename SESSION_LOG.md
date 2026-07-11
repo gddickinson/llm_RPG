@@ -2723,3 +2723,40 @@ second: it converges to a winner, is seed-deterministic, numbers
 win, the lines measurably close the gap, the outnumbered side routs
 rather than fighting forever, and archers trade well from range.
 Suite: 1251, green x3 (no flakes this round).
+
+**Round 130 — P17.4 The battle screen + zoom/LOD (done).**
+The battle you could only watch through a headless result dict now
+has a window. `ui/battle_camera.py` is the pure camera: a float
+centre in tile coordinates, a tile_size that steps 8→16→32→48, the
+world↔screen transforms, the visible-tile bounds, and the level-of-
+detail switch (below 16px there's no room to draw a man, so it flips
+to blob mode) — all arithmetic, no pygame, unit-tested directly.
+`ui/battle_screen.py` is the standalone pygame view (like the start
+menu, it needs no game engine): it builds a scenario, ticks a
+`BattleSession` on a timer, and draws the field — terrain tiles,
+then either every soldier as a team-coloured dot with an HP pip or,
+zoomed out, one strength-sized blob per squad — under a HUD with the
+tick count, per-team strength bars, a play/pause state and a winner
+banner. SPACE plays/pauses, N single-steps, R resets, +/- or the
+wheel zoom, WASD/arrows pan. `engine/battle/battle_scenario.py` +
+`data/battles/scenarios.json` stage four honest set-pieces the SAME
+builder hands to both the screen and the suite: open_field (an even
+sword-line fight), numbers_tell (mass wins), cavalry_raid (shock
+horse rolls footmen), storm_the_breach (attackers funnel a wall gap
+into a garrison that holds it). The Battle Testbed is reachable from
+the start menu (a new title option → scenario picker), and main.py
+loops the menu so backing out of a battle returns to it. One honest
+scope note recorded in the plan: the item said "reuse MapRenderer",
+but MapRenderer is bound to the world engine and zone, so the battle
+screen paints the arena's own string-terrain grid directly with the
+same tile_size idea rather than forcing the coupling.
+The validator gained a scenario cross-check (fields sized, squads
+use real archetypes, ids unique, orders name real squads, pieces in
+bounds); doing so pushed data_validate.py over 500 lines, so the
+module-pack and battle checks were lifted into
+`items/validate_packs.py` and `items/validate_battles.py` (437 lines
+now, clear margin). 12 new tests (camera zoom/LOD/transforms +
+scenario building/convergence). Suite: 1263, green.
+Playtest feedback captured as P17.4b (unit-type icons, ranged
+tracers, bigger battles) and folded into P17.5/P17.6 (tactics,
+cover) — taken up next in this round.

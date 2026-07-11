@@ -1,0 +1,277 @@
+{
+  "open_field": {
+    "name": "Open Field \u2014 Even Melee",
+    "desc": "Two equal sword lines meet on open grass. A fair fight \u2014 whoever wins the local scrum wins the day.",
+    "width": 40,
+    "height": 26,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_foot",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              6,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_foot",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              31,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "red_foot"
+          }
+        ]
+      }
+    ]
+  },
+  "numbers_tell": {
+    "name": "Numbers Tell",
+    "desc": "A larger levy against a smaller one, same troops both sides. The sim's clearest truth: mass wins.",
+    "width": 42,
+    "height": 26,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_horde",
+            "type": "infantry_sword",
+            "size": 16,
+            "anchor": [
+              6,
+              7
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_few"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_few",
+            "type": "infantry_sword",
+            "size": 8,
+            "anchor": [
+              33,
+              9
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "red_horde"
+          }
+        ]
+      }
+    ]
+  },
+  "cavalry_raid": {
+    "name": "Cavalry Raid",
+    "desc": "Fast, heavy-hitting horse slams a footman line. Shock cavalry as strong melee \u2014 until spears learn to blunt it.",
+    "width": 44,
+    "height": 26,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_light",
+            "type": "cavalry_light",
+            "size": 8,
+            "anchor": [
+              5,
+              8
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_foot"
+          },
+          {
+            "id": "red_heavy",
+            "type": "cavalry_heavy",
+            "size": 4,
+            "anchor": [
+              5,
+              15
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_foot",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              35,
+              8
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_light"
+          }
+        ]
+      }
+    ]
+  },
+  "storm_the_breach": {
+    "name": "Storm the Breach",
+    "desc": "Attackers funnel through a gap in the curtain wall into a waiting garrison \u2014 bows behind the stones. The defenders hold the breach.",
+    "width": 46,
+    "height": 30,
+    "walls": [
+      {
+        "type": "stone_wall",
+        "cells": [
+          [
+            23,
+            6
+          ],
+          [
+            23,
+            7
+          ],
+          [
+            23,
+            8
+          ],
+          [
+            23,
+            9
+          ],
+          [
+            23,
+            10
+          ],
+          [
+            23,
+            11
+          ],
+          [
+            23,
+            12
+          ],
+          [
+            23,
+            13
+          ],
+          [
+            23,
+            16
+          ],
+          [
+            23,
+            17
+          ],
+          [
+            23,
+            18
+          ],
+          [
+            23,
+            19
+          ],
+          [
+            23,
+            20
+          ],
+          [
+            23,
+            21
+          ],
+          [
+            23,
+            22
+          ],
+          [
+            23,
+            23
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_storm",
+            "type": "infantry_sword",
+            "size": 14,
+            "anchor": [
+              5,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_garrison"
+          },
+          {
+            "id": "red_spears",
+            "type": "infantry_spear",
+            "size": 10,
+            "anchor": [
+              5,
+              18
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_garrison"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_garrison",
+            "type": "infantry_sword",
+            "size": 8,
+            "anchor": [
+              27,
+              13
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_storm"
+          },
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 10,
+            "anchor": [
+              31,
+              10
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_storm"
+          }
+        ]
+      }
+    ]
+  }
+}
