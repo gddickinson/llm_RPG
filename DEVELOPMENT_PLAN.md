@@ -2769,14 +2769,26 @@ last. Networking was previously deferred — this supersedes that.
   timeline. 18 tests. *(This is to M.4 what M.1 was to the roster: once
   intents flow authoritatively and snapshots come back, the transport
   is a thin, separable layer — M.4b.)*
-- [ ] **M.4b The socket transport.** The replaceable wire over M.4a: a
-  server process that hosts one `GameServer`, accepts client
-  connections, receives `Intent.to_dict()` frames + broadcasts
-  `snapshot()` deltas, and ticks the shared world on a schedule; a thin
-  client that ships local intents up and renders the latest snapshot.
-  PvP/party/independent sessions fall out of who-joins + the existing
-  faction rep. Long-term architecture; the game stays single-process
-  and fully playable without it.
+- [x] **M.4b The socket transport.** The replaceable wire over M.4a, in
+  two layers. `engine/net_server.py` is transport-free: newline-JSON
+  **framing** (`encode` + a `FrameDecoder` that survives split frames,
+  packed frames, and garbage), a tiny **message protocol** (clients send
+  JOIN / INTENT / LEAVE / POLL; the server answers WELCOME / RESULT /
+  SNAPSHOT / ERROR), and **`NetServer`** — owns one `GameServer`, tracks
+  connected clients, and is authoritative about IDENTITY: a client's
+  intents are forced to act as the hero it JOINED as, so no client can
+  puppet another's character; `tick_and_broadcast` advances the shared
+  world and yields the frame every client receives. `engine/net_socket.py`
+  is the real TCP pump over it: **`NetHost`** (a threaded
+  `ThreadingTCPServer` + an optional background ticker that advances +
+  broadcasts) and **`NetClient`** (connect / join / ship intents / read
+  the latest snapshot). 17 tests — framing, dispatch (incl. the anti-
+  spoof identity binding + disconnect→agent handoff), and a real
+  end-to-end TCP round-trip (two clients sharing one world, a host
+  broadcast reaching a client) that SKIPS where a sandbox forbids
+  binding. The single-process game never imports the wire; it is opt-in.
+  *(Remaining M.4c polish: a `--serve`/menu entry point, snapshot DELTAS
+  instead of full snapshots, and reconnection — none blocking.)*
 
 ## What NOT to build (explicitly deferred)
 

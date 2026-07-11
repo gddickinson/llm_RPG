@@ -3399,3 +3399,38 @@ shared clock; two heroes act independently; snapshot is JSON-serialisable
 and reports controllers; leave hands the hero to an agent; the whitelist).
 Suite 1429, green. The single-process game is untouched and fully playable
 — netplay is additive scaffolding. M.4b (the wire) remains.
+
+**Round 153 — M.4b The socket transport.**
+The wire over M.4a, in two layers so the interesting half stays testable
+to the byte. `engine/net_server.py` is transport-free: newline-delimited
+JSON **framing** (`encode` + a `FrameDecoder` that buffers a byte stream
+and yields whole messages, surviving a frame split across two reads, three
+frames in one read, and a garbage line — which comes back as an ERROR
+rather than derailing the stream); a tiny tagged-union **message protocol**
+(clients send JOIN / INTENT / LEAVE / POLL, the server answers WELCOME /
+RESULT / SNAPSHOT / ERROR); and **`NetServer`**, which owns one M.4a
+`GameServer`, keeps a table of connected clients, and translates wire
+messages into `GameServer` calls and back. It is authoritative about
+IDENTITY as well as rules: a client's intents are FORCED to act as the
+hero it joined as (a test spoofs another player's id in the intent and the
+action still runs as the sender's own hero), an intent before joining is
+refused, and a disconnect routes the hero to the M.3 away path so a
+dropped connection leaves a living body, not a frozen one.
+`engine/net_socket.py` is the real TCP pump over that: **`NetHost`** runs a
+threaded `ThreadingTCPServer` (recv → `FrameDecoder` → `on_message` →
+`encode` → send) with an optional background ticker that advances the
+shared world on a schedule and broadcasts a snapshot to everyone, and
+**`NetClient`** is the thin other end (connect / join / ship intents / poll
+/ read the latest snapshot). Stdlib sockets only; the single-process game
+never imports the wire — it is opt-in networking on the same engine.
+17 new tests: five on framing; eight on `NetServer` dispatch (welcome +
+snapshot, intent-before-join refused, the anti-spoof identity binding,
+poll, unknown-message error, two clients seeing each other, disconnect →
+agent handoff, tick_and_broadcast advancing the world); and four REAL
+end-to-end TCP round-trips (`NetHost` on an ephemeral port, `NetClient`
+join / intent / poll over the socket, two clients sharing one world, a
+host broadcast reaching a connected client) that SKIP where a sandbox
+forbids binding a port — verified stable across repeated runs, no flake.
+Suite 1446, green. M.4 — networked multiplayer on the shared engine — is
+functionally complete; what remains (M.4c) is polish: a `--serve`/menu
+entry point, snapshot DELTAS instead of full snapshots, and reconnection.
