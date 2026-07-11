@@ -2099,3 +2099,30 @@ SHIFT+T/I/B/H dispatch; the hint bar teaches them beside any
 enemy; input_handler squeezed back to 499 by folding brackets,
 bank keys and overlay keys into tables. 8 tests. Suite: 1064,
 green x3.
+
+**Round 107 — P12.9 Crime & law II, sub-step 1: the ledger and the
+menu (done; fences/disguises remain).**
+`engine/law.py`. Every settlement keeps a BOUNTY LEDGER on
+player.metadata (persistence free), and the crimes that were
+previously just reputation hits now have a price in gold:
+break-ins through the trespass system (5g unseen, 10g witnessed),
+assaulting citizens (20g, hooked where P12.4 KO's a non-brigand),
+robbing the unconscious (15g). Stand next to a guard in a
+settlement where your name is worth gold and the CONFRONTATION
+opens — Skyrim's menu on keys 1-5, the hint bar handing itself
+over entirely: PAY the fine for a clean slate; take JAIL, where
+twelve hours pass and the fine's worth of XP drains from your best
+lattice skill (idle hands — you keep your gold but lose your
+edge); BRIBE at 60% of the fine behind a Persuasion check, where a
+refused bribe OFFENDS and the fine grows a quarter; TALK — one
+graded Persuasion story per confrontation, a crit clears you free,
+a success halves the fine; or RESIST — the fine grows half again,
+the guard swings, and the watch remembers. Walking out of reach
+shelves the confrontation behind a one-hour grace, but the ledger
+never forgets. Sub-step 2 remains in the plan: stolen-item flags
+with fence-only sales (finally cashing the unseen_break_ins
+counter) and KCD witness-memory with disguises. Also fixed a 30%
+flake shipped last round: lacerate's bleed can legitimately end on
+the action's own turn tick (the flat check is unrigged there), so
+the test now asserts the wound BLED, not that it persists — assert
+the mechanic, not the dice. 9 tests. Suite: 1073, green x4.

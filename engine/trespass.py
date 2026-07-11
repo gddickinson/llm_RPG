@@ -97,6 +97,12 @@ class TrespassSystem:
                    villagers=REP_BREAKIN_VILLAGERS,
                    guards=REP_BREAKIN_GUARDS)
         self._alert_guards(loc)
+        try:   # the ledger remembers (P12.9)
+            self.engine.law.add_bounty(
+                10 if witnessed else 5,
+                reason=f"a break-in at the {loc.name}")
+        except Exception:
+            pass
         return msg
 
     def _cost(self, owner, villagers: int, guards: int) -> None:

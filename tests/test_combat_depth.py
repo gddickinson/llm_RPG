@@ -159,7 +159,13 @@ class TestCombatDepth(unittest.TestCase):
         foe = self._foe()
         self.engine.combat_system.rng = _Rng(roll=20)
         weapon_action(self.engine)
-        self.assertTrue(has_effect(foe, "persistent_damage"))
+        # the action's own turn tick may roll the flat end-check
+        # (unrigged), so assert the wound bled, not that it persists
+        log = " ".join(str(e) for e in
+                       self.engine.memory_manager.game_history[-8:])
+        self.assertIn("red line", log)
+        self.assertIn("bleeding", log.lower(),
+                      "the wound bled at least once")
 
     def test_rest_restores_the_move(self):
         self._arm("warhammer")

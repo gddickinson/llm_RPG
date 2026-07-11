@@ -169,14 +169,11 @@ class InputHandler:
             self.gui.show_spellbook()
             return True
 
-        # V: quick heal; SHIFT+V: the weapon action (P12.7)
-        if k == pygame.K_v:
+        if k == pygame.K_v:   # heal; SHIFT+V: weapon action (P12.7)
             try:
-                if shift:
-                    from engine.combat_depth import weapon_action
-                    weapon_action(self.engine)
-                else:
-                    self.engine.cast_spell("heal", "me")
+                from engine.combat_depth import weapon_action
+                (weapon_action(self.engine) if shift else
+                 self.engine.cast_spell("heal", "me"))
             except Exception:
                 pass
             return True
@@ -206,8 +203,7 @@ class InputHandler:
                 pass
             return True
 
-        # Look around (L) — log the visible description
-        if k == pygame.K_l:
+        if k == pygame.K_l:   # look around
             self._look_around()
             return True
 
@@ -234,8 +230,7 @@ class InputHandler:
                 self._toggle_party()
             return True
 
-        # Sleep at an inn/tavern (Enter)
-        if k == pygame.K_RETURN:
+        if k == pygame.K_RETURN:   # sleep / camp (P12.6)
             try:
                 from engine.rest import sleep
                 lines = sleep(self.engine)
@@ -253,6 +248,12 @@ class InputHandler:
                     pygame.K_y: self.gui.show_topics}
         if k in overlays:
             overlays[k]()
+            return True
+
+        # Answer the guard (P12.9): 1-5 while confronted
+        if getattr(self.engine.law, "active", None) and \
+                pygame.K_1 <= k <= pygame.K_5:
+            self.engine.law.resolve(k - pygame.K_1 + 1)
             return True
 
         # PF2e skill verbs (P12.8): SHIFT + T/I/B/H
@@ -290,8 +291,7 @@ class InputHandler:
             msg = self.engine.pickup_item()
             return True
 
-        # Use item (potion auto-select)
-        if k == pygame.K_h:
+        if k == pygame.K_h:   # quick potion
             self._use_potion()
             return True
 

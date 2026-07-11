@@ -31,6 +31,15 @@ def context_hints(engine) -> List[str]:
     player = engine.player
     x, y = player.position
 
+    # The law outranks everything but dying (P12.9)
+    try:
+        if getattr(engine.law, "active", None):
+            a = engine.law.active
+            return [f"[Law] 1 pay {a['amount']}g · 2 jail · "
+                    f"3 bribe · 4 talk · 5 resist"]
+    except Exception:
+        pass
+
     # Dying dominates every other hint (P12.4)
     try:
         from engine.dying import DYING_MAX

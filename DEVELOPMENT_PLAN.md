@@ -1618,12 +1618,30 @@ traditions lead.
   one dispatch; hint line beside enemies. input_handler squeezed
   to 499 (brackets/bank/overlays folded). 8 tests. Suite 1064,
   green x3.)*
-- [ ] **P12.9 Crime & law II.** Skyrim's guard-resolution menu on
+- [x] **P12.9 Crime & law II.** Skyrim's guard-resolution menu on
   contact: pay fine / jail (time passes, skill-progress cost) /
   bribe / talk (Speech check) / resist; per-settlement bounty
   ledger; stolen-item flags with fence-only sales (the
   unseen_break_ins counter finally pays off); witnesses remember
   clothes (KCD) — a disguise resets identification.
+  *(Round 107, sub-step 1 of 2: `engine/law.py` — the LEDGER and
+  the MENU. Per-settlement bounties in player.metadata (persisted
+  free); crimes feed it: break-ins via trespass (5g unseen / 10g
+  witnessed), assault on citizens (20g, via ko_person), robbing
+  the unconscious (15g). Guard adjacency + local bounty opens the
+  confrontation (once per GRACE hour): 1 PAY (gold, clean slate) ·
+  2 JAIL (12h pass, fine×2 XP drains from your best lattice skill,
+  gold kept) · 3 BRIBE (60% of fine + Persuasion DC 12; refusal
+  grows the fine 25%) · 4 TALK (one graded Persuasion per
+  confrontation: crit clears free, success halves) · 5 RESIST
+  (fine ×1.5, the guard swings, the watch remembers). Walking out
+  of reach shelves, never clears. Keys 1-5 in play mode; the hint
+  bar hands over to the menu. REMAINDER (sub-step 2): stolen-item
+  flags + fence-only sales (unseen_break_ins pays off) and
+  KCD witness-memory/disguises. 9 tests. Suite 1073, green x4 —
+  after fixing a 30% flake in the P12.7 lacerate test (the
+  action's own tick can end the bleed; assert the wound bled, not
+  that it persists).)*
 - [ ] **P12.10 Economy II.** OSRS stock-elastic shop prices (price
   moves k% per item of stock deviation, self-healing restock)
   layered on per-settlement supply so REGIONAL arbitrage exists

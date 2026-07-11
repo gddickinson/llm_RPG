@@ -155,6 +155,13 @@ def ko_person(engine, attacker, npc) -> str:
     msg = (f"{attacker.name} beats {npc.name} senseless — they crumple "
            f"where they stand.")
     engine.memory_manager.add_event(msg)
+    try:   # assaulting citizens feeds the ledger (P12.9)
+        klass = getattr(npc.character_class, "value", "")
+        if attacker.id == engine.player.id and klass != "brigand":
+            engine.law.add_bounty(
+                20, reason=f"{npc.name} was assaulted")
+    except Exception:
+        pass
     return msg
 
 
@@ -178,6 +185,10 @@ def rob_body(engine, marker: str, x: int, y: int) -> Optional[str]:
         pass
     msg = f"You go through {name}'s pockets: {taken}g. They'll remember."
     engine.memory_manager.add_event(msg)
+    try:   # robbery feeds the ledger (P12.9)
+        engine.law.add_bounty(15, reason=f"{name} was robbed")
+    except Exception:
+        pass
     return msg
 
 

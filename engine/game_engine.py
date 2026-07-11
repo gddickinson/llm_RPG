@@ -181,6 +181,8 @@ class GameEngine(GameAPIMixin):
         self.flood_system = FloodSystem(self)
         from engine.traversal import TraversalSystem
         self.traversal = TraversalSystem(self)
+        from engine.law import LawSystem
+        self.law = LawSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -304,6 +306,12 @@ class GameEngine(GameAPIMixin):
             dying_tick(self)
         except Exception as e:
             logger.debug(f"Dying tick error: {e}")
+
+        # A guard collects on the ledger (P12.9)
+        try:
+            self.law.check_contact()
+        except Exception as e:
+            logger.debug(f"Law contact error: {e}")
 
         # Tick status effects on all active characters (player + NPCs)
         try:
