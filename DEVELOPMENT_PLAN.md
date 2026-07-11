@@ -2371,7 +2371,17 @@ is shippable and testable, de-risking UI last:
 ### Combat fidelity arc (user: "highly realistic battles")
 Speed (P17.4c) is the keystone; these layer real tactics on the grid
 sim, each data-driven, deterministic, and testable. Sequenced by
-payoff — do NOT try to do them all at once.
+payoff — do NOT try to do them all at once. **Researched priority
+order** (classical→medieval tactics survey, Spartan/Macedonian/Roman/
+Carthaginian/Byzantine/Mongol/medieval — see P17.14 doctrine block):
+FACING+FLANK/SURROUND first (P17.11 — highest impact, self-contained),
+then positional morale (P17.15), then FORMATIONS with cohesion (P17.16
+— the user's "different formations" ask), then bracing/RPS spine
+(P17.17, half-done via P17.13), then combined-arms & reserves (P17.18),
+then doctrine AI (P17.19), then envelopment/feigned-retreat (P17.20).
+Ranged fidelity (P17.9) and armour/shields (P17.10) slot in as the
+damage model deepens. The BATTLEFIELD-ENVIRONMENT block (P17.E1–E4:
+elevation, terrain/obstacles, LOS, fire) is a parallel track.
 - [ ] **P17.9 Ranged fidelity.** Per-unit range from `range_factor`
   (longbow reaches farther than a thrown axe); a RELOAD cooldown so
   crossbows/catapults don't fire every tick (they load, then loose);
@@ -2385,10 +2395,18 @@ payoff — do NOT try to do them all at once.
   blunt) that armour resists unevenly (mail shrugs slashes, a pick
   punches through); armour weight taxes `speed`. Now heavy cavalry
   survive the arrow-storm — the missing half of cavalry-vs-archers.
-- [ ] **P17.11 Facing & exposure.** A soldier struck from flank/rear
-  takes more (borrow the P7.3 flank helpers); a unit that runs is
-  more exposed to shot. Formation gives the front rank cover the
-  flanks lack.
+- [ ] **P17.11 Facing, flanking & surround (RESEARCH STEP 1 — do
+  next).** A per-soldier facing (8-dir) + front/flank/rear arc test
+  (the shooter's/attacker's approach tile gives the arc). Wire in:
+  flank hit **+2 to-hit / +25% dmg**, rear hit **+4 / +50% / ×2 morale
+  damage**, a target with **≥2 adjacent enemies** takes +2/+25% from
+  all (can't guard every side), and a **SURROUNDED** state (enemies on
+  ≥3 arc-sides or no free retreat tile → can't flee, −big morale/tick,
+  +50% dmg taken — the Cannae/tulughma rout accelerator). This is the
+  single highest-impact tactical system and is independent of
+  formations; it also makes the P17.13 charge matter more (hit the
+  flank). Directly answers the user's "advantages if surrounding and
+  attacking an individual".
 - [ ] **P17.12 Area effects & battle magic.** Catapult/trebuchet and
   fireball blast RADII hit a tile cluster and paint `surfaces`
   (fire/oil/electrify already exist); battle-mage units cast the
@@ -2413,6 +2431,87 @@ payoff — do NOT try to do them all at once.
   0/12 vs spears, 0/12 vs pikes; elephants trample too but also die
   on the pike hedge. New `cavalry_charge` scenario (heavy horse ride
   down a sword line). 8 tests; suite 1313, green.)*
+
+### Battle tactics — classical→medieval doctrine (researched)
+From a survey of real tactics (hoplite phalanx/othismos, Macedonian
+sarissa + Companion wedge hammer-and-anvil, Roman triplex acies/line-
+relief/testudo/orbis, Carthaginian Cannae double envelopment, Persian
+sparabara, Viking svinfylking, Byzantine Strategikon combined arms,
+Mongol tulughma/feigned-retreat/Parthian shot, medieval schiltron/
+Swiss pike/longbow-stakes/Wagenburg). Each maps to a concrete grid
+mechanic on the existing systems (one morale bar/squad, d20 strike,
+RPS+terrain table, cover, flow fields, charge/overrun). Sequenced;
+build on P17.11 (facing) first.
+- [ ] **P17.15 Positional morale.** Feed local outnumbering, flank/
+  rear hits, the SURROUNDED state, and an **adjacent-squad-routing
+  CASCADE** into the per-squad morale bar; a routed squad flees the
+  flow field and can be **run down** (bonus dmg). Cheap, uses P17.11 +
+  existing morale, and makes flanking pay off in decisions, not just
+  damage. (Also tempers the fragile morale seen in playtest — deep/
+  cohesive squads resist; the shove/rout math becomes readable.)
+- [ ] **P17.16 Formations I — line & loose, with cohesion (the user's
+  "different formations").** A formation is a squad property: assigned
+  slots, a shared FACING, spacing, and a 0–1 COHESION (soldiers in-
+  slot & facing right / living). Two archetypes first: **dense LINE**
+  (shield-overlap +2 front-arc defense while a right-neighbour stands,
+  depth raises the morale floor, ½ speed, slow to turn, full AoE) and
+  **LOOSE/skirmish** (mobile, ½ AoE/missile dmg spread out, no overlap,
+  weak floor, easily flanked). Formation BREAKS when cohesion drops
+  (flanked slot, failed shove, charged unbraced) → bonuses gone, morale
+  step-loss. Gives P17.5's `SET_FORMATION` real grid effects.
+- [ ] **P17.17 Bracing & the all-facing formation (RPS spine).** A
+  BRACE flag (hold still + face the threat) makes pike/spear **negate
+  the charge bonus and strike an interrupt first** (formalises P17.13's
+  half-RPS into a stance, not an archetype quirk); the **all-facing
+  formation** (orbis/schiltron ring) turns every arc to "front" —
+  removes flank/rear bonuses (the surround-counter) at the cost of
+  offense + mobility, and is missile-vulnerable (Falkirk).
+- [ ] **P17.18 Combined arms & reserves.** Hammer-and-anvil (a squad
+  PINNED in front then charged in flank/rear = rout trigger), soften-
+  then-shock (a pre-melee missile volley strips cohesion/AC then the
+  shock bonus applies — the Roman pilum), **line relief/reserve rally**
+  (a spent front squad withdraws through a gap while a fresh one steps
+  up / a shaken squad rallies on a reserve line behind), and **wedge**
+  formations (Companion/svinfylking/cataphract) that concentrate the
+  charge and breach a line.
+- [ ] **P17.19 Doctrine AI.** Teach the commander AI to deploy in
+  templates (screen → anchor centre → reserve cavalry → commit at the
+  decisive point), **anchor flanks on terrain**, refuse a flank /
+  oblique order, **brace when it sees a charge coming**, and commit
+  reserves where a local advantage already exists. Makes the above
+  legible to a watching player.
+- [ ] **P17.20 Envelopment & feigned retreat (capstone).** Scripted
+  feigned rout → wheel → sprung flank (with the **don't-over-pursue
+  discipline check** that counters it), Cannae elastic-centre double
+  envelopment, tulughma encirclement on open maps, and horse-archer
+  kiting + the **Parthian shot** (fire while fleeing, no rear-facing
+  penalty). Depends on facing+morale+formations+flow being solid;
+  delivers the "wow" battles.
+
+### Battlefield environment (user: hills, ditches, LOS, fire)
+Parallel track — the terrain itself as a combatant. Each is data-
+driven and folds into the battle grid (its own terrain strings +
+`cover_at` + `struct_hp` already exist).
+- [ ] **P17.E1 Elevation & high ground.** Per-tile elevation (hills,
+  depressions, ramparts); attacking DOWNHILL gives +to-hit and adds
+  charge momentum, UPHILL costs it; height extends ranged range and
+  sight. Anchors the "advantage from being above an enemy" ask.
+- [ ] **P17.E2 Terrain & obstacles.** Ditches/moats/streams/rivers as
+  movement-cost or blocking tiles (wade slow, deep = impassable/anchor);
+  a flank resting on impassable terrain (river/cliff/wall) **cannot be
+  flanked on that side** (removes the arc — the first thing good
+  deployment does). Extends the P11.x traversal ideas onto the battle
+  grid.
+- [ ] **P17.E3 Battle line-of-sight.** Trees/buildings/walls/ramparts
+  BLOCK sight (reuse `world/fov.overworld_los`) so ranged units can't
+  target through cover — closes the P17.6b "no wall LOS" gap and makes
+  cover concealment as well as protection.
+- [ ] **P17.E4 Fire & the battle surface layer.** A sparse grid
+  `surfaces` layer (port `engine/surfaces.py`): fire arrows, battle-
+  magic, and boiling oil (P17.6e) IGNITE oil/forest/wooden structures;
+  fire spreads tile-to-tile, damages occupants, and destroys cover/
+  walls. Unifies P17.12 (AoE/magic), P17.6e (boiling oil), and the
+  user's "trees and buildings can be set on fire" into one system.
 
 ## What NOT to build (explicitly deferred)
 
