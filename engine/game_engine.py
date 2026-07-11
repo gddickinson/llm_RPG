@@ -173,6 +173,8 @@ class GameEngine(GameAPIMixin):
         self.targeting = TargetingSystem(self)
         from world.structures import StructureBuilder
         self.structures = StructureBuilder(self)
+        from engine.tile_damage import TileDamage
+        self.tile_damage = TileDamage(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None

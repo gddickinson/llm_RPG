@@ -1278,10 +1278,20 @@ set_terrain + tile callbacks for interior sync.
   shield the indoors, other dungeon floors are safe. Single-target
   spells unchanged. Siege-monster splash deferred to P10.5 with the
   boulder throwers. 6 tests.)*
-- [ ] **P10.2 Destructible tiles.** Slim DurabilitySystem port:
+- [x] **P10.2 Destructible tiles.** Slim DurabilitySystem port:
   sparse tile HP, materials (stone buildings resist fire, wooden
   forests burn), TILE_DESTROYED map (BUILDING→RUBBLE, FOREST→GRASS);
   AoE spells and siege damage tiles in radius.
+  *(done 2026-07-11 — engine/tile_damage.py: sparse per-tile HP with
+  materials (stone ×0.3 vs fire, ×1.5 vs siege; wood ×2 vs fire),
+  base HP (wall 60, tree 20, field 10), destruction through
+  set_terrain so the P10.0 callbacks fire. Walls CRACK at half HP
+  before collapsing to RUBBLE; fire leaves SCORCHED earth, axes
+  leave grass. Fireballs raze their radius ("The blast razes 3 of
+  the surroundings!"). AND the payoff: a breached wall is a SECOND
+  DOOR — bump the rubble gap and you clamber inside, no lock
+  consulted (trespass still judges you). Sparse HP persists via
+  save_load. 8 tests.)*
 - [ ] **P10.3 Fire spread.** Per-turn ElementalEffects: fires spread
   to adjacent combustibles, burn out to SCORCHED, damage anyone
   standing in them; fireball ignites, lightning scorches.

@@ -23,7 +23,7 @@ class GameAPIMixin:
 
     # ---- interiors --------------------------------------------------
 
-    def enter_building(self, loc=None) -> str:
+    def enter_building(self, loc=None, via_breach: bool = False) -> str:
         if self.current_interior:
             return "You are already inside."
         if loc is None:
@@ -33,8 +33,11 @@ class GameAPIMixin:
         inter = self.interiors.get(loc.name)
         if not inter:
             return f"You can't enter the {loc.name}."
-        # The door has a say (P9A.1)
-        allowed, note = self.door_manager.try_enter(loc.name)
+        # The door has a say (P9A.1) — unless you made your own door
+        if via_breach:
+            allowed, note = True, "You clamber through the breach. "
+        else:
+            allowed, note = self.door_manager.try_enter(loc.name)
         if not allowed:
             self.memory_manager.add_event(note)
             return note

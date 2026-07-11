@@ -232,6 +232,14 @@ class PlayerActions:
         if loc is None or loc.name not in engine.interiors:
             return None
         door_tile = (loc.x + loc.width // 2, loc.y + loc.height - 1)
+        # A breached wall is a second door (P10.2): clamber through
+        from world.world_map import TerrainType as _TT
+        if engine.world.map.terrain[ny][nx] == _TT.RUBBLE:
+            msg = engine.enter_building(loc, via_breach=True)
+            if engine.current_interior is not None:
+                engine.advance_turn()
+                return True
+            return False
         day = engine.world.time // (24 * 60)
         marks = engine.player.metadata.setdefault("door_hints", {})
         if (nx, ny) != door_tile:

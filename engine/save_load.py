@@ -149,6 +149,7 @@ class SaveManager:
             "market": self._subsystem_dict(engine, "market"),
             "doors": self._subsystem_dict(engine, "door_manager"),
             "structures": self._subsystem_dict(engine, "structures"),
+            "tile_damage": self._subsystem_dict(engine, "tile_damage"),
             "dm_state": self._subsystem_dict(engine, "dm"),
             "world_history": list(getattr(engine, "world_history", [])),
             "shops": self._subsystem_dict(engine, "shop_manager"),
@@ -284,6 +285,7 @@ class SaveManager:
                           ("market", "market"),
                           ("doors", "door_manager"),
                           ("structures", "structures"),
+                          ("tile_damage", "tile_damage"),
                           ("dm_state", "dm"),
                           ("shops", "shop_manager")):
             sub = getattr(engine, attr, None)

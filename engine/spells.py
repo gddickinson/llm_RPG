@@ -162,6 +162,18 @@ class SpellSystem:
             if fallen:
                 results.append(
                     f"Slain in the blast: {', '.join(fallen)}.")
+            # The world burns too (P10.2) — overworld blasts only
+            try:
+                if self.engine.active_zone() is None:
+                    tx, ty = target.position
+                    razed = self.engine.tile_damage.damage_radius(
+                        tx, ty, spell.damage, spell.area, "fire")
+                    if razed:
+                        results.append(
+                            f"The blast razes {razed} of the "
+                            f"surroundings!")
+            except Exception:
+                pass
         elif spell.damage:
             target.take_damage(spell.damage)
             results.append(
