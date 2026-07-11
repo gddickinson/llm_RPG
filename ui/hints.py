@@ -86,6 +86,7 @@ def context_hints(engine) -> List[str]:
                 hints.append(f"[SHIFT+V] {move}")
         except Exception:
             pass
+        hints.append("[SHIFT+T/I/B] trip · demoralize · feint")
     try:
         tid = getattr(engine, "player_target_id", None)
         lock = engine.npc_manager.npcs.get(tid) if tid else None

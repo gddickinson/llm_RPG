@@ -54,6 +54,7 @@ llm_RPG/
 - **`food.py`** — P12.5 food economy: 2-turn chew delay gates attacks after eating, combo food bypasses it, the Hearty Brew overheals + curses; freshness decays nightly (stale = half heal + poison risk), hearths re-bake carried rations.
 - **`combat_depth.py`** — P12.7: concentration (one sustained spell; damage forces d20+CON vs max(10,dmg)), soft cover on the shot line (-10%/-25% hit, carried on projectiles), BG3 weapon actions as weapon data (Cleave/Topple/Pommel Strike/Lacerate, SHIFT+V, once per rest).
 - **`ranged.py`** — `shoot_ranged(engine, ...)`: bow/crossbow/thrown fire with ammo, aim, chew gate, true LOS (split from game_api_mixin).
+- **`skill_actions.py`** — P12.8 combat verbs on the graded core: Trip (SHIFT+T), Demoralize (SHIFT+I, 10-min per-target immunity), Feint (SHIFT+B), Battle Medicine (SHIFT+H, burns a bandage, once/day/patient); degree-sensitive outcomes both ways.
 - **`tactics.py`** — Opportunity attacks, SHIFT+move disengage, SHIFT+F shove.
 - **`faction_ticker.py`** — Daily dice-resolved faction events; strength/stores drive encounters, shortages, rumors; repelled raids spawn a visible straggler.
 - **`npc_conflict.py`** — `NPCConflictSystem` (P7.1): guards fight hostiles they can see, hostiles raid civilians; `[Clash]` events near the player; the player's duel is never stolen; overworld-grid NPCs only.

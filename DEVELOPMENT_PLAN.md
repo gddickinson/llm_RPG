@@ -1599,11 +1599,25 @@ traditions lead.
   to a dispatch (499). A silent str.replace no-op in the combat
   hook was caught by the tests — anchored Edits only for hooks.
   10 tests. Suite 1056, green x3.)*
-- [ ] **P12.8 Skill actions.** PF2e's codified combat verbs from
+- [x] **P12.8 Skill actions.** PF2e's codified combat verbs from
   skills we already train: Trip/Shove-plus (Athletics), Demoralize
   (Intimidation, per-target 10-min immunity — THE anti-spam
   pattern), Feint (Deception), Battle Medicine (once/day/target).
   Skills become fighting styles.
+  *(Round 106: `engine/skill_actions.py`, all four riding the
+  P12.1 graded core with degree-sensitive outcomes. TRIP
+  (Athletics vs 12+their STR): crit = prone + 2 dmg, crit fail =
+  YOU are prone. DEMORALIZE (Intimidation vs 12+their WIS, 3-tile
+  voice range): crit = Frightened 2, and every ATTEMPT — success
+  or not — sets the per-target 10-minute immunity. FEINT
+  (Deception vs 12+their WIS): crit = off-guard 4, success = 2
+  (one survives the action's own tick), crit fail = YOU'RE
+  off-guard. BATTLE MEDICINE (Medicine DC 13): burns a bandage,
+  once/day per patient (immunity lives on the target), crit 15 HP
+  / success 8 / crit fail cuts (-2). Bound to SHIFT+T/I/B/H via
+  one dispatch; hint line beside enemies. input_handler squeezed
+  to 499 (brackets/bank/overlays folded). 8 tests. Suite 1064,
+  green x3.)*
 - [ ] **P12.9 Crime & law II.** Skyrim's guard-resolution menu on
   contact: pay fine / jail (time passes, skill-progress cost) /
   bribe / talk (Speech check) / resist; per-settlement bounty

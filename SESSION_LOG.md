@@ -2073,3 +2073,29 @@ one-key overlays folded into a dispatch table; and a silent
 str.replace no-op left the concentration hook unwired until the
 test caught it — hooks get anchored Edits, not blind replaces,
 from here on. 10 tests. Suite: 1056, green x3.
+
+**Round 106 — P12.8 Skill actions (done).**
+Skills became fighting styles. `engine/skill_actions.py` gives the
+player four PF2e combat verbs, every one rolled through the P12.1
+graded core so crits and fumbles cut BOTH ways: TRIP (Athletics vs
+12 + their STR mod) knocks the enemy prone, a crit slams them for
+2 on the way down — and a fumble plants YOU face-first in the
+dirt. DEMORALIZE (Intimidation vs 12 + their WIS, 3-tile shouting
+range) inflicts Frightened 1, Frightened 2 on a crit — and here's
+the research synthesis's anti-spam pattern working as designed:
+every ATTEMPT, made or failed, sets a 10-minute per-target
+immunity. "They've heard your threats already — words are spent
+here." FEINT (Deception vs 12 + their WIS) leaves them off-guard
+(P12.2's -2 AC doing its third job) for your next strike — crit
+for 4 turns — while a fumble overextends and leaves YOU open.
+BATTLE MEDICINE (Medicine DC 13) burns a bandage for a field
+dressing, 8 HP on a success and 15 on a crit, once per day per
+patient with the immunity living on the target as PF2e writes it —
+and a fumble makes the wound worse. One technical lesson made a
+comment: conditions applied by an action tick once on that
+action's own advance_turn, so Feint's "next strike" window is
+duration 2, not 1 — the test caught the off-by-one. Bound as one
+SHIFT+T/I/B/H dispatch; the hint bar teaches them beside any
+enemy; input_handler squeezed back to 499 by folding brackets,
+bank keys and overlay keys into tables. 8 tests. Suite: 1064,
+green x3.

@@ -183,10 +183,7 @@ class InputHandler:
 
         # Forage (Z)
         if k == pygame.K_z:
-            try:
-                self.engine.forage()
-            except Exception:
-                pass
+            self.engine.forage()
             return True
 
         # Enter / exit building or dungeon (Tab); force a door (SHIFT+TAB)
@@ -198,15 +195,13 @@ class InputHandler:
             return True
 
         # Bank deposit all (N) / withdraw all (M)
-        if k == pygame.K_n:
+        if k in (pygame.K_n, pygame.K_m):
             try:
-                self.engine.deposit_gold(self.engine.player.gold)
-            except Exception:
-                pass
-            return True
-        if k == pygame.K_m:
-            try:
-                self.engine.withdraw_gold(self.engine.bank_balance())
+                if k == pygame.K_n:
+                    self.engine.deposit_gold(self.engine.player.gold)
+                else:
+                    self.engine.withdraw_gold(
+                        self.engine.bank_balance())
             except Exception:
                 pass
             return True
@@ -217,16 +212,12 @@ class InputHandler:
             return True
 
         # Cycle ranged targets ([ back, ] forward) (P8.7)
-        if k == pygame.K_RIGHTBRACKET:
-            self.engine.targeting.cycle(1)
-            return True
-        if k == pygame.K_LEFTBRACKET:
-            self.engine.targeting.cycle(-1)
+        if k in (pygame.K_RIGHTBRACKET, pygame.K_LEFTBRACKET):
+            self.engine.targeting.cycle(
+                1 if k == pygame.K_RIGHTBRACKET else -1)
             return True
 
-        # Open shop with adjacent merchant (B for barter — S is taken by
-        # move-down, which shadowed the old binding and made shops unreachable)
-        if k == pygame.K_b:
+        if k == pygame.K_b:   # barter (S is shadowed by move-down)
             self._open_shop()
             return True
 
@@ -262,6 +253,15 @@ class InputHandler:
                     pygame.K_y: self.gui.show_topics}
         if k in overlays:
             overlays[k]()
+            return True
+
+        # PF2e skill verbs (P12.8): SHIFT + T/I/B/H
+        if shift and k in (pygame.K_t, pygame.K_i,
+                           pygame.K_b, pygame.K_h):
+            from engine import skill_actions as sa
+            {pygame.K_t: sa.trip, pygame.K_i: sa.demoralize,
+             pygame.K_b: sa.feint,
+             pygame.K_h: sa.battle_medicine}[k](self.engine)
             return True
 
         # Talk to adjacent NPC
