@@ -282,6 +282,22 @@ class GameAPIMixin:
         from engine.furniture import interact
         return interact(self)
 
+    # ---- Claim a home (P15.7) -----------------------------------------
+
+    def home_action(self) -> Optional[str]:
+        """E inside a ruin/home: buy the derelict, or repair your own."""
+        from engine.homestead import home_action
+        return home_action(self)
+
+    def home_deposit(self, item_name: str) -> str:
+        """Store a carried item in your home chest (from the I-panel)."""
+        from engine.homestead import deposit
+        return deposit(self, item_name)
+
+    def home_withdraw(self, item_name: str) -> str:
+        from engine.homestead import withdraw
+        return withdraw(self, item_name)
+
     def current_weather(self) -> str:
         return self.weather_system.state.current.value
 

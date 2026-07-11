@@ -3476,3 +3476,37 @@ hit shake, richer floating damage/heal numbers, lerped camera, two-frame
 terrain sprites — `lerp`/`smoothstep`/`lerp_color` are the vocabulary
 waiting for them and for P15.3/P15.4; walk-bob already lives in
 `body_renderer.update_anim`.
+
+**Round 155 — P15.7 Claim a home.**
+Track A's turn (the plan alternates so neither track starves). The homes
+system (P9A.3) already flags buildings nobody lives in as DERELICT; this
+round turns one into something the player owns, in `engine/homestead.py`.
+CLAIM: stand inside an unowned derelict and press E to buy it for a
+size-scaled price — ownership rides the location's `properties`, which
+already save-serialise, so no new save code. REPAIR: a staged
+ConstructionProject (the candidate P14.2 parked here) — three stages, each
+spending 3 timber + 2 stone + 15g and a couple of in-world hours, E to
+advance, and it trains Crafting; the final stage clears the derelict flag,
+sweeps the dust from the interior's description, and FURNISHES the place —
+a bed, a hearth, and a storage chest are guaranteed, dropped onto free
+floor tiles. LIVE IN IT: sleeping at home rests you Well Rested for FREE
+(you own the bed) — wired into `rest.py` so even a broke hero can sleep in
+their own home, where the inn would turn them away; the hearth cooks via
+the existing P9A.2 furniture; and the chest is your OWN persistent storage
+(the P9A.2 rummage table steps aside for a home you own) — deposit from
+the inventory panel with a new H key, withdraw at the chest with E, the
+goods held as plain item dicts on `player.metadata` so they are save-safe.
+One home at a time keeps the model simple. Wired end to end: the E-key
+(furniture first, then claim/repair), the hint bar (buy/repair prompts),
+the I-panel store key, the home-chest interception, and the free-rest
+path. 12 tests: buying (cost, affordability, only-unowned-derelicts,
+one-home-at-a-time), the repair project (completion furnishes + clears the
+flag, needs materials, consumes wood/stone/gold, the E-key claim→repair
+chain), and living in it (free rest doesn't refuse a broke hero or charge
+them, store-and-take from the chest, the empty-chest message, and a full
+save_game → load_game round-trip proving the stored goods survive a
+reload and are usable after). One `input_handler.py` line went over the
+500 ceiling on the way and was folded back to 499. Suite 1477, green.
+REMAINDER (P15.7b): boss trophies displayed in the home, a pick-any
+storage panel (withdraw is top-item-first for now), and the cooperative
+multiplayer ConstructionProject.

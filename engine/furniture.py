@@ -95,6 +95,15 @@ def interact(engine) -> Optional[str]:
         msg = f"The carving reads: \"{piece.get('text', '...')}\""
         engine.memory_manager.add_event(msg)
         return msg
+    if kind == "stash":     # your own home chest is storage, not loot
+        try:
+            from engine.homestead import chest_interact
+            msg = chest_interact(engine)
+            if msg is not None:
+                engine.memory_manager.add_event(msg)
+                return msg
+        except Exception:
+            pass
     handler = {"bed": _rest, "hearth": _cook, "altar": _pray,
                "shelf": _read, "stash": _rummage,
                "anvil": _smith, "well": _drink}.get(kind)

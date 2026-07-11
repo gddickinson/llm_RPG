@@ -306,8 +306,8 @@ class InputHandler:
                         *self.engine.player.position)
                 except Exception:
                     here = []
-                if not here:
-                    msg = self.engine.use_furniture()
+                if not here:   # furniture, else claim/repair a home (P15.7)
+                    msg = self.engine.use_furniture() or self.engine.home_action()
                     if msg:
                         return True
             msg = self.engine.pickup_item()

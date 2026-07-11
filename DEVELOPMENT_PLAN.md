@@ -1951,10 +1951,28 @@ UI polish.
   deepest dungeon floor now spawns the real tyrant_depths. Loot +
   the Legendarium record ride the normal defeat path (a slain boss
   is a legend free). 9 tests. Suite 1213, green x3.)*
-- [ ] **P15.7 Claim a home.** Buy a derelict from the homes
+- [x] **P15.7 Claim a home.** Buy a derelict from the homes
   system; the ConstructionProject candidate lands here (repair to
   move in): storage chest, private-room rest quality, hearth
   kitchen, boss trophies displayed.
+  *(Round 155: `engine/homestead.py`. CLAIM — stand inside an unowned
+  derelict (the P9A.3 homes system already flags them) and press E to
+  buy it for a size-scaled price; ownership rides `location.properties`
+  (already save-serialised). REPAIR — a staged ConstructionProject
+  (3 stages, each spending timber + stone + coin + a couple of hours,
+  E to advance, trains Crafting); the final stage clears the derelict
+  flag, restores the interior description, and FURNISHES it — a bed,
+  hearth, and storage chest are guaranteed. LIVE IN IT — sleeping at
+  home rests you Well Rested for FREE (wired into `rest.py`; a broke
+  hero can still sleep in their own bed), the hearth cooks (existing
+  P9A.2 furniture), and the chest is your own persistent storage
+  (deposit from the I-panel with H, withdraw at the chest with E) held
+  as item dicts on `player.metadata` — save-safe, round-tripped through
+  a full save/load in the tests. One home at a time. E-key + hint-bar +
+  I-panel wired. 12 tests. Suite 1477, green. REMAINDER (P15.7b): boss
+  TROPHIES displayed in the home, a pick-any storage panel (withdraw is
+  top-item-first for now), and the cooperative multiplayer
+  ConstructionProject.)*
 - [ ] **P15.8 Roads, mounts & speed.** Roads earn their keep
   (fewer minutes per step on ROAD/BRIDGE), a buyable mule (carry
   +8, follows like a pet, and it's a body — ransom rules apply),

@@ -83,6 +83,8 @@ class InventoryPanel:
             self._drop(rows)
         elif k == pygame.K_t:
             self._transmute(rows)
+        elif k == pygame.K_h:
+            self._store(rows)
         return True
 
     def _move_cursor(self, delta: int, rows) -> None:
@@ -157,6 +159,19 @@ class InventoryPanel:
         from engine.item_use import transmute_item
         transmute_item(self.engine, item)
 
+    def _store(self, rows) -> None:
+        """P15.7: stash the highlighted item in your home chest."""
+        row = self._row_at_cursor(rows)
+        if row is None:
+            return
+        kind, _, item, _ = row
+        if item is None or kind != "bag":
+            return
+        msg = self.engine.home_deposit(item.name if hasattr(item, "name")
+                                       else str(item))
+        if msg:
+            self.engine.memory_manager.add_event(msg)
+
     # ---------------- render ---------------------------------------
 
     def draw(self, target, screen_rect) -> None:
@@ -228,7 +243,7 @@ class InventoryPanel:
         target.blit(status, (box.x + 16, box.bottom - 48))
         hint = self._font.render(
             "[Up/Down] move  [E] (un)equip  [Q] use  [D] drop  "
-            "[T] transmute  [Esc] close",
+            "[T] transmute  [H] store  [Esc] close",
             True, (160, 160, 180))
         target.blit(hint, (box.x + 16, box.bottom - 28))
 

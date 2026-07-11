@@ -42,6 +42,12 @@ def snapshot(engine) -> Dict[str, int]:
 
 def can_sleep_here(engine) -> Optional[str]:
     """None if a bed is available here; else the reason it isn't."""
+    try:                                   # your own furnished home (P15.7)
+        from engine.homestead import can_rest_home
+        if can_rest_home(engine):
+            return None
+    except Exception:
+        pass
     inter = getattr(engine, "current_interior", None)
     if inter is not None:
         name = getattr(inter, "name", "").lower()
@@ -69,13 +75,27 @@ def sleep(engine) -> List[str]:
         engine.memory_manager.add_event(reason)
         return []
     player = engine.player
-    if player.gold < BED_COST:
+    at_home = False
+    try:
+        from engine.homestead import can_rest_home
+        at_home = can_rest_home(engine)
+    except Exception:
+        pass
+    if not at_home and player.gold < BED_COST:
         engine.memory_manager.add_event(
             f"A bed costs {BED_COST}g — you can't cover it.")
         return []
     # Lifestyle tiers (P12.6): the private room earns its price
     tier_note = ""
-    if player.gold >= PRIVATE_ROOM_COST:
+    if at_home:                              # your own bed — free (P15.7)
+        try:
+            from characters.status_effects import apply_effect
+            apply_effect(player, "well_rested", duration=240)
+        except Exception:
+            pass
+        tier_note = ("You sleep in your own bed — Well Rested, "
+                     "and it costs you nothing.")
+    elif player.gold >= PRIVATE_ROOM_COST:
         player.gold -= PRIVATE_ROOM_COST
         try:
             from characters.status_effects import apply_effect

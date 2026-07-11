@@ -60,6 +60,14 @@ def context_hints(engine) -> List[str]:
     if getattr(engine, "current_interior", None):
         hints.append("[TAB] leave the building")
         try:
+            from engine.homestead import claimable_here, repairable_here
+            if claimable_here(engine) is not None:
+                hints.append("[E] buy this derelict home")
+            elif repairable_here(engine) is not None:
+                hints.append("[E] repair your home (timber + stone)")
+        except Exception:
+            pass
+        try:
             from engine.furniture import piece_near
             piece = piece_near(engine.current_interior,
                                *engine.player.position)
