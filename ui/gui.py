@@ -19,6 +19,35 @@ from ui.input_handler import InputHandler
 
 logger = logging.getLogger("llm_rpg.gui")
 
+# below this the side/bottom panels stop leaving a usable map
+MIN_W, MIN_H = 900, 640
+
+
+def compute_layout(width: int, height: int) -> dict:
+    """The screen regions for a given window size (PUX.4c) — RESPONSIVE:
+    the side/bottom panels scale within sane clamps and the map fills
+    whatever is left, so the layout works at any window size, not just
+    the old hard-pinned 1280×800. Pure (no display) so it's unit-tested.
+    """
+    width = max(MIN_W, width)
+    height = max(MIN_H, height)
+    side = max(260, min(420, int(width * 0.26)))
+    bottom = max(150, min(240, int(height * 0.24)))
+    bottom = min(bottom, height // 2 - 60)     # keep the Quests panel room
+    map_w = width - side
+    ev_w = max(160, min(map_w - 140, map_w // 2 + 80))
+    return {
+        "map": pygame.Rect(0, 0, map_w, height - bottom),
+        "status": pygame.Rect(width - side, 0, side, height // 2),
+        "quests": pygame.Rect(width - side, height // 2,
+                              side, height // 2 - bottom),
+        "events": pygame.Rect(0, height - bottom, ev_w, bottom),
+        "minimap": pygame.Rect(ev_w, height - bottom,
+                               map_w - ev_w, bottom),
+        # the party panel fills the bottom-right (PUX.4b)
+        "party": pygame.Rect(width - side, height - bottom, side, bottom),
+    }
+
 
 class GameGUI:
     """Pygame GUI — wraps engine state in a windowed application."""
@@ -52,7 +81,10 @@ class GameGUI:
         # Init pygame
         pygame.init()
         pygame.display.set_caption(title)
-        self.screen = pygame.display.set_mode((width, height))
+        self.fullscreen = False
+        self._windowed_size = (width, height)
+        self.screen = pygame.display.set_mode((width, height),
+                                              pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
 
         # Subsystems
@@ -75,26 +107,29 @@ class GameGUI:
     # ---- layout ------------------------------------------------------
 
     def _compute_layout(self) -> None:
-        side = 320
-        bottom = 200
-        self.layout = {
-            "map": pygame.Rect(0, 0, self.width - side, self.height - bottom),
-            "status": pygame.Rect(self.width - side, 0,
-                                  side, self.height // 2),
-            "quests": pygame.Rect(self.width - side, self.height // 2,
-                                  side, self.height // 2 - bottom),
-            "events": pygame.Rect(0, self.height - bottom,
-                                  (self.width - side) // 2 + 100, bottom),
-            "minimap": pygame.Rect((self.width - side) // 2 + 100,
-                                   self.height - bottom,
-                                   self.width - side -
-                                   ((self.width - side) // 2 + 100),
-                                   bottom),
-            # PUX.4b: the party panel reclaims the old bottom-right dead
-            # zone (below Quests, right of the mini-map).
-            "party": pygame.Rect(self.width - side, self.height - bottom,
-                                 side, bottom),
-        }
+        self.layout = compute_layout(self.width, self.height)
+
+    def resize(self, w: int, h: int) -> None:
+        """Re-lay the screen for a new window size (PUX.4c)."""
+        self.width = max(MIN_W, w)
+        self.height = max(MIN_H, h)
+        self.screen = pygame.display.set_mode((self.width, self.height),
+                                              pygame.RESIZABLE)
+        self._compute_layout()
+
+    def toggle_fullscreen(self) -> None:
+        self.fullscreen = not self.fullscreen
+        if self.fullscreen:
+            info = pygame.display.Info()
+            self.width = max(MIN_W, info.current_w)
+            self.height = max(MIN_H, info.current_h)
+            self.screen = pygame.display.set_mode(
+                (self.width, self.height), pygame.FULLSCREEN)
+        else:
+            self.width, self.height = self._windowed_size
+            self.screen = pygame.display.set_mode(
+                (self.width, self.height), pygame.RESIZABLE)
+        self._compute_layout()
 
     # ---- main loop ---------------------------------------------------
 
@@ -112,6 +147,13 @@ class GameGUI:
             if getattr(self.engine, "player_dead", False) and self.mode != "death":
                 self.mode = "death"
             for event in pygame.event.get():
+                if event.type == pygame.VIDEORESIZE:
+                    self.resize(event.w, event.h)
+                    continue
+                if event.type == pygame.KEYDOWN and \
+                        event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
+                    continue
                 self.input_handler.handle_event(event)
             # Drive NPC processes only while alive
             if self.mode != "death":

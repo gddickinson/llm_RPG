@@ -33,11 +33,12 @@ class TestPartyLayout(unittest.TestCase):
         lay = self.gui.layout
         self.assertIn("party", lay)
         party = lay["party"]
-        # bottom-right: right of the map column, below the Quests panel
-        self.assertEqual(party.x, self.gui.width - 320)
-        self.assertEqual(party.y, self.gui.height - 200)
-        self.assertEqual((party.width, party.height), (320, 200))
-        # it does not overlap the event log or the mini-map
+        # bottom-right corner, in the right-hand panel column
+        self.assertEqual(party.right, self.gui.width)
+        self.assertEqual(party.bottom, self.gui.height)
+        self.assertEqual(party.x, lay["status"].x)   # same column
+        self.assertEqual(party.top, lay["events"].top)
+        # it does not overlap the event log, mini-map, or map
         for other in ("events", "minimap", "map"):
             self.assertFalse(party.colliderect(lay[other]),
                              f"party overlaps {other}")

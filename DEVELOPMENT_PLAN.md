@@ -2603,11 +2603,20 @@ these next, ahead of more Phase-17 depth.
   party is empty it says how to recruit ([P]). 3 tests: the region
   fills the dead zone and overlaps no other panel, the panel draws
   empty, and it draws a recruited companion. Suite 1369, green.)*
-- [ ] **PUX.4c Responsive layout & panel polish.** Make
-  `gui._compute_layout` RESPONSIVE to the real window size (it's
-  hard-pinned to 1280×800) and support fullscreen/resize. Plus the
-  remaining polish: consistency/readability across the I/B/K/X/J/O
-  panels and event-log clarity.
+- [x] **PUX.4c Responsive layout + resize/fullscreen.** The layout was
+  hard-pinned to 1280×800; now it flexes with the window.
+  *(Round 144: `_compute_layout` became a pure module function
+  `compute_layout(width, height)` — the side/bottom panels scale
+  within sane clamps (`MIN_W/MIN_H` floor) and the map fills whatever
+  is left, so every region stays valid and disjoint at any size. The
+  window is now `RESIZABLE`; the event loop catches `VIDEORESIZE` →
+  `gui.resize` (re-lays and never shrinks below the usable minimum),
+  and **F11** toggles fullscreen (`toggle_fullscreen`, remembering the
+  windowed size) — both documented in the F1/? overlay. 5 tests: valid
+  disjoint regions across seven sizes incl. below-min, the map flexes
+  with the window, the party stays bottom-right, and a live GUI resize
+  re-lays + floors at the minimum. Suite 1374, green. The remaining
+  panel-consistency polish (I/B/K/X/J/O) folds into PUX.5's review.)*
 - [ ] **PUX.5 Playability review.** Run the DEVELOPMENT_PLAN Playtest
   Matrix (12 dimensions) as scripted-and-judged sessions; turn friction
   findings into fixes or plan items.

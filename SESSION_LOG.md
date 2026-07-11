@@ -3154,3 +3154,25 @@ event log, mini-map or map; the panel draws with no companions; and it
 draws a recruited one. Suite 1369, green. The other half of the old
 PUX.4b — making the whole layout responsive to the real window size
 instead of hard-pinned to 1280×800 — is split out as PUX.4c.
+
+**Round 144 — PUX.4c Responsive layout + resize/fullscreen.**
+The window layout had been hard-pinned to 1280×800: `_compute_layout`
+read fixed `side=320`/`bottom=200`, so on any other size it either
+wasted space or clipped. It now flexes. The region maths moved into a
+pure module function, `compute_layout(width, height)`, where the side
+and bottom panels scale with the window inside sensible clamps (a
+`MIN_W/MIN_H` floor keeps them usable) and the map viewport simply
+fills whatever is left — so every panel stays valid and disjoint from
+900×640 up to 1920×1080 and beyond. The window is created `RESIZABLE`,
+the event loop catches `VIDEORESIZE` and calls `gui.resize` (which
+re-lays and never shrinks below the minimum), and F11 toggles
+fullscreen through `toggle_fullscreen`, remembering the windowed size
+to restore. Both keys are in the F1/? reference now. Because the map
+renders straight into `layout["map"]`, a larger window shows more of
+the world for free. Five tests: the regions are valid and non-
+overlapping across seven sizes including an absurdly small one, the
+map grows with the window, the party panel stays welded to the
+bottom-right, and a live GUI resize re-lays the screen and floors at
+the usable minimum. Suite 1374, green. (One combat-RNG flake in
+test_tactics surfaced during the full run and passed 3/3 on rerun —
+unrelated to the UI change.)

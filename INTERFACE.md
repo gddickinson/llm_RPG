@@ -199,7 +199,7 @@ llm_RPG/
 
 ### ui/ — User interfaces
 
-- **`gui.py`** — `GameGUI`; pygame main window + death popup mode.
+- **`gui.py`** — `GameGUI`; pygame main window + death popup mode; PUX.4c responsive `compute_layout(width,height)` (resizable window, `VIDEORESIZE`→`resize`, F11 `toggle_fullscreen`).
 - **`start_menu.py`** — Title screen with New Game / Load / Quit; routes into the character creator.
 - **`character_creator.py`** — Multi-step character creation flow + `CharacterSpec`, race/class data.
 - **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting; `_render_zone()` draws dungeons/interiors.
