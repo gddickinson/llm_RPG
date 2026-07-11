@@ -70,6 +70,7 @@ class GameGUI:
         self.dialog_history: list = []   # list of strings (NPC last reply)
         self.dialog_input: str = ""
         self.dialog_pending_reply: Optional[str] = None
+        self.dialog_menu: list = []      # PUX.6 quick-pick options
 
         # Inventory + shop + crafting + spell panels (lazy)
         self.inventory_panel = None
@@ -207,6 +208,7 @@ class GameGUI:
                 self.dialog_pending_reply or "",
                 prompt=(f"> {self.dialog_input}_   (Enter send, Esc leave, "
                         f"/persuade /intimidate /deceive <argument>)"),
+                menu=self.dialog_menu,
             )
 
         if self.mode in ("menu", "travel") and self.overlay:
@@ -437,15 +439,21 @@ class GameGUI:
 
     # ---- dialog -----------------------------------------------------
 
+    def _refresh_dialog_menu(self) -> None:
+        from engine import conversation
+        npc = self.engine.npc_manager.get_npc(self.dialog_npc_id)
+        self.dialog_menu = conversation.menu(self.engine, npc) \
+            if npc is not None else []
+
     def start_dialog(self, npc_id: str) -> None:
         self.dialog_npc_id = npc_id
         self.dialog_input = ""
-        # Initial greeting
         try:
             self.dialog_pending_reply = self.engine.interact_with_npc(npc_id)
         except Exception as e:
             logger.warning(f"Dialog start error: {e}")
             self.dialog_pending_reply = "..."
+        self._refresh_dialog_menu()
         self.mode = "dialog"
 
     def submit_dialog(self) -> None:
@@ -462,31 +470,16 @@ class GameGUI:
         except Exception as e:
             logger.warning(f"Dialog submit error: {e}")
             self.dialog_pending_reply = "..."
+        self._refresh_dialog_menu()
 
     def end_dialog(self) -> None:
         self.dialog_npc_id = None
         self.dialog_pending_reply = None
         self.dialog_input = ""
+        self.dialog_menu = []
         self.mode = "play"
 
     def dialog_quest_action(self, idx: int) -> None:
-        """Handle 1-9 hotkeys in dialog mode for accepting/turning in quests."""
-        if not self.dialog_npc_id:
-            return
-        offered = self.engine.quests_offered_by(self.dialog_npc_id)
-        ready = self.engine.quests_to_turn_in_with(self.dialog_npc_id)
-        combined = list(offered) + list(ready)
-        if idx >= len(combined):
-            return
-        quest = combined[idx]
-        if quest in offered:
-            self.engine.accept_quest(quest.id)
-            self.dialog_pending_reply = (
-                f"(Quest accepted: {quest.title})"
-            )
-        else:
-            self.engine.turn_in_quest(quest.id)
-            self.dialog_pending_reply = (
-                f"(Quest turned in: {quest.title}. "
-                f"Reward: {quest.reward_gold}g, {quest.reward_xp}xp)"
-            )
+        """A numbered quick-pick from the conversation menu (PUX.6)."""
+        from ui.dialog_menu import apply
+        apply(self, idx)

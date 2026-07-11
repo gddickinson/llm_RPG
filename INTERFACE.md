@@ -51,6 +51,7 @@ llm_RPG/
 - **`combat_system.py`** — Player vs NPC vs NPC combat, damage, defeat, loot, faction rep on kill.
 - **`economy_system.py`** — Buy/sell/trade/give between characters.
 - **`dialog_system.py`** — Player↔NPC dialog flow (routes through dialog_protocol for LLM providers).
+- **`conversation.py`** — PUX.6 the conversation quick-pick menu: `menu(engine, npc)` lists an NPC's quests (accept/turn-in), Trade (`is_merchant`), askable topics, and unlockable secrets as numbered options the dialog screen dispatches.
 - **`dialog_protocol.py`** — Structured JSON dialog contract: whitelisted actions, engine-validated execution.
 - **`npc_memory.py`** — Per-NPC memory: recency×importance×relevance retrieval, verbatim dialog log, nightly reflection → opinions.
 - **`secrets.py`** — Gated NPC secrets from `data/secrets.json`; locked secrets never reach the prompt (injection-proof).
@@ -211,6 +212,7 @@ llm_RPG/
 - **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker; `draw_help_overlay` (two-column controls, PUX.3); hint bar + mini-map gated on settings (PUX.4a); PUX.4b `draw_party_panel` (companions — order + HP — in the reclaimed bottom-right).
 - **`settings_panel.py`** — PUX.4a the `,`-key settings overlay (cycle Event log / Hint bar / Mini-map / Sound / Map zoom; applies zoom + mute live).
 - **`dialog_input.py`** — dialog-typing key handler (split from input_handler to hold the line).
+- **`dialog_menu.py`** — PUX.6 conversation-menu dispatch (a numbered pick accepts/turns-in a quest, opens the shop, speaks a topic, or reveals a secret).
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
 - **`terminal_ui.py`** — Text-based UI.
 - **`inventory_panel.py`** — I-key equipment + bag overlay (equip/use/drop).

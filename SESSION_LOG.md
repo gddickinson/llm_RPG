@@ -3199,3 +3199,25 @@ categorised correctly and the filter is sound. Suite 1379, green.
 The next, richer UX beat — the user's ask for a menu-driven
 conversation screen (Quests / Trade / Rumours / Plot tabs one keypress
 away) — is written up as PUX.6.
+
+**Round 146 — PUX.6 Conversation menu system.**
+Talking to an NPC used to be a blank text box with hidden 1-9 quest
+hotkeys you had to guess at — the exact friction the user flagged.
+Now the conversation shows what it can give you. `engine/conversation.py`
+builds the menu as data: turn-ins first (you came to hand something
+in), then quests to accept, then Trade if they keep a shop, then "Ask
+about …" for each topic you've heard that this NPC can actually speak
+to, and a press-for-a-secret line when one has come unlocked. The
+merchant test is class-based (merchant/cleric/wizard/ranger) rather
+than "has a catalog", because the shop system auto-stocks a catalog
+for nearly everyone — so a guard or a brigand no longer looks like a
+shopkeeper. The dialog box lists the options numbered and grows to fit
+them, and the empty-field 1-9 keys that were always there but invisible
+now drive the whole menu through `ui/dialog_menu.py`: accept or turn in
+a quest, open the barter screen, get the NPC's answer on a topic, or
+draw out a secret — with free-text talk (and /persuade etc.) still
+working alongside. Splitting the dispatch into its own module kept
+gui.py under the line. Six tests: a merchant offers Trade and a guard
+doesn't, a quest-giver offers Accept, every menu item is well-formed,
+picking Accept lands the quest in the active log, picking Trade opens
+the shop, and the box draws with a menu. Suite 1385, green.

@@ -2635,17 +2635,23 @@ these next, ahead of more Phase-17 depth.
   now a repeatable regression net over the matrix. Suite 1379, green.
   Remaining panel-consistency polish is minor cosmetics; the richer
   next UX beat is the conversation menu (PUX.6).)*
-- [ ] **PUX.6 Conversation menu system (user-directed).** NPC dialog
-  should surface the KEY things a talk reveals through quick, always-
-  accessible menus that bypass free-text typing: a **Quests** tab
-  (offered / turn-in / progress — via `quests_offered_by`,
-  `quests_to_turn_in_with`), a **Trade** entry (open the shop panel if
-  the NPC is a merchant), **Rumours/Topics** (the topic journal
-  answers this NPC knows), and **Plot/Secrets** (gated reveals this NPC
-  holds). Structure the dialog screen as verbs/tabs the player clicks
-  or number-keys, with free text still available — so the useful
-  conversational payload is one keypress away, not buried in guessing
-  what to type.
+- [x] **PUX.6 Conversation menu system (user-directed).** NPC dialog
+  now shows the key things a talk reveals as numbered quick-picks.
+  *(Round 146: `engine/conversation.py` — `menu(engine, npc)` builds
+  the visible options as data: **Turn in / Accept** every quest this
+  NPC gives or takes (`quests_to_turn_in_with` / `quests_offered_by`,
+  turn-ins first), **Trade** if they keep a shop (`is_merchant` —
+  merchant/cleric/wizard/ranger, correctly NOT guards or brigands that
+  merely have an auto-stocked catalog), **Ask about …** each topic the
+  player has heard that this NPC can answer (capped), and **press for
+  a secret** when one is unlocked. The dialog box lists them numbered
+  and grows to fit; the existing empty-field 1-9 hotkeys (which were
+  invisible before) now dispatch the menu via `ui/dialog_menu.py`
+  (accept/turn-in a quest, open the shop, speak a topic answer, reveal
+  a secret) with free text still available. 6 tests (merchant offers
+  trade / guard doesn't, a giver offers Accept, items well-formed,
+  picking accepts a quest, picking Trade opens the shop, the box draws
+  with a menu). Suite 1385, green.)*
 
 ## What NOT to build (explicitly deferred)
 

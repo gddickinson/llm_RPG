@@ -251,8 +251,9 @@ class HUD:
     # ---- modal overlays ----------------------------------------------
 
     def draw_dialog_box(self, target, screen_rect, npc_name: str,
-                        text: str, prompt: str = "") -> None:
-        h = 160
+                        text: str, prompt: str = "", menu=None) -> None:
+        menu = menu or []
+        h = 168 + (len(menu) * 18 if menu else 0)
         box = pygame.Rect(20, screen_rect.height - h - 20,
                           screen_rect.width - 40, h)
         s = pygame.Surface(box.size, pygame.SRCALPHA)
@@ -261,20 +262,29 @@ class HUD:
         pygame.draw.rect(target, (200, 180, 100), box, 2)
         self._text(target, npc_name, (box.x + 12, box.y + 8),
                    big=True, color=(255, 220, 120))
-        # Wrap text
+        # Wrap the reply (cap the height it takes)
         words = (text or "").split()
         line = ""
         y = box.y + 36
         max_chars = box.width // 9
+        reply_bottom = box.y + 36 + 3 * 18
         for w in words:
             if len(line) + len(w) + 1 > max_chars:
                 self._text(target, line, (box.x + 12, y))
                 y += 18
                 line = w
+                if y > reply_bottom:
+                    break
             else:
                 line = (line + " " + w).strip()
-        if line:
+        if line and y <= reply_bottom:
             self._text(target, line, (box.x + 12, y))
+        # The quick-pick menu (PUX.6) — numbered so it's one keypress away
+        my = reply_bottom + 8
+        for i, item in enumerate(menu):
+            self._text(target, f"[{i + 1}] {item['label']}",
+                       (box.x + 12, my), color=(160, 230, 160))
+            my += 18
         if prompt:
             self._text(target, prompt, (box.x + 12, box.bottom - 22),
                        color=(180, 220, 255))
