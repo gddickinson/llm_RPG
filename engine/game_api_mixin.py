@@ -184,118 +184,12 @@ class GameAPIMixin:
 
     def shoot_ranged(self, target_name: str = None,
                      aimed: bool = False) -> str:
-        """Fire a ranged attack at the named target (or nearest enemy).
-
-        Requires an equipped ranged weapon. Consumes ammo of the matching
-        ammo_type. Thrown weapons fire without ammo. `aimed` (SHIFT+R):
-        +2 damage for an extra minute spent lining up the shot.
-        """
-        from items.item import Item
-
-        try:   # the chew delay costs tempo (P12.5)
-            from engine.food import attack_gate
-            gate = attack_gate(self)
-            if gate:
-                return gate
-        except Exception:
-            pass
-        try:
-            from characters.equipment import equipped_weapon
-            weapon = equipped_weapon(self.player)
-        except Exception:
-            weapon = None
-        if weapon is None or not weapon.is_ranged_weapon():
-            msg = "You have no ranged weapon equipped."
-            self.memory_manager.add_event(msg)
-            return msg
-
-        weapon_type = self._weapon_type_str(weapon)
-
-        # Ammo check (thrown weapons skip)
-        ammo_item = None
-        if weapon.weapon_kind == "ranged" and weapon.ammo_type:
-            ammo_item = self._find_ammo(weapon.ammo_type)
-            if ammo_item is None:
-                msg = f"You're out of {weapon.ammo_type}s!"
-                self.memory_manager.add_event(msg)
-                return msg
-
-        # Resolve target
-        target = None
-        if target_name:
-            target = self.find_character(target_name)
-        if target is None:
-            target = self.targeting.current()   # the lock (P8.7)
-        if target is None:
-            target = self._nearest_hostile()
-        if target is None:
-            return "No target in sight."
-
-        # Range + true line of sight (P8.6/P8.7)
-        ok, why = self.targeting.can_hit(target)
-        if not ok:
-            self.memory_manager.add_event(why)
-            return why
-
-        from engine.effects import effective_weapon_damage_bonus
-        dex_bonus = max(0, (self.player.dexterity - 10) // 2)
-        damage = max(1, int(weapon.damage) + dex_bonus
-                     + effective_weapon_damage_bonus(self.player))
-        if aimed:
-            damage += 2
-            self.world.advance_time(1)
-            self.memory_manager.add_event("You take careful aim...")
-
-        if ammo_item is not None:
-            self._consume_one_ammo(ammo_item)
-
-        proj = self.projectile_manager.spawn(
-            self.player, target, damage, weapon_type=weapon_type)
-        ammo_label = f" ({weapon.ammo_type} -1)" if ammo_item is not None else ""
-        msg = f"You loose a {proj.weapon_type} at {target.name}{ammo_label}."
-        self.memory_manager.add_event(msg)
-        self.advance_turn()
-        return msg
-
-    def _weapon_type_str(self, weapon) -> str:
-        name = (weapon.name or "").lower()
-        for key in ("longbow", "crossbow", "thrown knife", "javelin",
-                    "sling", "bow"):
-            if key in name or key.replace(" ", "_") in (weapon.id or ""):
-                return key.replace(" ", "_")
-        return "bow"
-
-    def _find_ammo(self, ammo_type: str):
-        from items.item import Item
-        for it in self.player.inventory:
-            if isinstance(it, Item) and it.is_ammo() and \
-                    it.ammo_type == ammo_type and it.quantity > 0:
-                return it
-        return None
-
-    def _consume_one_ammo(self, ammo_item) -> None:
-        ammo_item.quantity -= 1
-        if ammo_item.quantity <= 0:
-            try:
-                self.player.inventory.remove(ammo_item)
-            except ValueError:
-                pass
+        from engine.ranged import shoot_ranged
+        return shoot_ranged(self, target_name, aimed)
 
     def _nearest_hostile(self):
-        px, py = self.player.position
-        best = None
-        best_d = 999
-        for npc in self.npc_manager.npcs.values():
-            if not npc.is_active():
-                continue
-            klass = getattr(npc.character_class, "value", "")
-            if klass not in ("brigand", "troll", "monster"):
-                continue
-            d = ((npc.position[0] - px) ** 2 +
-                 (npc.position[1] - py) ** 2) ** 0.5
-            if d < best_d:
-                best_d, best = d, npc
-        return best
+        from engine.ranged import _nearest_hostile
+        return _nearest_hostile(self)
 
     # ---- spell visual effects (used by spell system + UI) ------------
 

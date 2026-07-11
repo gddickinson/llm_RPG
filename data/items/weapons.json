@@ -7,7 +7,10 @@
     "description": "A short, sharp blade.",
     "damage": 3,
     "weapon_kind": "melee",
-    "damage_kind": "pierce"
+    "damage_kind": "pierce",
+    "use_effect": {
+      "weapon_action": "lacerate"
+    }
   },
   "sword": {
     "id": "sword",
@@ -16,7 +19,10 @@
     "value": 30,
     "description": "A reliable steel sword.",
     "damage": 6,
-    "weapon_kind": "melee"
+    "weapon_kind": "melee",
+    "use_effect": {
+      "weapon_action": "pommel_strike"
+    }
   },
   "longsword": {
     "id": "longsword",
@@ -26,7 +32,10 @@
     "description": "A well-balanced longsword.",
     "rarity": "uncommon",
     "damage": 8,
-    "weapon_kind": "melee"
+    "weapon_kind": "melee",
+    "use_effect": {
+      "weapon_action": "cleave"
+    }
   },
   "battleaxe": {
     "id": "battleaxe",
@@ -37,7 +46,10 @@
     "rarity": "uncommon",
     "damage": 9,
     "weapon_kind": "melee",
-    "two_handed": true
+    "two_handed": true,
+    "use_effect": {
+      "weapon_action": "cleave"
+    }
   },
   "crude_axe": {
     "id": "crude_axe",
@@ -57,7 +69,10 @@
     "damage": 10,
     "weapon_kind": "melee",
     "damage_kind": "bludgeon",
-    "two_handed": true
+    "two_handed": true,
+    "use_effect": {
+      "weapon_action": "topple"
+    }
   },
   "staff": {
     "id": "staff",

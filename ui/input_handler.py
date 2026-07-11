@@ -169,10 +169,14 @@ class InputHandler:
             self.gui.show_spellbook()
             return True
 
-        # Quick heal (V)
+        # V: quick heal; SHIFT+V: the weapon action (P12.7)
         if k == pygame.K_v:
             try:
-                self.engine.cast_spell("heal", "me")
+                if shift:
+                    from engine.combat_depth import weapon_action
+                    weapon_action(self.engine)
+                else:
+                    self.engine.cast_spell("heal", "me")
             except Exception:
                 pass
             return True
@@ -251,24 +255,13 @@ class InputHandler:
                 pass
             return True
 
-        # Collection log (O)
-        if k == pygame.K_o:
-            self.gui.show_collection_log()
-            return True
-
-        # Achievement diaries (J)
-        if k == pygame.K_j:
-            self.gui.show_diaries()
-            return True
-
-        # Travel menu (U)
-        if k == pygame.K_u:
-            self.gui.show_travel()
-            return True
-
-        # Topic journal (Y)
-        if k == pygame.K_y:
-            self.gui.show_topics()
+        # One-key overlays: collection/diaries/travel/topics
+        overlays = {pygame.K_o: self.gui.show_collection_log,
+                    pygame.K_j: self.gui.show_diaries,
+                    pygame.K_u: self.gui.show_travel,
+                    pygame.K_y: self.gui.show_topics}
+        if k in overlays:
+            overlays[k]()
             return True
 
         # Talk to adjacent NPC

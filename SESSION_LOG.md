@@ -2044,3 +2044,32 @@ director's freshest rumor, or an authored stock dream), and
 queue a scene that plays at the next sleep and clears. Three rest
 tests re-pinned (wilds-Enter now camps; 50g buys the room). Camp
 hint appears at fatigue 60+. 8 tests. Suite: 1046, green x3.
+
+**Round 105 — P12.7 Combat depth (done).**
+Three systems in `engine/combat_depth.py`. CONCENTRATION (5e):
+spells carry `concentration: true` as data — bless, haste, hex,
+entangle, frost_armor — and one sustained spell is the limit:
+casting a second drops the first, its status ending wherever it
+sat (haste on yourself, hex on the enemy). Damage forces the
+keep-it check, d20 + CON modifier vs max(10, damage), wired right
+after take_damage in combat _resolve — fail and "the pain scatters
+your focus." COVER: forest and rubble strictly between shooter and
+target (Bresenham walk) soak ranged shots — one covering tile is
+half cover (-10% hit chance), two is three-quarters (-25%) —
+computed when the projectile is loosed and carried on it, so the
+player's arrows and NPC archers obey the same rule, and the log
+telegraphs "has cover" as you fire. WEAPON ACTIONS (BG3): each
+weapon type carries one special move as pure data
+(use_effect.weapon_action): CLEAVE on the axes carries half damage
+into a second adjacent enemy, TOPPLE on the warhammer knocks prone
+(P12.2's condition doing new work), POMMEL STRIKE on the sword
+stuns, LACERATE on the dagger opens a bleed. SHIFT+V spends it,
+once per rest, any real night restores it, and the hint bar
+advertises the unspent move whenever you stand beside an enemy.
+(The spec's flanking→off-guard swap was already delivered in
+P12.2.) Two lessons paid for: game_api_mixin and input_handler had
+crept over 500 — shoot_ranged moved to engine/ranged.py and the
+one-key overlays folded into a dispatch table; and a silent
+str.replace no-op left the concentration hook unwired until the
+test caught it — hooks get anchored Edits, not blind replaces,
+from here on. 10 tests. Suite: 1056, green x3.

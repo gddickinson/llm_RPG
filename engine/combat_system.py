@@ -162,6 +162,11 @@ class CombatSystem:
         damage = self._apply_damage_type_modifier(attacker, defender, damage)
 
         defender.take_damage(damage)
+        try:   # damage forces the keep-it check (P12.7)
+            from engine.combat_depth import concentration_check
+            concentration_check(self.engine, defender, damage)
+        except Exception:
+            pass
         self._wear_gear(attacker, defender)
 
         # Visual effects (damage popup + hit flash + death FX)

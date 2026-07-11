@@ -64,7 +64,8 @@
     "classes": [
       "cleric",
       "paladin"
-    ]
+    ],
+    "concentration": true
   },
   "shock": {
     "id": "shock",
@@ -127,7 +128,8 @@
     "description": "Roots burst from the earth and bind the target.",
     "classes": [
       "druid"
-    ]
+    ],
+    "concentration": true
   },
   "drain": {
     "id": "drain",
@@ -176,7 +178,8 @@
     "classes": [
       "warlock",
       "sorcerer"
-    ]
+    ],
+    "concentration": true
   },
   "frost_armor": {
     "id": "frost_armor",
@@ -188,7 +191,8 @@
     "description": "A rime of protective ice over your skin.",
     "classes": [
       "wizard"
-    ]
+    ],
+    "concentration": true
   },
   "water_walk": {
     "id": "water_walk",
@@ -242,7 +246,8 @@
     "classes": [
       "wizard",
       "sorcerer"
-    ]
+    ],
+    "concentration": true
   },
   "slow": {
     "id": "slow",

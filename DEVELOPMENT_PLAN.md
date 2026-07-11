@@ -1575,12 +1575,30 @@ traditions lead.
   dm_autonomous.night_scene lets the LLM DM queue an authored scene
   that plays once. Camp hint at fatigue 60+. 3 rest tests re-pinned
   to tiers/camp routing. 8 tests. Suite 1046, green x3.)*
-- [ ] **P12.7 Combat depth.** Concentration: one sustained spell
+- [x] **P12.7 Combat depth.** Concentration: one sustained spell
   max, damage forces the keep-it check (or PF2e sustain-as-action);
   cover from FOV terrain (+2 half / +5 three-quarters vs ranged);
   swap flanking advantage→flat −2 AC off-guard; BG3 weapon actions —
   one special move per weapon type, once per rest (cleave, topple,
   pommel-stun, bleed) as data on weapons.json.
+  *(Round 105: `engine/combat_depth.py`. CONCENTRATION: spells flag
+  `concentration: true` in data (bless/haste/hex/entangle/
+  frost_armor); casting a second drops the first (its status ends
+  wherever it sat); damage in _resolve forces d20+CON vs
+  max(10, damage) or the spell unravels. COVER: forest/rubble on
+  the Bresenham line = -10% hit (half) / -25% (three-quarters),
+  computed at loose-time and carried on the projectile (both the
+  player's and NPCs' shots). WEAPON ACTIONS as weapon data
+  (use_effect.weapon_action): Cleave (axe/longsword — carries into
+  a second adjacent enemy), Topple (warhammer — prone), Pommel
+  Strike (sword — stunned), Lacerate (dagger — bleed); SHIFT+V,
+  once per rest, restored by any real night; hint-bar advertises
+  the unspent move beside an enemy. Flanking→off_guard was already
+  done in P12.2. Housekeeping: shoot_ranged extracted to
+  engine/ranged.py (mixin 402); input_handler overlay keys folded
+  to a dispatch (499). A silent str.replace no-op in the combat
+  hook was caught by the tests — anchored Edits only for hooks.
+  10 tests. Suite 1056, green x3.)*
 - [ ] **P12.8 Skill actions.** PF2e's codified combat verbs from
   skills we already train: Trip/Shove-plus (Athletics), Demoralize
   (Intimidation, per-target 10-min immunity — THE anti-spam

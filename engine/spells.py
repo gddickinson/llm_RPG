@@ -28,6 +28,7 @@ class Spell:
     status_effect: str = ""    # name of status to apply on hit
     duration: int = 0          # turns the status persists
     area: float = 0.0          # blast radius in tiles (P10.1)
+    concentration: bool = False    # one sustained spell max (P12.7)
     classes: Tuple[str, ...] = ()   # who can learn it
 
 
@@ -48,6 +49,7 @@ def _build_spells() -> Dict[str, Spell]:
             status_effect=entry.get("status_effect", ""),
             duration=entry.get("duration", 0),
             area=entry.get("area", 0.0),
+            concentration=entry.get("concentration", False),
             classes=tuple(entry.get("classes", ())),
         )
     return out
@@ -204,6 +206,12 @@ class SpellSystem:
                 results.append(
                     f"{target.name} is {spell.status_effect} "
                     f"({spell.duration} turns).")
+                if spell.concentration:   # one sustained max (P12.7)
+                    from engine.combat_depth import begin_concentration
+                    dropped = begin_concentration(
+                        self.engine, caster, spell, target)
+                    if dropped:
+                        results.append(dropped)
             except Exception as e:
                 logger.warning(f"Status apply failed: {e}")
 

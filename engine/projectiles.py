@@ -63,6 +63,7 @@ class CombatProjectile:
     target_id: str
     weapon_type: str
     kind: str
+    cover: float = 0.0          # soft-cover hit penalty (P12.7)
     elapsed: float = 0.0
     flight_time: float = 1.0    # turns until arrival
     arrived: bool = False
@@ -114,6 +115,16 @@ class ProjectileManager:
         dx, dy = tx - sx, ty - sy
         distance = max(0.5, math.sqrt(dx * dx + dy * dy))
         flight_time = max(0.5, distance / speed)
+        cover = 0.0
+        try:   # soft cover soaks shots (P12.7)
+            from engine.combat_depth import cover_penalty
+            cover = cover_penalty(self.engine, int(sx), int(sy),
+                                  int(tx), int(ty))
+            if cover:
+                self.engine.memory_manager.add_event(
+                    f"{target.name} has cover — a harder shot.")
+        except Exception:
+            pass
         proj = CombatProjectile(
             start_x=sx, start_y=sy,
             target_orig_x=tx, target_orig_y=ty,
@@ -121,6 +132,7 @@ class ProjectileManager:
             damage=damage,
             shooter_id=shooter.id, target_id=target.id,
             weapon_type=weapon_type, kind=kind,
+            cover=cover,
             flight_time=flight_time,
         )
         self.active.append(proj)
@@ -169,10 +181,11 @@ class ProjectileManager:
                         f"{target_name} — they sidestepped.",
             )
 
-        # Hit roll — 75% base chance, modified by shooter DEX vs target DEX
+        # Hit roll — 75% base, DEX diff, minus cover (P12.7)
         dex_diff = (getattr(shooter, "dexterity", 10) -
                     getattr(target, "dexterity", 10))
-        hit_chance = max(0.2, min(0.95, 0.75 + 0.04 * dex_diff))
+        hit_chance = max(0.2, min(0.95, 0.75 + 0.04 * dex_diff
+                                  - getattr(proj, "cover", 0.0)))
         if self.rng.random() > hit_chance:
             return HitResult(
                 hit=False, damage=0,

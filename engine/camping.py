@@ -106,6 +106,7 @@ def camp(engine) -> List[str]:
     player.metadata["fatigue"] = 0
     player.metadata["sleep_debt"] = 0
     player.metadata["wounded"] = 0
+    player.metadata["weapon_action_used"] = False   # P12.7
     player.metadata["hunger"] = min(
         player.metadata.get("hunger", 20), 30)
 

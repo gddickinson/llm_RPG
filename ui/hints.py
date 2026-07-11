@@ -79,6 +79,13 @@ def context_hints(engine) -> List[str]:
 
     if enemies:
         hints.append(f"[F] attack {enemies[0].name}")
+        try:
+            from engine.combat_depth import action_name
+            move = action_name(engine)
+            if move:
+                hints.append(f"[SHIFT+V] {move}")
+        except Exception:
+            pass
     try:
         tid = getattr(engine, "player_target_id", None)
         lock = engine.npc_manager.npcs.get(tid) if tid else None
