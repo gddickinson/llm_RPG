@@ -68,8 +68,18 @@ def equip(character, item: Item) -> str:
     character.inventory.remove(item)
     if previous is not None:
         character.inventory.append(previous)
-        return f"You equip {item.name} (replacing {previous.name})."
-    return f"You equip {item.name}."
+    haunted_note = ""
+    try:   # the gear of the dead remembers (P12.13)
+        from engine.bones import on_equip_haunted
+        haunted_note = on_equip_haunted(character, item) or ""
+        if haunted_note:
+            haunted_note = " " + haunted_note
+    except Exception:
+        pass
+    if previous is not None:
+        return (f"You equip {item.name} (replacing "
+                f"{previous.name}).{haunted_note}")
+    return f"You equip {item.name}.{haunted_note}"
 
 
 def unequip(character, slot: EquipSlot) -> str:

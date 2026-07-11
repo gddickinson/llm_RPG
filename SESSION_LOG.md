@@ -2226,3 +2226,29 @@ priests finally matter at the bedside, not just the altar. Five
 phases of systems compose in this one: dying feeds it, hazards
 feed it, crits feed it, rest tiers fight it, Battle Medicine
 treats it. 9 tests. Suite: 1109, green x3.
+
+**Round 112 — P12.13 Bones: the fallen enter the Legendarium (done).**
+NetHack's bones files, single-player. A TRUE DEATH — slain at the
+bottom of the P12.4 dying ladder — now snapshots the site into
+bones.json beside the DM's library (same LLM_RPG_DM_LIBRARY root,
+capped at ten): who fell, at what level, where, to what, and the
+gear they carried. Every NEW campaign rolls one-in-three to load a
+bones entry: a hostile GHOST of the fallen hero rises near the
+death spot — level-scaled one above the dead, and it FLIES, the
+P11.4 flag paying off a third time — guarding that hero's gear
+scattered on the ground around it. Seventy percent of the gear
+rises HAUNTED: equip a haunted piece and the P12.2 cursed status
+settles into your arms for thirty turns ("the Haunted Shortsword
+remembers its dead"). Your failures literally become the world's
+content. The round's hard bug was in the TEST HARNESS, not the
+feature: `unittest discover tests/` imports test files as
+top-level modules, so tests/__init__'s environment pinning never
+actually runs under the loop's own command — meaning death-path
+tests would have written REAL bones into data/dm_library. All
+death-capable test files now pin LLM_RPG_DM_LIBRARY to a temp dir
+at module level (setdefault, so package runs keep their pin), and
+the bones tests clean the file both before engine start (start_game
+itself rolls the dice) and after (leftover bones gave later
+modules' engines a 1-in-3 ghost — caught as a tyrant-test flake
+and root-caused rather than rerun-and-hoped). 8 tests. Suite:
+1117, green x5.

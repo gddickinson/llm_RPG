@@ -1703,11 +1703,26 @@ traditions lead.
   subtracts by degree (crit -35 / success -20 / fail -5), +10 with
   a cleric/paladin adjacent — priests matter at the bedside. Hint
   bar shows the live race. 9 tests. Suite 1109, green x3.)*
-- [ ] **P12.13 Bones: the fallen enter the Legendarium.** NetHack's
+- [x] **P12.13 Bones: the fallen enter the Legendarium.** NetHack's
   bones pattern, single-player: on death/darkest defeats, snapshot
   the site + a hostile ghost + your gear (mostly cursed) into the
   Legendarium; future campaigns load it with probability 1/3. Your
   failures literally become the world's content.
+  *(Round 112: `engine/bones.py`, persisted as bones.json in the
+  Legendarium root (LLM_RPG_DM_LIBRARY, capped 10). True death at
+  the bottom of the dying ladder snapshots who/where/what-level/
+  slain-by/gear. New campaigns roll 1/3 at start: a hostile GHOST
+  of the fallen rises near the death spot — level-scaled and
+  FLYING (P11.4 pays again) — guarding the gear scattered around
+  it, 70% risen HAUNTED: equipping haunted gear applies cursed 30
+  ("the {item} remembers its dead"). Testing found and fixed a
+  real hazard: discover imports tests as TOP-LEVEL modules, so
+  tests/__init__'s env pinning never runs there — death-path test
+  files now pin LLM_RPG_DM_LIBRARY to temp dirs at module level,
+  and bones tests clean the file before AND after (an engine
+  start rolls bones, so leftovers caused cross-module ghost
+  nondeterminism — caught as a 1-in-3 tyrant-test flake).
+  8 tests. Suite 1117, green x5.)*
 - [ ] **P12.14 Pet loyalty.** NetHack tameness 1–20 (+1 feeding,
   −1 neglect, 0 = walks away) and apport/fetch trained by treats,
   layered on pets.py followers.

@@ -134,6 +134,11 @@ def _final(engine, attacker) -> str:
         engine, attacker or player, rng=engine.combat_system.rng)
     engine.memory_manager.add_event(msg)
     if not survived:
+        try:   # the fallen enter the Legendarium (P12.13)
+            from engine.bones import record_bones
+            record_bones(engine, attacker)
+        except Exception as e:
+            logger.debug(f"bones record failed: {e}")
         player.defeat()
         engine.player_dead = True
         if not getattr(engine, "_has_gui", False):

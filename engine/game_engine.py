@@ -266,6 +266,11 @@ class GameEngine(GameAPIMixin):
         try:
             from engine.module_packs import install_packs
             install_packs(self)
+            try:   # a past failure may haunt this world (P12.13)
+                from engine.bones import maybe_load_bones
+                maybe_load_bones(self)
+            except Exception as e:
+                logger.debug(f"Bones load skipped: {e}")
         except Exception as e:
             logger.warning(f"Module packs unavailable: {e}")
 

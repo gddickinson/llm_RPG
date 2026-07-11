@@ -1,5 +1,11 @@
 """Failure-as-story defeat outcome tests (P4.7)."""
 
+import os as _os
+import tempfile as _tempfile
+_os.environ.setdefault("LLM_RPG_DM_LIBRARY",
+                       _tempfile.mkdtemp(prefix="llmrpg_lib_"))
+
+
 import unittest
 
 from engine.game_engine import GameEngine
