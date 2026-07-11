@@ -30,7 +30,9 @@ llm_RPG/
 
 ### engine/ — Core game logic
 
-- **`game_engine.py`** — `GameEngine`; orchestrates world, NPCs, player, all subsystems.
+- **`game_engine.py`** — `GameEngine`; the thin orchestrator: state, start/end, delegates (438 lines).
+- **`engine_setup.py`** — `build_subsystems(engine)`: every gameplay system constructed in dependency order (P14.1 split from __init__).
+- **`turn_pipeline.py`** — `run_turn(engine)`: the per-minute pipeline — needs, encounters, companions, conflicts, surfaces, floods, hazards, dying, law, pets — plus the nightly stack; block order is load-bearing (P14.1 split from advance_turn).
 - **`demo_setup.py`** — `initialize_demo_world()`, `create_default_player(spec)`.
 - **`action_router.py`** — Routes NPC actions to specialized handlers.
 - **`combat_system.py`** — Player vs NPC vs NPC combat, damage, defeat, loot, faction rep on kill.

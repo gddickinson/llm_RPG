@@ -2380,3 +2380,29 @@ happily shares a STOLEN bottle of wine — Goren doesn't check
 provenance, and that feels true. No Phase 14 items forced: the
 Rules of Living hold together under play; the next phase should
 come from George's own sessions. Suite: 1145, green x3.
+
+**Round 118 — Phase 14 opened; P14.1 the engine under the line
+(done).**
+With every feature phase complete, the round went after the
+oldest standing violation of a hard rule: game_engine.py had sat
+at 784 lines against the 500-line limit since the subsystem count
+exploded through Phases 7-13. Split with zero behavior change:
+`engine/engine_setup.py` takes `build_subsystems(engine)` — all
+~40 gameplay systems constructed in dependency order, moved
+verbatim out of __init__ — and `engine/turn_pipeline.py` takes
+`run_turn(engine)` — the entire per-minute pipeline (needs,
+encounters, companions, conflicts, surfaces, floods, hazards,
+dying, law, pets) plus the nightly stack, moved verbatim out of
+advance_turn with a comment that the block ORDER is load-bearing.
+game_engine.py is a 438-line orchestrator again, and for the first
+time in months NO file in the repository exceeds the rule (the
+next-largest is input_handler at 499, watched). The 1145-test
+suite caught both extraction slips within minutes — a
+module-scope import set that stayed behind in game_engine, and a
+double-indent in the generated pipeline — which is precisely what
+a big suite is for: refactoring under a net. Dead imports pruned.
+Phase 14 also lists the remaining candidates awaiting a pull
+(DOS2 blood/electrified water, ConstructionProject, windows,
+structure-shipping module packs) with no forced order — the next
+real work should come from George's own sessions. Suite: 1145,
+green x6 total through the split.

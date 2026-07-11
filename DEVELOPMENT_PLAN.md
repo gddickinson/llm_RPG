@@ -1820,6 +1820,28 @@ they are first-class items now, in dependency order.
   the next phase should come from George's own play. Suite 1145,
   green x3.)*
 
+## Phase 14 — Hygiene & horizons (opened 2026-07-11)
+
+With every feature phase complete, this phase holds engineering
+debt and the door to whatever George's next play session surfaces.
+
+- [x] **P14.1 The engine under the line.** game_engine.py had sat
+  at 784 lines against the hard 500 rule since the subsystem count
+  exploded. Split without behavior change: `engine/engine_setup.py`
+  (`build_subsystems` — construction in dependency order, moved
+  verbatim from __init__) and `engine/turn_pipeline.py` (`run_turn`
+  — the whole per-minute pipeline including the nightly stack,
+  moved verbatim from advance_turn; block order is load-bearing).
+  game_engine.py is 438 lines; NO file in the repo now exceeds
+  the rule. Suite 1145 green x3 through the split (two extraction
+  slips — module-scope imports and an indent — caught by the suite
+  within minutes).
+- [ ] **P14.2 Candidates awaiting a pull** (pick when wanted, no
+  order): DOS2 leftovers (blood pools, electrified water);
+  cooperative ConstructionProject (new buildings from materials +
+  workers); windows / magical sight through walls; module packs
+  shipping structures; George's next playtest findings.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
