@@ -1946,3 +1946,27 @@ but the player can see it, and anything else that grants off-guard
 (future feints, stealth openers) stacks into the same rule.
 Intimidate applies Frightened 2 instead of a flat flag. 10 tests.
 Suite: 1009, green x3.
+
+**Round 101 — P12.3 Needs II: thirst + the exhaustion ladder (done).**
+The player finally NEEDS to sleep and drink. THIRST runs at 4/hour
+against hunger's 3 — thirsty in ~15 waking hours, parched in ~22 —
+and being parched drains HP (floored at 1, per the maiming
+convention). Drinking is everywhere water is: E at any water's edge
+kneels and drinks (the E-fallback chain is now rubble → drink →
+dig), and ale/mead/wine gained use_effect.thirst as pure data
+alongside a new Waterskin (quenches anywhere; stocked at the
+general store and tavern). THE LADDER: exhaustion_level 0-6 stacks
+exhausted-tired (+1), starving (+1), thirsty (+1) or parched (+2),
+and sleep debt (+1 per bedless night, capped +2). The rungs bite in
+5e order: -level to EVERY d20 (wired into roll_check beside the
+P12.2 condition penalty — three systems now compose in one line),
+level 2+ makes steps cost extra minutes, 3+ is -2 to attacks, 4+
+caps HP at half max, and 6 is COLLAPSE: paralyzed for 8 turns where
+you stand, and fatigue only drops to 50 — passing out is poor rest.
+CDDA's two tracks are real: a furniture-bed NAP clears 50 fatigue
+but NEVER sleep debt; only a real night at an inn zeroes both, and
+the nightly stack accrues debt for any night without a bed
+(run_player_night). The old inline hunger block in game_engine
+collapsed into needs.player_needs_turn — the engine got smaller
+while the system got bigger. Hint bar telegraphs "parched" and
+"exhaustion N/6". 9 tests. Suite: 1019, green x4.

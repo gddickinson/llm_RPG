@@ -187,6 +187,17 @@ class PlayerActions:
             except Exception:
                 pass
 
+            if "thirst" in use_eff:            # P12.3 drinks
+                from characters.needs import drink
+                drink(player, int(use_eff["thirst"]))
+                if getattr(it, "heal_amount", 0):
+                    player.heal(it.heal_amount)
+                self._remove_one(player, it)
+                msg = f"You drink the {it_name}. Your thirst eases."
+                self.engine.memory_manager.add_event(msg)
+                self.engine.advance_turn()
+                return msg
+
             heal = getattr(it, "heal_amount", 0)
             if heal:
                 from characters.needs import get_hunger, feed

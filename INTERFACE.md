@@ -105,7 +105,7 @@ llm_RPG/
 - **`npc_presets.py`** — Preset NPCs loaded from `data/npcs/*.json`; `make_npc(id)`, `all_presets()`.
 - **`factions.py`** — `Faction` enum, reputation tracking, on-defeat hooks.
 - **`schedules.py`** — Daily routines per NPC class.
-- **`needs.py`** — Hunger and fatigue simulation.
+- **`needs.py`** — Hunger, thirst, and fatigue simulation; P12.3 exhaustion ladder: `exhaustion_level` 0–6 from tired/starving/parched/sleep-debt with rung penalties (checks → speed → attacks → HP cap → collapse), two-track sleep (naps clear fatigue, only real beds clear debt), `player_needs_turn`/`run_player_night` engine hooks, `drink()`.
 - **`status_effects.py`** — Poison / paralyzed / blessed / cursed / etc. with duration ticks; P12.2 valued conditions: Frightened N (−N to every check, decays 1/turn), persistent_damage (flat DC 15 to end), prone/blinded/off_guard with `check_penalty`/`attack_penalty`/`ac_penalty` queried by skills + combat.
 - **`equipment.py`** — Worn weapon / armor / shield / amulet / ring / boots slots.
 - **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight.

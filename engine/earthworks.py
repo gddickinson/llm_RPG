@@ -41,6 +41,23 @@ def e_fallback(engine, x: int, y: int) -> Optional[str]:
             msg = td.clear_rubble(x + dx, y + dy)
             if msg:
                 return msg
+    # thirsty and beside water? drink (P12.3)
+    try:
+        from characters.needs import drink, get_thirst
+        if get_thirst(engine.player) >= 20:
+            wmap = engine.world.map
+            for dx, dy in NEIGHBORS:
+                nx, ny = x + dx, y + dy
+                if (0 <= nx < wmap.width and 0 <= ny < wmap.height
+                        and wmap.terrain[ny][nx] ==
+                        TerrainType.WATER):
+                    drink(engine.player)
+                    msg = ("You kneel at the water's edge and "
+                           "drink deep.")
+                    engine.memory_manager.add_event(msg)
+                    return msg
+    except Exception:
+        pass
     if has_pickaxe(engine.player):
         return _dig(engine, x, y)
     return None

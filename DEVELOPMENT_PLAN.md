@@ -1498,13 +1498,27 @@ traditions lead.
   Off-guard (-2 AC, 1 turn) is now what flanking DOES — the old
   attacker +2 became a visible condition on the defender.
   Intimidate applies Frightened 2. 10 tests. Suite 1009, green x3.)*
-- [ ] **P12.3 Needs II: thirst + the exhaustion ladder.** Add thirst
+- [x] **P12.3 Needs II: thirst + the exhaustion ladder.** Add thirst
   (faster clock than hunger: days not weeks); wire hunger/thirst/
   sleep-debt into a 6-level cumulative exhaustion ladder (5e) with
   felt penalties (checks → speed → attacks → HP max → collapse);
   CDDA's two-track insight: tiredness (any sleep clears) vs sleep
   debt (only real nights); the player finally NEEDS to sleep. Bed
   quality (already modeled) sets recovery speed.
+  *(Round 101: thirst at 4/hr vs hunger's 3 — thirsty ~15h, parched
+  ~22h; parched drains HP (floored 1). exhaustion_level 0-6 stacks
+  tired(+1) + starving(+1) + thirsty(+1)/parched(+2) + sleep_debt
+  (+1/night missed, cap +2). Rungs: -level to EVERY d20 (wired into
+  roll_check beside P12.2 conditions), 2+: steps cost extra minutes,
+  3+: -2 attacks, 4+: HP capped at half, 6: COLLAPSE (paralyzed 8,
+  fatigue only partially cleared — passing out is poor rest). Two
+  tracks: inn sleep clears fatigue AND debt; furniture bed naps
+  clear fatigue -50, never debt; nights without a bed accrue debt in
+  the nightly stack. Drinking: E at any water's edge; ale/mead/wine
+  + new waterskin quench via use_effect.thirst (data); stocked in
+  general/tavern. Hint bar telegraphs parched + exhaustion 2+.
+  The old inline hunger block became needs.player_needs_turn.
+  9 tests. Suite 1019, green x4.)*
 - [ ] **P12.4 Dying & Wounded.** PF2e's Dying 1–4 + recovery checks
   + the Wounded counter (each knockdown brings the next closer),
   layered UNDER our failure-as-story outcomes: drop to 0 → dying

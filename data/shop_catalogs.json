@@ -39,7 +39,8 @@
     "mead",
     "wine",
     "bread",
-    "jerky"
+    "jerky",
+    "waterskin"
   ],
   "innkeeper": [
     "ale",
@@ -65,7 +66,8 @@
     "fishing_rod",
     "crude_axe",
     "rope",
-    "climbing_picks"
+    "climbing_picks",
+    "waterskin"
   ],
   "wheelwright": [
     "leather",

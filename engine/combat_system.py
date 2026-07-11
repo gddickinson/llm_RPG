@@ -145,9 +145,11 @@ class CombatSystem:
         enchant_dmg = effective_weapon_damage_bonus(attacker)
         try:
             from characters.status_effects import attack_damage_modifier
-            from characters.needs import hunger_attack_penalty
+            from characters.needs import (exhaustion_attack_penalty,
+                                          hunger_attack_penalty)
             stat_mod = attack_damage_modifier(attacker) + \
-                hunger_attack_penalty(attacker)
+                hunger_attack_penalty(attacker) + \
+                exhaustion_attack_penalty(attacker)
         except Exception:
             stat_mod = 0
         base = max(1, weapon_dmg + max(0, atk_mod) + enchant_dmg + stat_mod)

@@ -140,6 +140,17 @@ def context_hints(engine) -> List[str]:
                 hints.append("[SHIFT+P] pray")
         except Exception:
             pass
+        try:   # needs telegraphs (P12.3)
+            from characters.needs import (exhaustion_level, get_thirst,
+                                          THIRST_PARCHED)
+            if get_thirst(engine.player) >= THIRST_PARCHED:
+                hints.insert(0, "[!] parched — drink ([E] by water)")
+            lvl = exhaustion_level(engine.player)
+            if lvl >= 2:
+                hints.insert(0, f"[!] exhaustion {lvl}/6 — you need "
+                                f"real sleep")
+        except Exception:
+            pass
         try:   # in deep water, the only hint that matters (P11.2)
             from characters.status_effects import has_effect
             from world.world_map import TerrainType as TT

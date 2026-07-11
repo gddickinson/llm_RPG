@@ -74,6 +74,7 @@ def sleep(engine) -> List[str]:
     # the bed is part of the day's spending
     now = engine.world.time
     minutes_per_day = 24 * 60
+    player.metadata["slept_day"] = now // minutes_per_day
     wake = ((now // minutes_per_day) + 1) * minutes_per_day + \
         WAKE_HOUR * 60
     engine.world.advance_time(wake - now)
@@ -93,6 +94,7 @@ def sleep(engine) -> List[str]:
         pass
     player.metadata["hunger"] = 5
     player.metadata["fatigue"] = 0     # slept off (P11.1)
+    player.metadata["sleep_debt"] = 0  # a REAL night (P12.3)
 
     after = snapshot(engine)
     lines = _summary_lines(engine, before, after)

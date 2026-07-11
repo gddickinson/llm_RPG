@@ -193,6 +193,13 @@ class TraversalSystem:
         """Called after a normal successful step: slow ground and
         foul weather tax the walker."""
         self._weather_penalty(nx, ny)
+        try:   # deep exhaustion drags every step (P12.3)
+            from characters.needs import exhaustion_step_minutes
+            extra = exhaustion_step_minutes(self.engine.player)
+            if extra:
+                self.engine.world.advance_time(extra)
+        except Exception:
+            pass
         wmap = self.engine.world.map
         rule = self.rule_for(wmap.terrain[ny][nx])
         if rule is None or rule.get("class") != "slog":

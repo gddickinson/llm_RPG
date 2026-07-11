@@ -290,22 +290,11 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"Needs tick error: {e}")
 
-        # Tick player hunger; starving drains HP (floored at 1 — hunger
-        # weakens, it doesn't kill)
+        # Player needs: hunger/thirst/tiredness growth, drains,
+        # the exhaustion ladder and its collapse (P12.3)
         try:
-            from characters.needs import (tick_player_needs, get_hunger,
-                                          HUNGER_STARVING, HUNGER_HUNGRY)
-            before = get_hunger(self.player)
-            tick_player_needs(self.player, elapsed_minutes=1)
-            hunger = get_hunger(self.player)
-            if hunger >= HUNGER_STARVING and self.world.time % 30 == 0:
-                if self.player.hp > 1:
-                    self.player.hp -= 1
-                self.memory_manager.add_event(
-                    "You are starving! Find something to eat.")
-            elif before < HUNGER_HUNGRY <= hunger:
-                self.memory_manager.add_event(
-                    "Your stomach growls. You should eat soon.")
+            from characters.needs import player_needs_turn
+            player_needs_turn(self)
         except Exception as e:
             logger.debug(f"Player needs tick error: {e}")
 
@@ -377,6 +366,11 @@ class GameEngine(GameAPIMixin):
             if day != getattr(self, "_last_reflection_day", day):
                 from engine.npc_memory import nightly_reflection
                 nightly_reflection(self)
+                try:   # a night without a bed is sleep debt (P12.3)
+                    from characters.needs import run_player_night
+                    run_player_night(self, day - 1)
+                except Exception as e:
+                    logger.debug(f"Sleep debt error: {e}")
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.retaliation.run_night()

@@ -121,6 +121,9 @@ def _rest(engine, interior) -> str:
     heal = max(1, int(player.max_hp * REST_FRACTION))
     before = player.hp
     player.hp = min(player.max_hp, player.hp + heal)
+    # a nap clears tiredness — but never sleep debt (P12.3, CDDA)
+    meta = player.metadata
+    meta["fatigue"] = max(0, meta.get("fatigue", 0) - 50)
     engine.world.advance_time(60)
     return (f"You stretch out on the bed and rest an hour "
             f"(+{player.hp - before} HP).")

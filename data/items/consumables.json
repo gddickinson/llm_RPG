@@ -33,7 +33,10 @@
     "value": 3,
     "description": "A frothy ale. Restores 2 HP.",
     "heal_amount": 2,
-    "stackable": true
+    "stackable": true,
+    "use_effect": {
+      "thirst": 50
+    }
   },
   "mead": {
     "id": "mead",
@@ -41,7 +44,10 @@
     "item_type": "consumable",
     "value": 5,
     "heal_amount": 3,
-    "stackable": true
+    "stackable": true,
+    "use_effect": {
+      "thirst": 50
+    }
   },
   "bread": {
     "id": "bread",
@@ -65,7 +71,10 @@
     "item_type": "consumable",
     "value": 10,
     "heal_amount": 4,
-    "stackable": true
+    "stackable": true,
+    "use_effect": {
+      "thirst": 40
+    }
   },
   "potion_might": {
     "id": "potion_might",
@@ -101,6 +110,17 @@
     "stackable": true,
     "use_effect": {
       "cure": "poisoned"
+    }
+  },
+  "waterskin": {
+    "id": "waterskin",
+    "name": "Waterskin",
+    "item_type": "consumable",
+    "value": 6,
+    "description": "A full skin of clean water. Quenches thirst anywhere.",
+    "stackable": true,
+    "use_effect": {
+      "thirst": 100
     }
   }
 }
