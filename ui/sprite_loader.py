@@ -68,23 +68,68 @@ class SpriteLoader:
         self._tile_cache: Dict[str, pygame.Surface] = {}
         self._char_cache: Dict[str, pygame.Surface] = {}
         self._rng = random.Random(1)
+        self.tileset_dir = self._resolve_tileset()
+
+    # -------------------------------------------- tileset (P15.1)
+
+    def _resolve_tileset(self):
+        """PNG tilesets: data/tiles/<name>/ with one image per
+        terrain value (grass.png, water.png, ...) and optional
+        entities/<class>.png. Pick via config.TILESET_NAME or the
+        LLM_RPG_TILESET env var; None/'' = procedural sprites.
+        See data/tiles/README.md for the drop-in contract."""
+        import os
+        name = os.environ.get("LLM_RPG_TILESET")
+        if name is None:
+            try:
+                import config
+                name = getattr(config, "TILESET_NAME", None)
+            except Exception:
+                name = None
+        if not name:
+            return None
+        root = os.path.join(os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))),
+            "data", "tiles", name)
+        return root if os.path.isdir(root) else None
+
+    def _from_tileset(self, relname: str):
+        """Load + scale one tileset image; None if absent/broken —
+        the procedural sprite is the graceful fallback."""
+        if self.tileset_dir is None:
+            return None
+        import os
+        path = os.path.join(self.tileset_dir, relname + ".png")
+        if not os.path.exists(path):
+            return None
+        try:
+            img = pygame.image.load(path)
+            return pygame.transform.scale(
+                img, (self.tile_size, self.tile_size))
+        except Exception:
+            return None
 
     # ------------------------------------------------------------------ tiles
     def tile(self, terrain_name: str) -> pygame.Surface:
         if terrain_name in self._tile_cache:
             return self._tile_cache[terrain_name]
+        loaded = self._from_tileset(terrain_name)
+        if loaded is not None:
+            self._tile_cache[terrain_name] = loaded
+            return loaded
         surf = pygame.Surface((self.tile_size, self.tile_size))
         ts = self.tile_size
         if terrain_name == "bridge":
             surf.fill(PALETTE["water"])
-            plank_h = max(2, size // 6)
-            for i in range(0, size, plank_h + 1):
+            plank_h = max(2, ts // 6)
+            for i in range(0, ts, plank_h + 1):
                 pygame.draw.rect(
                     surf, PALETTE["bridge"],
-                    (0, i, size, plank_h))
+                    (0, i, ts, plank_h))
                 pygame.draw.line(
                     surf, PALETTE["bridge2"],
-                    (0, i + plank_h - 1), (size, i + plank_h - 1))
+                    (0, i + plank_h - 1), (ts, i + plank_h - 1))
+            self._tile_cache[terrain_name] = surf
             return surf
         if terrain_name == "grass":
             surf.fill(PALETTE["grass"])
@@ -171,6 +216,11 @@ class SpriteLoader:
         key = f"char:{klass}:{is_player}:{is_hostile}"
         if key in self._char_cache:
             return self._char_cache[key]
+        loaded = self._from_tileset(
+            "entities/player" if is_player else f"entities/{klass}")
+        if loaded is not None:
+            self._char_cache[key] = loaded
+            return loaded
         ts = self.tile_size
         surf = pygame.Surface((ts, ts), pygame.SRCALPHA)
         cx, cy = ts // 2, ts // 2

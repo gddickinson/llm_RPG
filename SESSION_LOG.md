@@ -2460,3 +2460,23 @@ skin, light & weather II — pygame polished, not replaced) and
 Track A (companion loyalty arcs, three authored boss set-pieces,
 claim-a-home with ConstructionProject landing there, roads/mounts/
 boat, Playtest Campaign 5). 8 tests. Suite: 1162, green x3.
+
+**Round 121 — P15.1 Tileset pipeline (done). Track G opens.**
+The single round that turns all future art into data. SpriteLoader
+now resolves a tileset directory — data/tiles/<name>/ — chosen by
+config.TILESET_NAME or the LLM_RPG_TILESET env var (None keeps the
+procedural sprites). The contract is one PNG per terrain value
+(grass.png, water.png ... bridge.png) plus optional
+entities/<class>.png and entities/player.png overrides; images of
+any square size load once, scale to the game's tile size, and
+cache. The crucial property is PER-IMAGE graceful fallback: any
+tile the set doesn't provide silently uses the procedural version,
+so a half-finished art pack is playable from its first PNG, and a
+renamed CC0 pack (Kenney et al) drops straight in — the contract
+lives in data/tiles/README.md. The pipeline test earned its keep
+immediately: drawing every terrain revealed that round 119's
+bridge sprite had an undefined-variable NameError that only fired
+on first GUI draw (the suite never drew tiles — George's next
+session would have hit it) AND skipped the sprite cache; both
+fixed, with a bridge-draw regression test to hold it. 6 tests.
+Suite: 1168, green x3.

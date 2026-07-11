@@ -79,3 +79,8 @@ NPC_PROCESS_ENABLED = True
 NPC_PROCESS_TIMEOUT = 5.0  # Seconds to wait for NPC response before fallback
 NPC_DIALOG_TIMEOUT = 5.0  # Seconds to wait for dialog response
 NPC_MAX_PROCESSES = 8  # Maximum number of NPC processes to run concurrently
+
+
+# P15.1: PNG tileset name under data/tiles/ (None = the built-in
+# procedural sprites). Overridable per-run via LLM_RPG_TILESET.
+TILESET_NAME = None
