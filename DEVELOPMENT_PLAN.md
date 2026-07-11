@@ -2519,6 +2519,38 @@ driven and folds into the battle grid (its own terrain strings +
   walls. Unifies P17.12 (AoE/magic), P17.6e (boiling oil), and the
   user's "trees and buildings can be set on fire" into one system.
 
+## Playability, UX & a GUI gameplay test (user-directed, HIGH PRIORITY)
+User: "Add a major test of the gameplay from the GUI along with a
+strong effort for improving the game UX overall and playability."
+The battle layer is rich; now harden and smooth the CORE GAME. Take
+these next, ahead of more Phase-17 depth.
+- [ ] **PUX.1 A major GUI gameplay integration test (do next).** One
+  scripted, headless end-to-end playthrough driving the ENGINE through
+  the same calls the GUI/input_handler makes (SDL dummy): new game →
+  move about the world → enter a building → talk to an NPC → accept a
+  quest → trigger & win combat → loot & gain XP/level → buy/sell at a
+  shop → cast a spell → save → load → assert state survived. Asserts
+  the whole loop actually works together, not just units in isolation —
+  a regression net for the playable game. Split into a few focused
+  tests if one file would exceed the line limit.
+- [ ] **PUX.2 Trading II — the merchant screen.** Enrich `ui/shop_panel`
+  (already a B-key buy/sell overlay over a deep economy): quantity /
+  bulk buy-sell (Shift = ×5, "sell all junk"), PRICE TRANSPARENCY (buy
+  vs sell spread, why a price is what it is — faction/regional/stock),
+  and item INSPECT/COMPARE vs equipped before buying. Surfaces the
+  market/haggle systems that are built but invisible at point of sale.
+- [ ] **PUX.3 Onboarding & hint audit.** New-player clarity: verify the
+  hint bar (`ui/hints.py`) advertises every player-facing feature, the
+  tutorial covers the core verbs, and controls are discoverable (a
+  key-help overlay?). Reduce first-session friction.
+- [ ] **PUX.4 HUD & panel polish.** Consistency and readability across
+  the I/B/K/X/J/O panels and the HUD; event-log clarity (build on the
+  P15.11 filter); make keybinds discoverable. A visual/UX consistency
+  pass.
+- [ ] **PUX.5 Playability review.** Run the DEVELOPMENT_PLAN Playtest
+  Matrix (12 dimensions) as scripted-and-judged sessions; turn friction
+  findings into fixes or plan items.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
