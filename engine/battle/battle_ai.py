@@ -16,6 +16,8 @@ the headless skirmish stays pure so it tests instantly.
 
 from typing import Optional
 
+from engine.battle import battle_facing as facing
+
 MELEE_REACH = 1
 RANGED_REACH = 5
 
@@ -25,6 +27,47 @@ _NEIGH8 = ((1, 0), (-1, 0), (0, 1), (0, -1),
 
 def _dist(a, b) -> int:
     return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+
+
+def _squad_of(field, sid: str):
+    return field.squads.get(sid.rsplit("_", 1)[0]) if sid else None
+
+
+def adjacent_enemies(field, sol) -> int:
+    """How many enemy soldiers are pressed against this one (8-dir) —
+    a man engaged on several sides can't guard them all."""
+    n = 0
+    for dx, dy in _NEIGH8:
+        occ = field.soldier_at(sol.x + dx, sol.y + dy)
+        sq = _squad_of(field, occ) if occ else None
+        if sq is not None and sq.team != sol.team:
+            n += 1
+    return n
+
+
+def is_surrounded(field, sol) -> bool:
+    """Boxed in: four+ enemies on him, or no free tile to fall back
+    to. Surrounded men take extra punishment (P17.11)."""
+    if adjacent_enemies(field, sol) >= 4:
+        return True
+    for dx, dy in _NEIGH8:
+        if field.passable(sol.x + dx, sol.y + dy):
+            return False
+    return True
+
+
+def _position_mods(field, atk_sol, target):
+    """(to-hit bonus, damage multiplier) from where the blow lands —
+    flank/rear arc, being ganged up on, and being surrounded."""
+    ar = facing.arc(target.facing, atk_sol.pos, target.pos)
+    to_hit = facing.ARC_TO_HIT[ar]
+    dmg = facing.ARC_DMG[ar]
+    if adjacent_enemies(field, target) >= 2:      # multiple sides
+        to_hit += 2
+        dmg *= 1.25
+    if is_surrounded(field, target):
+        dmg *= 1.5
+    return to_hit, dmg
 
 
 def nearest_struct(field, x: int, y: int):
@@ -90,16 +133,18 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     else:
         return False
     # d20 + power vs 10 + defence of the target's squad; a RANGED shot
-    # is further blunted by the cover the target stands in (P17.6).
+    # is further blunted by the cover the target stands in (P17.6), and
+    # flank/rear/surround bonuses (P17.11) make it easier and harder.
     tgt_squad = field.squads.get(target.squad_id)
     defence = tgt_squad.stats.get("defense", 0) if tgt_squad else 0
     dc = 10 + defence
     if ranged:
         dc += round(field.cover_at(target.x, target.y) * 10)
-    roll = rng.randint(1, 20) + power
+    to_hit, dmg_mult = _position_mods(field, atk_soldier, target)
+    roll = rng.randint(1, 20) + power + to_hit
     if roll < dc:
         return False
-    dmg = max(1, power // 3 + rng.randint(0, 2))
+    dmg = max(1, int(power // 3 * dmg_mult) + rng.randint(0, 2))
     target.hurt(dmg)
     if not target.alive:
         field.vacate(target)
@@ -107,10 +152,10 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     return False
 
 
-def _strike(rng, power, mult, defender, defender_def) -> str:
-    """One blow: d20+power vs 10+def; on a hit, (power*mult)//3 dmg.
-    Returns 'kill' | 'hit' | 'miss'."""
-    if rng.randint(1, 20) + int(power) < 10 + defender_def:
+def _strike(rng, power, mult, defender, defender_def, to_hit=0) -> str:
+    """One blow: d20+power(+to_hit) vs 10+def; on a hit, (power*mult)//3
+    dmg. Returns 'kill' | 'hit' | 'miss'."""
+    if rng.randint(1, 20) + int(power) + to_hit < 10 + defender_def:
         return "miss"
     dmg = max(1, int(power * mult) // 3 + rng.randint(0, 2))
     defender.hurt(dmg)
@@ -150,8 +195,12 @@ def charge_attack(field, atk_sol, atk_sq, tgt_sol, tgt_sq, rng) -> str:
             field.vacate(atk_sol)
             return "repelled"
         return "stopped"                  # the wall holds; charge blunted
-    r = _strike(rng, a.get("melee", 0), a.get("charge_bonus", 1.0),
-                tgt_sol, t.get("defense", 0))
+    # a charge into a flank or rear is even more devastating (P17.11)
+    ar = facing.arc(tgt_sol.facing, atk_sol.pos, tgt_sol.pos)
+    r = _strike(rng, a.get("melee", 0),
+                a.get("charge_bonus", 1.0) * facing.ARC_DMG[ar],
+                tgt_sol, t.get("defense", 0),
+                to_hit=facing.ARC_TO_HIT[ar])
     if r == "kill":
         field.vacate(tgt_sol)
         return "overrun"

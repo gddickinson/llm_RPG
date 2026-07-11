@@ -2972,3 +2972,27 @@ overruns-braced, overruns-loose, shove clears the lane, the three
 duels, beasts trample, the scenario). Suite 1313, green. This is the
 first delivery of a larger playtest-driven combat-tactics arc now
 planned out below.
+
+**Round 138 — P17.11 Facing, flanking & surround.**
+The research named this the highest-impact tactical lever, and it is:
+a man can only fully fight what he faces. `engine/battle/battle_facing.py`
+is the pure geometry — eight compass directions, `face_toward`, and
+`arc(facing, attacker, target)` that buckets an incoming blow into the
+FRONT arc (the three tiles he faces), a FLANK (the two sides) or the
+REAR (the three behind). Each `Soldier` now carries a `facing` (it
+round-trips): he turns to face the enemy he fights, and turns the way
+he moves — so a soldier in flight or a routed man literally shows his
+back. `battle_ai._position_mods` folds the consequences into every
+strike: a flank hit is +2 to-hit and ×1.25 damage, a rear hit +4 and
+×1.5, a target with two or more enemies pressed on him +2/×1.25 (he
+can't guard every side), and a surrounded man (four attackers, or
+boxed in with nowhere to fall back) takes ×1.5. The charge landing
+reads the arc too, so an overrun that carries a rider into an exposed
+flank is murderous — the emergent hammer-on-a-pinned-anvil. Measured,
+a strike to the back averages 4.25 damage against 2.59 to the front, a
+64% edge for getting behind the enemy. Eight tests cover the arc
+geometry, the escalating modifiers, being ganged up on, the surround
+condition, that rear beats front in practice, that facing updates as a
+soldier advances, and the round-trip. Suite 1321, green. The morale
+half of flanking — rout acceleration and the routing-neighbour
+cascade — is the next step, P17.15.

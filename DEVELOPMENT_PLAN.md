@@ -2395,18 +2395,24 @@ elevation, terrain/obstacles, LOS, fire) is a parallel track.
   blunt) that armour resists unevenly (mail shrugs slashes, a pick
   punches through); armour weight taxes `speed`. Now heavy cavalry
   survive the arrow-storm — the missing half of cavalry-vs-archers.
-- [ ] **P17.11 Facing, flanking & surround (RESEARCH STEP 1 — do
-  next).** A per-soldier facing (8-dir) + front/flank/rear arc test
-  (the shooter's/attacker's approach tile gives the arc). Wire in:
-  flank hit **+2 to-hit / +25% dmg**, rear hit **+4 / +50% / ×2 morale
-  damage**, a target with **≥2 adjacent enemies** takes +2/+25% from
-  all (can't guard every side), and a **SURROUNDED** state (enemies on
-  ≥3 arc-sides or no free retreat tile → can't flee, −big morale/tick,
-  +50% dmg taken — the Cannae/tulughma rout accelerator). This is the
-  single highest-impact tactical system and is independent of
-  formations; it also makes the P17.13 charge matter more (hit the
-  flank). Directly answers the user's "advantages if surrounding and
-  attacking an individual".
+- [x] **P17.11 Facing, flanking & surround (RESEARCH STEP 1).** A
+  per-soldier facing (8-dir) + front/flank/rear arc test.
+  *(Round 138: `engine/battle/battle_facing.py` — pure geometry:
+  8 compass `DIRS`, `dir_index`, `face_toward`, and `arc(facing,
+  attacker_pos, target_pos)` → front/flank/rear (front = the 3 tiles
+  faced, flank = the 2 sides, rear = the 3 behind). `Soldier.facing`
+  (round-trips) is set as a man moves (he faces the way he goes — so
+  a runner shows his back) and as he fights (he turns to his target).
+  `battle_ai._position_mods` folds three bonuses into every strike:
+  FLANK +2 to-hit/×1.25 dmg, REAR +4/×1.5, a target with ≥2 adjacent
+  foes +2/×1.25, and SURROUNDED (≥4 adjacent or boxed in) ×1.5 dmg
+  taken. The charge landing also takes the arc bonus, so an overrun
+  that carries a rider into a flank is murderous. Measured: a rear
+  strike averages 4.25 dmg vs 2.59 to the front — a 64% edge from
+  behind. 8 tests (arc geometry, escalating mods, gang-up, surround,
+  rear-is-deadlier, facing-updates-on-move, round-trip); suite 1321,
+  green. The morale side of flanking (rout acceleration, cascade) is
+  P17.15.)*
 - [ ] **P17.12 Area effects & battle magic.** Catapult/trebuchet and
   fireball blast RADII hit a tile cluster and paint `surfaces`
   (fire/oil/electrify already exist); battle-mage units cast the

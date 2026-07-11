@@ -24,7 +24,7 @@ class Soldier:
     """One fighter: a grid token that belongs to a squad."""
 
     __slots__ = ("sid", "squad_id", "team", "x", "y", "hp",
-                 "max_hp", "alive", "move_accum")
+                 "max_hp", "alive", "move_accum", "facing")
 
     def __init__(self, sid: str, squad_id: str, team: str,
                  x: int, y: int, hp: int):
@@ -41,6 +41,9 @@ class Soldier:
         # carries — so cavalry (2.0) cover ground twice as fast as
         # foot (1.0) and a catapult (0.2) crawls one tile per 5 ticks.
         self.move_accum = 0.0
+        # which way this soldier looks (P17.11) — a blow from outside
+        # this front takes flank/rear bonuses. Set as he moves/fights.
+        self.facing = (1, 0)
 
     @property
     def pos(self) -> Tuple[int, int]:
@@ -55,7 +58,8 @@ class Soldier:
         return {"sid": self.sid, "squad_id": self.squad_id,
                 "team": self.team, "x": self.x, "y": self.y,
                 "hp": self.hp, "max_hp": self.max_hp,
-                "alive": self.alive, "move_accum": self.move_accum}
+                "alive": self.alive, "move_accum": self.move_accum,
+                "facing": list(self.facing)}
 
     @staticmethod
     def from_dict(d: dict) -> "Soldier":
@@ -64,6 +68,7 @@ class Soldier:
         s.hp = d["hp"]
         s.alive = d["alive"]
         s.move_accum = d.get("move_accum", 0.0)
+        s.facing = tuple(d.get("facing", (1, 0)))
         return s
 
 

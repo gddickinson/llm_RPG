@@ -17,6 +17,7 @@ import random
 from typing import Dict, List, Tuple
 
 from engine.battle import battle_ai as ai
+from engine.battle import battle_facing as facing
 from engine.battle import battle_orders as orders
 from engine.battle.battle_flow import distance_field
 
@@ -96,6 +97,10 @@ class BattleSession:
                     continue
             d = ai._dist(sol.pos, target.pos)
             if d <= ai.reach_of(sq):
+                # face what you fight — so a foe striking from outside
+                # this front takes the flank/rear bonus (P17.11)
+                sol.facing = facing.face_toward(sol.x, sol.y,
+                                                target.x, target.y)
                 if sq.charge_bonus > 1 and d <= ai.MELEE_REACH:
                     self._charge_melee(sol, sq, target)
                 else:
@@ -130,7 +135,7 @@ class BattleSession:
             res = ai.charge_attack(field, sol, sq, target, tgt_sq,
                                    self.rng)
             if res == "overrun":
-                field.move_soldier(sol, tx, ty)    # ride into the gap
+                self._move(sol, tx, ty)            # ride into the gap
                 target = None
                 continue
             break                                  # stopped or repelled
@@ -176,11 +181,20 @@ class BattleSession:
         reach = SIEGE_RANGE if sq.stats.get("ranged", 0) > 0 else 1
         for _ in range(self._steps(sol, sq)):
             goal = ai.step_toward(field, sol, near[0], near[1])
-            if goal is None or not field.move_soldier(sol, *goal):
+            if goal is None or not self._move(sol, *goal):
                 break
             if self._wall_in_range(sol, reach, sol) is not None:
                 break                        # in range; hit it next tick
         return True
+
+    def _move(self, sol, nx, ny) -> bool:
+        """Step a soldier and turn him to face the way he moved — so a
+        man in flight shows his back (P17.11)."""
+        ox, oy = sol.x, sol.y
+        if self.field.move_soldier(sol, nx, ny):
+            sol.facing = facing.face_toward(ox, oy, nx, ny)
+            return True
+        return False
 
     @staticmethod
     def _steps(sol, sq) -> int:
@@ -201,7 +215,7 @@ class BattleSession:
             if goal is None and melee:
                 # flow blocked by the enemy line — push into contact
                 goal = ai.step_toward(field, sol, target.x, target.y)
-            if goal is None or not field.move_soldier(sol, *goal):
+            if goal is None or not self._move(sol, *goal):
                 break
             if ai._dist(sol.pos, target.pos) <= ai.reach_of(sq):
                 break
@@ -212,8 +226,8 @@ class BattleSession:
         for _ in range(self._steps(sol, sq)):
             dx = (sol.x > target.x) - (sol.x < target.x)
             dy = (sol.y > target.y) - (sol.y < target.y)
-            if (dx or dy) and field.move_soldier(sol, sol.x + dx,
-                                                 sol.y + dy):
+            if (dx or dy) and self._move(sol, sol.x + dx,
+                                          sol.y + dy):
                 continue
             break
 
@@ -228,7 +242,7 @@ class BattleSession:
             if (sol.x, sol.y) == (tx, ty):
                 break
             goal = ai.step_toward(field, sol, tx, ty)
-            if goal is None or not field.move_soldier(sol, *goal):
+            if goal is None or not self._move(sol, *goal):
                 break
 
     def _flee(self, sol, sq, flows) -> None:
@@ -241,7 +255,7 @@ class BattleSession:
         for _ in range(self._steps(sol, sq)):
             dx = (sol.x > target.x) - (sol.x < target.x)
             dy = (sol.y > target.y) - (sol.y < target.y)
-            if not field.move_soldier(sol, sol.x + dx, sol.y + dy):
+            if not self._move(sol, sol.x + dx, sol.y + dy):
                 break
 
     # -------------------------------------------------- objectives
