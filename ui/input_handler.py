@@ -202,8 +202,12 @@ class InputHandler:
                 pass
             return True
 
-        if k == pygame.K_l:   # look around
-            self._look_around()
+        if k == pygame.K_l:   # look around; SHIFT+L: log detail
+            if shift:
+                from engine.event_filter import cycle_verbosity
+                cycle_verbosity(self.engine)
+            else:
+                self._look_around()
             return True
 
         # Cycle ranged targets ([ back, ] forward) (P8.7)

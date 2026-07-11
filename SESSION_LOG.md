@@ -2651,3 +2651,25 @@ on top of its explicit placement — 2-3 Tyrants some seeds; bosses
 are placed explicitly, so dungeon:false now (10 stability runs
 clean). This resolver also becomes the richer off-screen battle
 math for the faction systems in P17.8. Suite: 1224, green x5.
+
+**Round 127b — Event-log readability (George's third ask).**
+George: "the log still shows too much about events outside the
+player's view — especially inside buildings — and too many lines;
+give the player options." The memory keeps every event (the topic
+journal, deeds, sound and playtest assertions all read it — it's
+load-bearing, so I must not drop from it), so the fix is a
+DISPLAY-side filter: `engine/event_filter.py`. Every line
+categorizes by prefix/content — critical ([!]), combat, player
+(your own acts), news ([Realm]/[Board]/[DM]/[Legend], word that
+reaches you), law, social ([Bond]/[Secret]), and ambient
+(footsteps, weather, idle NPC barks, [Clash] street fights). A
+per-player VERBOSITY setting — quiet / normal / verbose, cycled
+with SHIFT+L, default normal — gates categories: quiet keeps only
+what matters, normal hides footsteps but keeps law/quest, verbose
+shows all. And the LOCATION rule George keeps asking for: while
+you're inside a building or dungeon, ambient overworld noise is
+hidden entirely — you can't see the street fight or the wolf
+wandering past from indoors — but news and rumor still reach you,
+because word travels. The HUD now shows the filtered last 10 with
+the mode in the panel title, so a wall of footsteps no longer
+crowds out the line that matters. 8 tests. Suite: 1232, green x3.

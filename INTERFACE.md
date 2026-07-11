@@ -153,6 +153,7 @@ llm_RPG/
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
 - **`gathering.py`** — `GatheringManager`; mining/woodcutting/fishing nodes from `data/gathering.json`, tier level gates, tool checks.
 - **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.
+- **`event_filter.py`** — display-side event-log filter: categorize by prefix/content, per-player verbosity (quiet/normal/verbose, SHIFT+L), hide ambient overworld noise while indoors; `filtered_recent` feeds the HUD (memory keeps everything).
 - **`discovery.py`** — P15.11 fog of war: per-turn VISIBLE set (shadowcaster) folded into a persistent EXPLORED mask (player.metadata, save-safe); `actor_hidden` (renderer), `can_witness` (event-log gate, fresh LOS); reveal by walking / map items (use_effect.reveal) / Farsight spell.
 - **`fov.py`** — P8.6 recursive shadowcasting: `compute_fov`, `has_line_of_sight`, `zone_fov` (dungeon fog-of-war), `overworld_los` (ranged-shot gating; buildings/mountains block).
 - **`structures.py`** — `StructureBuilder` (P9.1): themed multi-level structures from `data/structures.json` (grid-string levels, twinned stairs, dark levels, inscriptions, populate-on-first-visit natives); ships the Ruined Keep; populated-set persists.

@@ -132,10 +132,16 @@ class HUD:
             target.blit(surf, (x + 4, y - 1))
 
     def draw_event_log(self, target, engine, rect) -> None:
-        self._panel(target, rect, "Event Log")
-        recent = engine.memory_manager.get_recent_history(12)
+        try:
+            from engine.event_filter import filtered_recent, verbosity
+            recent = filtered_recent(engine, 10)
+            title = f"Event Log ({verbosity(engine)})"
+        except Exception:
+            recent = engine.memory_manager.get_recent_history(10)
+            title = "Event Log"
+        self._panel(target, rect, title)
         # Newest at bottom
-        self._draw_lines(target, recent, rect, 8, max_lines=12)
+        self._draw_lines(target, recent, rect, 8, max_lines=10)
 
     def draw_quest_panel(self, target, engine, rect) -> None:
         self._panel(target, rect, "Quests")

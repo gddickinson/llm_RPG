@@ -1992,6 +1992,17 @@ UI polish.
   [Realm]/[Board]/[DM]/[Legend] world news and rumor — those ARE
   the "revealed by another route" the request allows (word travels,
   the DM narrates, the board posts).
+  *(Round 127b, George's follow-up "the log still shows too much,
+  especially inside buildings; give the player display options":
+  `engine/event_filter.py` — a DISPLAY-side filter (memory keeps
+  every line, load-bearing). Events categorize by
+  prefix/content (critical/combat/player/news/law/social/ambient);
+  a per-player VERBOSITY (quiet/normal/verbose, SHIFT+L to cycle,
+  default normal) gates categories, and INSIDE a building ambient
+  overworld noise (footsteps, [Clash] street fights, idle NPC
+  barks) is hidden — you can't see the street — while news/rumor
+  still reaches you. HUD shows the filtered last 10 with the mode
+  in the title. 8 tests.)*
   *(Round 124: `engine/discovery.py`. Per-turn `update` recomputes
   the VISIBLE set from the player via the P8.6 shadowcaster
   (buildings/mountains/forest block sight) out to
