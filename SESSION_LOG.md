@@ -1668,3 +1668,19 @@ Tyrants, and now DM-built towers that accrete forever. The third
 rules-research agent (simulation roguelikes) is still out;
 synthesis into Phase 12 on its return. 9 new tests. Suite: 914,
 green x3.
+
+**Round 89 — P10.0 infra + P10.1 AoE damage (done).**
+The destructible world begins. P10.0: RUBBLE and SCORCHED terrain
+types with sprites and minimap colors, and WorldMap.set_terrain
+firing registered tile callbacks — the single choke-point every
+future destruction (fire, siege, giants) will route through so
+interiors and systems can react. P10.1: fireball is finally a
+FIREBALL — Spell.area comes from spells.json (2.0 tiles), and an
+area cast engulfs everyone within the radius of the impact except
+the caster. Friendly fire is real: a companion standing beside your
+target burns (tested); out-of-radius bystanders are safe; blast
+kills route through the one true defeat handler ("Slain in the
+blast: Wolf, Wolf."); and the same-space rules hold — a blast in
+the crypt doesn't scorch the street, walls shield the indoors, and
+monsters a dungeon floor away are untouched. Single-target spells
+are unchanged. 9 new tests. Suite: 923, green x3.

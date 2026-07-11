@@ -26,6 +26,8 @@ _TERRAIN_TO_SPRITE = {
     TerrainType.CAVE: "cave",
     TerrainType.SWAMP: "swamp",
     TerrainType.FARMLAND: "farmland",
+    TerrainType.RUBBLE: "rubble",
+    TerrainType.SCORCHED: "scorched",
 }
 
 # Door glyph colors by lock state (P9A.3b)

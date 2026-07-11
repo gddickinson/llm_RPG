@@ -18,11 +18,12 @@
     "mana_cost": 5,
     "damage": 12,
     "range": 6.0,
-    "description": "A roaring blast of flame.",
+    "description": "A roaring blast of flame that engulfs everyone near the target.",
     "classes": [
       "wizard",
       "sorcerer"
-    ]
+    ],
+    "area": 2.0
   },
   "frost_ray": {
     "id": "frost_ray",

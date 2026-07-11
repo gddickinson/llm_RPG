@@ -214,7 +214,7 @@ class TestWarArcFixes(unittest.TestCase):
         self.player.metadata["max_mana"] = 40
         xp0 = self.player.metadata.get("xp", 0)
         msg = self.engine.cast_spell("fireball", wolf.name)
-        self.assertIn("slain", msg)
+        self.assertIn("slain", msg.lower())
         self.assertFalse(wolf.is_active(),
                          "a spell-slain wolf must be DEAD, not a "
                          "0-HP zombie")

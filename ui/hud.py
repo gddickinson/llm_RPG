@@ -176,6 +176,8 @@ class HUD:
             TerrainType.CAVE: (30, 30, 35),
             TerrainType.SWAMP: (62, 78, 52),
             TerrainType.FARMLAND: (124, 92, 56),
+            TerrainType.RUBBLE: (105, 100, 95),
+            TerrainType.SCORCHED: (48, 40, 36),
         }
         ox = rect.x + (rect.width - wmap.width * scale) // 2
         oy = rect.y + 20 + ((rect.height - 24) - wmap.height * scale) // 2

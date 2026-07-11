@@ -20,6 +20,8 @@ class TerrainType(Enum):
     CAVE = "cave"
     SWAMP = "swamp"
     FARMLAND = "farmland"
+    RUBBLE = "rubble"
+    SCORCHED = "scorched"
 
 
 class WorldMap:
@@ -31,7 +33,29 @@ class WorldMap:
         self.terrain = [[TerrainType.GRASS for _ in range(width)] for _ in range(height)]
         self.objects = {}  # Key: (x, y), Value: Object at that location
         self.characters = {}  # Key: (x, y), Value: Character at that location
+        self._tile_callbacks = []  # fired by set_terrain (P10.0)
         logger.info(f"Map initialized with size {width}x{height}")
+
+    def register_tile_callback(self, fn) -> None:
+        """fn(x, y, old_terrain, new_terrain) on every set_terrain
+        (P10.0 — destruction routes through here so interiors and
+        systems can react)."""
+        self._tile_callbacks.append(fn)
+
+    def set_terrain(self, x: int, y: int,
+                    terrain_type: TerrainType) -> bool:
+        if not (0 <= x < self.width and 0 <= y < self.height):
+            return False
+        old = self.terrain[y][x]
+        if old == terrain_type:
+            return False
+        self.terrain[y][x] = terrain_type
+        for fn in list(self._tile_callbacks):
+            try:
+                fn(x, y, old, terrain_type)
+            except Exception:
+                pass
+        return True
 
     def add_terrain_feature(self, terrain_type: TerrainType, start_x: int, start_y: int, width: int, height: int):
         """Add a terrain feature of specified type and dimensions"""

@@ -37,6 +37,9 @@ PALETTE = {
     "swamp_pool": (38, 58, 66),
     "farmland":   (124, 92, 56),
     "farmland2":  (100, 72, 44),
+    "rubble":     (105, 100, 95),
+    "rubble2":    (80, 76, 72),
+    "scorched":   (48, 40, 36),
     "shrine":     (210, 200, 130),
     "shrine_glow":(255, 220, 150),
     "outline":    (10, 10, 10),
@@ -73,6 +76,20 @@ class SpriteLoader:
         if terrain_name == "grass":
             surf.fill(PALETTE["grass"])
             self._dither(surf, PALETTE["grass2"], 0.25)
+        elif terrain_name == "rubble":
+            surf.fill(PALETTE["rubble"])
+            for _ in range(5):
+                px = self._rng.randint(2, ts - 8)
+                py = self._rng.randint(2, ts - 8)
+                pygame.draw.circle(surf, PALETTE["rubble2"],
+                                   (px, py), self._rng.randint(2, 4))
+        elif terrain_name == "scorched":
+            surf.fill(PALETTE["scorched"])
+            for _ in range(3):
+                px = self._rng.randint(2, ts - 6)
+                py = self._rng.randint(2, ts - 6)
+                pygame.draw.line(surf, (25, 20, 18),
+                                 (px, py), (px + 4, py + 2), 2)
         elif terrain_name == "farmland":
             surf.fill(PALETTE["farmland"])
             for row in range(3, ts, max(3, ts // 5)):

@@ -1256,14 +1256,28 @@ BUILDING tile type (use a sparse material/HP overlay, add only
 RUBBLE + SCORCHED terrain); per-turn not dt-seconds; WorldMap needs
 set_terrain + tile callbacks for interior sync.
 
-- [ ] **P10.0 Enabling infra.** TerrainType.RUBBLE + SCORCHED (+
+- [x] **P10.0 Enabling infra.** TerrainType.RUBBLE + SCORCHED (+
   sprites/minimap); WorldMap.set_terrain(x, y, t) firing registered
   tile callbacks. Tiny round.
-- [ ] **P10.1 AoE damage, entity-first.** Spell dataclass +
+  *(done 2026-07-10 — RUBBLE (grey stone scatter) and SCORCHED
+  (charred ground) terrains with sprites + minimap colors; rubble
+  walkable until P10.4 depth rules; WorldMap.set_terrain fires
+  register_tile_callback(x, y, old, new) hooks — every future
+  destruction routes through it. 3 tests.)*
+- [x] **P10.1 AoE damage, entity-first.** Spell dataclass +
   spells.json gain area/targets; fireball (area 2) damages everyone
   near the impact except the caster (companions included — friendly
   fire is real); siege-monster splash (troll boulders) via the same
   helper. Uses the P8.7 lock as the impact point.
+  *(done 2026-07-10 — Spell.area from spells.json (fireball 2.0);
+  cast with area engulfs EVERYONE within radius of the target except
+  the caster — companions burn if they stand too close (friendly
+  fire is real and tested), out-of-radius is safe, blast kills route
+  through the one defeat handler ("Slain in the blast: …"), and the
+  SAME-SPACE rules hold: crypt blasts don't scorch the street, walls
+  shield the indoors, other dungeon floors are safe. Single-target
+  spells unchanged. Siege-monster splash deferred to P10.5 with the
+  boulder throwers. 6 tests.)*
 - [ ] **P10.2 Destructible tiles.** Slim DurabilitySystem port:
   sparse tile HP, materials (stone buildings resist fire, wooden
   forests burn), TILE_DESTROYED map (BUILDING→RUBBLE, FOREST→GRASS);

@@ -27,6 +27,7 @@ class Spell:
     description: str = ""
     status_effect: str = ""    # name of status to apply on hit
     duration: int = 0          # turns the status persists
+    area: float = 0.0          # blast radius in tiles (P10.1)
     classes: Tuple[str, ...] = ()   # who can learn it
 
 
@@ -46,6 +47,7 @@ def _build_spells() -> Dict[str, Spell]:
             description=entry.get("description", ""),
             status_effect=entry.get("status_effect", ""),
             duration=entry.get("duration", 0),
+            area=entry.get("area", 0.0),
             classes=tuple(entry.get("classes", ())),
         )
     return out
@@ -143,7 +145,24 @@ class SpellSystem:
 
         # Apply effects
         results = []
-        if spell.damage:
+        if spell.damage and spell.area > 0:
+            # Area damage (P10.1): everyone near the impact except
+            # the caster — friendly fire is REAL, companions included
+            victims = self._blast_victims(caster, target, spell.area)
+            names = []
+            for victim in victims:
+                victim.take_damage(spell.damage)
+                names.append(victim.name)
+                if not victim.is_alive():
+                    self._on_kill(caster, victim, spell.damage)
+            results.append(
+                f"{caster.name}'s {spell.name} engulfs "
+                f"{', '.join(names)} for {spell.damage} damage each!")
+            fallen = [v.name for v in victims if not v.is_alive()]
+            if fallen:
+                results.append(
+                    f"Slain in the blast: {', '.join(fallen)}.")
+        elif spell.damage:
             target.take_damage(spell.damage)
             results.append(
                 f"{caster.name} hits {target.name} with {spell.name} "
@@ -200,6 +219,42 @@ class SpellSystem:
                     pass
             return self._nearest_visible_hostile(caster, spell.range)
         return self.engine.find_character(name)
+
+    def _blast_victims(self, caster, target, radius: float) -> list:
+        """Everyone within the blast radius of the target's tile,
+        excluding the caster — same-space rules apply (a blast in the
+        crypt doesn't scorch the street)."""
+        engine = self.engine
+        cx, cy = target.position
+        zone = None
+        try:
+            zone = engine.active_zone()
+        except Exception:
+            pass
+        zname = getattr(zone, "name", None)
+        out = [target]
+        candidates = list(engine.npc_manager.npcs.values())
+        candidates.append(engine.player)
+        for ch in candidates:
+            if ch.id in (caster.id, target.id) or not ch.is_active():
+                continue
+            if ch.id != engine.player.id:
+                chz = getattr(ch, "metadata", {}).get("zone")
+                if zone is not None and chz != zname:
+                    continue                # a floor away is safe
+                if zone is None:
+                    if chz is not None:
+                        continue
+                    try:
+                        from engine.presence import is_indoors
+                        if is_indoors(engine, ch):
+                            continue        # walls shield them
+                    except Exception:
+                        pass
+            nx, ny = ch.position
+            if ((nx - cx) ** 2 + (ny - cy) ** 2) ** 0.5 <= radius:
+                out.append(ch)
+        return out
 
     def _nearest_visible_hostile(self, caster, max_range: float):
         nearest, best = None, max_range + 0.1
