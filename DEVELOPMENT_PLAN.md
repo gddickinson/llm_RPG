@@ -2593,12 +2593,21 @@ these next, ahead of more Phase-17 depth.
   (input_handler back under 500). 13 tests (defaults/set/cycle/wrap,
   log-detail sharing the filter store, zoom-applies-live, and the
   ESC→confirm→Y/N flow). Suite 1366, green.)*
-- [ ] **PUX.4b Party panel + responsive layout.** Reclaim the 320×200
-  bottom-right DEAD ZONE with a party/companions panel (portraits, HP,
-  current order). Make `gui._compute_layout` RESPONSIVE to the real
-  window size (it's hard-pinned to 1280×800) and support fullscreen/
-  resize. Plus the remaining polish: consistency/readability across
-  the I/B/K/X/J/O panels and event-log clarity.
+- [x] **PUX.4b Party panel — reclaim the dead zone.** A party/
+  companions panel where nothing used to draw.
+  *(Round 143: `gui._compute_layout` gained a `party` region filling
+  the old 320×200 bottom-right dead zone — right of the mini-map,
+  below the Quests panel — and `hud.draw_party_panel` renders the
+  companions there: each ally's name + level, their current order
+  (follow / hold / flee, colour-coded), and a health bar; when the
+  party is empty it says how to recruit ([P]). 3 tests: the region
+  fills the dead zone and overlaps no other panel, the panel draws
+  empty, and it draws a recruited companion. Suite 1369, green.)*
+- [ ] **PUX.4c Responsive layout & panel polish.** Make
+  `gui._compute_layout` RESPONSIVE to the real window size (it's
+  hard-pinned to 1280×800) and support fullscreen/resize. Plus the
+  remaining polish: consistency/readability across the I/B/K/X/J/O
+  panels and event-log clarity.
 - [ ] **PUX.5 Playability review.** Run the DEVELOPMENT_PLAN Playtest
   Matrix (12 dimensions) as scripted-and-judged sessions; turn friction
   findings into fixes or plan items.

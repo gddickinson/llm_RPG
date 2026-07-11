@@ -3138,3 +3138,19 @@ filter store) and the GUI flow (zoom applies live; ESC → confirm → N
 backs out, Y quits). Suite 1366, green. Remainder to PUX.4b: reclaim
 the bottom-right dead zone with a party panel and make the layout
 responsive.
+
+**Round 143 — PUX.4b Party panel: reclaim the dead zone.**
+The screen review turned up a 320×200 rectangle at bottom-right —
+right of the mini-map, below the Quests panel — where the fixed layout
+drew nothing at all. It's now the party panel. `gui._compute_layout`
+gained a `party` region filling exactly that space, and
+`hud.draw_party_panel` paints the companions at a glance: each ally's
+name and level, their current tactical order (follow / hold / flee,
+colour-coded so a fleeing companion reads red), and a health bar.
+Empty-handed, the panel tells a new player how to fill it — recruit an
+adjacent ally with [P] once they trust you. Three tests pin it down:
+the region sits in the old dead zone and collides with none of the
+event log, mini-map or map; the panel draws with no companions; and it
+draws a recruited one. Suite 1369, green. The other half of the old
+PUX.4b — making the whole layout responsive to the real window size
+instead of hard-pinned to 1280×800 — is split out as PUX.4c.

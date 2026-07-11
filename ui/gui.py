@@ -90,6 +90,10 @@ class GameGUI:
                                    self.width - side -
                                    ((self.width - side) // 2 + 100),
                                    bottom),
+            # PUX.4b: the party panel reclaims the old bottom-right dead
+            # zone (below Quests, right of the mini-map).
+            "party": pygame.Rect(self.width - side, self.height - bottom,
+                                 side, bottom),
         }
 
     # ---- main loop ---------------------------------------------------

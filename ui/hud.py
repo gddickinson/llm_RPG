@@ -36,6 +36,8 @@ class HUD:
         self.draw_quest_panel(target, engine, layout["quests"])
         if settings.enabled(engine.player, "minimap"):
             self.draw_minimap(target, engine, layout["minimap"])
+        if "party" in layout:
+            self.draw_party_panel(target, engine, layout["party"])
         if "map" in layout and settings.enabled(engine.player, "hints"):
             self.draw_hint_bar(target, engine, layout["map"])
 
@@ -121,6 +123,40 @@ class HUD:
             self._text(target, line, (rect.x + 8, y))
             y += 16
             if y > rect.bottom - 16:
+                break
+
+    def draw_party_panel(self, target, engine, rect) -> None:
+        """The companions at a glance (PUX.4b) — name, level, current
+        order, and a health bar — in the old bottom-right dead zone."""
+        self._panel(target, rect, "Party")
+        try:
+            members = engine.companion_manager.members()
+        except Exception:
+            members = []
+        if not members:
+            self._draw_lines(
+                target, ["No companions yet.",
+                         "Recruit an adjacent ally with [P]",
+                         "(they must trust you first)."], rect, 8)
+            return
+        _order_col = {"follow": (150, 210, 150), "hold": (220, 200, 120),
+                      "flee": (220, 150, 150)}
+        y = rect.y + 26
+        for m in members:
+            order = (getattr(m, "metadata", {}) or {}).get("order",
+                                                           "follow")
+            self._text(target, f"{m.name}  L{getattr(m, 'level', 1)}",
+                       (rect.x + 8, y))
+            self._text(target, order, (rect.right - 8 -
+                       self.font.size(order)[0], y) if self.font
+                       else (rect.x, y), color=_order_col.get(
+                           order, (200, 200, 200)))
+            y += 16
+            self._draw_bar(target, rect.x + 8, y, rect.width - 16, 10,
+                           m.hp / max(1, m.max_hp), (80, 175, 90),
+                           label=f"HP {m.hp}/{m.max_hp}")
+            y += 20
+            if y > rect.bottom - 20:
                 break
 
     def _draw_bar(self, target, x: int, y: int, w: int, h: int,
