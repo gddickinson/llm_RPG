@@ -2899,3 +2899,29 @@ plan: ranged units still have no wall LOS block in the open field —
 real battle line-of-sight rides with P17.9. Remainder split to
 P17.6c: wall-walk elevation, boiling-oil surfaces, capture-point
 victory, ranged bombardment, and the AI seeking cover.
+
+**Round 135 — P17.6c Capture-point victory.**
+A battle can now be won by taking ground, not only by killing
+everyone. `BattleField` grows a list of `objectives` — each a tile
+with a radius and a `hold` requirement, plus the mutable holder,
+hold_count and captured_by — round-tripped through to_dict/from_dict
+so a mid-siege save keeps the meter. `team_counts_near` tallies the
+living soldiers of each side inside the radius, and each tick the
+session's `_update_objectives` lets whichever team OUTNUMBERS the
+other there push the capture meter (`_dominant` wants a strict lead;
+an even contest bleeds the meter back toward neutral). Hold the point
+for `hold` ticks and it is seized; `over()` and `result()` then end
+the battle on that seizure, naming the winner and flagging a new
+`objective` key so a caller can tell a captured win from a massacre.
+The new `seize_the_hill` set-piece puts a point on a wooded central
+rise: an eighteen-strong assault drives a dug-in nine off the crest
+and holds it to win around tick 24 — the losers still on the field.
+The screen draws each objective as a radius ring and a flag coloured
+by its holder (filled once taken) over a capture meter, and the HUD
+marks a captured win "(captured)". The validator checks objective
+tiles sit on the field with sane radius/hold. Seven tests: the radius
+tally, the strict-lead dominance rule, a hold winning without a
+massacre, a tie making no progress, the objective round-trip, and the
+scenario building and being won by capture. Suite 1302, green.
+Remainder to P17.6d: wall-walk elevation, boiling-oil surfaces,
+ranged bombardment, and the AI seeking cover.

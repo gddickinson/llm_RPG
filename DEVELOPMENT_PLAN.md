@@ -2319,13 +2319,31 @@ is shippable and testable, de-risking UI last:
   siege wins); suite 1295, green. KNOWN SIMPLIFICATION: ranged units
   still have no line-of-sight block through walls in the open field —
   true battle LOS rides with P17.9.)*
-- [ ] **P17.6c Siege II & objectives.** Wall-walk elevation via the
-  multi-level stacks; boiling oil = a `surfaces` paint on the battle
-  grid (needs a grid surface layer); capture-point VICTORY (a squad
-  holding an objective tile wins — the `OBJECTIVES` scaffold from
-  P17.5); ranged siege BOMBARDMENT (catapults/trebuchets lobbing at
-  walls from range, not just adjacency); and the AI actively seeking
-  cover (deferred from P17.6a).
+- [x] **P17.6c Capture-point victory.** A squad holding an objective
+  tile wins without wiping out the enemy — the `OBJECTIVES` scaffold
+  from P17.5 made real.
+  *(Round 135: `BattleField` carries `objectives` (id/tile/radius/hold
+  + mutable holder/hold_count/captured_by), round-tripped in
+  to_dict/from_dict; `team_counts_near` tallies who contests a point
+  and `captured_team` reports a seizure. Each tick the session runs
+  `_update_objectives`: the team that OUTNUMBERS the other inside the
+  radius pushes the meter (`_dominant` — a strict lead; a tie is
+  contested and bleeds progress back), and holding for `hold` ticks
+  seizes it. `over()`/`result()` end on a capture — the winner and a
+  new `objective` key name it, so a battle can be won by seizing the
+  crest, not only by annihilation. New `seize_the_hill` scenario (a
+  central point in a wood): an 18-strong assault takes the hill from
+  a dug-in 9 at ~tick 24 while the defenders still stand. Screen draws
+  the radius ring, a flag coloured by the holder (filled once taken)
+  and a capture meter; HUD says "(captured)". Validator checks
+  objective tiles/radius/hold. 7 tests (counts, dominant lead,
+  hold-wins-without-massacre, contested-no-progress, round-trip,
+  scenario builds + is won by capture); suite 1302, green.)*
+- [ ] **P17.6d Siege II.** Wall-walk elevation via the multi-level
+  stacks; boiling oil = a `surfaces` paint on the battle grid (needs
+  a grid surface layer); ranged siege BOMBARDMENT (catapults/
+  trebuchets lobbing at walls from range, not just adjacency); and
+  the AI actively seeking cover (deferred from P17.6a).
 - [ ] **P17.7 Player role-swap.** An `embodied` flag on the
   session: set → input routes to normal grid-soldier controls,
   camera locks in; None → commander order layer, free camera; TAB

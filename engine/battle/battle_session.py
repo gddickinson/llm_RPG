@@ -96,6 +96,8 @@ class BattleSession:
                 self._order_move(sol, sq, target,
                                  flows.get(sq.team, {}))
 
+        self._update_objectives()            # capture points last
+
     def _order_move(self, sol, sq, target, flow) -> None:
         """Move a soldier out of reach according to its squad's order:
         hold roots, fall-back retreats, move marches to the tile, all
@@ -203,24 +205,59 @@ class BattleSession:
             if not field.move_soldier(sol, sol.x + dx, sol.y + dy):
                 break
 
+    # -------------------------------------------------- objectives
+
+    def _update_objectives(self) -> None:
+        """Advance each capture point: the team that dominates the
+        radius pushes its meter; holding for `hold` ticks seizes it."""
+        for o in self.field.objectives:
+            if o["captured_by"]:
+                continue
+            counts = self.field.team_counts_near(o["tile"], o["radius"])
+            dom = self._dominant(counts)
+            if dom is None:                  # empty or contested — bleed
+                o["hold_count"] = max(0, o["hold_count"] - 1)
+                if o["hold_count"] == 0:
+                    o["holder"] = None
+            elif dom == o["holder"]:
+                o["hold_count"] += 1
+            else:
+                o["holder"], o["hold_count"] = dom, 1
+            if o["hold_count"] >= o["hold"]:
+                o["captured_by"] = o["holder"]
+
+    @staticmethod
+    def _dominant(counts):
+        if not counts:
+            return None
+        ranked = sorted(counts.items(), key=lambda kv: -kv[1])
+        if len(ranked) == 1 or ranked[0][1] > ranked[1][1]:
+            return ranked[0][0]
+        return None                          # tie: contested, no gain
+
     # ---------------------------------------------------- outcome
 
     def over(self) -> bool:
+        if self.field.captured_team():
+            return True
         live = [t for t in self.field.teams()
                 if self.field.team_active(t)]
         return len(live) <= 1
 
     def result(self) -> dict:
+        cap = self.field.captured_team()
         live = [t for t in self.field.teams()
                 if self.field.team_active(t)]
         survivors = {t: sum(sq.strength
                             for sq in self.field.squads.values()
                             if sq.team == t)
                      for t in self.field.teams()}
+        winner = cap if cap else (live[0] if len(live) == 1 else None)
         return {
-            "winner": live[0] if len(live) == 1 else None,
+            "winner": winner,
             "ticks": self.tick_count,
             "survivors": survivors,
+            "objective": cap,
         }
 
     def run_headless(self, max_ticks: int = 300) -> dict:

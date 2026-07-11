@@ -212,9 +212,31 @@ class BattleScreen:
         else:
             self._draw_soldiers()
             self._draw_tracers()
+        self._draw_objectives()
         self._draw_selection()
         self._draw_hud()
         pygame.display.flip()
+
+    def _draw_objectives(self) -> None:
+        """Capture points: a radius ring and a flag coloured by who
+        holds it, filled once seized."""
+        ts = self.cam.tile_size
+        for o in self.field.objectives:
+            tx, ty = o["tile"]
+            sx, sy = self.cam.world_to_screen(tx + 0.5, ty + 0.5)
+            ix, iy = int(sx), int(sy)
+            holder, taken = o["holder"], o["captured_by"]
+            col = _team_color(holder) if holder else (210, 210, 210)
+            pygame.draw.circle(self.screen, (90, 90, 100), (ix, iy),
+                               max(4, int(o["radius"] * ts)), 1)
+            pygame.draw.circle(self.screen, col, (ix, iy),
+                               max(5, ts // 3), 0 if taken else 2)
+            frac = min(1.0, o["hold_count"] / max(1, o["hold"]))
+            bw = max(16, ts)
+            pygame.draw.rect(self.screen, (40, 40, 46),
+                             (ix - bw // 2, iy - ts, bw, 4))
+            pygame.draw.rect(self.screen, col,
+                             (ix - bw // 2, iy - ts, int(bw * frac), 4))
 
     def _draw_selection(self) -> None:
         """Ring the squad the commander currently has selected, and
@@ -325,7 +347,8 @@ class BattleScreen:
         state = "PLAYING" if self.playing else "PAUSED"
         res = self.session.result()
         if self.session.over():
-            state = f"OVER — {res['winner'] or 'draw'} wins"
+            how = " (captured)" if res.get("objective") else ""
+            state = f"OVER — {res['winner'] or 'draw'} wins{how}"
         head = (f"{self.scenario_id}   tick {self.session.tick_count}"
                 f"   {'  '.join(parts)}   [{state}]"
                 f"   zoom {self.cam.tile_size}px"

@@ -39,6 +39,9 @@ class BattleField:
         self.struct_kind: Dict[Tuple[int, int], str] = {}
         self.squads: Dict[str, Squad] = {}
         self._occupied: Dict[Tuple[int, int], str] = {}   # pos->sid
+        # capture points (P17.6c): each is a dict with id/tile/radius/
+        # hold and mutable holder/hold_count/captured_by.
+        self.objectives: List[dict] = []
 
     # ---- terrain / structures ------------------------------------
 
@@ -128,6 +131,35 @@ class BattleField:
         return [sq for sq in self.squads.values()
                 if sq.team != team and sq.active]
 
+    # ---- capture points ------------------------------------------
+
+    def add_objective(self, oid: str, tile, radius: int = 2,
+                      hold: int = 20) -> None:
+        self.objectives.append({
+            "id": oid, "tile": [int(tile[0]), int(tile[1])],
+            "radius": int(radius), "hold": int(hold),
+            "holder": None, "hold_count": 0, "captured_by": None,
+        })
+
+    def team_counts_near(self, tile, radius: int) -> Dict[str, int]:
+        """Living soldiers of each team within `radius` of a tile
+        (Chebyshev) — who is contesting a capture point."""
+        tx, ty = tile
+        counts: Dict[str, int] = {}
+        for sq in self.squads.values():
+            n = sum(1 for s in sq.alive_soldiers
+                    if max(abs(s.x - tx), abs(s.y - ty)) <= radius)
+            if n:
+                counts[sq.team] = counts.get(sq.team, 0) + n
+        return counts
+
+    def captured_team(self):
+        """The team that has fully seized a capture point, or None."""
+        for o in self.objectives:
+            if o.get("captured_by"):
+                return o["captured_by"]
+        return None
+
     # ---- persistence ---------------------------------------------
 
     def to_dict(self) -> dict:
@@ -139,6 +171,7 @@ class BattleField:
             "struct_kind": [[x, y, k] for (x, y), k in
                             self.struct_kind.items()],
             "squads": [sq.to_dict() for sq in self.squads.values()],
+            "objectives": self.objectives,
         }
 
     @staticmethod
@@ -151,4 +184,5 @@ class BattleField:
                           d.get("struct_kind", [])}
         for sd in d.get("squads", []):
             bf.add_squad(Squad.from_dict(sd))
+        bf.objectives = d.get("objectives", [])
         return bf

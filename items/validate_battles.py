@@ -70,6 +70,21 @@ def _check_scenarios(unit_types: set, terrain_kinds: set) -> List[str]:
                 if _oob(x, y):
                     out.append(f"scenario {sid}: wall cell "
                                f"({x},{y}) out of bounds")
+        obj_ids = set()
+        for obj in sc.get("objectives", []):
+            oid = obj.get("id")
+            if not oid or oid in obj_ids:
+                out.append(f"scenario {sid}: objective id "
+                           f"'{oid}' missing or duplicate")
+            obj_ids.add(oid)
+            tile = obj.get("tile")
+            if not (isinstance(tile, list) and len(tile) == 2
+                    and not _oob(tile[0], tile[1])):
+                out.append(f"scenario {sid}: objective {oid} tile "
+                           f"off-field")
+            if obj.get("radius", 2) < 1 or obj.get("hold", 20) < 1:
+                out.append(f"scenario {sid}: objective {oid} needs "
+                           f"radius>=1 and hold>=1")
         ids = set()
         for army in sc.get("armies", []):
             if not army.get("team"):

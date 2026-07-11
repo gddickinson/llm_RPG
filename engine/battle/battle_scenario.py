@@ -82,6 +82,9 @@ def build_field(scenario_id: str) -> BattleField:
             squad = Squad.raise_squad(sq["id"], team, sq["type"], cells)
             squad.set_order(sq.get("order", "charge"), sq.get("target"))
             bf.add_squad(squad)
+    for obj in sc.get("objectives", []):
+        bf.add_objective(obj["id"], obj["tile"],
+                         obj.get("radius", 2), obj.get("hold", 20))
     return bf
 
 

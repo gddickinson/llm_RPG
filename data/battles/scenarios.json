@@ -549,5 +549,69 @@
         ]
       }
     ]
+  },
+  "seize_the_hill": {
+    "name": "Seize the Hill",
+    "desc": "A capture point on the central rise \u2014 hold it and the day is yours, no need to kill every last foe. A stronger attacker drives for the crest against a dug-in defence.",
+    "width": 40,
+    "height": 26,
+    "terrain": [
+      {
+        "kind": "forest",
+        "rect": [
+          18,
+          11,
+          5,
+          5
+        ]
+      }
+    ],
+    "objectives": [
+      {
+        "id": "hill",
+        "tile": [
+          20,
+          13
+        ],
+        "radius": 3,
+        "hold": 14
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_foot",
+            "type": "infantry_sword",
+            "size": 18,
+            "anchor": [
+              4,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_foot",
+            "type": "infantry_sword",
+            "size": 9,
+            "anchor": [
+              24,
+              11
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_foot"
+          }
+        ]
+      }
+    ]
   }
 }
