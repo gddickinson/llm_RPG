@@ -2760,3 +2760,29 @@ scenario building/convergence). Suite: 1263, green.
 Playtest feedback captured as P17.4b (unit-type icons, ranged
 tracers, bigger battles) and folded into P17.5/P17.6 (tactics,
 cover) — taken up next in this round.
+
+**Round 130b — P17.4b Richer testbed, from live playtest feedback.**
+Watching the testbed, three asks: read the unit types, see the bows
+fire, and fight at scale. All three landed the same round.
+(a) UNIT-TYPE ICONS — `battle_camera.py` grew `category_shape` +
+`marker_points` (pure geometry, unit-tested): infantry a circle,
+cavalry a forward triangle, archers a diamond, siege a square,
+beasts a hex, medics a cross — each drawn in its team colour, so an
+icon now says WHO it is as well as which side. (b) RANGED TRACERS —
+the session records every ranged shot fired on a tick into
+`session.tracers` as (x0,y0,x1,y1), cleared at the top of each tick
+and never read back by the sim (determinism untouched); the screen
+paints them as pale arrow lines, so archers are visibly working
+instead of silently subtracting HP. (c) BIGGER BATTLES — `grand_clash`,
+a 120×80 field with 296 soldiers in a real line (infantry centre,
+cavalry wing, archers behind). It runs ~40ms/tick — a fraction of
+the screen's 220ms step — so it plays smoothly and the LOD blobs let
+you read the whole shape zoomed out, then dive to a company zoomed
+in. The exhaustive convergence test caps big fields at 25 ticks so
+the suite stays quick, with a dedicated scale test proving the
+hundreds-of-soldiers path ticks clean. Still open and now written
+into the plan where they'll be built: COVER types that blunt ranged
+fire (→ P17.6, now "Siege & cover") and richer commander tactics
+(→ P17.5). A headless render smoke-test drove every zoom (48→8,
+including blob mode) across three scenarios without error. 8 new
+tests; suite 1271, green.

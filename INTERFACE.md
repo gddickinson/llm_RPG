@@ -213,7 +213,7 @@ llm_RPG/
 - **`lighting.py`** — Night darkness + torch/window light punches (weather-scaled).
 - **`weather_overlay.py`** — Rain/snow/fog particle overlays.
 - **`sound.py`** — Procedural SFX (numpy-synthesized) via event observer + weather ambience loops.
-- **`battle_camera.py`** — P17.4 pure zoom/pan/LOD math for the battle screen (tile_size 8/16/32/48, float camera, world↔screen, blob_mode < 16px); unit-tested headless.
+- **`battle_camera.py`** — P17.4 pure zoom/pan/LOD math for the battle screen (tile_size 8/16/32/48, float camera, world↔screen, blob_mode < 16px) + P17.4b unit-type glyph geometry (`category_shape`/`marker_points`); unit-tested headless.
 - **`battle_screen.py`** — P17.4 the zoomable Battle Testbed view: a standalone pygame loop (no engine) that watches a `BattleSession` tick a scenario — terrain, soldiers-or-blobs by LOD, HUD, play/pause/step/reset; reachable from the start menu.
 - **`gui_interface.py`** — Minimal GUI-facing engine interface helpers.
 

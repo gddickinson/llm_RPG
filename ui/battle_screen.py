@@ -17,7 +17,8 @@ from typing import Optional
 
 from engine.battle import BattleSession
 from engine.battle.battle_scenario import build_field, team_strengths
-from ui.battle_camera import BattleCamera
+from ui.battle_camera import (BattleCamera, category_shape,
+                              marker_points)
 
 logger = logging.getLogger("llm_rpg.battle.screen")
 
@@ -133,6 +134,7 @@ class BattleScreen:
             self._draw_blobs()
         else:
             self._draw_soldiers()
+            self._draw_tracers()
         self._draw_hud()
         pygame.display.flip()
 
@@ -156,15 +158,43 @@ class BattleScreen:
         for sq in self.field.squads.values():
             base = _team_color(sq.team)
             col = tuple(c // 2 for c in base) if sq.routed else base
+            shape = category_shape(sq.category)
             for sol in sq.alive_soldiers:
                 sx, sy = self.cam.world_to_screen(sol.x + 0.5,
                                                   sol.y + 0.5)
                 if not (0 <= sx <= self.width and 0 <= sy <= self.view_h):
                     continue
-                pygame.draw.circle(self.screen, col,
-                                   (int(sx), int(sy)), r)
+                self._marker(shape, col, sx, sy, r)
                 if sol.hp < sol.max_hp and ts >= 32:
                     self._hp_pip(sx, sy, r, sol)
+
+    def _marker(self, shape, col, sx, sy, r) -> None:
+        """Draw a unit-type glyph: team colour, category shape."""
+        ix, iy = int(sx), int(sy)
+        if shape == "circle":
+            pygame.draw.circle(self.screen, col, (ix, iy), r)
+        elif shape == "cross":                # medic: a plus
+            t = max(1, r // 2)
+            pygame.draw.rect(self.screen, col, (ix - r, iy - t, 2 * r, 2 * t))
+            pygame.draw.rect(self.screen, col, (ix - t, iy - r, 2 * t, 2 * r))
+        else:
+            pts = marker_points(shape, sx, sy, r)
+            pygame.draw.polygon(self.screen, col, pts)
+        if r >= 5:                            # a thin rim reads the edge
+            pygame.draw.circle(self.screen, (16, 16, 20), (ix, iy),
+                               r + 1, 1)
+
+    def _draw_tracers(self) -> None:
+        """The ranged shots fired last tick, as fading arrow lines."""
+        if self.cam.tile_size < 16:
+            return
+        for (x0, y0, x1, y1) in self.session.tracers:
+            ax, ay = self.cam.world_to_screen(x0 + 0.5, y0 + 0.5)
+            bx, by = self.cam.world_to_screen(x1 + 0.5, y1 + 0.5)
+            pygame.draw.line(self.screen, (240, 226, 150),
+                             (int(ax), int(ay)), (int(bx), int(by)), 1)
+            pygame.draw.circle(self.screen, (250, 240, 180),
+                               (int(bx), int(by)), 2)
 
     def _hp_pip(self, sx, sy, r, sol) -> None:
         frac = sol.hp / max(1, sol.max_hp)

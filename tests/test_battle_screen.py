@@ -12,8 +12,13 @@ from engine.battle import BattleSession
 from engine.battle.battle_scenario import (SCENARIOS, build_field,
                                            list_scenarios,
                                            team_strengths)
-from ui.battle_camera import (BattleCamera, LOD_BLOB_BELOW,
-                              TILE_SIZES)
+from ui.battle_camera import (BattleCamera, CATEGORY_SHAPE,
+                              LOD_BLOB_BELOW, TILE_SIZES,
+                              category_shape, marker_points)
+
+
+def _soldier_count(field):
+    return sum(sq.strength for sq in field.squads.values())
 
 
 class TestScenarios(unittest.TestCase):
@@ -49,10 +54,48 @@ class TestScenarios(unittest.TestCase):
     def test_every_scenario_converges_headless(self):
         for sid in SCENARIOS:
             bf = build_field(sid)
-            r = BattleSession(bf, seed=2).run_headless(max_ticks=400)
-            # either someone wins or it ran the full clock — never crashes
+            # big fields are watched interactively, not raced in the
+            # suite — cap their tick budget so tests stay fast
+            cap = 25 if _soldier_count(bf) > 60 else 400
+            r = BattleSession(bf, seed=2).run_headless(max_ticks=cap)
+            # either someone wins or it ran the clock — never crashes
             self.assertIn("winner", r)
-            self.assertLessEqual(r["ticks"], 400)
+            self.assertLessEqual(r["ticks"], cap)
+
+    def test_a_large_battle_scales(self):
+        """Hundreds of soldiers on a wide field tick without error."""
+        bf = build_field("grand_clash")
+        self.assertGreater(_soldier_count(bf), 200)
+        self.assertGreaterEqual(bf.width, 100)
+        sess = BattleSession(bf, seed=1)
+        for _ in range(10):
+            sess.tick()
+        self.assertEqual(sess.tick_count, 10)
+
+    def test_ranged_squads_emit_tracers(self):
+        """A bow squad in range of a foe records a shot to draw."""
+        bf = build_field("storm_the_breach")
+        sess = BattleSession(bf, seed=1)
+        saw_tracer = False
+        for _ in range(120):
+            if sess.over():
+                break
+            sess.tick()
+            if sess.tracers:
+                # a tracer is (x0, y0, x1, y1) within the field
+                for (x0, y0, x1, y1) in sess.tracers:
+                    self.assertTrue(bf.in_bounds(x0, y0))
+                    self.assertTrue(bf.in_bounds(x1, y1))
+                saw_tracer = True
+                break
+        self.assertTrue(saw_tracer, "archers never fired a visible shot")
+
+    def test_tracers_reset_each_tick(self):
+        bf = build_field("open_field")   # pure melee — never any shots
+        sess = BattleSession(bf, seed=1)
+        for _ in range(8):
+            sess.tick()
+            self.assertEqual(sess.tracers, [], "melee makes no tracers")
 
 
 class TestCamera(unittest.TestCase):
@@ -118,6 +161,38 @@ class TestCamera(unittest.TestCase):
         self.assertEqual((cam.cx, cam.cy), (0.0, 0.0))
         cam.pan(1000, 1000)
         self.assertEqual((cam.cx, cam.cy), (float(cam.fw), float(cam.fh)))
+
+
+class TestUnitIcons(unittest.TestCase):
+    def test_each_category_has_a_shape(self):
+        for cat in ("infantry", "cavalry", "archer", "siege",
+                    "beast", "support"):
+            self.assertIn(cat, CATEGORY_SHAPE)
+        self.assertEqual(category_shape("nonsense"), "circle")
+
+    def test_the_melee_types_are_visually_distinct(self):
+        shapes = {category_shape(c) for c in
+                  ("infantry", "cavalry", "archer", "siege")}
+        self.assertEqual(len(shapes), 4, "each reads as its own glyph")
+
+    def test_polygon_markers_have_enough_vertices(self):
+        for shape in ("triangle", "diamond", "square", "hex"):
+            pts = marker_points(shape, 100, 100, 8)
+            self.assertGreaterEqual(len(pts), 3)
+            for (x, y) in pts:      # all within the marker's box
+                self.assertLessEqual(abs(x - 100), 8.01)
+                self.assertLessEqual(abs(y - 100), 8.01)
+
+    def test_circle_and_cross_are_not_polygons(self):
+        self.assertEqual(marker_points("circle", 0, 0, 5), [])
+        self.assertEqual(marker_points("cross", 0, 0, 5), [])
+
+    def test_scenario_unit_types_all_map_to_a_shape(self):
+        for sid in SCENARIOS:
+            for sq in build_field(sid).squads.values():
+                self.assertIn(category_shape(sq.category),
+                              ("circle", "triangle", "diamond",
+                               "square", "hex", "cross"))
 
 
 if __name__ == "__main__":

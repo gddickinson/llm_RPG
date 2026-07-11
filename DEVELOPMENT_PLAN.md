@@ -2214,25 +2214,37 @@ is shippable and testable, de-risking UI last:
   the wrong fit — MapRenderer is bound to the world engine/zone, so
   the screen paints the battle's own string-terrain grid directly
   with a shared tile_size concept. 12 tests; suite 1263 green.)*
-- [ ] **P17.4b Richer testbed (from playtest feedback).** The screen
-  works; make it show more. (a) UNIT-TYPE ICONS — a shape per
-  category (infantry/cavalry/archer/siege/beast/support) over the
-  team colour, so you read who's who, not just which side. (b)
-  RANGED TRACERS — the sim already resolves ranged strikes (reach 5);
-  surface them as short-lived attack events the screen draws as
-  arrow lines, so you can SEE the bows work. (c) BIGGER BATTLES —
-  a large-field scenario (100×70+, hundreds of soldiers) proving the
-  O(map) flow field + LOD blobs scale; raise no hard caps that block
-  it. (d) COVER remains for P17.6 (terrain that blunts ranged), and
-  richer commander tactics are P17.5.
+- [x] **P17.4b Richer testbed (from playtest feedback).** The screen
+  works; make it show more.
+  *(Round 130, same round: (a) UNIT-TYPE ICONS — `ui/battle_camera.py`
+  gained `category_shape` + `marker_points` (pure geometry): a glyph
+  per category — infantry circle, cavalry triangle, archer diamond,
+  siege square, beast hex, medic cross — drawn in the team colour, so
+  an icon reads WHO it is and which side. (b) RANGED TRACERS — the
+  session records each ranged shot fired that tick as `(x0,y0,x1,y1)`
+  in `session.tracers` (reset every tick, never read by the sim so
+  determinism is untouched); the screen draws them as fading arrow
+  lines — you can SEE the bows work now. (c) BIGGER BATTLES —
+  `grand_clash`: a 120×80 field, 296 soldiers, infantry centre / horse
+  wing / archers behind. ~40ms/tick, well under the screen's 220ms
+  budget, so it plays smoothly; the exhaustive convergence test caps
+  big fields at 25 ticks so the suite stays fast. 8 more tests
+  (icons, tracers, scale); suite 1271, green. (d) still open: COVER
+  types that blunt ranged fire → folded into P17.6; richer commander
+  tactics → P17.5.)*
 - [ ] **P17.5 Orders & commander overlay.** `battle_orders.py`
   (Move/Hold/Charge/FocusFire/FallBack/SetFormation + Objective
   types capture-point/breach/protect) and the command UI (select
   group → verb). The player commands allied squads.
-- [ ] **P17.6 Siege.** Gates/walls as TileDamage HP; siege engines
-  deal structural damage to adjacent wall tiles → RUBBLE breaches
-  (earthworks mapping); wall-walk elevation via the multi-level
-  stacks; boiling oil = a surfaces paint; capture-point victory.
+- [ ] **P17.6 Siege & cover.** Gates/walls as TileDamage HP; siege
+  engines deal structural damage to adjacent wall tiles → RUBBLE
+  breaches (earthworks mapping); wall-walk elevation via the multi-
+  level stacks; boiling oil = a surfaces paint; capture-point
+  victory. Plus COVER (playtest ask): battle terrain carries a
+  `cover` value (forest/rubble/wall-edge/palisade) that blunts
+  incoming RANGED hit rolls (mirror the P12.7 soft-cover model on the
+  shot line) and the AI seeks it — a variety of cover types, and a
+  scenario that turns on them (archers behind a treeline).
 - [ ] **P17.7 Player role-swap.** An `embodied` flag on the
   session: set → input routes to normal grid-soldier controls,
   camera locks in; None → commander order layer, free camera; TAB

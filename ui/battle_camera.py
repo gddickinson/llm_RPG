@@ -18,6 +18,40 @@ DEFAULT_TILE = 32
 # below this tile size a soldier is sub-pixel — draw squad blobs
 LOD_BLOB_BELOW = 16
 
+# a distinct glyph per unit category, so an icon reads as WHO it is,
+# not only which side (team is the fill colour). Shapes: circle,
+# triangle (advancing horse), diamond (bow), square (engine),
+# hex (beast), cross (medic).
+CATEGORY_SHAPE = {
+    "infantry": "circle",
+    "cavalry": "triangle",
+    "archer": "diamond",
+    "siege": "square",
+    "beast": "hex",
+    "support": "cross",
+}
+
+
+def category_shape(category: str) -> str:
+    return CATEGORY_SHAPE.get(category, "circle")
+
+
+def marker_points(shape: str, cx: float, cy: float, r: float) -> list:
+    """Polygon vertices for a unit glyph. [] for circle/cross (which
+    the renderer draws specially). Pure geometry — unit-tested."""
+    if shape == "triangle":                 # points right (advancing)
+        return [(cx + r, cy), (cx - r, cy - r), (cx - r, cy + r)]
+    if shape == "diamond":
+        return [(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)]
+    if shape == "square":
+        return [(cx - r, cy - r), (cx + r, cy - r),
+                (cx + r, cy + r), (cx - r, cy + r)]
+    if shape == "hex":
+        h = r * 0.87
+        return [(cx - r, cy), (cx - r / 2, cy - h), (cx + r / 2, cy - h),
+                (cx + r, cy), (cx + r / 2, cy + h), (cx - r / 2, cy + h)]
+    return []
+
 
 class BattleCamera:
     def __init__(self, field_w: int, field_h: int,

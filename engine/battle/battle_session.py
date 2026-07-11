@@ -25,6 +25,10 @@ class BattleSession:
         self.field = field
         self.rng = random.Random(seed)
         self.tick_count = 0
+        # ranged shots fired THIS tick, for the screen to draw as
+        # tracers: (x0, y0, x1, y1). Refreshed every tick; the sim
+        # never reads them, so they don't touch determinism.
+        self.tracers = []
 
     # ------------------------------------------------------- flow
 
@@ -49,6 +53,7 @@ class BattleSession:
         self.tick_count += 1
         field = self.field
         flows = self._flows()
+        self.tracers = []
 
         for sq in field.squads.values():
             ai.update_morale(field, sq)
@@ -70,7 +75,11 @@ class BattleSession:
             target = ai.pick_target(field, sol, sq)
             if target is None:
                 continue
-            if ai._dist(sol.pos, target.pos) <= ai.reach_of(sq):
+            d = ai._dist(sol.pos, target.pos)
+            if d <= ai.reach_of(sq):
+                if d > ai.MELEE_REACH and sq.stats.get("ranged", 0) > 0:
+                    self.tracers.append((sol.x, sol.y,
+                                         target.x, target.y))
                 ai.attack(field, sol, sq, target, self.rng)
             else:
                 goal = ai.role_goal(field, sol, sq,

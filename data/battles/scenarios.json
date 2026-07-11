@@ -273,5 +273,119 @@
         ]
       }
     ]
+  },
+  "grand_clash": {
+    "name": "Grand Clash",
+    "desc": "A full battle line on a wide field \u2014 infantry centre, horse on a wing, archers behind. Zoom out to blobs to read the shape; zoom in to watch a company.",
+    "width": 120,
+    "height": 80,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_centre",
+            "type": "infantry_sword",
+            "size": 60,
+            "anchor": [
+              10,
+              26
+            ],
+            "cols": 6,
+            "order": "charge",
+            "target": "blue_centre"
+          },
+          {
+            "id": "red_left",
+            "type": "infantry_spear",
+            "size": 40,
+            "anchor": [
+              10,
+              46
+            ],
+            "cols": 5,
+            "order": "charge",
+            "target": "blue_centre"
+          },
+          {
+            "id": "red_horse",
+            "type": "cavalry_light",
+            "size": 24,
+            "anchor": [
+              12,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_bows"
+          },
+          {
+            "id": "red_bows",
+            "type": "archer_longbow",
+            "size": 24,
+            "anchor": [
+              4,
+              34
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "blue_centre"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_centre",
+            "type": "infantry_sword",
+            "size": 60,
+            "anchor": [
+              104,
+              26
+            ],
+            "cols": 6,
+            "order": "charge",
+            "target": "red_centre"
+          },
+          {
+            "id": "blue_right",
+            "type": "infantry_spear",
+            "size": 40,
+            "anchor": [
+              104,
+              46
+            ],
+            "cols": 5,
+            "order": "charge",
+            "target": "red_centre"
+          },
+          {
+            "id": "blue_horse",
+            "type": "cavalry_light",
+            "size": 24,
+            "anchor": [
+              104,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "red_bows"
+          },
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 24,
+            "anchor": [
+              114,
+              34
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_centre"
+          }
+        ]
+      }
+    ]
   }
 }
