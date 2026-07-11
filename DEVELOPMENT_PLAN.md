@@ -1649,12 +1649,26 @@ traditions lead.
   again; unseen crimes grow the ledger but never confront (they
   don't know WHO). Preset NPCs can now carry metadata from data
   (the fence flag). 7 more tests. Suite 1080, green x3.)*
-- [ ] **P12.10 Economy II.** OSRS stock-elastic shop prices (price
+- [x] **P12.10 Economy II.** OSRS stock-elastic shop prices (price
   moves k% per item of stock deviation, self-healing restock)
   layered on per-settlement supply so REGIONAL arbitrage exists
   (M&B); KCD haggle-patience minigame (visible meter, failed
   haggles cost per-merchant reputation) replacing flat haggle
   tokens; an alchemy-style universal value floor as the gold sink.
+  *(Round 109: STOCK ELASTICITY in ShopManager — price moves 5%
+  per unit the shop's stock deviates from its category baseline,
+  clamped [0.5, 2.0]; buying them out raises the price, flooding
+  them tanks it; the daily restock is the self-heal. REGIONAL
+  SUPPLY as data (data/settlement_economy.json): per-settlement
+  category factors multiply buy AND sell — provisions 0.8 in
+  Riverside vs 1.3 in Stonepine: buy low, carry, sell high.
+  HAGGLE MINIGAME: H in the shop panel, per-merchant patience
+  3/day with a visible meter + earned-deal readout; graded
+  Persuasion DC 13 — crit +10%, success +5% (cap 15%), fail -1
+  patience, crit fail zeroes patience AND -5 relationship; the old
+  /persuade token honored via max(). DEFERRED: the alchemy-style
+  universal value floor (wants an item-targeting UI). 8 tests.
+  Suite 1088, green x3.)*
 - [ ] **P12.11 Social depth: the bond ceremony.** Qud's water
   ritual: a formal "share a drink" with named NPCs converts
   reputation into spendable currency — buy secrets, learn skills,
