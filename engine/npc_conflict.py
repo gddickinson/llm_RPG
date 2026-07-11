@@ -76,6 +76,14 @@ class NPCConflictSystem:
         fair_game = [h for h in hostiles
                      if _manhattan(h, player) > PLAYER_DUEL_RADIUS]
         engaged = 0
+        # Giants reshape the world (P10.5)
+        try:
+            from engine.giants import is_giant, giant_tick
+            for h in hostiles:
+                if is_giant(h) and giant_tick(engine, h):
+                    engaged += 1
+        except Exception:
+            pass
         for guard in guards:
             if engaged >= MAX_ENGAGEMENTS:
                 break

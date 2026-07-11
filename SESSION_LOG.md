@@ -1748,3 +1748,24 @@ compared max/min level rolls across floors (a top floor of all
 bandits tied it); it now asserts the actual mechanic — every deep
 monster exceeds its own template's level and hp. 7 new tests.
 Suite: 948, green x4.
+
+**Round 93 — P10.5 Actors shape the world: giants + labor (done).**
+The hill_giant walked in (`data/monsters.json`, behavior flag
+"giant": hp 60, STR 22, symbol G) and `engine/giants.py` gives it
+its two big acts, run from the NPC-conflict scan on a 3-tick
+cooldown. SMASH: an adjacent building wall takes STR-scaled siege
+damage — no lock, no DC, the huge don't knock — and a wall a giant
+brings down gains an extra debris layer: DEEP rubble, blocked until
+someone clears it (P10.4 rules). HURL: a boulder at the player from
+3–8 tiles with true LOS — direct hit maims to 1 HP but never kills
+(the story kills), splash crushes bystanders for real (defeat +
+removal), siege damage to the tiles under the blast, debris where
+it lands. The world heals back at night: `run_night_labor` in the
+overnight stack has work crews clear rubble layers beside
+settlement buildings (through the conserving clear_rubble — moved,
+never deleted) and scorched ground beside living woods regrows
+(cap 5/night). Regrowth was deliberately restricted to SCORCHED
+during testing: letting plain grass-beside-forest regrow would
+slowly forest over every meadow. Remainder (cooperative
+ConstructionProject + chop/dig laborer tasks) folded into P10.6.
+7 new tests. Suite: 950, green x3.

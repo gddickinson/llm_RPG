@@ -1325,12 +1325,22 @@ set_terrain + tile callbacks for interior sync.
   sync-on-entry, load-safe by construction). Depths persist via
   save_load. Also fixed a statistics flake in the dungeon depth
   test (assert the mechanic, not roll luck). 7 tests.)*
-- [ ] **P10.5 Actors shape the world.** Giants bash buildings
+- [x] **P10.5 Actors shape the world.** Giants bash buildings
   (STR/size-scaled siege damage, no DC for the huge) and hurl
   boulders (projectile + splash + tile damage); laborer tasks: chop
   (forest→grass with regrowth), dig (grass→farmland), clear rubble;
   minimal cooperative ConstructionProject (materials + workers →
-  stamped tiles).
+  stamped tiles). *(Round 93: `engine/giants.py` — hill_giant
+  template (behavior flag "giant"), giant_tick on the conflict scan
+  (smash adjacent walls with STR-scaled siege damage leaving DEEP
+  rubble; hurl boulders 3–8 tiles with LOS: direct hit maims the
+  player to 1 HP never kills, splash crushes bystanders for real,
+  siege tile damage + debris scatter; 3-tick cooldown); nightly
+  run_night_labor — work crews clear rubble beside settlement
+  buildings via the conserving clear_rubble, scorched ground beside
+  living woods regrows (cap 5/night). 7 tests. Remainder:
+  cooperative ConstructionProject + chop/dig laborer tasks — fold
+  into P10.6's dig actions.)*
 - [ ] **P10.6 Greenfield: water & tunnels.** Minimal cellular flood
   spread + damming (blocking tiles stop the frontier); mining
   tunnels (mountain→cave floor via dig actions). Small and tested.

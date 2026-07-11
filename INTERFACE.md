@@ -65,6 +65,7 @@ llm_RPG/
 - **`targeting.py`** — `TargetingSystem` (P8.7): [ ] cycle / click-to-target locks with range + true LOS; auto-refresh each turn; reticle + hint bar; bow and attack spells fire at the lock.
 - **`tile_damage.py`** — `TileDamage` (P10.2): sparse tile HP + materials (stone resists fire, wood burns); walls crack → RUBBLE (a breach is a second door); fire scorches; persisted.
 - **`surfaces.py`** — `SurfaceLayer` (P10.3): sparse fire/oil/water per-tile surfaces; fire burns occupants + tiles and spreads; oil pools chain-ignite; water douses; per-turn tick; persisted; DM-paintable.
+- **`giants.py`** — Giants + labor (P10.5): `is_giant`/`giant_tick` (smash walls to deep rubble, hurl boulders — maims the player, real splash deaths) on the conflict scan; nightly `run_night_labor` (crews clear rubble by buildings, scorched ground regrows).
 - **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.

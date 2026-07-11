@@ -124,5 +124,24 @@
     "behavior": {
       "ambush": 2
     }
+  },
+  "hill_giant": {
+    "name": "Hill Giant",
+    "class": "troll",
+    "race": "troll",
+    "hp": 60,
+    "level": 6,
+    "symbol": "G",
+    "description": "A shoulder-of-the-hills brute who treats walls as suggestions.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 22,
+      "constitution": 18
+    },
+    "behavior": {
+      "giant": true,
+      "flee_below": 0.1
+    }
   }
 }

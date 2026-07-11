@@ -382,6 +382,11 @@ class GameEngine(GameAPIMixin):
                 self.market.run_day()
                 self.door_manager.run_day()
                 try:
+                    from engine.giants import run_night_labor
+                    run_night_labor(self)
+                except Exception as e:
+                    logger.debug(f"Night labor error: {e}")
+                try:
                     from world.astronomy import announce_conjunction
                     announce_conjunction(self, day)
                 except Exception:
