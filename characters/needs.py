@@ -156,6 +156,11 @@ def player_needs_turn(engine) -> None:
     lvl = exhaustion_level(player)
     if lvl >= 4 and player.hp > player.max_hp // 2:
         player.hp = player.max_hp // 2
+    try:   # torso wounds cap effective HP (P15.9)
+        from engine.wounds import apply_hp_ceiling
+        apply_hp_ceiling(player)
+    except Exception:
+        pass
     # rung 6: collapse — any sleep clears tiredness, not the debt
     if lvl >= 6:
         from characters.status_effects import apply_effect, has_effect

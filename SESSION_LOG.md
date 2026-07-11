@@ -2508,3 +2508,34 @@ launched a background survey of the Autonomous World project for
 more importable ideas (worldgen, building graphics/types, economy
 & resource production) per George's request. 8 tests. Suite: 1176,
 green x3.
+
+**Round 123 — P15.9 body-part health (done; gameplay-first).**
+Where you're hurt now matters. `engine/wounds.py` layers a
+body-part model UNDER the HP/dying bar (never replacing it): five
+parts (head, torso, two arms, legs), each severity 0-3
+(sound/bruised/wounded/crippled). A hit for 6+ rolls one random
+part up a rung — torso weighted double as the biggest target, and
+the chance scales with how hard the blow landed. The consequences
+each ride an existing penalty summation point, so they compose for
+free: HEAD wounds dock every d20 check (into roll_check beside
+conditions and exhaustion), ARM wounds dock your attack — but the
+BETTER arm swings, so a single hurt arm doesn't stop you, it just
+stops helping — LEG wounds add minutes to every step (into the
+traversal step tax), and TORSO wounds drop your effective-HP
+ceiling 15% per rung. A CRIPPLED limb festers, raising the P12.12
+infection chance — three systems meeting at a shattered leg.
+Wounds knit worst-first: two rungs a real inn night, one a camp,
+and Battle Medicine (P12.8) sets the worst limb on a good dressing.
+The suite earned its keep again: the torso HP-cap tick was clawing
+back the Hearty Brew's legitimate overheal (P12.5) — the ceiling
+is now a strict no-op when the torso is sound. State lives on
+player.metadata (save-free); the hint bar reads what's broken. 12
+tests. The "more skills beyond the 8" half of P15.9 is deferred as
+P15.9b (its own round). George also sent two live design notes
+this round, both folded into the plan: FOG OF WAR / map discovery
+(P15.11 — the overworld unknown until explored, revealed by
+maps/being-told/magic) WITH an event-log corollary (the log should
+only report what the character can see or hear — P14.3a's earshot
+gate extended to the full FOV mask, world news/rumor kept global
+by design as the "revealed another way" route). Suite: 1188,
+green x3.

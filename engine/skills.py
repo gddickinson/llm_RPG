@@ -151,11 +151,13 @@ def roll_check(character, skill: Skill, dc: int = 10,
     mod = ability_modifier(ability_score)
     prof = proficiency_bonus(getattr(character, "level", 1)) if proficient else 0
 
-    try:   # conditions + exhaustion bite every check (P12.2/P12.3)
+    try:   # conditions + exhaustion + wounds bite every check
         from characters.needs import exhaustion_check_penalty
         from characters.status_effects import check_penalty
         cond = check_penalty(character) + \
             exhaustion_check_penalty(character)
+        from engine.wounds import check_penalty as wound_check
+        cond += wound_check(character)   # head wounds (P15.9)
     except Exception:
         cond = 0
     total = d20 + mod + prof + cond

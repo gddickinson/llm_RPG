@@ -153,9 +153,11 @@ class CombatSystem:
             from characters.status_effects import attack_damage_modifier
             from characters.needs import (exhaustion_attack_penalty,
                                           hunger_attack_penalty)
+            from engine.wounds import attack_penalty as wound_atk
             stat_mod = attack_damage_modifier(attacker) + \
                 hunger_attack_penalty(attacker) + \
-                exhaustion_attack_penalty(attacker)
+                exhaustion_attack_penalty(attacker) + \
+                wound_atk(attacker)          # arm wounds (P15.9)
         except Exception:
             stat_mod = 0
         base = max(1, weapon_dmg + max(0, atk_mod) + enchant_dmg + stat_mod)
@@ -179,6 +181,11 @@ class CombatSystem:
                     self.engine.active_zone() is None:
                 self.engine.surfaces_layer.splash_blood(
                     *defender.position)
+        except Exception:
+            pass
+        try:   # and it may break a body part (P15.9)
+            from engine.wounds import maybe_wound
+            maybe_wound(self.engine, damage, defender)
         except Exception:
             pass
         self._wear_gear(attacker, defender)

@@ -112,6 +112,11 @@ def camp(engine) -> List[str]:
     player.metadata["sleep_debt"] = 0
     player.metadata["wounded"] = 0
     player.metadata["weapon_action_used"] = False   # P12.7
+    try:   # a night in the wild knits one wound (P15.9)
+        from engine.wounds import heal_wounds
+        heal_wounds(player, 1)
+    except Exception:
+        pass
     player.metadata["hunger"] = min(
         player.metadata.get("hunger", 20), 30)
 

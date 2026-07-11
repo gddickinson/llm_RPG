@@ -117,6 +117,11 @@ def sleep(engine) -> List[str]:
     player.metadata["fatigue"] = 0     # slept off (P11.1)
     player.metadata["sleep_debt"] = 0  # a REAL night (P12.3)
     player.metadata["wounded"] = 0     # wounds knit (P12.4)
+    try:   # body-part wounds knit too (P15.9)
+        from engine.wounds import heal_wounds
+        heal_wounds(player, 2)
+    except Exception:
+        pass
     player.metadata["weapon_action_used"] = False   # P12.7
 
     after = snapshot(engine)

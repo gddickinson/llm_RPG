@@ -1925,13 +1925,25 @@ UI polish.
   (fewer minutes per step on ROAD/BRIDGE), a buyable mule (carry
   +8, follows like a pet, and it's a body — ransom rules apply),
   and a diary-unlocked Stonepine boat crossing.
-- [ ] **P15.9 Character detail (George, live 2026-07-11).** More
-  skills that add richness (combat/social/craft lattice beyond the
-  8), and a DETAILED HEALTH SYSTEM: body-part damage (head/torso/
-  arms/legs) with consequences — an arm wound docks attack, a leg
-  wound docks speed, a head wound docks checks — layered under the
-  existing HP/dying so it deepens without replacing. Ties into
-  P12.2 conditions and P12.12 infection (a wounded limb festers).
+- [x] **P15.9 Character detail: body-part health (George, live
+  2026-07-11).** DETAILED HEALTH SYSTEM: body-part damage (head/
+  torso/arms/legs) with consequences, layered under HP/dying.
+  *(Round 123: `engine/wounds.py`. Five parts, severity 0-3
+  (sound/bruised/wounded/crippled). A hit for 6+ rolls a random
+  part up one rung (torso weighted 2x — biggest target); chance
+  scales with the blow. HEAD wounds dock every d20 (into
+  roll_check beside conditions/exhaustion), ARM wounds dock attack
+  (the BETTER arm swings — worse arm ignored), LEG wounds add
+  minutes per step (into traversal), TORSO wounds drop the
+  effective-HP ceiling 15%/rung (needs turn; a no-op with a sound
+  torso so it never claws back the Hearty Brew overheal — a real
+  interaction the suite caught). A CRIPPLED limb festers (raises
+  P12.12 infection). Knit: 2 rungs per inn night, 1 per camp,
+  worst-first; Battle Medicine (P12.8) also sets the worst limb.
+  Hint bar reads what's broken. State on player.metadata (save-
+  free). 12 tests. Suite 1188, green x3. REMAINDER: the "more
+  skills beyond the 8" half — track separately as P15.9b when
+  wanted; the health system was the meatier request.)*
 - [ ] **P15.10 Equipment II (George, live 2026-07-11).** Equipment
   management that "makes sense": paper-doll equip/unequip UI with
   slot art, weight/encumbrance already in carry.py surfaced,
@@ -1939,7 +1951,30 @@ UI polish.
   matched-armor bonuses, durability shown, quick-swap loadouts;
   character sprite reflects worn gear (composited over the
   P15.1 tileset entity).
-- [ ] **P15.11 Playtest Campaign 5.** Both-sides session across the
+- [ ] **P15.11 Fog of war / map discovery (George, live
+  2026-07-11).** The overworld is NOT known at start: an explored/
+  visible mask over the map — tiles are unseen until in view (the
+  P8.6 FOV shadowcaster already blocks LOS through buildings/
+  mountains/forest), then remembered as "explored" (dimmed) once
+  left. Unseen tiles hide their NPCs and monsters. Reveal by
+  exploring, by bought/found maps (a data item that paints a
+  region explored), by being told (an NPC marks a POI), or by
+  magic (a Farsight spell). Renderer draws unseen black, explored
+  dim, visible full; the minimap follows.
+  **Event-log corollary (George, live 2026-07-11):** the log obeys
+  the same visibility — it describes only what the character can
+  see or hear. P14.3a already gated actor-local combat events by
+  earshot; this round EXTENDS that audit to every actor-local line
+  (spell hits far off, surface fires, NPC schedule moves) using the
+  FOV mask, not just Chebyshev distance. Deliberately KEPT global:
+  [Realm]/[Board]/[DM]/[Legend] world news and rumor — those ARE
+  the "revealed by another route" the request allows (word travels,
+  the DM narrates, the board posts).
+- [ ] **P15.9b Skill breadth (deferred half of P15.9).** More
+  lattice skills for richness beyond the 8 (a combat/social/craft
+  spread), each with a pet, a teacher, and a use-site that trains
+  it — sized as its own round.
+- [ ] **P15.12 Playtest Campaign 5.** Both-sides session across the
   P15 systems; findings become fixes or Phase 16.
 
 ## Phase 16 — Living world imports (Autonomous World survey, 2026-07-11)

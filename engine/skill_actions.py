@@ -183,6 +183,12 @@ def battle_medicine(engine, target=None) -> str:
                 msg += treat(engine, result.degree)
         except Exception:
             pass
+        try:   # and sets a broken limb (P15.9)
+            from engine.wounds import tend_limb
+            if result.degree is not Degree.CRIT_FAIL:
+                msg += tend_limb(engine)
+        except Exception:
+            pass
     engine.memory_manager.add_event(msg)
     engine.advance_turn()
     return msg
