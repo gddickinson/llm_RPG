@@ -2480,3 +2480,31 @@ on first GUI draw (the suite never drew tiles — George's next
 session would have hit it) AND skipped the sprite cache; both
 fixed, with a bridge-draw regression test to hold it. 6 tests.
 Suite: 1168, green x3.
+
+**Round 122 — P15.5 Companion depth (done; gameplay-first per George).**
+George redirected mid-loop: "gameplay first." So Track A led. Four
+features on the party. PERSONAL QUESTS ride the bond: a quest can
+carry requires_bond, and it stays hidden until the player's
+bond_earned high-water mark with the giver crosses it — trust,
+once earned, is NOT unearned by spending it (the ballad stays open
+after you spend the bond on a lesson; tested). Ships Melody's "The
+Lost Ballad" at bond 25. BANTER lives in data/banter.json (a line
+list per companion, with per-class fallbacks) and one line surfaces
+every 45 quiet turns, cycled speaker by speaker, from the turn
+pipeline — the road finally talks without spamming. TACTICAL
+ORDERS: /order follow|hold|flee, party-only — hold plants a
+companion (they fight what's adjacent but never trail you), flee
+peels a wounded companion (<30% HP) off melee toward safety. And a
+CAMP-SCENE ROLE: a companion on the P12.6 night stands the first
+watch and drops the wilderness ambush chance from 25% to 10%. A
+tricky bug: my bond high-water edit to _add silently didn't apply
+the first time (a stale anchor after an earlier assert failure) —
+the end-to-end trace caught bond_earned staying None, re-applied,
+green. Also folded George's two further live requests into the
+plan as P15.9 (character detail: more skills + body-part health
+with limb consequences) and P15.10 (Equipment II: sensible paper-
+doll management, two-handed rules, gear-reflecting sprite). And
+launched a background survey of the Autonomous World project for
+more importable ideas (worldgen, building graphics/types, economy
+& resource production) per George's request. 8 tests. Suite: 1176,
+green x3.

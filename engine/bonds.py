@@ -48,6 +48,9 @@ def points(engine, npc) -> int:
 def _add(engine, npc, delta: int) -> int:
     bonds = engine.player.metadata.setdefault("bonds", {})
     bonds[npc.id] = max(0, bonds.get(npc.id, 0) + delta)
+    if delta > 0:   # trust's high-water mark gates quests (P15.5)
+        earned = engine.player.metadata.setdefault("bond_earned", {})
+        earned[npc.id] = max(earned.get(npc.id, 0), bonds[npc.id])
     return bonds[npc.id]
 
 

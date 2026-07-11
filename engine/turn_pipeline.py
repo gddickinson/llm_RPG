@@ -52,6 +52,12 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Law contact error: {e}")
 
+    # The road talks (P15.5)
+    try:
+        self.companion_manager.banter_tick()
+    except Exception as e:
+        logger.debug(f"Banter error: {e}")
+
     # A loyal pet may fetch (P12.14)
     try:
         self.pet_system.maybe_fetch()

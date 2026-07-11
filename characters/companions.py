@@ -13,6 +13,19 @@ from typing import List, Optional
 
 logger = logging.getLogger("llm_rpg.companions")
 
+BANTER_EVERY = 45
+
+
+def _load_banter():
+    try:
+        from items.data_loader import load_data_file
+        return load_data_file("banter.json")
+    except Exception:
+        return {}
+
+
+BANTER = _load_banter()
+
 
 # Classes that can be recruited (heuristic mode)
 RECRUITABLE_CLASSES = {"warrior", "bard", "cleric", "wizard", "ranger", "paladin"}
@@ -89,12 +102,71 @@ class CompanionManager:
 
     # ---- per-turn behavior ------------------------------------------
 
+    def set_order(self, npc, order: str) -> str:
+        """P15.5 tactical orders: follow (default) / hold / flee."""
+        if order not in ("follow", "hold", "flee"):
+            return "/order follow · hold · flee"
+        npc.metadata["order"] = order
+        lines = {"follow": f"{npc.name} falls in behind you.",
+                 "hold": f"{npc.name} plants their feet: "
+                         f"\"I hold here.\"",
+                 "flee": f"{npc.name} nods: \"If it goes bad, "
+                         f"I'm gone.\""}
+        msg = lines[order]
+        self.engine.memory_manager.add_event(msg)
+        return msg
+
+    def _flee_step(self, npc) -> bool:
+        """Wounded and ordered to live: step away from the nearest
+        hostile."""
+        if npc.hp > npc.max_hp * 0.3:
+            return False
+        from engine.tactics import adjacent_hostiles
+        foes = adjacent_hostiles(self.engine, npc.position)
+        if not foes:
+            return False
+        fx, fy = foes[0].position
+        cx, cy = npc.position
+        dx = (cx > fx) - (cx < fx)
+        dy = (cy > fy) - (cy < fy)
+        moved = self.engine.world.map.move_character(
+            npc, cx + dx, cy + dy)
+        if moved:
+            self.engine.memory_manager.add_event(
+                f"{npc.name} breaks off, bleeding.")
+        return bool(moved)
+
+    def banter_tick(self) -> None:
+        """P15.5: the road talks. One authored line every
+        BANTER_EVERY quiet turns, cycling per companion."""
+        members = [n for n in self.members() if n.is_active()]
+        if not members:
+            return
+        meta = self.engine.player.metadata
+        turn = self.engine.turn_counter
+        if turn - meta.get("banter_turn", 0) < BANTER_EVERY:
+            return
+        meta["banter_turn"] = turn
+        idx = meta.get("banter_idx", 0)
+        speaker = members[idx % len(members)]
+        lines = BANTER.get(speaker.id) or BANTER.get(
+            "_class_" + getattr(speaker.character_class, "value",
+                                ""), [])
+        if not lines:
+            return
+        meta["banter_idx"] = idx + 1
+        line = lines[(idx // max(1, len(members))) % len(lines)]
+        self.engine.memory_manager.add_event(line)
+
     def update(self) -> None:
         """Move companions to follow the player and attack adjacent enemies."""
         from engine.squad_tactics import (player_focus_target, flank_tile,
                                           FOCUS_RADIUS)
         for npc in self.members():
             if not npc.is_active():
+                continue
+            order = npc.metadata.get("order", "follow")
+            if order == "flee" and self._flee_step(npc):
                 continue
             # Focus fire: the player's current target comes first (P7.3)
             focus = player_focus_target(self.engine)
@@ -125,8 +197,10 @@ class CompanionManager:
             # Attack any adjacent enemy
             if self._companion_attack_nearby_enemy(npc):
                 continue
-            # Otherwise, follow
-            self._companion_step_toward(npc, self.engine.player.position)
+            # Otherwise, follow — unless holding ground (P15.5)
+            if order != "hold":
+                self._companion_step_toward(
+                    npc, self.engine.player.position)
 
     def _companion_attack_nearby_enemy(self, comp) -> bool:
         """If a hostile is adjacent, attack it. Return True if did."""

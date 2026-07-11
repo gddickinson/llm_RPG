@@ -33,6 +33,7 @@ def build_subsystems(engine, llm_model=None,
     if enable_quests:
         from quests.quest_manager import QuestManager
         self.quest_manager = QuestManager()
+        self.quest_manager.engine = self   # bond gates (P15.5)
 
     # Encounter manager (wilderness monster spawns)
     from world.encounters import EncounterManager

@@ -283,5 +283,22 @@
     ],
     "reward_xp": 80,
     "quest_points": 1
+  },
+  "melodys_lost_ballad": {
+    "title": "The Lost Ballad",
+    "description": "Melody's masterpiece needs a finale \u2014 and inspiration is thirsty work. Bring her two bottles of wine and she'll finish it on the road with you.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "wine",
+        "required": 2,
+        "description": "Gather 2 bottles of wine for Melody"
+      }
+    ],
+    "giver_id": "minstrel_01",
+    "reward_gold": 40,
+    "reward_xp": 150,
+    "quest_points": 2,
+    "requires_bond": 25
   }
 }

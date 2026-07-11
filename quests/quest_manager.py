@@ -41,7 +41,22 @@ class QuestManager:
         return quest
 
     def is_unlocked(self, quest: Quest) -> bool:
-        """A quest with a prerequisite hides until that quest is done."""
+        """Prerequisite quests hide it; a personal quest hides until
+        the bond is deep enough (P15.5)."""
+        need_bond = quest.metadata.get("requires_bond")
+        if need_bond:
+            engine = getattr(self, "engine", None)
+            if engine is None:
+                return False
+            from engine.bonds import points
+            giver = engine.npc_manager.get_npc(quest.giver_id)
+            if giver is None:
+                return False
+            # spent bond still counts as trust: the high-water mark
+            earned = engine.player.metadata.get(
+                "bond_earned", {}).get(giver.id, 0)
+            if max(points(engine, giver), earned) < need_bond:
+                return False
         prereq = quest.metadata.get("prereq_quest")
         if not prereq:
             return True

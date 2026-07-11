@@ -27,6 +27,7 @@ SUPPLY_NEED = 8            # heal-value of food a real camp burns
 CAMP_HEAL_FRACTION = 0.50
 AMBUSH_HEAL_FRACTION = 0.25
 AMBUSH_CHANCE = 0.25
+WATCHED_AMBUSH_CHANCE = 0.10   # a companion on watch (P15.5)
 DOZE_FATIGUE_RELIEF = 40
 STOCK_DREAMS = (
     "You dream of a door in the mountainside that was never there.",
@@ -99,7 +100,10 @@ def camp(engine) -> List[str]:
     engine.advance_turn()                 # the nightly stack fires
 
     rng = engine.combat_system.rng
-    ambushed = rng.random() < AMBUSH_CHANCE
+    watcher = next((n for n in engine.companion_manager.members()
+                    if n.is_active()), None)
+    chance = WATCHED_AMBUSH_CHANCE if watcher else AMBUSH_CHANCE
+    ambushed = rng.random() < chance
     heal_frac = AMBUSH_HEAL_FRACTION if ambushed else \
         CAMP_HEAL_FRACTION
     player.hp = min(player.max_hp,
@@ -113,6 +117,9 @@ def camp(engine) -> List[str]:
 
     lines = [f"You camp under the open sky. (supplies: {supplies} "
              f"worth of provisions burned)"]
+    if watcher is not None:
+        lines.append(f"{watcher.name} takes the first watch, "
+                     f"firelight on their face.")
     if ambushed:
         lines.append(_spring_ambush(engine))
     else:

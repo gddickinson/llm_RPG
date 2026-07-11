@@ -1896,10 +1896,22 @@ UI polish.
   aurora on conjunction nights.
 
 **Track A — advanced gameplay**
-- [ ] **P15.5 Companion depth.** Loyalty arcs on the bond system:
+- [x] **P15.5 Companion depth.** Loyalty arcs on the bond system:
   personal quests at bond thresholds, authored travel banter
   (data, per NPC), tactical orders (hold / focus / flee at hp%),
   and a camp-scene role in the P12.6 night.
+  *(Round 122, gameplay-first per George: PERSONAL QUESTS gated by
+  a bond high-water mark — quests.requires_bond, unlocked once
+  bond_earned (trust is not un-earned by spending) crosses the
+  threshold; ships Melody's "The Lost Ballad" at bond 25. BANTER
+  from data/banter.json (per-NPC + per-class fallback), one line
+  every 45 quiet turns, cycled per companion, in the turn
+  pipeline. TACTICAL ORDERS via /order follow|hold|flee (party
+  only): hold plants them (fights adjacent, never trails), flee
+  breaks a wounded companion (<30% HP) away from melee. CAMP
+  WATCH: a companion on the P12.6 night drops the ambush chance
+  25%→10% ("takes the first watch"). 8 tests. Suite 1176, green
+  x3.)*
 - [ ] **P15.6 Boss set-pieces.** Three authored boss fights as
   data: telegraphed AoE (the giant marks the boulder tile a turn
   ahead), phase changes at hp thresholds (the Tyrant floods its
@@ -1913,7 +1925,21 @@ UI polish.
   (fewer minutes per step on ROAD/BRIDGE), a buyable mule (carry
   +8, follows like a pet, and it's a body — ransom rules apply),
   and a diary-unlocked Stonepine boat crossing.
-- [ ] **P15.9 Playtest Campaign 5.** Both-sides session across the
+- [ ] **P15.9 Character detail (George, live 2026-07-11).** More
+  skills that add richness (combat/social/craft lattice beyond the
+  8), and a DETAILED HEALTH SYSTEM: body-part damage (head/torso/
+  arms/legs) with consequences — an arm wound docks attack, a leg
+  wound docks speed, a head wound docks checks — layered under the
+  existing HP/dying so it deepens without replacing. Ties into
+  P12.2 conditions and P12.12 infection (a wounded limb festers).
+- [ ] **P15.10 Equipment II (George, live 2026-07-11).** Equipment
+  management that "makes sense": paper-doll equip/unequip UI with
+  slot art, weight/encumbrance already in carry.py surfaced,
+  two-handed rules enforced (no shield with a greatsword), set/
+  matched-armor bonuses, durability shown, quick-swap loadouts;
+  character sprite reflects worn gear (composited over the
+  P15.1 tileset entity).
+- [ ] **P15.11 Playtest Campaign 5.** Both-sides session across the
   P15 systems; findings become fixes or Phase 16.
 
 ## What NOT to build (explicitly deferred)

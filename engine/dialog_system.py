@@ -42,6 +42,14 @@ class DialogSystem:
             self.engine.advance_turn()
             return result
 
+        if lowered.startswith("/order"):
+            if npc.id not in self.engine.companion_manager.party:
+                return f"{npc.name} doesn't take orders from you."
+            parts = message.split(maxsplit=1)
+            return self.engine.companion_manager.set_order(
+                npc, (parts[1] if len(parts) > 1 else "").strip()
+                .lower())
+
         # Social checks: /persuade /intimidate /deceive <argument>
         from engine.persuasion import parse_command
         cmd = parse_command(message)
