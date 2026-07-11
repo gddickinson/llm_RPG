@@ -1556,12 +1556,25 @@ traditions lead.
   pie + brew stocked at the tavern. The full-health refusal
   contract preserved. Stolen-flag laundering waits on a theft
   marking system (remainder). 7 tests. Suite 1038, green x3.)*
-- [ ] **P12.6 Rest with teeth + the DM's night.** Long rest costs
+- [x] **P12.6 Rest with teeth + the DM's night.** Long rest costs
   provisions (BG3 camp supplies); interruption rules; well-rested
   buffs by bed quality (Skyrim +XP tiers); lifestyle expenses as a
   gold sink at inns; and the hook the whole game wants: the long
   rest is the AutonomousDM's GUARANTEED beat slot — while you sleep,
   the world moves and the DM speaks (dreams, ambushes, camp scenes).
+  *(Round 104: `engine/camping.py`. Enter outdoors now CAMPS: a
+  real camp burns SUPPLY_NEED(8) heal-value of food from the pack —
+  supplied = real night (half heal, fatigue/debt/wounded cleared),
+  unsupplied = fitful DOZE (partial fatigue only, the night wasted).
+  25% wilderness INTERRUPTION: reduced recovery + a real beast at
+  the fire come dawn. Inn tiers: 15g private room applies
+  WELL_RESTED (+10% XP via award_xp, 240 turns), 5g bunk when coin
+  is short. THE DM'S NIGHT: every sleep — inn or camp — ends with a
+  guaranteed `[DM]` dream stitched from the lived world (recent
+  deeds, director rumors, stock dreams), and
+  dm_autonomous.night_scene lets the LLM DM queue an authored scene
+  that plays once. Camp hint at fatigue 60+. 3 rest tests re-pinned
+  to tiers/camp routing. 8 tests. Suite 1046, green x3.)*
 - [ ] **P12.7 Combat depth.** Concentration: one sustained spell
   max, damage forces the keep-it check (or PF2e sustain-as-action);
   cover from FOV terrain (+2 half / +5 three-quarters vs ranged);

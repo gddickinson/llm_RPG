@@ -149,6 +149,12 @@ def context_hints(engine) -> List[str]:
                 hints.append("[SHIFT+P] pray")
         except Exception:
             pass
+        try:   # tired in the wilds? camp (P12.6)
+            from characters.needs import get_fatigue
+            if get_fatigue(engine.player) >= 60:
+                hints.append("[Enter] make camp (burns provisions)")
+        except Exception:
+            pass
         try:   # needs telegraphs (P12.3)
             from characters.needs import (exhaustion_level, get_thirst,
                                           THIRST_PARCHED)

@@ -27,10 +27,14 @@ class TestRest(unittest.TestCase):
             self.skipTest("no tavern interior")
         self.engine.current_interior = self.engine.interiors[tavern_key]
 
-    def test_no_bed_in_the_wilds(self):
+    def test_wilds_enter_makes_camp_instead(self):
+        # P12.6: no inn out here — Enter camps (dozes, unprovisioned)
         self.player.position = (2, 2)
+        self.player.inventory = []
         self.assertIsNotNone(can_sleep_here(self.engine))
-        self.assertEqual(sleep(self.engine), [])
+        lines = sleep(self.engine)
+        self.assertTrue(lines, "camping replaces the refusal")
+        self.assertIn("doze", " ".join(lines).lower())
 
     def test_sleep_at_tavern_restores_and_advances(self):
         self._enter_tavern()
@@ -42,7 +46,8 @@ class TestRest(unittest.TestCase):
         self.assertTrue(lines)
         self.assertEqual(self.player.hp, self.player.max_hp)
         self.assertLessEqual(self.player.metadata["hunger"], 5)
-        self.assertEqual(self.player.gold, 45, "bed costs 5g")
+        self.assertEqual(self.player.gold, 35,
+                         "50g buys the private room (15g)")
         # Woke at dawn the next day
         new_time = self.engine.world.time
         self.assertGreater(new_time, t0)
@@ -65,7 +70,7 @@ class TestRest(unittest.TestCase):
         self.engine._day_metrics = base
         lines = sleep(self.engine)
         text = "\n".join(lines)
-        self.assertIn("Gold: +55", text)   # 100 - 5 bed - 40
+        self.assertIn("Gold: +45", text)   # 100 - 15 room - 40
         self.assertIn("tavern board", text)
 
     def test_sleeping_fires_the_nightly_stack(self):

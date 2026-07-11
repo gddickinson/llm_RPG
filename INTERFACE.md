@@ -71,7 +71,8 @@ llm_RPG/
 - **`giants.py`** — Giants + labor (P10.5): `is_giant`/`giant_tick` (smash walls to deep rubble, hurl boulders — maims the player, real splash deaths) on the conflict scan; nightly `run_night_labor` (crews clear rubble by buildings, masons rebuild breached walls, scorched ground regrows).
 - **`flood.py`** — `FloodSystem` (P10.6): cellular flood frontier over low ground, dammed by rubble/buildings/mountains; recedes restoring original terrain; occupied tiles never flooded; storm-burst chance; persisted.
 - **`earthworks.py`** — P10.6: the E-key ground fallback (clear rubble, then pickaxe-dig adjacent mountains — 4 swings tunnel to grass, trains Mining); `footprint_to_perimeter`/`sync_breaches`/`close_breach` breach mapping shared by entry-sync and the night masons.
-- **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
+- **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay; P12.6 tiers: 15g private room grants well_rested (+10% XP), 5g bunk; routes outdoor Enter to camping.
+- **`camping.py`** — P12.6: camp anywhere outdoors — burns provisions (supplied = real night, unsupplied = doze), 25% wilderness ambush at dawn; `night_beat` = the DM's guaranteed `[DM]` dream after every sleep (dm_autonomous.night_scene overrides).
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.
 - **`dm_bridge.py`** — `--dm-bridge` file bridge: digest export + inbox bundle polling + result receipts.

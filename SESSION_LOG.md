@@ -2021,3 +2021,26 @@ at full HP (two pinned tests + a same-turn poison tick in my own
 test — the suite keeps me honest too). Stolen-flag laundering is
 noted as remainder pending any theft-marking system. 7 tests.
 Suite: 1038, green x3.
+
+**Round 104 — P12.6 Rest with teeth + the DM's night (done).**
+Sleep grew a cost, a risk, and a voice. CAMPING (`engine/camping.py`):
+Enter outdoors now makes camp instead of refusing — a real camp
+BURNS PROVISIONS, eight heal-value of food straight from the pack
+(BG3's supply rule riding P12.5's food data for free). Supplied,
+it's a real night: half heal, fatigue, sleep debt and the Wounded
+counter cleared, the nightly stack fires. Unsupplied you DOZE
+fitfully by a cold fire: some tiredness fades, the debt stays,
+the night is wasted — carry bread or pay for it. The wilderness
+can INTERRUPT: one roll in four wakes you at dawn to reduced
+recovery and a very real wolf beside the embers. INN TIERS
+(Skyrim + the gold sink): 15g takes the private room and wakes
+you WELL_RESTED — +10% XP for 240 turns, wired into award_xp —
+while short coin gets the 5g bunk and nothing else. And the hook
+the plan called "what the whole game wants": THE DM'S NIGHT.
+Every sleep, inn or camp, ends with a guaranteed `[DM]` beat — a
+dream stitched from the lived world (your latest deed, the
+director's freshest rumor, or an authored stock dream), and
+`dm_autonomous.night_scene` gives the LLM DM a one-shot slot to
+queue a scene that plays at the next sleep and clears. Three rest
+tests re-pinned (wilds-Enter now camps; 50g buys the room). Camp
+hint appears at fatigue 60+. 8 tests. Suite: 1046, green x3.

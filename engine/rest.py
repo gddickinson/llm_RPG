@@ -16,6 +16,7 @@ from typing import Dict, List, Optional
 logger = logging.getLogger("llm_rpg.rest")
 
 BED_COST = 5
+PRIVATE_ROOM_COST = 15     # buys WELL_RESTED (+10% XP) — P12.6
 WAKE_HOUR = 6
 
 
@@ -57,9 +58,14 @@ def can_sleep_here(engine) -> Optional[str]:
 
 
 def sleep(engine) -> List[str]:
-    """Sleep to morning; returns the day-summary overlay lines."""
+    """Sleep to morning; returns the day-summary overlay lines.
+    Outdoors with no inn, Enter makes CAMP instead (P12.6)."""
     reason = can_sleep_here(engine)
     if reason:
+        if getattr(engine, "current_interior", None) is None and \
+                getattr(engine, "current_dungeon", None) is None:
+            from engine.camping import camp
+            return camp(engine)
         engine.memory_manager.add_event(reason)
         return []
     player = engine.player
@@ -67,7 +73,21 @@ def sleep(engine) -> List[str]:
         engine.memory_manager.add_event(
             f"A bed costs {BED_COST}g — you can't cover it.")
         return []
-    player.gold -= BED_COST
+    # Lifestyle tiers (P12.6): the private room earns its price
+    tier_note = ""
+    if player.gold >= PRIVATE_ROOM_COST:
+        player.gold -= PRIVATE_ROOM_COST
+        try:
+            from characters.status_effects import apply_effect
+            apply_effect(player, "well_rested", duration=240)
+            tier_note = (f"You take the private room "
+                         f"({PRIVATE_ROOM_COST}g) — Well Rested: "
+                         f"+10% XP today.")
+        except Exception:
+            pass
+    else:
+        player.gold -= BED_COST
+        tier_note = f"You take a bunk in the common room ({BED_COST}g)."
 
     before = getattr(engine, "_day_metrics", None) or snapshot(engine)
     # Compare before paying doesn't matter for gold delta fairness:
@@ -99,6 +119,13 @@ def sleep(engine) -> List[str]:
 
     after = snapshot(engine)
     lines = _summary_lines(engine, before, after)
+    if tier_note:
+        lines.insert(1, tier_note)
+    try:   # the DM's guaranteed night beat (P12.6)
+        from engine.camping import night_beat
+        lines.append(night_beat(engine))
+    except Exception:
+        pass
     engine._day_metrics = after
     return lines
 

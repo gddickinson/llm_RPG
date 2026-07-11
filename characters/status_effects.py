@@ -14,6 +14,7 @@ Effects supported:
 - prone: -2 attack, -2 AC; standing costs the next action
 - blinded: visibility 1 for the player, -4 attack
 - off_guard: -2 AC (applied by flanking; replaces the old +2 to-hit)
+- well_rested: +10% XP (a private inn room, P12.6)
 - swimmers_grace: +5 to swim and struggle checks (P11.3)
 - flying: movement ignores ground-tile rules (P11.4)
 - hasted: every second step is free; slowed: steps cost double (P11.4)
@@ -36,7 +37,7 @@ VALID_EFFECTS = ("poisoned", "paralyzed", "blessed",
                  "water_walking", "swimmers_grace",
                  "flying", "hasted", "slowed",
                  "prone", "blinded", "off_guard",
-                 "persistent_damage")
+                 "persistent_damage", "well_rested")
 
 # Valued conditions (P12.2, PF2e): entries may carry a "value";
 # these decay by 1 at end of turn and expire at 0 (duration ignored)

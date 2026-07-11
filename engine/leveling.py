@@ -124,5 +124,11 @@ def award_xp(character, amount: int) -> List[str]:
     if not isinstance(meta, dict):
         meta = {}
         character.metadata = meta
+    try:   # a good bed pays for itself (P12.6)
+        from characters.status_effects import has_effect
+        if has_effect(character, "well_rested"):
+            amount = int(amount * 1.10)
+    except Exception:
+        pass
     meta["xp"] = meta.get("xp", 0) + max(0, int(amount))
     return check_level_up(character)
