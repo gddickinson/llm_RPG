@@ -1942,6 +1942,59 @@ UI polish.
 - [ ] **P15.11 Playtest Campaign 5.** Both-sides session across the
   P15 systems; findings become fixes or Phase 16.
 
+## Phase 16 — Living world imports (Autonomous World survey, 2026-07-11)
+
+George asked for another pass over the sibling `autonomous_world`
+project (worldgen, building graphics/types, economy & resource
+creation). A survey agent ranked the highest-value imports NOT yet
+taken. Ordered by value; each is a data-first port sized to
+llm_RPG's architecture (no chunk streaming — our map is a fixed
+grid).
+
+- [ ] **P16.1 Supply-chain data model.** Port AW's
+  `data/supply_chains.py` shape as `data/production.json`: every
+  item gets an ORIGIN — raw materials (gatherer profession, source
+  tile, yield, tool) and crafted goods (crafter profession,
+  workstation, skill, level). Pure data; gives every object a
+  producer and every profession a purpose. Foundation for P16.2.
+- [ ] **P16.2 NPC production loop.** AW `systems/npc_work.py`
+  FSM (gather → carry → deposit → craft → deliver) against a
+  per-settlement store dict: gatherers fill village stores from
+  resource tiles, crafters consume inputs and produce goods,
+  merchants arbitrage surplus between settlements (composes with
+  P12.10 elastic prices). Turns static villages into a living
+  economy; heuristic, no per-tick LLM.
+- [ ] **P16.3 Building-type catalog + room classification.** AW
+  `settlement_buildings.SPECIALIZATION_BUILDINGS` + `zones._classify_room`
+  as data: ~40 typed buildings (dock/warehouse/mill/granary/
+  smelter/sawmill/bakery/brewery/stable...) beyond our six, a
+  settlement specialization ("mining town → smelter+mine+
+  warehouse"), and furniture→room-function so an anvil-bearing
+  room IS a smithy whose owner works there. Ties P9A furniture to
+  occupations.
+- [ ] **P16.4 Resource nodes & regrowth.** AW resource tiles
+  (ORE_VEIN/HERB_PATCH/BERRY_BUSH...) with `leaves_tile` +
+  `forest_regrowth`: gathering becomes destructible-tile
+  interaction (composes with P10.2) that regrows over time.
+  Feeds P16.1's raw-material sources.
+- [ ] **P16.5 2.5D building render.** AW
+  `ui/renderer_buildings.py` (`_draw_building_heights`,
+  `_draw_pitched_roofs`, per-kind roof tiles): a render pass that
+  gives top-down buildings lit cube faces + pitched-roof shading,
+  tileset-compatible (shades over the P15.1 PNG base). The biggest
+  single graphics upgrade for the least code — belongs in Track G.
+- [ ] **P16.6 Worldgen leap.** AW `river_gen._trace_river_path`
+  (elevation → downhill rivers) + settlement-site scoring
+  (`world_plan._score_city_location`: near water, varied
+  neighbors, off-edge) + shore autotiling. Bridges already landed
+  (P14.3b). Replaces "two settlements + a straight road" with a
+  seed-reproducible watered map. ADAPT (not full chunk streaming).
+
+*Survey SKIPs (recorded, not building): Voronoi/BSP city districts
+(overkill for small towns), banking/loans/bonds, and copying AW's
+procedural pygame.draw art (we have the P15.1 PNG pipeline — take
+the techniques, not the draw code).*
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
