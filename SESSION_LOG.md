@@ -2154,3 +2154,28 @@ private-home check trusted inter.name which carries an
 "(interior)" suffix — resolved by identity against the interiors
 registry instead. 7 more tests (16 total in test_law). Suite:
 1080, green x3.
+
+**Round 109 — P12.10 Economy II (done; alchemy floor deferred).**
+The economy learned scarcity. STOCK ELASTICITY (OSRS): every price
+now moves 5% per unit the shop's stock deviates from its category
+baseline, clamped to [0.5x, 2.0x] — buy out the smith's swords and
+the next one costs more; flood the tavern with looted ale and Goren
+pays less for each tankard. The daily restock (which already
+existed) is the self-healing half of the rule. REGIONAL SUPPLY
+(M&B), pure data in data/settlement_economy.json: each settlement
+multiplies prices by category — provisions run 0.8x in Riverside
+(the river feeds) and 1.3x in Stonepine (loggers buy their bread),
+arms are cheapest at the camp's forge, arcana cheapest near
+Alzara's tower. Both buy AND sell take the factor, so the arbitrage
+run is real: buy fish cheap by the river, sell dear at the camp —
+the world finally rewards a trade route. THE HAGGLE MINIGAME (KCD)
+replaces flat tokens: H in the shop panel pushes the price behind a
+graded Persuasion check against a per-merchant PATIENCE of 3 a day,
+drawn as a live meter in the panel footer. A crit knocks 10% off, a
+success 5% (capped at 15%), a plain fail burns patience, and a
+critical fumble ends the conversation entirely — patience zeroed
+and -5 relationship: "Buy it or leave." The old /persuade haggle
+token still works (max() of the two paths honors both). Deferred
+with a note: the alchemy-style universal value floor wants an
+item-targeting UI and gets its own small round. 8 tests. Suite:
+1088, green x3.

@@ -64,7 +64,26 @@ class ShopPanel:
             self._move(1)
         elif k in (pygame.K_RETURN, pygame.K_SPACE):
             self._transact()
+        elif k == pygame.K_h:   # haggle (P12.10)
+            try:
+                self.engine.shop_manager.haggle(
+                    self.engine.player, self.merchant)
+            except Exception:
+                pass
         return True
+
+    def _haggle_line(self) -> str:
+        try:
+            st = self.engine.shop_manager.haggle_state(
+                self.engine.player, self.merchant)
+            meter = "\u25cf" * st["patience"] + \
+                "\u25cb" * (3 - st["patience"])
+            deal = f"  deal -{int(st['discount'] * 100)}%" \
+                if st["discount"] else ""
+            return (f"[Enter] buy/sell  [H] haggle {meter}{deal}  "
+                    f"[Esc] leave")
+        except Exception:
+            return "[Enter] buy/sell  [Esc] leave"
 
     def _move(self, delta: int) -> None:
         if self.column == 0:
@@ -207,8 +226,8 @@ class ShopPanel:
                           is_buy=False, active=(self.column == 1))
 
         hint = self._font.render(
-            "[Left/Right] switch  [Up/Down] move  "
-            "[Enter] buy/sell  [Esc] leave",
+            "[Left/Right] switch  [Up/Down] move  " +
+            self._haggle_line(),
             True, (160, 160, 180))
         target.blit(hint, (box.x + 16, box.bottom - 24))
 
