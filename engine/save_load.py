@@ -271,6 +271,13 @@ class SaveManager:
             if npc.is_active():
                 engine.world.map.place_character(npc, *npc.position)
 
+        # Rebuild the player roster (M.1b) — the active player plus any
+        # player-characters that were living in the NPC pool.
+        try:
+            engine.roster.rehydrate()
+        except Exception:
+            pass
+
         # Quests
         if hasattr(engine, "quest_manager") and engine.quest_manager:
             engine.quest_manager.from_dict(data.get("quests", {}))

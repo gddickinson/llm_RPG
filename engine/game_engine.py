@@ -280,6 +280,10 @@ class GameEngine(GameAPIMixin):
                     continue
             except Exception:
                 pass
+            # roster player-characters are driven by their controller
+            # (human / M.2 agent), never the ambient NPC AI (M.1b)
+            if (getattr(npc, "metadata", {}) or {}).get("player_char"):
+                continue
             try:
                 npc_x, npc_y = npc.position
                 if self._distance_to_player(npc_x, npc_y) > \
@@ -342,6 +346,10 @@ class GameEngine(GameAPIMixin):
                     continue
             except Exception:
                 pass
+            # roster player-characters are driven by their controller
+            # (human / M.2 agent), never the ambient NPC AI (M.1b)
+            if (getattr(npc, "metadata", {}) or {}).get("player_char"):
+                continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \
                     self.effective_visibility() * 2:

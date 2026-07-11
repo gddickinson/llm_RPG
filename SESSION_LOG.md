@@ -3245,3 +3245,27 @@ a player rebuild by dropping the stale object for the new one. Suite
 1391, green. Rendering, moving and saving the NON-active roster
 characters as live world entities is the world/save integration, split
 out as M.1b — this round is the abstraction itself.
+
+**Round 148 — M.1b Live roster characters in the world.**
+M.1 gave the roster the abstraction; this round makes the non-active
+heroes actually EXIST. The trick is to reuse the systems that already
+handle a cast of characters: a non-active hero is placed into the NPC
+pool (`npc_manager`, which the renderer draws from and save_load
+already serialises) and onto the map, flagged `metadata['player_char']`.
+`set_active` then SWAPS world presence — the hero you activate leaves
+the pool to become `engine.player` (drawn specially), and the one you
+step out of joins the pool as a live entity — so the active player is
+never double-listed and every other hero is on the field. Because the
+NPC pool is already saved, a whole party survives a save/load for
+free; `roster.rehydrate`, called at the end of `SaveManager.load`,
+just re-reads the reloaded pool's player-char flags to rebuild the
+roster with its controllers intact. Two small touches complete the
+illusion: the renderer draws any roster hero with the player body
+rather than an NPC sprite, and both NPC-turn loops skip
+player-characters so the ambient AI never wanders them off on a
+villager's schedule — their controller (a human, or M.2's agent) owns
+them. Four tests: add drops the hero into the world flagged, switching
+swaps who's in the pool, the AI leaves player-characters be across
+turns, and a two-hero save→load round-trip comes back with the agent
+controller still attached. Suite 1395, green. Next, M.2 gives those
+agent-controlled heroes a brain.

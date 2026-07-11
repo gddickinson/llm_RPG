@@ -71,6 +71,61 @@ class TestRoster(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.engine.roster.set_active(outsider)
 
+    def test_add_places_the_hero_in_the_world(self):
+        r = self.engine.roster
+        hero2 = make_npc("guard_01")
+        hero2.id = "hero2"
+        r.add(hero2, PlayerController(AGENT, "Claude"))
+        self.assertIn("hero2", self.engine.npc_manager.npcs)
+        self.assertTrue(hero2.metadata["player_char"])
+        # the active player is NOT in the NPC pool (rendered specially)
+        self.assertNotIn(self.engine.player.id,
+                         self.engine.npc_manager.npcs)
+
+    def test_switch_swaps_world_presence(self):
+        r = self.engine.roster
+        first = self.engine.player
+        hero2 = make_npc("guard_01")
+        hero2.id = "hero2"
+        r.add(hero2)
+        r.set_active(hero2)
+        self.assertIs(self.engine.player, hero2)
+        self.assertNotIn("hero2", self.engine.npc_manager.npcs)
+        self.assertIn(first.id, self.engine.npc_manager.npcs)
+        self.assertTrue(first.metadata["player_char"])
+
+    def test_ai_does_not_drive_player_characters(self):
+        r = self.engine.roster
+        hero2 = make_npc("guard_01")
+        hero2.id = "hero2"
+        r.add(hero2)
+        for _ in range(3):
+            self.engine.turn_counter = 0
+            self.engine.process_npc_turns()
+        self.assertIn("hero2", self.engine.npc_manager.npcs)
+        self.assertTrue(hero2.metadata.get("player_char"))
+
+    def test_roster_survives_save_load(self):
+        import tempfile
+        from engine.save_load import SaveManager
+        hero2 = make_npc("guard_01")
+        hero2.id = "hero2"
+        hero2.name = "Aria"
+        self.engine.roster.add(hero2, PlayerController(AGENT, "Claude"))
+        with tempfile.TemporaryDirectory() as tmp:
+            sm = SaveManager(save_dir=tmp)
+            sm.save(self.engine, "party")
+            other = GameEngine(llm_provider="heuristic",
+                               enable_npc_processes=False)
+            other.start_game()
+            self.assertTrue(sm.load(other, "party"))
+            ids = [c.id for c in other.roster.characters]
+            self.assertIn("hero2", ids)
+            self.assertIn("hero2", other.npc_manager.npcs)
+            self.assertTrue(other.roster.controller_for(
+                other.npc_manager.npcs["hero2"]).is_agent)
+            other.end_game()
+
     def test_survives_a_player_rebuild(self):
         # a load rebuilds engine.player as a NEW object with the same id
         r = self.engine.roster

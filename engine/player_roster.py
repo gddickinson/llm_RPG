@@ -77,10 +77,55 @@ class PlayerRoster:
 
     # ---- api ----------------------------------------------------
 
-    def add(self, character, controller: PlayerController = None):
-        """Register a controllable character (defaults to a human)."""
+    def _place_in_world(self, character) -> None:
+        """A non-active hero is a live world entity — put it in the NPC
+        pool (so it renders + saves) and on the map (M.1b)."""
+        eng = self.engine
+        try:
+            if character.id not in eng.npc_manager.npcs:
+                eng.npc_manager.add_npc(character)
+            if not getattr(character, "position", None):
+                character.position = eng.player.position
+            eng.world.map.place_character(character, *character.position)
+        except Exception:
+            pass
+
+    def _take_from_world(self, character) -> None:
+        """The character becoming active leaves the NPC pool (it is now
+        THE player, rendered/handled specially)."""
+        eng = self.engine
+        try:
+            eng.npc_manager.remove_npc(character.id)
+            eng.world.map.remove_character(character)
+        except Exception:
+            pass
+
+    def add(self, character, controller: PlayerController = None,
+            place: bool = True):
+        """Register a controllable character (defaults to a human) and,
+        unless it's the active player, place it live in the world."""
         self._sync_active()          # keep the standing player on the roster
-        return self._register(character, controller or PlayerController())
+        self._register(character, controller or PlayerController())
+        try:
+            character.metadata["player_char"] = True
+        except Exception:
+            pass
+        if place and character is not self.engine.player:
+            self._place_in_world(character)
+        return self._controllers[character.id]
+
+    def rehydrate(self) -> None:
+        """Rebuild the roster after a load: the active player, plus every
+        NPC-pool character flagged as a player-character."""
+        self._by_id.clear()
+        self._controllers.clear()
+        self._sync_active()
+        for npc in list(self.engine.npc_manager.npcs.values()):
+            meta = getattr(npc, "metadata", {}) or {}
+            if meta.get("player_char"):
+                self._register(npc, PlayerController(
+                    meta.get("controller", HUMAN),
+                    getattr(npc, "name", "Hero")))
 
     @property
     def active(self):
@@ -101,13 +146,28 @@ class PlayerRoster:
 
     def set_active(self, character):
         """Hand control to another roster character — `engine.player`
-        follows, so every existing system now acts as that hero."""
+        follows (so every system now acts as that hero), and the two
+        swap places: the new active leaves the world's NPC pool, the one
+        we're leaving joins it as a live entity (M.1b)."""
         self._sync_active()          # register the character we're leaving
         if character.id not in self._by_id and \
                 character is not self.engine.player:
             raise KeyError(f"{getattr(character, 'id', '?')} "
                            f"is not in the roster")
+        old = self.engine.player
+        if character is old:
+            return character
+        self._take_from_world(character)
         self.engine.player = character
+        if old is not None:
+            if old.id not in self._controllers:
+                self._register(old, PlayerController(
+                    name=getattr(old, "name", "Hero")))
+            try:
+                old.metadata["player_char"] = True
+            except Exception:
+                pass
+            self._place_in_world(old)
         self._sync_active()
         return character
 

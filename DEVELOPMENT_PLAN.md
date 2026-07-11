@@ -2680,10 +2680,23 @@ last. Networking was previously deferred — this supersedes that.
   round-trip, survives a player rebuild). Suite 1391, green. REMAINDER
   (M.1b): render/move/save the NON-active roster characters as live
   world entities — this round is the abstraction only.)*
-- [ ] **M.1b Live roster characters in the world.** Render, move and
-  SAVE the non-active roster heroes as real world entities (not just
-  the abstraction) so N heroes coexist — the world/save integration
-  M.1 deferred.
+- [x] **M.1b Live roster characters in the world.** The non-active
+  heroes now exist as real world entities.
+  *(Round 148: `roster.add` places a non-active hero in the NPC pool
+  (`npc_manager` — which the renderer draws from and save_load already
+  serialises) and on the map, flagged `metadata['player_char']`;
+  `set_active` SWAPS world presence — the new active leaves the pool
+  (it becomes `engine.player`, rendered specially), the one you leave
+  joins it as a live entity, preserving the invariant that the active
+  player is never double-listed. `roster.rehydrate` (called at the end
+  of `SaveManager.load`) rebuilds the roster from the reloaded pool's
+  player-char flags, so a whole party survives save/load. The renderer
+  draws every roster hero with the player body (not an NPC), and both
+  NPC-turn loops SKIP player-characters so the ambient AI never drives
+  them (their controller — human, or M.2's agent — does). 4 tests
+  (add places in world, switch swaps presence, AI leaves them be, and
+  a two-hero save/load round-trip that keeps the agent controller).
+  Suite 1395, green.)*
 - [ ] **M.2 Agent-driven character (Claude joins).** An autonomous
   controller that plays a character through the same `player_actions`
   route a human uses — goal/utility-driven (not the per-tick-LLM

@@ -184,7 +184,10 @@ class MapRenderer:
             update_anim(char, 1.0 / 30.0)
             sx = view_rect.x + (cx - cam_x) * self.tile_size
             sy = view_rect.y + (cy - cam_y) * self.tile_size
-            is_player = char.id == engine.player.id
+            # the active player AND any other roster hero draw as heroes
+            is_player = char.id == engine.player.id or \
+                (getattr(char, "metadata", {}) or {}).get("player_char",
+                                                          False)
             draw_body(target, char, sx, sy, self.tile_size, is_player=is_player)
 
         # The ranged lock (P8.7)
