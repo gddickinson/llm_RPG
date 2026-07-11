@@ -3090,3 +3090,26 @@ junk run the real path with the carry, afford, fence-for-stolen-goods
 and market-demand hooks all intact. 15 tests across the helpers and a
 headless panel (bulk buy, bulk-halts-when-broke, junk sweep,
 selection, a crash-free draw). Suite 1353, green.
+
+**Round 141 — PUX.3 Onboarding & hint audit.**
+The audit turned up a real onboarding bug hiding in plain sight: the
+F1/? controls overlay was a ~50-line hardcoded string list inside
+`gui.show_help`, and the generic text-overlay renderer breaks once it
+runs past the bottom of the box — so it clipped at about 23 rows and
+HALF the controls never appeared on screen. Worse, the list was stale:
+a dozen real keys were undocumented — the graded skill actions
+(SHIFT+T trip, SHIFT+I demoralize, SHIFT+B feint, SHIFT+H battle
+medicine), SHIFT+P pray, SHIFT+G carry-a-body, SHIFT+Z treat-the-pet,
+the [ / ] target cycle, SHIFT+TAB force-door, SHIFT+L log detail, and
+the 1–5 guard-confrontation menu. The fix pulls the reference out into
+`ui/controls.py` as audited, testable DATA — one source of truth with
+`documented_keys()` for coverage — completes it, and lays it out with
+`help_columns()`, which splits the whole thing into two balanced
+columns at the best section boundary so `hud.draw_help_overlay` can
+show EVERY key on one screen. A dedicated "help" GUI mode opens on F1/?
+and any key dismisses it, and the hint bar now carries a standing
+`[?] all controls` reminder whenever a slot is free, so a new player
+always knows the full list is one key away. Six tests lock it in: the
+once-missing keys and the core verbs are documented, the columns are
+balanced and fit, no line overflows a column, the section headers are
+present, and the overlay opens, draws and dismisses. Suite 1359, green.

@@ -167,6 +167,11 @@ class GameGUI:
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
 
+        if self.mode == "help":
+            self.hud.draw_help_overlay(
+                self.screen, self.screen.get_rect(), "Controls",
+                getattr(self, "help_columns", ([], [])))
+
         if self.mode == "inventory" and self.inventory_panel is not None:
             self.inventory_panel.draw(self.screen, self.screen.get_rect())
 
@@ -363,59 +368,9 @@ class GameGUI:
         self.mode = "menu"
 
     def show_help(self) -> None:
-        lines = [
-            "MOVEMENT",
-            "  WASD / Arrows : move (off-edge = enter a new region)",
-            "  TAB           : enter / exit building or cave-dungeon",
-            "  L             : look around (describe what you see)",
-            "  ENTER         : sleep at an inn/tavern (5g) — heals,",
-            "                  advances to dawn, shows your day summary",
-            "",
-            "COMBAT",
-            "  SPACE / F     : melee attack (uses equipped weapon)",
-            "  SHIFT+F       : shove — STR contest, push enemy back",
-            "  SHIFT+move    : disengage (no free strike; a bit slower)",
-            "  SHIFT+R       : aimed shot (+2 damage, slower)",
-            "  R             : ranged attack (needs equipped bow/sling/etc.)",
-            "  X             : spellbook — browse + cast any known spell",
-            "  V             : quick-cast Heal on self",
-            "",
-            "ITEMS & WORLD",
-            "  G / E         : pick up item on the ground",
-            "  H             : drink potion",
-            "  Z             : forage (forest / grass)",
-            "  T             : talk to adjacent NPC",
-            "                  (in dialog: /persuade /intimidate /deceive",
-            "                   <argument> — real stakes, no retry today)",
-            "",
-            "INTERACTIVE OVERLAYS",
-            "  I             : inventory + equipment slots",
-            "                  (E equip/unequip, Q use, D drop)",
-            "  B             : barter — shop with adjacent merchant",
-            "                  (Left/Right column, Enter buy/sell)",
-            "  K             : crafting — browse + craft recipes",
-            "                  (forge recipes need Durgan's Forge)",
-            "  P             : party — recruit adjacent NPC / dismiss member",
-            "                  (they must trust you: chat + do their quests)",
-            "  O             : collection log (items / foes / recipes / places)",
-            "  J             : achievement diaries (regional tasks + rewards)",
-            "  U             : travel menu (teleports unlock via diaries)",
-            "  Y             : topic journal (mention topics to NPCs to ask)",
-            "                  (Agility 15/25 climbs mountains / swims rivers)",
-            "  Q             : quest log",
-            "  C             : character sheet",
-            "",
-            "BANKING",
-            "  N             : deposit all gold (at temple/shop)",
-            "  M             : withdraw all bank gold",
-            "",
-            "SYSTEM",
-            "  F5 / F9       : save / load",
-            "  F1 or /       : this help",
-            "  ESC           : close menu / quit",
-        ]
-        self.overlay = ("Controls", lines)
-        self.mode = "menu"
+        from ui.controls import help_columns
+        self.help_columns = help_columns()
+        self.mode = "help"
 
     # ---- dialog -----------------------------------------------------
 

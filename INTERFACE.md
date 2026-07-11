@@ -204,7 +204,8 @@ llm_RPG/
 - **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting; `_render_zone()` draws dungeons/interiors.
 - **`sprite_loader.py`** — Procedural sprite generation + P15.1 PNG tileset pipeline: data/tiles/<name>/ via config.TILESET_NAME or LLM_RPG_TILESET, per-image graceful fallback to procedural; contract in data/tiles/README.md.
 - **`crafting_panel.py`** — `CraftingPanel`; K-key recipe browser with have/need counts, crafts via `engine.craft()`.
-- **`hints.py`** — `context_hints(engine)`; contextual key hints (talk/barter/forage/enter/…) rendered as the HUD hint bar.
+- **`controls.py`** — PUX.3 the controls reference as audited data (single source of truth for the F1/? help): `CONTROLS`, `help_columns()` (two balanced columns that fit one screen), `documented_keys()`.
+- **`hints.py`** — `context_hints(engine)`; contextual key hints (talk/barter/forage/enter/…) rendered as the HUD hint bar; a standing `[?] all controls` reminder when a slot is free.
 - **`spell_panel.py`** — X-key Spellbook; cast any known spell (Enter/1–9), mana + effect readout.
 - **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker.
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).

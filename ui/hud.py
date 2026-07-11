@@ -262,6 +262,33 @@ class HUD:
         self._text(target, "[ESC to close]",
                    (box.x + 16, box.bottom - 22), color=(180, 220, 255))
 
+    def draw_help_overlay(self, target, screen_rect, title: str,
+                          columns) -> None:
+        """The controls reference, in two columns so every key fits on
+        one screen (the single-column text overlay clipped half off the
+        bottom, PUX.3)."""
+        left, right = columns
+        w = min(screen_rect.width - 40, 900)
+        h = min(screen_rect.height - 40, 580)
+        box = pygame.Rect((screen_rect.width - w) // 2,
+                          (screen_rect.height - h) // 2, w, h)
+        s = pygame.Surface(box.size, pygame.SRCALPHA)
+        s.fill((10, 10, 20, 240))
+        target.blit(s, box.topleft)
+        pygame.draw.rect(target, (200, 180, 100), box, 2)
+        self._text(target, title, (box.x + 16, box.y + 12),
+                   big=True, color=(255, 220, 120))
+        col_x = (box.x + 16, box.x + box.width // 2 + 8)
+        for ci, lines in enumerate((left, right)):
+            y = box.y + 48
+            for line in lines:
+                header = bool(line) and not line.startswith(" ")
+                color = (255, 210, 120) if header else (215, 215, 225)
+                self._text(target, line, (col_x[ci], y), color=color)
+                y += 16
+        self._text(target, "[ESC / F1 / ? to close]",
+                   (box.x + 16, box.bottom - 22), color=(180, 220, 255))
+
     # ---- internals ----------------------------------------------------
 
     def _panel(self, target, rect, title: str) -> None:

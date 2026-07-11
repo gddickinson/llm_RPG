@@ -2557,10 +2557,24 @@ these next, ahead of more Phase-17 depth.
   hooks intact). 15 tests (helpers + headless panel: bulk buy, bulk
   halts broke, junk sweep, selection, crash-free draw); suite 1353,
   green.)*
-- [ ] **PUX.3 Onboarding & hint audit.** New-player clarity: verify the
-  hint bar (`ui/hints.py`) advertises every player-facing feature, the
-  tutorial covers the core verbs, and controls are discoverable (a
-  key-help overlay?). Reduce first-session friction.
+- [x] **PUX.3 Onboarding & hint audit.** New-player clarity: controls
+  are discoverable, the hint bar advertises the help, the reference is
+  complete.
+  *(Round 141: the audit found the F1/? help overlay was a hardcoded
+  ~50-line string list in `gui.show_help` that the text-overlay clipped
+  at ~23 rows — HALF the controls never rendered — and it was missing a
+  dozen real keys (skill actions SHIFT+T/I/B/H, pray SHIFT+P, carry
+  SHIFT+G, pet SHIFT+Z, targeting [/], force-door SHIFT+TAB, log detail
+  SHIFT+L, the 1–5 law menu). Fix: `ui/controls.py` — the controls as
+  AUDITED, testable DATA (single source of truth, `documented_keys`);
+  a `help_columns()` that splits the whole reference into two balanced
+  columns at the best section boundary; a `hud.draw_help_overlay` that
+  renders both columns so EVERY key fits one screen; a dedicated "help"
+  GUI mode any key dismisses; and a standing `[?] all controls` hint in
+  the bar when a slot is free (advertises the help itself). 6 tests
+  (coverage of the once-missing keys + core verbs, balanced columns
+  that fit, no line overflows, section headers, overlay opens/draws/
+  dismisses). Suite 1359, green.)*
 - [ ] **PUX.4 HUD & panel polish.** Consistency and readability across
   the I/B/K/X/J/O panels and the HUD; event-log clarity (build on the
   P15.11 filter); make keybinds discoverable. A visual/UX consistency

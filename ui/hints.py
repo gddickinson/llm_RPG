@@ -286,6 +286,10 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
 
+    # A standing reminder that the full controls list is one key away
+    # (onboarding, PUX.3) — only when nothing more urgent needs the slot.
+    hints.append("[?] all controls")
+
     # Dedup preserving order, cap
     seen = set()
     out = []

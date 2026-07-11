@@ -52,6 +52,12 @@ class InputHandler:
                 return True
             return True
 
+        # Help overlay — any key dismisses it -----------------------------
+        if self.gui.mode == "help":
+            if event.type == pygame.KEYDOWN:
+                self.gui.mode = "play"
+            return True
+
         # Dialog typing mode -----------------------------------------------
         if self.gui.mode == "dialog":
             return self._handle_dialog_input(event)
