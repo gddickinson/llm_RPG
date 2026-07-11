@@ -3221,3 +3221,27 @@ gui.py under the line. Six tests: a merchant offers Trade and a guard
 doesn't, a quest-giver offers Accept, every menu item is well-formed,
 picking Accept lands the quest in the active log, picking Trade opens
 the shop, and the box draws with a menu. Suite 1385, green.
+
+**Round 147 — M.1 The roster/controller keystone.**
+The first stone of the multiplayer arc, and the one everything else
+leans on: a clean "who is acting" abstraction over the engine's single
+`engine.player`. `engine/player_roster.py` adds a `PlayerController`
+(a human at the keyboard, or — M.2 — an agent; kind + name, round-trips)
+and a `PlayerRoster` on `engine.roster`, wired in at setup. The design
+is deliberately additive so nothing existing breaks: `engine.player`
+stays the ACTIVE character and every one of the hundreds of call sites
+keeps working untouched, while the roster tracks the wider cast beside
+it — `add(char, controller)`, `set_active(char)` (which swings
+`engine.player`, so combat, movement, dialog and the rest all now act
+as that hero), `controller_for`, and `humans()`/`agents()`. Controllers
+are keyed by character id and each character's kind rides on
+`metadata['controller']`, and a small `_sync_active` re-adopts the
+freshly-rebuilt player object after a load — so the roster rides
+through save/load with no new save-format work at all. Six tests: it
+seeds the opening player as human, takes an agent-controlled second
+hero, switches the active character (engine.player follows and back),
+refuses to activate a stranger, round-trips a controller, and survives
+a player rebuild by dropping the stale object for the new one. Suite
+1391, green. Rendering, moving and saving the NON-active roster
+characters as live world entities is the world/save integration, split
+out as M.1b — this round is the abstraction itself.

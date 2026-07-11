@@ -153,3 +153,7 @@ def build_subsystems(engine, llm_model=None,
     self.traversal = TraversalSystem(self)
     from engine.law import LawSystem
     self.law = LawSystem(self)
+    # M.1: the roster of controllable characters (self-seeds the active
+    # player); the keystone for multiplayer + agent-driven heroes.
+    from engine.player_roster import PlayerRoster
+    self.roster = PlayerRoster(self)

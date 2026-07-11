@@ -2663,12 +2663,27 @@ character keeps living when its human logs off instead of vanishing or
 being pure algorithm. This is a large arc; sequenced so the tractable,
 networking-free value lands first and the hard client/server piece is
 last. Networking was previously deferred — this supersedes that.
-- [ ] **M.1 Multiple player-characters in one engine.** Generalise the
-  single `engine.player` into a roster of controllable characters
-  (a `PlayerController` per character) driving the existing
-  player-action API. Hot-seat / split-screen-less: one process, N
-  heroes, each independent, able to party up or fight. The keystone —
-  everything else builds on a clean "who is acting" abstraction.
+- [x] **M.1 The roster/controller keystone.** A clean "who is acting"
+  abstraction over the single `engine.player`.
+  *(Round 147: `engine/player_roster.py` — `PlayerController` (kind
+  human/agent + name, round-trips) and `PlayerRoster` on `engine.roster`
+  (wired in engine_setup). Deliberately ADDITIVE: `engine.player` stays
+  the ACTIVE character so every existing call keeps working, and the
+  roster tracks the wider set beside it — `add(char, controller)`,
+  `set_active(char)` (engine.player follows, so all systems now act as
+  that hero), `controller_for`, `humans()`/`agents()`. Controllers are
+  keyed by character id and each character's kind rides on
+  `metadata['controller']`, and `_sync_active` re-adopts the rebuilt
+  player object after a load — so the roster survives save/load with no
+  new save-format work. 6 tests (seeds the player as human, add an
+  agent character, switch the active hero, reject a stranger, controller
+  round-trip, survives a player rebuild). Suite 1391, green. REMAINDER
+  (M.1b): render/move/save the NON-active roster characters as live
+  world entities — this round is the abstraction only.)*
+- [ ] **M.1b Live roster characters in the world.** Render, move and
+  SAVE the non-active roster heroes as real world entities (not just
+  the abstraction) so N heroes coexist — the world/save integration
+  M.1 deferred.
 - [ ] **M.2 Agent-driven character (Claude joins).** An autonomous
   controller that plays a character through the same `player_actions`
   route a human uses — goal/utility-driven (not the per-tick-LLM
