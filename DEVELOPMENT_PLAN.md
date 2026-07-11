@@ -2751,11 +2751,32 @@ last. Networking was previously deferred — this supersedes that.
   hero left AFK survived 20 world-ticks fighting off wolves at its home
   spot, then handed back on return. Suite 1411, green. The multiplayer/
   agent trio (M.1–M.3) is complete; M.4 is the networking layer.)*
-- [ ] **M.4 Networking (client/server).** The hard part: an
-  authoritative server owning the engine, thin clients on different
-  machines sending intents + receiving state deltas; lockstep or
-  snapshot sync of the turn model; PvP/party/independent sessions.
-  Long-term architecture — depends on M.1's controller abstraction.
+- [x] **M.4a The authoritative session (the networking keystone).**
+  Before any wire, the durable part of M.4 is the client<->world
+  *contract*, and it now exists transport-free in `engine/netplay.py`:
+  an **`Intent`** (the only thing a client may send — a whitelisted
+  verb move/attack/say/wait naming the acting hero, round-tripping
+  through JSON so the same object crosses a socket or a function call),
+  and a **`GameServer`** that OWNS the engine. Clients never touch the
+  engine: they `join` (a hero enters the roster + world, human or M.2
+  agent), `submit` intents (validated, then applied through the SAME
+  player-action route a human uses, acting AS that hero but with the
+  world clock pinned so the action lands WITHOUT cascading a turn),
+  read JSON `snapshot`s (every hero + nearby NPC body, no engine objects
+  leaked), and `leave` (a disconnect hands the hero to an agent via the
+  M.3 away path so it keeps living). The server alone drives the world
+  via `tick`, so N players' actions resolve against one ordered
+  timeline. 18 tests. *(This is to M.4 what M.1 was to the roster: once
+  intents flow authoritatively and snapshots come back, the transport
+  is a thin, separable layer — M.4b.)*
+- [ ] **M.4b The socket transport.** The replaceable wire over M.4a: a
+  server process that hosts one `GameServer`, accepts client
+  connections, receives `Intent.to_dict()` frames + broadcasts
+  `snapshot()` deltas, and ticks the shared world on a schedule; a thin
+  client that ships local intents up and renders the latest snapshot.
+  PvP/party/independent sessions fall out of who-joins + the existing
+  faction rep. Long-term architecture; the game stays single-process
+  and fully playable without it.
 
 ## What NOT to build (explicitly deferred)
 

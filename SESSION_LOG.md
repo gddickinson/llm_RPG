@@ -3367,3 +3367,35 @@ human control the instant a key was pressed. Suite 1411, green. M.1
 through M.3 — a roster of heroes that render, act, converse, save,
 travel, and keep living whether or not a human is watching — is done;
 M.4 is the networking layer.
+
+**Round 152 — M.4a The authoritative session (the networking keystone).**
+M.4's hard part is real networking, but the DURABLE part — the one that
+outlives whatever transport we pick — is the *contract* between a client
+and the world, and that is what this round nails down, transport-free and
+fully tested, in `engine/netplay.py`. Two objects. An **`Intent`** is the
+only thing a client may send: a whitelisted verb (move / attack / say /
+wait) naming which hero acts and how, round-tripping through JSON so the
+identical object crosses a socket (M.4b) exactly as it crosses a function
+call in a test. A **`GameServer`** OWNS the engine and is the only thing
+that touches it: clients `join` (a hero enters the roster + world — human,
+or an M.2 agent), `submit` intents (validated against the whitelist, then
+applied through the SAME player-action route a human uses, acting AS that
+hero — but with the world clock pinned via the `_advancing` guard so the
+action LANDS without cascading a turn), read JSON `snapshot`s (every
+joined hero plus the active NPC bodies around them, no engine objects
+leaked), and `leave` (a disconnect routes the hero to the M.3 away path so
+it keeps living instead of freezing). The server alone advances the shared
+world via `tick`, so N players' actions resolve against one ordered
+timeline rather than each move ticking the world. This is to M.4 what M.1
+was to the roster: the keystone. With intents flowing authoritatively and
+snapshots coming back, the socket transport (M.4b — a host process, frame
+send/broadcast, a scheduled tick) is a thin, separable layer over this,
+and PvP/party/independent sessions fall out of who-joins plus the existing
+faction rep. 18 new tests (JSON round-trip + safe defaults; host binds /
+second hero seated live / idempotent join / agent controller; move applies
+WITHOUT ticking / dict intents / unknown verb + unknown player rejected /
+say writes one event / attack damages an adjacent foe; tick advances the
+shared clock; two heroes act independently; snapshot is JSON-serialisable
+and reports controllers; leave hands the hero to an agent; the whitelist).
+Suite 1429, green. The single-process game is untouched and fully playable
+— netplay is additive scaffolding. M.4b (the wire) remains.
