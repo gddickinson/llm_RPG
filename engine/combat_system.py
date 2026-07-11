@@ -116,20 +116,30 @@ class CombatSystem:
         atk_mod = effective_ability_mod(attacker, atk_ability)
         prof = proficiency_bonus(attacker)
 
-        # Flanking bonus
-        flanking = self._flanking_bonus(attacker, defender)
+        # Flanked defenders are OFF-GUARD (-2 AC) — P12.2 replaces
+        # the old attacker-side +2 with a visible condition
+        from characters.status_effects import (ac_penalty,
+                                               apply_effect,
+                                               attack_penalty)
+        if self._flanking_bonus(attacker, defender) > 0:
+            apply_effect(defender, "off_guard", duration=1)
 
         # Roll attack
         roll = self.rng.randint(1, 20)
         natural_crit = (roll == 20)
         natural_fumble = (roll == 1)
-        total_to_hit = roll + atk_mod + prof + flanking
-        ac = effective_ac(defender)
+        total_to_hit = roll + atk_mod + prof + \
+            attack_penalty(attacker)
+        ac = effective_ac(defender) + ac_penalty(defender)
 
         if natural_fumble or (not natural_crit and total_to_hit < ac):
             kind = "fumbles" if natural_fumble else "misses"
             return f"{attacker.name} {verb} {defender.name} but {kind}!"
 
+        if natural_crit:
+            # a perfect strike opens a wound (P12.2)
+            apply_effect(defender, "persistent_damage", duration=99,
+                         data={"amount": 2, "kind": "bleeding"})
         # Damage roll: weapon-base + ability + enchant + status mod
         weapon_dmg = self._best_weapon_damage(attacker)
         enchant_dmg = effective_weapon_damage_bonus(attacker)

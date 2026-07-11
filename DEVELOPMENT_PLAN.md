@@ -1481,11 +1481,23 @@ traditions lead.
   4 old tests re-pinned to the graded contract; two 5%-flakes from
   fumble outcomes found and fixed by pinning quality rolls in yield
   tests. 11 new tests. Suite 999, 6 green runs.)*
-- [ ] **P12.2 Valued conditions.** PF2e-style {condition, value,
+- [x] **P12.2 Valued conditions.** PF2e-style {condition, value,
   decay} schema for status_effects: Frightened 2 = −2 to everything,
   auto-decays 1/turn; persistent damage with a flat-DC end check;
   add prone/blinded (FOV powers blinded) and off-guard (−2 AC,
   replaces our advantage-strength flanking).
+  *(Round 100: status entries gained `value`; DECAYING_VALUES
+  conditions tick value down 1/turn and expire at 0 (duration
+  ignored). Frightened N bites EVERY d20 — `check_penalty` wired
+  into roll_check, so the P12.1 routing propagates it to locks,
+  doors, persuasion, forage free. persistent_damage: damage each
+  turn, then a flat DC 15 check to stop; natural-crit melee hits
+  now open a bleeding wound (2/turn). Prone: -2 attack/-2 AC, NPCs
+  spend their next action scrambling up (action_router), crit
+  shoves inflict it. Blinded collapses effective_visibility to 1.
+  Off-guard (-2 AC, 1 turn) is now what flanking DOES — the old
+  attacker +2 became a visible condition on the defender.
+  Intimidate applies Frightened 2. 10 tests. Suite 1009, green x3.)*
 - [ ] **P12.3 Needs II: thirst + the exhaustion ladder.** Add thirst
   (faster clock than hunger: days not weeks); wire hunger/thirst/
   sleep-debt into a 6-level cumulative exhaustion ladder (5e) with

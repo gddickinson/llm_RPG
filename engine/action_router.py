@@ -35,6 +35,13 @@ class ActionRouter:
                 self.engine.memory_manager.add_event(
                     f"{npc.name} cannot move.")
                 return False
+            # Prone creatures spend the action standing up (P12.2)
+            if has_effect(npc, "prone"):
+                from characters.status_effects import remove_effect
+                remove_effect(npc, "prone")
+                self.engine.memory_manager.add_event(
+                    f"{npc.name} scrambles back to their feet.")
+                return False
             # Slowed creatures act every other turn (P11.4)
             if has_effect(npc, "slowed"):
                 skip = not npc.metadata.get("slow_skip", False)

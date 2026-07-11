@@ -390,8 +390,15 @@ class GameAPIMixin:
             getattr(self, "current_interior", None)
 
     def effective_visibility(self) -> int:
-        """Visibility range in tiles, shrunk by fog / rain / snow / storm."""
+        """Visibility range in tiles, shrunk by fog / rain / snow /
+        storm — and collapsed to 1 while blinded (P12.2)."""
         import config
+        try:
+            from characters.status_effects import has_effect
+            if has_effect(self.player, "blinded"):
+                return 1
+        except Exception:
+            pass
         base = config.DEFAULT_VISIBILITY_RANGE
         try:
             mod = self.weather_system.visibility_modifier()

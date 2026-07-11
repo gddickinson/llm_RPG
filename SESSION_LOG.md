@@ -1922,3 +1922,27 @@ repeated suite runs, fixed by pinning the quality roll to a plain
 success in those tests (assert the mechanic, not the dice). 4 old
 tests re-pinned to the graded contract, 11 new. Suite: 999,
 6 green runs.
+
+**Round 100 — P12.2 Valued conditions (done).**
+Status effects grew PF2e teeth. Entries carry an optional `value`,
+and DECAYING_VALUES conditions (frightened, for now) tick their
+value down 1 per turn and expire at 0 — Frightened 2 means -2 to
+EVERYTHING for two turns, and "everything" is real: check_penalty
+is wired into roll_check itself, so the P12.1 routing carries fear
+into lockpicking, door-forcing, persuasion and foraging with zero
+extra call sites. persistent_damage deals its damage each turn and
+then rolls a flat DC 15 to stop (it still hurts the turn it ends —
+tested); natural-crit melee strikes now open a bleeding wound
+(2/turn), which makes crits FELT beyond the double damage line.
+PRONE is -2 attack and -2 AC, NPCs spend their next action
+scrambling back up (at the action_router gate beside paralysis and
+slow), and a critical shove now knocks the target sprawling AND
+prone — the P12.1 margin crit got a consequence. BLINDED collapses
+effective_visibility to 1 tile, so the existing FOV/renderer
+machinery powers blindness for free. OFF-GUARD (-2 AC, 1 turn) is
+now WHAT FLANKING DOES: the old invisible attacker-side +2 became
+a visible condition applied to the flanked defender — same math,
+but the player can see it, and anything else that grants off-guard
+(future feints, stealth openers) stacks into the same rule.
+Intimidate applies Frightened 2 instead of a flat flag. 10 tests.
+Suite: 1009, green x3.

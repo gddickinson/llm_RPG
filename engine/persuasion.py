@@ -169,7 +169,7 @@ class PersuasionSystem:
             return f"{npc.name} comes around to your view."
         if verb == "intimidate":
             from characters.status_effects import apply_effect
-            apply_effect(npc, "frightened", duration=8)
+            apply_effect(npc, "frightened", duration=8, value=2)
             npc.modify_relationship(player.id, -2)
             return f"{npc.name} backs down, shaken."
         if verb == "deceive":

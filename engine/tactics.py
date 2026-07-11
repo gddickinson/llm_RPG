@@ -116,6 +116,8 @@ def shove(engine, rng: random.Random = None) -> str:
                 wmap.place_character(target, fx, fy)
                 msg = (f"You hurl {target.name} sprawling — they "
                        f"tumble two full paces back!")
+                from characters.status_effects import apply_effect
+                apply_effect(target, "prone", duration=3)
     else:
         msg = (f"You shove {target.name} against the "
                f"obstruction — they stumble but hold.")

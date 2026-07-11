@@ -106,7 +106,7 @@ llm_RPG/
 - **`factions.py`** — `Faction` enum, reputation tracking, on-defeat hooks.
 - **`schedules.py`** — Daily routines per NPC class.
 - **`needs.py`** — Hunger and fatigue simulation.
-- **`status_effects.py`** — Poison / paralyzed / blessed / cursed / etc. with duration ticks.
+- **`status_effects.py`** — Poison / paralyzed / blessed / cursed / etc. with duration ticks; P12.2 valued conditions: Frightened N (−N to every check, decays 1/turn), persistent_damage (flat DC 15 to end), prone/blinded/off_guard with `check_penalty`/`attack_penalty`/`ac_penalty` queried by skills + combat.
 - **`equipment.py`** — Worn weapon / armor / shield / amulet / ring / boots slots.
 - **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight.
 - **`families.py`** — Static family ties for preset NPCs.
