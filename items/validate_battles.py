@@ -33,11 +33,15 @@ def check_battles() -> List[str]:
             out.append(f"formation {fname}: needs def/atk mults")
     if not TERRAIN:
         out.append("battle terrain modifiers missing")
-    out += _check_scenarios(set(UNITS))
+    from engine.battle.battle_data import TERRAIN_COVER
+    for kind, cov in TERRAIN_COVER.items():
+        if not (0.0 <= cov <= 1.0):
+            out.append(f"battle terrain {kind}: cover {cov} not in 0..1")
+    out += _check_scenarios(set(UNITS), set(TERRAIN_COVER))
     return out
 
 
-def _check_scenarios(unit_types: set) -> List[str]:
+def _check_scenarios(unit_types: set, terrain_kinds: set) -> List[str]:
     """scenarios.json: fields sized, squads use known archetypes, ids
     unique, orders target real squads, all pieces inside the field."""
     from engine.battle.battle_scenario import SCENARIOS, wall_cells
@@ -51,6 +55,16 @@ def _check_scenarios(unit_types: set) -> List[str]:
 
         def _oob(x, y):
             return not (0 <= x < w and 0 <= y < h)
+        for patch in sc.get("terrain", []):
+            if patch.get("kind") not in terrain_kinds:
+                out.append(f"scenario {sid}: terrain kind "
+                           f"'{patch.get('kind')}' unknown")
+            rect = patch.get("rect")
+            if not (isinstance(rect, list) and len(rect) == 4):
+                out.append(f"scenario {sid}: terrain rect malformed")
+            elif _oob(rect[0], rect[1]) or \
+                    _oob(rect[0] + rect[2] - 1, rect[1] + rect[3] - 1):
+                out.append(f"scenario {sid}: terrain rect off-field")
         for wall in sc.get("walls", []):
             for (x, y) in wall_cells(wall):
                 if _oob(x, y):

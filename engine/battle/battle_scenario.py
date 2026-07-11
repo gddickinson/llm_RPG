@@ -64,6 +64,12 @@ def build_field(scenario_id: str) -> BattleField:
     if sc is None:
         raise KeyError(f"unknown battle scenario: {scenario_id}")
     bf = BattleField(int(sc["width"]), int(sc["height"]))
+    for patch in sc.get("terrain", []):     # cover/ground first
+        kind = patch["kind"]
+        x, y, w, h = patch["rect"]
+        for yy in range(y, y + h):
+            for xx in range(x, x + w):
+                bf.set_terrain(xx, yy, kind)
     for wall in sc.get("walls", []):
         kind = wall.get("type", "stone_wall")
         for (x, y) in wall_cells(wall):

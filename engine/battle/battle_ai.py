@@ -70,17 +70,23 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     """Resolve one strike. Returns True if the target fell."""
     st = atk_squad.stats
     d = _dist(atk_soldier.pos, target.pos)
+    ranged = False
     if d <= MELEE_REACH:
         power = st.get("melee", 0)
     elif d <= RANGED_REACH and st.get("ranged", 0) > 0:
         power = st.get("ranged", 0)
+        ranged = True
     else:
         return False
-    # d20 + power vs 10 + defence of the target's squad
+    # d20 + power vs 10 + defence of the target's squad; a RANGED shot
+    # is further blunted by the cover the target stands in (P17.6).
     tgt_squad = field.squads.get(target.squad_id)
     defence = tgt_squad.stats.get("defense", 0) if tgt_squad else 0
+    dc = 10 + defence
+    if ranged:
+        dc += round(field.cover_at(target.x, target.y) * 10)
     roll = rng.randint(1, 20) + power
-    if roll < 10 + defence:
+    if roll < dc:
         return False
     dmg = max(1, power // 3 + rng.randint(0, 2))
     target.hurt(dmg)

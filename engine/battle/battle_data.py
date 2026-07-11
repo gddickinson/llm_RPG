@@ -30,8 +30,19 @@ FORTIFICATIONS = _load("fortifications.json")
 _MATCH = _load("matchups.json")
 MATCHUP = _MATCH.get("matchup", {})
 TERRAIN = _MATCH.get("terrain", {})
+# grid-terrain cover (P17.6): kind -> cover fraction blunting ranged
+# hit rolls (forest 0.5, rubble 0.3, ...); distinct from the abstract
+# resolver's TERRAIN modifiers above (plains/hills/... aggregate math).
+_TERR = _load("terrain.json")
+TERRAIN_COVER = {k: float(v.get("cover", 0.0)) for k, v in _TERR.items()}
 
 DEFAULT_UNIT = "infantry_sword"
+
+
+def terrain_cover(kind: str) -> float:
+    """Cover (0..1) a soldier standing on this grid terrain gains
+    against ranged fire. 0 for open ground."""
+    return TERRAIN_COVER.get(kind, 0.0)
 
 
 def unit_stats(unit_type: str) -> dict:

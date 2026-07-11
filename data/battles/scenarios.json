@@ -387,5 +387,58 @@
         ]
       }
     ]
+  },
+  "treeline_defense": {
+    "name": "Archers in the Treeline",
+    "desc": "Bowmen loose from the cover of the woods; the open-field assault must cross the killing ground to reach them. Cover turns the exchange.",
+    "width": 44,
+    "height": 24,
+    "terrain": [
+      {
+        "kind": "forest",
+        "rect": [
+          30,
+          3,
+          9,
+          18
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_assault",
+            "type": "infantry_sword",
+            "size": 18,
+            "anchor": [
+              4,
+              7
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_bows"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 12,
+            "anchor": [
+              33,
+              7
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_assault"
+          }
+        ]
+      }
+    ]
   }
 }

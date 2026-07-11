@@ -1,0 +1,14 @@
+{
+  "grass":    {"cover": 0.0},
+  "road":     {"cover": 0.0},
+  "scorched": {"cover": 0.0},
+  "mud":      {"cover": 0.0},
+  "rubble":   {"cover": 0.3},
+  "forest":   {"cover": 0.5},
+  "hedge":    {"cover": 0.35},
+  "sandbags": {"cover": 0.5},
+  "wall":     {"cover": 0.0},
+  "gate":     {"cover": 0.0},
+  "water":    {"cover": 0.0},
+  "mountain": {"cover": 0.0}
+}

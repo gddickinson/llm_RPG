@@ -30,9 +30,9 @@ llm_RPG/
 
 ### engine/battle/ — Phase 17 tactical layer
 
-- **`battle_data.py`** — loaders over `data/battles/*.json`: unit archetypes, formations, matchup RPS + terrain, fortifications (all content, no hardcoded stats).
+- **`battle_data.py`** — loaders over `data/battles/*.json`: unit archetypes, formations, matchup RPS + terrain, fortifications, P17.6a grid-terrain cover (`terrain_cover`); all content, no hardcoded stats.
 - **`battle_unit.py`** — P17.2 grid pieces: `Soldier` (light token, +P17.4c `move_accum` speed budget) + `Squad` (owns soldiers, ONE morale bar, order/formation/commander, `speed`; rout on morale threshold); round-trips to dict.
-- **`battle_field.py`** — P17.2 battle grid: own terrain, WALL/GATE as HP structures breaching to rubble lanes, soldier occupancy, squad/team registry; round-trips to dict for mid-battle saves.
+- **`battle_field.py`** — P17.2 battle grid: own terrain (P17.6a passable COVER terrains + `cover_at`), WALL/GATE as HP structures breaching to rubble lanes, soldier occupancy, squad/team registry; round-trips to dict for mid-battle saves.
 - **`battle_flow.py`** — P17.3 flow fields: multi-source BFS distance field per team (O(map)); soldiers step the gradient toward the enemy and through breaches.
 - **`battle_ai.py`** — P17.3 group AI (ported colosseum brain): focus-fire target select, self-contained d20 strike, role movement (archers kite), squad morale/rout; P17.4c `step_toward` greedy push-into-contact when the centroid flow is blocked.
 - **`battle_orders.py`** — P17.5 the commander's verbs as behaviour: `advance_intent` maps an order (charge/hold/fall_back/move/focus_fire) to a soldier's out-of-reach intent; `is_focus` concentrates fire; objective-type scaffold. The session + `pick_target` read it.

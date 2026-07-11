@@ -2845,3 +2845,29 @@ scaffolded with capture-point VICTORY belonging to P17.6. 11 new
 tests (intent map, hold roots, fall-back retreats, move marches,
 focus concentrates, legacy spelling, valid_order, plus a headless
 command smoke); suite 1282, green.
+
+**Round 133 — P17.6a Cover (a coherent sub-step of Siege & cover).**
+The playtest ask for "a much larger variety of cover types" and the
+realism arc meet here. Battle terrain now carries a cover value in
+`data/battles/terrain.json` — forest and sandbags 0.5, hedge 0.35,
+rubble 0.3, open ground 0 — loaded through `battle_data.terrain_cover`
+and read off the grid by `BattleField.cover_at`. forest, hedge and
+sandbags join the field's passable cover terrains (you fight from
+them). The effect lands in one place: `battle_ai.attack` adds
+`round(cover*10)` to the difficulty of a RANGED shot and ONLY a
+ranged shot — a swordsman in the trees is no harder to cut down
+hand-to-hand, but an archer loosing at him eats a real penalty.
+Scenarios can paint terrain rectangles (`build_field` lays them under
+the walls and squads), and the new `treeline_defense` set-piece
+stands twelve longbows in a wood while an eighteen-strong assault
+crosses the open killing ground; cover lets the bows hold the
+treeline. The screen paints the new terrains, and the validator
+checks cover stays in 0..1 and that scenario terrain rects sit on the
+field. Measured, forest cuts an archer's hits from ~1480 to ~1010 per
+2000 rolls, rubble to ~1195 — a clear, graded shield. 7 tests (cover
+values, cover_at bounds, ranged-reduced, deeper-shields-more, melee-
+unaffected, treeline paints forest under the archers + converges);
+suite 1289, green (bar the historic test_disease worldgen flake,
+which reran clean). Remainder split onto the plan as P17.6b: siege
+units battering walls to breaches, wall-walk elevation, boiling-oil
+surfaces, capture-point victory, and the AI actively seeking cover.

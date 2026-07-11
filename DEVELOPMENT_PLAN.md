@@ -2279,15 +2279,35 @@ is shippable and testable, de-risking UI last:
   settable/plumbed but its grid effect (spacing/defence) lands with
   P17.10; objective types are scaffolded (`OBJECTIVES`) with the
   capture-point VICTORY condition already homed in P17.6.)*
-- [ ] **P17.6 Siege & cover.** Gates/walls as TileDamage HP; siege
-  engines deal structural damage to adjacent wall tiles → RUBBLE
-  breaches (earthworks mapping); wall-walk elevation via the multi-
-  level stacks; boiling oil = a surfaces paint; capture-point
-  victory. Plus COVER (playtest ask): battle terrain carries a
-  `cover` value (forest/rubble/wall-edge/palisade) that blunts
-  incoming RANGED hit rolls (mirror the P12.7 soft-cover model on the
-  shot line) and the AI seeks it — a variety of cover types, and a
-  scenario that turns on them (archers behind a treeline).
+- [x] **P17.6a Cover (playtest ask + realism arc).** Battle terrain
+  carries a `cover` value that blunts incoming RANGED hit rolls
+  (mirror the P12.7 soft-cover model), with a variety of cover types
+  and a scenario that turns on them.
+  *(Round 133: `data/battles/terrain.json` gives each grid-terrain
+  kind a cover fraction — forest 0.5, sandbags 0.5, hedge 0.35,
+  rubble 0.3, open ground 0 — loaded by `battle_data.terrain_cover`.
+  forest/hedge/sandbags join the field's PASSABLE cover terrains;
+  `BattleField.cover_at(x,y)` reads it. `battle_ai.attack` adds
+  `round(cover*10)` to the DC of a RANGED shot only (a swordsman in
+  the trees is no harder to hit hand-to-hand). Scenarios can paint
+  terrain rects (`build_field` lays them before walls/squads); the
+  new `treeline_defense` stands 12 longbows in a wood against an
+  18-strong open-field assault, and cover lets the bows hold the
+  treeline. Screen renders the new terrains; validator checks cover
+  ∈ 0..1 and scenario terrain rects. Measured: forest cuts an
+  archer's hits ~1480→1010 per 2000, rubble ~1195. 7 tests (cover
+  values, cover_at, ranged-reduced, deeper-shields-more, melee-
+  unaffected, treeline paints + converges); suite 1289, green.
+  REMAINDER: the AI does not yet actively SEEK cover — units use it
+  only where the scenario places them (→ P17.6b).)*
+- [ ] **P17.6b Siege.** Walls/gates are already HP structures that
+  breach to RUBBLE (P17.2); make SIEGE units batter them —
+  `structural_dmg` applied to an adjacent wall when the path is
+  blocked, opening the breach the flow field then routes through
+  (earthworks mapping). Wall-walk elevation via the multi-level
+  stacks; boiling oil = a `surfaces` paint on the battle grid;
+  capture-point VICTORY (a squad holding an objective tile wins);
+  and the AI actively seeking cover (deferred from P17.6a).
 - [ ] **P17.7 Player role-swap.** An `embodied` flag on the
   session: set → input routes to normal grid-soldier controls,
   camera locks in; None → commander order layer, free camera; TAB

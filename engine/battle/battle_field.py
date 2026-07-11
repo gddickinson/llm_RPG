@@ -14,12 +14,15 @@ testable headless.
 
 from typing import Dict, List, Optional, Tuple
 
-from engine.battle.battle_data import fort_stats
+from engine.battle.battle_data import fort_stats, terrain_cover
 from engine.battle.battle_unit import Squad
 
 # terrain kinds a battle field understands (strings, not the world
-# TerrainType enum — a battle is its own arena)
-PASSABLE = ("grass", "road", "rubble", "scorched", "mud")
+# TerrainType enum — a battle is its own arena). forest/hedge/sandbags
+# are passable COVER terrains (P17.6): you fight from them, they blunt
+# incoming ranged fire.
+PASSABLE = ("grass", "road", "rubble", "scorched", "mud",
+            "forest", "hedge", "sandbags")
 WALL = "wall"
 GATE = "gate"
 BLOCKING = ("wall", "gate", "water", "mountain")
@@ -72,6 +75,12 @@ class BattleField:
         if not self.in_bounds(x, y):
             return True
         return self.terrain[y][x] in BLOCKING
+
+    def cover_at(self, x: int, y: int) -> float:
+        """Cover (0..1) for a soldier standing here (P17.6)."""
+        if not self.in_bounds(x, y):
+            return 0.0
+        return terrain_cover(self.terrain[y][x])
 
     # ---- occupancy -----------------------------------------------
 
