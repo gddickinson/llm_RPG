@@ -3319,3 +3319,26 @@ improvement, written up as M.2b — a retreat/heal/focus/don't-fight-
 outnumbered policy — to be re-run against the same playthrough as a
 scorecard. Net: the multiplayer/agent foundation genuinely works; the
 brain just needs a survival instinct.
+
+**Round 150 — M.2b Agent tactics & survival.**
+The gameplay test's one real finding — the agent charging a wolf pack
+to 1 HP with no self-preservation — is fixed. `AgentController.decide`
+is now a priority utility policy: first SURVIVE (below 40% HP it drinks
+a healing potion, matched by id because the heal payload isn't on the
+item's use_effect, else casts Heal if it knows one with mana to spare,
+else flees the nearest foe); then refuse to be SWARMED (two or more
+foes on it while under three-quarter health means back off, not stand
+and trade); then FOCUS a single target, held until it dies or leaves,
+and SHOOT it if a bow is in hand and the range allows, otherwise close;
+then a light OBJECTIVE, grabbing loot lying within a few tiles; and
+only then wander. It's still LLM-free, and every choice executes
+through the real player API — use_item, cast_spell, shoot_ranged,
+pickup_item, attack_character, move_player. Re-running the playthrough
+as a scorecard tells the story: a ranged hero now KITES the same
+four-wolf pack for zero damage and levels up off it, and a melee hero
+dropped into the middle of four wolves FLEES and drinks a potion,
+walking away at 16 HP where the old policy left it at 1. Five new tests
+pin the behaviours — heal-or-flee when badly hurt, back off when
+swarmed, keep one focus target, shoot with a bow in range, and grab
+ground loot. Suite 1406, green. The agent can now genuinely look after
+itself; M.3 next hands it an absent human's hero to keep alive.

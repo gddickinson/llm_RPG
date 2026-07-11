@@ -60,10 +60,54 @@ class TestPolicy(unittest.TestCase):
         self.assertEqual(plan, ("move", (1, 0)))   # steps east toward it
 
     def test_wanders_with_no_foe_in_sight(self):
-        # no hostile within SIGHT -> a move/wait toward a cached goal
+        # no hostile within SIGHT -> a non-combat action (loot / roam)
         plan = self.ctrl.decide(self.engine, self.hero)
-        self.assertIn(plan[0], ("move", "wait"))
-        self.assertIsNotNone(self.ctrl.goal)
+        self.assertIn(plan[0], ("move", "wait", "loot"))
+
+    def test_heals_or_flees_when_badly_hurt(self):
+        from items.item_registry import create_item
+        self._wolf_at((3, 0))                    # a threat in sight
+        self.hero.hp = 3                         # badly wounded
+        self.hero.inventory = [create_item("potion")]
+        self.assertEqual(self.ctrl.decide(self.engine, self.hero)[0],
+                         "heal_potion")          # drink before fighting
+        self.hero.inventory = []                 # no cure left
+        self.assertEqual(self.ctrl.decide(self.engine, self.hero)[0],
+                         "flee")
+
+    def test_backs_off_when_swarmed(self):
+        self._wolf_at((1, 0))
+        self._wolf_at((-1, 0))                   # two on him at once
+        self.hero.hp = int(self.hero.max_hp * 0.6)   # hurt, not critical
+        self.assertEqual(self.ctrl.decide(self.engine, self.hero)[0],
+                         "flee")
+
+    def test_focuses_one_target(self):
+        self._wolf_at((2, 0))
+        self._wolf_at((3, 0))
+        self.ctrl.decide(self.engine, self.hero)
+        first = self.ctrl.target_id
+        self.assertIsNotNone(first)
+        self.ctrl.decide(self.engine, self.hero)
+        self.assertEqual(self.ctrl.target_id, first, "keeps the focus")
+
+    def test_shoots_with_a_bow_in_range(self):
+        from characters.equipment import equip, equipped_weapon
+        from items.item_registry import create_item
+        bow = create_item("bow")
+        self.hero.inventory.append(bow)
+        equip(self.hero, bow)
+        self.assertTrue(equipped_weapon(self.hero).is_ranged_weapon())
+        self._wolf_at((3, 0))                    # in bow range, not adjacent
+        self.assertEqual(self.ctrl.decide(self.engine, self.hero)[0],
+                         "shoot")
+
+    def test_grabs_loot_off_the_ground(self):
+        from items.item_registry import create_item
+        self.engine.world.add_item_to_ground(
+            create_item("dagger"), *self.hero.position)
+        self.assertEqual(self.ctrl.decide(self.engine, self.hero)[0],
+                         "loot")
 
     def test_take_turn_attacks_and_wounds(self):
         wolf = self._wolf_at((1, 0))

@@ -2715,20 +2715,24 @@ last. Networking was previously deferred — this supersedes that.
   and drive_agents runs once-per-turn restoring the active player).
   Suite 1401, green. This is the piece that lets an agent JOIN and play
   a character; M.3 makes it take over an absent human's hero.)*
-- [ ] **M.2b Agent tactics & survival (from a played-it-myself test).**
-  A 40-turn autonomous playthrough (Claude driving a hero via M.2)
-  proved the plumbing — the agent hunted and fought, the conversation
-  menu gave a quest, a 2nd agent hero joined and moved, the roster
-  survived save/load, travel scoped cleanly — but exposed the policy as
-  NAIVE: the hero charged a 4-wolf pack, got surrounded, fought to 1 HP
-  without ever fleeing or healing, and only survived by accidentally
-  wandering off the map edge. Give the `AgentController` a real policy:
-  RETREAT/heal (drink a potion, `V` self-heal) below an HP threshold,
-  don't engage when locally OUTNUMBERED (respect the P17.11 surround
-  logic's spirit), use RANGED/spells when it has them, FOCUS one target,
-  and pursue light OBJECTIVES (loot on the ground, an accepted quest's
-  target, a home tile) instead of pure random wander. Keep it LLM-free
-  (utility scoring). Then re-run the playthrough as a scorecard.
+- [x] **M.2b Agent tactics & survival (from a played-it-myself test).**
+  The naive charge-and-die policy is now a real one.
+  *(Round 150: `AgentController.decide` is a priority utility policy —
+  (1) SURVIVE: below 40% HP drink a healing potion (`_healing_item`,
+  id-matched since the heal payload isn't on use_effect), else cast
+  Heal if known + mana, else FLEE from the nearest foe; (2) don't stand
+  and trade blows when SWARMED (≥2 adjacent + under 75% HP → back off);
+  (3) FOCUS one target (`target_id` held until it dies/leaves) and SHOOT
+  it if a ranged weapon is equipped and it's within range, else close;
+  (4) a light OBJECTIVE — grab loot off the ground within 5 tiles;
+  (5) wander. Still LLM-free. Executes through the real API (`use_item`
+  / `cast_spell` / `shoot_ranged` / `pickup_item` / `attack_character`
+  / `move_player`). SCORECARD — re-ran the playthrough: a ranged hero
+  now KITES a 4-wolf pack for zero damage and levels up; a melee hero
+  swarmed by four wolves FLEES and drinks a potion, surviving at 16 HP
+  (was 1 HP, near-death). 5 new tests (heal/flee when hurt, back off
+  swarmed, focus one target, shoot with a bow, grab loot). Suite 1406,
+  green.)*
 - [ ] **M.3 Absent-player persistence.** When a human isn't at the
   controls, M.2's controller takes over their character with light
   standing goals (go home, work a trade, defend allies) so the world

@@ -23,6 +23,9 @@ from contextlib import contextmanager
 logger = logging.getLogger("llm_rpg.agent")
 
 SIGHT = 8                                   # tiles an agent notices a foe
+RANGED = 5                                  # tiles a bow can reach
+LOW_HP = 0.4                                # heal / flee at or below this
+SWARM_HP = 0.75                             # back off a pack below this
 _HOSTILE = ("brigand", "troll", "monster")  # matches the game's foe check
 
 
@@ -38,6 +41,40 @@ def _dist(a, b) -> int:
 def _toward(frm, to):
     return ((to[0] > frm[0]) - (to[0] < frm[0]),
             (to[1] > frm[1]) - (to[1] < frm[1]))
+
+
+def _away(frm, to):
+    return ((frm[0] > to[0]) - (frm[0] < to[0]),
+            (frm[1] > to[1]) - (frm[1] < to[1]))
+
+
+def _healing_item(char):
+    """A drinkable in the bag that mends wounds (id-matched — the heal
+    payload isn't on `use_effect`)."""
+    for it in getattr(char, "inventory", []):
+        try:
+            if not it.is_consumable():
+                continue
+        except Exception:
+            continue
+        iid = getattr(it, "id", "").lower()
+        if "potion" in iid or "heal" in iid or "remedy" in iid:
+            return it
+    return None
+
+
+def _knows_heal(char) -> bool:
+    m = getattr(char, "metadata", {}) or {}
+    return "heal" in m.get("spells_known", []) and m.get("mana", 0) >= 3
+
+
+def _can_shoot(char) -> bool:
+    try:
+        from characters.equipment import equipped_weapon
+        w = equipped_weapon(char)
+        return w is not None and w.is_ranged_weapon()
+    except Exception:
+        return False
 
 
 @contextmanager
@@ -56,19 +93,45 @@ class AgentController:
     def __init__(self, seed: int = 0):
         self.rng = random.Random(seed)
         self.goal = None          # a cached destination tile
+        self.target_id = None     # the foe we're focusing
 
-    # ---- policy (decide, no side effects) -----------------------
+    # ---- perception --------------------------------------------
 
-    def _nearest_foe(self, engine, char):
-        best, bd = None, SIGHT + 1
+    def _foes_in_sight(self, engine, char):
+        out = []
         for npc in engine.npc_manager.npcs.values():
             if npc.id == char.id or not npc.is_active():
                 continue
             if not _is_hostile(npc):
                 continue
             d = _dist(char.position, npc.position)
-            if d < bd:
-                best, bd = npc, d
+            if d <= SIGHT:
+                out.append((npc, d))
+        out.sort(key=lambda t: t[1])
+        return out
+
+    def _focus(self, foes):
+        """Keep hammering one target while it lives and is in sight —
+        finishing a foe beats spreading damage around."""
+        if self.target_id:
+            cur = next((f for f, _ in foes if f.id == self.target_id), None)
+            if cur is not None:
+                return cur
+        self.target_id = foes[0][0].id if foes else None
+        return foes[0][0] if foes else None
+
+    def _nearest_loot(self, engine, char, r: int = 5):
+        x, y = char.position
+        best, bd = None, r + 1
+        try:
+            for dx in range(-r, r + 1):
+                for dy in range(-r, r + 1):
+                    if engine.world.get_items_at(x + dx, y + dy):
+                        d = max(abs(dx), abs(dy))
+                        if d < bd:
+                            best, bd = (x + dx, y + dy), d
+        except Exception:
+            return None
         return best
 
     def _pick_goal(self, engine, char):
@@ -77,15 +140,49 @@ class AgentController:
         return (max(0, min(w.width - 1, x + self.rng.randint(-6, 6))),
                 max(0, min(w.height - 1, y + self.rng.randint(-6, 6))))
 
+    # ---- policy (decide, no side effects) -----------------------
+
     def decide(self, engine, char):
-        """The utility choice — returns a plan, executes nothing.
-        ('attack', foe) | ('move', (dx,dy)) | ('wait',)."""
-        foe = self._nearest_foe(engine, char)
-        if foe is not None:
-            if _dist(char.position, foe.position) <= 1:
-                return ("attack", foe)
-            self.goal = foe.position
-            return ("move", _toward(char.position, foe.position))
+        """Utility choice, in priority order — survive, don't get
+        swarmed, focus a foe (ranged if able), loot, then wander.
+        Returns a plan; executes nothing."""
+        hp = char.hp / max(1, char.max_hp)
+        foes = self._foes_in_sight(engine, char)
+        adj = [f for f, d in foes if d <= 1]
+
+        # 1. survive — heal if we can, else run from the nearest threat
+        if hp <= LOW_HP:
+            pot = _healing_item(char)
+            if pot is not None:
+                return ("heal_potion", pot)
+            if _knows_heal(char):
+                return ("heal_spell",)
+            if foes:
+                return ("flee", _away(char.position, foes[0][0].position))
+
+        # 2. don't stand and trade blows when swarmed in melee
+        if len(adj) >= 2 and hp < SWARM_HP:
+            return ("flee", _away(char.position, adj[0].position))
+
+        # 3. engage a focused target — shoot if we can, else close
+        target = self._focus(foes)
+        if target is not None:
+            d = _dist(char.position, target.position)
+            if d <= 1:
+                return ("attack", target)
+            if _can_shoot(char) and d <= RANGED:
+                return ("shoot", target)
+            self.goal = target.position
+            return ("move", _toward(char.position, target.position))
+
+        # 4. a light objective — grab loot off the ground
+        loot = self._nearest_loot(engine, char)
+        if loot is not None:
+            if loot == tuple(char.position):
+                return ("loot",)
+            return ("move", _toward(char.position, loot))
+
+        # 5. wander toward a cached goal
         if self.goal is None or char.position == self.goal:
             self.goal = self._pick_goal(engine, char)
         step = _toward(char.position, self.goal)
@@ -96,9 +193,18 @@ class AgentController:
     def take_turn(self, engine, char) -> str:
         plan = self.decide(engine, char)
         with acting_as(engine, char):
-            if plan[0] == "attack":
+            k = plan[0]
+            if k == "attack":
                 engine.attack_character(plan[1].name)
-            elif plan[0] == "move":
+            elif k == "shoot":
+                engine.shoot_ranged(plan[1].name)
+            elif k == "heal_potion":
+                engine.use_item(plan[1].name)
+            elif k == "heal_spell":
+                engine.cast_spell("heal")
+            elif k == "loot":
+                engine.pickup_item()
+            elif k in ("move", "flee"):
                 dx, dy = plan[1]
                 if dx or dy:
                     engine.move_player(dx, dy)
