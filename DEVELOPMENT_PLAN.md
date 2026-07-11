@@ -2072,6 +2072,86 @@ grid).
 procedural pygame.draw art (we have the P15.1 PNG pipeline — take
 the techniques, not the draw code).*
 
+## Phase 17 — The battle screen (George, 2026-07-11) — MAJOR
+
+George: a large-scale tactical COMBAT SCREEN for skirmishes,
+battles, sieges, castle assaults and large dungeon/building
+encounters — commanders issuing orders to troops, siege engines vs
+buildings, cavalry, units cooperating toward commander goals, and
+the player able to act as ONE soldier OR as a commander sending
+orders. Zoomable (interior-screen scale). Reachable from the START
+MENU as a standalone TESTBED, so we prove it in isolation and fold
+lessons back into the main game. A deep-research pass (tactical-
+combat mechanisms + a sweep of the sibling autonomous_world
+project) produced the architecture below.
+
+**Key finding:** autonomous_world already holds a near-complete
+tactical brain (`game/systems/colosseum.py` — target-select with
+focus-fire, morale/rout, role movement kite/flank/intercept,
+rally, siege) and army tables (`game/systems/warfare.py` —
+UNIT_STATS, MATCHUP rock-paper-scissors, FORMATIONS,
+FORTIFICATION_STATS, a Lanchester auto-resolver). They are
+FLOAT/real-time-coupled so NOT importable — but the DATA TABLES
+lift verbatim to JSON and the AI HEURISTICS are a ready design
+spec to port onto our grid. And our OWN engine already has the
+siege primitives: tile_damage (walls→rubble breaches), earthworks
+(breach mapping + night masons), surfaces (oil/fire/electrified),
+multi-level interiors/structures (wall-walks), squad_tactics
+(flank/surround/focus/BFS step), FOV/LOS. The battle SCREEN is the
+genuinely new work; most of the phase is porting + integration.
+
+Model: a SQUAD is the commandable object (N soldier tokens, ONE
+morale bar — the Total War model) with a Mount&Blade order grammar
+(select group → verb). RTWP tick loop decoupled from world-minutes,
+seeded/deterministic, heuristic (no per-tick LLM). Zoom = tile-size
+LOD: soldiers when zoomed in, one banner+bar blob per squad zoomed
+out. Package `engine/battle/` (each file <500 lines):
+battle_data / battle_unit / battle_field / battle_orders /
+battle_ai / battle_flow / battle_resolve / battle_session, plus
+ui/battle_screen and data/battles/*.json. Ordered so each round
+is shippable and testable, de-risking UI last:
+
+- [ ] **P17.1 Data tables + auto-resolver (headless).** Port
+  autonomous_world's warfare tables to data/battles/*.json
+  (units, formations, matchups, fortifications) and
+  `battle_resolve.resolve(seed)` (Lanchester melee/ranged/siege).
+  Validator extended for battle content. Deterministic headless
+  tests assert winners/survivors by seed — NO UI. Doubles as the
+  richer resolver for faction_ticker/retaliation off-screen fights.
+- [ ] **P17.2 Squad & soldier model + field.** `battle_unit.py`
+  (Squad = tokens + one morale bar; Soldier grid token;
+  to_dict/from_dict) and `battle_field.py` (a grid wrapping
+  TileDamage + SurfaceLayer). Save round-trip test.
+- [ ] **P17.3 Group AI ticking a skirmish.** Port the colosseum
+  brain grid-native into `battle_ai.py` (focus-fire target select,
+  morale/rout, role movement) + `battle_flow.py` (one BFS flow
+  field per objective). `battle_session.run_headless(scenario,
+  seed, max_ticks)` runs two squads to a result; tests assert it
+  converges. Damage routes through the existing combat_system so
+  surfaces/wounds/durability all apply.
+- [ ] **P17.4 The battle screen + zoom/LOD.** `ui/battle_screen.py`
+  reusing MapRenderer with a variable tile_size {8,16,32,48} and a
+  float camera; LOD blob-per-squad below ~16px. Reachable from the
+  start menu ("Battle Testbed" → scenario picker). Render only —
+  the sim already runs headless.
+- [ ] **P17.5 Orders & commander overlay.** `battle_orders.py`
+  (Move/Hold/Charge/FocusFire/FallBack/SetFormation + Objective
+  types capture-point/breach/protect) and the command UI (select
+  group → verb). The player commands allied squads.
+- [ ] **P17.6 Siege.** Gates/walls as TileDamage HP; siege engines
+  deal structural damage to adjacent wall tiles → RUBBLE breaches
+  (earthworks mapping); wall-walk elevation via the multi-level
+  stacks; boiling oil = a surfaces paint; capture-point victory.
+- [ ] **P17.7 Player role-swap.** An `embodied` flag on the
+  session: set → input routes to normal grid-soldier controls,
+  camera locks in; None → commander order layer, free camera; TAB
+  toggles. The player's squad runs the same AI, skipping the
+  driven soldier.
+- [ ] **P17.8 Fold-back.** `battle_resolve.resolve` replaces the
+  dice in faction_ticker/retaliation off-screen battles; commander
+  orders extend to overworld `[Clash]` events; a castle assault in
+  the overworld reuses the siege field. Playtest, then Phase 18.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
