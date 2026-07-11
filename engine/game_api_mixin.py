@@ -397,9 +397,10 @@ class GameAPIMixin:
         loc = self.world.get_location_at(x, y)
         name = loc.name if loc else f"cave_{x}_{y}"
         if name not in self.dungeons:
-            dungeon = generate_dungeon(name=f"{name} (Depths)",
-                                       seed=hash(name) & 0xFFFFFFFF)
-            populate_dungeon(dungeon, self)
+            from world.dungeon import generate_multilevel
+            dungeon = generate_multilevel(
+                name=f"{name} (Depths)",
+                seed=hash(name) & 0xFFFFFFFF, engine=self)
             self.dungeons[name] = dungeon
         self.current_dungeon = self.dungeons[name]
         self.dungeon_return_pos = self.player.position
@@ -412,6 +413,15 @@ class GameAPIMixin:
     def exit_dungeon(self) -> str:
         if not self.current_dungeon:
             return "You aren't in a dungeon."
+        # Deeper floors climb back up first (P9.5)
+        above = getattr(self.current_dungeon, "level_above", None)
+        if above is not None:
+            landing = above.stairs_down or above.exit_pos
+            self.current_dungeon = above
+            self.player.position = landing
+            msg = "You climb back toward the light."
+            self.memory_manager.add_event(msg)
+            return msg
         name = self.current_dungeon.name
         self.current_dungeon = None
         if self.dungeon_return_pos:

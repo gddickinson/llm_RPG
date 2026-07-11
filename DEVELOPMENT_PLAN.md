@@ -1205,9 +1205,22 @@ string-item crashes ×2, indoor pickups shadowed), 3 balance/content
 improvements (carry capacity, tome-not-scroll reward, keep fallback
 loot), 2 new phases planned from George's requests (10: destructible
 world; 11: traversal & movement magic).
-- [ ] **P9.5 Multi-level dungeons.** Depth 2–3 dungeons with stairs-down,
+- [x] **P9.5 Multi-level dungeons.** Depth 2–3 dungeons with stairs-down,
   scaling monsters/loot per level, a boss floor; collection-log and
   diary hooks ("clear depth 3").
+  *(done 2026-07-10 — generate_multilevel(): every cave now opens
+  onto a 2–3 floor delve using the SAME linked-stairs convention as
+  buildings (one _take_stairs rule moves between interior levels AND
+  dungeon floors, landing in the right engine slot). Deeper floors:
+  stronger monsters (+level/+hp per depth), richer room loot, and
+  the deepest floor holds the TYRANT OF THE DEPTHS (a den-lord troll
+  with a hoard of potions beside it). Monsters are floor-tagged —
+  no cross-level rendering/targeting bleed (renderer + targeting
+  guards). TAB climbs floor by floor before emerging. New personal
+  best depth is announced ("[Collection] You have delved to depth
+  2") and stored in metadata for future diary tasks. The whole stack
+  serializes recursively — save mid-delve, the dungeon remembers.
+  7 tests.)*
 - [ ] **P9.6 DM + Legendarium structures.** `define_structure` DM command
   (charter-capped size/level) + structures recorded in the Legendarium
   so DM-built towers persist across campaigns; module packs may ship

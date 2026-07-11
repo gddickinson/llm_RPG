@@ -1620,3 +1620,29 @@ and two new phases planned directly from George's play reports
 magic). The playtest-fix-replan loop is working exactly as
 designed: George plays, reports land mid-round, fixes ship with
 regression tests the same session. Suite: 898 tests, green x3.
+
+**Round 87 — P9.5 Multi-level dungeons (done); rules research
+running.**
+Every cave now opens onto a 2-3 floor delve. generate_multilevel()
+chains dungeon levels with the SAME twinned-stairs convention the
+buildings use — one _take_stairs rule now moves the player between
+interior levels and dungeon floors alike, landing in the correct
+engine slot. Depth means danger: deeper floors spawn stronger
+monsters (+1 level and +4 hp per floor) and richer room loot, and
+the deepest floor belongs to the Tyrant of the Depths, a den-lord
+troll guarding a hoard. Monsters are tagged to their floor so
+nothing renders or targets across levels; TAB climbs back floor by
+floor before emerging into daylight; a new personal-best depth is
+announced through the Collection prefix and stored for future diary
+tasks; and the whole stack serializes recursively so a mid-delve
+save restores every floor as you left it. MEANWHILE George's
+deep-dive rules research is running: three agents (tabletop 5e/PF2e,
+simulation roguelikes, modern CRPGs) were killed by a session limit
+and resumed; the tabletop report has landed (ranked top-10: degrees
+of success, exhaustion ladder, dying/wounded state machine, valued
+conditions, combat skill actions, concentration, cover/flanking,
+advantage, rests with teeth, object damage thresholds) — synthesis
+into Phase 12 when the other two return. docs/RULES_AUDIT.md holds
+our baseline self-audit. 7 new tests. Suite: 905, green (one stray
+conflict-test flake passed 6/6 standalone and 4/4 subsequent full
+runs). 

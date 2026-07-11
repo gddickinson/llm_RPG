@@ -47,10 +47,14 @@ class TargetingSystem:
             pass
         try:
             if zone is not None:
-                # In a building level, only its own natives are real
-                if not hasattr(zone, "rooms") and \
-                        target.metadata.get("zone") != \
-                        getattr(zone, "name", None):
+                # Only this level's own natives are real (buildings
+                # AND dungeon floors — P9.5)
+                tzone = target.metadata.get("zone")
+                if not hasattr(zone, "rooms"):
+                    if tzone != getattr(zone, "name", None):
+                        return False, f"{target.name} isn't here."
+                elif tzone is not None and \
+                        tzone != getattr(zone, "name", None):
                     return False, f"{target.name} isn't here."
                 from world.fov import zone_fov
                 if tuple(tpos) not in zone_fov(zone, tuple(ppos),

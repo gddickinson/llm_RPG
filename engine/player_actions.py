@@ -421,8 +421,21 @@ class PlayerActions:
         engine = self.engine
         landing = level.stairs_down if up else level.stairs_up
         if landing is None:
-            landing = level.door
-        engine.current_interior = level
+            landing = getattr(level, "door", None) or \
+                getattr(level, "exit_pos", (1, 1))
+        if hasattr(level, "rooms"):
+            engine.current_dungeon = level      # dungeon floor (P9.5)
+            if not up:
+                depth = getattr(level, "depth", 1)
+                best = engine.player.metadata.get(
+                    "max_dungeon_depth", 1)
+                if depth > best:
+                    engine.player.metadata["max_dungeon_depth"] = depth
+                    engine.memory_manager.add_event(
+                        f"[Collection] You have delved to depth "
+                        f"{depth}.")
+        else:
+            engine.current_interior = level
         engine.player.position = landing
         verb = "climb" if up else "descend"
         engine.memory_manager.add_event(

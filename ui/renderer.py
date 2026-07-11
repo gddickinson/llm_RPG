@@ -350,12 +350,15 @@ class MapRenderer:
         # at their interior positions)
         chars = [(engine.player, engine.player.position)]
         if is_dungeon:
+            zname_d = getattr(zone, "name", None)
             chars += [(n, n.position)
                       for n in engine.npc_manager.npcs.values()
                       if n.is_active() and
                       n.id.startswith(("enc_", "tut_"))
                       and 0 <= n.position[0] < zone.width
-                      and 0 <= n.position[1] < zone.height]
+                      and 0 <= n.position[1] < zone.height
+                      # its own floor only (P9.5)
+                      and n.metadata.get("zone") in (None, zname_d)]
         for npc_id, spot in getattr(zone, "visitors", {}).items():
             npc = engine.npc_manager.npcs.get(npc_id)
             if npc is not None and npc.is_active():
