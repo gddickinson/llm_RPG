@@ -31,6 +31,15 @@ def context_hints(engine) -> List[str]:
     player = engine.player
     x, y = player.position
 
+    # Dying dominates every other hint (P12.4)
+    try:
+        from engine.dying import DYING_MAX
+        d = player.metadata.get("dying", 0)
+        if d > 0:
+            return [f"[!] DYING {d}/{DYING_MAX} — fight for it!"]
+    except Exception:
+        pass
+
     # Tutorial lessons lead everything
     try:
         from engine.tutorial import hint_lines

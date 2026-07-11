@@ -74,16 +74,20 @@ class TestDefeatOutcomes(unittest.TestCase):
         self.engine.current_dungeon = None
 
     def test_combat_integration_survivable(self):
-        """Full combat path: lethal hit -> story outcome, no game over."""
+        """Lethal hit -> DYING -> stabilize -> story outcome (P12.4)."""
         self.engine._has_gui = True
-        self.engine.combat_system.rng = FixedRandom(0.5)
-        # FixedRandom lacks randint; patch minimal pieces
+        self.engine.combat_system.rng = FixedRandom(0.4)  # robbed leg
         self.engine.combat_system.rng.randint = lambda a, b: b
         self.player.hp = 1
         self.player.gold = 50
         msg = self.engine.combat_system._handle_defeat(
             self.wolf, self.player, damage=5)
-        self.assertIn("purse", msg)
+        self.assertIn("DYING", msg)
+        from engine.dying import dying_tick
+        dying_tick(self.engine)      # nat 20 -> stabilized -> robbed
+        log = " ".join(str(e) for e in
+                       self.engine.memory_manager.game_history[-6:])
+        self.assertIn("purse", log)
         self.assertFalse(self.engine.player_dead)
         self.assertTrue(self.engine.running)
         self.assertEqual(self.player.status, "alive")
@@ -91,10 +95,13 @@ class TestDefeatOutcomes(unittest.TestCase):
     def test_combat_integration_final(self):
         self.engine._has_gui = True
         self.engine.combat_system.rng = FixedRandom(0.05)
-        self.engine.combat_system.rng.randint = lambda a, b: b
+        self.engine.combat_system.rng.randint = lambda a, b: a  # nat 1s
         self.player.hp = 1
         self.engine.combat_system._handle_defeat(
             self.wolf, self.player, damage=5)
+        from engine.dying import dying_tick
+        dying_tick(self.engine)      # +2 -> 3
+        dying_tick(self.engine)      # -> 4: the full table, slain
         self.assertTrue(self.engine.player_dead)
 
     def test_victor_remembers(self):

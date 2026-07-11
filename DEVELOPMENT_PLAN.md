@@ -1519,12 +1519,26 @@ traditions lead.
   general/tavern. Hint bar telegraphs parched + exhaustion 2+.
   The old inline hunger block became needs.player_needs_turn.
   9 tests. Suite 1019, green x4.)*
-- [ ] **P12.4 Dying & Wounded.** PF2e's Dying 1–4 + recovery checks
+- [x] **P12.4 Dying & Wounded.** PF2e's Dying 1–4 + recovery checks
   + the Wounded counter (each knockdown brings the next closer),
   layered UNDER our failure-as-story outcomes: drop to 0 → dying
   turns → stabilize into robbed/left-for-dead/story beats instead
   of instant resolution. Kenshi's soft-states (staggered/KO) for
   NPCs so fights end in bodies to rob, ransom, or rescue.
+  *(Round 102: `engine/dying.py`. Player at 0 HP goes DOWN: Dying
+  1+Wounded, flat DC 10 recovery each turn (nat 20/1 move 2), hits
+  while down worsen; downed players can't walk (turns tick), the
+  hint bar shows only "DYING N/4". Stabilizing (Dying 0) adds a
+  Wound and resolves GENTLY (robbed/left-for-dead — never slain);
+  Dying 4 rolls the FULL P4.7 table with game-over plumbing. A real
+  inn night clears Wounded. NPCs: PERSON classes are KNOCKED OUT
+  instead of killed — no loot drop, a body on the ground you can
+  ROB (E: takes their purse, -30 relationship, remembered at
+  weight 8), and they wake in the overnight stack at 1/3 HP with a
+  grudge memory; monsters still die. XP/quest/faction hooks kept
+  for KOs. use() extracted to engine/item_use.py (player_actions
+  380 lines). Remainder: ransom/rescue beats around KO'd bodies.
+  12 tests + 2 integration tests re-pinned. Suite 1031, green x3.)*
 - [ ] **P12.5 Food economy.** OSRS: every food gets heal + a shared
   eat/attack delay (eating mid-fight costs tempo), one combo food,
   one brew that overheals but drains offense; KCD freshness 0–100

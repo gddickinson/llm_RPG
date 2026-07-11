@@ -95,6 +95,7 @@ def sleep(engine) -> List[str]:
     player.metadata["hunger"] = 5
     player.metadata["fatigue"] = 0     # slept off (P11.1)
     player.metadata["sleep_debt"] = 0  # a REAL night (P12.3)
+    player.metadata["wounded"] = 0     # wounds knit (P12.4)
 
     after = snapshot(engine)
     lines = _summary_lines(engine, before, after)

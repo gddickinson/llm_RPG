@@ -298,6 +298,13 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"Player needs tick error: {e}")
 
+        # Down at 0 HP: the recovery check (P12.4)
+        try:
+            from engine.dying import dying_tick
+            dying_tick(self)
+        except Exception as e:
+            logger.debug(f"Dying tick error: {e}")
+
         # Tick status effects on all active characters (player + NPCs)
         try:
             from characters.status_effects import tick_effects
@@ -371,6 +378,11 @@ class GameEngine(GameAPIMixin):
                     run_player_night(self, day - 1)
                 except Exception as e:
                     logger.debug(f"Sleep debt error: {e}")
+                try:   # the beaten come to (P12.4)
+                    from engine.dying import wake_the_fallen
+                    wake_the_fallen(self)
+                except Exception as e:
+                    logger.debug(f"KO wake error: {e}")
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.retaliation.run_night()

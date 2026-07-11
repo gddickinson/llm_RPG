@@ -50,6 +50,14 @@ class PlayerActions:
         # on the ground (shrines revive from there), and they crashed
         # the inventory panel when carried (George)
         if not hasattr(item, "id"):
+            try:   # a KO'd person's body can be robbed (P12.4)
+                from engine.dying import rob_body
+                robbed = rob_body(self.engine, item_name_str, x, y)
+                if robbed:
+                    self.engine.advance_turn()
+                    return robbed
+            except Exception:
+                pass
             return (f"You leave {item_name_str} in peace. A shrine "
                     f"may yet restore them.")
         from engine.carry import can_carry, full_message
@@ -96,143 +104,8 @@ class PlayerActions:
         return f"You don't have {item_name}."
 
     def use(self, item_name: str) -> str:
-        if not item_name:
-            return "Specify which item to use."
-        player = self.engine.player
-        for it in player.inventory:
-            it_name = it.name if hasattr(it, "name") else str(it)
-            if item_name.lower() not in it_name.lower():
-                continue
-
-            # Scroll: cast embedded spell
-            use_eff = getattr(it, "use_effect", None) or {}
-            if "spell" in use_eff:
-                spell_id = use_eff["spell"]
-                try:
-                    msg = self.engine.cast_spell(spell_id)
-                except Exception:
-                    msg = f"You read the {it_name}."
-                self._remove_one(player, it)
-                self.engine.memory_manager.add_event(
-                    f"You read the {it_name}.")
-                self.engine.advance_turn()
-                return msg
-
-            # Spell-teaching tome
-            if "teach_spell" in use_eff:
-                spell_id = use_eff["teach_spell"]
-                from engine.spells import SPELL_REGISTRY, ensure_mana
-                spell = SPELL_REGISTRY.get(spell_id)
-                if spell is None:
-                    return f"The {it_name} is gibberish."
-                ensure_mana(player)
-                known = player.metadata.setdefault("spells_known", [])
-                if spell_id in known:
-                    return f"You already know {spell.name}."
-                known.append(spell_id)
-                player.inventory.remove(it)
-                msg = (f"You study the {it_name} and learn "
-                       f"{spell.name}!")
-                self.engine.memory_manager.add_event(msg)
-                self.engine.advance_turn()
-                return msg
-
-            # Permanent stat increase (training manual)
-            if "permanent_stat" in use_eff:
-                stat = use_eff["permanent_stat"]
-                amount = int(use_eff.get("amount", 1))
-                old = getattr(player, stat, 10)
-                setattr(player, stat, old + amount)
-                player.inventory.remove(it)
-                msg = (f"You study the {it_name}. "
-                       f"{stat.upper()[:3]} {old} -> {old + amount}.")
-                self.engine.memory_manager.add_event(msg)
-                self.engine.advance_turn()
-                return msg
-
-            # Temporary buff (potion of might / speed)
-            if "effect" in use_eff:
-                try:
-                    from characters.status_effects import apply_effect
-                    apply_effect(player, use_eff["effect"],
-                                 int(use_eff.get("duration", 5)))
-                except Exception:
-                    pass
-                self._remove_one(player, it)
-                msg = f"You drink the {it_name}."
-                self.engine.memory_manager.add_event(msg)
-                self.engine.advance_turn()
-                return msg
-
-            if "cure" in use_eff:
-                try:
-                    from characters.status_effects import remove_effect
-                    remove_effect(player, use_eff["cure"])
-                except Exception:
-                    pass
-                self._remove_one(player, it)
-                msg = f"You drink the {it_name}."
-                self.engine.memory_manager.add_event(msg)
-                self.engine.advance_turn()
-                return msg
-
-            # The right remedy clears a disease (P8.2)
-            try:
-                from engine.disease import try_cure_with_item
-                cured = try_cure_with_item(self.engine, player, it)
-                if cured:
-                    self._remove_one(player, it)
-                    self.engine.advance_turn()
-                    return cured
-            except Exception:
-                pass
-
-            if "thirst" in use_eff:            # P12.3 drinks
-                from characters.needs import drink
-                drink(player, int(use_eff["thirst"]))
-                if getattr(it, "heal_amount", 0):
-                    player.heal(it.heal_amount)
-                self._remove_one(player, it)
-                msg = f"You drink the {it_name}. Your thirst eases."
-                self.engine.memory_manager.add_event(msg)
-                self.engine.advance_turn()
-                return msg
-
-            heal = getattr(it, "heal_amount", 0)
-            if heal:
-                from characters.needs import get_hunger, feed
-                hungry = get_hunger(player) > 10
-                if player.hp >= player.max_hp and not hungry:
-                    return "You're already at full health."
-                player.heal(heal)
-                # Eating also satisfies hunger (bread -32, jerky -24, ...)
-                feed(player, amount=heal * 8)
-                self._remove_one(player, it)
-                msg = f"You consume {it_name}" + (
-                    f" and heal {heal} HP." if player.hp <= player.max_hp
-                    else ".")
-                self.engine.memory_manager.add_event(msg)
-                self.engine.advance_turn()
-                return msg
-            else:
-                # Generic use — e.g. for quest items / keys
-                msg = f"You use {it_name}."
-                self.engine.memory_manager.add_event(msg)
-                self.engine.advance_turn()
-                return msg
-        return f"You don't have {item_name}."
-
-    def _remove_one(self, char, item) -> None:
-        """Decrement stack by 1, removing if depleted."""
-        if getattr(item, "stackable", False) and item.quantity > 1:
-            item.quantity -= 1
-        else:
-            try:
-                char.inventory.remove(item)
-            except ValueError:
-                pass
-
-    # ---- combat -------------------------------------------------------
+        from engine.item_use import use_item
+        return use_item(self.engine, item_name)
 
     def attack(self, target_name: str) -> str:
         result = self.engine.combat_system.player_attack(target_name)
@@ -283,6 +156,15 @@ class PlayerActions:
         player = self.engine.player
         if not self.engine.running:
             return False
+        try:   # down at 0 HP, you crawl nowhere (P12.4)
+            from engine.dying import action_gate
+            gate = action_gate(self.engine)
+            if gate:
+                self.engine.memory_manager.add_event(gate)
+                self.engine.advance_turn()
+                return False
+        except Exception:
+            pass
         nx, ny = player.position[0] + dx, player.position[1] + dy
 
         # Inside a dungeon/interior, the ZONE grid governs movement —

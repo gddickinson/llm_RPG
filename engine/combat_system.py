@@ -187,6 +187,30 @@ class CombatSystem:
         if defender.id == self.engine.player.id:
             return self._handle_player_defeat(attacker, damage)
 
+        # People are knocked out; monsters die (P12.4, Kenshi)
+        try:
+            from engine.dying import is_person, ko_person
+            person = is_person(defender)
+        except Exception:
+            person = False
+        if person:
+            msg = ko_person(self.engine, attacker, defender)
+            kls = getattr(getattr(defender, "character_class", None),
+                          "value", "")
+            if self.engine.quest_manager:
+                self.engine.quest_manager.on_npc_defeated(
+                    defender.id, kls)
+            if attacker.id == self.engine.player.id:
+                self._award_xp(defender)
+                self._update_faction_rep(kls)
+                try:
+                    from engine.player_deeds import record_deed
+                    record_deed(self.engine,
+                                f"beat {defender.name} senseless")
+                except Exception:
+                    pass
+            return msg
+
         defender.defeat()
         defender.last_position = defender.position
         msg = (
@@ -253,28 +277,26 @@ class CombatSystem:
         return msg
 
     def _handle_player_defeat(self, attacker, damage: int) -> str:
-        """Defeat outcomes: robbed / left for dead / slain (P4.7)."""
-        player = self.engine.player
-        self.engine.memory_manager.add_event(
-            f"{attacker.name} strikes you down!")
+        """0 HP: the dying ladder first (P12.4), then the story
+        outcomes (P4.7) when it resolves."""
         try:
+            from engine.dying import enter_dying, is_dying, worsen
+            if is_dying(self.engine.player):
+                return worsen(self.engine, attacker)
+            self.engine.memory_manager.add_event(
+                f"{attacker.name} strikes you down!")
+            return enter_dying(self.engine, attacker)
+        except Exception as e:
+            logger.warning(f"Dying layer error: {e}")
             from engine.defeat import handle_player_defeat
             survived, msg = handle_player_defeat(
                 self.engine, attacker, rng=self.rng)
-        except Exception as e:
-            logger.warning(f"Defeat outcome error: {e}")
-            survived, msg = (False, "You have been defeated!")
-
-        if survived:
+            if not survived:
+                self.engine.player.defeat()
+                self.engine.player_dead = True
+                if not getattr(self.engine, "_has_gui", False):
+                    self.engine.end_game()
             return msg
-
-        # The classic end: popup in the GUI, game over in terminal
-        player.defeat()
-        self.engine.memory_manager.add_event(msg)
-        self.engine.player_dead = True
-        if not getattr(self.engine, "_has_gui", False):
-            self.engine.end_game()
-        return msg
 
     def _award_xp(self, defeated) -> None:
         from engine.leveling import award_xp

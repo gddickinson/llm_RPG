@@ -1970,3 +1970,31 @@ the nightly stack accrues debt for any night without a bed
 collapsed into needs.player_needs_turn — the engine got smaller
 while the system got bigger. Hint bar telegraphs "parched" and
 "exhaustion N/6". 9 tests. Suite: 1019, green x4.
+
+**Round 102 — P12.4 Dying & Wounded (done).**
+The space between 0 HP and the story got real. `engine/dying.py`:
+dropping to 0 no longer resolves instantly — the player goes DOWN
+at Dying 1 + Wounded, and each turn rolls a flat DC 10 recovery
+check (PF2e: success -1, fail +1, nat 20/1 move two). Hits while
+down worsen Dying by one. Downed players can't act — moves are
+gated and cost the turn — and the hint bar clears to a single
+line: "DYING N/4 — fight for it!". STABILIZING (Dying 0) adds one
+to the Wounded counter (the next knockdown starts that much
+deeper — knockdowns compound until a real night's sleep clears the
+count) and resolves into the GENTLE story beats: robbed or
+left-for-dead, never slain — you fought back to the light, the
+world just took advantage. Dying 4 rolls the FULL P4.7 table,
+slain included, with the game-over plumbing moved into _final.
+THE KENSHI HALF: people are knocked out, monsters die. A PERSON
+beaten to 0 (by anyone — guards KO brigands too) drops as a body
+on the ground: no loot spill, but E on the body ROBS their whole
+purse (-30 relationship, remembered at weight 8 — "robbed me while
+I lay senseless"), and the overnight stack wakes them at 1/3 HP
+with a grudge memory naming who beat them. XP, quest credit and
+faction rep still flow from KOs, so bounty boards keep working.
+Housekeeping: use() extracted to engine/item_use.py
+(player_actions back to 380) — and the extraction briefly broke
+disease cures via a survived `self.engine` in the moved code,
+caught by the suite. Two defeat integration tests re-pinned to the
+dying contract. Remainder noted: ransom/rescue beats. 12 new
+tests. Suite: 1031, green x3.
