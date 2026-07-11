@@ -3434,3 +3434,45 @@ forbids binding a port — verified stable across repeated runs, no flake.
 Suite 1446, green. M.4 — networked multiplayer on the shared engine — is
 functionally complete; what remains (M.4c) is polish: a `--serve`/menu
 entry point, snapshot DELTAS instead of full snapshots, and reconnection.
+
+**Round 154 — P15.1 ticked + P15.2 Animation pass (foundation).**
+Phase M complete, the loop returns to phase order — and Track G (graphics)
+had gone starved with only P15.1 done to Track A's five. First, bookkeeping:
+P15.1 (the PNG tileset pipeline) was actually shipped back in commit
+9f1e480 — `sprite_loader` resolving a tileset dir, loading + scaling one
+image per terrain/entity with per-image procedural fallback, a drop-in
+contract in `data/tiles/README.md`, `tests/test_tileset.py` — the checkbox
+was just missed; ticked. Then the substance: P15.2's animation work is
+mostly pixels, but the DECISIONS behind the pixels are math — which of two
+frames a shimmering tile shows this instant, how dark the sky is at 18:47,
+what colour a surface pulses to — and that math had no home and couldn't
+be tested from inside the renderer (which sat one line under the 500
+ceiling). So it moved into a pure, headless `ui/animation.py`, the same
+move `battle_camera.py` made for the battle screen: an interpolation
+vocabulary (`clamp`/`lerp`/`smoothstep`/`lerp_color`), a two-frame
+animation clock (`frame_index`, seconds-per-frame per kind), the P10.3
+surface palette as data-with-flicker (`surface_fill` — fire flickers,
+electrified water crackles, water breathes a shimmer, oil/blood sit
+still), and an eased day/night curve (`ambient_darkness`) that ramps the
+sky minute-by-minute through smoothstepped dusk/dawn keyframes instead of
+snapping between morning/evening/night. Two consumers wired now:
+`ui/lighting.py`'s night overlay eases its ambient darkness via
+`ambient_darkness` (the P8.1 moonlight and weather modifiers still layer
+on top; a guarded fallback to the old discrete `TOD_DARKNESS` table keeps
+it safe), and `ui/renderer.py`'s surface overlays fill via `surface_fill`
+— which as a bonus SHRANK the renderer (494→487) by lifting the if/elif
+colour chain out into tested math. 19 new tests: the interpolation
+helpers (endpoints, eased middle, RGBA passthrough), `frame_index`
+(static kinds never animate, fire alternates, negative clock safe),
+`surface_fill` (fire brighter on the flicker frame, oil/blood ignore the
+clock, every fill valid RGBA, unknown kind → water default), and
+`ambient_darkness` (noon bright, deep night dark, old anchors preserved,
+dusk ramps up + dawn ramps down monotonically, and the headline: across
+all 1,440 minutes of a day the sky never jumps more than 3 alpha in a
+minute — the snap is gone). An end-to-end smoke render (fire + electrified
+tiles, night lighting at four hours) came back clean. Suite 1465, green.
+REMAINDER (P15.2b, needs renderer plumbing or new frames): attack lunge +
+hit shake, richer floating damage/heal numbers, lerped camera, two-frame
+terrain sprites — `lerp`/`smoothstep`/`lerp_color` are the vocabulary
+waiting for them and for P15.3/P15.4; walk-bob already lives in
+`body_renderer.update_anim`.

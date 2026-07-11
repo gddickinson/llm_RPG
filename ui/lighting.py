@@ -62,7 +62,14 @@ class LightingOverlay:
             return
 
         tod = engine.world.get_time_of_day()
-        darkness = TOD_DARKNESS.get(tod, 0)
+        # P15.2: ease the ambient darkness per-minute through dusk/dawn
+        # instead of snapping between morning/evening/night. Fall back to
+        # the discrete table if the pure helper is unavailable.
+        try:
+            from ui.animation import ambient_darkness
+            darkness = ambient_darkness((engine.world.time % 1440) / 60.0)
+        except Exception:
+            darkness = TOD_DARKNESS.get(tod, 0)
         # Full moons lighten clear nights (P8.1)
         if tod == "night":
             try:

@@ -112,8 +112,10 @@ class MapRenderer:
                     shade.fill((10, 10, 20, 130))
                     target.blit(shade, dest)
 
-        # Surfaces: fire / oil / water overlays (P10.3)
+        # Surfaces: fire / oil / water overlays (P10.3); P15.2 flicker
         try:
+            from ui.animation import surface_fill
+            clk = pygame.time.get_ticks() / 1000.0
             for (sx2, sy2), s in \
                     engine.surfaces_layer.surfaces.items():
                 if not (cam_x <= sx2 < cam_x + cols and
@@ -121,16 +123,7 @@ class MapRenderer:
                     continue
                 overlay = pygame.Surface(
                     (self.tile_size, self.tile_size), pygame.SRCALPHA)
-                if s["kind"] == "fire":
-                    overlay.fill((250, 120, 20, 150))
-                elif s["kind"] == "oil":
-                    overlay.fill((40, 35, 30, 120))
-                elif s["kind"] == "blood":
-                    overlay.fill((140, 20, 25, 110))
-                elif s["kind"] == "electrified":
-                    overlay.fill((150, 220, 255, 160))
-                else:
-                    overlay.fill((60, 120, 220, 90))
+                overlay.fill(surface_fill(s["kind"], clk))
                 target.blit(overlay,
                             (view_rect.x + (sx2 - cam_x) *
                              self.tile_size,

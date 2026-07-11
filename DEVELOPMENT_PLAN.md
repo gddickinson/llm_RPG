@@ -1877,15 +1877,37 @@ engine swap): the wins are an art pipeline, animation, light, and
 UI polish.
 
 **Track G — superior graphics**
-- [ ] **P15.1 Tileset pipeline.** Loadable PNG tilesets
+- [x] **P15.1 Tileset pipeline.** Loadable PNG tilesets
   (data/tiles/<set>/, one image per TerrainType + entity kind)
   with graceful fallback to the procedural sprites; config toggle;
   a documented contract so any CC0 16/32px pack (e.g. Kenney)
   drops in. One round that turns all later art into data.
-- [ ] **P15.2 Animation pass.** Two-frame terrain animation (water
-  shimmer, fire flicker, electrified crackle), entity walk-bob,
-  attack lunge + hit shake, lerped camera, richer floating
-  damage/heal numbers, day-night tint eased per minute.
+  *(Done in commit 9f1e480: `sprite_loader` resolves a tileset via
+  `config.TILESET_NAME`/`LLM_RPG_TILESET`, loads+scales one image per
+  terrain/entity with per-image procedural fallback; contract in
+  `data/tiles/README.md`; `tests/test_tileset.py`. Checkbox missed at
+  the time; ticked Round 154.)*
+- [x] **P15.2 Animation pass (foundation + first consumers).** The
+  math behind the pixels, pulled out of the renderer into a pure,
+  headless-testable `ui/animation.py` (the move `battle_camera.py`
+  made for the battle screen): interpolation vocabulary
+  (`clamp`/`lerp`/`smoothstep`/`lerp_color`), a two-frame animation
+  clock (`frame_index`), the P10.3 surface palette as data-with-flicker
+  (`surface_fill` — fire flickers, electrified water crackles, water
+  shimmers; oil/blood inert), and an eased day/night curve
+  (`ambient_darkness`) that ramps the sky minute-by-minute through
+  dusk/dawn instead of snapping between morning/evening/night. Wired
+  two consumers: `ui/lighting.py`'s night overlay now eases via
+  `ambient_darkness` (the moonlight/weather modifiers layer on top,
+  fallback to the old discrete table), and `ui/renderer.py`'s surface
+  overlays call `surface_fill` (which also SHRANK the renderer, moving
+  the colour table into tested math). 19 tests. Suite 1465, green.
+  *(Remainder — the entity-animation half needing renderer plumbing
+  and/or new frames, tracked as P15.2b: attack lunge + hit shake,
+  richer floating damage/heal numbers, lerped camera, two-frame
+  terrain sprites. `lerp`/`smoothstep`/`lerp_color` are the ready
+  vocabulary for those and for P15.3/P15.4. Walk-bob already exists in
+  `body_renderer.update_anim`.)*
 - [ ] **P15.3 UI skin.** Paneled HUD with 9-slice borders, NPC
   portraits in dialog (procedural face compositor from race/class/
   equipment), styled message log with per-prefix colors ([Law]
