@@ -207,8 +207,9 @@ def _rummage(engine, interior) -> str:
     rng = random.Random(hash((interior.name, _day(engine))) & 0xffff)
     if rng.random() < RUMMAGE_CHANCE:
         from items.item_registry import create_item
+        from engine.carry import can_carry
         item = create_item(rng.choice(RUMMAGE_ITEMS))
-        if item is not None:
+        if item is not None and can_carry(player):
             player.inventory.append(item)
             return f"Tucked at the bottom you find: {item.name}."
     coins = rng.randint(2, 7)

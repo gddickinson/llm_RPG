@@ -220,7 +220,10 @@ class InventoryPanel:
                 except Exception:
                     pass
             return f"{prefix}[{label:7s}] {iname}"
-        # bag
+        # bag — tolerate plain strings (picked-up body markers);
+        # George hit a hard crash here
+        if not hasattr(item, "name"):
+            return f"{prefix}{str(item)}"
         name = item.name
         qty = f" x{item.quantity}" if item.stackable and item.quantity > 1 else ""
         suffix = ""

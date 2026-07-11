@@ -140,8 +140,12 @@ class StructureBuilder:
         items = self.chest_contents.get(key)
         if not items:
             return None
-        self.looted.append(key)
         player = self.engine.player
+        from engine.carry import can_carry, full_message
+        if not can_carry(player, extra=len(items)):
+            return ("The chest brims with treasure — but " +
+                    full_message(player))
+        self.looted.append(key)
         names = []
         for item in items:
             player.inventory.append(item)

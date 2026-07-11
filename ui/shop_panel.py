@@ -85,6 +85,11 @@ class ShopPanel:
                 return
             item = items[self.cursor_left]
             price = sm.buy_price(player, item, self.merchant)
+            from engine.carry import can_carry, full_message
+            if not can_carry(player):
+                self.engine.memory_manager.add_event(
+                    full_message(player))
+                return
             if player.gold < price:
                 self.engine.memory_manager.add_event(
                     f"You can't afford {item.name} ({price}g).")

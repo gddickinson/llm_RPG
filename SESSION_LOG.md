@@ -1555,3 +1555,28 @@ world, greenfield floods/tunnels), built from a completed AW
 destruction survey (their durability.py and elemental_effects.py
 are the port targets; mining/floods are greenfield). 2 regression
 tests. Suite: 884, green x3.
+
+**Round 84 — PT3.2 The explorer's arc (done) + carry capacity +
+three George reports fixed.**
+A 31-beat scripted expedition: the Murkfen, a dungeon dive with the
+fog-of-war proving itself (41 of 384 tiles visible from a room
+center, 3 lurkers hidden in the dark), the Ruined Keep bump-entered
+with its history inscription read and the troll guardian slain by
+torchless crypt-fighting, the complete Wizard's Tower climb (ward
+blocks, Moon-Sun-Stars dissolves, menagerie wakes, observatory
+pays), a teleport, and region streaming west into a freshly
+generated 120x80 wilderness and home again. 28 of 31 beats clean.
+FIXES: the tower prize was a cast-scroll needing mana the finder
+likely lacks — replaced with a Tome of Fireball that TEACHES the
+spell through the existing teach_spell path; the keep crypt chest
+could be empty when worldgen placed no keep relic — authored
+fallback loot so the guardian always guards something. GEORGE'S
+LIVE REPORTS: (1) inventory panel crashed on string items (picked-
+up body markers) — now tolerant; (2) infinite carrying ended —
+engine/carry.py adds slot capacity (18 + 2 per STR modifier)
+enforced at pickup, foraging, gathering, harvest, shop buys,
+rummage and structure chests (chests stay lootable until you make
+room; quest rewards never blocked); (3) items indoors were
+unpickable — the furniture layer was shadowing the pickup key;
+a ground item underfoot now wins. 14 new tests. Suite: 893,
+green x3.

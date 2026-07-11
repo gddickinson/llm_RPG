@@ -280,12 +280,20 @@ class InputHandler:
                 self.engine.memory_manager.add_event("No one nearby to talk to.")
             return True
 
-        # Use furniture indoors (P9A.2); pickup otherwise
+        # E/G: a ground item underfoot beats furniture (George:
+        # furniture flavor was shadowing indoor pickups); then
+        # furniture indoors; then pickup
         if k in (pygame.K_g, pygame.K_e):
             if self.engine.current_interior:
-                msg = self.engine.use_furniture()
-                if msg:
-                    return True
+                try:
+                    here = self.engine.world.get_items_at(
+                        *self.engine.player.position)
+                except Exception:
+                    here = []
+                if not here:
+                    msg = self.engine.use_furniture()
+                    if msg:
+                        return True
             msg = self.engine.pickup_item()
             return True
 

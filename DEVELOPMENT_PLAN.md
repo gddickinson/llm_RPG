@@ -1130,10 +1130,30 @@ gameplay, fix bugs and add to the plan."
   forest tiles yielded ~290 herb bundles in one sweep; daily forage
   fatigue added (yield thins per forage after a 5-find grace, floor
   20%, resets at dawn) — sweep now ~40/day. 2 regression tests.)*
-- [ ] **PT3.2 The explorer's arc.** Distant regions (chunk streaming
+- [x] **PT3.2 The explorer's arc.** Distant regions (chunk streaming
   east/west/north/south), the Murkfen, dungeons with fog-of-war, the
   Ruined Keep crypt, temple crypt, the full Wizard's Tower climb,
   teleports/diaries, region discovery. Fix what breaks.
+  *(done 2026-07-10 — 31-beat scripted expedition, 28 clean (2 were
+  detector wording; 1 real). VERIFIED: the Murkfen stands and reads
+  as itself; dungeon dive with working fog-of-war (41 of 384 tiles
+  visible from a room) and 3 lurkers; the Ruined Keep bump-entered,
+  history inscription read, troll guardian slain in the dark crypt;
+  the full Wizard's Tower climb — ward blocks, Moon→Sun→Stars
+  dissolves it, menagerie wakes, observatory chest pays out;
+  teleports; region streaming west and home again (120x80 wilderness
+  generated). FIXES from findings + George's live reports this
+  round: (1) tower prize was a CAST scroll needing mana — now a
+  Tome of Fireball that TEACHES the spell (new item; teach_spell
+  path verified); (2) keep crypt chest could be empty if worldgen
+  placed no keep relic — authored fallback loot; (3) George's crash:
+  inventory panel died on string items (body markers) — tolerant
+  now; (4) George: infinite carrying — CARRY CAPACITY added
+  (engine/carry.py: 18 slots + 2 per STR modifier, enforced at
+  pickup/forage/gather/harvest/shop/rummage/chests — chests stay
+  lootable until you make room; rewards never blocked); (5) George:
+  couldn't pick up items indoors — furniture interaction was
+  shadowing pickup; ground item underfoot now wins. 14 tests.)*
 - [ ] **PT3.3 The war arc.** Powerful monsters (troll guardian,
   conjunction-night spawns), ranged/spell targeting in anger, squad
   tactics with companions, bounty-hunter retaliation, the DM running

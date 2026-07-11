@@ -129,6 +129,9 @@ class GatheringManager:
             logger.warning(f"gathering: unknown item {tier['item']}")
             return "You come up empty-handed."
 
+        from engine.carry import can_carry, full_message
+        if not can_carry(player):
+            return full_message(player)
         player.inventory.append(item)
         self.harvested_at[(skill_id, pos[0], pos[1])] = \
             self.engine.world.time

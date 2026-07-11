@@ -46,6 +46,9 @@
               3
             ]
           }
+        ],
+        "chest_loot": [
+          "greater_potion"
         ]
       }
     ]
@@ -193,7 +196,7 @@
           "To the patient reader of skies: take what you came for."
         ],
         "chest_loot": [
-          "scroll_fireball",
+          "tome_of_fireball",
           "potion_might"
         ]
       }

@@ -38,6 +38,11 @@ class PlayerActions:
 
         item = candidates[0]
         item_name_str = item.name if hasattr(item, "name") else str(item)
+        from engine.carry import can_carry, full_message
+        if not can_carry(player):
+            msg = full_message(player)
+            self.engine.memory_manager.add_event(msg)
+            return msg
         player.inventory.append(item)
         self.engine.world.remove_item_from_ground(item, x, y)
         msg = f"You pick up {item_name_str}."

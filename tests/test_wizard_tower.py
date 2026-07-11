@@ -76,7 +76,7 @@ class TestWizardTower(unittest.TestCase):
         key = f"wizard_tower:{chest['x']}:{chest['y']}"
         ids = [getattr(i, "id", "") for i in
                self.engine.structures.chest_contents.get(key, [])]
-        self.assertIn("scroll_fireball", ids)
+        self.assertIn("tome_of_fireball", ids)
 
     def test_alzara_lives_here(self):
         alzara = self.engine.npc_manager.get_npc("tower_wizard_01")

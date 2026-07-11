@@ -137,5 +137,16 @@
     "value": 4,
     "stackable": true,
     "description": "A golden sheaf cut from a ripe field."
+  },
+  "tome_of_fireball": {
+    "id": "tome_of_fireball",
+    "name": "Tome of Fireball",
+    "item_type": "book",
+    "value": 150,
+    "rarity": "rare",
+    "description": "Alzara's teaching copy \u2014 margins full of scorch marks.",
+    "use_effect": {
+      "teach_spell": "fireball"
+    }
   }
 }

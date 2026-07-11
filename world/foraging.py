@@ -64,6 +64,10 @@ class ForageManager:
                 return "Nothing to forage here."
             return "You've recently picked clean this spot."
 
+        from engine.carry import can_carry, full_message
+        if not can_carry(self.engine.player):
+            return full_message(self.engine.player)
+
         # Tired eyes find less (PT3.1 balance: hopping fresh tiles
         # yielded ~290 herb bundles in one sweep — an economy breaker).
         # Yield thins with each forage today, floor 20%.

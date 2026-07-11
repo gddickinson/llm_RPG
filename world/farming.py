@@ -113,8 +113,11 @@ class FarmManager:
         if not plot or plot["state"] != "mature":
             return None
         from items.item_registry import create_item
-        plot.update(state="harvested", since=self._day())
+        from engine.carry import can_carry, full_message
         player = self.engine.player
+        if not can_carry(player, extra=2):
+            return full_message(player)
+        plot.update(state="harvested", since=self._day())
         got = []
         for _ in range(2):
             item = create_item(CROP_ITEM)
