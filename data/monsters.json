@@ -90,7 +90,8 @@
       "swamp"
     ],
     "behavior": {
-      "flee_below": 0.5
+      "flee_below": 0.5,
+      "flying": true
     }
   },
   "bounty_hunter": {

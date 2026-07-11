@@ -30,11 +30,17 @@ class ActionRouter:
     def process(self, npc, action_data: Dict[str, str]) -> bool:
         # Skip the turn if paralyzed/stunned
         try:
-            from characters.status_effects import can_act
+            from characters.status_effects import can_act, has_effect
             if not can_act(npc):
                 self.engine.memory_manager.add_event(
                     f"{npc.name} cannot move.")
                 return False
+            # Slowed creatures act every other turn (P11.4)
+            if has_effect(npc, "slowed"):
+                skip = not npc.metadata.get("slow_skip", False)
+                npc.metadata["slow_skip"] = skip
+                if skip:
+                    return False
         except Exception:
             pass
 

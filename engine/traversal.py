@@ -198,6 +198,9 @@ class TraversalSystem:
         if rule is None or rule.get("class") != "slog":
             self.engine.player.metadata.pop("last_slog", None)
             return
+        from characters.status_effects import has_effect
+        if has_effect(self.engine.player, "flying"):
+            return               # the bog can't reach you (P11.4)
         self._tire(rule.get("fatigue", 2))
         if rule.get("extra_minutes"):
             self.engine.world.advance_time(rule["extra_minutes"])
@@ -207,6 +210,20 @@ class TraversalSystem:
             self.engine.memory_manager.add_event(line)
         self.engine.player.metadata["last_slog"] = \
             wmap.terrain[ny][nx].value
+
+    def advance_after_move(self) -> None:
+        """Haste/slow turn economics (P11.4): hasted, every second
+        step is free; slowed, the world takes two turns per step."""
+        from characters.status_effects import has_effect
+        player = self.engine.player
+        if has_effect(player, "hasted"):
+            free = not player.metadata.get("haste_step", False)
+            player.metadata["haste_step"] = free
+            if free:
+                return           # the world stands still for this step
+        self.engine.advance_turn()
+        if has_effect(player, "slowed"):
+            self.engine.advance_turn()
 
     def _weather_penalty(self, x: int, y: int) -> None:
         """Storms/snow slow travel off the roads: +1 min per step."""

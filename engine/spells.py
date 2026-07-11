@@ -225,7 +225,7 @@ class SpellSystem:
         # Self-cast for buffs / heals
         if spell.heal or spell.status_effect in (
                 "blessed", "cursed", "water_walking",
-                "swimmers_grace"):
+                "swimmers_grace", "flying", "hasted"):
             if not name or name.lower() in ("me", "self", caster.name.lower()):
                 return caster
         if not name:

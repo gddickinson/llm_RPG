@@ -1428,11 +1428,25 @@ speed or slow movement.
   New statuses joined VALID_EFFECTS + validator. Encumbrance: a
   failing struggle with a ≥90% pack logs "drop something ([I]) or
   sink!" — and the load already raises the DC (P11.1). 7 tests.)*
-- [ ] **P11.4 Flight & speed magic.** A `flying` movement mode
+- [x] **P11.4 Flight & speed magic.** A `flying` movement mode
   (creature flag or spell/status) that ignores ground-tile rules
   (water, rubble, swamp penalties) but not walls/ceilings indoors;
   haste/slow statuses that change actions-per-turn or step cost;
   flying monsters (wisps already float thematically) use it.
+  *(Round 98: one choke point — `world_map._is_flier` (behavior
+  flag OR 'flying' status, read straight off metadata) lets
+  move_character cross water/mountain for ANY mover, so player
+  spells and monster flags share the rule; zone movement untouched
+  (walls/ceilings still block indoors). Flying also skips deep-
+  rubble blocks, slog taxes, and the P11.2 water hazard — and when
+  the spell expires over a lake, the swim rules are simply real
+  again. Statuses flying/hasted/slowed + spells flight/haste/slow
+  (haste & flight self-cast; slow is ranged). Turn economics in
+  `traversal.advance_after_move`: hasted = every second step free;
+  slowed = two turns per step; slowed NPCs lose every other action
+  (action_router). marsh_wisp got behavior.flying. Hint bar shows
+  a flying line and suppresses the deep-water warning while aloft.
+  8 tests. Phase 11 COMPLETE.)*
 
 ## Phase 12 — Rules of Living (George's deep-dive, synthesized 2026-07-11)
 

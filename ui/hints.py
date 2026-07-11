@@ -141,10 +141,15 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
         try:   # in deep water, the only hint that matters (P11.2)
+            from characters.status_effects import has_effect
             from world.world_map import TerrainType as TT
             wmap = engine.world.map
-            if wmap.terrain[y][x] == TT.WATER and \
-                    not engine.traversal.is_shallow(x, y):
+            if has_effect(engine.player, "flying"):
+                hints.insert(0, "[~] flying — the ground can't "
+                                "touch you")
+            elif wmap.terrain[y][x] == TT.WATER and \
+                    not engine.traversal.is_shallow(x, y) and \
+                    not has_effect(engine.player, "water_walking"):
                 from engine.hazards import flow_at
                 pull = (" — the current pulls!"
                         if flow_at(engine, x, y) else "")

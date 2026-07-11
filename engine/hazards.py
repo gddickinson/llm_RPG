@@ -74,7 +74,8 @@ def water_hazard_tick(engine) -> None:
         player.metadata.pop("drown_turns", None)
         return
     from characters.status_effects import has_effect
-    if has_effect(player, "water_walking"):      # P11.3
+    if has_effect(player, "water_walking") or \
+            has_effect(player, "flying"):        # P11.3 / P11.4
         player.metadata.pop("drown_turns", None)
         return
     trav = engine.traversal

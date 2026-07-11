@@ -297,11 +297,13 @@ class PlayerActions:
                     return True
             return False
 
-        # Deep rubble blocks until cleared (P10.4)
+        # Deep rubble blocks until cleared (P10.4) — unless you fly
         try:
+            from characters.status_effects import has_effect
             from engine.tile_damage import RUBBLE_BLOCK_DEPTH
             if self.engine.tile_damage.depth_at(nx, ny) >= \
-                    RUBBLE_BLOCK_DEPTH:
+                    RUBBLE_BLOCK_DEPTH and \
+                    not has_effect(player, "flying"):
                 self.engine.memory_manager.add_event(
                     "The rubble is piled too high — clear it first "
                     "([E] on it).")
@@ -369,7 +371,10 @@ class PlayerActions:
                 opportunity_attack(self.engine, pre_move)
         except Exception:
             pass
-        self.engine.advance_turn()
+        try:   # haste/slow turn economics (P11.4)
+            self.engine.traversal.advance_after_move()
+        except Exception:
+            self.engine.advance_turn()
         return True
 
     def _move_in_zone(self, zone, nx: int, ny: int) -> bool:

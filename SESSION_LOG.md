@@ -1870,3 +1870,29 @@ penalty the load already causes. 7 tests: rope flips a fixed-roll
 miss into a make, picks stack, water-walking crosses uncheckable
 water unharmed, grace saves the struggle, the self-cast, the
 drop-or-sink line, and data integrity. Suite: 980, green x2.
+
+**Round 98 — P11.4 Flight & speed magic (done). Phase 11 COMPLETE.**
+Flight went in at a single choke point: `world_map._is_flier` reads
+a creature's behavior flag OR an active 'flying' status straight
+off metadata (the map stays dependency-free), and move_character
+consults it before refusing water/mountain — so the player's
+Flight spell and a monster's template flag share one rule, and
+every mover benefits: the marsh_wisp now truly floats over its
+swamp pools. Zone movement was deliberately left alone — walls and
+low ceilings still block fliers indoors, per the plan. Flying also
+skips deep-rubble blocks (player_actions), slog taxes (traversal),
+and the P11.2 water hazard — and there's no special landing code:
+when the spell expires over a lake, the swim rules are simply real
+again (tested). SPEED: hasted makes every second step free (the
+world stands still — advance_turn skipped on the free step);
+slowed makes each step cost two turns; both live in
+`traversal.advance_after_move` so player_actions stays under 500
+(487). Slowed NPCs lose every other action at the action_router
+gate, beside the paralysis check. Spells flight/haste/slow are
+data; flight and haste self-cast, slow is a ranged debuff. The
+hint bar shows "[~] flying" and suppresses the deep-water warning
+while aloft (and while water-walking — a P11.3 gap caught here).
+One unreproducible suite failure appeared right after the refactor
+and vanished for 10 straight green runs — likely worldgen
+randomness; if it recurs, get the test name before touching
+anything. 8 tests. Suite: 988, green x10.

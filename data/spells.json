@@ -217,5 +217,45 @@
       "druid",
       "wizard"
     ]
+  },
+  "flight": {
+    "id": "flight",
+    "name": "Flight",
+    "mana_cost": 6,
+    "range": 1.0,
+    "status_effect": "flying",
+    "duration": 25,
+    "description": "The ground releases you; rivers and rocks scroll past below.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  "haste": {
+    "id": "haste",
+    "name": "Haste",
+    "mana_cost": 5,
+    "range": 1.0,
+    "status_effect": "hasted",
+    "duration": 20,
+    "description": "The world slows; you do not.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  "slow": {
+    "id": "slow",
+    "name": "Slow",
+    "mana_cost": 4,
+    "range": 6.0,
+    "status_effect": "slowed",
+    "duration": 8,
+    "description": "Your foe wades through thickened time.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
   }
 }

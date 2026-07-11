@@ -116,7 +116,7 @@ llm_RPG/
 ### world/ — World, map, calendar, locations
 
 - **`world.py`** — `World`; high-level world state; `get_location_at` returns innermost.
-- **`world_map.py`** — `WorldMap`, `TerrainType`; tile grid, movement, FOV.
+- **`world_map.py`** — `WorldMap`, `TerrainType`; tile grid, movement, FOV; `_is_flier` flight bypass (P11.4) for water/mountain blocking.
 - **`location.py`** — `Location`, `LocationFactory`.
 - **`biome.py`** — `Biome` enum and biome→terrain mapping.
 - **`calendar.py`** — `Date`, `Season`; 12-month calendar, day-night clock, season tints.

@@ -24,6 +24,19 @@ class TerrainType(Enum):
     SCORCHED = "scorched"
 
 
+def _is_flier(character) -> bool:
+    """Flight (P11.4): a creature behavior flag or an active
+    'flying' status lets movement ignore ground-tile rules.
+    Read straight off metadata so the map stays dependency-free."""
+    meta = getattr(character, "metadata", None)
+    if not isinstance(meta, dict):
+        return False
+    if meta.get("behavior", {}).get("flying"):
+        return True
+    return any(e.get("name") == "flying"
+               for e in meta.get("status_effects", []))
+
+
 class WorldMap:
     """Represents the game world map with terrain and objects"""
 
@@ -89,10 +102,11 @@ class WorldMap:
             logger.debug(f"Move failed for {character.name}: Position ({new_x},{new_y}) is out of bounds")
             return False
 
-        # Check if terrain is traversable
+        # Check if terrain is traversable (fliers ignore ground rules)
         if self.terrain[new_y][new_x] == TerrainType.WATER or self.terrain[new_y][new_x] == TerrainType.MOUNTAIN:
-            logger.debug(f"Move failed for {character.name}: Terrain {self.terrain[new_y][new_x].value} is not traversable")
-            return False
+            if not _is_flier(character):
+                logger.debug(f"Move failed for {character.name}: Terrain {self.terrain[new_y][new_x].value} is not traversable")
+                return False
 
         # Check if position is occupied by another character
         if (new_x, new_y) in self.characters:
