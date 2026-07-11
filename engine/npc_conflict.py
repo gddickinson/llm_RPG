@@ -84,6 +84,14 @@ class NPCConflictSystem:
                     engaged += 1
         except Exception:
             pass
+        # Bosses run their set-piece mechanics (P15.6)
+        try:
+            from engine.bosses import boss_tick, is_boss
+            for h in hostiles:
+                if is_boss(h) and boss_tick(engine, h):
+                    engaged += 1
+        except Exception:
+            pass
         for guard in guards:
             if engaged >= MAX_ENGAGEMENTS:
                 break

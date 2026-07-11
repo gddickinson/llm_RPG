@@ -188,6 +188,12 @@ class CombatSystem:
             maybe_wound(self.engine, damage, defender)
         except Exception:
             pass
+        try:   # a boss may cross a phase threshold (P15.6)
+            from engine.bosses import boss_on_damaged, is_boss
+            if defender.is_alive() and is_boss(defender):
+                boss_on_damaged(self.engine, defender)
+        except Exception:
+            pass
         self._wear_gear(attacker, defender)
 
         # Visual effects (damage popup + hit flash + death FX)

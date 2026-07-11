@@ -2594,3 +2594,26 @@ reachable from the start menu as a testbed). Launched a research
 agent (tactical-combat mechanisms + Autonomous World's attempts +
 an architecture sketch); Phase 17 to be authored from its findings
 next.
+
+**Round 126 — P15.6 Boss set-pieces (done).**
+Fights with a shape. `engine/bosses.py` gives any monster with a
+`boss` behavior block two data-driven mechanics on top of ordinary
+combat. TELEGRAPHED AoE: instead of an instant hit, the boss MARKS
+a tile this turn — "the ground blackens beneath you — MOVE!" — and
+detonates it the NEXT, so a player paying attention steps clear;
+standing in it hurts, and like every environmental hit it maims to
+1 rather than killing. PHASE CHANGES: crossing an HP fraction fires
+a once-only action, and I built three bosses to show the range —
+the Giant Warlord ENRAGES at 40% health (+4 STR, harder throws),
+the Tyrant of the Depths FLOODS its own den at 50% (the P10.6
+flood system) then SUMMONS bog lurkers from the water at 25%, and
+the Wisp Queen ELECTRIFIES her pool at 50% (the P14.2a shock
+surface) while her court kindles three more wisps. Every phase
+composes an existing system rather than inventing one — the boss
+layer is orchestration, ~160 lines. The deepest dungeon floor now
+spawns the real tyrant_depths template instead of a renamed troll,
+so the Tyrant finally floods. Loot and the Legendarium record ride
+the ordinary defeat path, so a slain boss becomes a legend for
+free. 9 tests. Suite: 1213, green x3. Meanwhile the battle-screen
+research agent returned a full architecture — Phase 17 authored
+next from its findings.

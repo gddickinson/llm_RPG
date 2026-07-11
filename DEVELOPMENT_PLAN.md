@@ -1912,11 +1912,23 @@ UI polish.
   WATCH: a companion on the P12.6 night drops the ambush chance
   25%→10% ("takes the first watch"). 8 tests. Suite 1176, green
   x3.)*
-- [ ] **P15.6 Boss set-pieces.** Three authored boss fights as
-  data: telegraphed AoE (the giant marks the boulder tile a turn
-  ahead), phase changes at hp thresholds (the Tyrant floods its
-  den at 50%), arena surface play (a wisp queen electrifies her
-  pool); loot worth the fight; Legendarium record on the kill.
+- [x] **P15.6 Boss set-pieces.** Three authored boss fights as
+  data: telegraphed AoE, phase changes at hp thresholds, arena
+  surface play; loot worth the fight; Legendarium record on the
+  kill.
+  *(Round 126: `engine/bosses.py`, data-driven via a `boss`
+  behavior block. TELEGRAPHED AoE — the boss marks a tile this
+  turn ("the ground blackens beneath you — MOVE!") and blasts it
+  next turn (maims, never kills), so attention saves you;
+  `boss_tick` runs it from the conflict scan. PHASE CHANGES —
+  `boss_on_damaged` fires once-only actions at HP fractions:
+  the Giant Warlord ENRAGES at 40% (+STR), the Tyrant of the
+  Depths FLOODS its den at 50% (P10.6) and SUMMONS bog lurkers at
+  25%, the Wisp Queen ELECTRIFIES her pool (P14.2a) and calls
+  three wisps at 50%. Three boss templates in monsters.json; the
+  deepest dungeon floor now spawns the real tyrant_depths. Loot +
+  the Legendarium record ride the normal defeat path (a slain boss
+  is a legend free). 9 tests. Suite 1213, green x3.)*
 - [ ] **P15.7 Claim a home.** Buy a derelict from the homes
   system; the ConstructionProject candidate lands here (repair to
   move in): storage chest, private-room rest quality, hearth

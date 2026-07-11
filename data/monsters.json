@@ -144,5 +144,115 @@
       "giant": true,
       "flee_below": 0.1
     }
+  },
+  "giant_warlord": {
+    "name": "Giant Warlord",
+    "class": "troll",
+    "race": "goblin",
+    "hp": 90,
+    "level": 8,
+    "symbol": "G",
+    "description": "A giant in warpaint, hurling stones with a roar.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 22,
+      "constitution": 18
+    },
+    "behavior": {
+      "giant": true,
+      "flee_below": 0.1,
+      "boss": {
+        "telegraph": {
+          "kind": "boulder",
+          "range": 8,
+          "radius": 1,
+          "damage": 14,
+          "warn_turns": 1
+        },
+        "phases": [
+          {
+            "at": 0.4,
+            "action": "enrage",
+            "strength": 4,
+            "line": "The Warlord bellows \u2014 his throws come faster and harder!"
+          }
+        ]
+      }
+    }
+  },
+  "tyrant_depths": {
+    "name": "Tyrant of the Depths",
+    "class": "troll",
+    "race": "goblin",
+    "hp": 80,
+    "level": 7,
+    "symbol": "T",
+    "description": "The den-lord, vast and slick, master of its dark water.",
+    "encounter_weight": 0,
+    "dungeon": true,
+    "stats": {
+      "strength": 20,
+      "constitution": 20
+    },
+    "behavior": {
+      "flee_below": 0.0,
+      "boss": {
+        "phases": [
+          {
+            "at": 0.5,
+            "action": "flood",
+            "duration": 120,
+            "max_tiles": 25,
+            "line": "The Tyrant slams the floor \u2014 black water surges up from the deep!"
+          },
+          {
+            "at": 0.25,
+            "action": "summon",
+            "template": "bog_lurker",
+            "count": 2,
+            "line": "It keens, and shapes rise from the flood!"
+          }
+        ]
+      }
+    }
+  },
+  "wisp_queen": {
+    "name": "Wisp Queen",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 55,
+    "level": 6,
+    "symbol": "Q",
+    "description": "A great cold flame trailing a court of lesser lights.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "dexterity": 16,
+      "intelligence": 16
+    },
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.2,
+      "boss": {
+        "phases": [
+          {
+            "at": 0.5,
+            "action": "electrify",
+            "line": "The Queen flares \u2014 her pool ignites with cold lightning!"
+          },
+          {
+            "at": 0.5,
+            "action": "summon",
+            "template": "marsh_wisp",
+            "count": 3,
+            "line": "Her court answers, three lights kindling!"
+          }
+        ]
+      }
+    }
   }
 }

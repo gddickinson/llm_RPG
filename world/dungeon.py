@@ -234,7 +234,7 @@ def populate_dungeon(d: Dungeon, engine, rng: random.Random = None) -> None:
     # The deepest floor has a den-lord and its hoard
     if is_boss_floor and d.rooms:
         bx, by = d.rooms[-1].center()
-        boss = build_monster("wandering_troll", (bx, by))
+        boss = build_monster("tyrant_depths", (bx, by))
         boss.name = f"Tyrant of the Depths"
         boss.level += depth
         boss.max_hp += 10 * depth
