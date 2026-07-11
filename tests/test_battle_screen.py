@@ -26,6 +26,32 @@ class TestScenarios(unittest.TestCase):
         self.assertTrue(SCENARIOS)
         self.assertEqual(len(list_scenarios()), len(SCENARIOS))
 
+    def test_a_broad_library(self):
+        """The testbed spans many kinds of battle (P17.11 round)."""
+        self.assertGreaterEqual(len(SCENARIOS), 20)
+        # a spread of tactical set-pieces exists
+        for sid in ("flanking_maneuver", "pike_wall", "last_stand",
+                    "cavalry_charge", "gate_assault", "the_sortie",
+                    "combined_arms", "river_ford", "hold_the_pass"):
+            self.assertIn(sid, SCENARIOS)
+
+    def test_terrain_and_unit_variety(self):
+        """Across the library, many terrains and unit types appear."""
+        terrains, units = set(), set()
+        for sc in SCENARIOS.values():
+            for patch in sc.get("terrain", []):
+                terrains.add(patch["kind"])
+            for army in sc.get("armies", []):
+                for sq in army.get("squads", []):
+                    units.add(sq["type"])
+        # walls/water/forest/rubble/mountain cover the battlefield kinds
+        self.assertTrue({"forest", "water", "rubble", "mountain"}
+                        <= terrains, terrains)
+        # infantry, cavalry, archers, siege all feature
+        for u in ("infantry_sword", "infantry_pike", "cavalry_heavy",
+                  "archer_longbow", "siege_ram", "siege_trebuchet"):
+            self.assertIn(u, units)
+
     def test_every_scenario_builds_two_sided(self):
         for sid in SCENARIOS:
             bf = build_field(sid)

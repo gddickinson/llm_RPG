@@ -71,13 +71,14 @@ def _position_mods(field, atk_sol, target):
 
 
 def nearest_struct(field, x: int, y: int):
-    """The wall/gate tile nearest (x, y), or None — siege engines
-    home on it when the enemy is walled off (P17.6b)."""
-    best, bd = None, None
+    """The wall/gate a siege engine heads for: the WEAKEST first (a
+    timber gate over sound stone — concentrate on the breach point),
+    then the nearest. None if no walls (P17.6b/P17.6d)."""
+    best, best_key = None, None
     for (sx, sy) in field.struct_hp:
-        d = max(abs(sx - x), abs(sy - y))
-        if bd is None or d < bd:
-            best, bd = (sx, sy), d
+        key = (field.struct_hp[(sx, sy)], max(abs(sx - x), abs(sy - y)))
+        if best_key is None or key < best_key:
+            best, best_key = (sx, sy), key
     return best
 
 

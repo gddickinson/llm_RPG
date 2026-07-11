@@ -2996,3 +2996,27 @@ condition, that rear beats front in practice, that facing updates as a
 soldier advances, and the round-trip. Suite 1321, green. The morale
 half of flanking — rout acceleration and the routing-neighbour
 cascade — is the next step, P17.15.
+
+**Round 138b — A broad Battle Testbed (playtest ask: "a wide range
+of scenarios").** Ten new set-pieces double the library to twenty,
+exercising every mechanic built so far across very different fights:
+`flanking_maneuver` (a second column takes a spear line in the flank —
+the P17.11 payoff), `river_ford` and `hold_the_pass` (water and
+mountain chokepoints that cap the frontage so numbers drown in the
+gap), `last_stand` (a ring of foes closes on a knot of veterans — the
+surround mechanic kills them in thirteen ticks), `cavalry_clash`
+(horse into horse), `pike_wall` (the "don't charge a braced pike
+block" lesson — cavalry shatter 6/6), `combined_arms` (foot anvil,
+heavy-horse hammer, bows to soften), `urban_ruins` (a street fight
+among rubble that gives arrow cover), `gate_assault` (a sound stone
+curtain with a timber gate — the rams make for the weak point) and
+`the_sortie` (a garrison bursts through its own breach for a capture
+point). Two engine improvements fell out of building them: siege
+engines now head for and batter the WEAKEST wall first (`nearest_struct`
+and `_wall_in_range` prefer low HP, then nearest) — so a ram beside
+both stone and a gate goes for the gate, concentrating on the breach
+point like a real siege. Every scenario validates, builds two-sided
+with unique in-bounds placements, and converges (the big ones capped
+in the test). Two breadth tests assert the library spans forest/water/
+rubble/mountain terrain and infantry/cavalry/archer/siege units. Suite
+1323, green.

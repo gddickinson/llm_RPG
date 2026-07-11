@@ -157,17 +157,19 @@ class BattleSession:
             self._advance(sol, sq, target, flow)
 
     def _wall_in_range(self, sol, reach, target):
-        """The wall tile within `reach` of this soldier nearest the
-        enemy — the one worth hitting — or None. reach 1 = a ram at
-        touch; reach SIEGE_RANGE = artillery bombarding."""
+        """The wall tile within `reach` worth hitting — the WEAKEST
+        first (batter the gate/breach, not the sound stone), then the
+        one nearest the enemy. reach 1 = a ram at touch; reach
+        SIEGE_RANGE = artillery bombarding."""
         field = self.field
-        best, bd = None, None
+        best, best_key = None, None
         for (sx, sy) in field.struct_hp:
             if max(abs(sx - sol.x), abs(sy - sol.y)) > reach:
                 continue
-            d = ai._dist((sx, sy), target.pos)
-            if bd is None or d < bd:
-                best, bd = (sx, sy), d
+            key = (field.struct_hp[(sx, sy)],
+                   ai._dist((sx, sy), target.pos))
+            if best_key is None or key < best_key:
+                best, best_key = (sx, sy), key
         return best
 
     def _siege_approach(self, sol, sq) -> bool:
