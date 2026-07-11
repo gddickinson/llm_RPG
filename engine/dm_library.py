@@ -100,6 +100,15 @@ def load_into_registries() -> int:
             inherited += 1
         except Exception:
             logger.warning(f"library item '{iid}' unloadable; skipped")
+    try:
+        from world.structures import STRUCTURES
+        for sid, entry in _load_file("structures.json").items():
+            spec = entry.get("spec", {})
+            if sid not in STRUCTURES and spec.get("levels"):
+                STRUCTURES[sid] = dict(spec)
+                inherited += 1
+    except Exception:
+        pass
     if inherited:
         logger.info(f"Legendarium: inherited {inherited} definitions")
     return inherited

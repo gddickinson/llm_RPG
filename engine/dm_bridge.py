@@ -32,6 +32,7 @@ ALLOWED_COMMANDS = (
     "narrate", "define_monster", "define_item", "spawn_npc",
     "place_item", "add_building", "edit_terrain", "create_quest",
     "adjust_faction", "schedule_beat", "install_module",
+    "define_structure",
 )
 
 

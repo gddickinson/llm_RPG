@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional, Tuple
 logger = logging.getLogger("llm_rpg.dm")
 
 MUTATION_BUDGET = 12          # world-changing acts per game-day
+MAX_STRUCTURE_LEVELS = 3      # DM towers stay modest (charter)
 MAX_BRUSH = 6                 # terrain edit side length
 MAX_ITEM_VALUE = 500
 MAX_QUEST_GOLD_BASE = 100
@@ -37,6 +38,7 @@ class DMApi:
         self.notebook: List[dict] = []
         self.scheduled: List[dict] = []          # {day, command, args}
         self.defined_monsters: Dict[str, dict] = {}
+        self.defined_structures: Dict[str, dict] = {}
         self.defined_items: Dict[str, dict] = {}
         self.campaign_notes: str = ""            # the DM's arc memory
         self._spent: Dict[int, int] = {}         # day -> mutations used
@@ -101,6 +103,79 @@ class DMApi:
         return self._log("narrate", True, text[:80])
 
     # ---- definitions ----------------------------------------------------------
+
+    def define_structure(self, structure_id: str,
+                         spec: dict) -> Tuple[bool, str]:
+        """P9.6: the DM raises whole multi-level structures — within
+        the charter (<=3 levels, <=16x12 grids, known cells, existing
+        monster templates, item-value caps). Persisted to the
+        Legendarium: a DM-built tower outlives the campaign."""
+        from world.structures import STRUCTURES, CELL_FURNITURE
+        from items.item_registry import ITEM_REGISTRY
+        from world.monsters import MONSTER_TEMPLATES
+        if structure_id in STRUCTURES:
+            return self._log("define_structure", False,
+                             f"'{structure_id}' already exists")
+        target = spec.get("attach_to", "")
+        loc = next((l for l in self.engine.world.locations
+                    if target and target.lower() in l.name.lower()),
+                   None)
+        if loc is None:
+            return self._log("define_structure", False,
+                             f"no place called '{target}'")
+        levels = spec.get("levels", [])
+        if not 1 <= len(levels) <= MAX_STRUCTURE_LEVELS:
+            return self._log("define_structure", False,
+                             f"1-{MAX_STRUCTURE_LEVELS} levels "
+                             f"(charter)")
+        known = set("WFD.<>KG") | set(CELL_FURNITURE)
+        for i, lv in enumerate(levels):
+            rows = lv.get("grid", [])
+            if not rows or len(rows) > 12 or \
+                    max(len(r) for r in rows) > 16:
+                return self._log("define_structure", False,
+                                 f"level {i}: grid must fit 16x12 "
+                                 f"(charter)")
+            bad = set("".join(rows)) - known
+            if bad:
+                return self._log("define_structure", False,
+                                 f"level {i}: unknown cells "
+                                 f"{sorted(bad)}")
+            monsters = lv.get("monsters", [])
+            if len(monsters) > 3:
+                return self._log("define_structure", False,
+                                 f"level {i}: max 3 monsters "
+                                 f"(charter)")
+            for spawn in monsters:
+                if spawn.get("template") not in MONSTER_TEMPLATES:
+                    return self._log("define_structure", False,
+                                     f"unknown monster "
+                                     f"'{spawn.get('template')}'")
+            for iid in lv.get("chest_loot", []):
+                item = ITEM_REGISTRY.get(iid)
+                if item is None:
+                    return self._log("define_structure", False,
+                                     f"unknown item '{iid}'")
+                if getattr(item, "value", 0) > MAX_ITEM_VALUE:
+                    return self._log("define_structure", False,
+                                     f"'{iid}' over value cap")
+        denied = self._charge("define_structure")
+        if denied:
+            return denied
+        STRUCTURES[structure_id] = dict(spec)
+        self.defined_structures[structure_id] = dict(spec)
+        try:
+            self.engine.structures.build()
+        except Exception as e:
+            logger.warning(f"structure build failed: {e}")
+        try:
+            from engine.dm_library import record_definition
+            record_definition("structures", structure_id, spec,
+                              self._day())
+        except Exception:
+            pass
+        return self._log("define_structure", True,
+                         f"{structure_id} rises at {loc.name}")
 
     def define_monster(self, template_id: str,
                        spec: dict) -> Tuple[bool, str]:
@@ -351,6 +426,7 @@ class DMApi:
         return {"notebook": self.notebook[-NOTEBOOK_CAP:],
                 "scheduled": list(self.scheduled),
                 "defined_monsters": dict(self.defined_monsters),
+                "defined_structures": dict(self.defined_structures),
                 "defined_items": dict(self.defined_items),
                 "campaign_notes": self.campaign_notes,
                 "spent": {str(k): v for k, v in self._spent.items()}}
@@ -359,6 +435,15 @@ class DMApi:
         self.notebook = list(d.get("notebook", []))
         self.scheduled = list(d.get("scheduled", []))
         self.defined_monsters = dict(d.get("defined_monsters", {}))
+        self.defined_structures = dict(d.get("defined_structures", {}))
+        if self.defined_structures:
+            try:
+                from world.structures import STRUCTURES
+                for sid, sspec in self.defined_structures.items():
+                    STRUCTURES.setdefault(sid, dict(sspec))
+                self.engine.structures.build()
+            except Exception:
+                pass
         self.defined_items = dict(d.get("defined_items", {}))
         self.campaign_notes = str(d.get("campaign_notes", ""))
         self._spent = {int(k): v

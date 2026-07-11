@@ -1646,3 +1646,25 @@ into Phase 12 when the other two return. docs/RULES_AUDIT.md holds
 our baseline self-audit. 7 new tests. Suite: 905, green (one stray
 conflict-test flake passed 6/6 standalone and 4/4 subsequent full
 runs). 
+
+**Round 88 — P9.6 DM structures + Legendarium (done) — PHASE 9
+COMPLETE.**
+The DM can now raise whole buildings. dm.define_structure accepts
+the same level-stack specs the structures framework reads —
+attach_to an existing location, grid-string floors, stairs,
+inscriptions, monsters, chest loot — and validates them against the
+charter: at most 3 levels of 16x12, known grid cells only, at most
+3 monsters per level drawn from EXISTING templates (so monster
+power stays behind define_monster's own level cap), item-value
+caps on loot, one mutation charged. Accepted structures build
+immediately through the P9.1 framework, ride the dm_bridge
+allowlist, persist in DM state across saves, and are recorded to
+the Legendarium — where FUTURE CAMPAIGNS INHERIT THEM at boot, so
+a folly the DM raises tonight stands in every world after (proven
+by a fresh-boot inheritance test). With that, Phase 9 is complete:
+the structure framework, the explorable Ruined Keep, the temple
+crypt, the wizard's tower, multi-level dungeons with their
+Tyrants, and now DM-built towers that accrete forever. The third
+rules-research agent (simulation roguelikes) is still out;
+synthesis into Phase 12 on its return. 9 new tests. Suite: 914,
+green x3.

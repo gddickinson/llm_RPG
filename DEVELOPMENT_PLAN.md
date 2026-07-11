@@ -1221,10 +1221,23 @@ world; 11: traversal & movement magic).
   2") and stored in metadata for future diary tasks. The whole stack
   serializes recursively — save mid-delve, the dungeon remembers.
   7 tests.)*
-- [ ] **P9.6 DM + Legendarium structures.** `define_structure` DM command
+- [x] **P9.6 DM + Legendarium structures.** `define_structure` DM command
   (charter-capped size/level) + structures recorded in the Legendarium
   so DM-built towers persist across campaigns; module packs may ship
   structures.
+  *(done 2026-07-10 — dm.define_structure: the DM raises whole
+  multi-level structures on any existing location, charter-capped
+  (≤3 levels, ≤16×12 grids, known cells only, ≤3 monsters per level
+  from EXISTING templates — so monster power stays behind the
+  define_monster level cap — item-value caps on chest loot; one
+  mutation charged). Built immediately through the P9.1 framework;
+  bridge allowlisted; persisted in dm state and re-injected on load;
+  recorded to the Legendarium and INHERITED by future campaigns —
+  a DM's folly built tonight stands in every world after (test:
+  fresh boot inherits dm_folly). PHASE 9 COMPLETE: framework, keep,
+  temple crypt, wizard's tower, multi-level dungeons, DM towers.
+  Module-pack structure shipping deferred until a pack wants one.
+  9 tests.)*
 
 ## Phase 10 — A world you can break and shape (George, 2026-07-10)
 
