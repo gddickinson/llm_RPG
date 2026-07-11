@@ -2617,3 +2617,37 @@ the ordinary defeat path, so a slain boss becomes a legend for
 free. 9 tests. Suite: 1213, green x3. Meanwhile the battle-screen
 research agent returned a full architecture — Phase 17 authored
 next from its findings.
+
+**Round 127 — P17.1 Battle data tables + headless auto-resolver
+(done). Phase 17 begins.**
+The foundation of the battle screen, UI-free and testable. New
+`engine/battle/` package: battle_data loads the army tables from
+data/battles/*.json (all 16 Autonomous World unit archetypes —
+sword/spear/pike infantry, longbow/crossbow archers, light/heavy/
+mounted-archer cavalry, ram/catapult/trebuchet/tower siege,
+elephant/dire-wolf/wyvern beasts, medic — plus the RPS matchup
+grid, terrain modifiers, formations and fortification stats, ported
+verbatim as content). battle_resolve is a seeded, deterministic
+`resolve(attacker, defender, ...)` running melee + ranged + siege
+rounds. I ported AW's two Lanchester laws but corrected a latent
+bug in the original: AW computed total_defense and never used it,
+so armor/formations didn't reduce casualties — here melee
+casualties ARE reduced by the target's defence factor (formation ×
+fort × unit armor), so a shield wall and a stone wall actually
+matter. Ranged is square-Lanchester softened by the RPS matchup
+and the target's SPEED (fast cavalry closes and eats fewer
+volleys); cavalry gets a CHARGE on the opening rounds; spears BLUNT
+the charge by reducing incoming cavalry; and in a siege an intact
+wall keeps besiegers off the garrison (only engines and archers
+reach) while siege engines — shielded behind the escort in the
+casualty order — batter the wall to a breach. 11 tests, all
+seed-deterministic, assert the RPS shape (numbers win a straight
+fight, cavalry crush archers, spears blunt cavalry, a commander
+tips an even fight, a shield wall wins attrition, siege breaches
+the wall). The validator learned the battle tables. And the suite
+caught a bug I shipped in round 126: tyrant_depths carried
+dungeon:true, which put the boss in the RANDOM dungeon spawn pool
+on top of its explicit placement — 2-3 Tyrants some seeds; bosses
+are placed explicitly, so dungeon:false now (10 stability runs
+clean). This resolver also becomes the richer off-screen battle
+math for the faction systems in P17.8. Suite: 1224, green x5.

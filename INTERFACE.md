@@ -28,6 +28,11 @@ llm_RPG/
 
 ## Module Index
 
+### engine/battle/ — Phase 17 tactical layer
+
+- **`battle_data.py`** — loaders over `data/battles/*.json`: unit archetypes, formations, matchup RPS + terrain, fortifications (all content, no hardcoded stats).
+- **`battle_resolve.py`** — P17.1 headless Lanchester auto-resolver: `Army`/`Unit`/`Fort` + seeded `resolve(attacker, defender, terrain, is_siege, seed)`; defence-reduced melee, RPS+speed-softened ranged, cavalry charge, anti-cavalry spears, wall-gated siege with breaches. Deterministic; doubles as the off-screen faction-battle resolver.
+
 ### engine/ — Core game logic
 
 - **`game_engine.py`** — `GameEngine`; the thin orchestrator: state, start/end, delegates (438 lines).

@@ -190,7 +190,7 @@
     "symbol": "T",
     "description": "The den-lord, vast and slick, master of its dark water.",
     "encounter_weight": 0,
-    "dungeon": true,
+    "dungeon": false,
     "stats": {
       "strength": 20,
       "constitution": 20

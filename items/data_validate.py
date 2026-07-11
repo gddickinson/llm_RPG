@@ -35,7 +35,38 @@ def validate_all() -> List[str]:
     problems += _check_pantheon()
     problems += _check_structures()
     problems += _check_traversal()
+    problems += _check_battles()
     return problems
+
+
+def _check_battles() -> List[str]:
+    """battle tables: units have a category + core stats; formations
+    and fortifications well-formed; matchup keys reference known
+    categories."""
+    from engine.battle.battle_data import (FORMATIONS, FORTIFICATIONS,
+                                           MATCHUP, TERRAIN, UNITS)
+    out = []
+    cats = set()
+    for uid, st in UNITS.items():
+        if "category" not in st:
+            out.append(f"battle unit {uid}: missing category")
+        else:
+            cats.add(st["category"])
+        for field in ("melee", "ranged", "defense", "hp"):
+            if field not in st:
+                out.append(f"battle unit {uid}: missing {field}")
+    for key in MATCHUP:
+        if "|" not in key:
+            out.append(f"battle matchup '{key}': need 'atk|def'")
+    for fid, st in FORTIFICATIONS.items():
+        if "hp" not in st:
+            out.append(f"fortification {fid}: missing hp")
+    for fname, spec in FORMATIONS.items():
+        if "defense_mult" not in spec or "attack_mult" not in spec:
+            out.append(f"formation {fname}: needs def/atk mults")
+    if not TERRAIN:
+        out.append("battle terrain modifiers missing")
+    return out
 
 
 def _check_traversal() -> List[str]:

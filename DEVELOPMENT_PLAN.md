@@ -2111,13 +2111,32 @@ battle_ai / battle_flow / battle_resolve / battle_session, plus
 ui/battle_screen and data/battles/*.json. Ordered so each round
 is shippable and testable, de-risking UI last:
 
-- [ ] **P17.1 Data tables + auto-resolver (headless).** Port
+- [x] **P17.1 Data tables + auto-resolver (headless).** Port
   autonomous_world's warfare tables to data/battles/*.json
   (units, formations, matchups, fortifications) and
   `battle_resolve.resolve(seed)` (Lanchester melee/ranged/siege).
   Validator extended for battle content. Deterministic headless
   tests assert winners/survivors by seed — NO UI. Doubles as the
   richer resolver for faction_ticker/retaliation off-screen fights.
+  *(Round 127: `engine/battle/` package — battle_data (loaders over
+  data/battles/units·formations·matchups·fortifications.json, all
+  16 AW unit archetypes + RPS matchups + terrain + formations +
+  fort stats), battle_resolve (Army/Unit/Fort + a seeded
+  `resolve`). Two combat laws faithful to AW: melee casualties
+  reduced by target DEFENCE (fixed AW's latent bug where defense
+  was computed but unused), ranged square-Lanchester softened by
+  the RPS matchup and target SPEED (fast cavalry closes and eats
+  fewer volleys). Cavalry CHARGE front-loads rounds 1-2; spears
+  BLUNT the charge (reduce incoming cavalry); an intact WALL keeps
+  besiegers off the garrison (only engines + ranged reach) while
+  siege engines batter it to a breach; casualties shield siege
+  engines behind the front line. 11 seed-deterministic tests
+  (numbers win, cavalry>archers, spears blunt cavalry, commander
+  tips it, shield wall holds attrition, siege breaches). Validator
+  checks the tables. Also fixed a round-126 bug the suite surfaced:
+  tyrant_depths had dungeon:true, adding the boss to the RANDOM
+  spawn pool → 2-3 Tyrants intermittently; bosses are placed
+  explicitly, dungeon:false now. Suite 1224, green x5.)*
 - [ ] **P17.2 Squad & soldier model + field.** `battle_unit.py`
   (Squad = tokens + one morale bar; Soldier grid token;
   to_dict/from_dict) and `battle_field.py` (a grid wrapping
