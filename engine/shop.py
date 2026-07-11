@@ -230,6 +230,21 @@ class ShopManager:
         self.engine.memory_manager.add_event(msg)
         return msg
 
+    def trade_refusal(self, player, merchant_npc):
+        """Despised customers get the door, not a price (P12.11)."""
+        try:
+            from characters.factions import (Faction, threshold,
+                                             faction_of_class)
+            klass = getattr(merchant_npc.character_class, "value", "")
+            fac = faction_of_class(klass)
+            if fac != Faction.NEUTRAL and \
+                    threshold(player, fac) == "despised":
+                return (f"{merchant_npc.name} folds their arms: "
+                        f"\"Your coin's no good here. OUT.\"")
+        except Exception:
+            pass
+        return None
+
     # ----- price computation -------------------------------------------
 
     def buy_price(self, player, item: Item, merchant_npc) -> int:

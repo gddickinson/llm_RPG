@@ -2179,3 +2179,27 @@ token still works (max() of the two paths honors both). Deferred
 with a note: the alchemy-style universal value floor wants an
 item-targeting UI and gets its own small round. 8 tests. Suite:
 1088, green x3.
+
+**Round 110 — P12.11 The bond ceremony (done).**
+Qud's water ritual, tavern style. `/bond` while talking to a named
+NPC shares a drink — one ale, mead or wine leaves your pack (the
+P12.5 drink items earn a third job), the cup passes twice, and the
+ceremony (once per NPC, ever) mints BOND: 10 for the gesture plus
+half your relationship. Bond is spendable trust, via `/spend`:
+SECRET (15) makes them tell you something their affinity and quest
+gates still lock — tested by locking Goren's gate to zero and
+buying the troll-silver secret anyway; trust is the key. SKILL
+(25) is a lesson in the teacher's craft — a class-to-lattice map
+(the tavernkeeper teaches smithing? no — merchants teach smithing,
+wizards alchemy, rangers foraging, clerics cooking) worth +150 XP.
+JOIN (20 + 12 per level of gap — Qud's proselytize price scaled to
+our economy) recruits a companion PAST the relationship gate: the
+bond is the trust; class and party-cap rules still stand. FACTION
+THRESHOLDS: five bands (despised/disliked/indifferent/favored/
+revered) in factions.py, and for the first time reputation gates
+BEHAVIOR rather than just prices: despised merchants refuse to
+trade at all ("Your coin's no good here. OUT."), disliked factions
+refuse to be recruited from however charming you are personally,
+and revered guards wave off petty bounties under 20g — forgotten,
+not just ignored, tying back into the P12.9 ledger. 12 tests.
+Suite: 1100, green x3.

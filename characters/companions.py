@@ -36,6 +36,18 @@ class CompanionManager:
         klass = getattr(npc.character_class, "value", "")
         if klass not in RECRUITABLE_CLASSES:
             return f"A {klass} won't follow you."
+        # Their faction must at least tolerate you (P12.11)
+        try:
+            from characters.factions import (Faction, threshold,
+                                             faction_of_class)
+            fac = faction_of_class(klass)
+            if fac != Faction.NEUTRAL and threshold(
+                    self.engine.player, fac) in ("disliked",
+                                                 "despised"):
+                return (f"{npc.name}'s people think too little of "
+                        f"you to follow.")
+        except Exception:
+            pass
         # Need positive relationship
         if npc.get_relationship(self.engine.player.id) < 30:
             return f"{npc.name} doesn't trust you enough yet."

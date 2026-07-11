@@ -1669,12 +1669,24 @@ traditions lead.
   /persuade token honored via max(). DEFERRED: the alchemy-style
   universal value floor (wants an item-targeting UI). 8 tests.
   Suite 1088, green x3.)*
-- [ ] **P12.11 Social depth: the bond ceremony.** Qud's water
+- [x] **P12.11 Social depth: the bond ceremony.** Qud's water
   ritual: a formal "share a drink" with named NPCs converts
   reputation into spendable currency — buy secrets, learn skills,
   recruit companions at rep prices (12×level-gap + 200); faction
   rep gets behavior THRESHOLDS (despised/disliked/indifferent/
   favored/revered) instead of price-only effects.
+  *(Round 110: `engine/bonds.py` + /bond and /spend dialog
+  commands. The ceremony consumes an ale/mead/wine (P12.5 drinks
+  earn another job), once per NPC ever, minting bond = 10 +
+  relationship//2. /spend secret (15) reveals a secret PAST its
+  affinity/quest gates — trust is the key; /spend skill (25) is a
+  +150 XP lesson in the teacher's craft (class→lattice map);
+  /spend join (20 + 12×level-gap, Qud's proselytize price scaled)
+  recruits past the trust gate — class and party-cap rules still
+  stand. THRESHOLDS in factions.py with three behavior gates:
+  despised merchants refuse trade ("Your coin's no good here"),
+  disliked factions refuse recruitment, revered guards wave off
+  petty bounties (<20g) entirely. 12 tests. Suite 1100, green x3.)*
 - [ ] **P12.12 Medicine II: the infection race.** RimWorld's three
   numbers — infection grows +0.84/day, immunity +0.64/day scaled by
   rest/bed, treatment quality (healer skill × medicine tier)

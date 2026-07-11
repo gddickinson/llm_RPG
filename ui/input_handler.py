@@ -217,17 +217,12 @@ class InputHandler:
             self._open_shop()
             return True
 
-        # Crafting overlay (K)
-        if k == pygame.K_k:
+        if k == pygame.K_k:   # crafting overlay
             self.gui.show_crafting()
             return True
 
-        # Prayer at a shrine/temple (SHIFT+P); party toggle (P)
-        if k == pygame.K_p:
-            if shift:
-                self.engine.pray()
-            else:
-                self._toggle_party()
+        if k == pygame.K_p:   # SHIFT: pray; plain: party toggle
+            self.engine.pray() if shift else self._toggle_party()
             return True
 
         if k == pygame.K_RETURN:   # sleep / camp (P12.6)
@@ -493,6 +488,11 @@ class InputHandler:
             if not merchants:
                 self.engine.memory_manager.add_event(
                     "There's no merchant nearby.")
+                return
+            refusal = self.engine.shop_manager.trade_refusal(
+                self.engine.player, merchants[0])   # P12.11
+            if refusal:
+                self.engine.memory_manager.add_event(refusal)
                 return
             self.gui.show_shop(merchants[0])
         except Exception:

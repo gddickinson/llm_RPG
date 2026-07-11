@@ -27,6 +27,21 @@ class DialogSystem:
         if not message:
             return self._greet(npc)
 
+        # The bond ceremony: /bond, /spend <secret|skill|join> (P12.11)
+        lowered = message.strip().lower()
+        if lowered.startswith("/bond"):
+            from engine.bonds import share_drink
+            result = share_drink(self.engine, npc)
+            self.engine.advance_turn()
+            return result
+        if lowered.startswith("/spend"):
+            from engine.bonds import spend
+            parts = message.split(maxsplit=1)
+            result = spend(self.engine, npc,
+                           parts[1] if len(parts) > 1 else "")
+            self.engine.advance_turn()
+            return result
+
         # Social checks: /persuade /intimidate /deceive <argument>
         from engine.persuasion import parse_command
         cmd = parse_command(message)

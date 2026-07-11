@@ -121,6 +121,17 @@ class LawSystem:
         guard = self._adjacent_guard()
         if guard is None:
             return None
+        try:   # revered heroes get petty fines waved off (P12.11)
+            from characters.factions import Faction, threshold
+            if amount < 20 and threshold(
+                    player, Faction.GUARDS) == "revered":
+                self._ledger().pop(settlement, None)
+                engine.memory_manager.add_event(
+                    f"[Law] {guard.name} waves you on: \"For you? "
+                    f"Consider it forgotten.\"")
+                return None
+        except Exception:
+            pass
         self.active = {"guard_id": guard.id,
                        "settlement": self.settlement_here(),
                        "amount": amount, "talked": False}
