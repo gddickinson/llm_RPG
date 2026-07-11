@@ -108,6 +108,10 @@ class MapRenderer:
                     overlay.fill((250, 120, 20, 150))
                 elif s["kind"] == "oil":
                     overlay.fill((40, 35, 30, 120))
+                elif s["kind"] == "blood":
+                    overlay.fill((140, 20, 25, 110))
+                elif s["kind"] == "electrified":
+                    overlay.fill((150, 220, 255, 160))
                 else:
                     overlay.fill((60, 120, 220, 90))
                 target.blit(overlay,

@@ -173,6 +173,14 @@ class CombatSystem:
             concentration_check(self.engine, defender, damage)
         except Exception:
             pass
+        try:   # serious wounds splash blood (P14.2a)
+            from engine.surfaces import BLOOD_THRESHOLD
+            if damage >= BLOOD_THRESHOLD and \
+                    self.engine.active_zone() is None:
+                self.engine.surfaces_layer.splash_blood(
+                    *defender.position)
+        except Exception:
+            pass
         self._wear_gear(attacker, defender)
 
         # Visual effects (damage popup + hit flash + death FX)

@@ -2406,3 +2406,24 @@ Phase 14 also lists the remaining candidates awaiting a pull
 structure-shipping module packs) with no forced order — the next
 real work should come from George's own sessions. Suite: 1145,
 green x6 total through the split.
+
+**Round 119 — P14.2a: Surfaces II — blood + electrified water
+(done; picked from the P14.2 candidates).**
+The DOS2 leftovers landed. BLOOD: any overworld hit for 5+ damage
+splashes a pool under the victim — dark red on the renderer, forty
+turns on the ground, and it CONDUCTS but never burns (fire's
+spread list ignores it, tested with a rigged always-spread rng).
+Combat now literally paints the battlefield, and every pool is a
+tactical wire. ELECTRICITY: `surfaces.electrify(x, y)` races a
+charge through every CONNECTED conductor — water surfaces, WATER
+terrain, and blood bridges — flood-fill capped at 30 tiles, three
+turns of 4-per-turn zap to anyone standing in it (the player
+floored at 1 HP per the maiming convention, NPCs genuinely
+electrocuted through the real defeat path), after which the
+charge fades and the water is just water again. The SHOCK spell
+is the trigger: hit a target standing in the wet and the whole
+puddle lights up — "lure them into the water, then shock it" is
+now a real play, and the combo test proves the full loop through
+cast_spell. Blood-as-conductor makes the darker combo too: a
+wounded, bleeding enemy is halfway to being a lightning rod.
+9 tests. Suite: 1154, green x3.

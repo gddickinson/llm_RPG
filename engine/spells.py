@@ -189,6 +189,13 @@ class SpellSystem:
             results.append(
                 f"{caster.name} hits {target.name} with {spell.name} "
                 f"for {spell.damage} damage.")
+            if spell.id == "shock":   # lightning + water (P14.2a)
+                try:
+                    if self.engine.active_zone() is None:
+                        tx, ty = target.position
+                        self.engine.surfaces_layer.electrify(tx, ty)
+                except Exception:
+                    pass
             # Death from spell
             if not target.is_alive():
                 results.append(f"{target.name} is slain by the {spell.name}!")

@@ -1837,10 +1837,18 @@ debt and the door to whatever George's next play session surfaces.
   slips — module-scope imports and an indent — caught by the suite
   within minutes).
 - [ ] **P14.2 Candidates awaiting a pull** (pick when wanted, no
-  order): DOS2 leftovers (blood pools, electrified water);
-  cooperative ConstructionProject (new buildings from materials +
-  workers); windows / magical sight through walls; module packs
-  shipping structures; George's next playtest findings.
+  order): ~~DOS2 leftovers (blood pools, electrified water)~~
+  *(Round 119, done: serious wounds (damage ≥5, overworld) splash
+  BLOOD pools (40 turns, dark red overlay); blood CONDUCTS but
+  never burns. `surfaces.electrify(x,y)` races a charge through
+  every connected conductor — water surfaces, WATER terrain, blood
+  bridges — cap 30 tiles, 3 turns of 4/turn zap (player floored at
+  1 HP), fading back to plain water. The shock spell triggers it
+  at a wet target: lure them into the puddle, then shock it. 9
+  tests. Suite 1154, green x3.)*; cooperative ConstructionProject
+  (new buildings from materials + workers); windows / magical
+  sight through walls; module packs shipping structures; George's
+  next playtest findings.
 
 ## What NOT to build (explicitly deferred)
 

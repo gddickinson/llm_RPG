@@ -26,6 +26,11 @@ FIRE_BASE_DURATION = 6
 FIRE_DAMAGE = 4              # per turn standing in flames
 FIRE_TILE_DAMAGE = 6         # per turn against the tile itself
 SPREAD_CHANCE = 0.30         # per adjacent combustible per tick
+BLOOD_TURNS = 40             # P14.2a: spilled blood lingers
+BLOOD_THRESHOLD = 5          # damage that splashes a pool
+ELEC_TURNS = 3               # electrified water crackles briefly
+ELEC_DAMAGE = 4              # per turn standing in the charge
+ELEC_CAP = 30                # tiles one shock can electrify
 COMBUSTIBLE_TERRAIN = (TerrainType.FOREST, TerrainType.FARMLAND)
 WATER_DRY_TURNS = 30
 OIL_TURNS = 60
@@ -113,9 +118,17 @@ class SurfaceLayer:
         for pos, s in list(self.surfaces.items()):
             if s["kind"] == "fire":
                 self._burn(pos, s)
+            elif s["kind"] == "electrified":
+                self._zap(pos, s)
             s["turns"] -= 1
             if s["turns"] <= 0:
-                self.surfaces.pop(pos, None)
+                if s["kind"] == "electrified":
+                    # the charge fades; the water remains
+                    self.surfaces[pos] = {"kind": "water",
+                                          "turns": WATER_DRY_TURNS,
+                                          "intensity": 1}
+                else:
+                    self.surfaces.pop(pos, None)
 
     def _burn(self, pos: Tuple[int, int], s: dict) -> None:
         engine = self.engine
@@ -195,6 +208,77 @@ class SurfaceLayer:
                                      "intensity": 1}
             return True
         return False
+
+    # ---- Surfaces II (P14.2a): blood + electricity ---------------
+
+    def splash_blood(self, x: int, y: int) -> bool:
+        """A serious wound leaves a pool. Blood conducts; it never
+        burns (fire spread ignores it)."""
+        if not self._paintable(x, y):
+            return False
+        if self.surfaces.get((x, y), {}).get("kind") in (
+                "fire", "electrified"):
+            return False
+        self.surfaces[(x, y)] = {"kind": "blood",
+                                 "turns": BLOOD_TURNS,
+                                 "intensity": 1}
+        return True
+
+    def _conducts(self, x: int, y: int) -> bool:
+        kind = self.surfaces.get((x, y), {}).get("kind")
+        if kind in ("water", "blood", "electrified"):
+            return True
+        from world.world_map import TerrainType
+        wmap = self.engine.world.map
+        return (0 <= x < wmap.width and 0 <= y < wmap.height and
+                wmap.terrain[y][x] == TerrainType.WATER)
+
+    def electrify(self, x: int, y: int) -> int:
+        """Lightning meets water: the charge races through every
+        connected conductor — water surfaces, WATER terrain, and
+        spilled blood — up to ELEC_CAP tiles (DOS2's dream)."""
+        if not self._conducts(x, y):
+            return 0
+        charged = 0
+        frontier = [(x, y)]
+        seen = set()
+        while frontier and charged < ELEC_CAP:
+            cx, cy = frontier.pop(0)
+            if (cx, cy) in seen:
+                continue
+            seen.add((cx, cy))
+            if not self._conducts(cx, cy):
+                continue
+            self.surfaces[(cx, cy)] = {"kind": "electrified",
+                                       "turns": ELEC_TURNS,
+                                       "intensity": 2}
+            charged += 1
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                frontier.append((cx + dx, cy + dy))
+        if charged:
+            self.engine.memory_manager.add_event(
+                f"[!] The water LIGHTS UP — lightning races through "
+                f"{charged} tiles of it!")
+        return charged
+
+    def _zap(self, pos: Tuple[int, int], s: dict) -> None:
+        engine = self.engine
+        x, y = pos
+        for victim in self._standing_at(x, y):
+            victim.take_damage(ELEC_DAMAGE)
+            if victim.id == engine.player.id:
+                if victim.hp <= 0:
+                    victim.hp = 1     # current maims; the story kills
+                engine.memory_manager.add_event(
+                    f"[!] Current arcs through you! "
+                    f"(-{ELEC_DAMAGE} HP — get out of the water!)")
+            elif not victim.is_alive():
+                try:
+                    engine.combat_system._handle_defeat(
+                        engine.player, victim, ELEC_DAMAGE)
+                except Exception:
+                    victim.defeat()
+                    engine.world.map.remove_character(victim)
 
     def kind_at(self, x: int, y: int) -> Optional[str]:
         s = self.surfaces.get((x, y))
