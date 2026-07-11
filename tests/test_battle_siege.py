@@ -67,6 +67,46 @@ class TestSiegeBattering(unittest.TestCase):
         self.assertEqual(r["winner"], "red",
                          "the assault poured through the breach")
 
+    def _engine_vs_distant_wall(self, engine_type, gap):
+        bf = BattleField(40, 11)
+        bf.add_wall(10 + gap, 5, "stone_wall")
+        eng = Squad.raise_squad("e", "red", engine_type, [(10, 5)])
+        gar = Squad.raise_squad("g", "blue", "infantry_sword",
+                                [(10 + gap + 4, 5)])
+        eng.set_order("charge", "g")
+        gar.set_order("hold")
+        bf.add_squad(eng)
+        bf.add_squad(gar)
+        return bf, eng, (10 + gap, 5)
+
+    def test_artillery_bombards_from_range(self):
+        # a trebuchet 8 tiles off should pound the wall without closing
+        bf, eng, wall = self._engine_vs_distant_wall("siege_trebuchet", 8)
+        x0 = eng.soldiers[0].x
+        sess = BattleSession(bf, seed=1)
+        for _ in range(12):
+            sess.tick()
+        self.assertLess(bf.struct_hp.get(wall, 0), 500,
+                        "artillery should have bombarded the wall")
+        self.assertLessEqual(abs(eng.soldiers[0].x - x0), 3,
+                             "it lobbed from range, it did not charge")
+
+    def test_a_ram_must_close_to_touch(self):
+        # a ram 8 tiles off cannot hurt the wall while still crawling in
+        bf, _, wall = self._engine_vs_distant_wall("siege_ram", 8)
+        sess = BattleSession(bf, seed=1)
+        for _ in range(6):
+            sess.tick()
+        self.assertEqual(bf.struct_hp.get(wall), 500,
+                         "a ram deals nothing until it reaches the wall")
+
+    def test_bombard_scenario_breaches_and_wins(self):
+        bf = build_field("bombard_the_keep")
+        w0 = len(bf.struct_hp)
+        r = BattleSession(bf, seed=1).run_headless(max_ticks=300)
+        self.assertLess(len(bf.struct_hp), w0, "the guns breached it")
+        self.assertEqual(r["winner"], "red")
+
     def test_breach_becomes_passable_rubble(self):
         bf = _wall_and_besieger("siege_trebuchet")   # 50/hit, quick
         sess = BattleSession(bf, seed=1)

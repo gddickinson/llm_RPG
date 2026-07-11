@@ -613,5 +613,114 @@
         ]
       }
     ]
+  },
+  "bombard_the_keep": {
+    "name": "Bombard the Keep",
+    "desc": "Trebuchets stand off and pound the stone wall from range; when it cracks the footmen storm the breach. Artillery never touches the stones.",
+    "width": 50,
+    "height": 28,
+    "walls": [
+      {
+        "type": "stone_wall",
+        "cells": [
+          [
+            28,
+            8
+          ],
+          [
+            28,
+            9
+          ],
+          [
+            28,
+            10
+          ],
+          [
+            28,
+            11
+          ],
+          [
+            28,
+            12
+          ],
+          [
+            28,
+            13
+          ],
+          [
+            28,
+            14
+          ],
+          [
+            28,
+            15
+          ],
+          [
+            28,
+            16
+          ],
+          [
+            28,
+            17
+          ],
+          [
+            28,
+            18
+          ],
+          [
+            28,
+            19
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_guns",
+            "type": "siege_trebuchet",
+            "size": 3,
+            "anchor": [
+              20,
+              12
+            ],
+            "cols": 1,
+            "order": "charge",
+            "target": "blue_garrison"
+          },
+          {
+            "id": "red_foot",
+            "type": "infantry_sword",
+            "size": 18,
+            "anchor": [
+              5,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_garrison"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_garrison",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              32,
+              11
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_foot"
+          }
+        ]
+      }
+    ]
   }
 }

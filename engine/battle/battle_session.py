@@ -21,6 +21,7 @@ from engine.battle import battle_orders as orders
 from engine.battle.battle_flow import distance_field
 
 MAX_STEPS = 3            # tiles a soldier may cover in one tick (cap)
+SIEGE_RANGE = 10         # tiles a bombard-capable engine lobs at a wall
 
 
 class BattleSession:
@@ -78,11 +79,18 @@ class BattleSession:
             target = ai.pick_target(field, sol, sq)
             if target is None:
                 continue
-            # a siege engine batters an adjacent wall before all else —
-            # it does not shoot the garrison through the stones
+            # a siege engine attacks a wall before all else, and does
+            # NOT shoot the garrison through the stones: a ram must
+            # touch it (reach 1); artillery (a ranged engine) stands
+            # off and BOMBARDS from up to SIEGE_RANGE.
             if sq.structural_dmg > 0:
-                wall = self._adjacent_struct(sol, target)
+                arty = sq.stats.get("ranged", 0) > 0
+                reach = SIEGE_RANGE if arty else 1
+                wall = self._wall_in_range(sol, reach, target)
                 if wall is not None:
+                    if arty:                 # a visible lobbed shot
+                        self.tracers.append((sol.x, sol.y,
+                                             wall[0], wall[1]))
                     field.damage_struct(wall[0], wall[1],
                                         sq.structural_dmg)
                     continue
@@ -114,33 +122,35 @@ class BattleSession:
         else:
             self._advance(sol, sq, target, flow)
 
-    def _adjacent_struct(self, sol, target):
-        """The wall tile beside this soldier nearest the enemy — the
-        one worth battering — or None."""
+    def _wall_in_range(self, sol, reach, target):
+        """The wall tile within `reach` of this soldier nearest the
+        enemy — the one worth hitting — or None. reach 1 = a ram at
+        touch; reach SIEGE_RANGE = artillery bombarding."""
         field = self.field
         best, bd = None, None
-        for dx, dy in ai._NEIGH8:
-            p = (sol.x + dx, sol.y + dy)
-            if p in field.struct_hp:
-                d = ai._dist(p, target.pos)
-                if bd is None or d < bd:
-                    best, bd = p, d
+        for (sx, sy) in field.struct_hp:
+            if max(abs(sx - sol.x), abs(sy - sol.y)) > reach:
+                continue
+            d = ai._dist((sx, sy), target.pos)
+            if bd is None or d < bd:
+                best, bd = (sx, sy), d
         return best
 
     def _siege_approach(self, sol, sq) -> bool:
-        """Not adjacent to a wall yet: a siege engine crawls to the
-        nearest one (the tick loop batters it once adjacent). Returns
+        """Not in range of a wall yet: a siege engine crawls to the
+        nearest one (the tick loop hits it once in range). Returns
         True if it spent the tick heading for a wall."""
         field = self.field
         near = ai.nearest_struct(field, sol.x, sol.y)
         if near is None:
             return False                     # no walls: fight normally
+        reach = SIEGE_RANGE if sq.stats.get("ranged", 0) > 0 else 1
         for _ in range(self._steps(sol, sq)):
             goal = ai.step_toward(field, sol, near[0], near[1])
             if goal is None or not field.move_soldier(sol, *goal):
                 break
-            if self._adjacent_struct(sol, sol) is not None:
-                break                        # reached it; batter next tick
+            if self._wall_in_range(sol, reach, sol) is not None:
+                break                        # in range; hit it next tick
         return True
 
     @staticmethod

@@ -2339,11 +2339,25 @@ is shippable and testable, de-risking UI last:
   objective tiles/radius/hold. 7 tests (counts, dominant lead,
   hold-wins-without-massacre, contested-no-progress, round-trip,
   scenario builds + is won by capture); suite 1302, green.)*
-- [ ] **P17.6d Siege II.** Wall-walk elevation via the multi-level
+- [x] **P17.6d Ranged siege bombardment.** Artillery (a siege engine
+  with a `ranged` stat — catapult, trebuchet) stands off and pounds a
+  wall from a distance instead of crawling to touch it.
+  *(Round 136: `SIEGE_RANGE`=10; the tick loop now picks a siege
+  engine's wall-attack reach from whether it has `ranged` — a ram
+  (reach 1) must touch the wall, artillery hits any wall within
+  SIEGE_RANGE and leaves a lobbed-shot tracer, so it never has to
+  close and never shoots the garrison through the stones.
+  `_adjacent_struct` generalised to `_wall_in_range(sol, reach,
+  target)` (used by both the bombard check and the range-aware
+  `_siege_approach`). New `bombard_the_keep` scenario: three
+  trebuchets emplaced 8 tiles off a stone wall crack it at tick 4 and
+  the footmen storm the breach (red 8/8). 3 tests (artillery bombards
+  from range without closing, a ram deals nothing until it touches,
+  the scenario breaches + wins); suite 1305, green.)*
+- [ ] **P17.6e Siege III.** Wall-walk elevation via the multi-level
   stacks; boiling oil = a `surfaces` paint on the battle grid (needs
-  a grid surface layer); ranged siege BOMBARDMENT (catapults/
-  trebuchets lobbing at walls from range, not just adjacency); and
-  the AI actively seeking cover (deferred from P17.6a).
+  a grid surface layer); and the AI actively seeking cover (deferred
+  from P17.6a). Increasingly niche — could yield to P17.7 role-swap.
 - [ ] **P17.7 Player role-swap.** An `embodied` flag on the
   session: set → input routes to normal grid-soldier controls,
   camera locks in; None → commander order layer, free camera; TAB

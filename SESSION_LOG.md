@@ -2925,3 +2925,24 @@ massacre, a tie making no progress, the objective round-trip, and the
 scenario building and being won by capture. Suite 1302, green.
 Remainder to P17.6d: wall-walk elevation, boiling-oil surfaces,
 ranged bombardment, and the AI seeking cover.
+
+**Round 136 — P17.6d Ranged siege bombardment.**
+P17.6b gave every siege engine the ram's manners: crawl up and hammer
+the wall you're touching. That's wrong for artillery. Now a siege
+engine's wall-attack reach is read from whether it carries a `ranged`
+stat — a ram (reach 1) still must touch the stones, but a catapult or
+trebuchet bombards any wall within `SIEGE_RANGE` (10 tiles), leaving
+a lobbed-shot tracer, so it stands off and pounds instead of charging
+into the melee and never looses at the garrison through the wall.
+`_adjacent_struct` grew up into `_wall_in_range(sol, reach, target)`,
+shared by the bombard check and a now range-aware `_siege_approach`
+(artillery only crawls when its target wall is beyond SIEGE_RANGE).
+The new `bombard_the_keep` set-piece emplaces three trebuchets eight
+tiles off a stone curtain: they crack it at tick 4 — 150 structural a
+tick against 500 — and the eighteen footmen behind them storm the
+breach (red 8/8 across seeds). Three tests pin the behaviour:
+artillery bombards from range without closing the distance, a ram
+deals nothing until it reaches the wall, and the scenario breaches
+and is won. Suite 1305, green. Remainder folded to P17.6e (wall-walk
+elevation, boiling-oil surfaces, AI seeks cover) — increasingly niche
+and may yield to P17.7 player role-swap.
