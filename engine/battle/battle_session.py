@@ -96,15 +96,44 @@ class BattleSession:
                     continue
             d = ai._dist(sol.pos, target.pos)
             if d <= ai.reach_of(sq):
-                if d > ai.MELEE_REACH and sq.stats.get("ranged", 0) > 0:
-                    self.tracers.append((sol.x, sol.y,
-                                         target.x, target.y))
-                ai.attack(field, sol, sq, target, self.rng)
+                if sq.charge_bonus > 1 and d <= ai.MELEE_REACH:
+                    self._charge_melee(sol, sq, target)
+                else:
+                    if d > ai.MELEE_REACH and \
+                            sq.stats.get("ranged", 0) > 0:
+                        self.tracers.append((sol.x, sol.y,
+                                             target.x, target.y))
+                    ai.attack(field, sol, sq, target, self.rng)
             else:
                 self._order_move(sol, sq, target,
                                  flows.get(sq.team, {}))
 
         self._update_objectives()            # capture points last
+
+    def _charge_melee(self, sol, sq, target) -> None:
+        """A charge-capable soldier (horse, huge beast) hits home: it
+        tramples through loose foes (overrun → ride into the cleared
+        tile and keep going, up to its speed) and shatters on braced
+        spears. One d20 exchange per victim via `charge_attack`."""
+        field = self.field
+        for _ in range(max(1, int(sq.speed))):     # momentum = speed
+            if not sol.alive:
+                break
+            if (target is None or not target.alive
+                    or ai._dist(sol.pos, target.pos) > ai.MELEE_REACH):
+                target = ai.pick_target(field, sol, sq)
+                if target is None or \
+                        ai._dist(sol.pos, target.pos) > ai.MELEE_REACH:
+                    break
+            tgt_sq = field.squads.get(target.squad_id)
+            tx, ty = target.x, target.y
+            res = ai.charge_attack(field, sol, sq, target, tgt_sq,
+                                   self.rng)
+            if res == "overrun":
+                field.move_soldier(sol, tx, ty)    # ride into the gap
+                target = None
+                continue
+            break                                  # stopped or repelled
 
     def _order_move(self, sol, sq, target, flow) -> None:
         """Move a soldier out of reach according to its squad's order:

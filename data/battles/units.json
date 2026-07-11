@@ -138,7 +138,9 @@
     "morale_threshold": 15,
     "recruit_cost": 50,
     "terror": 25,
-    "category": "beast"
+    "category": "beast",
+    "charge_bonus": 1.8,
+    "structural_dmg": 20
   },
   "war_dire_wolf": {
     "melee": 12,
@@ -149,7 +151,8 @@
     "morale_threshold": 15,
     "recruit_cost": 15,
     "terror": 10,
-    "category": "beast"
+    "category": "beast",
+    "charge_bonus": 1.4
   },
   "war_wyvern": {
     "melee": 16,
@@ -160,7 +163,8 @@
     "morale_threshold": 10,
     "recruit_cost": 100,
     "terror": 35,
-    "category": "beast"
+    "category": "beast",
+    "charge_bonus": 1.5
   },
   "medic": {
     "melee": 2,

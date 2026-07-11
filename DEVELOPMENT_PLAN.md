@@ -2394,6 +2394,25 @@ payoff — do NOT try to do them all at once.
   (fire/oil/electrify already exist); battle-mage units cast the
   existing spell effects. Explosions, boiling oil, and magic land
   here.
+- [x] **P17.13 Charge & overrun.** Charging cavalry (and huge beasts)
+  RUN OVER loose infantry — trampling through — and only stop when
+  killed, blocked, or braced against by spears.
+  *(Round 137, playtest ask "charging cavalry should run over regular
+  soldiers": `Squad.charge_bonus` (>1 = charge-capable — horse; beast
+  data got `charge_bonus` too, elephant 1.8 + `structural_dmg` 20 as a
+  "huge creature = siege engine"). In melee a charge-capable soldier
+  resolves `battle_ai.charge_attack` not a plain strike: braced
+  spears/pikes (`bonus_vs_cavalry`) strike the charge FIRST and either
+  kill the horse/rider ("repelled") or stop it cold ("stopped");
+  against loose foot the charge lands amplified by charge_bonus and,
+  if it doesn't kill, `_shove` barges the survivor clear so the rider
+  rides through ("overrun") — momentum carries the trample up to the
+  unit's speed. A clean parry (miss) lets the footman riposte and
+  maybe down the rider. `_charge_melee` rides into each cleared tile.
+  Emergent RPS on the grid at last: cavalry 12/0 vs a sword line,
+  0/12 vs spears, 0/12 vs pikes; elephants trample too but also die
+  on the pike hedge. New `cavalry_charge` scenario (heavy horse ride
+  down a sword line). 8 tests; suite 1313, green.)*
 
 ## What NOT to build (explicitly deferred)
 

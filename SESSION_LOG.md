@@ -2946,3 +2946,29 @@ deals nothing until it reaches the wall, and the scenario breaches
 and is won. Suite 1305, green. Remainder folded to P17.6e (wall-walk
 elevation, boiling-oil surfaces, AI seeks cover) — increasingly niche
 and may yield to P17.7 player role-swap.
+
+**Round 137 — P17.13 Charge & overrun.**
+Playtest ask: charging cavalry should run over regular soldiers, not
+politely poke and stop. Now they do. `Squad.charge_bonus` (>1 marks a
+charge-capable body) turns a horse's melee into a charge; the beast
+data gained charge_bonus too (a war elephant trample 1.8, and — as a
+"huge creature is a siege engine" — `structural_dmg` 20 so it can stave
+in a gate). When a charge-capable soldier reaches melee it resolves
+`battle_ai.charge_attack` instead of a plain strike. Braced
+spears/pikes (their `bonus_vs_cavalry`) get the FIRST blow, amplified,
+and either kill the horse or rider outright ("repelled") or stop the
+charge cold ("stopped") — the hedge of points is the hard counter.
+Against loose foot the charge lands multiplied by charge_bonus and, if
+it doesn't kill, `_shove` barges the survivor clear so the rider rides
+straight through ("overrun"); the momentum carries up to the unit's
+speed, trampling a file at a time. A clean parry (a missed charge)
+lets the footman riposte and sometimes bring the rider down. The grid
+finally shows the real rock-paper-scissors the data always implied:
+cavalry ride down a sword line 12/0, but shatter on spears 0/12 and
+pikes 0/12; elephants trample loose foot yet die on the pike hedge all
+the same. New `cavalry_charge` scenario watches heavy horse smash and
+ride through a shield line. Eight tests (charge property, never-
+overruns-braced, overruns-loose, shove clears the lane, the three
+duels, beasts trample, the scenario). Suite 1313, green. This is the
+first delivery of a larger playtest-driven combat-tactics arc now
+planned out below.

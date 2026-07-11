@@ -107,6 +107,65 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     return False
 
 
+def _strike(rng, power, mult, defender, defender_def) -> str:
+    """One blow: d20+power vs 10+def; on a hit, (power*mult)//3 dmg.
+    Returns 'kill' | 'hit' | 'miss'."""
+    if rng.randint(1, 20) + int(power) < 10 + defender_def:
+        return "miss"
+    dmg = max(1, int(power * mult) // 3 + rng.randint(0, 2))
+    defender.hurt(dmg)
+    return "kill" if not defender.alive else "hit"
+
+
+def _shove(field, victim, charger) -> bool:
+    """Barge a survived footman to the open tile FARTHEST from the
+    charger, clearing the lane. False if the press leaves nowhere."""
+    best, bd = None, -1
+    for dx, dy in _NEIGH8:
+        nx, ny = victim.x + dx, victim.y + dy
+        if not field.passable(nx, ny):
+            continue
+        d = max(abs(nx - charger.x), abs(ny - charger.y))
+        if d > bd:
+            best, bd = (nx, ny), d
+    if best is None:
+        return False
+    field.move_soldier(victim, *best)
+    return True
+
+
+def charge_attack(field, atk_sol, atk_sq, tgt_sol, tgt_sq, rng) -> str:
+    """A charge into an occupied tile. Returns:
+      'overrun'  — the way is cleared (footman killed or shoved), ride on
+      'stopped'  — the charge is blunted; the charger holds
+      'repelled' — horse or rider is down; the charger is dead
+    Braced spears/pikes (bonus_vs_cavalry) set to receive and strike
+    first; loose infantry get trampled unless they defend and counter."""
+    a, t = atk_sq.stats, tgt_sq.stats
+    anti_cav = t.get("bonus_vs_cavalry", 1.0)
+    if anti_cav > 1.0:                     # the hedge of points
+        r = _strike(rng, t.get("melee", 0), anti_cav, atk_sol,
+                    a.get("defense", 0))
+        if r == "kill":
+            field.vacate(atk_sol)
+            return "repelled"
+        return "stopped"                  # the wall holds; charge blunted
+    r = _strike(rng, a.get("melee", 0), a.get("charge_bonus", 1.0),
+                tgt_sol, t.get("defense", 0))
+    if r == "kill":
+        field.vacate(tgt_sol)
+        return "overrun"
+    if r == "hit" and _shove(field, tgt_sol, atk_sol):
+        return "overrun"                  # bowled aside — ride through
+    if r == "miss":                       # a clean parry, then a riposte
+        c = _strike(rng, t.get("melee", 0), 1.0, atk_sol,
+                    a.get("defense", 0))
+        if c == "kill":
+            field.vacate(atk_sol)
+            return "repelled"
+    return "stopped"
+
+
 def role_goal(field, soldier, squad, dist):
     """Where this soldier wants to be this tick. Archers KITE (back
     off if an enemy is adjacent), everyone else advances the flow

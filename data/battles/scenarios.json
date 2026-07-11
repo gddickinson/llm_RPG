@@ -722,5 +722,47 @@
         ]
       }
     ]
+  },
+  "cavalry_charge": {
+    "name": "The Cavalry Charge",
+    "desc": "Heavy horse at the gallop smashes into a loose infantry line and rides right through it \u2014 trampling, shoving men aside, breaking clean. Charge home against foot with no hedge of spears and you overrun them.",
+    "width": 46,
+    "height": 24,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_horse",
+            "type": "cavalry_heavy",
+            "size": 12,
+            "anchor": [
+              6,
+              7
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_foot",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              34,
+              7
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_horse"
+          }
+        ]
+      }
+    ]
   }
 }

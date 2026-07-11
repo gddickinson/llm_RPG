@@ -115,8 +115,14 @@ class Squad:
     @property
     def structural_dmg(self) -> int:
         """Damage this squad deals to a wall it batters (P17.6b);
-        0 for everything but siege engines."""
+        0 for everything but siege engines (and huge creatures)."""
         return int(self.stats.get("structural_dmg", 0))
+
+    @property
+    def charge_bonus(self) -> float:
+        """Momentum multiplier when this squad charges home (P17.13);
+        > 1 marks a charge-capable body — horse and huge beasts."""
+        return float(self.stats.get("charge_bonus", 1.0))
 
     @property
     def alive_soldiers(self) -> List[Soldier]:
