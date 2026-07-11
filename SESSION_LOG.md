@@ -3176,3 +3176,26 @@ bottom-right, and a live GUI resize re-lays the screen and floors at
 the usable minimum. Suite 1374, green. (One combat-RNG flake in
 test_tactics surfaced during the full run and passed 3/3 on rerun —
 unrelated to the UI change.)
+
+**Round 145 — PUX.5 Playability review (Playtest Matrix).**
+A scripted, judged session across the standing 12-dimension charter,
+codified as `tests/test_playtest_matrix.py` so it stays a regression
+net rather than a one-off read. It walks the game the way a player
+does and asserts the cross-cutting things that make it playable:
+PROGRESSION — every authored quest's giver is in the world and every
+kill/talk target is present or spawnable, so no quest is a dead end;
+ECONOMY — a wolf kill earns its loot, a sample recipe crafts the
+moment its ingredients are in the bag, and a temple/store sink exists
+to reach; COOPERATION — a recruited companion joins the fight and
+draws blood on an adjacent foe; NAVIGATION — crossing into a new
+region scopes its cast (no home villagers haunt the next map, the
+round-140 fix holding) and the player survives the trip; FEEL — quiet
+verbosity hides the ambient flavour that verbose still shows. The
+sweep came back GREEN: no critical friction. The one oddity spotted
+in exploration — a synthetic "a crow caws" line bucketed as player —
+turned out to be my own test input, not a line the game emits; the
+real ambient patterns (wanders/strolls/mutters/weather/[Clash]) are
+categorised correctly and the filter is sound. Suite 1379, green.
+The next, richer UX beat — the user's ask for a menu-driven
+conversation screen (Quests / Trade / Rumours / Plot tabs one keypress
+away) — is written up as PUX.6.

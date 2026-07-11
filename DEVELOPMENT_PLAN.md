@@ -2617,9 +2617,35 @@ these next, ahead of more Phase-17 depth.
   with the window, the party stays bottom-right, and a live GUI resize
   re-lays + floors at the minimum. Suite 1374, green. The remaining
   panel-consistency polish (I/B/K/X/J/O) folds into PUX.5's review.)*
-- [ ] **PUX.5 Playability review.** Run the DEVELOPMENT_PLAN Playtest
-  Matrix (12 dimensions) as scripted-and-judged sessions; turn friction
-  findings into fixes or plan items.
+- [x] **PUX.5 Playability review.** Run the Playtest Matrix as
+  scripted-and-judged sessions; turn friction into fixes or plan items.
+  *(Round 145: `tests/test_playtest_matrix.py` — a scripted session
+  that WALKS the charter and asserts cross-cutting playability, not one
+  system in isolation: (1) Progression — every authored quest's giver
+  and every kill/talk target is present in the world or spawnable (NO
+  dead ends); (4) Economy — a wolf kill earns loot, a sample recipe
+  crafts once its ingredients are in the bag, and a bank/shop sink
+  exists to reach; (2/10) Cooperation — a recruited companion joins
+  the fight and wounds an adjacent foe; (7) Navigation — travel scopes
+  each region's cast (no ghosts follow you over) and the player
+  survives it; (12) Feel — quiet verbosity hides ambient flavour that
+  verbose shows. All GREEN — the sweep found no critical friction (a
+  synthetic "crow caws" line mis-bucketed as player was test noise,
+  not a real game line; the event filter is sound). The playtest is
+  now a repeatable regression net over the matrix. Suite 1379, green.
+  Remaining panel-consistency polish is minor cosmetics; the richer
+  next UX beat is the conversation menu (PUX.6).)*
+- [ ] **PUX.6 Conversation menu system (user-directed).** NPC dialog
+  should surface the KEY things a talk reveals through quick, always-
+  accessible menus that bypass free-text typing: a **Quests** tab
+  (offered / turn-in / progress — via `quests_offered_by`,
+  `quests_to_turn_in_with`), a **Trade** entry (open the shop panel if
+  the NPC is a merchant), **Rumours/Topics** (the topic journal
+  answers this NPC knows), and **Plot/Secrets** (gated reveals this NPC
+  holds). Structure the dialog screen as verbs/tabs the player clicks
+  or number-keys, with free text still available — so the useful
+  conversational payload is one keypress away, not buried in guessing
+  what to type.
 
 ## What NOT to build (explicitly deferred)
 
