@@ -69,6 +69,30 @@ class TraversalSystem:
                 return True
         return False
 
+    def aid_bonus(self, kind: str) -> int:
+        """Gear and blessings help (P11.3): carried items with an
+        equip_bonuses entry for the check kind ('climb'/'swim'),
+        plus Swimmer's Grace for water."""
+        player = self.engine.player
+        bonus = 0
+        carried = list(getattr(player, "inventory", []) or [])
+        try:
+            gear = getattr(player, "equipment", None)
+            if gear is not None:
+                carried += [it for it in vars(gear).values()
+                            if it is not None]
+        except Exception:
+            pass
+        for it in carried:
+            bonuses = getattr(it, "equip_bonuses", None)
+            if isinstance(bonuses, dict):
+                bonus += int(bonuses.get(kind, 0))
+        if kind == "swim":
+            from characters.status_effects import has_effect
+            if has_effect(player, "swimmers_grace"):
+                bonus += 5
+        return bonus
+
     def check_dc(self, rule: dict) -> int:
         """Base DC raised by pack weight and exhaustion."""
         from characters.needs import get_fatigue
@@ -103,6 +127,14 @@ class TraversalSystem:
             if npc.is_active() and tuple(npc.position) == (nx, ny):
                 return None
         player = self.engine.player
+        # water walking: the surface bears you (P11.3)
+        if rule.get("class") == "swim":
+            from characters.status_effects import has_effect
+            if has_effect(player, "water_walking"):
+                self._move_to(nx, ny)
+                msg = "You stride across the water's skin."
+                self.engine.memory_manager.add_event(msg)
+                return msg
         # shore water: anyone can wade
         if rule.get("wade_at_edge") and self.is_shallow(nx, ny):
             self._move_to(nx, ny)
@@ -122,7 +154,8 @@ class TraversalSystem:
         total = d20 + get_skill_level(player, skill) + \
             ability_modifier(getattr(player,
                                      rule.get("ability", "dexterity"),
-                                     10))
+                                     10)) + \
+            self.aid_bonus(rule.get("class", ""))
         if total >= dc:
             self._move_to(nx, ny)
             self._tire(rule.get("fatigue", 10))

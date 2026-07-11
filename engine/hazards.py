@@ -73,13 +73,18 @@ def water_hazard_tick(engine) -> None:
             engine.traversal.is_shallow(x, y):
         player.metadata.pop("drown_turns", None)
         return
+    from characters.status_effects import has_effect
+    if has_effect(player, "water_walking"):      # P11.3
+        player.metadata.pop("drown_turns", None)
+        return
     trav = engine.traversal
     rule = trav.rules.get("water", {})
     from engine.skill_progression import get_skill_level
     from engine.skills import ability_modifier
     d20 = trav.rng.randint(1, 20)
     total = d20 + get_skill_level(player, "swimming") + \
-        ability_modifier(getattr(player, "strength", 10))
+        ability_modifier(getattr(player, "strength", 10)) + \
+        trav.aid_bonus("swim")
     if total >= trav.check_dc(rule):
         player.metadata.pop("drown_turns", None)
         engine.memory_manager.add_event(
@@ -97,6 +102,14 @@ def water_hazard_tick(engine) -> None:
     engine.memory_manager.add_event(
         f"[!] You go under — the water fills your throat! "
         f"(-{dmg} HP)")
+    try:   # drop your pack or sink (P11.3)
+        from engine.carry import capacity, used_slots
+        if used_slots(player) / max(1, capacity(player)) >= 0.9:
+            engine.memory_manager.add_event(
+                "[!] Your pack drags you down — drop something "
+                "([I]) or sink!")
+    except Exception:
+        pass
     if player.hp <= 1:
         player.hp = 1
         _wash_ashore(engine)

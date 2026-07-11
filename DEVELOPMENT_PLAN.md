@@ -1414,9 +1414,20 @@ speed or slow movement.
   failed climbs while standing on rock TUMBLE you off the face.
   `[!]` log lines + a top-priority deep-water hint ("the current
   pulls!"). 7 tests.)*
-- [ ] **P11.3 Aids.** Items and spells that help: rope, climbing
+- [x] **P11.3 Aids.** Items and spells that help: rope, climbing
   gear, a swimming blessing, water-walking; encumbrance interacts
   (drop your pack or sink).
+  *(Round 97: all content is data. Items: rope (+3 climb) and
+  climbing_picks (+5, stacking) — carried gear read via
+  `equip_bonuses` by `traversal.aid_bonus(kind)`, applied to
+  crossing checks AND drowning struggles; stocked in the general
+  store. Spells: water_walk (status water_walking, 30 turns —
+  stride over deep water with no check and no hazard tick) and
+  swimmers_grace (+5 swim, 40 turns); both self-cast, both also on
+  wizard-shop scrolls (scroll_water_walk / scroll_swimmers_grace).
+  New statuses joined VALID_EFFECTS + validator. Encumbrance: a
+  failing struggle with a ≥90% pack logs "drop something ([I]) or
+  sink!" — and the load already raises the DC (P11.1). 7 tests.)*
 - [ ] **P11.4 Flight & speed magic.** A `flying` movement mode
   (creature flag or spell/status) that ignores ground-tile rules
   (water, rubble, swamp penalties) but not walls/ceilings indoors;

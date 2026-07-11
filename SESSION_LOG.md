@@ -1850,3 +1850,23 @@ hint-bar warning in deep water that says whether the current pulls.
 7 tests: flow shape rules, safe treading, downstream sweep,
 escalation-never-kills, ashore-minus-an-item, the tumble, and the
 hint. Suite: 973, green x2.
+
+**Round 97 — P11.3 Traversal aids (done).**
+Help against the land's teeth, all of it data. GEAR: a Coil of
+Rope (+3 climb) and Climbing Picks (+5, and they stack) — carried
+items whose `equip_bonuses` name a check kind are summed by
+`traversal.aid_bonus(kind)` into crossing checks AND the P11.2
+drowning struggle; both are stocked at the general store. MAGIC:
+Water Walk (30 turns of the water_walking status — deep water
+bears you like flagstones: no check to cross, no hazard tick while
+it holds) and Swimmer's Grace (+5 to swim math for 40 turns). Both
+self-cast (the spell system's self-buff list grew), both exist as
+wizard-shop scrolls for the classes that can't cast them, and both
+statuses joined VALID_EFFECTS with the validator checking spell
+references. ENCUMBRANCE closes the loop George asked for: a
+failing struggle with a >=90% full pack telegraphs "Your pack
+drags you down — drop something ([I]) or sink!" on top of the DC
+penalty the load already causes. 7 tests: rope flips a fixed-roll
+miss into a make, picks stack, water-walking crosses uncheckable
+water unharmed, grace saves the struggle, the self-cast, the
+drop-or-sink line, and data integrity. Suite: 980, green x2.

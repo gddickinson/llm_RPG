@@ -63,7 +63,9 @@
     "stone",
     "pickaxe",
     "fishing_rod",
-    "crude_axe"
+    "crude_axe",
+    "rope",
+    "climbing_picks"
   ],
   "wheelwright": [
     "leather",
@@ -82,7 +84,9 @@
     "amulet_mana",
     "tome_firebolt",
     "tome_hex",
-    "tome_regrowth"
+    "tome_regrowth",
+    "scroll_water_walk",
+    "scroll_swimmers_grace"
   ],
   "ranger": [
     "bow",

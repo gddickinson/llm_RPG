@@ -8,6 +8,8 @@ Effects supported:
 - poisoned: 1 damage per turn
 - paralyzed: cannot act
 - blessed: +1 to attack damage
+- water_walking: cross water like solid ground (P11.3)
+- swimmers_grace: +5 to swim and struggle checks (P11.3)
 - cursed: -1 to attack damage
 - frightened: random chance to skip turn
 
@@ -23,7 +25,8 @@ logger = logging.getLogger("llm_rpg.status_effects")
 
 
 VALID_EFFECTS = ("poisoned", "paralyzed", "blessed",
-                 "cursed", "frightened", "stunned")
+                 "cursed", "frightened", "stunned",
+                 "water_walking", "swimmers_grace")
 
 
 def _slot(character) -> List[Dict[str, Any]]:

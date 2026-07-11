@@ -223,7 +223,9 @@ class SpellSystem:
 
     def _resolve_target(self, caster, name: str, spell: Spell):
         # Self-cast for buffs / heals
-        if spell.heal or spell.status_effect in ("blessed", "cursed"):
+        if spell.heal or spell.status_effect in (
+                "blessed", "cursed", "water_walking",
+                "swimmers_grace"):
             if not name or name.lower() in ("me", "self", caster.name.lower()):
                 return caster
         if not name:

@@ -124,5 +124,25 @@
     "value": 30,
     "stackable": true,
     "description": "A solid bar of refined iron."
+  },
+  "rope": {
+    "id": "rope",
+    "name": "Coil of Rope",
+    "item_type": "misc",
+    "value": 8,
+    "equip_bonuses": {
+      "climb": 3
+    },
+    "description": "Fifty feet of hemp. Carried, it makes any climb kinder."
+  },
+  "climbing_picks": {
+    "id": "climbing_picks",
+    "name": "Climbing Picks",
+    "item_type": "misc",
+    "value": 25,
+    "equip_bonuses": {
+      "climb": 5
+    },
+    "description": "Iron claws for hands and boots \u2014 the rock face relents."
   }
 }

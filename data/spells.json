@@ -189,5 +189,33 @@
     "classes": [
       "wizard"
     ]
+  },
+  "water_walk": {
+    "id": "water_walk",
+    "name": "Water Walk",
+    "mana_cost": 4,
+    "range": 1.0,
+    "status_effect": "water_walking",
+    "duration": 30,
+    "description": "The water bears your weight like flagstones.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "druid"
+    ]
+  },
+  "swimmers_grace": {
+    "id": "swimmers_grace",
+    "name": "Swimmer's Grace",
+    "mana_cost": 3,
+    "range": 1.0,
+    "status_effect": "swimmers_grace",
+    "duration": 40,
+    "description": "A blessing of the river: you cut water like an otter.",
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
   }
 }
