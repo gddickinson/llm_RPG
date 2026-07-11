@@ -203,6 +203,15 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Companion update error: {e}")
 
+    # Agent-driven heroes take their turn through the real action API
+    # (M.2). advance_turn is re-entrancy-guarded, so their moves don't
+    # cascade another world tick.
+    try:
+        from engine.agent_controller import drive_agents
+        drive_agents(self)
+    except Exception as e:
+        logger.debug(f"Agent drive error: {e}")
+
     # The world fights its own battles (P7.1)
     try:
         self.npc_conflict.update()

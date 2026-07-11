@@ -2697,11 +2697,24 @@ last. Networking was previously deferred — this supersedes that.
   (add places in world, switch swaps presence, AI leaves them be, and
   a two-hero save/load round-trip that keeps the agent controller).
   Suite 1395, green.)*
-- [ ] **M.2 Agent-driven character (Claude joins).** An autonomous
-  controller that plays a character through the same `player_actions`
-  route a human uses — goal/utility-driven (not the per-tick-LLM
-  forbidden path: cached plans + heuristic execution, like the DM).
-  Lets an agent join for testing and to add a living hero to the world.
+- [x] **M.2 Agent-driven character (Claude joins).** An autonomous
+  controller that plays a hero through the SAME player-action route a
+  human uses.
+  *(Round 149: `engine/agent_controller.py` — `AgentController` with a
+  small utility POLICY (`decide`: fight an adjacent foe, close on a
+  nearby threat within SIGHT, else wander toward a cached goal — LLM-
+  free per tick, the DM's cached-plan discipline) that EXECUTES through
+  the real engine actions (`engine.attack_character` / `move_player`),
+  temporarily `acting_as` the character so the whole player API operates
+  on it. `drive_agents(engine)` runs every agent roster hero once and is
+  wired into the turn pipeline after companions; a re-entrancy guard on
+  `advance_turn` (a `_advancing` flag) means a hero's move resolves but
+  doesn't cascade a nested world tick. `PlayerController.driver` holds
+  the brain. 6 tests (toward-vector, attacks-adjacent, hunts-in-sight,
+  wanders-with-no-foe, take_turn wounds a foe through the real route,
+  and drive_agents runs once-per-turn restoring the active player).
+  Suite 1401, green. This is the piece that lets an agent JOIN and play
+  a character; M.3 makes it take over an absent human's hero.)*
 - [ ] **M.3 Absent-player persistence.** When a human isn't at the
   controls, M.2's controller takes over their character with light
   standing goals (go home, work a trade, defend allies) so the world

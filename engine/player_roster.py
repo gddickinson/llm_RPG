@@ -25,6 +25,7 @@ class PlayerController:
     def __init__(self, kind: str = HUMAN, name: str = "Player"):
         self.kind = kind
         self.name = name
+        self.driver = None        # M.2 AgentController (agents only)
 
     @property
     def is_human(self) -> bool:

@@ -3269,3 +3269,29 @@ swaps who's in the pool, the AI leaves player-characters be across
 turns, and a two-hero save→load round-trip comes back with the agent
 controller still attached. Suite 1395, green. Next, M.2 gives those
 agent-controlled heroes a brain.
+
+**Round 149 — M.2 Agent-driven character (Claude joins).**
+The one that lets an agent actually PLAY a hero. `engine/agent_controller.py`
+gives a character a brain that runs on the same rails a human does:
+each turn the `AgentController` looks at the world through the
+character's eyes and DECIDES — fight an adjacent foe, close on the
+nearest threat within sight, or wander toward a cached goal — with a
+small utility policy that never calls an LLM per tick (the DM's
+cached-plan discipline). Then it EXECUTES that choice through the real
+engine actions, `engine.attack_character` and `move_player`, by briefly
+`acting_as` the character so the entire player API operates on it and
+restores the previous player afterward. `drive_agents(engine)` runs
+every agent-controlled roster hero once and is called from the turn
+pipeline just after the companions move; the trick that keeps it honest
+is a one-line re-entrancy guard on `advance_turn` — a hero acting mid-
+turn does its move or strike (which resolve before the pipeline is
+touched) but the nested `advance_turn` is a no-op, so the world ticks
+once, not once per hero. The controller lives on `PlayerController.driver`.
+Six tests: the toward-vector, attacking an adjacent foe, hunting one in
+sight, wandering with none around, wounding a foe through the real
+combat route, and `drive_agents` running exactly once per world tick
+while restoring the active player. Suite 1401, green (the historic
+disease worldgen flake reran clean; a spawn-order flake in the PUX.1
+full-loop test was hardened by fighting at the clean start position).
+The multiplayer/agent trio's brain is in; M.3 hands it an absent
+human's hero.

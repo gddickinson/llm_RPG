@@ -153,8 +153,19 @@ class GameEngine(GameAPIMixin):
             self.llm_interface.shutdown()
 
     def advance_turn(self) -> None:
-        from engine.turn_pipeline import run_turn
-        run_turn(self)
+        # Re-entrancy guard (M.2): an agent-driven hero acts through the
+        # real player-action API mid-turn, which would otherwise cascade
+        # a nested world tick. When already advancing, its action still
+        # happens (position/attack resolve first) but the pipeline runs
+        # once, not once per agent.
+        if getattr(self, "_advancing", False):
+            return
+        self._advancing = True
+        try:
+            from engine.turn_pipeline import run_turn
+            run_turn(self)
+        finally:
+            self._advancing = False
 
     # ====================================================================
     # Player API (delegates to PlayerActions)

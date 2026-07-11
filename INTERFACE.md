@@ -44,6 +44,7 @@ llm_RPG/
 ### engine/ — Core game logic
 
 - **`game_engine.py`** — `GameEngine`; the thin orchestrator: state, start/end, delegates (438 lines).
+- **`agent_controller.py`** — M.2 `AgentController` (goal/utility policy — fight/hunt/wander, LLM-free) that plays a hero through the real player-action API via `acting_as`; `drive_agents(engine)` runs agent roster heroes each turn (advance_turn re-entrancy-guarded).
 - **`player_roster.py`** — M.1 `PlayerRoster` (`engine.roster`) + `PlayerController` (human/agent): the roster of controllable characters over `engine.player`; add/`set_active`/`controller_for`, survives save/load via `metadata['controller']`. M.1b: non-active heroes live in the world (placed in `npc_manager` + on the map, flagged `player_char`, rendered as heroes, skipped by NPC AI); `rehydrate` rebuilds the roster after a load. The multiplayer/agent keystone.
 - **`engine_setup.py`** — `build_subsystems(engine)`: every gameplay system constructed in dependency order (P14.1 split from __init__).
 - **`turn_pipeline.py`** — `run_turn(engine)`: the per-minute pipeline — needs, encounters, companions, conflicts, surfaces, floods, hazards, dying, law, pets — plus the nightly stack; block order is load-bearing (P14.1 split from advance_turn).

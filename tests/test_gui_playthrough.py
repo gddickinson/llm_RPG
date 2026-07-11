@@ -188,13 +188,14 @@ class TestGuiPlaythrough(unittest.TestCase):
 
     def test_full_core_loop(self):
         """One chained playthrough — the whole game in one run."""
-        # walk, fight, and take the loot's worth of xp
-        for dx, dy in ((1, 0), (0, 1), (-1, 0)):
-            self.engine.move_player(dx, dy)
+        # fight at the clean start (spawn adjacency is reliable here),
+        # take the loot's worth of xp, then walk a little
         xp0 = self.player.metadata.get("xp", 0)
         wolf = self._spawn_monster("wolf")
         self.assertTrue(self._kill(wolf))
         self.assertGreater(self.player.metadata.get("xp", 0), xp0)
+        for dx, dy in ((1, 0), (0, 1), (-1, 0)):
+            self.engine.move_player(dx, dy)
         # trade
         merchant = self._spawn_npc("blacksmith_01")
         ware = create_item("dagger")
