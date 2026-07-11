@@ -222,6 +222,17 @@ class SpellSystem:
             except Exception as e:
                 logger.warning(f"Status apply failed: {e}")
 
+        if spell.id == "farsight" and \
+                caster.id == self.engine.player.id:   # P15.11
+            try:
+                from engine.discovery import reveal_around
+                n = reveal_around(self.engine, *caster.position,
+                                  radius=18)
+                results.append(f"The land unrolls in your mind "
+                               f"({n} tiles charted).")
+            except Exception:
+                pass
+
         msg = " ".join(results) if results else f"{caster.name} casts {spell.name}."
         self.engine.memory_manager.add_event(msg)
 
@@ -237,8 +248,9 @@ class SpellSystem:
     # ---- helpers -----------------------------------------------------
 
     def _resolve_target(self, caster, name: str, spell: Spell):
-        # Self-cast for buffs / heals
-        if spell.heal or spell.status_effect in (
+        # Self-cast for buffs / heals / self-utility (P15.11 farsight)
+        if spell.heal or spell.id in ("farsight",) or \
+                spell.status_effect in (
                 "blessed", "cursed", "water_walking",
                 "swimmers_grace", "flying", "hasted"):
             if not name or name.lower() in ("me", "self", caster.name.lower()):

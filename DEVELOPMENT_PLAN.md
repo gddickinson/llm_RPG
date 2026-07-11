@@ -1951,7 +1951,7 @@ UI polish.
   matched-armor bonuses, durability shown, quick-swap loadouts;
   character sprite reflects worn gear (composited over the
   P15.1 tileset entity).
-- [ ] **P15.11 Fog of war / map discovery (George, live
+- [x] **P15.11 Fog of war / map discovery (George, live
   2026-07-11).** The overworld is NOT known at start: an explored/
   visible mask over the map — tiles are unseen until in view (the
   P8.6 FOV shadowcaster already blocks LOS through buildings/
@@ -1970,6 +1970,26 @@ UI polish.
   [Realm]/[Board]/[DM]/[Legend] world news and rumor — those ARE
   the "revealed by another route" the request allows (word travels,
   the DM narrates, the board posts).
+  *(Round 124: `engine/discovery.py`. Per-turn `update` recomputes
+  the VISIBLE set from the player via the P8.6 shadowcaster
+  (buildings/mountains/forest block sight) out to
+  effective_visibility()+2, folding it into a persistent EXPLORED
+  set on player.metadata (save-safe: the JSON encoder now writes
+  sets as sorted lists, round-tripped back). Renderer draws unseen
+  black, explored dim (shaded), visible full; actors on unseen
+  tiles aren't drawn (actor_hidden). REVEAL ROUTES: walking; a
+  Regional Map (charts settlements) and Explorer's Chart (the whole
+  realm) as use_effect.reveal items (general store); and the
+  Farsight spell (wizard/druid, self-cast) charts an 18-tile disc.
+  EVENT-LOG COROLLARY: NPC-vs-NPC defeats and [Clash] lines now
+  gate on `can_witness` (fresh overworld_los, not a stale cache),
+  so only fights the player can SEE are logged — extending P14.3a's
+  earshot to true sight; world news/rumor stays global. Lesson: the
+  first cut gated targeting on the per-turn cache and broke 21
+  combat tests that stage mid-turn without a FOV recompute — the
+  targeting gate was redundant with can_hit's own true-LOS, so it
+  came out, and can_witness switched to fresh LOS. 10 tests. Suite
+  1198, green x3.)*
 - [ ] **P15.9b Skill breadth (deferred half of P15.9).** More
   lattice skills for richness beyond the 8 (a combat/social/craft
   spread), each with a pet, a teacher, and a use-site that trains

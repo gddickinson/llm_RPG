@@ -2539,3 +2539,31 @@ only report what the character can see or hear — P14.3a's earshot
 gate extended to the full FOV mask, world news/rumor kept global
 by design as the "revealed another way" route). Suite: 1188,
 green x3.
+
+**Round 124 — P15.11 Fog of war + the event-log visibility
+corollary (done; George's two most recent requests).**
+The map is earned now. `engine/discovery.py`: every turn recomputes
+the VISIBLE set from the player through the P8.6 shadowcaster
+(buildings, mountains, forest block sight) out to a bit past acting
+range, and folds it into a persistent EXPLORED set. Three states —
+UNSEEN (black, actors hidden), EXPLORED (dim, terrain remembered
+but not who's there now), VISIBLE (full). The renderer honors all
+three: unseen tiles draw black, explored draw shaded, and any
+NPC/monster on an unseen tile simply isn't drawn. Discovery
+persists on player.metadata; since sets aren't JSON, the save
+encoder now writes any set as a sorted list and _explored rebuilds
+it on load (round-trip tested). FOUR reveal routes as George asked:
+walking (FOV), a Regional Map (charts every settlement) and
+Explorer's Chart (the whole realm) as use_effect.reveal items in
+the general store, being told (reveal_around a POI), and MAGIC —
+the Farsight spell (wizard/druid, self-cast) charts an 18-tile
+disc. THE EVENT-LOG COROLLARY (his second note): NPC-vs-NPC
+defeats and [Clash] lines gate on can_witness — a FRESH
+line-of-sight check — so the log reports only fights the player can
+actually see, extending P14.3a's earshot gate to true sight; world
+news and rumor stay global by design (word travels). The tax: my
+first cut also gated TARGETING on the per-turn cache, which broke
+21 combat/AoE/targeting tests that stage a scene mid-turn without
+recomputing FOV. That gate was redundant with can_hit's existing
+true-LOS anyway, so it came out; can_witness moved to fresh LOS to
+be correct without a turn tick. 10 tests. Suite: 1198, green x3.

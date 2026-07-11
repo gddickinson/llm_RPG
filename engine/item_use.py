@@ -102,6 +102,13 @@ def use_item(engine, item_name: str) -> str:
         except Exception:
             pass
 
+        if "reveal" in use_eff:            # P15.11 map items
+            from engine.discovery import use_map_item
+            msg = use_map_item(engine, it)
+            _remove_one(player, it)
+            engine.advance_turn()
+            return msg or f"You study the {it_name}."
+
         # Food: tempo + freshness + brews + combos (P12.5)
         try:
             from engine.food import eat_food, is_food

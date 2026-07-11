@@ -123,7 +123,15 @@ class NPCConflictSystem:
                 combat._step_toward(attacker, defender)
                 return
             result = combat._resolve(attacker, defender)
-            if _manhattan(attacker, self.engine.player) <= CLASH_EARSHOT:
-                self.engine.memory_manager.add_event(f"[Clash] {result}")
+            seen = _manhattan(attacker, self.engine.player) <= \
+                CLASH_EARSHOT
+            try:   # sight beats earshot for the clash line (P15.11)
+                from engine.discovery import can_witness
+                seen = can_witness(self.engine, attacker.position)
+            except Exception:
+                pass
+            if seen:
+                self.engine.memory_manager.add_event(
+                    f"[Clash] {result}")
         except Exception as e:
             logger.debug(f"engagement failed: {e}")

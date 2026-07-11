@@ -243,10 +243,16 @@ class CombatSystem:
             f"{attacker.name} attacks {defender.name} for {damage} damage. "
             f"{defender.name} is defeated!"
         )
-        from engine.presence import in_earshot
-        if attacker.id == self.engine.player.id or \
-                defender.id == self.engine.player.id or \
-                in_earshot(self.engine, defender.position):
+        seen = (attacker.id == self.engine.player.id or
+                defender.id == self.engine.player.id)
+        if not seen:
+            try:   # only report a defeat the player could see (P15.11)
+                from engine.discovery import can_witness
+                seen = can_witness(self.engine, defender.position)
+            except Exception:
+                from engine.presence import in_earshot
+                seen = in_earshot(self.engine, defender.position)
+        if seen:
             self.engine.memory_manager.add_event(msg)
 
         # Drops via loot tables

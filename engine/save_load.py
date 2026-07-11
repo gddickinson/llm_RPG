@@ -67,7 +67,11 @@ class SaveManager:
         payload = self._serialize_engine(engine, label=label)
         tmp = path + ".tmp"
         with open(tmp, "w") as fp:
-            json.dump(payload, fp, indent=2, default=str)
+            # sets (e.g. the P15.11 explored mask) → lists, else str
+            json.dump(payload, fp, indent=2,
+                      default=lambda o: (sorted(list(o))
+                                         if isinstance(o, set)
+                                         else str(o)))
         os.replace(tmp, path)
         logger.info(f"Saved game to {path}")
         return path

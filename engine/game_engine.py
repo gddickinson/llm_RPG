@@ -116,6 +116,11 @@ class GameEngine(GameAPIMixin):
         self.turn_counter = 0
         self.player_dead = False
         self.memory_manager.add_event("The adventure begins.")
+        try:   # seed the opening fog-of-war view (P15.11)
+            from engine.discovery import update as _disc
+            _disc(self)
+        except Exception:
+            pass
         try:
             self.farm_manager.ensure_plots()
         except Exception as e:

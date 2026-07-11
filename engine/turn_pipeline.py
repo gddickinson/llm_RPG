@@ -209,6 +209,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"NPC conflict error: {e}")
 
+    # Reveal what the player can see; fog the rest (P15.11)
+    try:
+        from engine.discovery import update as _discovery_update
+        _discovery_update(self)
+    except Exception as e:
+        logger.debug(f"Discovery error: {e}")
+
     # Keep the ranged lock honest (P8.7 UX)
     try:
         self.targeting.refresh()

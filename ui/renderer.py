@@ -88,12 +88,29 @@ class MapRenderer:
                 wy = cam_y + screen_y
                 if not (0 <= wx < wmap.width and 0 <= wy < wmap.height):
                     continue
+                dest = (view_rect.x + screen_x * self.tile_size,
+                        view_rect.y + screen_y * self.tile_size)
+                # Fog of war (P15.11): unseen black, explored dim
+                try:
+                    from engine.discovery import (is_explored,
+                                                  is_visible)
+                    if not is_explored(engine, wx, wy):
+                        target.fill((8, 8, 12), (dest[0], dest[1],
+                                    self.tile_size, self.tile_size))
+                        continue
+                    dim = not is_visible(engine, wx, wy)
+                except Exception:
+                    dim = False
                 terrain = wmap.terrain[wy][wx]
                 sprite_name = _TERRAIN_TO_SPRITE.get(terrain, "grass")
                 surf = self.sprites.tile(sprite_name)
-                dest = (view_rect.x + screen_x * self.tile_size,
-                        view_rect.y + screen_y * self.tile_size)
                 target.blit(surf, dest)
+                if dim:
+                    shade = pygame.Surface(
+                        (self.tile_size, self.tile_size),
+                        pygame.SRCALPHA)
+                    shade.fill((10, 10, 20, 130))
+                    target.blit(shade, dest)
 
         # Surfaces: fire / oil / water overlays (P10.3)
         try:
@@ -150,6 +167,14 @@ class MapRenderer:
             try:
                 if char.id != engine.player.id and \
                         is_indoors(engine, char):
+                    continue
+            except Exception:
+                pass
+            # Fog (P15.11): actors on unseen tiles aren't drawn
+            try:
+                from engine.discovery import actor_hidden
+                if char.id != engine.player.id and \
+                        actor_hidden(engine, char):
                     continue
             except Exception:
                 pass
