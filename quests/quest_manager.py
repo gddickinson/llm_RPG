@@ -198,11 +198,17 @@ class QuestManager:
             self._log(f"Quest ready to turn in: {quest.title}")
 
     def on_npc_defeated(self, npc_id: str, npc_class: str = "") -> None:
+        hostile = npc_class in ("monster", "brigand", "troll")
         for quest in self.active():
             for obj in quest.objectives:
                 if obj.obj_type != ObjectiveType.KILL:
                     continue
-                if obj.target == npc_id or obj.target == npc_class:
+                # Match by exact id, by class — and 'monster' as a
+                # forgiving authoring default matches ANY hostile
+                # kill (PT3.3: DM quests targeting 'monster' never
+                # completed on brigand-class victims)
+                if obj.target == npc_id or obj.target == npc_class \
+                        or (obj.target == "monster" and hostile):
                     obj.increment(1)
                     self._newly_completed(quest, obj)
 

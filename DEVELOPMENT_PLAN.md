@@ -1176,8 +1176,35 @@ gameplay, fix bugs and add to the plan."
   objectives match by class — 'monster' does not match
   brigand-class targets; DM quest authors beware. 2 regression
   tests.)*
-- [ ] **PT3.4 Findings round.** Consolidate all findings into fixes +
+- [x] **PT3.4 Findings round.** Consolidate all findings into fixes +
   new plan items; update the Playtest Matrix scorecard (Session 3).
+  *(done 2026-07-10 — scorecard below; final campaign fix: 'monster'
+  kill targets now match ANY hostile class as a forgiving authoring
+  default, with the id/class exact matches unchanged.)*
+
+### Playtest Session 3 scorecard (2026-07-10 — Campaign 3, rounds 83–86)
+
+| # | Dimension | Verdict |
+|---|---|---|
+| 1 | Progression | ✅ two authored quests + a DM quest to completion; leveling; **fixed: quest board unreachable since solid walls** |
+| 2 | Cooperation | ✅ Melody recruited, fought, survived; **fixed: schedules marched party members home mid-adventure** |
+| 3 | Conspiracy | ✅ bounty ladder end-to-end: warning → level-scaled hunter → fight |
+| 4 | Economy | ✅ buy/sell/craft/repair/bank; **fixed: 290-bundle forage exploit (daily fatigue)**; carry capacity added (George) |
+| 5 | Monsters | ✅ pack fights, troll guardian, conjunction ×danger night |
+| 6 | Quests | ✅ boards, fetch/talk/kill flows, DM module mid-session with next-day beat; kill-target authoring made forgiving |
+| 7 | Navigation | ✅ Murkfen, dungeon fog-of-war, keep/temple/tower delves, teleports, region streaming all four ways |
+| 8 | Alliances/enemies | ✅ heart event fired at threshold; real enemy made (the law) |
+| 9 | Combat | ✅ archery with lock/cycle, fireball, melee, defeat-as-story; **fixed: spell kills made 0-HP zombies (no death/XP/credit)** |
+| 10 | Coordination | ✅ companion focus-fire in squad fight; surrounds live |
+| 11 | DM layer | ✅ module install mid-war, quest boarded + completed, beat fired |
+| 12 | Feel | ✅ telegraphed dangers, story defeats; George's live reports (3 crashes/gaps) all fixed same-session |
+
+**Campaign 3 totals:** 66 scripted beats, 7 REAL bugs fixed (board
+unreachable, forage exploit, spell-kill zombies, party schedules,
+string-item crashes ×2, indoor pickups shadowed), 3 balance/content
+improvements (carry capacity, tome-not-scroll reward, keep fallback
+loot), 2 new phases planned from George's requests (10: destructible
+world; 11: traversal & movement magic).
 - [ ] **P9.5 Multi-level dungeons.** Depth 2–3 dungeons with stairs-down,
   scaling monsters/loot per level, a boss floor; collection-log and
   diary hooks ("clear depth 3").

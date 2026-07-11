@@ -238,3 +238,34 @@ class TestWarArcFixes(unittest.TestCase):
         log = " ".join(str(e) for e in
                        self.engine.memory_manager.game_history[-6:])
         self.assertNotIn("Melody moves tavern", log)
+
+
+class TestKillTargetMatching(unittest.TestCase):
+    """PT3.4: 'monster' kill targets match any hostile class."""
+
+    def setUp(self):
+        self.engine = GameEngine(
+            llm_provider="heuristic", enable_npc_processes=False)
+        self.engine.start_game()
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def test_monster_target_matches_brigand_kills(self):
+        ok, _ = self.engine.dm.create_quest("pt34_kill", {
+            "title": "T", "description": "d",
+            "objectives": [{"type": "kill", "target": "monster",
+                            "required": 1, "description": "k"}],
+            "giver_id": "guard_01", "reward_gold": 10,
+            "reward_xp": 10})
+        self.assertTrue(ok)
+        self.engine.quest_manager.accept_quest("pt34_kill")
+        self.engine.quest_manager.on_npc_defeated(
+            "enc_bandit_abc123", "brigand")
+        q = self.engine.quest_manager.get("pt34_kill")
+        self.assertTrue(all(o.is_complete() for o in q.objectives),
+                        "brigand kills must satisfy 'monster' "
+                        "objectives")

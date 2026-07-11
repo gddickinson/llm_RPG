@@ -1602,3 +1602,21 @@ entering packs at all — shrines revive from the ground, so bodies
 now stay where they fall. George's traversal request became Phase
 11 (wading/swimming with flow and encumbrance risks, climbing,
 graded terrain, flight and speed magic). Suite: 897, green x3.
+
+**Round 86 — PT3.4 Findings round (done) — Campaign 3 complete.**
+The consolidation round. Final campaign fix: 'monster' kill targets
+now match ANY hostile class (monster/brigand/troll) as a forgiving
+authoring default — exact id and class matches unchanged — so DM
+and module authors can write "kill a monster" without knowing our
+class taxonomy. Session 3 scorecard written into the plan: all 12
+matrix dimensions pass, 66 scripted beats across the three arcs,
+SEVEN real bugs fixed during the campaign (the unreachable quest
+board, the 290-bundle forage exploit, spell-kill zombies, schedules
+marching party members home, two string-item crashes, and
+furniture shadowing indoor pickups), three balance/content
+improvements (carry capacity, the tower tome, keep fallback loot),
+and two new phases planned directly from George's play reports
+(Phase 10 destructible world, Phase 11 traversal and movement
+magic). The playtest-fix-replan loop is working exactly as
+designed: George plays, reports land mid-round, fixes ship with
+regression tests the same session. Suite: 898 tests, green x3.
