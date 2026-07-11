@@ -1728,3 +1728,23 @@ there's fuel. Surfaces render as translucent overlays, tick once
 per game turn (sparse: free when nothing burns), persist through
 saves — and the DM can pre-paint arenas with pour(oil) and wait
 for someone to bring a torch. 10 new tests. Suite: 941, green x3.
+
+**Round 92 — P10.4 Rubble depth + interior breach sync (done).**
+Rubble grew a third dimension. One wall collapse leaves depth-1
+rubble — the clamberable breach from P10.2 — but piled two layers
+or higher (repeat collapses, future giant smashes, or debris dumped
+by clearing) it BLOCKS movement until someone does the work.
+Pressing E on or beside rubble shifts one layer to the least-buried
+adjacent tile: debris is MOVED, never deleted — total rubble in the
+world is conserved (tested) — and a fully cleared tile returns to
+grass ("You heave the last of the stone aside — clear!"). The
+second half: INTERIOR SYNC. Entering a breached building now shows
+the wound from inside — every rubbled footprint tile opens the
+proportionally-matched tile on the interior's perimeter wall, an
+idempotent sync-on-entry that's load-safe by construction (the
+exterior terrain is the source of truth). Depths ride save_load.
+Also retired a statistics flake in the dungeon-depth test: it
+compared max/min level rolls across floors (a top floor of all
+bandits tied it); it now asserts the actual mechanic — every deep
+monster exceeds its own template's level and hp. 7 new tests.
+Suite: 948, green x4.

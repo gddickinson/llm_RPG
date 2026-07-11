@@ -22,6 +22,19 @@ class PlayerActions:
         x, y = player.position
         ground = self.engine.world.get_items_at(x, y)
         if not ground:
+            # E on/beside rubble clears a layer (P10.4)
+            try:
+                td = self.engine.tile_damage
+                if self.engine.active_zone() is None:
+                    for dx, dy in ((0, 0), (1, 0), (-1, 0),
+                                   (0, 1), (0, -1)):
+                        if td.depth_at(x + dx, y + dy) > 0:
+                            msg = td.clear_rubble(x + dx, y + dy)
+                            if msg:
+                                self.engine.advance_turn()
+                                return msg
+            except Exception:
+                pass
             return "There's nothing here to pick up."
 
         candidates = []
@@ -233,8 +246,10 @@ class PlayerActions:
             return None
         door_tile = (loc.x + loc.width // 2, loc.y + loc.height - 1)
         # A breached wall is a second door (P10.2): clamber through
+        # (only if the rubble is low enough — P10.4)
         from world.world_map import TerrainType as _TT
-        if engine.world.map.terrain[ny][nx] == _TT.RUBBLE:
+        if engine.world.map.terrain[ny][nx] == _TT.RUBBLE and \
+                engine.tile_damage.depth_at(nx, ny) < 2:
             msg = engine.enter_building(loc, via_breach=True)
             if engine.current_interior is not None:
                 engine.advance_turn()
@@ -286,6 +301,18 @@ class PlayerActions:
                     self.engine.advance_turn()
                     return True
             return False
+
+        # Deep rubble blocks until cleared (P10.4)
+        try:
+            from engine.tile_damage import RUBBLE_BLOCK_DEPTH
+            if self.engine.tile_damage.depth_at(nx, ny) >= \
+                    RUBBLE_BLOCK_DEPTH:
+                self.engine.memory_manager.add_event(
+                    "The rubble is piled too high — clear it first "
+                    "([E] on it).")
+                return False
+        except Exception:
+            pass
 
         # Solid buildings (P9A.3b): walls block, the door tile admits.
         # George: "I can just walk onto the building tile — shouldn't

@@ -54,10 +54,15 @@ class TestMultiLevelDungeon(unittest.TestCase):
                          self.engine.npc_manager.npcs.values()
                          if n.metadata.get("zone") == deep.name]
         self.assertTrue(top_monsters and deep_monsters)
-        self.assertGreater(
-            max(n.level for n in deep_monsters),
-            min(n.level for n in top_monsters),
-            "depth must scale danger")
+        from world.monsters import MONSTER_TEMPLATES
+        for n in deep_monsters:
+            tid = "_".join(n.id.split("_")[1:-1])
+            spec = MONSTER_TEMPLATES.get(tid)
+            if spec is None or "Tyrant" in n.name:
+                continue
+            self.assertGreater(n.max_hp, spec.get("hp", 0),
+                               "depth must scale danger")
+            self.assertGreater(n.level, spec.get("level", 1))
 
     def test_the_deepest_floor_has_a_tyrant(self):
         top = self._enter()

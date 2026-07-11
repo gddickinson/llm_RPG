@@ -1309,10 +1309,22 @@ set_terrain + tile callbacks for interior sync.
   once per game turn (sparse — free when nothing burns); persists
   via save_load. The DM can pre-paint arenas with pour(). 10
   tests.)*
-- [ ] **P10.4 Interior sync + rubble.** Exterior breach opens the
+- [x] **P10.4 Interior sync + rubble.** Exterior breach opens the
   matched interior wall (tile callback); rubble depth blocks
   movement until CLEARED — debris moves to a dump tile, never
   vanishes.
+  *(done 2026-07-11 — RUBBLE gained DEPTH: one collapse leaves a
+  clamberable depth-1 breach; piled to 2+ (giant smashes, multiple
+  collapses, dumped debris) it BLOCKS movement until cleared. E on
+  or beside rubble shifts one layer to the least-buried adjacent
+  tile — debris is MOVED, never deleted (conservation tested);
+  fully cleared tiles return to grass. Breach entry requires low
+  rubble. INTERIOR SYNC: entering a breached building shows the
+  hole from inside — every rubbled footprint tile opens the
+  proportionally-matched interior perimeter tile (idempotent
+  sync-on-entry, load-safe by construction). Depths persist via
+  save_load. Also fixed a statistics flake in the dungeon depth
+  test (assert the mechanic, not roll luck). 7 tests.)*
 - [ ] **P10.5 Actors shape the world.** Giants bash buildings
   (STR/size-scaled siege damage, no DC for the huge) and hurl
   boulders (projectile + splash + tile damage); laborer tasks: chop

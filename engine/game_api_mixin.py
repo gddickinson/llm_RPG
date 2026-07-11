@@ -50,6 +50,11 @@ class GameAPIMixin:
             assign_visitors(self, inter, loc.name)
         except Exception:
             pass
+        # Exterior breaches show inside too (P10.4)
+        try:
+            self._sync_breaches(loc, inter)
+        except Exception:
+            pass
         try:
             self.structures.on_enter_level(inter)   # P9.1
         except Exception:
@@ -80,6 +85,33 @@ class GameAPIMixin:
         except Exception:
             pass
         return msg
+
+    def _sync_breaches(self, loc, inter) -> None:
+        """Every rubbled footprint tile opens the matching interior
+        perimeter tile — the hole goes all the way through."""
+        from world.world_map import TerrainType
+        wmap = self.world.map
+        for ey in range(loc.y, loc.y + loc.height):
+            for ex in range(loc.x, loc.x + loc.width):
+                if not (0 <= ex < wmap.width and
+                        0 <= ey < wmap.height):
+                    continue
+                if wmap.terrain[ey][ex] != TerrainType.RUBBLE:
+                    continue
+                rx = (ex - loc.x) / max(1, loc.width - 1)
+                ry = (ey - loc.y) / max(1, loc.height - 1)
+                ix = 1 + round(rx * (inter.width - 3))
+                iy = 1 + round(ry * (inter.height - 3))
+                # push to the nearest perimeter
+                if min(ix, inter.width - 1 - ix) < \
+                        min(iy, inter.height - 1 - iy):
+                    ix = 0 if ix < inter.width // 2 else \
+                        inter.width - 1
+                else:
+                    iy = 0 if iy < inter.height // 2 else \
+                        inter.height - 1
+                if inter.terrain[iy][ix] == TerrainType.BUILDING:
+                    inter.terrain[iy][ix] = TerrainType.RUBBLE
 
     def force_door(self) -> str:
         """SHIFT+TAB: force the door of the building underfoot."""

@@ -51,10 +51,15 @@ DESTROY_LINES = {
 }
 
 
+RUBBLE_BLOCK_DEPTH = 2       # piled this high, you must clear it
+
+
 class TileDamage:
     def __init__(self, engine):
         self.engine = engine
         self.tile_hp: Dict[Tuple[int, int], int] = {}
+        # rubble depth per tile: 1 = clamberable breach, 2+ = blocked
+        self.rubble_depth: Dict[Tuple[int, int], int] = {}
 
     def damage_tile(self, x: int, y: int, amount: int,
                     attack_type: str = "physical") -> Optional[str]:
@@ -82,6 +87,9 @@ class TileDamage:
                     TerrainType.FOREST, TerrainType.FARMLAND):
                 destroyed = TerrainType.SCORCHED
             wmap.set_terrain(x, y, destroyed)
+            if destroyed == TerrainType.RUBBLE:
+                self.rubble_depth[(x, y)] = \
+                    self.rubble_depth.get((x, y), 0) + 1
             msg = DESTROY_LINES.get(terrain, "It breaks apart.")
             self.engine.memory_manager.add_event(msg)
             return msg
@@ -110,12 +118,67 @@ class TileDamage:
                     destroyed += 1
         return destroyed
 
+    # ------------------------------------------------------- rubble
+
+    def depth_at(self, x: int, y: int) -> int:
+        return self.rubble_depth.get((x, y), 0)
+
+    def add_rubble(self, x: int, y: int, depth: int = 1) -> None:
+        """Debris arrives (collapses, giants, clearing dumps)."""
+        wmap = self.engine.world.map
+        if not (0 <= x < wmap.width and 0 <= y < wmap.height):
+            return
+        self.rubble_depth[(x, y)] = \
+            self.rubble_depth.get((x, y), 0) + depth
+        if wmap.terrain[y][x] not in (TerrainType.WATER,
+                                      TerrainType.MOUNTAIN,
+                                      TerrainType.RUBBLE):
+            wmap.set_terrain(x, y, TerrainType.RUBBLE)
+
+    def clear_rubble(self, x: int, y: int) -> Optional[str]:
+        """Shift one layer of debris to the least-buried adjacent
+        tile — moved, never deleted (George: giants and workers MOVE
+        debris)."""
+        depth = self.rubble_depth.get((x, y), 0)
+        if depth <= 0:
+            return None
+        wmap = self.engine.world.map
+        best, best_depth = None, 10 ** 6
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = x + dx, y + dy
+            if not (0 <= nx < wmap.width and 0 <= ny < wmap.height):
+                continue
+            if wmap.terrain[ny][nx] in (TerrainType.WATER,
+                                        TerrainType.MOUNTAIN,
+                                        TerrainType.BUILDING):
+                continue
+            d = self.rubble_depth.get((nx, ny), 0)
+            if d < best_depth:
+                best, best_depth = (nx, ny), d
+        if best is None:
+            return "There is nowhere to shift the debris."
+        self.rubble_depth[(x, y)] = depth - 1
+        self.add_rubble(best[0], best[1], 1)
+        if self.rubble_depth[(x, y)] <= 0:
+            self.rubble_depth.pop((x, y), None)
+            wmap.set_terrain(x, y, TerrainType.GRASS)
+            msg = "You heave the last of the stone aside — clear!"
+        else:
+            msg = (f"You shift broken stone aside "
+                   f"({self.rubble_depth[(x, y)]} layers left).")
+        self.engine.memory_manager.add_event(msg)
+        return msg
+
     # ---------------------------------------------------- persistence
 
     def to_dict(self) -> dict:
         return {"hp": [[x, y, hp] for (x, y), hp in
-                       self.tile_hp.items()]}
+                       self.tile_hp.items()],
+                "rubble": [[x, y, d] for (x, y), d in
+                           self.rubble_depth.items()]}
 
     def from_dict(self, data: dict) -> None:
         self.tile_hp = {(int(x), int(y)): int(hp)
                         for x, y, hp in data.get("hp", [])}
+        self.rubble_depth = {(int(x), int(y)): int(d)
+                             for x, y, d in data.get("rubble", [])}
