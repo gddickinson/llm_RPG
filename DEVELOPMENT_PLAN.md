@@ -2715,6 +2715,20 @@ last. Networking was previously deferred — this supersedes that.
   and drive_agents runs once-per-turn restoring the active player).
   Suite 1401, green. This is the piece that lets an agent JOIN and play
   a character; M.3 makes it take over an absent human's hero.)*
+- [ ] **M.2b Agent tactics & survival (from a played-it-myself test).**
+  A 40-turn autonomous playthrough (Claude driving a hero via M.2)
+  proved the plumbing — the agent hunted and fought, the conversation
+  menu gave a quest, a 2nd agent hero joined and moved, the roster
+  survived save/load, travel scoped cleanly — but exposed the policy as
+  NAIVE: the hero charged a 4-wolf pack, got surrounded, fought to 1 HP
+  without ever fleeing or healing, and only survived by accidentally
+  wandering off the map edge. Give the `AgentController` a real policy:
+  RETREAT/heal (drink a potion, `V` self-heal) below an HP threshold,
+  don't engage when locally OUTNUMBERED (respect the P17.11 surround
+  logic's spirit), use RANGED/spells when it has them, FOCUS one target,
+  and pursue light OBJECTIVES (loot on the ground, an accepted quest's
+  target, a home tile) instead of pure random wander. Keep it LLM-free
+  (utility scoring). Then re-run the playthrough as a scorecard.
 - [ ] **M.3 Absent-player persistence.** When a human isn't at the
   controls, M.2's controller takes over their character with light
   standing goals (go home, work a trade, defend allies) so the world

@@ -3295,3 +3295,27 @@ disease worldgen flake reran clean; a spawn-order flake in the PUX.1
 full-loop test was hardened by fighting at the clean start position).
 The multiplayer/agent trio's brain is in; M.3 hands it an absent
 human's hero.
+
+**Round 149b — I played the game myself (massive gameplay test).**
+With M.2 in, I drove a hero autonomously for 40 turns through the real
+action API and then exercised the new mechanisms end to end. It held up
+well: the agent hunted the wolves I seeded and traded blows with them;
+the conversation menu offered Goren's quests and I accepted
+`tavern_intro` from the numbered list; a second agent hero, Aria, joined
+the roster and moved under her own control while the human-slot player
+stayed put; the whole two-hero roster (and 200g) came back intact from a
+save/load; and a clean region transit reported zero home NPCs bleeding
+into the next map — the round-140 scoping fix holding. Two apparent
+frictions both proved to be harness artifacts on closer look: the
+"trade too far" was my script calling `economy_system.player_buy` with a
+bad position instead of the real dialog→Trade→`show_shop` path (which
+opens the shop with nine wares just fine), and the "27 NPCs bled" was a
+false positive because the agent had wandered the player into an
+interior, so `transit` correctly refused and no transition happened. The
+one REAL finding is the agent's combat sense: it charged a four-wolf
+pack, got surrounded, and fought down to 1 HP without ever fleeing or
+healing, escaping only by blundering off the map edge. That's the next
+improvement, written up as M.2b — a retreat/heal/focus/don't-fight-
+outnumbered policy — to be re-run against the same playthrough as a
+scorecard. Net: the multiplayer/agent foundation genuinely works; the
+brain just needs a survival instinct.
