@@ -2541,12 +2541,22 @@ these next, ahead of more Phase-17 depth.
   chains walk→fight→trade→save/load in one run. Spawns are made
   presence-adjacent by SEARCH (worldgen varies), so it's deterministic
   — 5/5 clean isolated runs, 0.33s. Suite 1335, green.)*
-- [ ] **PUX.2 Trading II — the merchant screen.** Enrich `ui/shop_panel`
-  (already a B-key buy/sell overlay over a deep economy): quantity /
-  bulk buy-sell (Shift = ×5, "sell all junk"), PRICE TRANSPARENCY (buy
-  vs sell spread, why a price is what it is — faction/regional/stock),
-  and item INSPECT/COMPARE vs equipped before buying. Surfaces the
-  market/haggle systems that are built but invisible at point of sale.
+- [x] **PUX.2 Trading II — the merchant screen.** Enrich `ui/shop_panel`
+  with quantity/bulk trade, price transparency, and inspect/compare.
+  *(Round 140b: `engine/trade_info.py` — pure, tested helpers the panel
+  renders: `item_report` (what an item IS), `compare_to_equipped` (its
+  delta vs your worn gear), `price_factors`/`factors_line` (the
+  reputation × shortage × market × stock × region multipliers that
+  were always applied but never shown), `is_junk`/`junk_items`, and
+  `affordable_qty`. The panel gained an INSPECT PANE under the two
+  columns showing the selected item's stats, the compare line, and the
+  buy/sell price WITH its breakdown; Shift+Enter buys/sells ×5 (halts
+  when the purse runs dry), and `J` sweeps all common misc trinketry in
+  one sell-all-junk. `_transact` refactored into `_buy_one`/`_sell_one`
+  so bulk and junk reuse the real path (carry/afford/fence/market
+  hooks intact). 15 tests (helpers + headless panel: bulk buy, bulk
+  halts broke, junk sweep, selection, crash-free draw); suite 1353,
+  green.)*
 - [ ] **PUX.3 Onboarding & hint audit.** New-player clarity: verify the
   hint bar (`ui/hints.py`) advertises every player-facing feature, the
   tutorial covers the core verbs, and controls are discoverable (a

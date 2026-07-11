@@ -3067,3 +3067,26 @@ and re-places them beside the player on the far side, so they cross
 with you. Verified: 22 home NPCs, 0 bleed into the next region, all 22
 restored on return, and a companion travels while the region's cast
 stays put. 3 tests; suite 1338, green.
+
+**Round 140b — PUX.2 Trading II: the merchant screen.**
+The shop panel was a thin two-column overlay over a genuinely deep
+economy — faction-aware, stock-elastic, regionally-arbitraged prices
+and a haggle minigame — all invisible at the point of sale, and every
+buy or sell moved a single unit. Trading II surfaces the depth and
+adds bulk. `engine/trade_info.py` holds the pure, tested logic the
+panel draws: `item_report` says what an item is, `compare_to_equipped`
+gives its delta against the gear you're wearing ("+6 dmg vs your
+Sword"), and `price_factors` decomposes a price into the multipliers
+that actually moved it — reputation, shortage, market, stock, region —
+which `factors_line` renders so you can finally SEE why the smith
+charges what he does. `is_junk`/`junk_items` pick out common misc
+trinketry and `affordable_qty` does the bulk maths. On the screen, an
+inspect pane sits under the wares and bag showing the selected item's
+stats, the compare line, and its buy-or-sell price with the breakdown;
+Shift+Enter trades five at a time (stopping the moment the purse or
+stock runs out) and J sweeps every trinket in one sell-all-junk. The
+old one-unit `_transact` became `_buy_one`/`_sell_one`, so bulk and
+junk run the real path with the carry, afford, fence-for-stolen-goods
+and market-demand hooks all intact. 15 tests across the helpers and a
+headless panel (bulk buy, bulk-halts-when-broke, junk sweep,
+selection, a crash-free draw). Suite 1353, green.

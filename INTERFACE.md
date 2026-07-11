@@ -121,6 +121,7 @@ llm_RPG/
 - **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).
 - **`player_actions.py`** — Player-driven actions (pickup/drop/use/attack/move); weather travel penalty.
 - **`game_api_mixin.py`** — `GameAPIMixin`; thin engine wrappers: party, interiors, dungeons, spells, banking, crafting, `effective_visibility()`.
+- **`trade_info.py`** — PUX.2 pure helpers behind a merchant deal: `item_report`, `compare_to_equipped`, `price_factors`/`factors_line` (why a price is what it is), `is_junk`/`junk_items`, `affordable_qty`; the shop panel renders these.
 - **`shop.py`** — `ShopManager`; per-merchant catalogs, faction-aware prices, persistence; P12.10: stock-elastic pricing (5%/unit deviation, daily restock heals), regional category factors from `data/settlement_economy.json` (arbitrage), H-key haggle minigame (patience 3/day, graded Persuasion, crit fails cost reputation).
 - **`effects.py`** — Effective AC / stat / damage bonuses from worn equipment (broken gear contributes 0).
 - **`durability.py`** — Gear wear on uncommon+ weapons/armor; break, repair at forge, `durability_label()`.
@@ -209,7 +210,7 @@ llm_RPG/
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
 - **`terminal_ui.py`** — Text-based UI.
 - **`inventory_panel.py`** — I-key equipment + bag overlay (equip/use/drop).
-- **`shop_panel.py`** — B-key two-column buy/sell overlay.
+- **`shop_panel.py`** — B-key two-column buy/sell overlay; PUX.2 Trading II: an inspect/compare + price-breakdown pane, Shift+Enter bulk ×5, and `J` sell-all-junk (via `engine/trade_info.py`).
 - **`body_renderer.py`** — Layered character body sprites (race/class/equipment).
 - **`combat_effects.py`** — Damage popups, hit flashes, death particles.
 - **`lighting.py`** — Night darkness + torch/window light punches (weather-scaled).
