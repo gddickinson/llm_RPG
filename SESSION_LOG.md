@@ -1709,3 +1709,22 @@ the DM's night, combat depth, skill actions, crime & law II,
 economy II, the bond ceremony, the infection race, bones into the
 Legendarium, pet loyalty) plus annotations upgrading P10.3 to
 DOS2-style surfaces. 8 new tests. Suite: 931, green x3.
+
+**Round 91 — P10.3 Surfaces: fire, oil, water (done).**
+The world's chemistry set, first slice of the DOS2-style surface
+system the research synthesis called for. engine/surfaces.py keeps
+a sparse per-tile layer: FIRE damages whoever stands in it each
+turn (NPC flame deaths are real deaths; the player is maimed to
+1 HP but never killed outright — fire maims, the story kills),
+gnaws the tile itself through the P10.2 material system (a burning
+grove becomes scorched earth; stone walls endure far longer), and
+spreads to adjacent forests and fields with seeded randomness. OIL
+lies in wait — and the whole connected pool chain-ignites in one
+whoosh the moment flame touches any tile of it ("The oil catches —
+flame races across the pool!"). WATER douses fire and refuses
+ignition with a hiss. Fires gutter out on their own; fireballs now
+leave burning ground at the impact point that keeps spreading if
+there's fuel. Surfaces render as translucent overlays, tick once
+per game turn (sparse: free when nothing burns), persist through
+saves — and the DM can pre-paint arenas with pour(oil) and wait
+for someone to bring a torch. 10 new tests. Suite: 941, green x3.

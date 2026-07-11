@@ -95,6 +95,29 @@ class MapRenderer:
                         view_rect.y + screen_y * self.tile_size)
                 target.blit(surf, dest)
 
+        # Surfaces: fire / oil / water overlays (P10.3)
+        try:
+            for (sx2, sy2), s in \
+                    engine.surfaces_layer.surfaces.items():
+                if not (cam_x <= sx2 < cam_x + cols and
+                        cam_y <= sy2 < cam_y + rows):
+                    continue
+                overlay = pygame.Surface(
+                    (self.tile_size, self.tile_size), pygame.SRCALPHA)
+                if s["kind"] == "fire":
+                    overlay.fill((250, 120, 20, 150))
+                elif s["kind"] == "oil":
+                    overlay.fill((40, 35, 30, 120))
+                else:
+                    overlay.fill((60, 120, 220, 90))
+                target.blit(overlay,
+                            (view_rect.x + (sx2 - cam_x) *
+                             self.tile_size,
+                             view_rect.y + (sy2 - cam_y) *
+                             self.tile_size))
+        except Exception:
+            pass
+
         # Building doors, colored by lock state (P9A.3b)
         self._draw_door_glyphs(target, engine, view_rect,
                                cam_x, cam_y, cols, rows)

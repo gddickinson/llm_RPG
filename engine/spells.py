@@ -172,6 +172,14 @@ class SpellSystem:
                         results.append(
                             f"The blast razes {razed} of the "
                             f"surroundings!")
+                    # flame lingers at the impact (P10.3)
+                    if spell.id == "fireball":
+                        lay = self.engine.surfaces_layer
+                        lay.ignite(tx, ty, intensity=2)
+                        for ddx, ddy in ((1, 0), (-1, 0),
+                                         (0, 1), (0, -1)):
+                            lay.ignite(tx + ddx, ty + ddy,
+                                       intensity=1)
             except Exception:
                 pass
         elif spell.damage:

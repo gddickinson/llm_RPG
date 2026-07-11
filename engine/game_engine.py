@@ -175,6 +175,8 @@ class GameEngine(GameAPIMixin):
         self.structures = StructureBuilder(self)
         from engine.tile_damage import TileDamage
         self.tile_damage = TileDamage(self)
+        from engine.surfaces import SurfaceLayer
+        self.surfaces_layer = SurfaceLayer(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -424,6 +426,12 @@ class GameEngine(GameAPIMixin):
             self.targeting.refresh()
         except Exception as e:
             logger.debug(f"Targeting refresh error: {e}")
+
+        # Fires burn, spread, and gutter (P10.3)
+        try:
+            self.surfaces_layer.tick()
+        except Exception as e:
+            logger.debug(f"Surface tick error: {e}")
 
         if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
             self.process_npc_turns_async()

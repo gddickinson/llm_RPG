@@ -1292,9 +1292,23 @@ set_terrain + tile callbacks for interior sync.
   DOOR — bump the rubble gap and you clamber inside, no lock
   consulted (trespass still judges you). Sparse HP persists via
   save_load. 8 tests.)*
-- [ ] **P10.3 Fire spread.** Per-turn ElementalEffects: fires spread
+- [x] **P10.3 Fire spread.** Per-turn ElementalEffects: fires spread
   to adjacent combustibles, burn out to SCORCHED, damage anyone
   standing in them; fireball ignites, lightning scorches.
+  *(done 2026-07-11 — engine/surfaces.py, upgraded to the first
+  slice of DOS2-style SURFACES per the Phase 12 synthesis: a sparse
+  per-tile layer of FIRE / OIL / WATER with the marquee chemistry —
+  fire damages whoever stands in it every turn (NPC flame deaths
+  are real; the player is maimed to 1 HP, never killed outright —
+  the story kills), gnaws the tile itself through P10.2 materials
+  (groves burn to SCORCHED, stone endures), and spreads to adjacent
+  combustible terrain; OIL pools chain-ignite in one whoosh the
+  instant flame touches any tile of the pool; WATER douses and
+  refuses ignition; fires gutter out. Fireballs leave burning
+  ground at the impact. Rendered as translucent overlays; ticked
+  once per game turn (sparse — free when nothing burns); persists
+  via save_load. The DM can pre-paint arenas with pour(). 10
+  tests.)*
 - [ ] **P10.4 Interior sync + rubble.** Exterior breach opens the
   matched interior wall (tile callback); rubble depth blocks
   movement until CLEARED — debris moves to a dump tile, never
