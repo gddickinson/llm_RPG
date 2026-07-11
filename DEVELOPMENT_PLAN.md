@@ -1908,10 +1908,22 @@ UI polish.
   terrain sprites. `lerp`/`smoothstep`/`lerp_color` are the ready
   vocabulary for those and for P15.3/P15.4. Walk-bob already exists in
   `body_renderer.update_anim`.)*
-- [ ] **P15.3 UI skin.** Paneled HUD with 9-slice borders, NPC
-  portraits in dialog (procedural face compositor from race/class/
-  equipment), styled message log with per-prefix colors ([Law]
-  gold, [DM] violet, [!] red), minimap terrain colors + fog.
+- [x] **P15.3 UI skin (styled log + minimap fog).** The message log
+  and minimap, coloured. Pure `ui/hud_style.py` (the `ui/animation.py`
+  move): `line_color(text)` paints each event-log line by its
+  load-bearing prefix ([!] red, [Law] gold, [DM] violet, [Home] tan,
+  [Bond] green, … the full family) and falls back to the SEMANTIC
+  category — reusing `event_filter.categorize`, the single source — so
+  unprefixed lines still read right (a foe's blow orange, your own acts
+  neutral, ambient chatter dim); and `dim`/`fog_terrain_color` give the
+  minimap the P15.11 fog of war the main map already has — full colour
+  where visible, dimmed where only remembered, near-black where unseen,
+  with NPCs hidden on tiles you can't currently see. Wired into
+  `hud.draw_event_log` (`_draw_lines` gained a per-line `color_fn`) and
+  `hud.draw_minimap` (guarded `_minimap_fog`, so it draws in full before
+  discovery has ticked). 12 tests. Suite 1489, green. *(Remainder
+  P15.3b — the untestable pixel half: 9-slice paneled borders and the
+  procedural NPC-portrait face compositor for the dialog box.)*
 - [ ] **P15.4 Light & weather II.** Colored light sources (forge
   orange, wisp blue-green), shadow direction by sun hour, rain
   ripples on P10.3 water pools, winter snow-accumulation tint,

@@ -216,6 +216,7 @@ llm_RPG/
 - **`controls.py`** — PUX.3 the controls reference as audited data (single source of truth for the F1/? help): `CONTROLS`, `help_columns()` (two balanced columns that fit one screen), `documented_keys()`.
 - **`hints.py`** — `context_hints(engine)`; contextual key hints (talk/barter/forage/enter/…) rendered as the HUD hint bar; a standing `[?] all controls` reminder when a slot is free.
 - **`spell_panel.py`** — X-key Spellbook; cast any known spell (Enter/1–9), mana + effect readout.
+- **`hud_style.py`** — P15.3 pure HUD colour logic: `line_color(text)` (event-log lines coloured by load-bearing prefix — [!]/[Law]/[DM]/[Home]/… — with a semantic-category fallback via `event_filter.categorize`), `dim`/`fog_terrain_color` (minimap fog: full/dim/near-black by P15.11 visibility). Used by `hud.draw_event_log` + `hud.draw_minimap`.
 - **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker; `draw_help_overlay` (two-column controls, PUX.3); hint bar + mini-map gated on settings (PUX.4a); PUX.4b `draw_party_panel` (companions — order + HP — in the reclaimed bottom-right).
 - **`settings_panel.py`** — PUX.4a the `,`-key settings overlay (cycle Event log / Hint bar / Mini-map / Sound / Map zoom; applies zoom + mute live).
 - **`dialog_input.py`** — dialog-typing key handler (split from input_handler to hold the line).

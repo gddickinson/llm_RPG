@@ -3510,3 +3510,33 @@ reload and are usable after). One `input_handler.py` line went over the
 REMAINDER (P15.7b): boss trophies displayed in the home, a pick-any
 storage panel (withdraw is top-item-first for now), and the cooperative
 multiplayer ConstructionProject.
+
+**Round 156 — P15.3 UI skin (styled log + minimap fog).**
+Back to Track G. P15.3 is a grab-bag of visual polish, so — as with
+P15.2 — the round pulls the TESTABLE decisions ("given this line / this
+tile, what colour?") into a pure `ui/hud_style.py` and wires the two most
+visible, self-contained wins. First, the event log: its prefixes ([DM],
+[Law], [!], [Home], [Bond], …) are load-bearing, and now they're coloured
+— `line_color(text)` maps the iconic prefixes to crisp hues (the plan's
+[!] red, [Law] gold, [DM] violet, plus the rest of the family) and, for
+lines that carry no prefix, falls back to the SEMANTIC category by reusing
+`event_filter.categorize` (the single source of truth — no drift), so a
+foe's blow reads combat-orange, your own deliberate acts stay neutral, and
+ambient chatter dims. Second, the minimap: it already had per-terrain
+colours but drew the whole world regardless of what you'd seen, so it now
+obeys the P15.11 fog of war exactly as the main map does — `dim` and
+`fog_terrain_color` render visible tiles full, explored-but-not-visible
+tiles at half light, and never-seen tiles near-black, and NPCs standing on
+tiles you can't currently see are hidden from the minimap too. Both wires
+are guarded: `_draw_lines` gained an optional per-line `color_fn` (every
+other panel is untouched), and `draw_minimap` uses a `_minimap_fog` helper
+that returns None — drawing in full — before discovery has ticked, so the
+minimap is never an all-black panel. 12 tests: the prefix and
+category-fallback colouring (with whitespace tolerance and safe handling
+of non-string input), `dim` scaling toward black (alpha ignored), the
+three fog states ordered visible > explored > unseen, `_minimap_fog`
+reporting None when nothing's seen and the seen-sets once tiles are known,
+and a smoke render of the coloured log + fogged minimap. Suite 1489,
+green. REMAINDER (P15.3b — the untestable pixel half): 9-slice paneled
+HUD borders and the procedural NPC-portrait face compositor for the
+dialog box.

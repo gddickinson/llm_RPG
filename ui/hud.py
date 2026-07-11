@@ -12,6 +12,21 @@ except ImportError:  # pragma: no cover
 logger = logging.getLogger("llm_rpg.hud")
 
 
+def _minimap_fog(engine):
+    """(visible_set, explored_set) if fog of war is active, else None so
+    the minimap draws in full (e.g. before discovery has ticked)."""
+    try:
+        from engine.discovery import visible_set, is_explored  # noqa: F401
+        from engine import discovery
+        vis = discovery.visible_set(engine)
+        exp = discovery._explored(engine)
+        if vis or exp:
+            return (vis, exp)
+    except Exception:
+        pass
+    return None
+
+
 class HUD:
     """In-game heads-up display rendered over the map view."""
 
@@ -178,8 +193,10 @@ class HUD:
             recent = engine.memory_manager.get_recent_history(10)
             title = "Event Log"
         self._panel(target, rect, title)
-        # Newest at bottom
-        self._draw_lines(target, recent, rect, 8, max_lines=10)
+        # Newest at bottom, coloured by prefix / category (P15.3)
+        from ui.hud_style import line_color
+        self._draw_lines(target, recent, rect, 8, max_lines=10,
+                         color_fn=line_color)
 
     def draw_quest_panel(self, target, engine, rect) -> None:
         self._panel(target, rect, "Quests")
@@ -225,9 +242,18 @@ class HUD:
         }
         ox = rect.x + (rect.width - wmap.width * scale) // 2
         oy = rect.y + 20 + ((rect.height - 24) - wmap.height * scale) // 2
+        # Fog of war (P15.3): dim what's only remembered, hide the unseen
+        fog = _minimap_fog(engine)
         for y in range(wmap.height):
             for x in range(wmap.width):
-                color = colors.get(wmap.terrain[y][x], (50, 50, 50))
+                base = colors.get(wmap.terrain[y][x], (50, 50, 50))
+                if fog is None:
+                    color = base
+                else:
+                    from ui.hud_style import fog_terrain_color
+                    vis, exp = fog
+                    color = fog_terrain_color(base, (x, y) in vis,
+                                              (x, y) in exp)
                 pygame.draw.rect(target, color,
                                  (ox + x * scale, oy + y * scale,
                                   scale, scale))
@@ -236,9 +262,11 @@ class HUD:
         pygame.draw.rect(target, (255, 240, 100),
                          (ox + px * scale, oy + py * scale,
                           max(2, scale), max(2, scale)))
-        # NPCs
+        # NPCs — but not ones standing on tiles you can't currently see
         for npc in engine.npc_manager.npcs.values():
             if not npc.is_active():
+                continue
+            if fog is not None and tuple(npc.position) not in fog[0]:
                 continue
             klass = getattr(npc.character_class, "value", "")
             color = (220, 80, 60) if klass in ("brigand", "troll", "monster") \
@@ -346,13 +374,14 @@ class HUD:
                    big=True, color=(255, 220, 120))
 
     def _draw_lines(self, target, lines, rect, line_x: int,
-                    max_lines: int = None) -> None:
+                    max_lines: int = None, color_fn=None) -> None:
         if not self.font:
             return
         y = rect.y + 26
         n = 0
         for line in lines[-max_lines:] if max_lines else lines:
-            self._text(target, line, (rect.x + line_x, y))
+            col = color_fn(line) if color_fn else (220, 220, 220)
+            self._text(target, line, (rect.x + line_x, y), color=col)
             y += 16
             n += 1
             if y > rect.bottom - 16:
