@@ -61,6 +61,8 @@ llm_RPG/
 - **`furniture.py`** — P9A.2: E beside interior furniture — beds rest (+30% HP/day), hearths cook, altars pray, shelves surface rumors, chests/barrels rummage; flavor for the rest; cooldowns in player.metadata.
 - **`trespass.py`** — `TrespassSystem` (P9A.4): private homes + after-hours shops; witnessed trespass costs rep/relationship/memory; forced entry is a crime — guards converge on the alert, repeat offenses reach the P7.2 bounty ladder.
 - **`presence.py`** — P9A.7: NPCs within an enterable footprint are INDOORS — hidden from the street, shown inside as the same entities at zone-local spots; `npc_adjacent_to_player` is THE adjacency check (talk/hints/melee/barter).
+- **`carry.py`** — carry capacity (George): slot-based pack, 18 + 2 per STR modifier; `can_carry`/`full_message` enforced at pickup/forage/gather/harvest/shop/rummage/chests.
+- **`targeting.py`** — `TargetingSystem` (P8.7): [ ] cycle / click-to-target locks with range + true LOS; auto-refresh each turn; reticle + hint bar; bow and attack spells fire at the lock.
 - **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.
