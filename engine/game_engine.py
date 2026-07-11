@@ -383,6 +383,11 @@ class GameEngine(GameAPIMixin):
                     wake_the_fallen(self)
                 except Exception as e:
                     logger.debug(f"KO wake error: {e}")
+                try:   # rations age in the pack (P12.5)
+                    from engine.food import decay_inventory
+                    decay_inventory(self)
+                except Exception as e:
+                    logger.debug(f"Food decay error: {e}")
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.retaliation.run_night()

@@ -1539,12 +1539,23 @@ traditions lead.
   for KOs. use() extracted to engine/item_use.py (player_actions
   380 lines). Remainder: ransom/rescue beats around KO'd bodies.
   12 tests + 2 integration tests re-pinned. Suite 1031, green x3.)*
-- [ ] **P12.5 Food economy.** OSRS: every food gets heal + a shared
+- [x] **P12.5 Food economy.** OSRS: every food gets heal + a shared
   eat/attack delay (eating mid-fight costs tempo), one combo food,
   one brew that overheals but drains offense; KCD freshness 0–100
   decaying per day (poison risk under 50), cooking resets it and
   launders the stolen flag. Gives farming/foraging/cooking a combat
   reason to exist.
+  *(Round 103: `engine/food.py` + data flags (use_effect.food/
+  perishable/combo/brew). Eating sets a 2-turn CHEW DELAY blocking
+  melee AND ranged ("no opening to strike"); the Meat Pie is combo —
+  eats through the delay, sets none. The Hearty Brew heals to 115%
+  of max and curses the sword arm for 10 turns. Freshness 100
+  decays 15/night in the pack; under 50 food heals half with a
+  poison chance scaling as it rots; the hearth re-bakes carried
+  rations to 100 (cooking's combat reason). Bread/jerky perishable;
+  pie + brew stocked at the tavern. The full-health refusal
+  contract preserved. Stolen-flag laundering waits on a theft
+  marking system (remainder). 7 tests. Suite 1038, green x3.)*
 - [ ] **P12.6 Rest with teeth + the DM's night.** Long rest costs
   provisions (BG3 camp supplies); interruption rules; well-rested
   buffs by bed quality (Skyrim +XP tiers); lifestyle expenses as a

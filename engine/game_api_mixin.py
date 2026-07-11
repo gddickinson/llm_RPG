@@ -192,6 +192,13 @@ class GameAPIMixin:
         """
         from items.item import Item
 
+        try:   # the chew delay costs tempo (P12.5)
+            from engine.food import attack_gate
+            gate = attack_gate(self)
+            if gate:
+                return gate
+        except Exception:
+            pass
         try:
             from characters.equipment import equipped_weapon
             weapon = equipped_weapon(self.player)

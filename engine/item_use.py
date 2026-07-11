@@ -102,6 +102,19 @@ def use_item(engine, item_name: str) -> str:
         except Exception:
             pass
 
+        # Food: tempo + freshness + brews + combos (P12.5)
+        try:
+            from engine.food import eat_food, is_food
+            if is_food(it):
+                msg = eat_food(engine, it)
+                if msg is None:
+                    return "You're already at full health."
+                _remove_one(player, it)
+                engine.advance_turn()
+                return msg
+        except Exception as e:
+            logger.debug(f"Food path error: {e}")
+
         if "thirst" in use_eff:            # P12.3 drinks
             from characters.needs import drink
             drink(player, int(use_eff["thirst"]))

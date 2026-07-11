@@ -55,7 +55,11 @@
     "item_type": "consumable",
     "value": 4,
     "heal_amount": 4,
-    "stackable": true
+    "stackable": true,
+    "use_effect": {
+      "food": true,
+      "perishable": true
+    }
   },
   "jerky": {
     "id": "jerky",
@@ -63,7 +67,11 @@
     "item_type": "consumable",
     "value": 4,
     "heal_amount": 3,
-    "stackable": true
+    "stackable": true,
+    "use_effect": {
+      "food": true,
+      "perishable": true
+    }
   },
   "wine": {
     "id": "wine",
@@ -121,6 +129,34 @@
     "stackable": true,
     "use_effect": {
       "thirst": 100
+    }
+  },
+  "meat_pie": {
+    "id": "meat_pie",
+    "name": "Meat Pie",
+    "item_type": "consumable",
+    "value": 12,
+    "heal_amount": 8,
+    "stackable": true,
+    "description": "Eats in one bite even mid-swing \u2014 a fighter's pie.",
+    "use_effect": {
+      "food": true,
+      "perishable": true,
+      "combo": true
+    }
+  },
+  "hearty_brew": {
+    "id": "hearty_brew",
+    "name": "Hearty Brew",
+    "item_type": "consumable",
+    "value": 30,
+    "heal_amount": 12,
+    "stackable": true,
+    "description": "Heals past your limits and slows your swing.",
+    "use_effect": {
+      "food": true,
+      "brew": true,
+      "thirst": 30
     }
   }
 }

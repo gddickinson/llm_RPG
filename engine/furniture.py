@@ -131,6 +131,12 @@ def _rest(engine, interior) -> str:
 
 def _cook(engine, interior) -> str:
     from items.crafting import list_recipes
+    refreshed = 0
+    try:   # the fire re-bakes carried rations (P12.5)
+        from engine.food import refresh_rations
+        refreshed = refresh_rations(engine)
+    except Exception:
+        pass
     counts: Dict[str, int] = {}
     for item in engine.player.inventory:
         iid = getattr(item, "id", "")
@@ -141,6 +147,9 @@ def _cook(engine, interior) -> str:
         need = recipe.ingredients
         if all(counts.get(iid, 0) >= n for iid, n in need.items()):
             return engine.craft(recipe.output_id)
+    if refreshed:
+        return (f"You hold your rations to the fire — {refreshed} "
+                f"freshened up, good as baked.")
     return ("The fire crackles invitingly. Bring something raw "
             "to cook — the river has trout.")
 

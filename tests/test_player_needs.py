@@ -35,7 +35,7 @@ class TestPlayerHunger(unittest.TestCase):
         self.player.hp = self.player.max_hp - 10
         self.player.inventory.append(create_item("bread"))
         msg = self.engine.use_item("Bread")
-        self.assertIn("consume", msg.lower())
+        self.assertIn("eat", msg.lower())
         self.assertLess(get_hunger(self.player), 70)
         self.assertEqual(self.player.hp, self.player.max_hp - 10 + 4)
 

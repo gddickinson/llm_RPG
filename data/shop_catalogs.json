@@ -40,14 +40,17 @@
     "wine",
     "bread",
     "jerky",
-    "waterskin"
+    "waterskin",
+    "meat_pie",
+    "hearty_brew"
   ],
   "innkeeper": [
     "ale",
     "bread",
     "jerky",
     "wine",
-    "mead"
+    "mead",
+    "meat_pie"
   ],
   "general": [
     "potion",

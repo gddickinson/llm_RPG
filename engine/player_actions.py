@@ -108,6 +108,13 @@ class PlayerActions:
         return use_item(self.engine, item_name)
 
     def attack(self, target_name: str) -> str:
+        try:   # the chew delay costs tempo (P12.5)
+            from engine.food import attack_gate
+            gate = attack_gate(self.engine)
+            if gate:
+                return gate
+        except Exception:
+            pass
         result = self.engine.combat_system.player_attack(target_name)
         self.engine.memory_manager.add_event(result)
         self.engine.advance_turn()

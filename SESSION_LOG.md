@@ -1998,3 +1998,26 @@ disease cures via a survived `self.engine` in the moved code,
 caught by the suite. Two defeat integration tests re-pinned to the
 dying contract. Remainder noted: ransom/rescue beats. 12 new
 tests. Suite: 1031, green x3.
+
+**Round 103 — P12.5 Food economy (done).**
+Eating became a combat decision. `engine/food.py` + pure data
+flags (use_effect.food/perishable/combo/brew): eating any food
+sets a 2-turn CHEW DELAY that blocks both melee and ranged attacks
+("You're still swallowing — no opening to strike"), so healing
+mid-fight costs tempo, exactly OSRS's rule. The MEAT PIE is the
+combo food — it eats clean through an active delay and sets none
+("You barely break stride"), burst healing for a price. The HEARTY
+BREW heals to 115% of max HP and curses your sword arm for 10
+turns — the Saradomin brew tradeoff. FRESHNESS (KCD): perishables
+(bread, jerky, the pie) carry freshness 100 on the item instance
+(inside use_effect, so it rides Item.copy() and save/load free),
+decaying 15 per night in the pack; under 50 the food heals half
+and risks poison with a chance that grows as it rots. The HEARTH
+answers it: E at any hearth re-bakes every carried perishable to
+100 — cooking finally has a combat reason to exist. Pie and brew
+stock the tavern. The old "already at full health" refusal contract
+was preserved after the suite caught the food path silently eating
+at full HP (two pinned tests + a same-turn poison tick in my own
+test — the suite keeps me honest too). Stolen-flag laundering is
+noted as remainder pending any theft-marking system. 7 tests.
+Suite: 1038, green x3.
