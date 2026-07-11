@@ -111,6 +111,11 @@ def _stabilize(engine) -> None:
     engine.memory_manager.add_event(
         f"[!] You stabilize... (Wounded {wounded(player)} — the next "
         f"fall comes faster. Sleep it off.)")
+    try:   # you lay in the dirt (P12.12)
+        from engine.infection import maybe_infect
+        maybe_infect(engine, 0.30, "the fall")
+    except Exception:
+        pass
     from engine.defeat import _left_for_dead, _robbed
     rng = engine.combat_system.rng
     if rng.random() < 0.5:

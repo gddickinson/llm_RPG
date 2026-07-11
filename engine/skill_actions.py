@@ -167,6 +167,13 @@ def battle_medicine(engine, target=None) -> str:
                f"(+{patient.hp - before} HP).")
     else:
         msg = "The dressing holds nothing — the bandage is wasted."
+    if patient is player:
+        try:   # tending races the infection (P12.12)
+            from engine.infection import treat
+            if result.degree is not Degree.CRIT_FAIL:
+                msg += treat(engine, result.degree)
+        except Exception:
+            pass
     engine.memory_manager.add_event(msg)
     engine.advance_turn()
     return msg

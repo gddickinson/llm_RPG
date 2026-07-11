@@ -2203,3 +2203,26 @@ refuse to be recruited from however charming you are personally,
 and revered guards wave off petty bounties under 20g — forgotten,
 not just ignored, tying back into the P12.9 ledger. 12 tests.
 Suite: 1100, green x3.
+
+**Round 111 — P12.12 Medicine II: the infection race (done).**
+RimWorld's three numbers, on our clock. A DIRTY WOUND can turn:
+30% when you stabilize from the P12.4 dying state (you lay in the
+dirt), 30% when the river spits you out (P11.2), 15% when a
+critical hit's bleed opens deep — one infection at a time, and the
+moment it turns, the hint bar starts showing the race. THE RACE
+runs nightly: infection climbs +28, immunity climbs +21 scaled by
+HOW you slept — an inn bed multiplies by 1.5, a camp by 1.0, and a
+sleepless night by 0.6, so the P12.6 rest tiers suddenly carry
+medical weight (rest.py and camping.py stamp slept_quality; the
+night tick consumes it). First to 100 wins: immunity 100 and "the
+wound is cool this morning"; infection 100 and the fever CRESTS —
+you drop where you stand into the P12.4 dying ladder (the story
+kills, not the germ) and the fever breaks back to 60 either way.
+TREATMENT subtracts: Battle Medicine (P12.8) now also cleans an
+infected wound by check degree — crit -35, success -20, even a
+failed dressing -5 — and a cleric or paladin standing adjacent
+adds +10 ("the priest's steady hands guide yours"): healers and
+priests finally matter at the bedside, not just the altar. Five
+phases of systems compose in this one: dying feeds it, hazards
+feed it, crits feed it, rest tiers fight it, Battle Medicine
+treats it. 9 tests. Suite: 1109, green x3.

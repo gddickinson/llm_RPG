@@ -172,6 +172,13 @@ def context_hints(engine) -> List[str]:
                 hints.append("[Enter] make camp (burns provisions)")
         except Exception:
             pass
+        try:   # the infection race (P12.12)
+            from engine.infection import hint as _inf_hint
+            line = _inf_hint(engine)
+            if line:
+                hints.insert(0, line)
+        except Exception:
+            pass
         try:   # needs telegraphs (P12.3)
             from characters.needs import (exhaustion_level, get_thirst,
                                           THIRST_PARCHED)

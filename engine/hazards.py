@@ -186,6 +186,11 @@ def _wash_ashore(engine) -> None:
         lost = f" The river keeps your {item.name}."
     engine.memory_manager.add_event(
         f"[!] You are washed ashore, battered and spent.{lost}")
+    try:   # river water in an open wound (P12.12)
+        from engine.infection import maybe_infect
+        maybe_infect(engine, 0.30, "the river")
+    except Exception:
+        pass
 
 
 def tumble(engine) -> Optional[str]:

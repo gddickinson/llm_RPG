@@ -1687,11 +1687,22 @@ traditions lead.
   despised merchants refuse trade ("Your coin's no good here"),
   disliked factions refuse recruitment, revered guards wave off
   petty bounties (<20g) entirely. 12 tests. Suite 1100, green x3.)*
-- [ ] **P12.12 Medicine II: the infection race.** RimWorld's three
+- [x] **P12.12 Medicine II: the infection race.** RimWorld's three
   numbers — infection grows +0.84/day, immunity +0.64/day scaled by
   rest/bed, treatment quality (healer skill × medicine tier)
   subtracts — first to 100 wins. Extends diseases (P8.2) with
   wounds that demand tending, and makes healers/priests matter.
+  *(Round 111: `engine/infection.py`. Dirty wounds turn: 30% on
+  stabilizing in the dirt (P12.4), 30% washed ashore (P11.2), 15%
+  on a crit bleed; one infection at a time. The nightly race:
+  infection +28, immunity +21 scaled by slept_quality (inn bed
+  x1.5, camp x1.0, sleepless x0.6 — rest.py/camping.py stamp it).
+  Immunity 100 = the wound knits; infection 100 = the fever CRISIS
+  drops you into the P12.4 dying state (the story kills, not the
+  germ) and breaks back to 60. TREATMENT: Battle Medicine
+  subtracts by degree (crit -35 / success -20 / fail -5), +10 with
+  a cleric/paladin adjacent — priests matter at the bedside. Hint
+  bar shows the live race. 9 tests. Suite 1109, green x3.)*
 - [ ] **P12.13 Bones: the fallen enter the Legendarium.** NetHack's
   bones pattern, single-player: on death/darkest defeats, snapshot
   the site + a hostile ghost + your gear (mostly cursed) into the

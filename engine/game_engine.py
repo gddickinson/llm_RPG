@@ -396,6 +396,11 @@ class GameEngine(GameAPIMixin):
                     decay_inventory(self)
                 except Exception as e:
                     logger.debug(f"Food decay error: {e}")
+                try:   # the infection race advances (P12.12)
+                    from engine.infection import infection_night
+                    infection_night(self)
+                except Exception as e:
+                    logger.debug(f"Infection error: {e}")
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.retaliation.run_night()

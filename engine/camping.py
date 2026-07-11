@@ -90,6 +90,7 @@ def camp(engine) -> List[str]:
                 "carry provisions.)"]
 
     player.metadata["slept_day"] = day
+    player.metadata["slept_quality"] = "camp"    # P12.12
     from engine.rest import WAKE_HOUR, snapshot
     before = getattr(engine, "_day_metrics", None) or snapshot(engine)
     minutes_per_day = 24 * 60

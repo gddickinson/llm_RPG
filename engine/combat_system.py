@@ -140,6 +140,12 @@ class CombatSystem:
             # a perfect strike opens a wound (P12.2)
             apply_effect(defender, "persistent_damage", duration=99,
                          data={"amount": 2, "kind": "bleeding"})
+            if defender.id == self.engine.player.id:
+                try:   # a deep cut can turn (P12.12)
+                    from engine.infection import maybe_infect
+                    maybe_infect(self.engine, 0.15, "the deep cut")
+                except Exception:
+                    pass
         # Damage roll: weapon-base + ability + enchant + status mod
         weapon_dmg = self._best_weapon_damage(attacker)
         enchant_dmg = effective_weapon_damage_bonus(attacker)

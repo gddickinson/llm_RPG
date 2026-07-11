@@ -95,6 +95,7 @@ def sleep(engine) -> List[str]:
     now = engine.world.time
     minutes_per_day = 24 * 60
     player.metadata["slept_day"] = now // minutes_per_day
+    player.metadata["slept_quality"] = "bed"     # P12.12
     wake = ((now // minutes_per_day) + 1) * minutes_per_day + \
         WAKE_HOUR * 60
     engine.world.advance_time(wake - now)
