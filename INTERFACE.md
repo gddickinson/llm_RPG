@@ -184,7 +184,7 @@ llm_RPG/
 - **`start_menu.py`** — Title screen with New Game / Load / Quit; routes into the character creator.
 - **`character_creator.py`** — Multi-step character creation flow + `CharacterSpec`, race/class data.
 - **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting; `_render_zone()` draws dungeons/interiors.
-- **`sprite_loader.py`** — Procedural sprite generation (no PNG assets).
+- **`sprite_loader.py`** — Procedural sprite generation + P15.1 PNG tileset pipeline: data/tiles/<name>/ via config.TILESET_NAME or LLM_RPG_TILESET, per-image graceful fallback to procedural; contract in data/tiles/README.md.
 - **`crafting_panel.py`** — `CraftingPanel`; K-key recipe browser with have/need counts, crafts via `engine.craft()`.
 - **`hints.py`** — `context_hints(engine)`; contextual key hints (talk/barter/forage/enter/…) rendered as the HUD hint bar.
 - **`spell_panel.py`** — X-key Spellbook; cast any known spell (Enter/1–9), mana + effect readout.
