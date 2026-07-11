@@ -440,5 +440,114 @@
         ]
       }
     ]
+  },
+  "siege_assault": {
+    "name": "Siege \u2014 Batter the Wall",
+    "desc": "No breach yet: the rams must batter the palisade down before the assault can pour through. Infantry alone would mill at the wall \u2014 watch it fall.",
+    "width": 46,
+    "height": 28,
+    "walls": [
+      {
+        "type": "wooden_palisade",
+        "cells": [
+          [
+            24,
+            8
+          ],
+          [
+            24,
+            9
+          ],
+          [
+            24,
+            10
+          ],
+          [
+            24,
+            11
+          ],
+          [
+            24,
+            12
+          ],
+          [
+            24,
+            13
+          ],
+          [
+            24,
+            14
+          ],
+          [
+            24,
+            15
+          ],
+          [
+            24,
+            16
+          ],
+          [
+            24,
+            17
+          ],
+          [
+            24,
+            18
+          ],
+          [
+            24,
+            19
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_rams",
+            "type": "siege_ram",
+            "size": 4,
+            "anchor": [
+              20,
+              12
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_garrison"
+          },
+          {
+            "id": "red_foot",
+            "type": "infantry_sword",
+            "size": 16,
+            "anchor": [
+              5,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_garrison"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_garrison",
+            "type": "infantry_sword",
+            "size": 10,
+            "anchor": [
+              28,
+              11
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_foot"
+          }
+        ]
+      }
+    ]
   }
 }

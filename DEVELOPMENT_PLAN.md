@@ -2300,14 +2300,32 @@ is shippable and testable, de-risking UI last:
   unaffected, treeline paints + converges); suite 1289, green.
   REMAINDER: the AI does not yet actively SEEK cover — units use it
   only where the scenario places them (→ P17.6b).)*
-- [ ] **P17.6b Siege.** Walls/gates are already HP structures that
-  breach to RUBBLE (P17.2); make SIEGE units batter them —
-  `structural_dmg` applied to an adjacent wall when the path is
-  blocked, opening the breach the flow field then routes through
-  (earthworks mapping). Wall-walk elevation via the multi-level
-  stacks; boiling oil = a `surfaces` paint on the battle grid;
-  capture-point VICTORY (a squad holding an objective tile wins);
-  and the AI actively seeking cover (deferred from P17.6a).
+- [x] **P17.6b Siege battering.** Walls/gates are already HP
+  structures that breach to RUBBLE (P17.2); make SIEGE units batter
+  them — `structural_dmg` applied to an adjacent wall, opening the
+  breach the flow field then routes through.
+  *(Round 134: `Squad.structural_dmg` exposes the archetype's wall
+  damage (ram 25, catapult 35, trebuchet 50; 0 for everyone else).
+  The tick loop batters as a siege engine's FIRST action — adjacent to
+  a wall (nearest the enemy) it hammers `damage_struct` and does NOT
+  shoot the garrison through the stones; the wall drops to rubble and
+  the recomputed flow field pours the assault through. Out of reach
+  with no adjacent wall, `_siege_approach` crawls the engine to the
+  nearest wall (`battle_ai.nearest_struct`); infantry can't breach at
+  all, so siege is REQUIRED. New `siege_assault` scenario: an intact
+  12-tile palisade, four rams + sixteen foot vs a garrison — the rams
+  breach ~tick 15 and the assault takes it. 6 tests (structural_dmg,
+  nearest_struct, ram batters, infantry can't, breach→rubble lane,
+  siege wins); suite 1295, green. KNOWN SIMPLIFICATION: ranged units
+  still have no line-of-sight block through walls in the open field —
+  true battle LOS rides with P17.9.)*
+- [ ] **P17.6c Siege II & objectives.** Wall-walk elevation via the
+  multi-level stacks; boiling oil = a `surfaces` paint on the battle
+  grid (needs a grid surface layer); capture-point VICTORY (a squad
+  holding an objective tile wins — the `OBJECTIVES` scaffold from
+  P17.5); ranged siege BOMBARDMENT (catapults/trebuchets lobbing at
+  walls from range, not just adjacency); and the AI actively seeking
+  cover (deferred from P17.6a).
 - [ ] **P17.7 Player role-swap.** An `embodied` flag on the
   session: set → input routes to normal grid-soldier controls,
   camera locks in; None → commander order layer, free camera; TAB

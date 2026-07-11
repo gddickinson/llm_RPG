@@ -2871,3 +2871,31 @@ suite 1289, green (bar the historic test_disease worldgen flake,
 which reran clean). Remainder split onto the plan as P17.6b: siege
 units battering walls to breaches, wall-walk elevation, boiling-oil
 surfaces, capture-point victory, and the AI actively seeking cover.
+
+**Round 134 — P17.6b Siege battering (a coherent sub-step).**
+Walls were HP structures that breached to rubble since P17.2, but
+nothing could knock them down in a live battle. Now siege engines do.
+`Squad.structural_dmg` exposes the archetype's wall damage (ram 25,
+catapult 35, trebuchet 50; zero for everyone else). A siege engine's
+FIRST action each tick is to batter: adjacent to a wall (the segment
+nearest the enemy) it hammers `damage_struct` and — importantly —
+does NOT loose at the garrison through the stones, which is exactly
+the bug the trebuchet test caught (a ranged engine within five tiles
+was shooting the defenders instead of the wall). When it's not yet
+adjacent, `_siege_approach` crawls it to the nearest wall via
+`battle_ai.nearest_struct`. Once a segment falls to rubble the flow
+field — recomputed every tick — routes the waiting assault straight
+through the breach. Infantry carry no `structural_dmg`, so they can't
+breach at all: siege is genuinely REQUIRED, not optional. The new
+`siege_assault` scenario stages an intact twelve-tile palisade with
+four rams and sixteen foot against a ten-strong garrison; the rams
+reach the wall, breach it around tick 15, and the assault pours in to
+take the fortress (red 8/8 across seeds). Six tests: the
+structural_dmg property, nearest_struct, a ram battering the
+palisade, infantry proven unable to breach, a felled wall becoming a
+passable rubble lane, and the full assault winning through the
+breach. Suite 1295, green. One honest simplification recorded on the
+plan: ranged units still have no wall LOS block in the open field —
+real battle line-of-sight rides with P17.9. Remainder split to
+P17.6c: wall-walk elevation, boiling-oil surfaces, capture-point
+victory, ranged bombardment, and the AI seeking cover.

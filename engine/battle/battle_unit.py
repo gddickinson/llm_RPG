@@ -113,6 +113,12 @@ class Squad:
         return float(self.stats.get("speed", 1.0))
 
     @property
+    def structural_dmg(self) -> int:
+        """Damage this squad deals to a wall it batters (P17.6b);
+        0 for everything but siege engines."""
+        return int(self.stats.get("structural_dmg", 0))
+
+    @property
     def alive_soldiers(self) -> List[Soldier]:
         return [s for s in self.soldiers if s.alive]
 

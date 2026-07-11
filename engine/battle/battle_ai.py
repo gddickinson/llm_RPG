@@ -27,6 +27,17 @@ def _dist(a, b) -> int:
     return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
 
 
+def nearest_struct(field, x: int, y: int):
+    """The wall/gate tile nearest (x, y), or None — siege engines
+    home on it when the enemy is walled off (P17.6b)."""
+    best, bd = None, None
+    for (sx, sy) in field.struct_hp:
+        d = max(abs(sx - x), abs(sy - y))
+        if bd is None or d < bd:
+            best, bd = (sx, sy), d
+    return best
+
+
 def step_toward(field, sol, tx: int, ty: int):
     """Greedy: the passable neighbour nearest to (tx, ty). Closes the
     final tiles into contact when the flow field (aimed at the enemy
