@@ -2697,3 +2697,29 @@ moves them and the loop that ticks them are P17.3. Suite: 1244,
 green (two intermittent misses across runs were pre-existing
 disease/director RNG flakes — the battle package imports nothing
 from the game engine, so it can't be the cause).
+
+**Round 129 — P17.3 Group AI ticking a skirmish (done).**
+The battle now moves. Three small modules turn P17.2's static
+squads into a fighting simulation. `battle_flow.py`: a multi-source
+BFS distance field per team, computed once a tick (O(map), not one
+path search per soldier — Supreme Commander's flow-field trick), so
+a hundred men advance on the enemy centroid together and route
+naturally through a breach the moment a wall falls to rubble.
+`battle_ai.py`: the Autonomous World colosseum brain, ported
+grid-native — FOCUS-FIRE target selection (the squad's ordered
+target first, then the lowest-HP enemy, then the nearest), a
+self-contained d20 strike (melee reach 1, ranged 5, rolled against
+the archetype's stats), ROLE movement (archers kite backward off an
+adjacent enemy while infantry and cavalry close via the flow), and
+squad MORALE that presses the single bar down on a thinning line,
+local outnumbering, or a friendly squad breaking. `battle_session.py`:
+a deterministic seeded tick loop whose run_headless returns exactly
+the P17.1 resolver's result shape, so a ticked battle and an
+auto-resolved one read alike. Combat stays self-contained on the
+battle's own Soldier tokens — the bridge to the world's combat_system
+(for surfaces, wounds, durability) is P17.7's embodied mode, and
+keeping the headless skirmish pure is what lets its 7 tests run in a
+second: it converges to a winner, is seed-deterministic, numbers
+win, the lines measurably close the gap, the outnumbered side routs
+rather than fighting forever, and archers trade well from range.
+Suite: 1251, green x3 (no flakes this round).

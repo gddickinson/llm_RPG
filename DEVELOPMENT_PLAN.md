@@ -2167,13 +2167,29 @@ is shippable and testable, de-risking UI last:
   green (the two intermittent misses were pre-existing disease/
   director RNG flakes — the battle modules import nothing from the
   game engine).)*
-- [ ] **P17.3 Group AI ticking a skirmish.** Port the colosseum
+- [x] **P17.3 Group AI ticking a skirmish.** Port the colosseum
   brain grid-native into `battle_ai.py` (focus-fire target select,
   morale/rout, role movement) + `battle_flow.py` (one BFS flow
   field per objective). `battle_session.run_headless(scenario,
   seed, max_ticks)` runs two squads to a result; tests assert it
-  converges. Damage routes through the existing combat_system so
-  surfaces/wounds/durability all apply.
+  converges.
+  *(Round 129: `battle_flow.py` — multi-source BFS distance field
+  per team (O(map) not O(units)); soldiers step the gradient toward
+  the enemy and THROUGH breaches once a wall falls to rubble.
+  `battle_ai.py` — focus-fire target select (ordered squad first,
+  then lowest HP, then nearest), a self-contained d20 strike
+  (melee reach 1 / ranged 5 vs the archetype's stats), role
+  movement (archers KITE off an adjacent enemy, everyone else
+  advances the flow), and squad morale (strength ratio, local
+  outnumbering, allies routing — all on the ONE bar).
+  `battle_session.py` — the deterministic tick loop:
+  run_headless(max_ticks) returns the resolver's result shape.
+  Combat is self-contained on the battle's Soldier tokens (the
+  bridge to combat_system for surfaces/wounds is P17.7's embodied
+  mode — the headless skirmish stays pure so it tests instantly).
+  7 tests: converges to a winner, seed-deterministic, numbers win,
+  lines close the distance, the broken side routs, archers trade
+  well, result-shape matches P17.1. Suite 1251, green x3.)*
 - [ ] **P17.4 The battle screen + zoom/LOD.** `ui/battle_screen.py`
   reusing MapRenderer with a variable tile_size {8,16,32,48} and a
   float camera; LOD blob-per-squad below ~16px. Reachable from the
