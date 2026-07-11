@@ -1747,6 +1747,36 @@ object-material AC/HP tables if finer grain is wanted. Phase 11
 swimming adopts 5e's two-stage breath clock (1+CON-mod minutes,
 then CON-mod rounds of drowning).
 
+## Phase 13 — Deferred remainders (collected 2026-07-11)
+
+Phase 12 shipped with a few clauses consciously deferred mid-round;
+they are first-class items now, in dependency order.
+
+- [x] **P13.1 The alchemy value floor.** OSRS High Alchemy as the
+  gold sink/value floor deferred from P12.10: Transmute (wizard/
+  sorcerer spell, 4 mana) turns any carried item into gold at 40%
+  of value — the item-targeting UI is the inventory panel's [T] on
+  the selected bag item.
+  *(Round 114: `transmute_item` in engine/item_use.py, spell in
+  data/spells.json (class casters know it from the start),
+  [T] in the I-panel with the footer hint. Stack-aware, mana-gated,
+  spell-known-gated; stolen goods transmute too — coin is coin,
+  destruction is the ultimate laundering. 6 tests.)*
+- [ ] **P13.2 Ransom & rescue.** The P12.4 remainder: KO'd named
+  NPCs can be carried (a body in the pack slot? drag?) to a
+  faction that wants them — brigands ransom captured guards back
+  to the watch, rescued citizens pay gratitude and rep; ties the
+  KO economy to factions and the P12.9 ledger.
+- [ ] **P13.3 The breath clock.** Phase 11 annotation from the
+  research: 5e's two-stage drowning — hold breath 1+CON-mod
+  minutes underwater before the P11.2 escalation starts; diving
+  becomes plannable.
+- [ ] **P13.4 Playtest Campaign 4.** Both-sides scripted-and-judged
+  session per the Playtest Matrix, focused on the Phase 12 systems
+  interacting (needs+rest+infection, crime+fence+disguise,
+  economy+haggling+arbitrage, bond+thresholds); findings become
+  fixes or Phase 14 items.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the

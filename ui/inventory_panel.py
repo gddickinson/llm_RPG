@@ -81,6 +81,8 @@ class InventoryPanel:
             self._use(rows)
         elif k == pygame.K_d:
             self._drop(rows)
+        elif k == pygame.K_t:
+            self._transmute(rows)
         return True
 
     def _move_cursor(self, delta: int, rows) -> None:
@@ -143,6 +145,17 @@ class InventoryPanel:
             return
         self.engine.drop_item(item.name if hasattr(item, "name")
                               else str(item))
+
+    def _transmute(self, rows) -> None:
+        """P13.1: the value floor — coin from any carried thing."""
+        row = self._row_at_cursor(rows)
+        if row is None:
+            return
+        kind, _, item, _ = row
+        if item is None or kind != "bag" or not hasattr(item, "id"):
+            return
+        from engine.item_use import transmute_item
+        transmute_item(self.engine, item)
 
     # ---------------- render ---------------------------------------
 
@@ -211,7 +224,8 @@ class InventoryPanel:
             y += line_h
 
         hint = self._font.render(
-            "[Up/Down] move  [E] (un)equip  [Q] use  [D] drop  [Esc] close",
+            "[Up/Down] move  [E] (un)equip  [Q] use  [D] drop  "
+            "[T] transmute  [Esc] close",
             True, (160, 160, 180))
         target.blit(hint, (box.x + 16, box.bottom - 28))
 

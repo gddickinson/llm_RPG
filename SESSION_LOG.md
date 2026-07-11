@@ -2281,3 +2281,24 @@ with fences and disguises, the elastic economy, the bond ceremony,
 the infection race, bones, and pet loyalty. The remaining plan
 items are the two deferred notes (alchemy value floor; ransom/
 rescue beats) and whatever George's next playtest surfaces.
+
+**Round 114 — Phase 13 opened; P13.1 the alchemy value floor (done).**
+Every checkbox in the plan was ticked, so the deferred remainders
+Phase 12 consciously set aside became Phase 13, in dependency
+order: P13.1 the alchemy value floor (this round), P13.2 ransom &
+rescue around KO'd bodies, P13.3 the 5e breath clock for diving,
+P13.4 Playtest Campaign 4 focused on the Phase 12 systems
+interacting. P13.1: TRANSMUTE — OSRS High Alchemy as the universal
+value floor. A wizard/sorcerer spell (they know the working from
+the start; others can learn), 4 mana, and the item-targeting UI
+that P12.10 deferred for turned out to already exist: the
+inventory panel — [T] on any selected bag item runs it like wax
+into gold at 40% of value, floor of one coin, stacks one at a
+time. Stolen goods transmute too: coin is coin, and destruction is
+the ultimate laundering. The test found a REAL latent bug:
+_remove_one removed items by list equality, and dataclass items
+compare equal — transmuting a looted sword deleted the player's
+STARTING sword and left the loot. Removal is identity-first now,
+which quietly corrects every eat/drink/scroll path that consumed
+"an equal item" instead of the item in hand. 6 tests. Suite:
+1132, green x3.

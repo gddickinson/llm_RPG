@@ -150,12 +150,48 @@ def use_item(engine, item_name: str) -> str:
             return msg
     return f"You don't have {item_name}."
 
+TRANSMUTE_RATE = 0.4
+TRANSMUTE_MANA = 4
+
+
+def transmute_item(engine, item) -> str:
+    """P13.1 (OSRS High Alchemy): any carried item runs to coin at
+    40% of value — the universal value floor. Costs mana; wizards
+    and sorcerers know the working."""
+    player = engine.player
+    from engine.spells import ensure_mana
+    ensure_mana(player)
+    if "transmute" not in player.metadata.get("spells_known", []):
+        return "You don't know the transmutation working."
+    if player.metadata.get("mana", 0) < TRANSMUTE_MANA:
+        return (f"Transmute needs {TRANSMUTE_MANA} mana "
+                f"({player.metadata.get('mana', 0)} left).")
+    if item not in player.inventory:
+        return "You can only transmute what you carry."
+    player.metadata["mana"] -= TRANSMUTE_MANA
+    gold = max(1, int(getattr(item, "value", 1) * TRANSMUTE_RATE))
+    name = getattr(item, "name", str(item))
+    _remove_one(player, item)
+    player.gold += gold
+    msg = (f"The {name} runs like wax between your fingers and "
+           f"hardens into {gold}g.")
+    engine.memory_manager.add_event(msg)
+    engine.advance_turn()
+    return msg
+
+
 def _remove_one(char, item) -> None:
-    """Decrement stack by 1, removing if depleted."""
+    """Decrement stack by 1, removing if depleted. Removal is by
+    IDENTITY: dataclass items compare equal, and list.remove would
+    take the first equal twin instead of the item in hand."""
     if getattr(item, "stackable", False) and item.quantity > 1:
         item.quantity -= 1
-    else:
-        try:
-            char.inventory.remove(item)
-        except ValueError:
-            pass
+        return
+    for i, it in enumerate(char.inventory):
+        if it is item:
+            del char.inventory[i]
+            return
+    try:
+        char.inventory.remove(item)
+    except ValueError:
+        pass

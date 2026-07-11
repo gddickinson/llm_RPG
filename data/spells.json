@@ -262,5 +262,16 @@
       "sorcerer",
       "warlock"
     ]
+  },
+  "transmute": {
+    "id": "transmute",
+    "name": "Transmute",
+    "mana_cost": 4,
+    "range": 1.0,
+    "description": "Base matter runs like wax and hardens into coin.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
   }
 }

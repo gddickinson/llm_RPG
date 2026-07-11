@@ -50,7 +50,7 @@ llm_RPG/
 - **`legends.py`** — Relic pickups reveal authored legends; Legends section of the Y journal; gossip citations.
 - **`defeat.py`** — Failure-as-story defeat outcomes: robbed / left for dead / slain.
 - **`dying.py`** — P12.4 Dying & Wounded: 0 HP → Dying 1–4 with per-turn flat recovery checks; stabilize = +1 Wounded + gentle story beat, Dying 4 = the full defeat table; people (not monsters) are KO'd into robbable bodies that wake overnight with grudges.
-- **`item_use.py`** — `use_item(engine, name)`: every on-use payload (scrolls, tomes, manuals, potions, remedies, P12.3 drinks, food).
+- **`item_use.py`** — `use_item(engine, name)`: every on-use payload (scrolls, tomes, manuals, potions, remedies, P12.3 drinks, food); `transmute_item` (P13.1: any carried item → 40% value in gold, mana-gated, [T] in the I-panel); identity-first `_remove_one`.
 - **`food.py`** — P12.5 food economy: 2-turn chew delay gates attacks after eating, combo food bypasses it, the Hearty Brew overheals + curses; freshness decays nightly (stale = half heal + poison risk), hearths re-bake carried rations.
 - **`combat_depth.py`** — P12.7: concentration (one sustained spell; damage forces d20+CON vs max(10,dmg)), soft cover on the shot line (-10%/-25% hit, carried on projectiles), BG3 weapon actions as weapon data (Cleave/Topple/Pommel Strike/Lacerate, SHIFT+V, once per rest).
 - **`ranged.py`** — `shoot_ranged(engine, ...)`: bow/crossbow/thrown fire with ammo, aim, chew gate, true LOS (split from game_api_mixin).
