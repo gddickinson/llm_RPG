@@ -31,6 +31,8 @@ llm_RPG/
 ### engine/battle/ — Phase 17 tactical layer
 
 - **`battle_data.py`** — loaders over `data/battles/*.json`: unit archetypes, formations, matchup RPS + terrain, fortifications (all content, no hardcoded stats).
+- **`battle_unit.py`** — P17.2 grid pieces: `Soldier` (light token) + `Squad` (owns soldiers, ONE morale bar, order/formation/commander; rout on morale threshold); round-trips to dict.
+- **`battle_field.py`** — P17.2 battle grid: own terrain, WALL/GATE as HP structures breaching to rubble lanes, soldier occupancy, squad/team registry; round-trips to dict for mid-battle saves.
 - **`battle_resolve.py`** — P17.1 headless Lanchester auto-resolver: `Army`/`Unit`/`Fort` + seeded `resolve(attacker, defender, terrain, is_siege, seed)`; defence-reduced melee, RPS+speed-softened ranged, cavalry charge, anti-cavalry spears, wall-gated siege with breaches. Deterministic; doubles as the off-screen faction-battle resolver.
 
 ### engine/ — Core game logic

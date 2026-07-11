@@ -12,3 +12,5 @@ screen, orders, siege, and player role-swap (P17.2–P17.8).
 
 from engine.battle.battle_resolve import (Army, resolve,  # noqa: F401
                                           unit_category)
+from engine.battle.battle_unit import (Soldier, Squad)  # noqa: F401
+from engine.battle.battle_field import BattleField  # noqa: F401

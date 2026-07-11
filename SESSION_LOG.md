@@ -2673,3 +2673,27 @@ wandering past from indoors — but news and rumor still reach you,
 because word travels. The HUD now shows the filtered last 10 with
 the mode in the panel title, so a wall of footsteps no longer
 crowds out the line that matters. 8 tests. Suite: 1232, green x3.
+
+**Round 128 — P17.2 Squad & soldier model + battle field (done).**
+The on-grid pieces the tick-based battle will move (distinct from
+P17.1's abstract resolver). `battle_unit.py`: a Soldier is a light
+grid token (hp, position, alive) that belongs to a Squad, and the
+Squad is the commandable object carrying ONE morale bar for the
+whole body — the Total War model, so morale and rout live on the
+squad, not the man. A squad musters via raise_squad, shrinks in
+strength as soldiers fall, ROUTS wholesale when its morale crosses
+the archetype threshold, reports a centroid, holds an order +
+target + formation + commander flag, and round-trips to dict for a
+mid-fight save. `battle_field.py`: a self-contained grid with its
+OWN terrain strings (a battle is its own arena, not the world map),
+WALL and GATE segments as HP structures that batter down into a
+RUBBLE breach — "a breach is a lane," and a soldier can march it
+once it opens (tested) — soldier occupancy so no two share a tile,
+a squad/team registry with enemy queries, and its own to_dict/
+from_dict. Both modules are dependency-light and fully headless, so
+the 12 tests (squad rout, casualties, centroid, wall breach + march,
+gate weaker than wall, both round-trips) run instantly. The AI that
+moves them and the loop that ticks them are P17.3. Suite: 1244,
+green (two intermittent misses across runs were pre-existing
+disease/director RNG flakes — the battle package imports nothing
+from the game engine, so it can't be the cause).

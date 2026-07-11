@@ -2148,10 +2148,25 @@ is shippable and testable, de-risking UI last:
   tyrant_depths had dungeon:true, adding the boss to the RANDOM
   spawn pool → 2-3 Tyrants intermittently; bosses are placed
   explicitly, dungeon:false now. Suite 1224, green x5.)*
-- [ ] **P17.2 Squad & soldier model + field.** `battle_unit.py`
+- [x] **P17.2 Squad & soldier model + field.** `battle_unit.py`
   (Squad = tokens + one morale bar; Soldier grid token;
   to_dict/from_dict) and `battle_field.py` (a grid wrapping
   TileDamage + SurfaceLayer). Save round-trip test.
+  *(Round 128: `battle_unit.py` — Soldier (light grid token,
+  hp/pos/alive) + Squad (owns soldiers, archetype, team, ONE morale
+  bar on the body per Total War, order + target, formation,
+  commander flag; `raise_squad`, casualties shrink strength,
+  morale crossing the threshold ROUTS the whole squad, centroid,
+  full to_dict/from_dict). `battle_field.py` — a self-contained
+  grid (its own terrain strings, not the world enum): WALL/GATE as
+  HP structures that break to a RUBBLE breach ("a breach is a
+  lane" — marching-through tested), soldier occupancy so two
+  can't share a tile, a squad registry with team/enemy queries,
+  and to_dict/from_dict for mid-battle saves. Dependency-light and
+  headless. 12 tests incl. squad + field round-trips. Suite 1244,
+  green (the two intermittent misses were pre-existing disease/
+  director RNG flakes — the battle modules import nothing from the
+  game engine).)*
 - [ ] **P17.3 Group AI ticking a skirmish.** Port the colosseum
   brain grid-native into `battle_ai.py` (focus-fire target select,
   morale/rout, role movement) + `battle_flow.py` (one BFS flow
