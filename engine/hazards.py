@@ -5,11 +5,15 @@ water neighbors) is a river, and rivers run: flow points along the
 channel toward the map's south/east (downhill by convention). Open
 water — a lake, three-plus water neighbors — is still.
 
-IN DEEP WATER each turn the player makes a struggle check (the same
-swim math as crossing: d20 + Swimming + STR mod vs the loaded/tired
-DC). Fail in a current and you're SWEPT downstream a tile or two;
-fail anywhere and the water starts winning — escalating drown
-damage. The water never kills outright (the story kills): brought
+IN DEEP WATER the BREATH CLOCK runs first (P13.3, 5e's two-stage
+drowning): you can hold your breath 1 + CON-mod minutes (4 turns
+each, min 4 turns) — a plannable dive, no checks, the hint bar
+counting it down. Only when the breath runs out does each turn
+become a struggle check (the same swim math as crossing: d20 +
+Swimming + STR mod vs the loaded/tired DC). Fail in a current and
+you're SWEPT downstream a tile or two; fail anywhere and the water
+starts winning — escalating drown damage. Surfacing (shore, land,
+water-walking, flight) refills the lungs. The water never kills outright (the story kills): brought
 to 1 HP the river spits you out — WASHED ASHORE at the nearest dry
 land, battered, and the river keeps one item from your pack.
 
@@ -29,6 +33,16 @@ logger = logging.getLogger("llm_rpg.hazards")
 
 DROWN_STEP = 2          # damage grows by this each failing turn
 SWEEP_TILES = 2         # how far a current carries you per fail
+BREATH_PER_MINUTE = 4   # P13.3: 5e's 1+CON-mod minutes, 4 turns each
+BREATH_MIN = 4
+
+
+def breath_capacity(player) -> int:
+    """How long you can hold it: 5e's 1 + CON modifier minutes."""
+    from engine.skills import ability_modifier
+    minutes = 1 + ability_modifier(getattr(player,
+                                           "constitution", 10))
+    return max(BREATH_MIN, minutes * BREATH_PER_MINUTE)
 
 
 FLOW_SCAN = 12          # how far along an axis we look for "river"
@@ -72,11 +86,24 @@ def water_hazard_tick(engine) -> None:
     if wmap.terrain[y][x] != TerrainType.WATER or \
             engine.traversal.is_shallow(x, y):
         player.metadata.pop("drown_turns", None)
+        player.metadata.pop("breath", None)      # lungs refill
         return
     from characters.status_effects import has_effect
     if has_effect(player, "water_walking") or \
             has_effect(player, "flying"):        # P11.3 / P11.4
         player.metadata.pop("drown_turns", None)
+        player.metadata.pop("breath", None)
+        return
+    # the breath clock (P13.3): the dive is free until it isn't
+    breath = player.metadata.get("breath")
+    if breath is None:
+        breath = breath_capacity(player)
+    if breath > 0:
+        player.metadata["breath"] = breath - 1
+        if breath - 1 in (2, 0):
+            engine.memory_manager.add_event(
+                "[!] Your lungs burn — find air!" if breath - 1 == 0
+                else "[!] Your breath is nearly spent.")
         return
     trav = engine.traversal
     rule = trav.rules.get("water", {})

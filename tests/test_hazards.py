@@ -78,6 +78,7 @@ class TestHazards(unittest.TestCase):
         self._put_player(x, y)
         self.engine.traversal.rng = _FixedRng(20)
         hp0 = self.player.hp
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         self.assertEqual(self.player.hp, hp0)
         self.assertEqual(self.player.position, (x, y))
@@ -87,6 +88,7 @@ class TestHazards(unittest.TestCase):
         self._put_player(x, y)
         self.player.hp = self.player.max_hp
         self.engine.traversal.rng = _FixedRng(1)
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         self.assertGreater(self.player.position[0], x,
                            "the current must carry you east")
@@ -99,6 +101,7 @@ class TestHazards(unittest.TestCase):
         self._put_player(x, y)
         self.player.hp = self.player.max_hp
         self.engine.traversal.rng = _FixedRng(1)
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         hp_after_one = self.player.hp
         dmg1 = self.player.max_hp - hp_after_one
@@ -107,6 +110,7 @@ class TestHazards(unittest.TestCase):
         # already washed ashore)
         if self.wmap.terrain[self.player.position[1]] \
                 [self.player.position[0]] == TerrainType.WATER:
+            self.player.metadata["breath"] = 0
             water_hazard_tick(self.engine)
             dmg2 = hp_after_one - self.player.hp
             self.assertGreater(dmg2, dmg1)
@@ -115,6 +119,7 @@ class TestHazards(unittest.TestCase):
             if self.wmap.terrain[self.player.position[1]] \
                     [self.player.position[0]] != TerrainType.WATER:
                 break
+            self.player.metadata["breath"] = 0
             water_hazard_tick(self.engine)
         self.assertGreaterEqual(self.player.hp, 1,
                                 "water maims; the story kills")
@@ -130,6 +135,7 @@ class TestHazards(unittest.TestCase):
             if self.wmap.terrain[self.player.position[1]] \
                     [self.player.position[0]] != TerrainType.WATER:
                 break
+            self.player.metadata["breath"] = 0
             water_hazard_tick(self.engine)
         px, py = self.player.position
         self.assertNotEqual(self.wmap.terrain[py][px],
@@ -171,3 +177,81 @@ class TestHazards(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestBreathClock(unittest.TestCase):
+    """P13.3: 5e's two-stage drowning — the dive is plannable."""
+
+    def setUp(self):
+        self.engine = GameEngine(
+            llm_provider="heuristic", enable_npc_processes=False)
+        self.engine.start_game()
+        self.wmap = self.engine.world.map
+        self.player = self.engine.player
+        self.ox, self.oy = self.wmap.width - 16, self.wmap.height - 10
+        for y in range(self.oy - 1, self.oy + 5):
+            for x in range(self.ox - 1, self.ox + 6):
+                self.wmap.terrain[y][x] = TerrainType.GRASS
+                ch = self.wmap.get_character_at(x, y)
+                if ch is not None:
+                    self.wmap.remove_character(ch)
+        for dy in range(5):
+            for dx in range(5):
+                self.wmap.terrain[self.oy + dy][self.ox + dx] = \
+                    TerrainType.WATER
+        self.deep = (self.ox + 2, self.oy + 2)
+        self.wmap.remove_character(self.player)
+        self.player.position = self.deep
+        self.wmap.place_character(self.player, *self.deep)
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def test_capacity_scales_with_constitution(self):
+        from engine.hazards import breath_capacity
+        self.player.constitution = 10
+        self.assertEqual(breath_capacity(self.player), 4)
+        self.player.constitution = 14      # +2 mod: 3 minutes
+        self.assertEqual(breath_capacity(self.player), 12)
+        self.player.constitution = 6       # the floor holds
+        self.assertEqual(breath_capacity(self.player), 4)
+
+    def test_the_dive_is_safe_while_breath_holds(self):
+        self.player.constitution = 10      # 4 turns of air
+        self.engine.traversal.rng = _FixedRng(1)   # doomed checks
+        hp0 = self.player.hp
+        for _ in range(4):
+            water_hazard_tick(self.engine)
+        self.assertEqual(self.player.hp, hp0,
+                         "no struggle while the breath holds")
+        water_hazard_tick(self.engine)     # lungs empty: it begins
+        self.assertLess(self.player.hp, hp0,
+                        "the fifth turn is the water's")
+
+    def test_surfacing_refills_the_lungs(self):
+        self.player.constitution = 10
+        water_hazard_tick(self.engine)     # breath 4 -> 3
+        self.assertEqual(self.player.metadata["breath"], 3)
+        self.wmap.remove_character(self.player)
+        self.player.position = (self.ox - 1, self.oy)   # dry land
+        self.wmap.place_character(self.player, *self.player.position)
+        water_hazard_tick(self.engine)
+        self.assertNotIn("breath", self.player.metadata,
+                         "air is free on land")
+
+    def test_the_hint_counts_the_dive_down(self):
+        from ui.hints import context_hints
+        water_hazard_tick(self.engine)
+        joined = " ".join(context_hints(self.engine)).lower()
+        self.assertIn("diving — breath", joined)
+
+    def test_the_burn_warning_fires(self):
+        self.player.constitution = 10
+        for _ in range(4):
+            water_hazard_tick(self.engine)
+        log = " ".join(str(e) for e in
+                       self.engine.memory_manager.game_history[-4:])
+        self.assertIn("lungs burn", log.lower())

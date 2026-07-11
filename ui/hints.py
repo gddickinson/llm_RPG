@@ -219,7 +219,13 @@ def context_hints(engine) -> List[str]:
                 from engine.hazards import flow_at
                 pull = (" — the current pulls!"
                         if flow_at(engine, x, y) else "")
-                hints.insert(0, f"[!] deep water: reach land{pull}")
+                breath = engine.player.metadata.get("breath")
+                if breath is not None and breath > 0:
+                    hints.insert(0, f"[~] diving — breath {breath}"
+                                    f"{pull}")
+                else:
+                    hints.insert(0, f"[!] deep water: reach "
+                                    f"land{pull}")
         except Exception:
             pass
         try:   # traversal (P11.1): what would a bump cost here?

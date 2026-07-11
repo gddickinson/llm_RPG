@@ -42,6 +42,7 @@ class TestFlight(unittest.TestCase):
         apply_effect(self.player, "flying", 20)
         self.assertTrue(self.engine.player_actions.move(1, 0))
         hp0 = self.player.hp
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         self.assertEqual(self.player.hp, hp0,
                          "no struggle above the water")
@@ -60,9 +61,11 @@ class TestFlight(unittest.TestCase):
         self.engine.traversal.rng = type(
             "R", (), {"randint": lambda s, a, b: 1})()
         hp0 = self.player.hp
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         self.assertEqual(self.player.hp, hp0, "airborne and dry")
         remove_effect(self.player, "flying")
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         self.assertLess(self.player.hp, hp0,
                         "grounded, the water is real again")

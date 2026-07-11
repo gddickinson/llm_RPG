@@ -91,6 +91,7 @@ class TestTraversalAids(unittest.TestCase):
         self.assertEqual(self.player.position[0], self.ox + 2,
                          "the surface bears you")
         hp0 = self.player.hp
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         self.assertEqual(self.player.hp, hp0,
                          "no struggle while water-walking")
@@ -100,12 +101,14 @@ class TestTraversalAids(unittest.TestCase):
         self._put_player(x, y)
         self.trav.rng = _FixedRng(6)     # 6 + 1 + 0 = 7 < DC 12
         hp0 = self.player.hp
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         self.assertLess(self.player.hp, hp0, "graceless, you sink")
         self.player.hp = hp0
         self.player.metadata.pop("drown_turns", None)
         from characters.status_effects import apply_effect
         apply_effect(self.player, "swimmers_grace", 20)
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)   # 7 + 5 = 12 >= DC 12
         self.assertEqual(self.player.hp, hp0,
                          "the blessing keeps your head up")
@@ -126,6 +129,7 @@ class TestTraversalAids(unittest.TestCase):
                                  for _ in range(capacity(self.player))]
         self.trav.rng = _FixedRng(2)
         self.player.hp = self.player.max_hp
+        self.player.metadata["breath"] = 0
         water_hazard_tick(self.engine)
         log = " ".join(str(e) for e in
                        self.engine.memory_manager.game_history[-4:])

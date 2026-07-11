@@ -2327,3 +2327,24 @@ refused to work while the player stood on a building footprint —
 the P9A.7 presence rules correctly treat footprints as indoors —
 so the tests (and players) carry bodies to open ground first,
 exactly as the fiction wants. 7 tests. Suite: 1139, green x3.
+
+**Round 116 — P13.3 The breath clock (done).**
+Diving became plannable. 5e's two-stage drowning went under the
+P11.2 hazard tick: entering deep water starts the BREATH CLOCK —
+(1 + CON modifier) x 4 turns of air, floor of four — and while it
+holds, the water costs nothing: no struggle checks, no fatigue,
+just the hint bar counting the dive down ("[~] diving — breath 7")
+and warnings as it thins ("your breath is nearly spent", "your
+lungs burn — find air!"). Only when the lungs are empty does the
+existing struggle-sweep-drown machinery take over, unchanged.
+Surfacing to shore or land refills instantly, as do water-walking
+and flight. A CON-14 character gets twelve turns of working time
+under the lake — enough to swim down to something, do a thing, and
+swim back, which is the whole point: the research annotation asked
+for diving you can PLAN. The existing struggle tests were
+re-pinned with breath=0 presets (the struggle phase is what they
+test); the blind sed that added those presets mangled two
+nested-block call sites in test_hazards into syntax errors —
+repaired by hand, and the lesson from round 105 now extends to
+test surgery: anchored edits, not blind replaces. 5 new tests.
+Suite: 1144, green x3.

@@ -1780,10 +1780,20 @@ they are first-class items now, in dependency order.
   ends. Testing surfaced good presence behavior: delivery fails on
   building footprints (indoor rules) — carry them to open ground,
   as the fiction wants. 7 tests. Suite 1139, green x3.)*
-- [ ] **P13.3 The breath clock.** Phase 11 annotation from the
+- [x] **P13.3 The breath clock.** Phase 11 annotation from the
   research: 5e's two-stage drowning — hold breath 1+CON-mod
   minutes underwater before the P11.2 escalation starts; diving
   becomes plannable.
+  *(Round 116: `breath_capacity` = (1 + CON mod) × 4 turns, floor
+  4, in engine/hazards.py. While breath holds, deep water costs
+  NOTHING — no checks, no fatigue — and the hint bar counts the
+  dive down ("[~] diving — breath N"); warnings at 2 and 0
+  ("your lungs burn"). Only at empty lungs does the P11.2
+  struggle machinery begin. Surfacing, water-walking or flight
+  refills instantly. Existing struggle tests re-pinned with
+  breath=0 presets (a blind sed mangled two nested call sites —
+  repaired; anchored edits for test surgery too, noted again).
+  5 tests. Suite 1144, green x3.)*
 - [ ] **P13.4 Playtest Campaign 4.** Both-sides scripted-and-judged
   session per the Playtest Matrix, focused on the Phase 12 systems
   interacting (needs+rest+infection, crime+fence+disguise,
