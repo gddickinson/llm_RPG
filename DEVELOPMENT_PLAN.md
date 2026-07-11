@@ -1399,9 +1399,21 @@ speed or slow movement.
   telegraphs wade/swim/climb. Validator checks traversal.json skill/
   terrain refs. Sweep-downstream and drop-pack outcomes are P11.2/
   P11.3 as planned. 8 new tests + 3 rewritten.)*
-- [ ] **P11.2 Hazard outcomes.** Being swept: forced movement along a
+- [x] **P11.2 Hazard outcomes.** Being swept: forced movement along a
   flow direction; drowning: escalating HP loss with a struggle check
   each turn; mountain falls. Telegraphed clearly in the log + hints.
+  *(Round 96: `engine/hazards.py`. FLOW derived from water shape —
+  a river is much longer than wide, so flow runs along the clearly-
+  longer axis toward map south/east; round lakes are slack. Each
+  turn in deep water: struggle check (swim math); success treads
+  water, failure = swept SWEEP_TILES downstream if there's a
+  current + escalating drown damage (2×turns). The water never
+  kills: at 1 HP you're WASHED ASHORE at the nearest dry tile,
+  fatigue 100, and the river keeps one item from your pack
+  (dropped on the riverbed — recoverable if you dare). Badly
+  failed climbs while standing on rock TUMBLE you off the face.
+  `[!]` log lines + a top-priority deep-water hint ("the current
+  pulls!"). 7 tests.)*
 - [ ] **P11.3 Aids.** Items and spells that help: rope, climbing
   gear, a swimming blessing, water-walking; encumbrance interacts
   (drop your pack or sink).

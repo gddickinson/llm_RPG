@@ -1827,3 +1827,26 @@ the validator cross-checks traversal.json terrain and skill refs.
 Old hard-gate tests rewritten to the graded contract; a pets test
 that hardcoded 8 skills now derives from the registry. 8 new tests.
 Suite: 966, green x2.
+
+**Round 96 — P11.2 Hazard outcomes: sweeps, drowning, tumbles (done).**
+The water got its teeth. `engine/hazards.py`: FLOW is derived from
+the water's shape — a river is much longer than it is wide, so the
+current runs along the clearly-longer axis (2+ tiles longer),
+toward the map's south/east by convention; round lakes and bends
+are slack. Every turn the player spends in DEEP water (P11.1's
+overlay: no dry neighbor) is a struggle check using the same swim
+math as crossing — succeed and you tread water, fail and the water
+starts winning: swept downstream up to 2 tiles if there's a
+current, plus escalating drown damage (2 x consecutive failing
+turns), plus fatigue. The water never kills outright — at 1 HP the
+river spits you out: WASHED ASHORE at the nearest dry unoccupied
+tile, fatigue pegged at 100, and the river keeps one item from
+your pack, dropped on the riverbed where you went under
+(recoverable, if you dare go back in). On rock, a badly failed
+climb while standing on a mountain tile is a TUMBLE — you fall off
+the face to adjacent flat ground on top of the scrape damage.
+Everything telegraphs: `[!]`-prefixed log lines and a top-priority
+hint-bar warning in deep water that says whether the current pulls.
+7 tests: flow shape rules, safe treading, downstream sweep,
+escalation-never-kills, ashore-minus-an-item, the tumble, and the
+hint. Suite: 973, green x2.

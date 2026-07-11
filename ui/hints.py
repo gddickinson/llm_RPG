@@ -140,6 +140,17 @@ def context_hints(engine) -> List[str]:
                 hints.append("[SHIFT+P] pray")
         except Exception:
             pass
+        try:   # in deep water, the only hint that matters (P11.2)
+            from world.world_map import TerrainType as TT
+            wmap = engine.world.map
+            if wmap.terrain[y][x] == TT.WATER and \
+                    not engine.traversal.is_shallow(x, y):
+                from engine.hazards import flow_at
+                pull = (" — the current pulls!"
+                        if flow_at(engine, x, y) else "")
+                hints.insert(0, f"[!] deep water: reach land{pull}")
+        except Exception:
+            pass
         try:   # traversal (P11.1): what would a bump cost here?
             from world.world_map import TerrainType as TT
             wmap = engine.world.map

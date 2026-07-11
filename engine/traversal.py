@@ -146,6 +146,12 @@ class TraversalSystem:
             hurt = rule.get("hurt_line", "It hurts.")
             self.engine.memory_manager.add_event(
                 f"{hurt} (-{rule['fail_hp']} HP)")
+            if rule.get("class") == "climb":
+                try:   # falling off the face you stood on (P11.2)
+                    from engine.hazards import tumble
+                    tumble(self.engine)
+                except Exception:
+                    pass
         return msg
 
     # --------------------------------------------------------- slogs

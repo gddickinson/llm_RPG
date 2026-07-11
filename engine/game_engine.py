@@ -448,6 +448,13 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"Flood tick error: {e}")
 
+        # Deep water makes you struggle (P11.2)
+        try:
+            from engine.hazards import water_hazard_tick
+            water_hazard_tick(self)
+        except Exception as e:
+            logger.debug(f"Hazard tick error: {e}")
+
         if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
             self.process_npc_turns_async()
 
