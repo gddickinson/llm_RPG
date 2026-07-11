@@ -26,6 +26,8 @@ class PlayerController:
         self.kind = kind
         self.name = name
         self.driver = None        # M.2 AgentController (agents only)
+        self.away = False         # M.3 human stepped away -> agent drives
+        self.away_home = None     # the spot to potter around while away
 
     @property
     def is_human(self) -> bool:
@@ -179,3 +181,26 @@ class PlayerRoster:
     def agents(self) -> list:
         return [c for c in self.characters
                 if self._controllers[c.id].is_agent]
+
+    # ---- M.3: absent-player persistence -------------------------
+
+    def set_away(self, character, away: bool = True):
+        """Mark a (human) hero as away — an agent keeps it alive until
+        the human returns. Remembers where to potter about."""
+        ctrl = self.controller_for(character)
+        if ctrl is None:
+            return None
+        ctrl.away = away
+        if away and ctrl.away_home is None:
+            ctrl.away_home = tuple(getattr(character, "position", (0, 0))
+                                   or (0, 0))
+        elif not away:
+            ctrl.away_home = None
+        return ctrl
+
+    def is_away(self, character) -> bool:
+        ctrl = self.controller_for(character)
+        return bool(ctrl and ctrl.away)
+
+    def away_characters(self) -> list:
+        return [c for c in self.characters if self.is_away(c)]

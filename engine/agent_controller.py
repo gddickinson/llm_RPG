@@ -94,6 +94,7 @@ class AgentController:
         self.rng = random.Random(seed)
         self.goal = None          # a cached destination tile
         self.target_id = None     # the foe we're focusing
+        self.home = None          # M.3 potter-around tile while away
 
     # ---- perception --------------------------------------------
 
@@ -135,6 +136,9 @@ class AgentController:
         return best
 
     def _pick_goal(self, engine, char):
+        # an away hero potters back toward home (M.3); otherwise roam
+        if self.home is not None and tuple(char.position) != tuple(self.home):
+            return tuple(self.home)
         w = engine.world.map
         x, y = char.position
         return (max(0, min(w.width - 1, x + self.rng.randint(-6, 6))),
@@ -219,15 +223,21 @@ def _driver_for(controller, char) -> AgentController:
 
 
 def drive_agents(engine) -> None:
-    """Run every agent-controlled roster hero once this turn."""
+    """Run every character an agent should drive this turn: the agent-
+    controlled roster heroes, AND any human hero whose player has
+    stepped away (M.3) — including the active player."""
     roster = getattr(engine, "roster", None)
     if roster is None:
         return
-    for char in roster.agents():
+    for char in roster.characters:
         ctrl = roster.controller_for(char)
         if ctrl is None:
             continue
+        if not (ctrl.is_agent or (ctrl.is_human and ctrl.away)):
+            continue
         try:
-            _driver_for(ctrl, char).take_turn(engine, char)
+            driver = _driver_for(ctrl, char)
+            driver.home = ctrl.away_home if ctrl.away else None
+            driver.take_turn(engine, char)
         except Exception as e:
             logger.warning(f"Agent {getattr(char, 'id', '?')}: {e}")

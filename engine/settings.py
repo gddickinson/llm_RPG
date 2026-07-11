@@ -24,6 +24,8 @@ OPTIONS: List[dict] = [
      "choices": ["on", "off"], "default": "on"},
     {"key": "zoom", "label": "Map zoom",
      "choices": [24, 32, 48], "default": 32},
+    {"key": "autoplay", "label": "Auto-play (away)",
+     "choices": ["off", "on"], "default": "off"},
 ]
 _BY_KEY = {o["key"]: o for o in OPTIONS}
 

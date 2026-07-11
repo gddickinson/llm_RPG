@@ -3342,3 +3342,28 @@ pin the behaviours — heal-or-flee when badly hurt, back off when
 swarmed, keep one focus target, shoot with a bow in range, and grab
 ground loot. Suite 1406, green. The agent can now genuinely look after
 itself; M.3 next hands it an absent human's hero to keep alive.
+
+**Round 151 — M.3 Absent-player persistence.**
+The last stone of the multiplayer trio: when a human steps away, their
+hero doesn't freeze or turn into an NPC puppet — the M.2b agent takes
+the wheel. `PlayerController` gained an `away` flag and an `away_home`
+(the spot to potter around, captured when they leave), with
+`roster.set_away`/`is_away`/`away_characters` to work it. `drive_agents`
+now drives not just the agent-controlled heroes but any human hero
+flagged away — the ACTIVE `engine.player` included — running it through
+the same survive/defend/focus policy from M.2b, with the wander goal
+biased toward home so an absent hero holds its ground rather than
+roaming off. The one wrinkle is that a GUI at idle doesn't advance the
+world (only player actions tick it), so `ui/away_mode.heartbeat` ticks
+it on a slow half-second cadence while away — inside the turn pipeline,
+so the away hero actually acts — and any keypress in play hands control
+straight back to the human. A `,`-menu "Auto-play (away)" toggle turns
+it on. Five tests cover the flag and home capture, the away hero being
+driven and defending itself, hand-back stopping the agent, pottering
+toward home, and the heartbeat ticking only while away. The demo says
+it best: a hero left AFK with wolves on it survived twenty world-ticks,
+fighting them off at its home spot at full health, and snapped back to
+human control the instant a key was pressed. Suite 1411, green. M.1
+through M.3 — a roster of heroes that render, act, converse, save,
+travel, and keep living whether or not a human is watching — is done;
+M.4 is the networking layer.

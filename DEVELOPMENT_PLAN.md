@@ -2733,10 +2733,24 @@ last. Networking was previously deferred — this supersedes that.
   (was 1 HP, near-death). 5 new tests (heal/flee when hurt, back off
   swarmed, focus one target, shoot with a bow, grab loot). Suite 1406,
   green.)*
-- [ ] **M.3 Absent-player persistence.** When a human isn't at the
-  controls, M.2's controller takes over their character with light
-  standing goals (go home, work a trade, defend allies) so the world
-  stays populated by real characters, not ghosts — hand back on return.
+- [x] **M.3 Absent-player persistence.** When a human isn't at the
+  controls, M.2's controller takes over their hero.
+  *(Round 151: `PlayerController.away` + `roster.set_away/is_away/
+  away_characters`, capturing an `away_home` (where to potter) when a
+  human steps out. `drive_agents` now drives agent heroes AND any human
+  hero flagged away — INCLUDING the active `engine.player` — through the
+  M.2b policy, so an absent player's character keeps surviving, defending
+  and heading home instead of freezing or going ghost; the controller's
+  wander biases toward `away_home` (a light standing goal). The GUI
+  freezes the world when idle, so `ui/away_mode.heartbeat` ticks it on a
+  slow cadence while away (in the pipeline, so the away hero acts), and
+  ANY keypress in play hands control straight back. A `,`-menu
+  "Auto-play (away)" setting toggles it. 5 tests (away flag + home
+  capture, the away hero is driven & defends, hand-back stops the agent,
+  potters toward home, the heartbeat ticks only while away). Demo: a
+  hero left AFK survived 20 world-ticks fighting off wolves at its home
+  spot, then handed back on return. Suite 1411, green. The multiplayer/
+  agent trio (M.1–M.3) is complete; M.4 is the networking layer.)*
 - [ ] **M.4 Networking (client/server).** The hard part: an
   authoritative server owning the engine, thin clients on different
   machines sending intents + receiving state deltas; lockstep or

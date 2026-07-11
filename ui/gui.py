@@ -155,7 +155,13 @@ class GameGUI:
                         event.key == pygame.K_F11:
                     self.toggle_fullscreen()
                     continue
+                # M.3: any keypress in play hands control back to the human
+                if event.type == pygame.KEYDOWN and self.mode == "play" \
+                        and self.engine.roster.is_away(self.engine.player):
+                    self.engine.roster.set_away(self.engine.player, False)
                 self.input_handler.handle_event(event)
+            from ui.away_mode import heartbeat
+            heartbeat(self)               # M.3 tick the world while away
             # Drive NPC processes only while alive
             if self.mode != "death":
                 try:
