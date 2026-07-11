@@ -19,6 +19,8 @@ from typing import Dict, List, Tuple
 from engine.battle import battle_ai as ai
 from engine.battle.battle_flow import distance_field
 
+MAX_STEPS = 3            # tiles a soldier may cover in one tick (cap)
+
 
 class BattleSession:
     def __init__(self, field, seed: int = 0):
@@ -82,20 +84,44 @@ class BattleSession:
                                          target.x, target.y))
                 ai.attack(field, sol, sq, target, self.rng)
             else:
-                goal = ai.role_goal(field, sol, sq,
-                                    flows.get(sq.team, {}))
-                if goal is not None:
-                    field.move_soldier(sol, *goal)
+                self._advance(sol, sq, target, flows.get(sq.team, {}))
+
+    @staticmethod
+    def _steps(sol, sq) -> int:
+        """Whole tiles this soldier may move this tick from its speed
+        budget; the fractional remainder carries to the next tick."""
+        sol.move_accum += sq.speed
+        n = int(sol.move_accum)
+        sol.move_accum -= n
+        return min(n, MAX_STEPS)
+
+    def _advance(self, sol, sq, target, flow) -> None:
+        """March toward the target, up to the speed budget; stop the
+        moment a step brings the target into reach (attack next tick)."""
+        field = self.field
+        melee = sq.stats.get("ranged", 0) == 0
+        for _ in range(self._steps(sol, sq)):
+            goal = ai.role_goal(field, sol, sq, flow)
+            if goal is None and melee:
+                # flow blocked by the enemy line — push into contact
+                goal = ai.step_toward(field, sol, target.x, target.y)
+            if goal is None or not field.move_soldier(sol, *goal):
+                break
+            if ai._dist(sol.pos, target.pos) <= ai.reach_of(sq):
+                break
 
     def _flee(self, sol, sq, flows) -> None:
-        """A routed squad's men run from the nearest enemy."""
+        """A routed squad's men run from the nearest enemy — at speed
+        (fast units outrun the rout, slow ones get caught)."""
         field = self.field
         target = ai.pick_target(field, sol, sq)
         if target is None:
             return
-        dx = (sol.x > target.x) - (sol.x < target.x)
-        dy = (sol.y > target.y) - (sol.y < target.y)
-        field.move_soldier(sol, sol.x + dx, sol.y + dy)
+        for _ in range(self._steps(sol, sq)):
+            dx = (sol.x > target.x) - (sol.x < target.x)
+            dy = (sol.y > target.y) - (sol.y < target.y)
+            if not field.move_soldier(sol, sol.x + dx, sol.y + dy):
+                break
 
     # ---------------------------------------------------- outcome
 

@@ -31,11 +31,11 @@ llm_RPG/
 ### engine/battle/ — Phase 17 tactical layer
 
 - **`battle_data.py`** — loaders over `data/battles/*.json`: unit archetypes, formations, matchup RPS + terrain, fortifications (all content, no hardcoded stats).
-- **`battle_unit.py`** — P17.2 grid pieces: `Soldier` (light token) + `Squad` (owns soldiers, ONE morale bar, order/formation/commander; rout on morale threshold); round-trips to dict.
+- **`battle_unit.py`** — P17.2 grid pieces: `Soldier` (light token, +P17.4c `move_accum` speed budget) + `Squad` (owns soldiers, ONE morale bar, order/formation/commander, `speed`; rout on morale threshold); round-trips to dict.
 - **`battle_field.py`** — P17.2 battle grid: own terrain, WALL/GATE as HP structures breaching to rubble lanes, soldier occupancy, squad/team registry; round-trips to dict for mid-battle saves.
 - **`battle_flow.py`** — P17.3 flow fields: multi-source BFS distance field per team (O(map)); soldiers step the gradient toward the enemy and through breaches.
-- **`battle_ai.py`** — P17.3 group AI (ported colosseum brain): focus-fire target select, self-contained d20 strike, role movement (archers kite), squad morale/rout.
-- **`battle_session.py`** — P17.3 deterministic tick loop; `run_headless(max_ticks)` runs squads to a result (same shape as the resolver).
+- **`battle_ai.py`** — P17.3 group AI (ported colosseum brain): focus-fire target select, self-contained d20 strike, role movement (archers kite), squad morale/rout; P17.4c `step_toward` greedy push-into-contact when the centroid flow is blocked.
+- **`battle_session.py`** — P17.3 deterministic tick loop; `run_headless(max_ticks)` runs squads to a result (same shape as the resolver); P17.4c multi-step movement by unit `speed` (`MAX_STEPS` cap).
 - **`battle_scenario.py`** — P17.4 staged set-pieces from `data/battles/scenarios.json`; `build_field(id)` expands one into a tickable `BattleField` (shared by the screen and the tests).
 - **`battle_resolve.py`** — P17.1 headless Lanchester auto-resolver: `Army`/`Unit`/`Fort` + seeded `resolve(attacker, defender, terrain, is_siege, seed)`; defence-reduced melee, RPS+speed-softened ranged, cavalry charge, anti-cavalry spears, wall-gated siege with breaches. Deterministic; doubles as the off-screen faction-battle resolver.
 

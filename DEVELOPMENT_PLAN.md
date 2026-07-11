@@ -2232,6 +2232,29 @@ is shippable and testable, de-risking UI last:
   (icons, tracers, scale); suite 1271, green. (d) still open: COVER
   types that blunt ranged fire → folded into P17.6; richer commander
   tactics → P17.5.)*
+- [x] **P17.4c Movement speed — the fidelity keystone.** The grid sim
+  moved every soldier one tile per tick, ignoring the `speed` field
+  the data already carried (cavalry 2.0–2.2, foot ~1.0, catapult 0.2);
+  so cavalry couldn't catch archers and "Charge" would mean nothing.
+  Fix: a per-soldier fractional movement budget.
+  *(Round 131, greenlit "highly realistic battles": each `Soldier`
+  gained a `move_accum` (round-trips in to_dict/from_dict); each
+  marching tick adds the squad's `speed`, whole tiles are spent and
+  the remainder carries — so cavalry cover ~2 tiles/tick, crossbows
+  ~0.8, a catapult one tile per five ticks (`MAX_STEPS`=3 caps a
+  tick). `Squad.speed` reads the archetype. Wiring this exposed a
+  latent pathing gridlock: at 296 units the two masses froze 3 tiles
+  apart because the flow field aims at the enemy CENTROID, whose
+  front tiles are occupied — `battle_ai.step_toward` adds a greedy
+  "push into contact" fallback toward the nearest enemy soldier when
+  the flow is blocked (melee units only; archers still hold), and
+  `grand_clash` now resolves (~88 ticks, was a 500-tick stalemate).
+  Determinism preserved. NOTE: speed alone does NOT flip cavalry-vs-
+  archers — massed bows still win, because they fire every tick with
+  no reload and arrows ignore armour; those are the next fidelity
+  steps (reload/aim, armour/damage-types + shields, then AoE/magic)
+  toward the realism arc. 4 tests (cavalry outruns foot, siege
+  crawls, deterministic, accum round-trip); suite 1275, green.)*
 - [ ] **P17.5 Orders & commander overlay.** `battle_orders.py`
   (Move/Hold/Charge/FocusFire/FallBack/SetFormation + Objective
   types capture-point/breach/protect) and the command UI (select
@@ -2254,6 +2277,33 @@ is shippable and testable, de-risking UI last:
   dice in faction_ticker/retaliation off-screen battles; commander
   orders extend to overworld `[Clash]` events; a castle assault in
   the overworld reuses the siege field. Playtest, then Phase 18.
+
+### Combat fidelity arc (user: "highly realistic battles")
+Speed (P17.4c) is the keystone; these layer real tactics on the grid
+sim, each data-driven, deterministic, and testable. Sequenced by
+payoff — do NOT try to do them all at once.
+- [ ] **P17.9 Ranged fidelity.** Per-unit range from `range_factor`
+  (longbow reaches farther than a thrown axe); a RELOAD cooldown so
+  crossbows/catapults don't fire every tick (they load, then loose);
+  a MOVE-AND-SHOOT penalty — shoot accurately only if you held still
+  last tick, so archers must stop to aim and horse-archers trade
+  accuracy for mobility (the Parthian shot). This is what lets bows
+  be devastating-but-slow instead of devastating-every-tick.
+- [ ] **P17.10 Armour, shields & damage types.** Split `defense`
+  into armour (value + weight) and a shield (front-arc bonus, worth
+  MORE vs ranged than melee); damage carries a type (slash/pierce/
+  blunt) that armour resists unevenly (mail shrugs slashes, a pick
+  punches through); armour weight taxes `speed`. Now heavy cavalry
+  survive the arrow-storm — the missing half of cavalry-vs-archers.
+- [ ] **P17.11 Facing & exposure.** A soldier struck from flank/rear
+  takes more (borrow the P7.3 flank helpers); a unit that runs is
+  more exposed to shot. Formation gives the front rank cover the
+  flanks lack.
+- [ ] **P17.12 Area effects & battle magic.** Catapult/trebuchet and
+  fireball blast RADII hit a tile cluster and paint `surfaces`
+  (fire/oil/electrify already exist); battle-mage units cast the
+  existing spell effects. Explosions, boiling oil, and magic land
+  here.
 
 ## What NOT to build (explicitly deferred)
 

@@ -92,5 +92,54 @@ class TestSkirmish(unittest.TestCase):
         self.assertEqual(set(r["survivors"]), {"red", "blue"})
 
 
+class TestMovementSpeed(unittest.TestCase):
+    """P17.4c: soldiers cover ground per their unit `speed`."""
+
+    def _advance_after(self, utype, ticks):
+        """Tiles a lone squad of `utype` advances toward a far, idle
+        foe over `ticks` — measured before any contact."""
+        bf = BattleField(48, 12)
+        mover = Squad.raise_squad("m", "red", utype, [(2, 5), (2, 6)])
+        foe = Squad.raise_squad("f", "blue", "infantry_sword",
+                                [(46, 5), (46, 6)])
+        foe.set_order("hold", "m")
+        mover.set_order("charge", "f")
+        bf.add_squad(mover)
+        bf.add_squad(foe)
+        sess = BattleSession(bf, seed=1)
+        x0 = mover.centroid()[0]
+        for _ in range(ticks):
+            sess.tick()
+        return mover.centroid()[0] - x0
+
+    def test_cavalry_outruns_infantry(self):
+        inf = self._advance_after("infantry_sword", 8)   # speed 1.0
+        cav = self._advance_after("cavalry_light", 8)     # speed 2.0
+        self.assertGreater(cav, inf * 1.5,
+                           "horse should cover much more ground")
+
+    def test_siege_crawls(self):
+        cat = self._advance_after("siege_catapult", 8)    # speed 0.2
+        inf = self._advance_after("infantry_sword", 8)
+        self.assertLess(cat, inf, "a catapult is far slower than foot")
+        self.assertGreaterEqual(cat, 1, "but it does inch forward")
+
+    def test_speed_is_deterministic(self):
+        a = self._advance_after("cavalry_light", 6)
+        b = self._advance_after("cavalry_light", 6)
+        self.assertEqual(a, b)
+
+    def test_move_accum_survives_a_round_trip(self):
+        bf = _skirmish(red_type="cavalry_light", red_n=4)
+        sess = BattleSession(bf, seed=3)
+        for _ in range(3):
+            sess.tick()
+        sq = bf.squads["red1"]
+        before = [s.move_accum for s in sq.soldiers]
+        restored = Squad.from_dict(sq.to_dict())
+        after = [s.move_accum for s in restored.soldiers]
+        self.assertEqual(before, after)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -19,9 +19,28 @@ from typing import Optional
 MELEE_REACH = 1
 RANGED_REACH = 5
 
+_NEIGH8 = ((1, 0), (-1, 0), (0, 1), (0, -1),
+           (1, 1), (1, -1), (-1, 1), (-1, -1))
+
 
 def _dist(a, b) -> int:
     return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+
+
+def step_toward(field, sol, tx: int, ty: int):
+    """Greedy: the passable neighbour nearest to (tx, ty). Closes the
+    final tiles into contact when the flow field (aimed at the enemy
+    centroid) is blocked by the enemy's own front rank — otherwise a
+    big line gridlocks a few tiles short and never fights."""
+    best, best_d = None, None
+    for dx, dy in _NEIGH8:
+        nx, ny = sol.x + dx, sol.y + dy
+        if not field.passable(nx, ny):
+            continue
+        d = max(abs(nx - tx), abs(ny - ty))
+        if best_d is None or d < best_d:
+            best, best_d = (nx, ny), d
+    return best
 
 
 def reach_of(squad) -> int:

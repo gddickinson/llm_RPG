@@ -24,7 +24,7 @@ class Soldier:
     """One fighter: a grid token that belongs to a squad."""
 
     __slots__ = ("sid", "squad_id", "team", "x", "y", "hp",
-                 "max_hp", "alive")
+                 "max_hp", "alive", "move_accum")
 
     def __init__(self, sid: str, squad_id: str, team: str,
                  x: int, y: int, hp: int):
@@ -36,6 +36,11 @@ class Soldier:
         self.hp = hp
         self.max_hp = hp
         self.alive = True
+        # fractional movement budget (P17.4c): each marching tick adds
+        # the squad's `speed`; whole tiles are spent, the remainder
+        # carries — so cavalry (2.0) cover ground twice as fast as
+        # foot (1.0) and a catapult (0.2) crawls one tile per 5 ticks.
+        self.move_accum = 0.0
 
     @property
     def pos(self) -> Tuple[int, int]:
@@ -50,7 +55,7 @@ class Soldier:
         return {"sid": self.sid, "squad_id": self.squad_id,
                 "team": self.team, "x": self.x, "y": self.y,
                 "hp": self.hp, "max_hp": self.max_hp,
-                "alive": self.alive}
+                "alive": self.alive, "move_accum": self.move_accum}
 
     @staticmethod
     def from_dict(d: dict) -> "Soldier":
@@ -58,6 +63,7 @@ class Soldier:
                     d["y"], d["max_hp"])
         s.hp = d["hp"]
         s.alive = d["alive"]
+        s.move_accum = d.get("move_accum", 0.0)
         return s
 
 
@@ -100,6 +106,11 @@ class Squad:
     @property
     def category(self) -> str:
         return self.stats.get("category", "infantry")
+
+    @property
+    def speed(self) -> float:
+        """Tiles per marching tick (P17.4c). Horse > foot > siege."""
+        return float(self.stats.get("speed", 1.0))
 
     @property
     def alive_soldiers(self) -> List[Soldier]:

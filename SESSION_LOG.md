@@ -2786,3 +2786,33 @@ fire (→ P17.6, now "Siege & cover") and richer commander tactics
 (→ P17.5). A headless render smoke-test drove every zoom (48→8,
 including blob mode) across three scenarios without error. 8 new
 tests; suite 1271, green.
+
+**Round 131 — P17.4c Movement speed, the fidelity keystone.**
+With the user asking for "highly realistic battles", the first and
+biggest lever is that the grid sim moved everyone one tile per tick —
+ignoring the `speed` the unit data already carried (cavalry 2.0–2.2,
+foot ~1.0, catapult 0.2). So cavalry could never catch archers and a
+future "Charge" order would be hollow. The fix is a per-soldier
+fractional movement budget: each `Soldier` carries a `move_accum`
+(saved in to_dict/from_dict); every marching tick adds the squad's
+`speed`, whole tiles are spent and the remainder carries, capped at
+`MAX_STEPS`=3 a tick. Cavalry now cover ~2 tiles/tick, crossbows
+~0.8, a catapult one tile per five ticks — and it all stays
+deterministic. Wiring speed in exposed a latent gridlock the small
+scenarios had hidden: at 296 units the two masses froze three tiles
+apart, because the flow field aims at the enemy CENTROID and the
+tiles in front of it are occupied by the enemy's own front rank, so
+`step_down` could never advance. `battle_ai.step_toward` adds a
+greedy "push into contact" fallback — when the flow is blocked, a
+melee soldier steps to the passable tile nearest the enemy soldier
+it's targeting (archers still hold, they don't blindly charge). With
+that, `grand_clash` resolves in ~88 ticks instead of stalemating to
+500. The honest limit, written into the plan: speed alone does NOT
+flip cavalry-vs-archers — massed bows still win because they loose
+every tick with no reload and arrows ignore armour. Those are the
+next steps of the arc, now on the plan as P17.9 (reload / range /
+move-and-shoot), P17.10 (armour, shields, damage types), P17.11
+(facing & exposure) and P17.12 (area effects & battle magic). 4 new
+tests (cavalry outruns foot, siege crawls, deterministic, accum
+round-trips); the 27 battle tests and the full suite stay green at
+1275.
