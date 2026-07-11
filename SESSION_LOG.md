@@ -1684,3 +1684,28 @@ blast: Wolf, Wolf."); and the same-space rules hold — a blast in
 the crypt doesn't scorch the street, walls shield the indoors, and
 monsters a dungeon floor away are untouched. Single-target spells
 are unchanged. 9 new tests. Suite: 923, green x3.
+
+**Round 90 — P10.2 Destructible tiles (done) + Phase 12 synthesis.**
+The world takes damage. engine/tile_damage.py gives tiles materials
+and sparse hit points: stone walls shrug off fire (x0.3) but crumble
+to siege (x1.5), wooden groves burn (x2), fields tear easily. Walls
+CRACK at half HP as a warning before collapsing into RUBBLE through
+set_terrain — firing the P10.0 callbacks. Fireballs now raze their
+blast radius ("The blast razes 3 of the surroundings!" — scorched
+earth where the grove stood), and the emergent payoff: a BREACHED
+WALL IS A SECOND DOOR. Bump the rubble gap and you clamber inside,
+no lock consulted — smash your way into the locked farmhouse and
+the trespass system still judges you. Tile HP persists via
+save_load. AND the deep-dive completed: the third research report
+(simulation roguelikes: NetHack's 7-state hunger ladder with exact
+nutrition integers, CDDA's two-track fatigue and bite-infection
+fuses, OSRS's XP curve and food-tick economy, UO skill atrophy,
+Qud's water ritual and single-scalar temperature, NetHack bones)
+landed, and all three reports were synthesized against
+docs/RULES_AUDIT.md into PHASE 12 — RULES OF LIVING: fourteen
+ordered rounds (degrees of success, valued conditions, thirst +
+exhaustion ladder, dying & wounded, food economy, rest with teeth +
+the DM's night, combat depth, skill actions, crime & law II,
+economy II, the bond ceremony, the infection race, bones into the
+Legendarium, pet loyalty) plus annotations upgrading P10.3 to
+DOS2-style surfaces. 8 new tests. Suite: 931, green x3.

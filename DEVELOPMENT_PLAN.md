@@ -1338,6 +1338,105 @@ speed or slow movement.
   haste/slow statuses that change actions-per-turn or step cost;
   flying monsters (wisps already float thematically) use it.
 
+## Phase 12 — Rules of Living (George's deep-dive, synthesized 2026-07-11)
+
+Three research agents surveyed tabletop (D&D 5e / Pathfinder 2e),
+simulation roguelikes (NetHack / CDDA / OSRS / UO / DF / Qud / PZ)
+and modern CRPGs (DOS2/BG3 / KCD / RimWorld / Skyrim / Gothic / M&B)
+for concrete rules across ten categories; docs/RULES_AUDIT.md holds
+our baseline. The full reports (with exact formulas) are in the
+session transcript. Below: the synthesis, ordered so each item is
+one loop round and earlier items feed later ones. Convergence was
+the ranking signal — mechanics independently top-ranked by multiple
+traditions lead.
+
+- [ ] **P12.1 Degrees of success.** PF2e's four-outcome d20: beat
+  the DC by 10+ = critical success, miss by 10+ = critical failure,
+  nat 20/1 shift one degree. Upgrade engine/skills.py's check core
+  so EVERY existing roll (lockpicking, persuasion, forage quality,
+  forcing doors, shove) gains jackpot/fumble outcomes. The single
+  biggest systemic win per line of code.
+- [ ] **P12.2 Valued conditions.** PF2e-style {condition, value,
+  decay} schema for status_effects: Frightened 2 = −2 to everything,
+  auto-decays 1/turn; persistent damage with a flat-DC end check;
+  add prone/blinded (FOV powers blinded) and off-guard (−2 AC,
+  replaces our advantage-strength flanking).
+- [ ] **P12.3 Needs II: thirst + the exhaustion ladder.** Add thirst
+  (faster clock than hunger: days not weeks); wire hunger/thirst/
+  sleep-debt into a 6-level cumulative exhaustion ladder (5e) with
+  felt penalties (checks → speed → attacks → HP max → collapse);
+  CDDA's two-track insight: tiredness (any sleep clears) vs sleep
+  debt (only real nights); the player finally NEEDS to sleep. Bed
+  quality (already modeled) sets recovery speed.
+- [ ] **P12.4 Dying & Wounded.** PF2e's Dying 1–4 + recovery checks
+  + the Wounded counter (each knockdown brings the next closer),
+  layered UNDER our failure-as-story outcomes: drop to 0 → dying
+  turns → stabilize into robbed/left-for-dead/story beats instead
+  of instant resolution. Kenshi's soft-states (staggered/KO) for
+  NPCs so fights end in bodies to rob, ransom, or rescue.
+- [ ] **P12.5 Food economy.** OSRS: every food gets heal + a shared
+  eat/attack delay (eating mid-fight costs tempo), one combo food,
+  one brew that overheals but drains offense; KCD freshness 0–100
+  decaying per day (poison risk under 50), cooking resets it and
+  launders the stolen flag. Gives farming/foraging/cooking a combat
+  reason to exist.
+- [ ] **P12.6 Rest with teeth + the DM's night.** Long rest costs
+  provisions (BG3 camp supplies); interruption rules; well-rested
+  buffs by bed quality (Skyrim +XP tiers); lifestyle expenses as a
+  gold sink at inns; and the hook the whole game wants: the long
+  rest is the AutonomousDM's GUARANTEED beat slot — while you sleep,
+  the world moves and the DM speaks (dreams, ambushes, camp scenes).
+- [ ] **P12.7 Combat depth.** Concentration: one sustained spell
+  max, damage forces the keep-it check (or PF2e sustain-as-action);
+  cover from FOV terrain (+2 half / +5 three-quarters vs ranged);
+  swap flanking advantage→flat −2 AC off-guard; BG3 weapon actions —
+  one special move per weapon type, once per rest (cleave, topple,
+  pommel-stun, bleed) as data on weapons.json.
+- [ ] **P12.8 Skill actions.** PF2e's codified combat verbs from
+  skills we already train: Trip/Shove-plus (Athletics), Demoralize
+  (Intimidation, per-target 10-min immunity — THE anti-spam
+  pattern), Feint (Deception), Battle Medicine (once/day/target).
+  Skills become fighting styles.
+- [ ] **P12.9 Crime & law II.** Skyrim's guard-resolution menu on
+  contact: pay fine / jail (time passes, skill-progress cost) /
+  bribe / talk (Speech check) / resist; per-settlement bounty
+  ledger; stolen-item flags with fence-only sales (the
+  unseen_break_ins counter finally pays off); witnesses remember
+  clothes (KCD) — a disguise resets identification.
+- [ ] **P12.10 Economy II.** OSRS stock-elastic shop prices (price
+  moves k% per item of stock deviation, self-healing restock)
+  layered on per-settlement supply so REGIONAL arbitrage exists
+  (M&B); KCD haggle-patience minigame (visible meter, failed
+  haggles cost per-merchant reputation) replacing flat haggle
+  tokens; an alchemy-style universal value floor as the gold sink.
+- [ ] **P12.11 Social depth: the bond ceremony.** Qud's water
+  ritual: a formal "share a drink" with named NPCs converts
+  reputation into spendable currency — buy secrets, learn skills,
+  recruit companions at rep prices (12×level-gap + 200); faction
+  rep gets behavior THRESHOLDS (despised/disliked/indifferent/
+  favored/revered) instead of price-only effects.
+- [ ] **P12.12 Medicine II: the infection race.** RimWorld's three
+  numbers — infection grows +0.84/day, immunity +0.64/day scaled by
+  rest/bed, treatment quality (healer skill × medicine tier)
+  subtracts — first to 100 wins. Extends diseases (P8.2) with
+  wounds that demand tending, and makes healers/priests matter.
+- [ ] **P12.13 Bones: the fallen enter the Legendarium.** NetHack's
+  bones pattern, single-player: on death/darkest defeats, snapshot
+  the site + a hostile ghost + your gear (mostly cursed) into the
+  Legendarium; future campaigns load it with probability 1/3. Your
+  failures literally become the world's content.
+- [ ] **P12.14 Pet loyalty.** NetHack tameness 1–20 (+1 feeding,
+  −1 neglect, 0 = walks away) and apport/fetch trained by treats,
+  layered on pets.py followers.
+
+**Annotations to existing phases from the research:** P10.3 (fire
+spread) upgrades to DOS2-style SURFACES — water/oil/blood pools,
+electrified water, oil slows, fire+oil detonates; the DM can
+pre-paint arenas as data. P10.2's damage thresholds gain 5e's
+object-material AC/HP tables if finer grain is wanted. Phase 11
+swimming adopts 5e's two-stage breath clock (1+CON-mod minutes,
+then CON-mod rounds of drowning).
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
