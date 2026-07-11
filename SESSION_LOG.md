@@ -3020,3 +3020,31 @@ with unique in-bounds placements, and converges (the big ones capped
 in the test). Two breadth tests assert the library spans forest/water/
 rubble/mountain terrain and infantry/cavalry/archer/siege units. Suite
 1323, green.
+
+**Round 139 — PUX.1 A major GUI gameplay integration test.**
+The battle layer has deep coverage, but the CORE playable game was
+only tested system-by-system. `tests/test_gui_playthrough.py` closes
+that gap with twelve end-to-end integration tests that each boot a
+fresh heuristic engine and drive it through exactly the calls the
+GUI's input_handler makes — no mocks, the real code paths. In one
+sweep they prove the whole loop hangs together: a new game boots a
+world with combat, economy, quests, NPCs and interiors all wired;
+`move_player` walks the hero and turns the per-tick pipeline; a wolf
+spawned at his elbow is cut down through `combat_system.player_attack`
+and yields experience; `award_xp` carries him up a level and thickens
+his HP; an item is forged, equipped, and a potion heals a wound;
+`interact_with_npc` returns real dialogue; `accept_quest` lands the
+quest in the manager's active list; `economy_system.player_buy` and
+`player_sell` move gold and goods with a merchant conjured at his
+side; a taught spell is cast and drains mana; a building is entered
+and left; and — the load-bearing one — a save, a deliberate scribble
+over the live state, and a load restore his gold, wounds and
+position exactly. A final `test_full_core_loop` chains walk → fight →
+trade → save/load in a single run. The trick that keeps it off the
+worldgen flake: enemies and merchants aren't hunted for in the
+procedural map, they're spawned and then nudged onto whichever
+adjacent tile the presence-aware adjacency check actually accepts —
+so it ran 5/5 clean in isolation in a third of a second. This is the
+regression net the playable game was missing, and the first stone of
+the user-directed playability pass. Suite 1335, green (bar the
+historic disease/director worldgen flake, which reran clean).

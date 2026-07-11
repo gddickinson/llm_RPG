@@ -2524,15 +2524,23 @@ User: "Add a major test of the gameplay from the GUI along with a
 strong effort for improving the game UX overall and playability."
 The battle layer is rich; now harden and smooth the CORE GAME. Take
 these next, ahead of more Phase-17 depth.
-- [ ] **PUX.1 A major GUI gameplay integration test (do next).** One
-  scripted, headless end-to-end playthrough driving the ENGINE through
-  the same calls the GUI/input_handler makes (SDL dummy): new game →
-  move about the world → enter a building → talk to an NPC → accept a
-  quest → trigger & win combat → loot & gain XP/level → buy/sell at a
-  shop → cast a spell → save → load → assert state survived. Asserts
-  the whole loop actually works together, not just units in isolation —
-  a regression net for the playable game. Split into a few focused
-  tests if one file would exceed the line limit.
+- [x] **PUX.1 A major GUI gameplay integration test.** One scripted,
+  headless end-to-end playthrough driving the ENGINE through the same
+  calls the GUI/input_handler makes.
+  *(Round 139: `tests/test_gui_playthrough.py` — 12 integration tests
+  under one class, each booting a fresh heuristic engine and driving
+  the real GUI code paths: new game boots a world with all subsystems
+  wired; `move_player` runs the turn pipeline; a wolf spawned adjacent
+  is killed via `combat_system.player_attack` and grants XP; `award_xp`
+  levels the hero and grows his HP; an item is created, equipped and a
+  potion healed; `interact_with_npc` returns dialogue; `accept_quest`
+  lands it in `quest_manager.active()`; `economy_system.player_buy/sell`
+  moves gold and goods with a spawned merchant; a taught spell is cast
+  and spends mana; a building is entered and left; and a save→scribble
+  →load round-trip restores gold/hp/position. A `test_full_core_loop`
+  chains walk→fight→trade→save/load in one run. Spawns are made
+  presence-adjacent by SEARCH (worldgen varies), so it's deterministic
+  — 5/5 clean isolated runs, 0.33s. Suite 1335, green.)*
 - [ ] **PUX.2 Trading II — the merchant screen.** Enrich `ui/shop_panel`
   (already a B-key buy/sell overlay over a deep economy): quantity /
   bulk buy-sell (Shift = ×5, "sell all junk"), PRICE TRANSPARENCY (buy
