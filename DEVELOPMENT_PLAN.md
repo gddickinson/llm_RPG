@@ -2653,11 +2653,42 @@ these next, ahead of more Phase-17 depth.
   picking accepts a quest, picking Trade opens the shop, the box draws
   with a menu). Suite 1385, green.)*
 
+## Phase M — Multiplayer & agent-driven characters (user-directed)
+
+The user has asked for multiplayer / MMO: players on different machines
+exploring alone or together, forming parties, fighting each other, or
+independent; PLUS a way for an agent (Claude) to control a character
+through the SAME engine route — to test, to enrich the world, and so a
+character keeps living when its human logs off instead of vanishing or
+being pure algorithm. This is a large arc; sequenced so the tractable,
+networking-free value lands first and the hard client/server piece is
+last. Networking was previously deferred — this supersedes that.
+- [ ] **M.1 Multiple player-characters in one engine.** Generalise the
+  single `engine.player` into a roster of controllable characters
+  (a `PlayerController` per character) driving the existing
+  player-action API. Hot-seat / split-screen-less: one process, N
+  heroes, each independent, able to party up or fight. The keystone —
+  everything else builds on a clean "who is acting" abstraction.
+- [ ] **M.2 Agent-driven character (Claude joins).** An autonomous
+  controller that plays a character through the same `player_actions`
+  route a human uses — goal/utility-driven (not the per-tick-LLM
+  forbidden path: cached plans + heuristic execution, like the DM).
+  Lets an agent join for testing and to add a living hero to the world.
+- [ ] **M.3 Absent-player persistence.** When a human isn't at the
+  controls, M.2's controller takes over their character with light
+  standing goals (go home, work a trade, defend allies) so the world
+  stays populated by real characters, not ghosts — hand back on return.
+- [ ] **M.4 Networking (client/server).** The hard part: an
+  authoritative server owning the engine, thin clients on different
+  machines sending intents + receiving state deltas; lockstep or
+  snapshot sync of the turn model; PvP/party/independent sessions.
+  Long-term architecture — depends on M.1's controller abstraction.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
   director + salient-interaction pattern captures 80% of the value.
-- Networked multiplayer, 3D mode, web UI — ROADMAP long-term, irrelevant to the
-  quality/richness goals.
+- 3D mode and a web UI — ROADMAP long-term, irrelevant to the
+  quality/richness goals. (Networked multiplayer moved to Phase M.)
 - LLM-generated main plot (AI Dungeon's trap) and voice I/O.
 - Punishing survival mechanics for the player (needs stay light).
