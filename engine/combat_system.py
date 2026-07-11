@@ -236,7 +236,11 @@ class CombatSystem:
             f"{attacker.name} attacks {defender.name} for {damage} damage. "
             f"{defender.name} is defeated!"
         )
-        self.engine.memory_manager.add_event(msg)
+        from engine.presence import in_earshot
+        if attacker.id == self.engine.player.id or \
+                defender.id == self.engine.player.id or \
+                in_earshot(self.engine, defender.position):
+            self.engine.memory_manager.add_event(msg)
 
         # Drops via loot tables
         try:

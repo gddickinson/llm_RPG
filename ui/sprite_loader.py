@@ -29,6 +29,8 @@ PALETTE = {
     "water":      (45, 100, 180),
     "water2":     (70, 140, 210),
     "road":       (160, 130, 90),
+    "bridge":     (135, 95, 55),
+    "bridge2":    (100, 70, 40),
     "building":   (140, 100, 60),
     "building2":  (90, 60, 30),
     "cave":       (30, 30, 35),
@@ -73,6 +75,17 @@ class SpriteLoader:
             return self._tile_cache[terrain_name]
         surf = pygame.Surface((self.tile_size, self.tile_size))
         ts = self.tile_size
+        if terrain_name == "bridge":
+            surf.fill(PALETTE["water"])
+            plank_h = max(2, size // 6)
+            for i in range(0, size, plank_h + 1):
+                pygame.draw.rect(
+                    surf, PALETTE["bridge"],
+                    (0, i, size, plank_h))
+                pygame.draw.line(
+                    surf, PALETTE["bridge2"],
+                    (0, i + plank_h - 1), (size, i + plank_h - 1))
+            return surf
         if terrain_name == "grass":
             surf.fill(PALETTE["grass"])
             self._dither(surf, PALETTE["grass2"], 0.25)

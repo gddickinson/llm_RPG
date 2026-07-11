@@ -109,15 +109,42 @@ def _skip_inherited(module: dict) -> dict:
     return module
 
 
+def _install_structures(engine, pack) -> int:
+    """P14.2b: packs ship whole structures. Each spec goes through
+    the DM charter (define_structure: level/grid/monster/value caps)
+    but costs no budget — authored content is free. Already-known
+    ids (the Legendarium loaded them from an earlier campaign) skip
+    silently; a refused spec is logged, never fatal to the pack."""
+    from world.structures import STRUCTURES
+    placed = 0
+    for sid, spec in pack.get("structures", {}).items():
+        if sid in STRUCTURES:
+            continue
+        spent_before = dict(engine.dm._spent)
+        ok, note = engine.dm.define_structure(sid, spec)
+        engine.dm._spent = spent_before
+        if ok:
+            placed += 1
+        else:
+            logger.warning(f"pack structure '{sid}' refused: {note}")
+    return placed
+
+
 def install_packs(engine) -> int:
     """Install every pack at new-game start. Returns how many landed."""
     from engine.dm_modules import install_module
     installed = 0
     for pack in discover_packs():
         module = _skip_inherited(_resolve_anchors(engine, pack))
-        spent_before = dict(engine.dm._spent)
-        ok, note = install_module(engine, module)
-        engine.dm._spent = spent_before      # authored content is free
+        placed = _install_structures(engine, pack)
+        if any(module.get(k) for k in ("monsters", "items", "spawns",
+                                       "placements", "quests",
+                                       "beats")):
+            spent_before = dict(engine.dm._spent)
+            ok, note = install_module(engine, module)
+            engine.dm._spent = spent_before  # authored content is free
+        else:
+            ok = placed > 0                  # a structures-only pack
         if ok:
             installed += 1
             engine.memory_manager.add_event(

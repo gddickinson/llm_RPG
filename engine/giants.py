@@ -57,8 +57,10 @@ def giant_tick(engine, giant) -> bool:
             continue
         if wmap.terrain[ny][nx] == TerrainType.BUILDING:
             str_mod = (getattr(giant, "strength", 20) - 10) // 2
-            engine.memory_manager.add_event(
-                f"{giant.name} smashes at the wall!")
+            from engine.presence import in_earshot
+            if in_earshot(engine, (nx, ny)):
+                engine.memory_manager.add_event(
+                    f"{giant.name} smashes at the wall!")
             msg = engine.tile_damage.damage_tile(
                 nx, ny, 15 + 3 * str_mod, "siege")
             if msg and "rubble" in msg:

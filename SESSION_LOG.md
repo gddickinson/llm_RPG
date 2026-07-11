@@ -2427,3 +2427,36 @@ now a real play, and the combo test proves the full loop through
 cast_spell. Blood-as-conductor makes the darker combo too: a
 wounded, bleeding enemy is halfway to being a lightning rod.
 9 tests. Suite: 1154, green x3.
+
+**Round 120 — packs ship structures (P14.2b) + two live playtest
+fixes (P14.3) + the Phase 15 plan (George's direction).**
+A three-part round shaped by George playing WHILE the loop ran.
+PACK STRUCTURES: module packs gain a "structures" section — each
+spec runs through the DM charter (define_structure: level/grid/
+monster/value caps) budget-free, Legendarium-inherited ids skip
+silently, refusals log without killing the pack, and structures-
+only packs are valid. The validator learned to check pack
+structures, and promptly caught my own sample's bad cell letter
+and fake monster — working as intended. Shipped content: The
+Smugglers' Cache, a dark cellar under the Old Farmhouse with
+Restless Bones on guard, lockpicks and wine in the chest, and
+"Wulf pays best. Ask no names." scratched into a beam — a thread
+that points straight at the P12.9 fence. LIVE FINDING 1 (George):
+"the event log shows events occurring a long distance away" —
+presence.in_earshot (radius 14) now gates actor-local events:
+NPC-vs-NPC defeats, knockouts, distant giant smashes and overnight
+wakes only reach the log when the player could plausibly hear
+them; your own deeds and [Realm]/[Board]/[DM] news stay global.
+LIVE FINDING 2 (George): "there should be bridges when paths cross
+water" — the road generator was deliberately SKIPPING water tiles,
+leaving the gaps George walked into. TerrainType.BRIDGE: all three
+generated roads now lay planked bridges (walkable, planks-over-
+water sprite, wood in the damage tables at 30 HP — yes, you can
+burn a bridge down to open water; floods never claim one). AND THE
+PLAN: George asked for the next phase — "more advanced gameplay
+and superior graphics" — so Phase 15 is authored in two
+alternating tracks: Track G (tileset pipeline, animation pass, UI
+skin, light & weather II — pygame polished, not replaced) and
+Track A (companion loyalty arcs, three authored boss set-pieces,
+claim-a-home with ConstructionProject landing there, roads/mounts/
+boat, Playtest Campaign 5). 8 tests. Suite: 1162, green x3.

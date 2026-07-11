@@ -22,6 +22,7 @@ class TerrainType(Enum):
     FARMLAND = "farmland"
     RUBBLE = "rubble"
     SCORCHED = "scorched"
+    BRIDGE = "bridge"          # P14.3b: roads cross water (George)
 
 
 def _is_flier(character) -> bool:

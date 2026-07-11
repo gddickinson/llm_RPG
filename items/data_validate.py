@@ -219,6 +219,26 @@ def _check_module_packs() -> List[str]:
                            f"'{beat.get('command')}' not allowed")
             if beat.get("day_offset", 0) < 1:
                 out.append(f"pack {pid}: beats need day_offset >= 1")
+        # P14.2b: shipped structures obey the same charter shapes
+        from world.structures import CELL_FURNITURE
+        from world.monsters import MONSTER_TEMPLATES as MT
+        from items.item_registry import ITEM_REGISTRY as IR
+        known = set("WFD.<>KG") | set(CELL_FURNITURE)
+        for sid, sspec in pack.get("structures", {}).items():
+            for i, lv in enumerate(sspec.get("levels", [])):
+                bad = set("".join(lv.get("grid", []))) - known
+                if bad:
+                    out.append(f"pack {pid}: structure {sid} level "
+                               f"{i} unknown cells {sorted(bad)}")
+                for spawn in lv.get("monsters", []):
+                    if spawn.get("template") not in MT:
+                        out.append(f"pack {pid}: structure {sid} "
+                                   f"unknown monster "
+                                   f"'{spawn.get('template')}'")
+                for iid in lv.get("chest_loot", []):
+                    if iid not in IR:
+                        out.append(f"pack {pid}: structure {sid} "
+                                   f"unknown item '{iid}'")
     return out
 
 

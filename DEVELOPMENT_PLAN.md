@@ -1845,10 +1845,76 @@ debt and the door to whatever George's next play session surfaces.
   bridges — cap 30 tiles, 3 turns of 4/turn zap (player floored at
   1 HP), fading back to plain water. The shock spell triggers it
   at a wet target: lure them into the puddle, then shock it. 9
-  tests. Suite 1154, green x3.)*; cooperative ConstructionProject
-  (new buildings from materials + workers); windows / magical
-  sight through walls; module packs shipping structures; George's
-  next playtest findings.
+  tests. Suite 1154, green x3.)*; ~~module packs shipping
+  structures~~ *(Round 120: packs gain a "structures" section —
+  each spec runs the DM charter (define_structure) budget-free;
+  known ids skip (Legendarium inheritance); refusals log, never
+  kill the pack; structures-only packs valid; validator checks
+  cells/monsters/loot. Shipped sample:
+  data/module_packs/smugglers_cache.json — a dark cellar under the
+  Old Farmhouse: Restless Bones on guard, a chest of lockpicks and
+  wine, and a beam scratched "Wulf pays best. Ask no names.")*;
+  cooperative ConstructionProject (lands in P15.7); windows /
+  magical sight through walls.
+- [x] **P14.3 Playtest findings (George, live, 2026-07-11).**
+  a) "The event log shows events occurring a long distance away" —
+  `presence.in_earshot` (Chebyshev radius 14) gates actor-local
+  events: NPC-vs-NPC defeats, knockouts, distant giant smashes,
+  overnight wakes. The player's own actions and [Realm]/[Board]/
+  [DM] world news stay global by design. b) "There should be
+  bridges when paths cross water" — TerrainType.BRIDGE: all three
+  generated roads lay planked bridges over water instead of
+  skipping it; walkable, plank-over-water sprite, wood in the
+  tile-damage tables (30 HP — a bridge can burn down to open
+  water), floods never claim one. 8 tests. Suite 1162, green x3.
+
+## Phase 15 — Advanced gameplay & superior graphics (George, 2026-07-11)
+
+George: "develop a plan for further development. This should
+include more advanced gameplay and superior graphics." Two tracks,
+rounds alternating so neither starves. Graphics stays pygame (no
+engine swap): the wins are an art pipeline, animation, light, and
+UI polish.
+
+**Track G — superior graphics**
+- [ ] **P15.1 Tileset pipeline.** Loadable PNG tilesets
+  (data/tiles/<set>/, one image per TerrainType + entity kind)
+  with graceful fallback to the procedural sprites; config toggle;
+  a documented contract so any CC0 16/32px pack (e.g. Kenney)
+  drops in. One round that turns all later art into data.
+- [ ] **P15.2 Animation pass.** Two-frame terrain animation (water
+  shimmer, fire flicker, electrified crackle), entity walk-bob,
+  attack lunge + hit shake, lerped camera, richer floating
+  damage/heal numbers, day-night tint eased per minute.
+- [ ] **P15.3 UI skin.** Paneled HUD with 9-slice borders, NPC
+  portraits in dialog (procedural face compositor from race/class/
+  equipment), styled message log with per-prefix colors ([Law]
+  gold, [DM] violet, [!] red), minimap terrain colors + fog.
+- [ ] **P15.4 Light & weather II.** Colored light sources (forge
+  orange, wisp blue-green), shadow direction by sun hour, rain
+  ripples on P10.3 water pools, winter snow-accumulation tint,
+  aurora on conjunction nights.
+
+**Track A — advanced gameplay**
+- [ ] **P15.5 Companion depth.** Loyalty arcs on the bond system:
+  personal quests at bond thresholds, authored travel banter
+  (data, per NPC), tactical orders (hold / focus / flee at hp%),
+  and a camp-scene role in the P12.6 night.
+- [ ] **P15.6 Boss set-pieces.** Three authored boss fights as
+  data: telegraphed AoE (the giant marks the boulder tile a turn
+  ahead), phase changes at hp thresholds (the Tyrant floods its
+  den at 50%), arena surface play (a wisp queen electrifies her
+  pool); loot worth the fight; Legendarium record on the kill.
+- [ ] **P15.7 Claim a home.** Buy a derelict from the homes
+  system; the ConstructionProject candidate lands here (repair to
+  move in): storage chest, private-room rest quality, hearth
+  kitchen, boss trophies displayed.
+- [ ] **P15.8 Roads, mounts & speed.** Roads earn their keep
+  (fewer minutes per step on ROAD/BRIDGE), a buyable mule (carry
+  +8, follows like a pet, and it's a body — ransom rules apply),
+  and a diary-unlocked Stonepine boat crossing.
+- [ ] **P15.9 Playtest Campaign 5.** Both-sides session across the
+  P15 systems; findings become fixes or Phase 16.
 
 ## What NOT to build (explicitly deferred)
 

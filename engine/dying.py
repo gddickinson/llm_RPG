@@ -164,7 +164,10 @@ def ko_person(engine, attacker, npc) -> str:
     engine.world.map.remove_character(npc)
     msg = (f"{attacker.name} beats {npc.name} senseless — they crumple "
            f"where they stand.")
-    engine.memory_manager.add_event(msg)
+    from engine.presence import in_earshot
+    if attacker.id == engine.player.id or \
+            in_earshot(engine, npc.position):
+        engine.memory_manager.add_event(msg)
     try:   # assaulting citizens feeds the ledger (P12.9)
         klass = getattr(npc.character_class, "value", "")
         if attacker.id == engine.player.id and klass != "brigand":
@@ -236,7 +239,9 @@ def wake_the_fallen(engine) -> int:
                      engine.world.time)
         except Exception:
             pass
-        engine.memory_manager.add_event(
-            f"[Overnight] {npc.name} comes to, aching and angry.")
+        from engine.presence import in_earshot
+        if in_earshot(engine, npc.position):
+            engine.memory_manager.add_event(
+                f"[Overnight] {npc.name} comes to, aching and angry.")
         woke += 1
     return woke

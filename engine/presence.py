@@ -81,3 +81,17 @@ def npc_adjacent_to_player(engine, npc,
         return False
     nx, ny = npc.position
     return ((nx - px) ** 2 + (ny - py) ** 2) ** 0.5 <= radius
+
+
+EARSHOT_RADIUS = 14
+
+
+def in_earshot(engine, pos, radius: int = EARSHOT_RADIUS) -> bool:
+    """P14.3a (George: 'the event log shows events occurring a long
+    distance away'): actor-local events only reach the log when the
+    player could plausibly see or hear them."""
+    try:
+        px, py = engine.player.position
+        return max(abs(pos[0] - px), abs(pos[1] - py)) <= radius
+    except Exception:
+        return True

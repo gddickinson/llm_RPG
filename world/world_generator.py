@@ -220,13 +220,17 @@ class WorldGenerator:
         # L-shape path: horizontal then vertical
         for x in range(min(ax, bx), max(ax, bx) + 1):
             if 0 <= x < self.w and 0 <= ay < self.h:
-                if self.world.map.terrain[ay][x] not in (
-                        TerrainType.WATER, TerrainType.BUILDING):
+                t = self.world.map.terrain[ay][x]
+                if t == TerrainType.WATER:
+                    self.world.map.terrain[ay][x] = TerrainType.BRIDGE
+                elif t != TerrainType.BUILDING:
                     self.world.map.terrain[ay][x] = TerrainType.ROAD
         for y in range(min(ay, by), max(ay, by) + 1):
             if 0 <= y < self.h and 0 <= bx < self.w:
-                if self.world.map.terrain[y][bx] not in (
-                        TerrainType.WATER, TerrainType.BUILDING):
+                t = self.world.map.terrain[y][bx]
+                if t == TerrainType.WATER:
+                    self.world.map.terrain[y][bx] = TerrainType.BRIDGE
+                elif t != TerrainType.BUILDING:
                     self.world.map.terrain[y][bx] = TerrainType.ROAD
 
     def _add_third_settlement(self) -> None:
@@ -264,15 +268,19 @@ class WorldGenerator:
         # Vertical first, then horizontal
         for y in range(min(ay, by), max(ay, by) + 1):
             if 0 <= y < self.h and 0 <= ax < self.w:
-                if self.world.map.terrain[y][ax] not in (
-                        TerrainType.WATER, TerrainType.BUILDING,
-                        TerrainType.MOUNTAIN):
+                t = self.world.map.terrain[y][ax]
+                if t == TerrainType.WATER:
+                    self.world.map.terrain[y][ax] = TerrainType.BRIDGE
+                elif t not in (TerrainType.BUILDING,
+                               TerrainType.MOUNTAIN):
                     self.world.map.terrain[y][ax] = TerrainType.ROAD
         for x in range(min(ax, bx), max(ax, bx) + 1):
             if 0 <= x < self.w and 0 <= by < self.h:
-                if self.world.map.terrain[by][x] not in (
-                        TerrainType.WATER, TerrainType.BUILDING,
-                        TerrainType.MOUNTAIN):
+                t = self.world.map.terrain[by][x]
+                if t == TerrainType.WATER:
+                    self.world.map.terrain[by][x] = TerrainType.BRIDGE
+                elif t not in (TerrainType.BUILDING,
+                               TerrainType.MOUNTAIN):
                     self.world.map.terrain[by][x] = TerrainType.ROAD
 
     def _add_secondary_river(self) -> None:
