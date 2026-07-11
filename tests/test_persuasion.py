@@ -48,7 +48,7 @@ class TestAdjudication(unittest.TestCase):
         self.assertLessEqual(discounted, base)
 
     def test_failure_costs_affinity_and_locks_verb(self):
-        self.ps.rng.randint = lambda a, b: 1  # guaranteed fail
+        self.ps.rng.randint = lambda a, b: 8  # plain fail (not a crit)
         before = self.goren.get_relationship(self.player.id)
         msg = self.ps.attempt(self.goren, "persuade", "gimme stuff")
         self.assertIn("FAILED", msg)
@@ -63,10 +63,17 @@ class TestAdjudication(unittest.TestCase):
         self.assertIn("SUCCESS", msg3)
 
     def test_lock_expires_after_a_day(self):
-        self.ps.rng.randint = lambda a, b: 1
+        self.ps.rng.randint = lambda a, b: 8   # plain fail
         self.ps.attempt(self.goren, "persuade", "x")
         self.engine.world.time += 24 * 60 + 1
         self.assertFalse(self.ps.is_locked(self.goren, "persuade"))
+
+    def test_crit_fail_locks_twice_as_long(self):
+        self.ps.rng.randint = lambda a, b: 1   # nat 1: OFFENDED
+        self.ps.attempt(self.goren, "persuade", "x")
+        self.engine.world.time += 24 * 60 + 1
+        self.assertTrue(self.ps.is_locked(self.goren, "persuade"),
+                        "a critical fumble is spent for two days")
 
     def test_intimidate_frightens_target(self):
         from characters.status_effects import has_effect

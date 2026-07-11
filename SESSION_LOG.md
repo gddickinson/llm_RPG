@@ -1896,3 +1896,29 @@ One unreproducible suite failure appeared right after the refactor
 and vanished for 10 straight green runs — likely worldgen
 randomness; if it recurs, get the test name before touching
 anything. 8 tests. Suite: 988, green x10.
+
+**Round 99 — P12.1 Degrees of success (done). Phase 12 begins.**
+PF2e's four-outcome d20 went into engine/skills.py: `check()`
+returns a `CheckResult` graded by `degree_of` — beat the DC by 10+
+for a critical success, miss by 10+ for a critical failure, and a
+natural 20/1 shifts the outcome one degree either way (capped at
+the ends). The audit's surprise: roll_check had ZERO callers —
+every system rolled its own d20 — so the round's real work was
+ROUTING. Lockpicking: a crit springs the lock "flawless"; a crit
+fail snaps your picks (retiring the fixed PICK_BREAK_MARGIN).
+Forcing doors: a crit takes the door off its hinges; a crit fail
+pops your shoulder (-2 HP, floored). Persuasion's dice path: a
+masterstroke doubles the relationship gain; a critical fumble
+OFFENDS (-5 extra, lockout doubled to two days) — the LLM-judged
+path stays two-outcome by design (the argument matters there, not
+the dice). Shove became margin-graded: win by 10+ and the target
+is hurled TWO tiles; lose by 10+ and the counter-shove staggers
+you backward. Foraging gained a quality roll: crit = "a perfect
+patch," double yield; fumble = a fistful of nettles, -1 HP, no
+yield — but the XP still flows (fumbles teach), which kept the
+skill-progression contract stable. Lessons paid for: fumble
+outcomes made two yield-asserting tests 5% flaky — found by
+repeated suite runs, fixed by pinning the quality roll to a plain
+success in those tests (assert the mechanic, not the dice). 4 old
+tests re-pinned to the graded contract, 11 new. Suite: 999,
+6 green runs.

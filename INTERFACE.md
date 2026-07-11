@@ -78,7 +78,7 @@ llm_RPG/
 - **`module_packs.py`** — Module packs (P1.4): authored campaign packs from `data/module_packs/*.json` install at new-game start via the dm_modules pipeline — budget-free, inherited definitions tolerated, `"anchor": "wilderness"` resolved per map; folder overridable via `LLM_RPG_MODULE_PACKS`.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
-- **`skills.py`** — D&D-style skill checks.
+- **`skills.py`** — D&D-style skill checks; P12.1 degrees of success: `check()` → `CheckResult` with `Degree` (crit ±10 margins, nat 20/1 shift one degree) — lockpicking, forcing, persuasion, shove, and forage all route through it.
 - **`leveling.py`** — XP curve, auto level-up with HP/stat increases.
 - **`skill_progression.py`** — 8-skill lattice from `data/skills.json`; geometric curve, `add_skill_xp()`, levels 1–50.
 - **`collection_log.py`** — `CollectionLog`; unique items/kills/crafts/places vs registry totals (O-key overlay).

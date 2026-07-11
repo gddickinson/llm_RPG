@@ -72,7 +72,7 @@ class TestTactics(unittest.TestCase):
         from engine.tactics import shove
         import random
         rig = random.Random()
-        rolls = iter([20, 1])   # player 20, wolf 1
+        rolls = iter([15, 8])   # player wins by 7 — a plain success
         rig.randint = lambda a, b: next(rolls)
         before = self.wolf.position
         msg = shove(self.engine, rng=rig)
@@ -84,7 +84,7 @@ class TestTactics(unittest.TestCase):
         from engine.tactics import shove
         import random
         rig = random.Random()
-        rolls = iter([1, 20])
+        rolls = iter([8, 15])   # player loses by 7 — no counter-crit
         rig.randint = lambda a, b: next(rolls)
         before = self.wolf.position
         msg = shove(self.engine, rng=rig)

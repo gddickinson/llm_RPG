@@ -70,8 +70,18 @@ def shove(engine, rng: random.Random = None) -> str:
 
     mine = rng.randint(1, 20) + player.get_stat_modifier("strength")
     theirs = rng.randint(1, 20) + target.get_stat_modifier("strength")
-    if mine <= theirs:
+    margin = mine - theirs                      # P12.1 degrees
+    if margin <= 0:
         msg = f"You shove {target.name}, but they hold their ground!"
+        if margin <= -10:
+            # critical loss: the counter-shove staggers YOU
+            px, py = player.position
+            back = (px - (target.position[0] - px),
+                    py - (target.position[1] - py))
+            wmap = engine.world.map
+            if wmap.move_character(player, *back):
+                msg = (f"{target.name} counter-shoves you — you "
+                       f"stagger backward!")
         engine.memory_manager.add_event(msg)
         engine.advance_turn()
         return msg
@@ -93,6 +103,19 @@ def shove(engine, rng: random.Random = None) -> str:
         target.position = (nx, ny)
         wmap.place_character(target, nx, ny)
         msg = f"You slam into {target.name} and send them staggering back!"
+        if margin >= 10:                        # critical: a second tile
+            fx, fy = nx + step[0], ny + step[1]
+            if (0 <= fx < wmap.width and 0 <= fy < wmap.height and
+                    wmap.get_terrain_at(fx, fy) not in
+                    (TerrainType.WATER, TerrainType.MOUNTAIN,
+                     TerrainType.BUILDING) and
+                    not any(n.is_active() and n.position == (fx, fy)
+                            for n in engine.npc_manager.npcs.values())):
+                wmap.remove_character(target)
+                target.position = (fx, fy)
+                wmap.place_character(target, fx, fy)
+                msg = (f"You hurl {target.name} sprawling — they "
+                       f"tumble two full paces back!")
     else:
         msg = (f"You shove {target.name} against the "
                f"obstruction — they stumble but hold.")

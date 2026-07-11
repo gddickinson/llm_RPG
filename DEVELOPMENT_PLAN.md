@@ -1460,12 +1460,27 @@ one loop round and earlier items feed later ones. Convergence was
 the ranking signal — mechanics independently top-ranked by multiple
 traditions lead.
 
-- [ ] **P12.1 Degrees of success.** PF2e's four-outcome d20: beat
+- [x] **P12.1 Degrees of success.** PF2e's four-outcome d20: beat
   the DC by 10+ = critical success, miss by 10+ = critical failure,
   nat 20/1 shift one degree. Upgrade engine/skills.py's check core
   so EVERY existing roll (lockpicking, persuasion, forage quality,
   forcing doors, shove) gains jackpot/fumble outcomes. The single
   biggest systemic win per line of code.
+  *(Round 99: `Degree`/`CheckResult`/`degree_of`/`check()` in
+  engine/skills.py — the audit found roll_check had ZERO callers;
+  every system rolled its own dice, so the real work was routing.
+  Lockpicking: crit = "flawless" instant open; crit fail = picks
+  snap (replaces the fixed PICK_BREAK_MARGIN). Forcing: crit = door
+  off its hinges; crit fail = -2 HP popped shoulder. Persuasion
+  (dice path): crit = masterstroke, double relationship; crit fail
+  = OFFENDED, -5 extra, double lockout; LLM path stays two-outcome.
+  Shove (opposed, margin ±10): crit = hurled two tiles; crit loss =
+  the counter-shove staggers YOU back. Forage: graded Survival —
+  crit = double yield "perfect patch"; fumble = nettles, -1 HP, no
+  yield (but still teaches XP, keeping the XP contract stable).
+  4 old tests re-pinned to the graded contract; two 5%-flakes from
+  fumble outcomes found and fixed by pinning quality rolls in yield
+  tests. 11 new tests. Suite 999, 6 green runs.)*
 - [ ] **P12.2 Valued conditions.** PF2e-style {condition, value,
   decay} schema for status_effects: Frightened 2 = −2 to everything,
   auto-decays 1/turn; persistent damage with a flat-DC end check;

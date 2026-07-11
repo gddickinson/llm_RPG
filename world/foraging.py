@@ -83,6 +83,27 @@ class ForageManager:
             return ("You search, but your eyes are tired and the "
                     "good herbs elude you. (Rest until tomorrow.)")
 
+        # Quality roll (P12.1): a graded Survival check
+        from engine.skills import Degree, Skill, check
+        quality = check(self.engine.player, Skill.SURVIVAL,
+                        dc=8, rng=self.rng)
+        if quality.degree is Degree.CRIT_FAIL:
+            self.harvested_at[(x, y)] = self.engine.world.time
+            player = self.engine.player
+            player.take_damage(1)
+            if player.hp <= 0:
+                player.hp = 1
+            msg = ("You forage carelessly and grab a fistful of "
+                   "nettles — nothing worth keeping. (-1 HP)")
+            self.engine.memory_manager.add_event(msg)
+            try:   # even fumbles teach (keeps XP contract stable)
+                from engine.skill_progression import add_skill_xp
+                for note in add_skill_xp(self.engine.player,
+                                         "foraging", 15):
+                    self.engine.memory_manager.add_event(note)
+            except Exception:
+                pass
+            return msg
         terrain = self.engine.world.map.get_terrain_at(x, y)
         table = TERRAIN_FORAGE_TABLE[terrain]
         item_id = _weighted_pick(table, self.rng)
@@ -90,12 +111,19 @@ class ForageManager:
         if not item:
             return "You find nothing of value."
         self.engine.player.inventory.append(item)
+        bonus = ""
+        if quality.degree is Degree.CRIT_SUCCESS:
+            from engine.carry import can_carry as _can_carry
+            extra = create_item(item_id)
+            if extra and _can_carry(self.engine.player):
+                self.engine.player.inventory.append(extra)
+                bonus = " A perfect patch — you gather double!"
         self.harvested_at[(x, y)] = self.engine.world.time
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             iid = getattr(item, "id", "")
             if iid:
                 self.engine.quest_manager.on_item_acquired(iid)
-        msg = f"You forage and find {item.name}."
+        msg = f"You forage and find {item.name}.{bonus}"
         self.engine.memory_manager.add_event(msg)
         try:
             from engine.skill_progression import add_skill_xp

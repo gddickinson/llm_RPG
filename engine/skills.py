@@ -1,11 +1,17 @@
-"""D&D-style skill system.
+"""D&D-style skill system with PF2e degrees of success (P12.1).
 
 Skills map to an ability score (STR/DEX/CON/INT/WIS/CHA). A check is
-1d20 + ability modifier vs a difficulty class (DC).
+1d20 + ability modifier vs a difficulty class (DC), graded into FOUR
+outcomes: beat the DC by 10+ = critical success, miss by 10+ =
+critical failure, and a natural 20/1 shifts the result one degree.
+Every system that rolls (lockpicking, persuasion, forcing doors,
+shove, forage) routes through `check()` so jackpots and fumbles
+exist everywhere.
 """
 
 import logging
 import random
+from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple
 
@@ -64,6 +70,58 @@ def ability_modifier(score: int) -> int:
 def proficiency_bonus(level: int) -> int:
     """D&D 5e proficiency bonus."""
     return 2 + max(0, (level - 1) // 4)
+
+
+class Degree(Enum):
+    """PF2e's four degrees of success."""
+    CRIT_FAIL = 0
+    FAIL = 1
+    SUCCESS = 2
+    CRIT_SUCCESS = 3
+
+
+@dataclass
+class CheckResult:
+    degree: Degree
+    total: int
+    d20: int
+    dc: int
+
+    @property
+    def success(self) -> bool:
+        return self.degree in (Degree.SUCCESS, Degree.CRIT_SUCCESS)
+
+    @property
+    def crit(self) -> bool:
+        return self.degree in (Degree.CRIT_FAIL, Degree.CRIT_SUCCESS)
+
+
+def degree_of(total: int, dc: int, d20: int) -> Degree:
+    """Grade a roll: +/-10 margins crit; nat 20/1 shift one degree."""
+    if total >= dc + 10:
+        deg = Degree.CRIT_SUCCESS
+    elif total >= dc:
+        deg = Degree.SUCCESS
+    elif total <= dc - 10:
+        deg = Degree.CRIT_FAIL
+    else:
+        deg = Degree.FAIL
+    if d20 == 20:
+        deg = Degree(min(deg.value + 1, 3))
+    elif d20 == 1:
+        deg = Degree(max(deg.value - 1, 0))
+    return deg
+
+
+def check(character, skill: Skill, dc: int = 10,
+          proficient: bool = False, advantage: bool = False,
+          disadvantage: bool = False,
+          rng: random.Random = None) -> CheckResult:
+    """The graded check core: everything that rolls comes here."""
+    ok, total, d20 = roll_check(character, skill, dc,
+                                proficient, advantage,
+                                disadvantage, rng)
+    return CheckResult(degree_of(total, dc, d20), total, d20, dc)
 
 
 def roll_check(character, skill: Skill, dc: int = 10,

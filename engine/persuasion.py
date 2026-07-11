@@ -74,17 +74,29 @@ class PersuasionSystem:
             return (f"{npc.name} is in no mood for that again today. "
                     f"(Try something else, or come back tomorrow.)")
 
+        from engine.skills import Degree
+        self.last_degree = None
         success, reason = self._judge(npc, verb, argument)
+        degree = self.last_degree
         if success:
             note = self._apply_success(npc, verb)
+            if degree is Degree.CRIT_SUCCESS:
+                npc.modify_relationship(self.engine.player.id, 8)
+                note += " A masterstroke — they are genuinely moved."
             msg = (f"[{verb.title()} SUCCESS] {reason} {note}").strip()
         else:
             npc.modify_relationship(self.engine.player.id, FAIL_AFFINITY)
+            lockout = LOCKOUT_MINUTES
+            tail = (f"({npc.name} is annoyed — that approach is spent "
+                    f"for today.)")
+            if degree is Degree.CRIT_FAIL:
+                npc.modify_relationship(self.engine.player.id, -5)
+                lockout *= 2
+                tail = (f"({npc.name} is OFFENDED — don't try that "
+                        f"again soon.)")
             self._locks()[f"{npc.id}:{verb}"] = \
-                self.engine.world.time + LOCKOUT_MINUTES
-            msg = (f"[{verb.title()} FAILED] {reason} "
-                   f"({npc.name} is annoyed — that approach is spent "
-                   f"for today.)")
+                self.engine.world.time + lockout
+            msg = (f"[{verb.title()} FAILED] {reason} {tail}")
         self.engine.memory_manager.add_event(msg)
         from engine.npc_memory import remember
         remember(npc, f"{self.engine.player.name} tried to {verb} me "
@@ -130,13 +142,15 @@ class PersuasionSystem:
             return None
 
     def _dice_judge(self, npc, verb) -> Tuple[bool, str]:
+        from engine.skills import Degree, degree_of
         player = self.engine.player
         stat = VERBS[verb]
         mod = player.get_stat_modifier(stat)
         rel_bonus = npc.get_relationship(player.id) // 10
         roll = self.rng.randint(1, 20)
         total = roll + mod + rel_bonus
-        success = total >= DC
+        self.last_degree = degree_of(total, DC, roll)   # P12.1
+        success = self.last_degree.value >= Degree.SUCCESS.value
         return (success,
                 f"(d20 {roll} {mod:+d} {stat[:3].upper()} "
                 f"{rel_bonus:+d} rapport = {total} vs DC {DC})")

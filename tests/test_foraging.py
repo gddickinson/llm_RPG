@@ -30,6 +30,8 @@ class TestForaging(unittest.TestCase):
         spot = self._find_terrain(TerrainType.FOREST)
         self.assertIsNotNone(spot)
         self.engine.player.position = spot
+        # pin the P12.1 quality roll to a plain success
+        self.engine.forage_manager.rng.randint = lambda a, b: 10
         before = len(self.engine.player.inventory)
         msg = self.engine.forage()
         self.assertIn("forage", msg.lower())
@@ -48,6 +50,7 @@ class TestForaging(unittest.TestCase):
     def test_cooldown(self):
         spot = self._find_terrain(TerrainType.FOREST)
         self.engine.player.position = spot
+        self.engine.forage_manager.rng.randint = lambda a, b: 10
         msg1 = self.engine.forage()
         self.assertIn("forage", msg1.lower())
         msg2 = self.engine.forage()

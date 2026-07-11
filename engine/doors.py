@@ -4,7 +4,8 @@ George's playtest: "They shouldn't be allowed to enter any building at
 will. Doors need to be opened, locks need keys or to be picked/forced."
 The autonomous_world survey confirmed openable doors and keys were
 never built there, so this is new work; the lockpick/force checks port
-its d20 pattern.
+its d20 pattern; P12.1 graded the rolls — crit failures snap picks
+and pop shoulders, crit successes are quiet or clean.
 
 Policy comes from `data/doors.json` by building-name match: homes are
 LOCKED (their owner's key may exist), shops and forges lock at NIGHT,
@@ -24,7 +25,6 @@ from typing import Dict, Optional, Tuple
 
 logger = logging.getLogger("llm_rpg.doors")
 
-PICK_BREAK_MARGIN = 5      # fail by this much -> picks snap
 FORCE_BONUS_DC = 3         # forcing is harder than picking
 
 
@@ -124,15 +124,22 @@ class DoorManager:
                       if getattr(i, "id", "") == "lockpicks"), None)
         if picks is None:
             return None
-        roll = self.rng.randint(1, 20) + _mod(player.dexterity)
-        dc = door["lock_level"]
-        if roll >= dc:
+        from engine.skills import Degree, Skill, check
+        result = check(player, Skill.LOCKPICKING,
+                       dc=door["lock_level"], rng=self.rng)
+        if result.degree is Degree.CRIT_SUCCESS:
+            door["state"] = "open"
+            self.engine.memory_manager.add_event(
+                f"You pick the lock of the {name}.")
+            return True, ("The lock springs open at the first "
+                          "touch — flawless work. ")
+        if result.success:
             door["state"] = "open"
             msg = "The lock clicks open under your picks. "
             self.engine.memory_manager.add_event(
                 f"You pick the lock of the {name}.")
             return True, msg
-        if roll <= dc - PICK_BREAK_MARGIN:
+        if result.degree is Degree.CRIT_FAIL:
             player.inventory.remove(picks)
             return False, ("Your lockpicks snap off in the lock! "
                            "You'll need a new set.")
@@ -145,17 +152,32 @@ class DoorManager:
         if self._effective_state(door) in ("open", "broken"):
             return True, "The door already stands open."
         player = self.engine.player
-        roll = self.rng.randint(1, 20) + _mod(player.strength)
-        dc = door["lock_level"] + FORCE_BONUS_DC
+        from engine.skills import Degree, Skill, check
+        result = check(player, Skill.ATHLETICS,
+                       dc=door["lock_level"] + FORCE_BONUS_DC,
+                       rng=self.rng)
         day = self.engine.world.time // (24 * 60)
         player.metadata["forced_entry_day"] = day     # P9A.4 hook
         self.engine.memory_manager.add_event(
             "The crash of splintering wood echoes down the street.")
-        if roll >= dc:
+        if result.degree is Degree.CRIT_SUCCESS:
+            door["state"] = "broken"
+            msg = (f"The door of the {name} bursts off its hinges — "
+                   f"one clean hit!")
+            self.engine.memory_manager.add_event(msg)
+            return True, msg
+        if result.success:
             door["state"] = "broken"
             msg = f"The door of the {name} gives way!"
             self.engine.memory_manager.add_event(msg)
             return True, msg
+        if result.degree is Degree.CRIT_FAIL:
+            player.take_damage(2)
+            if player.hp <= 0:
+                player.hp = 1
+            return False, ("Something pops in your shoulder! (-2 HP) "
+                           "The door doesn't budge — and someone "
+                           "will have heard that.")
         return False, "The door shudders but holds. Your shoulder " \
                       "aches — and someone will have heard that."
 
