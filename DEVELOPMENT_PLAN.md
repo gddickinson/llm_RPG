@@ -1043,7 +1043,7 @@ simple one-room building interiors — nothing grander. The zone machinery
 already supports richer spaces; what's missing is depth, theming, and
 authored set-pieces. Plan:
 
-- [ ] **P9.1 Structure framework.** A `Structure` = a named stack of
+- [x] **P9.1 Structure framework.** A `Structure` = a named stack of
   themed zone levels connected by stairs/ladders, entered from an
   overworld footprint; locked doors + key items; per-level light levels.
   Blueprints as data (`data/structures.json`) — rooms, connections,
@@ -1341,9 +1341,28 @@ set_terrain + tile callbacks for interior sync.
   living woods regrows (cap 5/night). 7 tests. Remainder:
   cooperative ConstructionProject + chop/dig laborer tasks — fold
   into P10.6's dig actions.)*
-- [ ] **P10.6 Greenfield: water & tunnels.** Minimal cellular flood
+- [x] **P10.6 Greenfield: water & tunnels.** Minimal cellular flood
   spread + damming (blocking tiles stop the frontier); mining
   tunnels (mountain→cave floor via dig actions). Small and tested.
+  *(Round 94: `engine/flood.py` — floods spread as a cellular
+  frontier over grass/road/farmland/swamp/scorched every 4 turns
+  (cap 40 tiles), blocked by buildings/mountains/forest and RUBBLE —
+  piled debris is a DAM, so the P10.4 rubble economy doubles as
+  flood defense. Occupied tiles are never flooded; when the turns
+  run out the water recedes and restores the original terrain.
+  Storms can burst a water's edge (small per-turn chance). Persisted
+  via save_load. `engine/earthworks.py` — E-key ground fallback
+  (rubble clearing moved here from player_actions, which is back
+  under 500 lines) + pickaxe DIGGING: mountains joined the
+  tile_damage material table (stone, 80 HP), four swings cut a
+  tunnel to open ground, each swing trains Mining; hint-bar lines
+  for both. Plus the P10.5 remainder: night MASONS in
+  run_night_labor rebuild breached footprint walls once the rubble
+  is cleared, closing the interior hole through the shared
+  footprint_to_perimeter mapping (breach sync now opens AND closes
+  through one function). 8 tests. Deferred: full ConstructionProject
+  (materials + workers building NEW structures) — revisit if a
+  quest/DM use-case wants it.)*
 
 ## Phase 11 — Environmental traversal & movement magic (George, 2026-07-10)
 

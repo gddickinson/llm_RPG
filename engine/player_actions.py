@@ -22,17 +22,12 @@ class PlayerActions:
         x, y = player.position
         ground = self.engine.world.get_items_at(x, y)
         if not ground:
-            # E on/beside rubble clears a layer (P10.4)
-            try:
-                td = self.engine.tile_damage
-                if self.engine.active_zone() is None:
-                    for dx, dy in ((0, 0), (1, 0), (-1, 0),
-                                   (0, 1), (0, -1)):
-                        if td.depth_at(x + dx, y + dy) > 0:
-                            msg = td.clear_rubble(x + dx, y + dy)
-                            if msg:
-                                self.engine.advance_turn()
-                                return msg
+            try:   # E clears rubble or digs at rock (P10.4/P10.6)
+                from engine.earthworks import e_fallback
+                msg = e_fallback(self.engine, x, y)
+                if msg:
+                    self.engine.advance_turn()
+                    return msg
             except Exception:
                 pass
             return "There's nothing here to pick up."

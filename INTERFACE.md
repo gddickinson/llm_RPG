@@ -65,7 +65,9 @@ llm_RPG/
 - **`targeting.py`** — `TargetingSystem` (P8.7): [ ] cycle / click-to-target locks with range + true LOS; auto-refresh each turn; reticle + hint bar; bow and attack spells fire at the lock.
 - **`tile_damage.py`** — `TileDamage` (P10.2): sparse tile HP + materials (stone resists fire, wood burns); walls crack → RUBBLE (a breach is a second door); fire scorches; persisted.
 - **`surfaces.py`** — `SurfaceLayer` (P10.3): sparse fire/oil/water per-tile surfaces; fire burns occupants + tiles and spreads; oil pools chain-ignite; water douses; per-turn tick; persisted; DM-paintable.
-- **`giants.py`** — Giants + labor (P10.5): `is_giant`/`giant_tick` (smash walls to deep rubble, hurl boulders — maims the player, real splash deaths) on the conflict scan; nightly `run_night_labor` (crews clear rubble by buildings, scorched ground regrows).
+- **`giants.py`** — Giants + labor (P10.5): `is_giant`/`giant_tick` (smash walls to deep rubble, hurl boulders — maims the player, real splash deaths) on the conflict scan; nightly `run_night_labor` (crews clear rubble by buildings, masons rebuild breached walls, scorched ground regrows).
+- **`flood.py`** — `FloodSystem` (P10.6): cellular flood frontier over low ground, dammed by rubble/buildings/mountains; recedes restoring original terrain; occupied tiles never flooded; storm-burst chance; persisted.
+- **`earthworks.py`** — P10.6: the E-key ground fallback (clear rubble, then pickaxe-dig adjacent mountains — 4 swings tunnel to grass, trains Mining); `footprint_to_perimeter`/`sync_breaches`/`close_breach` breach mapping shared by entry-sync and the night masons.
 - **`rest.py`** — Enter-to-sleep at inns; dawn wake, restoration, day-summary overlay.
 - **`dm_api.py`** — `DMApi`; the Dungeon Master's typed/validated/budgeted command set + notebook + scheduled beats.
 - **`dm_digest.py`** — `build_digest(engine)`; the DM's compact JSON view of the table.

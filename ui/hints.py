@@ -141,6 +141,23 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
         try:
+            from engine.earthworks import has_pickaxe
+            from world.world_map import TerrainType
+            wmap = engine.world.map
+            if any(engine.tile_damage.depth_at(x + dx, y + dy) > 0
+                   for dx, dy in ((0, 0), (1, 0), (-1, 0),
+                                  (0, 1), (0, -1))):
+                hints.append("[E] clear the rubble")
+            elif has_pickaxe(engine.player) and any(
+                    0 <= x + dx < wmap.width
+                    and 0 <= y + dy < wmap.height
+                    and wmap.terrain[y + dy][x + dx] ==
+                    TerrainType.MOUNTAIN
+                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                hints.append("[E] dig at the rock face")
+        except Exception:
+            pass
+        try:
             node = engine.gathering_manager.node_at(x, y)
             if node is not None and engine.gathering_manager.has_tool_for(node):
                 _, spec, _ = node

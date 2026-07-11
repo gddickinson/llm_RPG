@@ -1769,3 +1769,31 @@ during testing: letting plain grass-beside-forest regrow would
 slowly forest over every meadow. Remainder (cooperative
 ConstructionProject + chop/dig laborer tasks) folded into P10.6.
 7 new tests. Suite: 950, green x3.
+
+**Round 94 — P10.6 Water & tunnels + the P10.5 remainder (done).**
+Also ticked the stale P9.1 box (that framework shipped in Round 78;
+the checkbox was simply never marked). The round proper:
+`engine/flood.py` — a flood starts at a source tile (or a storm
+bursts a water's edge, small per-turn chance) and spreads as a
+cellular frontier every 4 turns over grass/road/farmland/swamp/
+scorched ground, capped at 40 tiles. It does NOT cross buildings,
+mountains, forest or RUBBLE — piled debris is a DAM, turning the
+P10.4 rubble economy into flood defense: a giant knocks down what
+kept the water out; a player heaving stone into a line saves a
+field (tested with a literal north-south dam). Floods remember what
+they drowned and recede when their turns run out, restoring the
+original terrain; occupied tiles are never flooded (swimming is
+Phase 11's job). Active floods ride save_load.
+`engine/earthworks.py` — the E-key ground fallback moved here
+(player_actions was over the 500-line rule; it's back under) and
+grew DIGGING: mountains joined the tile_damage material table
+(stone, 80 HP), so with a pickaxe in the pack four E-swings at an
+adjacent rock face cut a tunnel through to open ground, each swing
+training Mining. Both advertise on the hint bar. And the P10.5
+remainder: night MASONS in run_night_labor rebuild breached
+footprint walls once the rubble is cleared — the interior hole
+closes with the wall, because breach sync was refactored onto one
+shared footprint_to_perimeter mapping that opens AND closes holes
+(game_api_mixin also back under 500). Deferred: greenfield
+ConstructionProject for NEW structures, pending a quest/DM
+use-case. 8 new tests. Suite: 958, green x2.

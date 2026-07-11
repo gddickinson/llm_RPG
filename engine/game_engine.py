@@ -177,6 +177,8 @@ class GameEngine(GameAPIMixin):
         self.tile_damage = TileDamage(self)
         from engine.surfaces import SurfaceLayer
         self.surfaces_layer = SurfaceLayer(self)
+        from engine.flood import FloodSystem
+        self.flood_system = FloodSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -437,6 +439,12 @@ class GameEngine(GameAPIMixin):
             self.surfaces_layer.tick()
         except Exception as e:
             logger.debug(f"Surface tick error: {e}")
+
+        # Floods spread and recede (P10.6)
+        try:
+            self.flood_system.tick()
+        except Exception as e:
+            logger.debug(f"Flood tick error: {e}")
 
         if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
             self.process_npc_turns_async()

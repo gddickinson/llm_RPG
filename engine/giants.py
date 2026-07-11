@@ -32,6 +32,7 @@ BOULDER_SPLASH = 5
 BOULDER_TILE_DAMAGE = 15
 GIANT_COOLDOWN = 3          # conflict ticks between big acts
 LABOR_LAYERS_PER_NIGHT = 3
+REBUILD_PER_NIGHT = 2       # wall tiles the masons raise
 REGROWTH_CHANCE = 0.05
 REGROWTH_CAP = 5
 
@@ -130,7 +131,38 @@ def run_night_labor(engine, rng: random.Random = None) -> int:
             "[Realm] Work crews haul broken stone away from the "
             "buildings.")
         acts += cleared
-    # 2) the forest creeps back
+    # 2) masons rebuild breached walls (P10.6 — minimal cooperative
+    #    construction: footprint tiles cleared of rubble are raised
+    #    back to BUILDING, and the interior hole closes with them)
+    rebuilt = 0
+    for loc in engine.world.locations:
+        if rebuilt >= REBUILD_PER_NIGHT:
+            break
+        inter = getattr(engine, "interiors", {}).get(loc.name)
+        if inter is None:
+            continue
+        for ey in range(loc.y, loc.y + loc.height):
+            for ex in range(loc.x, loc.x + loc.width):
+                if rebuilt >= REBUILD_PER_NIGHT:
+                    break
+                if wmap.terrain[ey][ex] not in (TerrainType.GRASS,
+                                                TerrainType.SCORCHED):
+                    continue
+                if engine.tile_damage.depth_at(ex, ey) > 0:
+                    continue
+                wmap.set_terrain(ex, ey, TerrainType.BUILDING)
+                engine.tile_damage.tile_hp.pop((ex, ey), None)
+                try:
+                    from engine.earthworks import close_breach
+                    close_breach(loc, inter, ex, ey)
+                except Exception:
+                    pass
+                engine.memory_manager.add_event(
+                    f"[Realm] Masons raise fresh masonry at the "
+                    f"{loc.name}.")
+                rebuilt += 1
+    acts += rebuilt
+    # 3) the forest creeps back
     regrown = 0
     for y in range(wmap.height):
         for x in range(wmap.width):

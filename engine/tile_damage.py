@@ -32,22 +32,27 @@ TILE_MATERIAL = {
     TerrainType.BUILDING: "stone",
     TerrainType.FOREST: "wood",
     TerrainType.FARMLAND: "light",
+    TerrainType.MOUNTAIN: "stone",
 }
 TILE_BASE_HP = {
     TerrainType.BUILDING: 60,
     TerrainType.FOREST: 20,
     TerrainType.FARMLAND: 10,
+    TerrainType.MOUNTAIN: 80,
 }
 TILE_DESTROYED = {
     TerrainType.BUILDING: TerrainType.RUBBLE,
     TerrainType.FOREST: TerrainType.GRASS,
     TerrainType.FARMLAND: TerrainType.SCORCHED,
+    TerrainType.MOUNTAIN: TerrainType.GRASS,
 }
 DESTROY_LINES = {
     TerrainType.BUILDING: "Masonry gives way — the wall collapses "
                           "into rubble!",
     TerrainType.FOREST: "The tree splinters and falls!",
     TerrainType.FARMLAND: "The field is torn apart.",
+    TerrainType.MOUNTAIN: "The rock gives way — you've cut a "
+                          "tunnel through!",
 }
 
 
