@@ -2567,3 +2567,30 @@ first cut also gated TARGETING on the per-turn cache, which broke
 recomputing FOV. That gate was redundant with can_hit's existing
 true-LOS anyway, so it came out; can_witness moved to fresh LOS to
 be correct without a turn tick. 10 tests. Suite: 1198, green x3.
+
+**Round 125 — P15.10 Equipment II (done; George's request).**
+"Please ensure character equipment actions make sense." Now they
+do. TWO-HANDED RULES land in equipment.equip: a two-handed weapon
+needs both hands, so equipping the battleaxe or warhammer STOWS
+whatever shield you were holding ("both hands on the X"), and
+trying to raise a shield while a two-hander is gripped is refused
+("no room for a shield") — one-handed weapons leave the shield up,
+as they should. SET BONUSES reward a matched kit: armor pieces
+carry a metadata.armor_set tag, and 2+ worn pieces (across armor/
+shield/boots) sharing a set give +1 AC each, folded into
+effective_ac. The Iron set — chainmail + iron_shield + iron_boots
+— pays a full +3 for the discipline of matching. Durability was
+already drawn per row in the I-panel; added a status line reading
+effective AC, the active set bonus, and pack N/capacity so the
+encumbrance already in carry.py is finally visible. 6 tests, incl.
+the AC arithmetic (one-piece → two-piece = +3 shield +2 set).
+Suite: 1204, green x3. The character SPRITE reflecting worn gear is
+noted as remainder P15.10b — body_renderer draws weapons by class,
+not the equipped item, and that's untestable pixel work for a
+Track-G round. Meanwhile George asked for a MAJOR new feature — a
+tactical battle screen (commanders, troops, siege, cavalry,
+player-as-soldier-or-commander, castle/large-encounter combat,
+reachable from the start menu as a testbed). Launched a research
+agent (tactical-combat mechanisms + Autonomous World's attempts +
+an architecture sketch); Phase 17 to be authored from its findings
+next.

@@ -14,7 +14,10 @@
     "value": 80,
     "description": "Interlocking metal rings.",
     "rarity": "uncommon",
-    "armor": 4
+    "armor": 4,
+    "metadata": {
+      "armor_set": "iron"
+    }
   },
   "plate": {
     "id": "plate",
@@ -45,6 +48,9 @@
     "item_type": "shield",
     "value": 40,
     "rarity": "uncommon",
-    "armor": 3
+    "armor": 3,
+    "metadata": {
+      "armor_set": "iron"
+    }
   }
 }

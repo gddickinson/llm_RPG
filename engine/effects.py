@@ -88,6 +88,11 @@ def total_armor_value(character) -> int:
         item = eq.get(slot)
         if item and not is_broken(item):
             total += int(getattr(item, "armor", 0))
+    try:   # a matched set is worth more than its pieces (P15.10)
+        from characters.equipment import set_bonus
+        total += set_bonus(character)[0]
+    except Exception:
+        pass
     return total
 
 

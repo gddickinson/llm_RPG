@@ -122,7 +122,7 @@ llm_RPG/
 - **`schedules.py`** — Daily routines per NPC class.
 - **`needs.py`** — Hunger, thirst, and fatigue simulation; P12.3 exhaustion ladder: `exhaustion_level` 0–6 from tired/starving/parched/sleep-debt with rung penalties (checks → speed → attacks → HP cap → collapse), two-track sleep (naps clear fatigue, only real beds clear debt), `player_needs_turn`/`run_player_night` engine hooks, `drink()`.
 - **`status_effects.py`** — Poison / paralyzed / blessed / cursed / etc. with duration ticks; P12.2 valued conditions: Frightened N (−N to every check, decays 1/turn), persistent_damage (flat DC 15 to end), prone/blinded/off_guard with `check_penalty`/`attack_penalty`/`ac_penalty` queried by skills + combat.
-- **`equipment.py`** — Worn weapon / armor / shield / amulet / ring / boots slots.
+- **`equipment.py`** — Worn weapon / armor / shield / amulet / ring / boots slots; P15.10: two-handed rules (a two-hander stows the shield; no shield while two-handed) + matched-set bonuses (`set_bonus`, +1 AC per matched armor/shield/boots piece).
 - **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight; P15.5 depth: /order follow|hold|flee, authored travel banter (data/banter.json), camp watch (halves ambush), bond-gated personal quests.
 - **`families.py`** — Static family ties for preset NPCs.
 - **`gossip.py`** — Gossip lines pulled from family ties + recent memory events.

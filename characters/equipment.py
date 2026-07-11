@@ -55,14 +55,34 @@ def get_equipment(character) -> Dict[str, Optional[Item]]:
     return eq
 
 
+def is_two_handed(item) -> bool:
+    return bool(getattr(item, "two_handed", False))
+
+
 def equip(character, item: Item) -> str:
-    """Move `item` from inventory to its slot. Returns a status message."""
+    """Move `item` from inventory to its slot. Returns a status
+    message. Enforces two-handed weapon rules (P15.10): a two-handed
+    weapon needs both hands (any shield is stowed), and a shield
+    can't be raised while two hands grip a weapon."""
     slot = slot_for_item(item)
     if slot is None:
         return f"{item.name} can't be equipped."
     if item not in character.inventory:
         return f"You don't have {item.name}."
     eq = get_equipment(character)
+    stowed = ""
+    if slot is EquipSlot.SHIELD:
+        wpn = eq.get("weapon")
+        if wpn is not None and is_two_handed(wpn):
+            return (f"Both hands grip the {wpn.name} — there's no "
+                    f"room for a shield.")
+    if slot is EquipSlot.WEAPON and is_two_handed(item):
+        shield = eq.get("shield")
+        if shield is not None:
+            eq["shield"] = None
+            character.inventory.append(shield)
+            stowed = f" You stow the {shield.name} — both hands " \
+                     f"on the {item.name}."
     previous = eq[slot.value]
     eq[slot.value] = item
     character.inventory.remove(item)
@@ -78,8 +98,8 @@ def equip(character, item: Item) -> str:
         pass
     if previous is not None:
         return (f"You equip {item.name} (replacing "
-                f"{previous.name}).{haunted_note}")
-    return f"You equip {item.name}.{haunted_note}"
+                f"{previous.name}).{stowed}{haunted_note}")
+    return f"You equip {item.name}.{stowed}{haunted_note}"
 
 
 def unequip(character, slot: EquipSlot) -> str:
@@ -114,6 +134,31 @@ def total_armor(character) -> int:
         if item:
             total += getattr(item, "armor", 0)
     return total
+
+
+def armor_set(item):
+    """The matched-set tag of a worn piece, or None."""
+    return (getattr(item, "metadata", None) or {}).get("armor_set")
+
+
+def set_bonus(character):
+    """A matched armor set rewards discipline (P15.10): 2+ worn
+    pieces (armor/shield/boots) sharing a set tag give +1 AC each.
+    Returns (bonus, set_name) — (0, None) if nothing matches."""
+    eq = get_equipment(character)
+    from collections import Counter
+    tags = Counter()
+    for slot in ("armor", "shield", "boots"):
+        it = eq.get(slot)
+        tag = armor_set(it) if it else None
+        if tag:
+            tags[tag] += 1
+    if not tags:
+        return 0, None
+    best, count = tags.most_common(1)[0]
+    if count >= 2:
+        return count, best
+    return 0, None
 
 
 def weapon_damage(character) -> int:

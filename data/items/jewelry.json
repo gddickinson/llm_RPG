@@ -112,6 +112,9 @@
     "rarity": "uncommon",
     "equip_bonuses": {
       "armor": 1
+    },
+    "metadata": {
+      "armor_set": "iron"
     }
   }
 }

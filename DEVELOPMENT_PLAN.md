@@ -1944,13 +1944,23 @@ UI polish.
   free). 12 tests. Suite 1188, green x3. REMAINDER: the "more
   skills beyond the 8" half — track separately as P15.9b when
   wanted; the health system was the meatier request.)*
-- [ ] **P15.10 Equipment II (George, live 2026-07-11).** Equipment
-  management that "makes sense": paper-doll equip/unequip UI with
-  slot art, weight/encumbrance already in carry.py surfaced,
-  two-handed rules enforced (no shield with a greatsword), set/
-  matched-armor bonuses, durability shown, quick-swap loadouts;
-  character sprite reflects worn gear (composited over the
-  P15.1 tileset entity).
+- [x] **P15.10 Equipment II (George, live 2026-07-11).** Equipment
+  management that "makes sense": two-handed rules, set bonuses,
+  durability + encumbrance surfaced.
+  *(Round 125: TWO-HANDED enforcement in equipment.equip — a
+  two-handed weapon needs both hands, so equipping one STOWS any
+  shield ("both hands on the X"), and a shield is refused while a
+  two-hander is held ("no room for a shield"); one-handers leave
+  the shield up. SET BONUSES: armor pieces tag metadata.armor_set;
+  2+ matched worn pieces (armor/shield/boots) grant +1 AC each,
+  folded into effective_ac — the Iron set (chainmail + iron_shield
+  + iron_boots) rewards a full kit +3. The I-panel already showed
+  durability per row; added a status line (effective AC, active
+  set bonus, pack N/capacity). 6 tests. Suite 1204, green x3.
+  REMAINDER: the character SPRITE reflecting worn gear —
+  body_renderer draws weapons by CLASS, not the equipped item;
+  that's a Track-G graphics round (P15.10b) since it's untestable
+  pixel work.)*
 - [x] **P15.11 Fog of war / map discovery (George, live
   2026-07-11).** The overworld is NOT known at start: an explored/
   visible mask over the map — tiles are unseen until in view (the

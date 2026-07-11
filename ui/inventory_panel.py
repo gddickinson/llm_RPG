@@ -223,11 +223,36 @@ class InventoryPanel:
             target.blit(txt, (box.x + 16, y))
             y += line_h
 
+        status = self._font.render(self._status_line(),
+                                   True, (200, 200, 150))
+        target.blit(status, (box.x + 16, box.bottom - 48))
         hint = self._font.render(
             "[Up/Down] move  [E] (un)equip  [Q] use  [D] drop  "
             "[T] transmute  [Esc] close",
             True, (160, 160, 180))
         target.blit(hint, (box.x + 16, box.bottom - 28))
+
+    def _status_line(self) -> str:
+        p = self.engine.player
+        parts = []
+        try:
+            from engine.effects import effective_ac
+            parts.append(f"AC {effective_ac(p)}")
+        except Exception:
+            pass
+        try:
+            from characters.equipment import set_bonus
+            n, name = set_bonus(p)
+            if n:
+                parts.append(f"{name} set +{n} AC ({n} pcs)")
+        except Exception:
+            pass
+        try:
+            from engine.carry import capacity, used_slots
+            parts.append(f"pack {used_slots(p)}/{capacity(p)}")
+        except Exception:
+            pass
+        return "   ".join(parts)
 
     def _render_row(self, kind, label, item, prefix) -> str:
         if kind == "sep":
