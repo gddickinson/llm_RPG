@@ -166,6 +166,15 @@ def context_hints(engine) -> List[str]:
                 hints.append("[SHIFT+P] pray")
         except Exception:
             pass
+        try:   # a body on your shoulder or at your feet (P13.2)
+            from engine.ransom import _body_here, carrying
+            if carrying(engine) is not None:
+                hints.insert(0, "[SHIFT+G] set them down "
+                                "(priest=rescue · fence=ransom)")
+            elif _body_here(engine)[0] is not None:
+                hints.append("[SHIFT+G] carry them")
+        except Exception:
+            pass
         try:   # a hungry pet at your heels (P12.14)
             if engine.pet_system.active_pet() is not None and \
                     engine.pet_system.tameness() <= 5:

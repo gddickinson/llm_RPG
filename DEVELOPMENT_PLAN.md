@@ -1762,11 +1762,24 @@ they are first-class items now, in dependency order.
   [T] in the I-panel with the footer hint. Stack-aware, mana-gated,
   spell-known-gated; stolen goods transmute too — coin is coin,
   destruction is the ultimate laundering. 6 tests.)*
-- [ ] **P13.2 Ransom & rescue.** The P12.4 remainder: KO'd named
+- [x] **P13.2 Ransom & rescue.** The P12.4 remainder: KO'd named
   NPCs can be carried (a body in the pack slot? drag?) to a
   faction that wants them — brigands ransom captured guards back
   to the watch, rescued citizens pay gratitude and rep; ties the
   KO economy to factions and the P12.9 ledger.
+  *(Round 115: `engine/ransom.py`. SHIFT+G hoists a KO'd body —
+  it weighs 6 pack slots (carry.used_slots counts it) and every
+  step under the load costs an extra minute + fatigue. SHIFT+G
+  again delivers by WHO stands beside you: a cleric/paladin =
+  RESCUE (wake at half HP, 15g gratitude, +30 relationship, +8
+  faction rep, warm memory); the fence = RANSOM (25 + 10×level
+  gold, faction −15, bounty +25 WITNESSED — the victim saw your
+  face — and a weight-9 grudge: "SOLD me to the brigands"); nobody
+  special = set down gently. KO expiring mid-carry wakes them in
+  your arms (+5, benefit of the doubt). Hint bar teaches both
+  ends. Testing surfaced good presence behavior: delivery fails on
+  building footprints (indoor rules) — carry them to open ground,
+  as the fiction wants. 7 tests. Suite 1139, green x3.)*
 - [ ] **P13.3 The breath clock.** Phase 11 annotation from the
   research: 5e's two-stage drowning — hold breath 1+CON-mod
   minutes underwater before the P11.2 escalation starts; diving

@@ -183,8 +183,7 @@ class InputHandler:
                 self.engine.forage()
             return True
 
-        # Enter / exit building or dungeon (Tab); force a door (SHIFT+TAB)
-        if k == pygame.K_TAB:
+        if k == pygame.K_TAB:   # enter/exit; SHIFT forces the door
             if shift and not self.engine.current_interior:
                 self.engine.force_door()
             else:
@@ -245,9 +244,8 @@ class InputHandler:
             overlays[k]()
             return True
 
-        # Answer the guard (P12.9): 1-5 while confronted
         if getattr(self.engine.law, "active", None) and \
-                pygame.K_1 <= k <= pygame.K_5:
+                pygame.K_1 <= k <= pygame.K_5:   # answer the guard
             self.engine.law.resolve(k - pygame.K_1 + 1)
             return True
 
@@ -269,10 +267,12 @@ class InputHandler:
                 self.engine.memory_manager.add_event("No one nearby to talk to.")
             return True
 
-        # E/G: a ground item underfoot beats furniture (George:
-        # furniture flavor was shadowing indoor pickups); then
-        # furniture indoors; then pickup
+        # E/G: ground item beats furniture; then furniture; then pickup
         if k in (pygame.K_g, pygame.K_e):
+            if shift and k == pygame.K_g:   # carry a body (P13.2)
+                from engine.ransom import hoist_or_deliver
+                hoist_or_deliver(self.engine)
+                return True
             if self.engine.current_interior:
                 try:
                     here = self.engine.world.get_items_at(

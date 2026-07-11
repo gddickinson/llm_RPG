@@ -21,7 +21,12 @@ def capacity(player) -> int:
 
 
 def used_slots(player) -> int:
-    return len(getattr(player, "inventory", []))
+    slots = len(getattr(player, "inventory", []))
+    meta = getattr(player, "metadata", None)
+    if isinstance(meta, dict) and meta.get("carrying_body"):
+        from engine.ransom import BODY_SLOTS
+        slots += BODY_SLOTS          # a body over the shoulder (P13.2)
+    return slots
 
 
 def can_carry(player, extra: int = 1) -> bool:

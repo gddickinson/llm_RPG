@@ -200,6 +200,12 @@ class TraversalSystem:
                 self.engine.world.advance_time(extra)
         except Exception:
             pass
+        try:   # a body over the shoulder drags too (P13.2)
+            if self.engine.player.metadata.get("carrying_body"):
+                self.engine.world.advance_time(1)
+                self._tire(1)
+        except Exception:
+            pass
         wmap = self.engine.world.map
         rule = self.rule_for(wmap.terrain[ny][nx])
         if rule is None or rule.get("class") != "slog":

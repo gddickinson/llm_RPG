@@ -210,6 +210,13 @@ def wake_the_fallen(engine) -> int:
         if until is None or npc.is_active() or \
                 engine.world.time < until:
             continue
+        try:   # asleep on your back? (P13.2)
+            from engine.ransom import wake_in_arms
+            if wake_in_arms(engine, npc):
+                woke += 1
+                continue
+        except Exception:
+            pass
         npc.metadata.pop("ko_until", None)
         npc.status = "alive"
         npc.hp = max(1, npc.max_hp // 3)

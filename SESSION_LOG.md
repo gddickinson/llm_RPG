@@ -2302,3 +2302,28 @@ STARTING sword and left the loot. Removal is identity-first now,
 which quietly corrects every eat/drink/scroll path that consumed
 "an equal item" instead of the item in hand. 6 tests. Suite:
 1132, green x3.
+
+**Round 115 — P13.2 Ransom & rescue (done).**
+The KO economy joined the factions. SHIFT+G on a knocked-out
+person's body HOISTS them over your shoulder: the body counts six
+slots against the carry capacity (a STR build carries bodies
+better — the P-carry system doing new work) and every step under
+the load costs an extra minute and fatigue. SHIFT+G again sets
+them down, and WHO stands beside you decides what that means. A
+cleric or paladin adjacent: RESCUE — they wake at half health,
+press 15g of gratitude into your hand, +30 relationship, +8
+faction rep, and a weight-8 memory that word of this will travel.
+The FENCE adjacent: RANSOM — Wulf counts out 25 + 10-per-level
+gold and has them bundled into the back room ("the watch pays
+better than you'd think to get their own back"), their faction
+drops 15, the P12.9 ledger takes +25 WITNESSED because the victim
+saw your face, and they carry a weight-9 grudge: "SOLD me to the
+brigands while I lay senseless." Nobody special: set down gently,
+no harm done. If the KO wears off mid-carry they wake IN YOUR
+ARMS — set down beside you with +5 relationship, because you were
+carrying them SOMEWHERE and they choose to believe it was
+somewhere good. A test failure taught the right lesson: delivery
+refused to work while the player stood on a building footprint —
+the P9A.7 presence rules correctly treat footprints as indoors —
+so the tests (and players) carry bodies to open ground first,
+exactly as the fiction wants. 7 tests. Suite: 1139, green x3.
