@@ -35,7 +35,8 @@ llm_RPG/
 - **`battle_field.py`** — P17.2 battle grid: own terrain, WALL/GATE as HP structures breaching to rubble lanes, soldier occupancy, squad/team registry; round-trips to dict for mid-battle saves.
 - **`battle_flow.py`** — P17.3 flow fields: multi-source BFS distance field per team (O(map)); soldiers step the gradient toward the enemy and through breaches.
 - **`battle_ai.py`** — P17.3 group AI (ported colosseum brain): focus-fire target select, self-contained d20 strike, role movement (archers kite), squad morale/rout; P17.4c `step_toward` greedy push-into-contact when the centroid flow is blocked.
-- **`battle_session.py`** — P17.3 deterministic tick loop; `run_headless(max_ticks)` runs squads to a result (same shape as the resolver); P17.4c multi-step movement by unit `speed` (`MAX_STEPS` cap).
+- **`battle_orders.py`** — P17.5 the commander's verbs as behaviour: `advance_intent` maps an order (charge/hold/fall_back/move/focus_fire) to a soldier's out-of-reach intent; `is_focus` concentrates fire; objective-type scaffold. The session + `pick_target` read it.
+- **`battle_session.py`** — P17.3 deterministic tick loop; `run_headless(max_ticks)` runs squads to a result (same shape as the resolver); P17.4c multi-step movement by unit `speed` (`MAX_STEPS` cap); P17.5 order-driven movement (`_order_move`: hold/retreat/goto/advance).
 - **`battle_scenario.py`** — P17.4 staged set-pieces from `data/battles/scenarios.json`; `build_field(id)` expands one into a tickable `BattleField` (shared by the screen and the tests).
 - **`battle_resolve.py`** — P17.1 headless Lanchester auto-resolver: `Army`/`Unit`/`Fort` + seeded `resolve(attacker, defender, terrain, is_siege, seed)`; defence-reduced melee, RPS+speed-softened ranged, cavalry charge, anti-cavalry spears, wall-gated siege with breaches. Deterministic; doubles as the off-screen faction-battle resolver.
 
@@ -214,7 +215,7 @@ llm_RPG/
 - **`weather_overlay.py`** — Rain/snow/fog particle overlays.
 - **`sound.py`** — Procedural SFX (numpy-synthesized) via event observer + weather ambience loops.
 - **`battle_camera.py`** — P17.4 pure zoom/pan/LOD math for the battle screen (tile_size 8/16/32/48, float camera, world↔screen, blob_mode < 16px) + P17.4b unit-type glyph geometry (`category_shape`/`marker_points`); unit-tested headless.
-- **`battle_screen.py`** — P17.4 the zoomable Battle Testbed view: a standalone pygame loop (no engine) that watches a `BattleSession` tick a scenario — terrain, soldiers-or-blobs by LOD, HUD, play/pause/step/reset; reachable from the start menu.
+- **`battle_screen.py`** — P17.4 the zoomable Battle Testbed view: a standalone pygame loop (no engine) that watches a `BattleSession` tick a scenario — terrain, soldiers-or-blobs by LOD, HUD, play/pause/step/reset; reachable from the start menu; P17.5 command overlay (TAB/click select an allied squad, C/H/F/G/M issue orders).
 - **`gui_interface.py`** — Minimal GUI-facing engine interface helpers.
 
 ## Key Classes — where to find them

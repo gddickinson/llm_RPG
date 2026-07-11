@@ -2255,10 +2255,30 @@ is shippable and testable, de-risking UI last:
   steps (reload/aim, armour/damage-types + shields, then AoE/magic)
   toward the realism arc. 4 tests (cavalry outruns foot, siege
   crawls, deterministic, accum round-trip); suite 1275, green.)*
-- [ ] **P17.5 Orders & commander overlay.** `battle_orders.py`
+- [x] **P17.5 Orders & commander overlay.** `battle_orders.py`
   (Move/Hold/Charge/FocusFire/FallBack/SetFormation + Objective
   types capture-point/breach/protect) and the command UI (select
   group → verb). The player commands allied squads.
+  *(Round 132: `engine/battle/battle_orders.py` gives the verbs real
+  behaviour — `advance_intent(squad)` maps the order to what a soldier
+  out of reach does: HOLD roots in place (fights only what comes),
+  FALL_BACK withdraws from the nearest enemy at speed, MOVE marches to
+  an ordered tile ignoring the foe, CHARGE/FOCUS_FIRE close into
+  contact (focus_fire also concentrates target selection, via
+  `is_focus` — the legacy "focus" spelling still works). The session
+  routes movement through `_order_move` → `_retreat`/`_goto`/`_advance`;
+  `pick_target` reads `is_focus`. Command UI in `battle_screen.py`:
+  the player commands their team — TAB / left-click selects an allied
+  squad (highlight ring), C/H/F/G issue Charge/Hold/Focus/Fall-back
+  (Focus & Charge auto-target the nearest enemy squad), M arms a
+  click-to-Move; a CMD line shows the selected squad and its order.
+  Held defenders now hold the breach instead of marching out — more
+  realistic sieges. 11 tests (intent map, hold roots, fall-back
+  retreats, move marches, focus concentrates, legacy spelling +
+  command smoke); suite 1282, green. REMAINDER: SET_FORMATION is
+  settable/plumbed but its grid effect (spacing/defence) lands with
+  P17.10; objective types are scaffolded (`OBJECTIVES`) with the
+  capture-point VICTORY condition already homed in P17.6.)*
 - [ ] **P17.6 Siege & cover.** Gates/walls as TileDamage HP; siege
   engines deal structural damage to adjacent wall tiles → RUBBLE
   breaches (earthworks mapping); wall-walk elevation via the multi-

@@ -16,6 +16,7 @@ import logging
 from typing import Optional
 
 from engine.battle import BattleSession
+from engine.battle import battle_orders as orders
 from engine.battle.battle_scenario import build_field, team_strengths
 from ui.battle_camera import (BattleCamera, category_shape,
                               marker_points)
@@ -72,6 +73,12 @@ class BattleScreen:
                                 tile_size=32)
         self.playing = True
         self._acc = 0
+        # command layer (P17.5): the player commands one team's squads
+        teams = self.field.teams()
+        self.player_team = "red" if "red" in teams else \
+            (teams[0] if teams else "red")
+        self.sel = 0                 # index into allied squads
+        self.move_arm = False        # armed for a click-to-move order
 
     # ------------------------------------------------------- loop
 
@@ -87,7 +94,10 @@ class BattleScreen:
                         return {"action": "menu",
                                 "result": self.session.result()}
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self._wheel(event)
+                    if event.button == 1:
+                        self._click(event.pos)
+                    else:
+                        self._wheel(event)
             if self.playing and not self.session.over():
                 self._acc += dt
                 while self._acc >= _TICK_MS:
@@ -117,6 +127,8 @@ class BattleScreen:
             self.cam.pan(0, -3)
         elif k in (pygame.K_DOWN, pygame.K_s):
             self.cam.pan(0, 3)
+        else:
+            self._command_key(k)
         return None
 
     def _wheel(self, event) -> None:
@@ -124,6 +136,70 @@ class BattleScreen:
             self.cam.zoom_in()
         elif event.button == 5:
             self.cam.zoom_out()
+
+    # ------------------------------------------------ command layer
+
+    def _allies(self) -> list:
+        return [sq for sq in sorted(self.field.squads.values(),
+                                    key=lambda s: s.squad_id)
+                if sq.team == self.player_team]
+
+    def _selected(self):
+        allies = self._allies()
+        return allies[self.sel % len(allies)] if allies else None
+
+    def _command_key(self, k) -> None:
+        if k == pygame.K_TAB:
+            allies = self._allies()
+            if allies:
+                self.sel = (self.sel + 1) % len(allies)
+            return
+        sq = self._selected()
+        if sq is None:
+            return
+        if k == pygame.K_c:
+            sq.set_order(orders.CHARGE, self._nearest_enemy_id(sq))
+        elif k == pygame.K_h:
+            sq.set_order(orders.HOLD)
+        elif k == pygame.K_f:
+            sq.set_order(orders.FOCUS_FIRE, self._nearest_enemy_id(sq))
+        elif k == pygame.K_g:
+            sq.set_order(orders.FALL_BACK)
+        elif k == pygame.K_m:
+            self.move_arm = True     # next left-click sets the tile
+
+    def _nearest_enemy_id(self, sq):
+        c = sq.centroid()
+        best, bd = None, None
+        for e in self.field.enemies_of(sq.team):
+            ec = e.centroid()
+            if c is None or ec is None:
+                continue
+            d = abs(c[0] - ec[0]) + abs(c[1] - ec[1])
+            if bd is None or d < bd:
+                best, bd = e.squad_id, d
+        return best
+
+    def _click(self, pos) -> None:
+        wx, wy = self.cam.screen_to_world(*pos)
+        tile = (int(wx), int(wy))
+        sq = self._selected()
+        if self.move_arm and sq is not None:
+            sq.set_order(orders.MOVE, tile)
+            self.move_arm = False
+            return
+        # otherwise select the allied squad nearest the click
+        allies = self._allies()
+        best, bd = None, None
+        for i, a in enumerate(allies):
+            c = a.centroid()
+            if c is None:
+                continue
+            d = abs(c[0] - wx) + abs(c[1] - wy)
+            if bd is None or d < bd:
+                best, bd = i, d
+        if best is not None and bd <= 6:
+            self.sel = best
 
     # ----------------------------------------------------- render
 
@@ -135,8 +211,25 @@ class BattleScreen:
         else:
             self._draw_soldiers()
             self._draw_tracers()
+        self._draw_selection()
         self._draw_hud()
         pygame.display.flip()
+
+    def _draw_selection(self) -> None:
+        """Ring the squad the commander currently has selected, and
+        flag a move order that's armed for a click."""
+        sq = self._selected()
+        if sq is None:
+            return
+        c = sq.centroid()
+        if c is None:
+            return
+        sx, sy = self.cam.world_to_screen(c[0] + 0.5, c[1] + 0.5)
+        rad = max(10, int(2 + sq.strength ** 0.5 * self.cam.tile_size
+                          / 6))
+        colour = (245, 230, 120) if self.move_arm else (250, 250, 250)
+        pygame.draw.circle(self.screen, colour, (int(sx), int(sy)),
+                           rad, 2)
 
     def _draw_terrain(self) -> None:
         x0, y0, x1, y1 = self.cam.visible_tile_bounds()
@@ -237,21 +330,35 @@ class BattleScreen:
                 f"   zoom {self.cam.tile_size}px"
                 f"{'  (blobs)' if self.cam.blob_mode else ''}")
         self.screen.blit(self.font.render(head, True, (235, 235, 235)),
-                         (12, y + 8))
-        hint = ("SPACE play/pause  N step  R reset  +/- zoom  "
-                "arrows/WASD pan  ESC back")
+                         (12, y + 6))
+        self._draw_command_line(y + 26)
+        hint = ("SPACE play  N step  R reset  +/- zoom  WASD pan  |  "
+                "TAB select  C harge  H old  F ocus  G fall-back  "
+                "M ove(click)  ESC back")
         self.screen.blit(self.small.render(hint, True, (150, 150, 160)),
-                         (12, y + 34))
+                         (12, y + 48))
         # team strength bars
         bx = 12
         total = max(1, sum(strengths.values()))
         for t, n in strengths.items():
             w = int((self.width - 24) * n / total)
             pygame.draw.rect(self.screen, _team_color(t),
-                             (bx, y + 56, w, 8))
+                             (bx, y + 68, w, 8))
             bx += w
         if self.session.over():
             self._banner(res)
+
+    def _draw_command_line(self, y: int) -> None:
+        sq = self._selected()
+        col = _team_color(self.player_team)
+        if sq is None:
+            txt = f"CMD [{self.player_team}]  (no squads)"
+        else:
+            label = orders.ORDER_LABEL.get(sq.order, sq.order)
+            armed = "  — click a tile" if self.move_arm else ""
+            txt = (f"CMD [{self.player_team}]  ‹{sq.squad_id}› "
+                   f"{sq.category} x{sq.strength}  order: {label}{armed}")
+        self.screen.blit(self.font.render(txt, True, col), (12, y))
 
     def _banner(self, res: dict) -> None:
         winner = res["winner"] or "draw"

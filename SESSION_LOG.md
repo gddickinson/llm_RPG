@@ -2816,3 +2816,32 @@ move-and-shoot), P17.10 (armour, shields, damage types), P17.11
 tests (cavalry outruns foot, siege crawls, deterministic, accum
 round-trips); the 27 battle tests and the full suite stay green at
 1275.
+
+**Round 132 — P17.5 Orders & commander overlay.**
+The squads could fight but not be commanded: `order` was a string
+that only "focus" ever read. Now the verbs mean something.
+`engine/battle/battle_orders.py` is the one place that translates an
+order into intent — `advance_intent(squad)` returns what a soldier
+does when no enemy is in reach: HOLD roots the squad in place (it
+fights only what walks into it), FALL_BACK withdraws from the nearest
+foe at the unit's speed, MOVE marches to an ordered tile ignoring the
+enemy, and CHARGE/FOCUS_FIRE close into contact (focus_fire also
+concentrates the whole squad's fire on one enemy squad, through
+`is_focus`, which still honours the legacy "focus" spelling for old
+saves). The session routes an out-of-reach soldier through
+`_order_move` → `_retreat` / `_goto` / `_advance`, and `pick_target`
+reads `is_focus` instead of a hard-coded string. On the screen, the
+player now commands their own team: TAB or a left-click picks an
+allied squad (a highlight ring marks it), C/H/F/G issue
+Charge/Hold/Focus/Fall-back (Focus and Charge auto-pick the nearest
+enemy squad as the target), and M arms a click-to-Move to any tile; a
+CMD line in the HUD names the selected squad and its current order.
+A nice emergent result: with HOLD now real, the storm-the-breach
+garrison stands and holds the gap instead of marching out to meet the
+assault — a truer siege. Two remainders, both already homed on the
+plan: SET_FORMATION is settable and plumbed but its grid effect
+(spacing/defence) rides with P17.10, and the objective types are
+scaffolded with capture-point VICTORY belonging to P17.6. 11 new
+tests (intent map, hold roots, fall-back retreats, move marches,
+focus concentrates, legacy spelling, valid_order, plus a headless
+command smoke); suite 1282, green.

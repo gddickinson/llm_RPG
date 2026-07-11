@@ -3,6 +3,8 @@
 import unittest
 
 from engine.battle import BattleField, BattleSession, Squad
+from engine.battle import battle_ai as ai
+from engine.battle import battle_orders as orders
 
 
 def _line(x, y0, n):
@@ -139,6 +141,94 @@ class TestMovementSpeed(unittest.TestCase):
         restored = Squad.from_dict(sq.to_dict())
         after = [s.move_accum for s in restored.soldiers]
         self.assertEqual(before, after)
+
+
+class TestOrders(unittest.TestCase):
+    """P17.5: the commander's verbs actually change squad behaviour."""
+
+    def _two(self, red_order, red_target=None, blue_order="hold"):
+        bf = BattleField(40, 14)
+        red = Squad.raise_squad("r", "red", "infantry_sword",
+                                [(20, 6), (20, 7)])
+        blue = Squad.raise_squad("b", "blue", "infantry_sword",
+                                 [(6, 6), (6, 7)])
+        red.set_order(red_order, red_target)
+        blue.set_order(blue_order)
+        bf.add_squad(red)
+        bf.add_squad(blue)
+        return bf, red, blue
+
+    def test_intent_mapping(self):
+        bf, red, _ = self._two("hold")
+        self.assertEqual(orders.advance_intent(red), "hold")
+        red.set_order("fallback")
+        self.assertEqual(orders.advance_intent(red), "retreat")
+        red.set_order("move", (10, 6))
+        self.assertEqual(orders.advance_intent(red), "goto")
+        red.set_order("charge")
+        self.assertEqual(orders.advance_intent(red), "advance")
+        red.set_order("move", "not_a_tile")   # bad target -> advance
+        self.assertEqual(orders.advance_intent(red), "advance")
+
+    def test_hold_roots_the_squad(self):
+        bf, red, _ = self._two("hold")          # foe on hold too
+        cx0 = red.centroid()[0]
+        sess = BattleSession(bf, seed=1)
+        for _ in range(8):
+            sess.tick()
+        self.assertEqual(red.centroid()[0], cx0,
+                         "a holding squad does not advance")
+
+    def test_fall_back_retreats_from_the_enemy(self):
+        bf, red, _ = self._two("fallback")      # enemy is to the left
+        cx0 = red.centroid()[0]
+        sess = BattleSession(bf, seed=1)
+        for _ in range(6):
+            sess.tick()
+        self.assertGreater(red.centroid()[0], cx0,
+                           "fall-back withdraws away from the foe")
+
+    def test_move_marches_to_the_ordered_tile(self):
+        bf = BattleField(40, 20)
+        red = Squad.raise_squad("r", "red", "infantry_sword",
+                                [(5, 5), (5, 6)])
+        # a distant idle foe off the path — must be ignored
+        foe = Squad.raise_squad("b", "blue", "infantry_sword",
+                                [(38, 18)])
+        red.set_order("move", (25, 5))
+        foe.set_order("hold")
+        bf.add_squad(red)
+        bf.add_squad(foe)
+        sess = BattleSession(bf, seed=1)
+        for _ in range(30):
+            sess.tick()
+        self.assertGreaterEqual(red.centroid()[0], 20,
+                                "the squad marched toward its tile")
+
+    def test_focus_fire_concentrates_on_the_ordered_squad(self):
+        bf = BattleField(40, 14)
+        me = Squad.raise_squad("me", "red", "infantry_sword", [(20, 6)])
+        ordered = Squad.raise_squad("ordered", "blue",
+                                    "infantry_sword", [(30, 6)])   # far
+        other = Squad.raise_squad("other", "blue", "infantry_sword",
+                                  [(22, 6)])                        # near
+        me.set_order("focus_fire", "ordered")
+        for sq in (me, ordered, other):
+            bf.add_squad(sq)
+        tgt = ai.pick_target(bf, me.soldiers[0], me)
+        self.assertEqual(tgt.squad_id, "ordered",
+                         "focus fire beats the closer squad")
+
+    def test_focus_legacy_spelling_still_works(self):
+        self.assertTrue(orders.is_focus("focus"))
+        self.assertTrue(orders.is_focus("focus_fire"))
+        self.assertFalse(orders.is_focus("charge"))
+
+    def test_valid_order(self):
+        for o in orders.ORDERS:
+            self.assertTrue(orders.valid_order(o))
+        self.assertTrue(orders.valid_order("focus"))
+        self.assertFalse(orders.valid_order("nonsense"))
 
 
 if __name__ == "__main__":

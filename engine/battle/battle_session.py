@@ -17,6 +17,7 @@ import random
 from typing import Dict, List, Tuple
 
 from engine.battle import battle_ai as ai
+from engine.battle import battle_orders as orders
 from engine.battle.battle_flow import distance_field
 
 MAX_STEPS = 3            # tiles a soldier may cover in one tick (cap)
@@ -84,7 +85,22 @@ class BattleSession:
                                          target.x, target.y))
                 ai.attack(field, sol, sq, target, self.rng)
             else:
-                self._advance(sol, sq, target, flows.get(sq.team, {}))
+                self._order_move(sol, sq, target,
+                                 flows.get(sq.team, {}))
+
+    def _order_move(self, sol, sq, target, flow) -> None:
+        """Move a soldier out of reach according to its squad's order:
+        hold roots, fall-back retreats, move marches to the tile, all
+        else charges into contact."""
+        intent = orders.advance_intent(sq)
+        if intent == "hold":
+            return
+        if intent == "retreat":
+            self._retreat(sol, sq, target)
+        elif intent == "goto":
+            self._goto(sol, sq, sq.order_target)
+        else:
+            self._advance(sol, sq, target, flow)
 
     @staticmethod
     def _steps(sol, sq) -> int:
@@ -108,6 +124,31 @@ class BattleSession:
             if goal is None or not field.move_soldier(sol, *goal):
                 break
             if ai._dist(sol.pos, target.pos) <= ai.reach_of(sq):
+                break
+
+    def _retreat(self, sol, sq, target) -> None:
+        """Ordered fall-back: withdraw from the target, at speed."""
+        field = self.field
+        for _ in range(self._steps(sol, sq)):
+            dx = (sol.x > target.x) - (sol.x < target.x)
+            dy = (sol.y > target.y) - (sol.y < target.y)
+            if (dx or dy) and field.move_soldier(sol, sol.x + dx,
+                                                 sol.y + dy):
+                continue
+            break
+
+    def _goto(self, sol, sq, tile) -> None:
+        """Ordered move: march toward an objective tile, ignoring the
+        enemy; stop once standing on it."""
+        if not (isinstance(tile, (tuple, list)) and len(tile) == 2):
+            return
+        field = self.field
+        tx, ty = int(tile[0]), int(tile[1])
+        for _ in range(self._steps(sol, sq)):
+            if (sol.x, sol.y) == (tx, ty):
+                break
+            goal = ai.step_toward(field, sol, tx, ty)
+            if goal is None or not field.move_soldier(sol, *goal):
                 break
 
     def _flee(self, sol, sq, flows) -> None:

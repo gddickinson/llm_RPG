@@ -51,7 +51,9 @@ def reach_of(squad) -> int:
 def pick_target(field, soldier, squad):
     """Focus-fire: the squad's ordered target squad first, else any
     enemy — lowest HP, then nearest. Returns an enemy Soldier."""
-    order_sid = squad.order_target if squad.order == "focus" else None
+    from engine.battle import battle_orders as orders
+    order_sid = squad.order_target if orders.is_focus(squad.order) \
+        else None
     best, best_key = None, None
     for enemy in field.squads.values():
         if enemy.team == soldier.team or not enemy.active:
