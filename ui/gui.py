@@ -47,6 +47,7 @@ class GameGUI:
         self.shop_panel = None
         self.crafting_panel = None
         self.spell_panel = None
+        self.settings_panel = None
 
         # Init pygame
         pygame.init()
@@ -171,6 +172,16 @@ class GameGUI:
             self.hud.draw_help_overlay(
                 self.screen, self.screen.get_rect(), "Controls",
                 getattr(self, "help_columns", ([], [])))
+
+        if self.mode == "settings" and self.settings_panel is not None:
+            self.settings_panel.draw(self.screen, self.screen.get_rect())
+
+        if self.mode == "confirm_quit":
+            self.hud.draw_text_overlay(
+                self.screen, self.screen.get_rect(), "Leave the game?",
+                ["", "Quit to desktop? Unsaved progress is lost.",
+                 "  (F5 quicksaves)", "",
+                 "  [Y] quit        [N] keep playing"])
 
         if self.mode == "inventory" and self.inventory_panel is not None:
             self.inventory_panel.draw(self.screen, self.screen.get_rect())
@@ -371,6 +382,12 @@ class GameGUI:
         from ui.controls import help_columns
         self.help_columns = help_columns()
         self.mode = "help"
+
+    def show_settings(self) -> None:
+        from ui.settings_panel import SettingsPanel
+        if self.settings_panel is None:
+            self.settings_panel = SettingsPanel(self)
+        self.mode = "settings"
 
     # ---- dialog -----------------------------------------------------
 

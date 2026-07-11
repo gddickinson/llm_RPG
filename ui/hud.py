@@ -30,11 +30,13 @@ class HUD:
 
     def draw(self, target, engine, layout: dict) -> None:
         """Draw all HUD elements in their layout positions."""
+        from engine import settings
         self.draw_status_panel(target, engine, layout["status"])
         self.draw_event_log(target, engine, layout["events"])
         self.draw_quest_panel(target, engine, layout["quests"])
-        self.draw_minimap(target, engine, layout["minimap"])
-        if "map" in layout:
+        if settings.enabled(engine.player, "minimap"):
+            self.draw_minimap(target, engine, layout["minimap"])
+        if "map" in layout and settings.enabled(engine.player, "hints"):
             self.draw_hint_bar(target, engine, layout["map"])
 
     def draw_hint_bar(self, target, engine, map_rect) -> None:

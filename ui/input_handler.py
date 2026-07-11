@@ -58,9 +58,25 @@ class InputHandler:
                 self.gui.mode = "play"
             return True
 
-        # Dialog typing mode -----------------------------------------------
+        # Quit confirmation — Y quits, N / Esc keeps playing
+        if self.gui.mode == "confirm_quit":
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_y, pygame.K_RETURN):
+                    self.engine.end_game()
+                    self.gui.running = False
+                elif event.key in (pygame.K_n, pygame.K_ESCAPE):
+                    self.gui.mode = "play"
+            return True
+        # Settings overlay
+        if self.gui.mode == "settings":
+            if self.gui.settings_panel is not None:
+                return self.gui.settings_panel.handle_key(event)
+            self.gui.mode = "play"
+            return True
+        # Dialog typing mode
         if self.gui.mode == "dialog":
-            return self._handle_dialog_input(event)
+            from ui.dialog_input import handle_dialog_input
+            return handle_dialog_input(self.gui, event)
 
         # Travel menu: 1-9 teleports, Esc cancels
         if self.gui.mode == "travel":
@@ -245,11 +261,12 @@ class InputHandler:
                 pass
             return True
 
-        # One-key overlays: collection/diaries/travel/topics
+        # One-key overlays: collection/diaries/travel/topics/settings
         overlays = {pygame.K_o: self.gui.show_collection_log,
                     pygame.K_j: self.gui.show_diaries,
                     pygame.K_u: self.gui.show_travel,
-                    pygame.K_y: self.gui.show_topics}
+                    pygame.K_y: self.gui.show_topics,
+                    pygame.K_COMMA: self.gui.show_settings}
         if k in overlays:
             overlays[k]()
             return True
@@ -332,41 +349,14 @@ class InputHandler:
             self.gui.show_help()
             return True
 
-        # Quit
+        # Quit — ask first, never drop the game on a stray ESC
         if k == pygame.K_ESCAPE:
-            self.engine.end_game()
-            self.gui.running = False
+            self.gui.mode = "confirm_quit"
             return True
 
         return False
 
     # ---- dialog input ------------------------------------------------
-
-    def _handle_dialog_input(self, event) -> bool:
-        if event.type != pygame.KEYDOWN:
-            return False
-        if event.key == pygame.K_ESCAPE:
-            self.gui.end_dialog()
-            return True
-        if event.key == pygame.K_RETURN:
-            self.gui.submit_dialog()
-            return True
-        if event.key == pygame.K_BACKSPACE:
-            self.gui.dialog_input = self.gui.dialog_input[:-1]
-            return True
-        # Quest accept / turn-in hotkeys (1-9) -------------------------
-        # Only trigger if the dialog input field is empty (otherwise user
-        # is typing).
-        if not self.gui.dialog_input and pygame.K_1 <= event.key <= pygame.K_9:
-            idx = event.key - pygame.K_1  # 0-based
-            self.gui.dialog_quest_action(idx)
-            return True
-        # Typing
-        ch = event.unicode
-        if ch and ch.isprintable():
-            self.gui.dialog_input += ch
-            return True
-        return False
 
     # ---- helpers -----------------------------------------------------
 

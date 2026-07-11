@@ -3113,3 +3113,28 @@ always knows the full list is one key away. Six tests lock it in: the
 once-missing keys and the core verbs are documented, the columns are
 balanced and fit, no line overflows a column, the section headers are
 present, and the overlay opens, draws and dismisses. Suite 1359, green.
+
+**Round 142 — PUX.4a Settings overlay + a quit confirmation.**
+The game had a genuinely deep set of behaviours but almost no way to
+adjust them: a single scattered toggle (SHIFT+L) and no options screen
+at all. `engine/settings.py` turns the options into persisted data —
+Event log detail (sharing the event filter's own `log_verbosity`
+store so the two never drift), Hint bar, Mini-map and Sound on/off,
+and Map zoom (24/32/48) — all living in player.metadata so they ride
+through saves. `ui/settings_panel.py` is the `,`-key overlay that
+lists them: up/down to pick, left/right or Enter to cycle a value,
+Esc or ',' to close. A change both persists and takes effect at once —
+map zoom re-sizes the renderer and clears its sprite cache, Sound
+mutes the SFX, and the HUD checks the hint-bar and mini-map toggles
+each frame. Along the way I fixed the ESC trap the user called out:
+pressing Escape no longer dumps the whole game to desktop — it raises
+a "Leave the game?" confirmation with [Y] quit / [N] keep playing (the
+window close button still exits at once, as expected), so a stray key
+can't cost an unsaved run. Making room for all this pushed
+input_handler over the 500-line line, so the dialog-typing handler
+moved out to its own `ui/dialog_input.py`. Thirteen tests cover the
+model (defaults, set, cycle-and-wrap both ways, log-detail sharing the
+filter store) and the GUI flow (zoom applies live; ESC → confirm → N
+backs out, Y quits). Suite 1366, green. Remainder to PUX.4b: reclaim
+the bottom-right dead zone with a party panel and make the layout
+responsive.

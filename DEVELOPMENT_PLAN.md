@@ -2575,23 +2575,30 @@ these next, ahead of more Phase-17 depth.
   (coverage of the once-missing keys + core verbs, balanced columns
   that fit, no line overflows, section headers, overlay opens/draws/
   dismisses). Suite 1359, green.)*
-- [ ] **PUX.4 Screen layout & an options menu (user-directed).**
-  Review of the current 1280×800 fixed layout (`gui._compute_layout`)
-  found: (a) a **dead zone** — a 320×200 empty rectangle at bottom-
-  right (below the Quests panel, right of the minimap) draws nothing;
-  (b) the layout is **hard-pinned to 1280×800** (`self.width/height`
-  computed once) — no resize/scale/fullscreen adaptation; (c) there is
-  **no central options/settings UI** — the few toggles that exist
-  (SHIFT+L log verbosity) are scattered and undiscoverable. Do:
-  reclaim the dead zone (a party/companions panel, or a bigger event
-  log / at-a-glance controls); a **SETTINGS OVERLAY** (a new key, e.g.
-  `,` or from the start menu) with adjustable OPTIONS — log verbosity,
-  hint bar on/off, map zoom (tile_size 24/32/48), sound on/off,
-  fullscreen/resizable, high-contrast/font-scale — persisted to
-  config/player.metadata; make the layout responsive to the actual
-  window size. Plus the original polish: consistency/readability
-  across the I/B/K/X/J/O panels and event-log clarity. Split into
-  coherent sub-steps (settings overlay first, then responsive layout).
+- [x] **PUX.4a Settings/options overlay + a quit confirmation
+  (user-directed).**
+  *(Round 142: `engine/settings.py` — the options as persisted DATA
+  (`get/set/cycle_setting`, `enabled`): Event log (quiet/normal/verbose,
+  sharing event_filter's `log_verbosity` store), Hint bar on/off,
+  Mini-map on/off, Sound on/off, Map zoom 24/32/48 — all in
+  player.metadata, so they survive saves. `ui/settings_panel.py` — a
+  `,`-key overlay: ↕ pick a row, ↔/Enter cycle the value, Esc/','
+  close; cycling both persists AND applies live — zoom re-sizes the
+  renderer + clears the sprite cache, Sound mutes the SFX, and the HUD
+  gates the hint bar / mini-map on their toggles each frame. Also fixed
+  a real UX trap the user flagged: **ESC no longer drops the whole game
+  outright** — it opens a "Leave the game?" confirmation ([Y] quit /
+  [N] keep playing; the window-X still closes immediately). To make
+  room, the dialog-typing handler was extracted to `ui/dialog_input.py`
+  (input_handler back under 500). 13 tests (defaults/set/cycle/wrap,
+  log-detail sharing the filter store, zoom-applies-live, and the
+  ESC→confirm→Y/N flow). Suite 1366, green.)*
+- [ ] **PUX.4b Party panel + responsive layout.** Reclaim the 320×200
+  bottom-right DEAD ZONE with a party/companions panel (portraits, HP,
+  current order). Make `gui._compute_layout` RESPONSIVE to the real
+  window size (it's hard-pinned to 1280×800) and support fullscreen/
+  resize. Plus the remaining polish: consistency/readability across
+  the I/B/K/X/J/O panels and event-log clarity.
 - [ ] **PUX.5 Playability review.** Run the DEVELOPMENT_PLAN Playtest
   Matrix (12 dimensions) as scripted-and-judged sessions; turn friction
   findings into fixes or plan items.

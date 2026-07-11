@@ -59,6 +59,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
         ("Y", "topic journal"),
     ]),
     ("SYSTEM", [
+        (",", "settings & options"),
         ("F5 / F9", "quicksave / quickload"),
         ("F1 or ?", "this help"),
         ("ESC", "close a panel · quit map"),

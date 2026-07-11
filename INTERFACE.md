@@ -117,6 +117,7 @@ llm_RPG/
 - **`traversal.py`** — `TraversalSystem` (P11.1): per-terrain rules from `data/traversal.json` — wade at shores, graded swim/climb checks (d20 + skill level + ability mod vs DC raised by pack load and exhaustion, bad fails hurt), swamp/forest slogs + weather tax per step; fatigue on the needs scale, reset by sleep.
 - **`hazards.py`** — P11.2: `flow_at` (rivers run along the longer water axis; lakes are slack), per-turn deep-water struggle (`water_hazard_tick`: fail → swept downstream + escalating drown damage; at 1 HP washed ashore minus one item), `tumble` off rock faces on bad climb fails; `[!]` telegraphs + hint-bar warning. P13.3 breath clock: (1+CON mod)×4 turns of free diving before the struggle starts, hint-bar countdown. P11.3 aids: carried gear (`equip_bonuses` climb/swim via `traversal.aid_bonus`), water_walking status skips checks and struggles, swimmers_grace +5, heavy-pack "drop or sink" telegraph.
 - **`spells.py`** — `SpellSystem`, spell registry, mana mechanics.
+- **`settings.py`** — PUX.4a persisted player options (Event log / Hint bar / Mini-map / Sound / Map zoom) in player.metadata; `get/set/cycle_setting`, `enabled`; the `,`-key settings overlay reads these.
 - **`banking.py`** — Deposit/withdraw gold at temples/shops.
 - **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).
 - **`player_actions.py`** — Player-driven actions (pickup/drop/use/attack/move); weather travel penalty.
@@ -207,7 +208,9 @@ llm_RPG/
 - **`controls.py`** — PUX.3 the controls reference as audited data (single source of truth for the F1/? help): `CONTROLS`, `help_columns()` (two balanced columns that fit one screen), `documented_keys()`.
 - **`hints.py`** — `context_hints(engine)`; contextual key hints (talk/barter/forage/enter/…) rendered as the HUD hint bar; a standing `[?] all controls` reminder when a slot is free.
 - **`spell_panel.py`** — X-key Spellbook; cast any known spell (Enter/1–9), mana + effect readout.
-- **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker.
+- **`hud.py`** — Status, HP/XP bars, mini-map, event log, quest tracker; `draw_help_overlay` (two-column controls, PUX.3); hint bar + mini-map gated on settings (PUX.4a).
+- **`settings_panel.py`** — PUX.4a the `,`-key settings overlay (cycle Event log / Hint bar / Mini-map / Sound / Map zoom; applies zoom + mute live).
+- **`dialog_input.py`** — dialog-typing key handler (split from input_handler to hold the line).
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
 - **`terminal_ui.py`** — Text-based UI.
 - **`inventory_panel.py`** — I-key equipment + bag overlay (equip/use/drop).
