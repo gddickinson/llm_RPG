@@ -34,6 +34,40 @@ def validate_all() -> List[str]:
     problems += _check_diseases()
     problems += _check_pantheon()
     problems += _check_structures()
+    problems += _check_traversal()
+    return problems
+
+
+def _check_traversal() -> List[str]:
+    """traversal.json: known terrain values, classes, lattice skills."""
+    import json
+    from pathlib import Path
+    from world.world_map import TerrainType
+    problems = []
+    path = Path(__file__).resolve().parent.parent / "data" / \
+        "traversal.json"
+    if not path.exists():
+        return problems
+    try:
+        rules = json.loads(path.read_text())
+    except Exception as e:
+        return [f"traversal.json unparseable: {e}"]
+    terrains = {t.value for t in TerrainType}
+    try:
+        from engine.skill_progression import SKILLS
+    except Exception:
+        SKILLS = {}
+    for terrain, rule in rules.items():
+        if terrain not in terrains:
+            problems.append(f"traversal: unknown terrain '{terrain}'")
+        if rule.get("class") not in ("swim", "climb", "slog"):
+            problems.append(
+                f"traversal[{terrain}]: bad class "
+                f"'{rule.get('class')}'")
+        skill = rule.get("skill")
+        if skill and SKILLS and skill not in SKILLS:
+            problems.append(
+                f"traversal[{terrain}]: unknown skill '{skill}'")
     return problems
 
 

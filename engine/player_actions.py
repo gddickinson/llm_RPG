@@ -355,7 +355,10 @@ class PlayerActions:
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager and loc:
             self.engine.quest_manager.on_location_entered(loc.name)
 
-        self._weather_travel_penalty(nx, ny)
+        try:   # slow ground + weather tax the step (P11.1)
+            self.engine.traversal.on_step(nx, ny)
+        except Exception:
+            pass
         # Retreating from melee: careful disengage or eat a free strike
         try:
             from engine.tactics import (opportunity_attack,
@@ -477,24 +480,3 @@ class PlayerActions:
         engine.advance_turn()
         return True
 
-    def _weather_travel_penalty(self, x: int, y: int) -> None:
-        """Storms/snow — and swamp muck — slow travel: +1 min per step."""
-        try:
-            from world.weather import Weather
-            from world.world_map import TerrainType
-            terrain = self.engine.world.map.get_terrain_at(x, y)
-            if terrain == TerrainType.SWAMP:
-                self.engine.world.advance_time(1)
-                return
-            current = self.engine.weather_system.state.current
-            if current not in (Weather.STORM, Weather.SNOW):
-                return
-            if terrain == TerrainType.ROAD:
-                return
-            self.engine.world.advance_time(1)
-            self._slow_steps = getattr(self, "_slow_steps", 0) + 1
-            if self._slow_steps % 10 == 1:
-                self.engine.memory_manager.add_event(
-                    f"The {current.value} slows your travel.")
-        except Exception:
-            pass

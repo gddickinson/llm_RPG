@@ -1,12 +1,20 @@
-"""Agility shortcuts + earned teleports (P2.8)."""
+"""Terrain crossings (P11.1 contract) + earned teleports (P2.8)."""
 
 import unittest
 
 from engine.game_engine import GameEngine
 from engine.skill_progression import (add_skill_xp, total_xp_for_level,
                                       get_skill_xp)
-from engine.travel import CLIMB_LEVEL, SWIM_LEVEL, TELEPORT_TOLL
+from engine.travel import TELEPORT_TOLL
 from world.world_map import TerrainType
+
+
+class _FixedRng:
+    def __init__(self, value):
+        self.value = value
+
+    def randint(self, a, b):
+        return self.value
 
 
 def _adjacent_to(engine, terrain):
@@ -38,43 +46,43 @@ class TestShortcuts(unittest.TestCase):
         except Exception:
             pass
 
-    def test_mountain_blocks_low_agility(self):
+    def test_failed_climb_blocks_and_logs(self):
         step = _adjacent_to(self.engine, TerrainType.MOUNTAIN)
         if step is None:
             self.skipTest("no reachable mountain edge")
+        self.engine.traversal.rng = _FixedRng(1)   # doomed roll
         before = self.player.position
         moved = self.engine.move_player(*step)
         self.assertFalse(moved)
         self.assertEqual(self.player.position, before)
         log = " ".join(str(e) for e in
                        self.engine.memory_manager.game_history[-3:])
-        self.assertIn("Agility", log)
+        self.assertIn("grip", log.lower())
 
-    def test_climb_with_high_agility(self):
+    def test_high_agility_cannot_fail_the_climb(self):
         step = _adjacent_to(self.engine, TerrainType.MOUNTAIN)
         if step is None:
             self.skipTest("no reachable mountain edge")
-        add_skill_xp(self.player, "agility",
-                     total_xp_for_level(CLIMB_LEVEL))
+        add_skill_xp(self.player, "agility", total_xp_for_level(15))
+        self.engine.traversal.rng = _FixedRng(1)   # worst roll
         xp_before = get_skill_xp(self.player, "agility")
         target = (self.player.position[0] + step[0],
                   self.player.position[1] + step[1])
         moved = self.engine.move_player(*step)
-        self.assertTrue(moved)
+        self.assertTrue(moved, "mastery is certainty")
         self.assertEqual(self.player.position, target)
-        self.assertGreater(get_skill_xp(self.player, "agility"), xp_before)
+        self.assertGreater(get_skill_xp(self.player, "agility"),
+                           xp_before)
 
-    def test_swim_needs_higher_level_than_climb(self):
+    def test_shore_water_is_wadeable_by_anyone(self):
         step = _adjacent_to(self.engine, TerrainType.WATER)
         if step is None:
             self.skipTest("no reachable shoreline")
-        add_skill_xp(self.player, "agility",
-                     total_xp_for_level(CLIMB_LEVEL))
-        self.assertFalse(self.engine.move_player(*step),
-                         "climb level must not allow swimming")
-        add_skill_xp(self.player, "agility",
-                     total_xp_for_level(SWIM_LEVEL))
+        self.engine.traversal.rng = _FixedRng(1)   # wading never rolls
         self.assertTrue(self.engine.move_player(*step))
+        log = " ".join(str(e) for e in
+                       self.engine.memory_manager.game_history[-3:])
+        self.assertIn("wade", log.lower())
 
 
 class TestTeleports(unittest.TestCase):

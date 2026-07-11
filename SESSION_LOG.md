@@ -1797,3 +1797,33 @@ shared footprint_to_perimeter mapping that opens AND closes holes
 (game_api_mixin also back under 500). Deferred: greenfield
 ConstructionProject for NEW structures, pending a quest/DM
 use-case. 8 new tests. Suite: 958, green x2.
+
+**Round 95 — P11.1 Traversal framework (done).**
+The land grades your passage now. `engine/traversal.py` +
+`data/traversal.json` (all rules are data): water with any dry
+neighbor is SHALLOW — anyone can wade it, it just tires you — while
+all-water-neighbor tiles are DEEP and take a graded swim check.
+Depth is an overlay computed from neighbors, so no new terrain type
+was needed and flood tiles (P10.6) get shores for free. Checks are
+d20 + lattice skill level + ability modifier against a DC raised by
+pack load (the P-carry system: +2 at 60%, +4 at 90% full) and
+exhaustion (+2 tired, +5 exhausted). SWIMMING joined the skill
+lattice (with its own skilling pet, Ripple the river sprite);
+climbing rock stays Agility's job. The old hard gates — travel.py's
+flat Agility 15/25 — became the mastery plateau: at Agility 15 the
+worst d20 still clears the climb DC, so mastery is certainty, but
+a level-1 character can now ATTEMPT the rock and sometimes make it.
+Success crosses, tires, costs minutes, and trains the skill;
+failure strands you on your side of it, more tired; miss by 5+ and
+the rock or the river takes a bite (HP loss, floored at 1 — sweeps
+and drowning get their own teeth in P11.2). Swamp and dense forest
+are slog-class: extra fatigue and minutes per step, telegraphed
+once on entry. Player fatigue rides the same 0-100 needs scale NPCs
+use and an inn bed resets it. travel.try_shortcut now delegates to
+the framework; the weather travel penalty moved into
+traversal.on_step (player_actions.py back under 500 — 482). The
+hint bar telegraphs wade/swim/climb beside the water or the rocks;
+the validator cross-checks traversal.json terrain and skill refs.
+Old hard-gate tests rewritten to the graded contract; a pets test
+that hardcoded 8 skills now derives from the registry. 8 new tests.
+Suite: 966, green x2.

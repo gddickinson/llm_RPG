@@ -179,6 +179,8 @@ class GameEngine(GameAPIMixin):
         self.surfaces_layer = SurfaceLayer(self)
         from engine.flood import FloodSystem
         self.flood_system = FloodSystem(self)
+        from engine.traversal import TraversalSystem
+        self.traversal = TraversalSystem(self)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None

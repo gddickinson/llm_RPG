@@ -30,5 +30,9 @@
   "agility": {
     "name": "Agility",
     "description": "Move fast and far; unlocks shortcuts across the land."
+  },
+  "swimming": {
+    "name": "Swimming",
+    "description": "Cross deep water without the river deciding for you."
   }
 }

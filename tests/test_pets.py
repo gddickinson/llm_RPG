@@ -90,7 +90,7 @@ class TestPets(unittest.TestCase):
         lines = self.engine.collection_log.overlay_lines()
         pet_line = next(ln for ln in lines if ln.startswith("Pets"))
         self.assertIn("Rocky", pet_line)
-        self.assertIn("1/8", pet_line)
+        self.assertIn(f"1/{len(PETS)}", pet_line)
 
 
 if __name__ == "__main__":

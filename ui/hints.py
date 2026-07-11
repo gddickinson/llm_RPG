@@ -140,6 +140,26 @@ def context_hints(engine) -> List[str]:
                 hints.append("[SHIFT+P] pray")
         except Exception:
             pass
+        try:   # traversal (P11.1): what would a bump cost here?
+            from world.world_map import TerrainType as TT
+            wmap = engine.world.map
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                tx, ty = x + dx, y + dy
+                if not (0 <= tx < wmap.width and
+                        0 <= ty < wmap.height):
+                    continue
+                t = wmap.terrain[ty][tx]
+                if t == TT.WATER:
+                    if engine.traversal.is_shallow(tx, ty):
+                        hints.append("[move] wade the shallows")
+                    else:
+                        hints.append("[move] swim (Swimming check)")
+                    break
+                if t == TT.MOUNTAIN:
+                    hints.append("[move] climb (Agility check)")
+                    break
+        except Exception:
+            pass
         try:
             from engine.earthworks import has_pickaxe
             from world.world_map import TerrainType

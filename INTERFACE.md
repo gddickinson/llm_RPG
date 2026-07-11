@@ -84,7 +84,8 @@ llm_RPG/
 - **`collection_log.py`** — `CollectionLog`; unique items/kills/crafts/places vs registry totals (O-key overlay).
 - **`pets.py`** — `PetSystem`; rare skilling-pet rolls from `data/pets.json`, follower trails the player.
 - **`diaries.py`** — `DiaryManager`; regional task tiers from `data/diaries.json`, auto-claim rewards + shop discounts (J-key overlay).
-- **`travel.py`** — `TravelSystem`; Agility terrain shortcuts + diary-unlocked teleports with toll/cooldown (U-key menu).
+- **`travel.py`** — `TravelSystem`; terrain crossings (delegates to traversal) + diary-unlocked teleports with toll/cooldown (U-key menu).
+- **`traversal.py`** — `TraversalSystem` (P11.1): per-terrain rules from `data/traversal.json` — wade at shores, graded swim/climb checks (d20 + skill level + ability mod vs DC raised by pack load and exhaustion, bad fails hurt), swamp/forest slogs + weather tax per step; fatigue on the needs scale, reset by sleep.
 - **`spells.py`** — `SpellSystem`, spell registry, mana mechanics.
 - **`banking.py`** — Deposit/withdraw gold at temples/shops.
 - **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).

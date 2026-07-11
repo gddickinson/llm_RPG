@@ -1374,13 +1374,31 @@ for climbing mountains, rough ground, swamps and dense forest. Plus:
 some creatures and magic-enhanced characters FLY, and magic can
 speed or slow movement.
 
-- [ ] **P11.1 Traversal framework.** Per-terrain traversal rules as
+- [x] **P11.1 Traversal framework.** Per-terrain traversal rules as
   data (data/traversal.json): passable/wade/swim/climb classes, skill
   gates (Agility exists; add Swimming to the lattice or reuse), STR/
   encumbrance modifiers (carry.py), fatigue costs, fail outcomes
   (blocked / swept downstream / HP loss / drop items). WATER becomes
   wadeable at shores (new SHALLOW_WATER terrain or depth overlay),
   swimmable beyond.
+  *(Round 95: `engine/traversal.py` + `data/traversal.json`. Depth
+  by overlay, no new terrain: water with any dry 4-neighbor is
+  SHALLOW — anyone wades, it just tires; all-water neighbors = deep,
+  a graded check. Checks: d20 + lattice skill level + ability mod vs
+  DC raised by pack load (carry.py: +2 at 60%, +4 at 90%) and
+  exhaustion (+2 tired / +5 exhausted). Swimming joined the lattice
+  (data/skills.json + a Ripple pet); climbing uses Agility — the old
+  hard gates (travel.py level 15/25) became the mastery plateau:
+  at Agility 15 the d20 cannot miss the climb DC. Success moves,
+  tires, costs minutes, trains the skill; failure strands you tired;
+  miss by 5+ and the rock/river bites (HP loss floored at 1). Swamp/
+  forest are slog-class: per-step fatigue + minutes, telegraphed on
+  entry. Player fatigue rides the NPC needs scale; sleeping resets
+  it. travel.try_shortcut delegates; weather travel penalty moved
+  into traversal.on_step (player_actions back under 500). Hint bar
+  telegraphs wade/swim/climb. Validator checks traversal.json skill/
+  terrain refs. Sweep-downstream and drop-pack outcomes are P11.2/
+  P11.3 as planned. 8 new tests + 3 rewritten.)*
 - [ ] **P11.2 Hazard outcomes.** Being swept: forced movement along a
   flow direction; drowning: escalating HP loss with a struggle check
   each turn; mountain falls. Telegraphed clearly in the log + hints.

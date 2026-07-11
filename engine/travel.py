@@ -1,9 +1,8 @@
-"""Travel: agility shortcuts + earned teleports (P2.8).
+"""Travel: terrain crossings + earned teleports (P2.8).
 
-Shortcuts — high Agility turns blocking terrain into paths anywhere on
-the map: level 15 clambers over mountains, level 25 swims across water.
-Each crossing costs extra minutes and grants Agility XP (the skill that
-literally opens the map).
+Crossings — bumping blocking terrain routes through the P11.1
+traversal framework (engine/traversal.py): wade at shores, graded
+swim/climb checks beyond, trained by Swimming/Agility.
 
 Teleports — a travel menu (U key). Oakvale is always available; the
 other settlements unlock by claiming their diary's easy tier ("the diary
@@ -16,10 +15,6 @@ from typing import List, Optional, Tuple
 
 logger = logging.getLogger("llm_rpg.travel")
 
-CLIMB_LEVEL = 15
-SWIM_LEVEL = 25
-SHORTCUT_XP = 8
-SHORTCUT_EXTRA_MINUTES = 3
 TELEPORT_COOLDOWN_MIN = 240   # 4 game hours
 TELEPORT_TOLL = 15
 
@@ -35,52 +30,19 @@ class TravelSystem:
     def __init__(self, engine):
         self.engine = engine
 
-    # ---- agility shortcuts ----------------------------------------------
+    # ---- terrain crossings (P11.1) ---------------------------------------
 
     def try_shortcut(self, nx: int, ny: int) -> Optional[str]:
-        """Attempt to cross blocking terrain. Returns a message if the
-        tile was shortcut-able (crossed or level-gated); None otherwise."""
-        from world.world_map import TerrainType
-        from engine.skill_progression import (get_skill_level,
-                                              add_skill_xp)
-        wmap = self.engine.world.map
-        if not (0 <= nx < wmap.width and 0 <= ny < wmap.height):
-            return None
-        terrain = wmap.get_terrain_at(nx, ny)
-        if terrain == TerrainType.MOUNTAIN:
-            needed, verb = CLIMB_LEVEL, "clamber over the rocks"
-        elif terrain == TerrainType.WATER:
-            needed, verb = SWIM_LEVEL, "swim across"
-        else:
-            return None
-
-        player = self.engine.player
-        level = get_skill_level(player, "agility")
-        if level < needed:
-            hint = (f"You can't pass. (Agility {needed} would let "
-                    f"you {verb}.)")
-            self.engine.memory_manager.add_event(hint)
-            return hint
-
-        # Don't land on another character
-        for npc in self.engine.npc_manager.npcs.values():
-            if npc.is_active() and npc.position == (nx, ny):
-                return None
-
-        old_pos = player.position
-        wmap.remove_character(player)
-        player.position = (nx, ny)
-        wmap.place_character(player, nx, ny)
-        self.engine.world.advance_time(SHORTCUT_EXTRA_MINUTES)
-        msg = f"You {verb}. (+{SHORTCUT_XP} Agility XP)"
-        self.engine.memory_manager.add_event(msg)
-        for note in add_skill_xp(player, "agility", SHORTCUT_XP):
-            self.engine.memory_manager.add_event(note)
-        try:
-            self.engine.pet_system.on_player_moved(old_pos)
-            self.engine.pet_system.maybe_award("agility")
-        except Exception:
-            pass
+        """Attempt to cross blocking terrain via the traversal
+        framework. Returns its message (crossed or failed); None if
+        the tile has no traversal rule."""
+        msg = self.engine.traversal.attempt_cross(nx, ny)
+        if msg is not None and \
+                self.engine.player.position == (nx, ny):
+            try:
+                self.engine.pet_system.maybe_award("agility")
+            except Exception:
+                pass
         return msg
 
     # ---- teleports ---------------------------------------------------------

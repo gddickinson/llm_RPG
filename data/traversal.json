@@ -1,0 +1,45 @@
+{
+  "water": {
+    "class": "swim",
+    "skill": "swimming",
+    "ability": "strength",
+    "verb": "swim across",
+    "wade_at_edge": true,
+    "wade_verb": "wade through the shallows",
+    "base_dc": 12,
+    "fatigue": 12,
+    "wade_fatigue": 5,
+    "fail_fatigue": 6,
+    "fail_hp": 2,
+    "xp": 6,
+    "extra_minutes": 3,
+    "fail_line": "The water shoves you back to the bank, gasping.",
+    "hurt_line": "You go under for a moment — you come up coughing."
+  },
+  "mountain": {
+    "class": "climb",
+    "skill": "agility",
+    "ability": "dexterity",
+    "verb": "clamber up the rocks",
+    "base_dc": 12,
+    "fatigue": 10,
+    "fail_fatigue": 5,
+    "fail_hp": 3,
+    "xp": 6,
+    "extra_minutes": 4,
+    "fail_line": "You lose your grip and slide back down.",
+    "hurt_line": "Rock tears at your hands as you fall back."
+  },
+  "swamp": {
+    "class": "slog",
+    "fatigue": 4,
+    "extra_minutes": 2,
+    "enter_line": "The bog sucks at your boots."
+  },
+  "forest": {
+    "class": "slog",
+    "fatigue": 1,
+    "extra_minutes": 0,
+    "enter_line": ""
+  }
+}

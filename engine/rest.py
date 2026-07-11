@@ -92,6 +92,7 @@ def sleep(engine) -> List[str]:
     except Exception:
         pass
     player.metadata["hunger"] = 5
+    player.metadata["fatigue"] = 0     # slept off (P11.1)
 
     after = snapshot(engine)
     lines = _summary_lines(engine, before, after)
