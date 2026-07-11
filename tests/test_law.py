@@ -37,6 +37,9 @@ class TestLaw(unittest.TestCase):
         """Stage: bounty on the ledger, a guard at the elbow."""
         settlement = self.law.settlement_here()
         self.player.metadata["bounties"] = {settlement: bounty}
+        from engine.law import outfit_signature
+        self.player.metadata["crime_outfits"] = {
+            settlement: outfit_signature(self.player)}
         self.player.metadata.pop("law_grace_until", None)
         guard = next(n for n in self.engine.npc_manager.npcs.values()
                      if n.is_active() and
@@ -141,6 +144,148 @@ class TestLaw(unittest.TestCase):
         self.assertEqual(
             self.player.metadata["bounties"][settlement], 20,
             "the ledger remembers")
+
+
+class TestStolenGoods(unittest.TestCase):
+    """P12.9 part 2: theft flags, the fence, disguises."""
+
+    def setUp(self):
+        self.engine = GameEngine(
+            llm_provider="heuristic", enable_npc_processes=False)
+        self.engine.start_game()
+        self.player = self.engine.player
+        self.law = self.engine.law
+        self.wmap = self.engine.world.map
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def _private_home(self):
+        for name, inter in self.engine.interiors.items():
+            door = self.engine.door_manager.door(name)
+            if door.get("policy") == "locked" and \
+                    self.engine.homes.owner_of(name) is not None and \
+                    not self.engine.homes.is_derelict(name):
+                return name, inter
+        self.skipTest("no owned private home on this map")
+
+    def test_lifting_from_a_home_marks_stolen(self):
+        from engine.law import is_stolen
+        from items.item_registry import create_item
+        name, inter = self._private_home()
+        self.engine.current_interior = inter
+        self.player.position = (2, 2)
+        loot = create_item("ale")
+        self.engine.world.add_item_to_ground(loot, 2, 2)
+        msg = self.engine.pickup_item()
+        self.assertIn("(stolen)", msg)
+        self.assertTrue(is_stolen(loot))
+        self.engine.current_interior = None
+
+    def test_honest_pickup_stays_clean(self):
+        from engine.law import is_stolen
+        from items.item_registry import create_item
+        px, py = self.player.position
+        loot = create_item("ale")
+        self.engine.world.add_item_to_ground(loot, px, py)
+        self.engine.pickup_item()
+        self.assertFalse(is_stolen(loot))
+
+    def test_only_the_fence_buys_and_only_if_proven(self):
+        from engine.law import fence_sale, mark_stolen
+        from items.item_registry import create_item
+        from characters.npc_presets import make_npc
+        loot = create_item("ale")
+        mark_stolen(loot)
+        honest = make_npc("blacksmith_01")
+        ok, price, note = fence_sale(self.engine, loot, honest, 10)
+        self.assertFalse(ok)
+        self.assertIn("know where that came from", note)
+        fence = make_npc("camp_taverner_01")
+        self.player.metadata["unseen_break_ins"] = 1
+        ok, price, note = fence_sale(self.engine, loot, fence, 10)
+        self.assertFalse(ok, "quiet hands must be proven first")
+        self.player.metadata["unseen_break_ins"] = 3
+        ok, price, note = fence_sale(self.engine, loot, fence, 10)
+        self.assertTrue(ok, "the counter finally pays off")
+        self.assertEqual(price, 6, "the fence takes 40%")
+
+    def test_clean_goods_sell_anywhere(self):
+        from engine.law import fence_sale
+        from items.item_registry import create_item
+        from characters.npc_presets import make_npc
+        ok, price, _ = fence_sale(
+            self.engine, create_item("ale"),
+            make_npc("blacksmith_01"), 10)
+        self.assertTrue(ok)
+        self.assertEqual(price, 10)
+
+    def test_the_hearth_launders_food(self):
+        from engine.food import refresh_rations
+        from engine.law import is_stolen, mark_stolen
+        from items.item_registry import create_item
+        bread = create_item("bread")
+        mark_stolen(bread)
+        self.player.inventory = [bread]
+        refresh_rations(self.engine)
+        self.assertFalse(is_stolen(bread),
+                         "nobody recognizes a re-baked loaf")
+
+    def test_witnesses_remember_clothes(self):
+        from characters.equipment import equip
+        from items.item_registry import create_item
+        settlement = self.law.settlement_here()
+        # crime committed in plain clothes
+        self.law.add_bounty(20, reason="seen plainly",
+                            witnessed=True)
+        self.assertEqual(
+            self.player.metadata["crime_outfits"][settlement],
+            "plain clothes")
+        guard = next(n for n in self.engine.npc_manager.npcs.values()
+                     if n.is_active() and
+                     getattr(n.character_class, "value", "")
+                     in ("guard", "paladin"))
+        px, py = self.player.position
+        self.wmap.remove_character(guard)
+        guard.position = (px + 1, py)
+        self.wmap.place_character(guard, px + 1, py)
+        self.player.metadata.pop("law_grace_until", None)
+        # disguised in armor: the guard walks past
+        armor = create_item("leather")
+        self.player.inventory.append(armor)
+        equip(self.player, armor)
+        self.law.check_contact()
+        self.assertIsNone(self.law.active,
+                          "a change of clothes is a disguise")
+        # back in plain clothes: recognized
+        from characters.equipment import EquipSlot, unequip
+        unequip(self.player, EquipSlot.ARMOR)
+        self.law.check_contact()
+        self.assertIsNotNone(self.law.active,
+                             "the outfit on file matches again")
+
+    def test_unseen_crimes_never_confront(self):
+        settlement = self.law.settlement_here()
+        self.law.add_bounty(5, reason="a quiet break-in",
+                            witnessed=False)
+        guard = next(n for n in self.engine.npc_manager.npcs.values()
+                     if n.is_active() and
+                     getattr(n.character_class, "value", "")
+                     in ("guard", "paladin"))
+        px, py = self.player.position
+        self.wmap.remove_character(guard)
+        guard.position = (px + 1, py)
+        self.wmap.place_character(guard, px + 1, py)
+        self.player.metadata.pop("law_grace_until", None)
+        self.law.check_contact()
+        self.assertIsNone(self.law.active,
+                          "they don't know WHO did it")
+        self.assertEqual(
+            self.player.metadata["bounties"][settlement], 5,
+            "but the ledger still grows")
 
 
 if __name__ == "__main__":

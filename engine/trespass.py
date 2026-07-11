@@ -100,7 +100,8 @@ class TrespassSystem:
         try:   # the ledger remembers (P12.9)
             self.engine.law.add_bounty(
                 10 if witnessed else 5,
-                reason=f"a break-in at the {loc.name}")
+                reason=f"a break-in at the {loc.name}",
+                witnessed=witnessed)
         except Exception:
             pass
         return msg

@@ -1555,7 +1555,7 @@ traditions lead.
   rations to 100 (cooking's combat reason). Bread/jerky perishable;
   pie + brew stocked at the tavern. The full-health refusal
   contract preserved. Stolen-flag laundering waits on a theft
-  marking system (remainder). 7 tests. Suite 1038, green x3.)*
+  marking system (delivered in P12.9 round 108). 7 tests. Suite 1038, green x3.)*
 - [x] **P12.6 Rest with teeth + the DM's night.** Long rest costs
   provisions (BG3 camp supplies); interruption rules; well-rested
   buffs by bed quality (Skyrim +XP tiers); lifestyle expenses as a
@@ -1636,12 +1636,19 @@ traditions lead.
   confrontation: crit clears free, success halves) · 5 RESIST
   (fine ×1.5, the guard swings, the watch remembers). Walking out
   of reach shelves, never clears. Keys 1-5 in play mode; the hint
-  bar hands over to the menu. REMAINDER (sub-step 2): stolen-item
-  flags + fence-only sales (unseen_break_ins pays off) and
-  KCD witness-memory/disguises. 9 tests. Suite 1073, green x4 —
-  after fixing a 30% flake in the P12.7 lacerate test (the
-  action's own tick can end the bleed; assert the wound bled, not
-  that it persists).)*
+  bar hands over to the menu. 9 tests, suite 1073 green x4.
+  Round 108, sub-step 2: STOLEN GOODS — lifting from an owned,
+  locked, non-derelict home (pickup or rummage) flags the item
+  (use_effect.stolen, save-free); honest merchants refuse ("I know
+  where that came from"), only Wulf the Stonepine taverner fences —
+  at 60%, and only once unseen_break_ins >= 3 (the counter pays
+  off); the hearth launders food (P12.5's deferred clause
+  delivered). WITNESSES REMEMBER CLOTHES: witnessed crimes record
+  your armor per settlement; guards only confront a MATCHING
+  outfit — a change of armor is a disguise until you're seen
+  again; unseen crimes grow the ledger but never confront (they
+  don't know WHO). Preset NPCs can now carry metadata from data
+  (the fence flag). 7 more tests. Suite 1080, green x3.)*
 - [ ] **P12.10 Economy II.** OSRS stock-elastic shop prices (price
   moves k% per item of stock deviation, self-healing restock)
   layered on per-settlement supply so REGIONAL arbitrage exists

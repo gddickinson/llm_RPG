@@ -119,10 +119,15 @@ def decay_inventory(engine) -> int:
 
 
 def refresh_rations(engine) -> int:
-    """A hearth re-bakes carried perishables back to fresh."""
+    """A hearth re-bakes carried perishables back to fresh — and
+    nobody recognizes a re-baked loaf (P12.9b laundering)."""
     refreshed = 0
     for item in getattr(engine.player, "inventory", []):
         eff = getattr(item, "use_effect", None) or {}
+        if not eff.get("food"):
+            continue
+        if eff.pop("stolen", None):
+            refreshed += 1
         if eff.get("perishable") and \
                 int(eff.get("freshness", FRESH_START)) < FRESH_START:
             eff["freshness"] = FRESH_START

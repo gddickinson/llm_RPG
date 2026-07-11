@@ -223,6 +223,16 @@ def _rummage(engine, interior) -> str:
         item = create_item(rng.choice(RUMMAGE_ITEMS))
         if item is not None and can_carry(player):
             player.inventory.append(item)
+            try:   # rifling a private stash is theft (P12.9b)
+                from engine.law import mark_stolen
+                from engine.player_actions import \
+                    _is_private_interior
+                if _is_private_interior(engine):
+                    mark_stolen(item)
+                    return (f"Tucked at the bottom you find: "
+                            f"{item.name}. (stolen)")
+            except Exception:
+                pass
             return f"Tucked at the bottom you find: {item.name}."
     coins = rng.randint(2, 7)
     player.gold = getattr(player, "gold", 0) + coins

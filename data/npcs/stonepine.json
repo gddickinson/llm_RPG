@@ -127,7 +127,7 @@
     ],
     "gold": 45,
     "symbol": "U",
-    "description": "A grizzled barkeep with a permanent half-smile.",
+    "description": "A grizzled barkeep with a permanent half-smile. Asks no questions about where things come from.",
     "personality": {
       "traits": [
         "genial",
@@ -145,6 +145,9 @@
       }
     ],
     "home_location": "Camp Tavern",
-    "faction": "neutral"
+    "faction": "neutral",
+    "metadata": {
+      "fence": true
+    }
   }
 }

@@ -54,6 +54,8 @@ def make_npc(npc_id: str,
         npc.add_memory(mem["event"], mem.get("importance", 1))
     npc.home_location = spec.get("home_location", "")
     npc.faction = spec.get("faction", "neutral")
+    for key, val in spec.get("metadata", {}).items():
+        npc.metadata[key] = val
     return npc
 
 

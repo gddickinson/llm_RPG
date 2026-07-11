@@ -9,6 +9,26 @@ from typing import Optional
 logger = logging.getLogger("llm_rpg.player_actions")
 
 
+def _is_private_interior(engine) -> bool:
+    """Inside somebody's locked home (not derelict, not yours)."""
+    inter = getattr(engine, "current_interior", None)
+    if inter is None:
+        return False
+    try:
+        # interiors are keyed by the exterior location name;
+        # inter.name carries a suffix — resolve by identity
+        name = next((k for k, v in engine.interiors.items()
+                     if v is inter), None)
+        if name is None:
+            return False
+        door = engine.door_manager.door(name)
+        return (door.get("policy") == "locked"
+                and engine.homes.owner_of(name) is not None
+                and not engine.homes.is_derelict(name))
+    except Exception:
+        return False
+
+
 class PlayerActions:
     """All actions the player can take, separated from engine internals."""
 
@@ -68,6 +88,13 @@ class PlayerActions:
         player.inventory.append(item)
         self.engine.world.remove_item_from_ground(item, x, y)
         msg = f"You pick up {item_name_str}."
+        try:   # lifting from a private home is THEFT (P12.9b)
+            from engine.law import mark_stolen
+            if _is_private_interior(self.engine):
+                mark_stolen(item)
+                msg += " (stolen)"
+        except Exception:
+            pass
         self.engine.memory_manager.add_event(msg)
 
         # Relics of history reveal their legends

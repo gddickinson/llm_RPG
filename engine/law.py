@@ -17,8 +17,15 @@ gold, the CONFRONTATION opens — Skyrim's menu, keys 1-5:
     watch remembers)
 
 Walking out of reach shelves the confrontation (short grace), it
-does not clear the ledger. Remainder (planned): stolen-item flags
-with fence-only sales, disguises vs witness memory.
+does not clear the ledger.
+
+Part 2 (this file too): STOLEN GOODS carry a flag (in use_effect,
+riding copy/save free) — honest merchants refuse them; only the
+FENCE buys, at 60%, and only once you've proven quiet hands
+(unseen_break_ins >= 3 — the counter pays off). Cooking launders
+food. WITNESSES REMEMBER CLOTHES (KCD): witnessed crimes record
+your outfit per settlement, and guards only confront a matching
+outfit — a change of armor is a disguise until you're seen again.
 """
 
 import logging
@@ -62,10 +69,15 @@ class LawSystem:
         return best
 
     def add_bounty(self, amount: int, reason: str = "",
-                   settlement: str = None) -> None:
+                   settlement: str = None,
+                   witnessed: bool = True) -> None:
         settlement = settlement or self.settlement_here()
         ledger = self._ledger()
         ledger[settlement] = ledger.get(settlement, 0) + amount
+        if witnessed:   # they saw what you were wearing (P12.9b)
+            outfits = self.engine.player.metadata.setdefault(
+                "crime_outfits", {})
+            outfits[settlement] = outfit_signature(self.engine.player)
         self.engine.memory_manager.add_event(
             f"[Law] Word spreads in {settlement}: "
             f"{reason or 'a crime'} (+{amount}g bounty, "
@@ -98,6 +110,14 @@ class LawSystem:
         amount = self.bounty_here()
         if amount <= 0:
             return None
+        # witnesses remember clothes: no matching outfit on file,
+        # no recognition (KCD disguise rule, P12.9b)
+        settlement = self.settlement_here()
+        outfits = player.metadata.get("crime_outfits", {})
+        signature = outfits.get(settlement)
+        if signature is None or \
+                signature != outfit_signature(player):
+            return None
         guard = self._adjacent_guard()
         if guard is None:
             return None
@@ -122,6 +142,9 @@ class LawSystem:
     def _close(self, cleared: bool) -> None:
         if cleared:
             self._ledger().pop(self.active["settlement"], None)
+            self.engine.player.metadata.get(
+                "crime_outfits", {}).pop(
+                    self.active["settlement"], None)
         self.engine.player.metadata["law_grace_until"] = \
             self.engine.world.time + GRACE_MINUTES
         self.active = None
@@ -252,3 +275,50 @@ class LawSystem:
             elif self._dist(npc) <= 1:
                 return npc
         return None
+
+
+# ------------------------------------------------- stolen goods
+
+def outfit_signature(player) -> str:
+    """What witnesses remember: the armor on your back."""
+    try:
+        gear = getattr(player, "equipment", None) or {}
+        armor = gear.get("armor") if isinstance(gear, dict) \
+            else getattr(gear, "armor", None)
+        return getattr(armor, "id", None) or "plain clothes"
+    except Exception:
+        return "plain clothes"
+
+
+def mark_stolen(item) -> None:
+    eff = getattr(item, "use_effect", None)
+    if isinstance(eff, dict):
+        eff["stolen"] = True
+
+
+def is_stolen(item) -> bool:
+    return bool((getattr(item, "use_effect", None) or {})
+                .get("stolen"))
+
+
+FENCE_RATE = 0.6
+FENCE_TRUST_BREAK_INS = 3
+
+
+def fence_sale(engine, item, merchant, base_price):
+    """(allowed, price, message) for selling THIS item to THIS
+    merchant. Honest hands refuse stolen goods; the fence pays 60%
+    once you've proven quiet hands."""
+    if not is_stolen(item):
+        return True, base_price, ""
+    if not merchant.metadata.get("fence"):
+        return (False, 0,
+                f"{merchant.name} pushes it back: \"I know where "
+                f"that came from. Take it elsewhere.\"")
+    marks = engine.player.metadata
+    if marks.get("unseen_break_ins", 0) < FENCE_TRUST_BREAK_INS:
+        return (False, 0,
+                f"{merchant.name} eyes you: \"Prove you've got "
+                f"quiet hands first, then we'll talk.\"")
+    return (True, max(1, int(base_price * FENCE_RATE)),
+            f"{merchant.name} asks no questions.")

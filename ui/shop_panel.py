@@ -125,6 +125,17 @@ class ShopPanel:
                 return
             item = items[self.cursor_right]
             price = sm.sell_price(player, item, self.merchant)
+            try:   # stolen goods need a fence (P12.9b)
+                from engine.law import fence_sale
+                ok, price, note = fence_sale(
+                    self.engine, item, self.merchant, price)
+                if not ok:
+                    self.engine.memory_manager.add_event(note)
+                    return
+                if note:
+                    self.engine.memory_manager.add_event(note)
+            except Exception:
+                pass
             cat = self._catalog()
             if cat.gold < price:
                 self.engine.memory_manager.add_event(

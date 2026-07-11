@@ -2126,3 +2126,31 @@ flake shipped last round: lacerate's bleed can legitimately end on
 the action's own turn tick (the flat check is unrigged there), so
 the test now asserts the wound BLED, not that it persists — assert
 the mechanic, not the dice. 9 tests. Suite: 1073, green x4.
+
+**Round 108 — P12.9 part 2: stolen goods, the fence, disguises
+(done — P12.9 complete).**
+The theft economy arrived. STOLEN FLAGS: lifting anything from an
+owned, locked, non-derelict home — ground pickup or a rummaged
+stash — marks the item stolen (in use_effect, so it rides
+Item.copy() and saves for free) and the log says so: "(stolen)".
+Honest merchants push stolen goods back across the counter — "I
+know where that came from" — and only WULF, the Stonepine camp
+taverner (flagged as a fence in data; presets can now carry
+metadata from JSON), will buy: at 60% of the price, and only once
+your unseen_break_ins counter reads three or more. The counter
+P9A.4 planted "for future fence content" two phases ago finally
+pays off: quiet hands are a credential. The HEARTH launders food —
+nobody recognizes a re-baked loaf — delivering the clause P12.5
+had to defer for want of a theft system. WITNESSES REMEMBER
+CLOTHES (KCD): every witnessed crime records your equipped armor
+per settlement, and guards only open the confrontation when your
+CURRENT outfit matches the one on file — a change of armor is a
+disguise until you're seen offending in it, and clearing the
+bounty clears the description. Unseen crimes grow the ledger but
+never trigger the menu: they don't know WHO did it. Two real bugs
+died in testing: outfit_signature read player.equipment as an
+object when it's a dict (always "plain clothes"), and the
+private-home check trusted inter.name which carries an
+"(interior)" suffix — resolved by identity against the interiors
+registry instead. 7 more tests (16 total in test_law). Suite:
+1080, green x3.
