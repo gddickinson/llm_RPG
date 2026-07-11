@@ -2575,10 +2575,23 @@ these next, ahead of more Phase-17 depth.
   (coverage of the once-missing keys + core verbs, balanced columns
   that fit, no line overflows, section headers, overlay opens/draws/
   dismisses). Suite 1359, green.)*
-- [ ] **PUX.4 HUD & panel polish.** Consistency and readability across
-  the I/B/K/X/J/O panels and the HUD; event-log clarity (build on the
-  P15.11 filter); make keybinds discoverable. A visual/UX consistency
-  pass.
+- [ ] **PUX.4 Screen layout & an options menu (user-directed).**
+  Review of the current 1280×800 fixed layout (`gui._compute_layout`)
+  found: (a) a **dead zone** — a 320×200 empty rectangle at bottom-
+  right (below the Quests panel, right of the minimap) draws nothing;
+  (b) the layout is **hard-pinned to 1280×800** (`self.width/height`
+  computed once) — no resize/scale/fullscreen adaptation; (c) there is
+  **no central options/settings UI** — the few toggles that exist
+  (SHIFT+L log verbosity) are scattered and undiscoverable. Do:
+  reclaim the dead zone (a party/companions panel, or a bigger event
+  log / at-a-glance controls); a **SETTINGS OVERLAY** (a new key, e.g.
+  `,` or from the start menu) with adjustable OPTIONS — log verbosity,
+  hint bar on/off, map zoom (tile_size 24/32/48), sound on/off,
+  fullscreen/resizable, high-contrast/font-scale — persisted to
+  config/player.metadata; make the layout responsive to the actual
+  window size. Plus the original polish: consistency/readability
+  across the I/B/K/X/J/O panels and event-log clarity. Split into
+  coherent sub-steps (settings overlay first, then responsive layout).
 - [ ] **PUX.5 Playability review.** Run the DEVELOPMENT_PLAN Playtest
   Matrix (12 dimensions) as scripted-and-judged sessions; turn friction
   findings into fixes or plan items.
