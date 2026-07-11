@@ -93,7 +93,7 @@ llm_RPG/
 - **`leveling.py`** — XP curve, auto level-up with HP/stat increases.
 - **`skill_progression.py`** — 8-skill lattice from `data/skills.json`; geometric curve, `add_skill_xp()`, levels 1–50.
 - **`collection_log.py`** — `CollectionLog`; unique items/kills/crafts/places vs registry totals (O-key overlay).
-- **`pets.py`** — `PetSystem`; rare skilling-pet rolls from `data/pets.json`, follower trails the player.
+- **`pets.py`** — `PetSystem`; rare skilling-pet rolls from `data/pets.json`, follower trails the player; P12.14 loyalty 1–20 (SHIFT+Z treats +1, nightly neglect −1, 0 walks away), apport fetch at 12+.
 - **`diaries.py`** — `DiaryManager`; regional task tiers from `data/diaries.json`, auto-claim rewards + shop discounts (J-key overlay).
 - **`travel.py`** — `TravelSystem`; terrain crossings (delegates to traversal) + diary-unlocked teleports with toll/cooldown (U-key menu).
 - **`traversal.py`** — `TraversalSystem` (P11.1): per-terrain rules from `data/traversal.json` — wade at shores, graded swim/climb checks (d20 + skill level + ability mod vs DC raised by pack load and exhaustion, bad fails hurt), swamp/forest slogs + weather tax per step; fatigue on the needs scale, reset by sleep.

@@ -1723,9 +1723,21 @@ traditions lead.
   start rolls bones, so leftovers caused cross-module ghost
   nondeterminism — caught as a 1-in-3 tyrant-test flake).
   8 tests. Suite 1117, green x5.)*
-- [ ] **P12.14 Pet loyalty.** NetHack tameness 1–20 (+1 feeding,
+- [x] **P12.14 Pet loyalty.** NetHack tameness 1–20 (+1 feeding,
   −1 neglect, 0 = walks away) and apport/fetch trained by treats,
   layered on pets.py followers.
+  *(Round 113: the active pet carries loyalty 1-20 (fresh pets
+  start at 10). SHIFT+Z tosses a treat — burns one food item, +1
+  loyalty, stamps the fed-day; each day WITHOUT a treat costs 1 in
+  the nightly stack, with a fraying warning at <=3 and the walk-away
+  at 0 (removed from the collection — win them back at the grind).
+  APPORT at loyalty 12+: each overworld turn a 5% dart fetches a
+  ground item from near the pet's heels into your pack (carry-cap
+  respected, zones excluded). Hint bar warns when the bond frays.
+  9 tests — including a fetch test that initially grabbed a
+  worldgen relic instead of the planted ale (the mechanic worked;
+  the test staged in a scrubbed corner). Suite 1126, green x3.
+  PHASE 12 COMPLETE.)*
 
 **Annotations to existing phases from the research:** P10.3 (fire
 spread) upgrades to DOS2-style SURFACES — water/oil/blood pools,

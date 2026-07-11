@@ -2252,3 +2252,32 @@ itself rolls the dice) and after (leftover bones gave later
 modules' engines a 1-in-3 ghost — caught as a tyrant-test flake
 and root-caused rather than rerun-and-hoped). 8 tests. Suite:
 1117, green x5.
+
+**Round 113 — P12.14 Pet loyalty (done). PHASE 12 COMPLETE.**
+The last Rules-of-Living round. NetHack tameness landed on the
+skilling pets: the ACTIVE follower carries loyalty 1-20 (fresh
+pets start at 10). SHIFT+Z tosses it a treat — one food item burns
+from the pack, loyalty +1 (capped 20), and the fed-day is stamped.
+Every day WITHOUT a treat costs 1 in the nightly stack; at 3 or
+less the hint bar and log warn that the bond is fraying ("trails
+further behind, thin and doubtful"), and at 0 the pet WALKS AWAY —
+gone from the collection log's count, winnable back only at the
+skilling grind that first earned it. APPORT arrives at loyalty 12:
+each overworld turn there's a 5% chance the pet darts off and
+fetches a ground item from within 3 tiles of its heels straight
+into your pack — carry capacity respected, zones excluded. The
+test that mattered: the fetch test initially failed because the
+pet fetched a WORLDGEN RELIC lying near the player's start instead
+of the planted ale — the mechanic was working perfectly, the test
+assumed an empty world; it now stages in a scrubbed corner.
+9 tests. Suite: 1126, green x3.
+
+With P12.14, Phase 12 — Rules of Living, fourteen rounds
+synthesized from the three-agent RPG research deep-dive — is
+COMPLETE: degrees of success, valued conditions, thirst and the
+exhaustion ladder, Dying & Wounded, the food economy, rest with
+teeth and the DM's night, combat depth, skill actions, crime & law
+with fences and disguises, the elastic economy, the bond ceremony,
+the infection race, bones, and pet loyalty. The remaining plan
+items are the two deferred notes (alchemy value floor; ransom/
+rescue beats) and whatever George's next playtest surfaces.

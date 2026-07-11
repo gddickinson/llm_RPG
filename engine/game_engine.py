@@ -318,6 +318,12 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"Law contact error: {e}")
 
+        # A loyal pet may fetch (P12.14)
+        try:
+            self.pet_system.maybe_fetch()
+        except Exception as e:
+            logger.debug(f"Pet fetch error: {e}")
+
         # Tick status effects on all active characters (player + NPCs)
         try:
             from characters.status_effects import tick_effects
@@ -406,6 +412,10 @@ class GameEngine(GameAPIMixin):
                     infection_night(self)
                 except Exception as e:
                     logger.debug(f"Infection error: {e}")
+                try:   # neglected pets drift (P12.14)
+                    self.pet_system.run_night()
+                except Exception as e:
+                    logger.debug(f"Pet night error: {e}")
                 self.world_director.run_night()
                 self.faction_ticker.run_day()
                 self.retaliation.run_night()

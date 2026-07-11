@@ -159,13 +159,11 @@ class InputHandler:
             self.engine.melee_or_shoot()
             return True
 
-        # Ranged attack (R; SHIFT+R = aimed shot)
-        if k == pygame.K_r:
+        if k == pygame.K_r:   # ranged; SHIFT+R aims
             self.engine.shoot_ranged(aimed=shift)
             return True
 
-        # Spellbook (X)
-        if k == pygame.K_x:
+        if k == pygame.K_x:   # spellbook
             self.gui.show_spellbook()
             return True
 
@@ -178,9 +176,11 @@ class InputHandler:
                 pass
             return True
 
-        # Forage (Z)
-        if k == pygame.K_z:
-            self.engine.forage()
+        if k == pygame.K_z:   # forage; SHIFT+Z: treat the pet
+            if shift:
+                self.engine.pet_system.feed_pet()
+            else:
+                self.engine.forage()
             return True
 
         # Enter / exit building or dungeon (Tab); force a door (SHIFT+TAB)

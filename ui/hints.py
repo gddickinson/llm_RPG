@@ -166,6 +166,13 @@ def context_hints(engine) -> List[str]:
                 hints.append("[SHIFT+P] pray")
         except Exception:
             pass
+        try:   # a hungry pet at your heels (P12.14)
+            if engine.pet_system.active_pet() is not None and \
+                    engine.pet_system.tameness() <= 5:
+                hints.append("[SHIFT+Z] toss your pet a treat — "
+                             "the bond is fraying")
+        except Exception:
+            pass
         try:   # tired in the wilds? camp (P12.6)
             from characters.needs import get_fatigue
             if get_fatigue(engine.player) >= 60:
