@@ -38,6 +38,12 @@ class PlayerActions:
 
         item = candidates[0]
         item_name_str = item.name if hasattr(item, "name") else str(item)
+        # Plain-string ground entries are body markers — they belong
+        # on the ground (shrines revive from there), and they crashed
+        # the inventory panel when carried (George)
+        if not hasattr(item, "id"):
+            return (f"You leave {item_name_str} in peace. A shrine "
+                    f"may yet restore them.")
         from engine.carry import can_carry, full_message
         if not can_carry(player):
             msg = full_message(player)

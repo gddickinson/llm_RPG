@@ -1580,3 +1580,25 @@ room; quest rewards never blocked); (3) items indoors were
 unpickable — the furniture layer was shadowing the pickup key;
 a ground item underfoot now wins. 14 new tests. Suite: 893,
 green x3.
+
+**Round 85 — PT3.3 The war arc (done): the zombie-goblin bug + more.**
+An 18-beat battle session: auto-lock and target cycling under
+pressure, archery clearing a wolf pack in five volleys, a 3-wolf
+squad fight won in 45 rounds with Melody alive at the end, the
+conjunction omen turning the night dangerous, the full bounty ladder
+(warning → level-scaled hunter → hunter beaten), a DM module
+installed MID-SESSION with its quest boarded, its cultist slain and
+its beat firing the next dawn, and defeat resolving as story. THE
+BIG FIND: spell kills created 0-HP ZOMBIES — take_damage() lowers hp
+but only defeat() flips status, and the spell path never called it,
+so spell-slain enemies remained active and targetable forever and
+granted no XP, loot, or quest credit (the diagnostic goblin absorbed
+twenty fireballs). Spell kills now route through the one true defeat
+handler. Second fix: party members were still driven by SCHEDULES —
+Melody marched home to the tavern mid-adventure; party now skips
+scheduled NPC turns entirely. Also fixed George's second
+string-item crash (equip/use on body markers) and stopped bodies
+entering packs at all — shrines revive from the ground, so bodies
+now stay where they fall. George's traversal request became Phase
+11 (wading/swimming with flow and encumbrance risks, climbing,
+graded terrain, flight and speed magic). Suite: 897, green x3.

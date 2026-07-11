@@ -112,6 +112,10 @@ class InventoryPanel:
             except Exception:
                 pass
         elif kind == "bag" and item is not None:
+            if not hasattr(item, "is_equippable"):
+                self.engine.memory_manager.add_event(
+                    f"You can't equip {item}.")
+                return
             if not item.is_equippable():
                 self.engine.memory_manager.add_event(
                     f"{item.name} can't be equipped.")
@@ -125,6 +129,8 @@ class InventoryPanel:
         kind, _, item, _ = row
         if item is None or kind == "equip":
             return
+        if not hasattr(item, "name"):
+            return
         # Use via the engine API for consistent messaging
         self.engine.use_item(item.name)
 
@@ -135,7 +141,8 @@ class InventoryPanel:
         kind, _, item, _ = row
         if item is None or kind != "bag":
             return
-        self.engine.drop_item(item.name)
+        self.engine.drop_item(item.name if hasattr(item, "name")
+                              else str(item))
 
     # ---------------- render ---------------------------------------
 

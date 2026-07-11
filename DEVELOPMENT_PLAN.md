@@ -1154,10 +1154,28 @@ gameplay, fix bugs and add to the plan."
   lootable until you make room; rewards never blocked); (5) George:
   couldn't pick up items indoors — furniture interaction was
   shadowing pickup; ground item underfoot now wins. 14 tests.)*
-- [ ] **PT3.3 The war arc.** Powerful monsters (troll guardian,
+- [x] **PT3.3 The war arc.** Powerful monsters (troll guardian,
   conjunction-night spawns), ranged/spell targeting in anger, squad
   tactics with companions, bounty-hunter retaliation, the DM running
   a fresh module mid-session. Fix what breaks.
+  *(done 2026-07-10 — 18-beat battle session. VERIFIED: auto-lock +
+  cycling under pressure, archery killing a pack in 5 volleys, squad
+  fight won in 45 rounds with the companion surviving, conjunction
+  omen + x3 danger night, bounty warning → level-scaled hunter →
+  hunter defeated, a DM module installed MID-SESSION (quest to the
+  board, cultist slain, next-day beat fired), and defeat resolving
+  as story ("You come to hours later where you fell — bloodied,
+  starving, but alive"). TWO REAL BUGS FIXED: (1) SPELL KILLS made
+  0-HP 'alive' zombies — take_damage never set defeated status, so
+  spell-slain enemies stayed active/targetable forever and granted
+  no XP/loot/quest credit; _on_kill now routes through the ONE
+  defeat handler (my test goblin ate 20 fireballs before diagnosis);
+  (2) party members were still driven by SCHEDULES — Melody marched
+  home to the tavern mid-adventure; party skips scheduled NPC turns
+  (the companion system owns their feet). AUTHORING NOTE: kill
+  objectives match by class — 'monster' does not match
+  brigand-class targets; DM quest authors beware. 2 regression
+  tests.)*
 - [ ] **PT3.4 Findings round.** Consolidate all findings into fixes +
   new plan items; update the Playtest Matrix scorecard (Session 3).
 - [ ] **P9.5 Multi-level dungeons.** Depth 2–3 dungeons with stairs-down,
@@ -1213,6 +1231,35 @@ set_terrain + tile callbacks for interior sync.
 - [ ] **P10.6 Greenfield: water & tunnels.** Minimal cellular flood
   spread + damming (blocking tiles stop the frontier); mining
   tunnels (mountain→cave floor via dig actions). Small and tested.
+
+## Phase 11 — Environmental traversal & movement magic (George, 2026-07-10)
+
+George: wade in shallow water, SWIM in deep water (skill/ability-
+gated) with real risks — fast-flowing water can carry you away or
+drown you, encumbrance (the new carry system) and fatigue make it
+harder, magic/equipment can help. Same graded-difficulty treatment
+for climbing mountains, rough ground, swamps and dense forest. Plus:
+some creatures and magic-enhanced characters FLY, and magic can
+speed or slow movement.
+
+- [ ] **P11.1 Traversal framework.** Per-terrain traversal rules as
+  data (data/traversal.json): passable/wade/swim/climb classes, skill
+  gates (Agility exists; add Swimming to the lattice or reuse), STR/
+  encumbrance modifiers (carry.py), fatigue costs, fail outcomes
+  (blocked / swept downstream / HP loss / drop items). WATER becomes
+  wadeable at shores (new SHALLOW_WATER terrain or depth overlay),
+  swimmable beyond.
+- [ ] **P11.2 Hazard outcomes.** Being swept: forced movement along a
+  flow direction; drowning: escalating HP loss with a struggle check
+  each turn; mountain falls. Telegraphed clearly in the log + hints.
+- [ ] **P11.3 Aids.** Items and spells that help: rope, climbing
+  gear, a swimming blessing, water-walking; encumbrance interacts
+  (drop your pack or sink).
+- [ ] **P11.4 Flight & speed magic.** A `flying` movement mode
+  (creature flag or spell/status) that ignores ground-tile rules
+  (water, rubble, swamp penalties) but not walls/ceilings indoors;
+  haste/slow statuses that change actions-per-turn or step cost;
+  flying monsters (wisps already float thematically) use it.
 
 ## What NOT to build (explicitly deferred)
 

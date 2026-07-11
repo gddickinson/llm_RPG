@@ -151,7 +151,7 @@ class SpellSystem:
             # Death from spell
             if not target.is_alive():
                 results.append(f"{target.name} is slain by the {spell.name}!")
-                self._on_kill(caster, target)
+                self._on_kill(caster, target, spell.damage)
         if spell.heal:
             healed = min(spell.heal, target.max_hp - target.hp)
             target.heal(spell.heal)
@@ -218,15 +218,13 @@ class SpellSystem:
         return ((a.position[0] - b.position[0]) ** 2 +
                 (a.position[1] - b.position[1]) ** 2) ** 0.5
 
-    def _on_kill(self, killer, victim) -> None:
-        # Defer to combat system's kill handling
+    def _on_kill(self, killer, victim, damage: int = 0) -> None:
+        """Route through the ONE defeat handler (PT3.3 finding: spell
+        kills left 0-HP 'alive' zombies — no defeat(), no XP, no
+        quest credit, still targetable)."""
         try:
-            self.engine.world.map.remove_character(victim)
-            from items.loot_tables import generate_loot
-            drops = generate_loot(victim)
-            for item in drops:
-                self.engine.world.add_item_to_ground(
-                    item, victim.position[0], victim.position[1])
+            self.engine.combat_system._handle_defeat(killer, victim,
+                                                     damage)
         except Exception as e:
             logger.warning(f"Spell-kill cleanup error: {e}")
 
