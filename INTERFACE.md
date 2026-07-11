@@ -152,7 +152,7 @@ llm_RPG/
 - **`world_generator.py`** — `WorldGenerator`; procedural world. Two settlements (Oakvale + Riverside Hamlet) connected by road on 60×40+ maps.
 - **`interiors.py`** — Building interior mini-maps; multi-level stacks (P9A.5): tavern/inn bedroom lofts, shop/forge cellars, twinned stair tiles (`add_upper_floor`/`add_cellar`).
 - **`blueprints.py`** — Building footprint blueprints used by the world generator.
-- **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming).
+- **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming); NPCs are region-scoped (each region caches its own cast; companions cross with the player).
 - **`encounters.py`** — `EncounterManager`; wilderness monster spawns (weather-scaled chance).
 - **`monsters.py`** — Monster templates from `data/monsters.json`; terrain-filtered encounters + dungeons; `build_monster()`.
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.

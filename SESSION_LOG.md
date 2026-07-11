@@ -3048,3 +3048,22 @@ so it ran 5/5 clean in isolation in a third of a second. This is the
 regression net the playable game was missing, and the first stone of
 the user-directed playability pass. Suite 1335, green (bar the
 historic disease/director worldgen flake, which reran clean).
+
+**Round 140a — Bugfix: NPCs no longer follow you between regions.**
+Playtest report: crossing into a new map region shows the SAME NPCs
+in the same spots. Root cause in `world/chunked_world.py`: region
+transitions cached the terrain and locations per region but the NPC
+manager was "left untouched" — `_reset_map_characters` only wiped the
+map grid, so every villager stayed in `npc_manager` at its old
+position, and the renderer (which draws NPCs from the manager)
+redisplayed the previous region's cast on the new map. The fix makes
+NPCs belong to their region: `_cache_current` now stows the current
+region's cast in `cw.cached_npcs` and pulls them OUT of the live
+manager, `_restore` brings a visited region's cast back at their old
+posts, and a brand-new wilderness region simply starts empty. Party
+members are the exception — `_party_ids` (read from the companion
+manager, not a phantom `engine.party`) keeps companions in the manager
+and re-places them beside the player on the far side, so they cross
+with you. Verified: 22 home NPCs, 0 bleed into the next region, all 22
+restored on return, and a companion travels while the region's cast
+stays put. 3 tests; suite 1338, green.

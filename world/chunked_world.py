@@ -32,6 +32,10 @@ class ChunkedWorld:
     regions: Dict[Tuple[int, int], RegionPlan] = field(default_factory=dict)
     cached_terrain: Dict[Tuple[int, int], list] = field(default_factory=dict)
     cached_locations: Dict[Tuple[int, int], list] = field(default_factory=dict)
+    # a region's NPCs travel WITH the region, not with the player — each
+    # region keeps its own cast so the same villagers don't reappear in
+    # the next map over.
+    cached_npcs: Dict[Tuple[int, int], list] = field(default_factory=dict)
     current_region: Tuple[int, int] = (0, 0)
 
     def plan_for(self, rx: int, ry: int) -> RegionPlan:
@@ -123,6 +127,13 @@ class WorldStreamer:
         self.engine.world.map.remove_character(self.engine.player)
         self.engine.player.position = (new_x, new_y)
         self.engine.world.map.place_character(self.engine.player, new_x, new_y)
+        # party members cross with the player (they were cleared off the
+        # old grid) — set them beside the player to fan out next turn
+        for nid in self._party_ids():
+            npc = self.engine.npc_manager.get_npc(nid)
+            if npc is not None:
+                npc.position = (new_x, new_y)
+                self.engine.world.map.place_character(npc, new_x, new_y)
         self.cw.current_region = (new_rx, new_ry)
         plan = self.cw.plan_for(new_rx, new_ry)
         msg = (f"You travel {direction} into a new region "
@@ -137,14 +148,41 @@ class WorldStreamer:
         wmap = self.engine.world.map
         self.cw.cached_terrain[(rx, ry)] = [list(row) for row in wmap.terrain]
         self.cw.cached_locations[(rx, ry)] = list(self.engine.world.locations)
+        # stow this region's cast and pull them OUT of the live manager,
+        # so they don't bleed into the next region we walk into.
+        self.cw.cached_npcs[(rx, ry)] = self._pop_region_npcs()
+
+    def _party_ids(self) -> set:
+        """The NPC ids that follow the player (companions), not the
+        region — read from the companion manager."""
+        cm = getattr(self.engine, "companion_manager", None)
+        ids = set(getattr(cm, "party", []) or []) if cm else set()
+        ids |= set(getattr(self.engine, "party", []) or [])
+        return ids
+
+    def _pop_region_npcs(self) -> list:
+        """Remove every non-player, non-party NPC from the manager and
+        return them. Party members travel with the player, so they stay."""
+        party = self._party_ids()
+        nm = self.engine.npc_manager
+        leaving = [npc for nid, npc in list(nm.npcs.items())
+                   if nid not in party]
+        for npc in leaving:
+            nm.remove_npc(npc.id)
+        return leaving
 
     def _restore(self, rx: int, ry: int) -> None:
         terrain = self.cw.cached_terrain[(rx, ry)]
         locations = self.cw.cached_locations[(rx, ry)]
         self.engine.world.map.terrain = [list(row) for row in terrain]
         self.engine.world.locations = list(locations)
-        # Clear non-player characters from the map; NPC manager untouched
         self._reset_map_characters()
+        # bring this region's own cast back to life at their old posts
+        for npc in self.cw.cached_npcs.get((rx, ry), []):
+            self.engine.npc_manager.add_npc(npc)
+            pos = getattr(npc, "position", None)
+            if pos:
+                self.engine.world.map.place_character(npc, *pos)
         self._rebuild_interiors()
 
     def _generate(self, rx: int, ry: int) -> None:
