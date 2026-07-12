@@ -113,6 +113,7 @@ llm_RPG/
 - **`dm_modules.py`** — Atomic adventure bundles: prevalidate → install → rollback-on-failure.
 - **`dm_library.py`** — The Legendarium (P6.7): DM definitions persist to `data/dm_library/` with provenance and load into the registries at every boot; slain DM creations enter `legendarium.json`. `record_definition` / `load_into_registries` / `record_legend` / `legendarium_tail`; root overridable via `LLM_RPG_DM_LIBRARY`.
 - **`module_packs.py`** — Module packs (P1.4 + P14.2b): authored campaign packs install at new-game start; packs ship monsters/items/spawns/quests/beats AND structures (charter-checked, budget-free, Legendarium-inherited); structures-only packs valid.
+- **`production.py`** — P16.1 supply-chain origins: one unified `origin_of(item)` view merging `gathering.json` (raws) + `recipes.json` (crafted) + `data/production.json` (the profession layer, workstations, and farmed/foraged/hunted raws). Queries `is_raw`/`is_crafted`/`raw_materials`/`crafted_goods`/`producers(prof)`/`profession_of`/`inputs_of`/`source_of`/`all_professions`. Pure data, no state; the foundation for the P16.2 NPC production loop.
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks; P12.1 degrees of success: `check()` → `CheckResult` with `Degree` (crit ±10 margins, nat 20/1 shift one degree) — lockpicking, forcing, persuasion, shove, and forage all route through it.

@@ -2149,12 +2149,28 @@ taken. Ordered by value; each is a data-first port sized to
 llm_RPG's architecture (no chunk streaming — our map is a fixed
 grid).
 
-- [ ] **P16.1 Supply-chain data model.** Port AW's
+- [x] **P16.1 Supply-chain data model.** Port AW's
   `data/supply_chains.py` shape as `data/production.json`: every
   item gets an ORIGIN — raw materials (gatherer profession, source
   tile, yield, tool) and crafted goods (crafter profession,
   workstation, skill, level). Pure data; gives every object a
   producer and every profession a purpose. Foundation for P16.2.
+  *(Round 161: `engine/production.py` builds ONE unified `origin_of`
+  view, DRY by construction — the mining/woodcutting/fishing raws come
+  from `gathering.json` and the crafted goods from `recipes.json` (so
+  those single sources never drift), merged with `data/production.json`,
+  which adds only what they lack: the profession layer (miner/smith/
+  cook/…→skill), the workstations (smithing→forge, cooking→hearth, …),
+  and the farmed/foraged/hunted raws outside the gathering nodes
+  (wheat_sheaf/herb_bundle/bogcap/wolf_pelt). 13 raws + 12 crafted, the
+  full ore→bar→sword chain intact. Queries: `origin_of` / `is_raw` /
+  `is_crafted` / `raw_materials` / `crafted_goods` / `producers(prof)` /
+  `profession_of` / `inputs_of` / `source_of` / `all_professions`.
+  Validator `_check_production` cross-refs skills/items/professions/
+  sources; 12 tests including a coverage sweep (every gathering tier +
+  recipe has an origin) and a chain check (every crafted good grounds
+  out in raws). Suite 1541, green. The producer/profession map P16.2's
+  NPC work loop stands on.)*
 - [ ] **P16.2 NPC production loop.** AW `systems/npc_work.py`
   FSM (gather → carry → deposit → craft → deliver) against a
   per-settlement store dict: gatherers fill village stores from

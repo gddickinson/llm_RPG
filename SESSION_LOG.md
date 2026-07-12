@@ -3663,3 +3663,35 @@ a home, an abandoned building is derelict and empty, the full claim→
 repair→rest loop runs on a real derelict), roads save time, a trade and a
 hunt train the new skills, the night atmosphere renders, an agent hero
 acts. Validator clean, suite 1529, green. Phase 15 is complete.
+
+**Round 161 — P16.1 Supply-chain data model.**
+Phase 16 opens: a pass over the sibling autonomous_world project for the
+highest-value imports. First and foundational is the supply chain — every
+item's ORIGIN, so every profession has a purpose and every object a maker.
+The insight that shaped the port: most of this already lives in our data,
+just scattered — `gathering.json` knows the mining/woodcutting/fishing
+raws (skill, tool, terrain, tier items) and `recipes.json` knows the
+crafted goods (inputs, skill, forge-gate). Rather than re-author and risk
+drift, `engine/production.py` MERGES those two single sources with a small
+new `data/production.json` that adds only what they lack: the profession
+layer (miner/woodcutter/fisher/forager/farmer/hunter/smith/cook/alchemist/
+carpenter → their skills), the workstations (smithing→forge, cooking→
+hearth, alchemy→alchemy_bench, carpentry→workbench), and the four raws
+that live OUTSIDE the gathering nodes because they come off a field, a
+forest floor, or a slain beast (wheat_sheaf, herb_bundle, bogcap,
+wolf_pelt). The result is one unified `origin_of(item)` index — 13 raw
+materials, 12 crafted goods — that answers, for any economic item, whether
+it's raw (which profession gathers it, from what tile, with what tool) or
+crafted (which profession makes it, at what workstation, from what inputs).
+The ore→bar→sword chain resolves cleanly: iron_ore is a miner's raw off
+the mountain, iron_bar is a smith's craft from ore, the sword a smith's
+craft from bars. Queries for P16.2 to build on: `raw_materials`,
+`crafted_goods`, `producers(profession)`, `profession_of`, `inputs_of`,
+`source_of`, `all_professions`, `skill_for_profession`. A validator check
+cross-references every profession→skill, every authored raw's item/skill/
+profession/source. 12 tests, two of them structural: a COVERAGE sweep
+(every gathering tier item and every recipe output has an origin, so the
+merge is complete) and a CHAIN check (walking any crafted good's inputs
+eventually reaches raw materials — nothing is made from thin air). Suite
+1541, green. Pure data + queries, no state — the map the P16.2 NPC work
+loop will walk.
