@@ -4668,3 +4668,35 @@ footprint, and the production loop recognises the town + villages).
 Suite 1790, green. Planting this into a live world and dropping the
 player at the gate is P18.5 — this is the reusable region that
 menu-start will call.
+
+---
+
+## P18.5 "Begin at the Castle" — the castle is playable from the title
+
+Everything the castle needed was built (the seven-floor keep P18.1-3, the
+living court P18.2, the realm layout P18.4); P18.5 wires it to the title
+screen so a new player can walk straight into it.
+
+A `world_kind` string now flows from the New Game menu → `main.py` →
+`GameEngine` → `initialize_demo_game` → `initialize_demo_world`. When it's
+`"castle"`, the world init plants the P18.4 Bloodstone realm
+(`build_castle_region`) instead of the default Oakvale world and spawns
+the hero on the road just outside the gatehouse
+(`castle_region.gate_approach` — the passable tile below the south-wall
+gate). Nothing else changes: `start_game`'s existing `structures.build()`
+finds the "Bloodstone Castle" location the region planted and attaches
+the seven-floor keep, so the player can walk through the gate and up to
+the throne — or down to the crypt.
+
+The menu gains a "Begin at the Castle" new-game option that routes through
+the SAME character creator as Customize (you still make your own hero),
+setting a `pending_start = "castle"` that rides out with the finished
+spec. The default start is completely untouched — a plain New Game is
+still Oakvale.
+
+6 tests (the realm is the castle region; the hero stands at the gate on
+open ground, not inside a wall; the seven-floor keep is attached; the
+default start is still Oakvale; the option is on the menu; and choosing
+it routes through character creation carrying the castle flag, which then
+resets). Suite 1796, green. The whole castle — stone, court, realm, and
+now the front door — is playable end-to-end.

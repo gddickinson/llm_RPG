@@ -3420,9 +3420,23 @@ Sequenced into tested rounds:
   the settlements are recognised by the production loop). Suite 1790,
   green. Planting this into a LIVE world (and dropping the player at the
   gate) is P18.5 — this is the reusable region the menu-start will call.)*
-- [ ] **P18.5 "Begin at the Castle" — the menu start.** A start-menu
+- [x] **P18.5 "Begin at the Castle" — the menu start.** A start-menu
   option that generates a castle-centered world (castle + town +
   villages) and drops the newly-made character at the gate.
+  *(Round: a `world_kind` flows New Game → `main.py` → `GameEngine` →
+  `initialize_demo_game`/`initialize_demo_world`. `world_kind="castle"`
+  plants the P18.4 Bloodstone realm instead of the default world and
+  spawns the player on the road just outside the gatehouse
+  (`castle_region.gate_approach`); `start_game`'s `structures.build()`
+  then attaches the seven-floor keep automatically. The start menu gains
+  a "Begin at the Castle" new-game option that routes through the SAME
+  character creator as Customize (you still make your hero) carrying a
+  `pending_start="castle"` flag out with the finished spec. The default
+  Oakvale start is untouched. 6 tests (the realm is the castle region,
+  the hero stands at the gate on open ground, the keep is attached, the
+  default start is still Oakvale, the option is on the menu, and choosing
+  it routes through creation with the flag then resets). Suite 1796,
+  green. The castle is now playable end-to-end from the title screen.)*
 - [ ] **P18.6 The castle adventure.** Quests and court intrigue (a
   succession plot, a spy in the household, the thing stirring in the
   crypt), and a siege set-piece that hands the P17 battle layer the

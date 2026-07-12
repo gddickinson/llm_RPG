@@ -182,15 +182,22 @@ def _resolve_player_spawn(engine) -> tuple:
     return (cx, cy)
 
 
-def initialize_demo_world(engine, player_spec=None) -> None:
-    """Populate `engine` with world terrain, NPCs, player, and starter quests."""
+def initialize_demo_world(engine, player_spec=None,
+                          world_kind="default") -> None:
+    """Populate `engine` with world terrain, NPCs, player, and starter
+    quests. `world_kind="castle"` plants the Bloodstone realm (P18.5)."""
+    castle = (world_kind == "castle")
     # World generation
-    try:
-        from world.world_generator import WorldGenerator
-        WorldGenerator(engine.world).generate()
-    except Exception as e:
-        logger.warning(f"Procedural worldgen failed ({e}); using legacy.")
-        engine.world.create_simple_world()
+    if castle:
+        from world.castle_region import build_castle_region
+        build_castle_region(engine.world)
+    else:
+        try:
+            from world.world_generator import WorldGenerator
+            WorldGenerator(engine.world).generate()
+        except Exception as e:
+            logger.warning(f"Procedural worldgen failed ({e}); using legacy.")
+            engine.world.create_simple_world()
 
     # Revival shrine + back-references
     try:
@@ -207,13 +214,18 @@ def initialize_demo_world(engine, player_spec=None) -> None:
         npc.position = _resolve_npc_spawn(engine, npc)
         engine.world.map.place_character(npc, *npc.position)
 
-    # Player — spawn near Oakvale's center
+    # Player — at the castle gate (P18.5) or near Oakvale's center
     engine.player = create_default_player(spec=player_spec)
-    engine.player.position = _resolve_player_spawn(engine)
+    spawn = None
+    if castle:
+        from world.castle_region import gate_approach
+        spawn = gate_approach(engine.world)
+    engine.player.position = spawn or _resolve_player_spawn(engine)
     engine.world.map.place_character(engine.player, *engine.player.position)
 
     engine.memory_manager.add_event(
-        "You arrive at the outskirts of Oakvale Village.")
+        "You stand before the gates of Bloodstone Castle." if castle
+        else "You arrive at the outskirts of Oakvale Village.")
 
     # Offer every authored quest (locked ones hide behind their prereqs)
     if engine.quest_manager:

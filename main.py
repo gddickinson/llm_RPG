@@ -90,6 +90,7 @@ def main() -> int:
 
     # Start menu (GUI only) — returns the user's choice
     player_spec = None
+    world_kind = "default"
     load_save_name = args.load
     if args.ui == "gui" and has_pygame and not args.no_menu \
             and not args.load:
@@ -111,6 +112,7 @@ def main() -> int:
                 load_save_name = choice["save_name"]
             elif choice["action"] == "new":
                 player_spec = choice.get("spec")
+                world_kind = choice.get("start", "default")
         except Exception as e:
             logger.warning(f"Start menu failed, skipping: {e}")
 
@@ -124,6 +126,7 @@ def main() -> int:
         player_spec=player_spec,
         start_tutorial=args.tutorial,
         enable_dm_bridge=args.dm_bridge,
+        world_kind=world_kind,
     )
 
     # Optional load

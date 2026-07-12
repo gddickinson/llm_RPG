@@ -136,6 +136,22 @@ def _village(world, x, y, name) -> None:
                 wm.terrain[yy][xx] = TerrainType.FARMLAND
 
 
+def gate_approach(world):
+    """The passable tile just OUTSIDE the castle gatehouse — where the
+    P18.5 start drops the player. None if the castle isn't planted."""
+    castle = next((l for l in world.locations
+                   if l.name == CASTLE_NAME), None)
+    if castle is None:
+        return None
+    gx = castle.x + castle.width // 2
+    gy = castle.y + castle.height        # one tile south of the south wall
+    wm = world.map
+    if 0 <= gx < wm.width and 0 <= gy < wm.height and \
+            wm.terrain[gy][gx] != TerrainType.BUILDING:
+        return (gx, gy)
+    return (gx, castle.y + castle.height - 1)   # on the gate itself
+
+
 def build_castle_region(world) -> dict:
     """Plant the castle, its town and the supply villages; link them by
     road. Returns {'castle','town','villages',...} for the caller."""

@@ -35,7 +35,8 @@ class GameEngine(GameAPIMixin):
                  enable_quests: bool = True,
                  player_spec=None,
                  start_tutorial: bool = False,
-                 enable_dm_bridge: bool = False):
+                 enable_dm_bridge: bool = False,
+                 world_kind: str = "default"):
         # Core systems --------------------------------------------------
         self.world = World()
         self.npc_manager = NPCManager()
@@ -59,7 +60,8 @@ class GameEngine(GameAPIMixin):
         # Initialize demo world
         from engine.tutorial import TutorialManager
         self.tutorial_manager = TutorialManager(self)
-        self.initialize_demo_game(player_spec=player_spec)
+        self.initialize_demo_game(player_spec=player_spec,
+                                  world_kind=world_kind)
         # Baseline for the nightly-reflection day-change detector
         self._last_reflection_day = self.world.time // (24 * 60)
         from engine.rest import snapshot
@@ -95,10 +97,12 @@ class GameEngine(GameAPIMixin):
     # World / state setup
     # ====================================================================
 
-    def initialize_demo_game(self, player_spec=None) -> None:
+    def initialize_demo_game(self, player_spec=None,
+                             world_kind="default") -> None:
         """Set up a starter world + NPCs + player + initial quests."""
         from engine.demo_setup import initialize_demo_world
-        initialize_demo_world(self, player_spec=player_spec)
+        initialize_demo_world(self, player_spec=player_spec,
+                              world_kind=world_kind)
         # World streamer (needs the world built first)
         try:
             from world.chunked_world import WorldStreamer

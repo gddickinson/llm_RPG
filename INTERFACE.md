@@ -58,7 +58,7 @@ llm_RPG/
 - **`player_roster.py`** — M.1 `PlayerRoster` (`engine.roster`) + `PlayerController` (human/agent): the roster of controllable characters over `engine.player`; add/`set_active`/`controller_for`, survives save/load via `metadata['controller']`. M.1b: non-active heroes live in the world (placed in `npc_manager` + on the map, flagged `player_char`, rendered as heroes, skipped by NPC AI); `rehydrate` rebuilds the roster after a load. M.3: `set_away`/`is_away`/`away_characters` — an away human's hero is driven by the agent (`drive_agents` includes away humans) until they return. The multiplayer/agent keystone.
 - **`engine_setup.py`** — `build_subsystems(engine)`: every gameplay system constructed in dependency order (P14.1 split from __init__).
 - **`turn_pipeline.py`** — `run_turn(engine)`: the per-minute pipeline — needs, encounters, companions, conflicts, surfaces, floods, hazards, dying, law, pets — plus the nightly stack; block order is load-bearing (P14.1 split from advance_turn).
-- **`demo_setup.py`** — `initialize_demo_world()`, `create_default_player(spec)`.
+- **`demo_setup.py`** — `initialize_demo_world(engine, spec, world_kind)`, `create_default_player(spec)`. P18.5 `world_kind="castle"` plants the `castle_region` realm and spawns the player at the gatehouse instead of the default Oakvale world.
 - **`action_router.py`** — Routes NPC actions to specialized handlers.
 - **`combat_system.py`** — Player vs NPC vs NPC combat, damage, defeat, loot, faction rep on kill.
 - **`economy_system.py`** — Buy/sell/trade/give between characters.
@@ -221,7 +221,7 @@ llm_RPG/
 ### ui/ — User interfaces
 
 - **`gui.py`** — `GameGUI`; pygame main window + death popup mode; PUX.4c responsive `compute_layout(width,height)` (resizable window, `VIDEORESIZE`→`resize`, F11 `toggle_fullscreen`).
-- **`start_menu.py`** — Title screen with New Game / Load / Quit; routes into the character creator.
+- **`start_menu.py`** — Title screen with New Game / Load / Quit; routes into the character creator. P18.5 "Begin at the Castle" new-game option makes a hero (same creator) and carries a `pending_start="castle"` flag out to `main.py` (→ `GameEngine(world_kind=...)`).
 - **`character_creator.py`** — Multi-step character creation flow + `CharacterSpec`, race/class data.
 - **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting; `_render_zone()` draws dungeons/interiors; P16.5 `draw_buildings` pass over the flat tiles.
 - **`renderer_buildings.py`** — P16.5 2.5D building render: pure geometry+colour (`height_for` per building kind, `cube_faces`, `roof_faces`, `face_colors`) + a thin `draw_buildings` pass that shades a lifted, ridge-roofed block over each explored BUILDING tile (on top of the P15.1 base, fog-respecting). Headless-testable math.

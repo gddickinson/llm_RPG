@@ -34,6 +34,7 @@ TITLE_OPTIONS = [
 NEW_GAME_OPTIONS = [
     ("Quick Start", "quick"),
     ("Customize Character", "customize"),
+    ("Begin at the Castle", "castle"),
     ("Back", "back"),
 ]
 
@@ -60,6 +61,7 @@ class StartMenu:
         self.saves = []
         self.scenarios = []
         self.creator: Optional[CharacterCreator] = None
+        self.pending_start = "default"     # "castle" for the P18.5 start
 
     # ------------------------------------------------------------- main
 
@@ -102,7 +104,8 @@ class StartMenu:
             if done:
                 spec = self.creator.build_spec()
                 self.creator = None
-                return {"action": "new", "spec": spec}
+                start, self.pending_start = self.pending_start, "default"
+                return {"action": "new", "spec": spec, "start": start}
             return None
         return None
 
@@ -125,8 +128,12 @@ class StartMenu:
         elif k in (pygame.K_RETURN, pygame.K_SPACE):
             label, code = NEW_GAME_OPTIONS[self.selected]
             if code == "quick":
-                return {"action": "new", "spec": default_quick_start_spec()}
-            if code == "customize":
+                return {"action": "new", "spec": default_quick_start_spec(),
+                        "start": "default"}
+            if code in ("customize", "castle"):
+                # both make a hero; the castle option starts them at the gate
+                self.pending_start = "castle" if code == "castle" \
+                    else "default"
                 self.creator = CharacterCreator(
                     self.screen, self.font, self.big_font)
                 self.state = "customize"
