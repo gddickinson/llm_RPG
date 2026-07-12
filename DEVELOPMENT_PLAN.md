@@ -3542,8 +3542,24 @@ a coherent, testable slice; ordered roughly by impact.
   well-fed bonus is only worth it at the right moment (before/in a fight,
   when hungry with food to spare beyond the M.8a camp ration), so those wait
   on a little more context-awareness.
-- [ ] **M.8f Homesteading.** Claim and improve a derelict home; stash loot in
-  its chest; rest there free. A base of operations for a long-lived hero.
+- [x] **M.8f Homesteading (2026-07-12e).** A base of operations for a
+  long-lived hero (`decide` step 3e). STASH: a full-packed hero that keeps a
+  furnished home shelves its SURPLUS (loot/materials — not gear/potions/food/
+  ammo/tomes) in the chest (`agent_sense._can_stash`/`_surplus_items` → the
+  `stash` verb → `homestead.deposit`, which reaches the chest from anywhere),
+  freeing the pack to keep gathering and looting — a real answer to the
+  recurring pack-full stall. CLAIM: standing at an affordable derelict
+  dwelling it buys in (`_claim_target` → the `claim_home` verb). Rest-at-home
+  is already M.8a's `sleep` (`can_rest_home`, free Well-Rested). 7 tests.
+  Remainder — and the KEY cross-cutting gap for the whole indoor-M.8 cluster:
+  a "seek and enter a specific building" navigation (the away-hero skirts
+  buildings, so it rarely REACHES a derelict to claim, an inn to rest at, an
+  indoor shop to trade at, or a forge to craft at). That one navigation step
+  would light up M.8a inn-rest, M.8b indoor-merchants, M.8d crafting, and
+  M.8f claim/repair together. Plus the staged home REPAIR project (needs the
+  hero inside its home with timber/stone).
+  *That completes the M.8 arc (a–f): the away-hero rests, spends, casts,
+  gathers, worships and homesteads — it uses the whole game.*
 
 ### M.9 — Watchability: autoplay as a spectator feature
 - [ ] **M.9a "While you were away" digest (was M.5b).** A readable screen of

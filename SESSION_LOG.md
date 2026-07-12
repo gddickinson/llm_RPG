@@ -6096,3 +6096,26 @@ take-turn action dispatch — the big if/elif that turns a plan into real
 player actions — moved wholesale to a new `engine/agent_exec.py`
 (`execute(ctrl, engine, char, plan)`), dropping the controller from 506 to
 443. 6 tests.
+
+## 2026-07-12 (cont.) — M.8f: homesteading — and the M.8 arc closes
+
+The last piece. Two homesteading behaviours in `decide` (step 3e). STASH: a
+full-packed hero that keeps a furnished home shelves its SURPLUS
+(`agent_sense._surplus_items` — loot/materials, never the gear/potions/food/
+ammo/tomes it's keeping) into the chest via `homestead.deposit`, which
+reaches the chest from anywhere. That's a real answer to the pack-full stall
+that kept surfacing in the autoplay runs: freed of dead weight, the hero can
+keep gathering and looting. CLAIM: standing at an affordable derelict
+dwelling, it buys in. Rest-at-home was already M.8a's sleep(). 7 tests.
+
+The honest remainder is the one gap that shadows the whole indoor half of
+M.8: the away-hero SKIRTS buildings (the M.5b doorway-loop fix), so it rarely
+REACHES a derelict to claim, an inn to rest at, an indoor shop to trade at,
+or a forge to craft at. A single "seek and enter a named building" navigation
+step would light up M.8a inn-rest, M.8b indoor merchants, M.8d crafting and
+M.8f claim/repair all at once — a good next target.
+
+With this, the M.8 arc (a–f) is complete: the away-hero rests, spends, casts,
+gathers, worships and homesteads. It genuinely uses the whole game — the
+chronically-wounded, gold-hoarding scavenger of the first observation is now
+a self-sufficient adventurer.

@@ -26,7 +26,7 @@ from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
                                 _knows_heal, _can_shoot, _provisioned,
                                 _attack_spell, _gatherable, _learn_item,
-                                _can_pray)
+                                _can_pray, _can_stash, _claim_target)
 
 logger = logging.getLogger("llm_rpg.agent")
 
@@ -300,6 +300,15 @@ class AgentController:
                 return ("study", tome)
             if self.social and _can_pray(engine, char):
                 return ("pray",)
+
+        # 3e. homesteading (M.8f) — a full-packed hero with a home shelves its
+        # surplus in the chest (frees the pack); at a claimable derelict it
+        # can afford, it buys in
+        if self.social and not foes:
+            if _can_stash(engine, char):
+                return ("stash",)
+            if _claim_target(engine, char) is not None:
+                return ("claim_home",)
 
         # inside a building/dungeon: leave or prowl, never freeze on an
         # unreachable overworld goal

@@ -91,6 +91,63 @@ def _attack_spell(char, dist):
     return scored[0][2]
 
 
+def _surplus_items(char):
+    """Loot/materials worth shelving in the home chest (M.8f) — everything
+    the hero ISN'T keeping: not worn gear, not potions/food/ammo, not a
+    learn-tome. Frees the pack to keep gathering and looting."""
+    try:
+        from characters.equipment import equipped_items
+        worn = {id(it) for it in equipped_items(char)}
+    except Exception:
+        worn = set()
+    out = []
+    for it in getattr(char, "inventory", []):
+        if id(it) in worn:
+            continue
+        iid = (getattr(it, "id", "") or "").lower()
+        eff = getattr(it, "use_effect", None) or {}
+        if any(k in iid for k in ("potion", "heal", "remedy")):
+            continue
+        if eff.get("food") or "teach_spell" in eff or "permanent_stat" in eff:
+            continue
+        try:
+            if it.is_ammo():
+                continue
+        except Exception:
+            pass
+        out.append(it)
+    return out
+
+
+def _can_stash(engine, char) -> bool:
+    """Pack full, and the hero keeps a furnished home + has surplus to shelve
+    in its chest (M.8f). Deposit reaches the chest from anywhere."""
+    try:
+        from engine.homestead import is_ready
+        from engine.carry import can_carry
+        if can_carry(char) or not is_ready(char):
+            return False
+        return bool(_surplus_items(char))
+    except Exception:
+        return False
+
+
+def _claim_target(engine, char):
+    """A derelict home the hero is standing at and can afford (M.8f), or
+    None. (Claiming needs to be AT the dwelling — the building-skirting
+    away-hero reaches these rarely, but a human's abandoned start does.)"""
+    try:
+        from engine.homestead import owns_home, claimable_here, claim_price
+        if owns_home(char):
+            return None
+        loc = claimable_here(engine)
+        if loc is None:
+            return None
+        return loc if getattr(char, "gold", 0) >= claim_price(loc) else None
+    except Exception:
+        return None
+
+
 def _learn_item(char):
     """A tome/manual worth STUDYING now (M.8e) — one that teaches a spell we
     don't yet know, or grants a permanent stat. (Not buff/attack scrolls,

@@ -33,6 +33,16 @@ def execute(ctrl, engine, char, plan) -> None:
             engine.use_item(plan[1].name)
         elif k == "pray":                     # a boon at a shrine (M.8e)
             engine.pray()
+        elif k == "stash":                    # shelve surplus at home (M.8f)
+            from engine.agent_sense import _surplus_items
+            from engine import homestead as hs
+            for it in _surplus_items(char):
+                hs.deposit(engine, it.name)
+            deed("stored its surplus in the home chest.")
+        elif k == "claim_home":               # buy a derelict (M.8f)
+            from engine import homestead as hs
+            hs.claim(engine)
+            deed("claimed a home of its own.")
         elif k == "rest":                     # camp/inn to mend (M.8a)
             try:
                 from engine.rest import sleep

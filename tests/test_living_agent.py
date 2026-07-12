@@ -95,6 +95,73 @@ class TestSocial(_Base):
         self.assertTrue(self.ac.greeted)
 
 
+class TestHomestead(_Base):
+    """Homesteading (M.8f) — a home to stash surplus in and claim."""
+
+    def _fill_pack(self):
+        from engine.carry import can_carry
+        from items.item import Item, ItemType, ItemRarity
+        self.p.inventory = []
+        i = 0
+        while can_carry(self.p) and i < 80:
+            self.p.inventory.append(Item(
+                id=f"rock{i}", name=f"Rock {i}", description="",
+                item_type=ItemType.MISC, rarity=ItemRarity.COMMON, value=2))
+            i += 1
+
+    def _ready_home(self):
+        self.p.metadata["home"] = "Old Cottage"
+        self.p.metadata["home_ready"] = True
+
+    def _derelict_here(self):
+        from world.location import Location
+        x, y = self.p.position
+        loc = Location("Abandoned Cottage", "", x, y, 1, 1)
+        loc.add_property("derelict", True)
+        self.engine.world.add_location(loc)
+
+    def test_stashes_surplus_when_full_with_a_home(self):
+        self._ready_home()
+        self._fill_pack()
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "stash")
+
+    def test_stash_frees_the_pack(self):
+        from engine.carry import can_carry
+        self._ready_home()
+        self._fill_pack()
+        self.ac.take_turn(self.engine, self.p)
+        self.assertTrue(can_carry(self.p))
+
+    def test_no_stash_without_a_home(self):
+        self._fill_pack()                       # full but homeless
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "stash")
+
+    def test_stash_keeps_the_essentials(self):
+        from engine.agent_sense import _surplus_items
+        from items.item_registry import create_item
+        pot = create_item("potion")
+        self.p.inventory = [pot]
+        self.assertNotIn(pot, _surplus_items(self.p))
+
+    def test_claims_an_affordable_derelict(self):
+        self._derelict_here()
+        self.p.gold = 5000
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "claim_home")
+
+    def test_claim_gives_a_home(self):
+        from engine.homestead import owns_home
+        self._derelict_here()
+        self.p.gold = 5000
+        self.ac.take_turn(self.engine, self.p)
+        self.assertTrue(owns_home(self.p))
+
+    def test_no_claim_when_too_poor(self):
+        self._derelict_here()
+        self.p.gold = 0
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0],
+                            "claim_home")
+
+
 class TestWorship(_Base):
     """Worship & self-betterment (M.8e) — study a teaching tome you carry,
     pray at a shrine; not twice a day, and adventurers don't pray."""
