@@ -1,0 +1,54 @@
+{
+  "gods": {
+    "solara": {
+      "opposes": "pale_lady",
+      "metric": {"faction": "villagers", "stat": "stores"},
+      "high": 58, "low": 30,
+      "boon": {"faction": "villagers", "stat": "stores", "amount": 6},
+      "wrath": {"faction": "villagers", "stat": "stores", "amount": -6},
+      "boon_line": "Solara warms the fields — a bountiful harvest fills the larders.",
+      "wrath_line": "Solara turns her face away; a blight creeps through the crops."
+    },
+    "morrik": {
+      "opposes": "veyra",
+      "metric": {"faction": "brigands", "stat": "strength"},
+      "high": 58, "low": 30,
+      "boon": {"faction": "guards", "stat": "strength", "amount": 4},
+      "wrath": {"faction": "brigands", "stat": "strength", "amount": 5},
+      "boon_line": "Morrik blesses the realm's warriors — the watch stands taller.",
+      "wrath_line": "The Battle-Father, restless in the quiet, looses strife upon the land."
+    },
+    "grimble": {
+      "opposes": null,
+      "metric": {"faction": "merchants", "stat": "stores"},
+      "high": 60, "low": 32,
+      "boon": {"faction": "merchants", "stat": "stores", "amount": 5},
+      "wrath": {"faction": "merchants", "stat": "stores", "amount": -5},
+      "boon_line": "Grimble smiles on the trade — coin flows and the coffers swell.",
+      "wrath_line": "Grimble shutters his purse; a lean season falls on the markets."
+    },
+    "veyra": {
+      "opposes": "morrik",
+      "metric": {"faction": "guards", "stat": "strength"},
+      "high": 58, "low": 30,
+      "boon": {"faction": "merchants", "stat": "stores", "amount": 4},
+      "wrath": {"faction": "brigands", "stat": "strength", "amount": 4},
+      "boon_line": "Veyra keeps the roads — travellers pass safe and trade thrives.",
+      "wrath_line": "Veyra withdraws her protection; the roads grow perilous."
+    },
+    "pale_lady": {
+      "opposes": "solara",
+      "metric": {"faction": "monsters", "stat": "strength"},
+      "high": 58, "low": 30,
+      "boon": {"faction": "villagers", "stat": "strength", "amount": 3},
+      "wrath": {"faction": "villagers", "stat": "strength", "amount": -4},
+      "boon_line": "The Pale Lady grants a gentle passing; the realm makes peace with its dead.",
+      "wrath_line": "The Pale Lady walks abroad; a pall of death settles on the land."
+    }
+  },
+  "act_chance": 0.5,
+  "favor_weight": 2,
+  "favor_cap": 20,
+  "tension_at": 3,
+  "storm_line": "The gods contend in the heavens — the weather turns wild and strange."
+}

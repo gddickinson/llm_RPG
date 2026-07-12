@@ -5428,3 +5428,39 @@ each declared once; a strong faction turning to dominate, a beaten one to
 recover, a recovered one back to its nature; a run_day [Realm] beat; and a
 persistence round-trip). Remainder P20.3b: diplomacy that steers which
 factions actually clash, and territory they hold and contest.
+
+## The active pantheon — gods that meddle (P20.4)
+
+George asked, back at the start of this arc, whether the game should
+import Autonomous World's gods. The pantheon we had was a buff vendor: it
+read your deeds, granted prayer miracles, and dropped the odd omen — the
+gods only ever reacted to you. This round makes them agents that reach into
+the world on their own.
+
+`engine/divine_acts.py` gives each of the five a nightly judgement. Solara
+weighs the harvest in the larders, Morrik the strife on the roads, Grimble
+the coin in the markets, Veyra the safety of travel, the Pale Lady the
+reach of death — each reading the faction ticker's numbers, tempered by the
+favor you've built with it (honoring a god tips its hand toward kindness).
+When a god's domain thrives, or you've kept its favor, it sends a boon that
+swells its favoured faction; when its domain is neglected, it looses wrath
+that saps them. And because those faction numbers are the same ones the
+ticker's raids and the wilderness encounter weight already read, a god's
+mood is not flavor — a wrathful Veyra really does put brigands back on the
+roads, a pleased Solara really does fill the granaries.
+
+It sits right on top of last round's faction agendas: the factions pursue
+their aims and move their own numbers, and the gods judge the world those
+aims produce. And the gods don't only judge the mortals — they contend with
+each other. Solara stands against the Pale Lady, Morrik against Veyra, and
+on a night when two opposed powers both act, tension climbs the heavens
+until it breaks in a storm of wild and strange weather.
+
+The only new state is that tension, and it rides the player's metadata, so
+a sky spoiling for a divine storm survives a save. 9 tests (a thriving
+domain earns a boon and a neglected one wrath, a middling one is left in
+peace; favor tips a god to act where it otherwise wouldn't; effects clamp;
+opposing gods build tension to a storm that resets while unopposed acts
+raise none; tension persists; and a run_day announces its divine beats).
+Remainder P20.4b: cults the NPCs join, festival days, and a god's demand
+with teeth.

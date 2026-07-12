@@ -3802,10 +3802,31 @@ This phase gives NPCs agency, a social web, and gods that act.
   registered in `save_load`). 13 tests. Suite green. Remainder P20.3b:
   diplomacy that SELECTS the ticker's events (a war makes the two factions
   actually raid each other) and territory the factions hold and contest.)*
-- [ ] **P20.4 The active pantheon.** Gods that INITIATE: divine events,
+- [x] **P20.4 The active pantheon.** Gods that INITIATE: divine events,
   boons and wrath on factions and NPCs, god-vs-god tension, cults,
   festivals, demands with consequences. The Autonomous-World gods import
   the user asked for — the pantheon becomes a set of meddling agents.
+  *(Round: `engine/divine_acts.py` `DivineActs` over `data/divine_acts.json`
+  turns the passive pantheon into agents. Each night (after the pantheon's
+  own omen tick) every god WEIGHS how its domain fares — Solara the harvest
+  in the larders, Morrik the strife on the roads, Grimble the coin in the
+  markets, Veyra the safety of travel, the Pale Lady the reach of death —
+  read from the faction ticker's state and tempered by the favor you've
+  built (`god_favor`, favor tips the scales toward a boon). A THRIVING or
+  honored domain earns a BOON that swells the god's favoured faction; a
+  NEGLECTED one earns WRATH that saps it — and because those numbers drive
+  the ticker's raids and the wilderness encounter weight, a god's mood
+  really moves the realm. Each act is a `[Realm]` beat pushed into the
+  rumor pool. Opposing gods CONTEND: when two who stand against each other
+  both act (Solara↔Pale Lady, Morrik↔Veyra), tension climbs the heavens
+  until it breaks in a wild-weather storm. Composes with P20.3 — the
+  agendas move the faction numbers the gods then judge. The only new state
+  is the tension scalar, riding `player.metadata`. 9 tests (a thriving
+  domain boons and a neglected one wraths, a middling one is left alone;
+  favor tips a god to act; effects clamp; opposing gods build tension to a
+  storm that resets while non-opposing acts don't; tension persists; a
+  run_day announces divine beats). Remainder P20.4b: cults NPCs join,
+  festival days, and a god's DEMAND with consequences.)*
 - [ ] **P20.5 Runtime history & the saga.** The chronicle accrues at
   runtime — player and faction deeds append to `world_history`, producing
   an emergent saga readable in the Y-journal, so the world remembers.

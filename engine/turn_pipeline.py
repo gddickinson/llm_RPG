@@ -208,6 +208,10 @@ def run_turn(engine) -> None:
             self.disease.run_day()
             self.farm_manager.run_day()
             self.pantheon.run_day()
+            try:   # the gods reach into the world of their own accord (P20.4)
+                self.divine_acts.run_day()
+            except Exception as e:
+                logger.debug(f"Divine acts error: {e}")
             self.market.run_day()
             self.door_manager.run_day()
             try:
