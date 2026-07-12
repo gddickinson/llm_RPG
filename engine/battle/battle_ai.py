@@ -20,6 +20,7 @@ from engine.battle import battle_facing as facing
 
 MELEE_REACH = 1
 RANGED_REACH = 5
+ROUT_CASCADE_R = 4       # a rout within this many tiles panics neighbours
 
 _NEIGH8 = ((1, 0), (-1, 0), (0, 1), (0, -1),
            (1, 1), (1, -1), (-1, 1), (-1, -1))
@@ -66,6 +67,12 @@ def _position_mods(field, atk_sol, target):
         to_hit += 2
         dmg *= 1.25
     if is_surrounded(field, target):
+        dmg *= 1.5
+    # P17.15: a routed squad is RUN DOWN — fleeing men can't defend, so
+    # a blow lands easy and bites deep.
+    tgt_sq = field.squads.get(target.squad_id)
+    if tgt_sq is not None and tgt_sq.routed:
+        to_hit += 4
         dmg *= 1.5
     return to_hit, dmg
 
@@ -147,6 +154,14 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
         return False
     dmg = max(1, int(power // 3 * dmg_mult) + rng.randint(0, 2))
     target.hurt(dmg)
+    # P17.15: a blow from the flank or rear shakes the whole squad's
+    # nerve, not just the body it lands on — flanking pays in MORALE.
+    if tgt_squad is not None and not tgt_squad.routed:
+        ar = facing.arc(target.facing, atk_soldier.pos, target.pos)
+        if ar == "rear":
+            tgt_squad.adjust_morale(-3)
+        elif ar == "flank":
+            tgt_squad.adjust_morale(-2)
     if not target.alive:
         field.vacate(target)
         return True
@@ -252,13 +267,27 @@ def update_morale(field, squad) -> None:
         near_ally = _count_near(field, c, squad.team, foe=False)
         if near_enemy > near_ally + 3:
             squad.adjust_morale(-3)
-    # a routed friendly squad shakes the line
-    routed_allies = sum(
-        1 for sq in field.squads.values()
-        if sq.team == squad.team and sq.routed and
-        sq.squad_id != squad.squad_id)
-    if routed_allies:
-        squad.adjust_morale(-2 * routed_allies)
+        # P17.15: a real SHARE of the squad hemmed in saps its nerve —
+        # but a deep squad shrugs off a couple of trapped men (tempers
+        # the fragile morale from the playtest).
+        alive = squad.alive_soldiers
+        if alive:
+            boxed = sum(1 for s in alive if is_surrounded(field, s))
+            if boxed / len(alive) >= 0.3:
+                squad.adjust_morale(-4)
+            elif boxed:
+                squad.adjust_morale(-1)
+    # P17.15: a routed ally shakes the line — a CLOSE rout PANICS it (the
+    # cascade that collapses a wing), a distant one only unsettles it.
+    for sq in field.squads.values():
+        if sq.team != squad.team or not sq.routed or \
+                sq.squad_id == squad.squad_id:
+            continue
+        oc = sq.centroid()
+        if c is not None and oc is not None and _dist(c, oc) <= ROUT_CASCADE_R:
+            squad.adjust_morale(-4)
+        else:
+            squad.adjust_morale(-1)
     if squad.morale < 40:      # slow rally when not pressed
         squad.adjust_morale(1)
 

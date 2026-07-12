@@ -2658,13 +2658,27 @@ Swiss pike/longbow-stakes/Wagenburg). Each maps to a concrete grid
 mechanic on the existing systems (one morale bar/squad, d20 strike,
 RPS+terrain table, cover, flow fields, charge/overrun). Sequenced;
 build on P17.11 (facing) first.
-- [ ] **P17.15 Positional morale.** Feed local outnumbering, flank/
+- [x] **P17.15 Positional morale.** Feed local outnumbering, flank/
   rear hits, the SURROUNDED state, and an **adjacent-squad-routing
   CASCADE** into the per-squad morale bar; a routed squad flees the
   flow field and can be **run down** (bonus dmg). Cheap, uses P17.11 +
   existing morale, and makes flanking pay off in decisions, not just
   damage. (Also tempers the fragile morale seen in playtest — deep/
   cohesive squads resist; the shove/rout math becomes readable.)
+  *(Round 167: four additions to `battle_ai`, the researched-priority
+  next after P17.11 facing. A flank/rear HIT in `attack` now shakes the
+  target squad's morale (−2 flank, −3 rear) — flanking pays in nerve,
+  not just damage. `update_morale` gains the SURROUNDED penalty, but by
+  the SHARE of the squad boxed in (≥30% → −4) so a deep squad shrugs off
+  a couple of trapped men (the promised tempering), and the routed-ally
+  penalty becomes a proximity CASCADE — a rout within 4 tiles panics a
+  neighbour (−4, the wing-collapse) where a distant one only unsettles
+  (−1). `_position_mods` runs down the broken — a routed target is
+  struck at +4 to-hit ×1.5 dmg (fleeing men can't defend); routed squads
+  already `_flee` the flow field, so the run-down lands on them as they
+  break. 7 tests (rear > flank > front morale, a hemmed-in squad breaks
+  but a deep one holds, run-down bonus, close rout panics more than a
+  far one). Suite 1600, green.)*
 - [ ] **P17.16 Formations I — line & loose, with cohesion (the user's
   "different formations").** A formation is a squad property: assigned
   slots, a shared FACING, spacing, and a 0–1 COHESION (soldiers in-

@@ -3855,3 +3855,30 @@ the low ground; shore detection and site scoring preferring water + variety
 clean, suite 1593, green across two runs. Phase 16 — the living-world
 imports — is complete. REMAINDER (P16.6b): adopt `score_site` to place
 settlements and `is_shore` to autotile the coasts.
+
+**Round 167 — P17.15 Positional morale.**
+Into Phase 17's combat-fidelity arc, taking the researched-priority next
+item (P17.11 facing was done; P17.6e siege is flagged niche and yields).
+The idea: make POSITION pay in the squad's nerve, not only its wounds, so
+flanking wins battles the way it does in history — by breaking the will to
+fight. Four additions to `battle_ai`, all on the existing one-morale-bar-
+per-squad model. First, a blow from the flank or rear now shakes the whole
+target squad (−2 flank, −3 rear) the instant it lands, so getting around a
+line's side is worth doing even when the damage is the same. Second, being
+SURROUNDED saps morale — but measured by the SHARE of the squad boxed in,
+not a flat hit: a squad that's a third-or-more hemmed in loses its nerve
+(−4), while a deep squad with a couple of trapped men barely notices, which
+is exactly the tempering the playtest asked for (fragile morale made
+readable — depth resists). Third, a routed ally's panic became a CASCADE
+weighted by distance: a squad that breaks within four tiles drags its
+neighbour down hard (−4, the way a collapsing wing rolls up a line), where
+a rout across the field only unsettles (−1) — the replacement for the old
+flat, position-blind penalty. Fourth, the broken get RUN DOWN: a routed
+squad (which already flees the flow field) is struck at +4 to-hit and ×1.5
+damage, fleeing men unable to defend, so a rout turns into a slaughter as
+the pursuit catches it. 7 tests: a rear blow shakes more than a flank more
+than a front (which costs no morale at all), a hemmed-in lone squad breaks
+where a ten-man one holds, the run-down bonus stacks on a routed target,
+and a close rout panics a neighbour more than a distant one. No regression
+in the deterministic battle sessions; `battle_ai` at 304 lines. Suite
+1600, green.
