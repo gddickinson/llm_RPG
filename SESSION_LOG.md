@@ -5057,3 +5057,41 @@ place so the guard survives a region change.
 either; open ground still walks; the door still admits; an NPC on a side
 wall can't leave through it; a zone monster can't phase a zone wall; zone
 floors stay walkable). Suite 1867, green.
+
+## Dragons — the apex tier the game never had (P19.1)
+
+The Ultraplan's sharpest finding: no dragons, and the boss-tier monsters
+that DID exist (Giant Warlord, Wisp Queen, Tyrant) were `weight:0` dead
+content reachable only in tests. A level-20 party had nothing worthy to
+fight. This round crowns the deep dark.
+
+A dragon family joins `data/monsters.json`: a `dragon_whelp` (a L5 minion,
+the thing an elder calls up), a `young_dragon` (L12, 120 HP — a terror
+roar at half health, then it enrages) and an `elder_dragon` (L16, 190 HP —
+a wider, hotter breath, a roar that unmakes the brave, a brood summoned
+from the dark, and full wrath when wounded). Dragons are `dragonborn`,
+`flee_below: 0` (they never rout), and `encounter_weight: 0` — lair and
+dungeon content, never a wild wander into the starting meadow.
+
+`engine/bosses.py` learns two things a dragon needs. A `breath` telegraph
+kind: after the blast lands it sets the struck ground alight on the P10.3
+surface layer, so dragonfire leaves a burning scar you have to move
+around. And a `terror` phase action: the roar applies Frightened N to the
+player (the P12.2 valued condition — a minus to everything until it
+decays).
+
+The old bosses stop being dead. `world/monsters.apex_pool(depth)` returns
+the boss-tier templates a dungeon of that depth may crown its deepest
+floor with — a template opts in with a new `boss_depth`, so the warlord,
+the wisp queen and the tyrant finally see play, a young dragon waits below
+depth 3 and an elder below depth 5. `populate_dungeon` draws the den-lord
+from that pool instead of always the Tyrant. Inside a dungeon the breath
+telegraph stays quiet (the conflict scan that fires it is overworld-only),
+but the terror/summon/enrage phases and the sheer weight of a scaled wyrm
+make a real fight; the full ground-scorching breath comes online the day
+a dragon is met on the overworld — a lair (P19.2).
+
+11 new tests (the family exists and breathes; dragons don't wander; the
+apex pool gates by depth and only grows; breath sets the ground ablaze;
+the roar Frightens; a deep boss floor crowns an apex) plus one retuned
+multilevel-dungeon test. Suite 1878, green.

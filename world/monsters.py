@@ -59,6 +59,17 @@ def dungeon_pool() -> List[str]:
             if t.get("dungeon", False)]
 
 
+def apex_pool(depth: int) -> List[str]:
+    """Boss-tier templates a dungeon of this DEPTH may crown its deepest
+    floor with (P19.1). A template opts in with a `boss_depth`: the
+    warlord, the wisp queen and the tyrant become reachable instead of
+    dead test-only content, and a young dragon waits below depth 3, an
+    elder wyrm below depth 5."""
+    return [tid for tid, t in MONSTER_TEMPLATES.items()
+            if t.get("boss_depth") is not None
+            and t["boss_depth"] <= depth]
+
+
 def build_monster(template_id: str, position: Tuple[int, int]):
     """Create a hostile Character from a template."""
     from characters.character import Character

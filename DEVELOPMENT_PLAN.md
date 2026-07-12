@@ -3580,7 +3580,7 @@ that act like a coordinated, populous ecology. Content-as-data throughout;
 leans on the existing boss framework (`engine/bosses.py`) and the
 Phase-17 tactical AI.
 
-- [ ] **P19.1 The apex tier: dragons & fire-breath.** Author a true apex
+- [x] **P19.1 The apex tier: dragons & fire-breath.** Author a true apex
   tier in `data/monsters.json` — a young + an elder dragon (and a wyvern /
   a drake / a lich as the roster grows), each a `boss` with a telegraphed
   breath, phases, and terror. Extend `engine/bosses.py` with a **`breath`
@@ -3590,6 +3590,25 @@ Phase-17 tactical AI.
   **reachable, not dead**: deep dungeon den-lords draw from a depth-scaled
   apex pool (so the built-but-unspawnable warlord/wisp-queen/hill-giant
   finally appear), not only the Tyrant. Validator + tests.
+  *(Round: a dragon family in `data/monsters.json` — `dragon_whelp`
+  (L5 minion, the summon target), `young_dragon` (L12, hp120, fire breath,
+  a terror roar at 50% then enrage at 30%) and `elder_dragon` (L16, hp190,
+  a wider hotter breath, terror → summons whelps → full-wrath enrage). All
+  `dragonborn`, `flee_below: 0` (they never rout), `encounter_weight: 0`
+  (lair/dungeon content, never a wild wander). `engine/bosses.py` gains
+  the `breath` telegraph kind (after the blast it `ignite`s the struck
+  radius on the surface layer — dragonfire leaves the ground ablaze) and
+  the `terror` phase action (`apply_effect` Frightened N on the player).
+  Reachability: `world/monsters.apex_pool(depth)` returns the boss-tier
+  templates a dungeon of that depth may crown its deepest floor with — the
+  formerly test-only warlord/wisp-queen/tyrant opt in via a new
+  `boss_depth`, and a young dragon waits below depth 3, an elder below
+  depth 5; `world/dungeon.populate_dungeon` draws the den-lord from it
+  instead of the hardcoded Tyrant. In a dungeon the breath telegraph is
+  quiet (the conflict scan is overworld-only) but the terror/summon/enrage
+  phases and the heavy melee make a genuinely hard fight; the full breath
+  comes online when a dragon is met on the overworld (a lair — P19.2). 11
+  new tests + 1 retuned dungeon test. Suite 1878, green.)*
 - [ ] **P19.2 Lairs on the overworld.** Seeded monster lairs (a dragon's
   roost on a peak, a goblin warren, a troll den) as overworld locations
   that hold an apex or a pack over a hoard; clearing one yields the hoard,

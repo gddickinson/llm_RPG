@@ -231,11 +231,15 @@ def populate_dungeon(d: Dungeon, engine, rng: random.Random = None) -> None:
         engine.npc_manager.add_npc(monster)
         engine.world.map.place_character(monster, cx, cy)
 
-    # The deepest floor has a den-lord and its hoard
+    # The deepest floor has a den-lord and its hoard — drawn from the
+    # apex pool for this depth (P19.1): the built bosses become reachable
+    # and a dragon may wait in the deep dark.
     if is_boss_floor and d.rooms:
+        from world.monsters import apex_pool
         bx, by = d.rooms[-1].center()
-        boss = build_monster("tyrant_depths", (bx, by))
-        boss.name = f"Tyrant of the Depths"
+        pool = apex_pool(depth) or ["tyrant_depths"]
+        template = rng.choice(pool)
+        boss = build_monster(template, (bx, by))
         boss.level += depth
         boss.max_hp += 10 * depth
         boss.hp = boss.max_hp

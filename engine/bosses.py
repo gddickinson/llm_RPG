@@ -87,6 +87,15 @@ def _detonate(engine, boss, pos, tele) -> None:
                                              "siege")
     except Exception:
         pass
+    if tele.get("kind") == "breath":   # dragonfire leaves the ground ablaze
+        try:
+            if engine.active_zone() is None:
+                lay = engine.surfaces_layer
+                for dx in range(-radius, radius + 1):
+                    for dy in range(-radius, radius + 1):
+                        lay.ignite(x + dx, y + dy)
+        except Exception:
+            pass
 
 
 def boss_on_damaged(engine, boss) -> None:
@@ -131,6 +140,14 @@ def _run_phase(engine, boss, phase) -> None:
         boss.metadata.setdefault("behavior", {})
         boss.strength = getattr(boss, "strength", 12) + \
             phase.get("strength", 4)
+    elif action == "terror":   # a dragon's roar unmakes the brave (P19.1)
+        try:
+            from characters.status_effects import apply_effect
+            apply_effect(engine.player, "frightened",
+                         duration=phase.get("duration", 3),
+                         value=phase.get("value", 2))
+        except Exception:
+            pass
     elif action == "summon":
         _summon(engine, boss, phase)
 

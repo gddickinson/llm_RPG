@@ -179,7 +179,8 @@
           }
         ]
       }
-    }
+    },
+    "boss_depth": 3
   },
   "tyrant_depths": {
     "name": "Tyrant of the Depths",
@@ -215,7 +216,8 @@
           }
         ]
       }
-    }
+    },
+    "boss_depth": 2
   },
   "wisp_queen": {
     "name": "Wisp Queen",
@@ -250,6 +252,134 @@
             "template": "marsh_wisp",
             "count": 3,
             "line": "Her court answers, three lights kindling!"
+          }
+        ]
+      }
+    },
+    "boss_depth": 2
+  },
+  "dragon_whelp": {
+    "name": "Dragon Whelp",
+    "class": "monster",
+    "race": "dragonborn",
+    "hp": 26,
+    "level": 5,
+    "symbol": "d",
+    "description": "A cat-sized dragon, all teeth and appetite, spitting sparks.",
+    "encounter_weight": 0,
+    "dungeon": true,
+    "spawn_terrain": [
+      "mountain"
+    ],
+    "stats": {
+      "strength": 14,
+      "constitution": 13,
+      "dexterity": 15
+    },
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.15
+    }
+  },
+  "young_dragon": {
+    "name": "Young Dragon",
+    "class": "monster",
+    "race": "dragonborn",
+    "hp": 120,
+    "level": 12,
+    "symbol": "D",
+    "description": "A young dragon, scales like banked coals, smoke curling from its jaws.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "boss_depth": 3,
+    "spawn_terrain": [
+      "mountain"
+    ],
+    "stats": {
+      "strength": 24,
+      "constitution": 22,
+      "dexterity": 14
+    },
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.0,
+      "boss": {
+        "telegraph": {
+          "kind": "breath",
+          "range": 6,
+          "radius": 1,
+          "damage": 18,
+          "warn_turns": 1
+        },
+        "phases": [
+          {
+            "at": 0.5,
+            "action": "terror",
+            "value": 2,
+            "duration": 3,
+            "line": "The dragon rears and ROARS \u2014 raw terror grips you!"
+          },
+          {
+            "at": 0.3,
+            "action": "enrage",
+            "strength": 5,
+            "line": "Wings snap wide \u2014 the dragon's fury blazes hotter!"
+          }
+        ]
+      }
+    }
+  },
+  "elder_dragon": {
+    "name": "Elder Dragon",
+    "class": "monster",
+    "race": "dragonborn",
+    "hp": 190,
+    "level": 16,
+    "symbol": "D",
+    "description": "An ancient wyrm vast as a hall, the air aching with heat before it.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "boss_depth": 5,
+    "spawn_terrain": [
+      "mountain"
+    ],
+    "stats": {
+      "strength": 27,
+      "constitution": 26,
+      "dexterity": 14,
+      "intelligence": 18
+    },
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.0,
+      "boss": {
+        "telegraph": {
+          "kind": "breath",
+          "range": 8,
+          "radius": 2,
+          "damage": 26,
+          "warn_turns": 1
+        },
+        "phases": [
+          {
+            "at": 0.6,
+            "action": "terror",
+            "value": 3,
+            "duration": 4,
+            "line": "The elder wyrm's roar shakes the stone \u2014 you are unmade by fear!"
+          },
+          {
+            "at": 0.5,
+            "action": "summon",
+            "template": "dragon_whelp",
+            "count": 2,
+            "line": "It calls, and its brood scrabble from the dark!"
+          },
+          {
+            "at": 0.25,
+            "action": "enrage",
+            "strength": 6,
+            "line": "Wounded, the ancient one unleashes its full wrath!"
           }
         ]
       }

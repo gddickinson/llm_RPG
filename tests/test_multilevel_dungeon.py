@@ -64,14 +64,19 @@ class TestMultiLevelDungeon(unittest.TestCase):
                                "depth must scale danger")
             self.assertGreater(n.level, spec.get("level", 1))
 
-    def test_the_deepest_floor_has_a_tyrant(self):
+    def test_the_deepest_floor_crowns_a_den_lord(self):
+        # the boss floor is now crowned from the apex pool (P19.1) — a
+        # tyrant, a wisp queen, a warlord, or (deep enough) a dragon
         top = self._enter()
         lv = top
         while lv.level_below is not None:
             lv = lv.level_below
+        from world.monsters import apex_pool, MONSTER_TEMPLATES
+        depth = getattr(lv, "depth", 2)
+        apex_names = {MONSTER_TEMPLATES[t]["name"] for t in apex_pool(depth)}
         boss = [n for n in self.engine.npc_manager.npcs.values()
                 if n.metadata.get("zone") == lv.name
-                and "Tyrant" in n.name]
+                and n.name in apex_names]
         self.assertEqual(len(boss), 1, "the den-lord must be home")
         self.assertGreater(boss[0].max_hp, 30)
 
