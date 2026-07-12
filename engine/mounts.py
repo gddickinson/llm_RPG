@@ -128,6 +128,11 @@ def buy_mount(engine, kind: str) -> str:
     player.metadata["mount"] = {"kind": kind, "pos": list(player.position)}
     player.metadata["mounted"] = True
     player.metadata.pop("mule", None)          # the generic slot supersedes it
+    tv = list(traverses(kind))                 # P28.2b terrain crossings
+    if tv:
+        player.metadata["mount_traverses"] = tv
+    else:
+        player.metadata.pop("mount_traverses", None)
     msg = f"You buy {display_name(kind)} for {cost}g."
     engine.memory_manager.add_event(msg)
     return msg
@@ -139,6 +144,7 @@ def release_mount(engine) -> str:
         return "You have no mount to part with."
     player.metadata.pop("mount", None)
     player.metadata.pop("mule", None)
+    player.metadata.pop("mount_traverses", None)
     player.metadata["mounted"] = False
     msg = "You part ways with your mount."
     engine.memory_manager.add_event(msg)

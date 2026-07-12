@@ -131,5 +131,52 @@ class TestEffects(_Base):
         self.assertEqual(capacity(self.p) - base_no, 8)
 
 
+class TestTerrainCrossing(_Base):
+    """P28.2b — a mount's `traverses` list lets the rider cross what a walker
+    can't (a magic carpet over water & mountains)."""
+
+    def _tiles(self):
+        from world.world_map import TerrainType
+        px, py = self.p.position
+        wmap = self.engine.world.map
+        wmap.terrain[py][px + 1] = TerrainType.WATER
+        wmap.terrain[py][px - 1] = TerrainType.MOUNTAIN
+        return wmap, px, py
+
+    def _reset_to(self, px, py):
+        wmap = self.engine.world.map
+        wmap.remove_character(self.p)
+        self.p.position = (px, py)
+        wmap.place_character(self.p, px, py)
+
+    def test_a_walker_cannot_cross_water(self):
+        wmap, px, py = self._tiles()
+        self.assertFalse(wmap.move_character(self.p, px + 1, py))
+
+    def test_a_carpet_crosses_water_and_mountain(self):
+        self._seller("market")
+        wmap, px, py = self._tiles()
+        mounts.buy_mount(self.engine, "magic_carpet")
+        self._reset_to(px, py)
+        self.assertTrue(wmap.move_character(self.p, px + 1, py))   # water
+        self._reset_to(px, py)
+        self.assertTrue(wmap.move_character(self.p, px - 1, py))   # mountain
+
+    def test_a_plain_horse_still_cannot_cross_water(self):
+        self._seller("stable")
+        wmap, px, py = self._tiles()
+        mounts.buy_mount(self.engine, "horse")     # no `traverses`
+        self._reset_to(px, py)
+        self.assertFalse(wmap.move_character(self.p, px + 1, py))
+
+    def test_releasing_the_carpet_grounds_you(self):
+        self._seller("market")
+        wmap, px, py = self._tiles()
+        mounts.buy_mount(self.engine, "magic_carpet")
+        mounts.release_mount(self.engine)
+        self._reset_to(px, py)
+        self.assertFalse(wmap.move_character(self.p, px + 1, py))
+
+
 if __name__ == "__main__":
     unittest.main()

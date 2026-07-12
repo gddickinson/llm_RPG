@@ -69,12 +69,18 @@ class TestSkillActions(unittest.TestCase):
 
     def test_demoralize_frightens_with_degrees(self):
         foe = self._foe(dx=3)      # voice range, not melee
+        # demoralize runs an internal advance_turn (the whole world sim); clear
+        # every OTHER NPC so that turn can't incidentally act on our foe and
+        # drop the effect (the flake) — the 99-HP foe can't die on its own
+        for nid in list(self.engine.npc_manager.npcs):
+            if nid != foe.id:
+                other = self.engine.npc_manager.npcs[nid]
+                self.wmap.remove_character(other)
+                self.engine.npc_manager.remove_npc(nid)
         self.engine.combat_system.rng = _Rng(roll=20)
         msg = demoralize(self.engine)
         self.assertIn("Frightened 2", msg, "a crit roar hits harder")
-        # the crit leaves them frightened; the exact post-tick value depends
-        # on the turn's incidental status decay (order-sensitive), so just
-        # assert the effect took and persists
+        # a crit roar (Frightened 2) survives its own turn's single decay tick
         self.assertTrue(has_effect(foe, "frightened"),
                         "the roar leaves them shaken")
 

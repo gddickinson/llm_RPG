@@ -3769,11 +3769,17 @@ P15.8b pack mule).
   this layer. `tests/test_mounts.py` (13; legacy mule green). *Remainder folded
   into P28.2b/c:* per-mount ROAD SPEED (road pace is still binary `mounted`), the
   `traverses` terrain crossings, and the buy-UI/E-key to pick a mount kind.
-- [ ] **P28.2b Terrain abilities.** A mount's `traverses` list lets it cross
+- [x] **P28.2b Terrain abilities.** A mount's `traverses` list lets it cross
   what a walker can't — a magic carpet / griffon FLIES over water & mountains
   (compose with `world_map._is_flier`), a horse fords shallows, a camel
   shrugs off desert. Mounted travel reads the mount's abilities in
-  `traversal`/`hazards`.
+  `traversal`/`hazards`. *Done:* `world_map._mount_crosses` — the WATER/MOUNTAIN
+  block in `move_character` now also yields to a rider whose mount `traverses`
+  that terrain (read off `player.metadata["mount_traverses"]`, which
+  `mounts.buy_mount` writes and `release_mount` clears — dependency-free, like
+  `_is_flier`). A carpet crosses water & mountain; a plain horse is still
+  blocked; releasing grounds you. `tests/test_mounts.py` (+4). *Remainder:*
+  a flying rider bypassing the P11.2 drown/swim HAZARDS (edge case), and desert.
 - [ ] **P28.2c Mount lifecycle & care.** Buy/stable/release at a stable;
   ride/dismount (a key); the mount can be spooked, tire, or (war-mounts) fight;
   loyalty/feed like the P12.14 pet. See `autonomous_world` for the breadth of

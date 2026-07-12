@@ -6361,3 +6361,15 @@ behind. 13 tests (+ the 11 legacy mule tests still green). Remainder folded into
 P28.2b/c: per-mount ROAD SPEED (the pace is still binary `mounted`), the
 `traverses` terrain crossings (a carpet flying over water/mountain), and a
 buy-UI/E-key to pick which beast.
+
+## 2026-07-12 (cont.) — P28.2b: a mount crosses what a walker can't
+
+The mounts' `traverses` list now does something. `world_map._mount_crosses`
+(dependency-free, read off metadata like `_is_flier`) makes the WATER/MOUNTAIN
+move-block in `move_character` yield to a rider whose mount can cross that
+terrain: `mounts.buy_mount` writes `player.metadata["mount_traverses"]` (the
+magic carpet's `["water","mountain"]`), `release_mount` clears it. So a carpet
+FLIES over water and mountains, a plain horse is still stopped at the shore, and
+parting with the carpet grounds you. +4 tests (flight/traversal suites
+unaffected). Remainder: a flying rider bypassing the P11.2 drown/swim hazards
+(edge case), a desert terrain, and P28.2c per-mount road speed + a buy-UI.

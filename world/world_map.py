@@ -25,6 +25,17 @@ class TerrainType(Enum):
     BRIDGE = "bridge"          # P14.3b: roads cross water (George)
 
 
+def _mount_crosses(character, terrain_value) -> bool:
+    """P28.2b: a mount whose `traverses` list includes this terrain lets the
+    RIDER cross it — a magic carpet over water & mountains, a horse fording
+    shallows. Read straight off metadata so the map stays dependency-free
+    (`engine.mounts.buy_mount` writes `mount_traverses`)."""
+    meta = getattr(character, "metadata", None)
+    if not isinstance(meta, dict):
+        return False
+    return terrain_value in (meta.get("mount_traverses") or [])
+
+
 def _is_flier(character) -> bool:
     """Flight (P11.4): a creature behavior flag or an active
     'flying' status lets movement ignore ground-tile rules.
@@ -106,8 +117,9 @@ class WorldMap:
 
         # Check if terrain is traversable (fliers ignore ground rules)
         if self.terrain[new_y][new_x] == TerrainType.WATER or self.terrain[new_y][new_x] == TerrainType.MOUNTAIN:
-            if not _is_flier(character):
-                logger.debug(f"Move failed for {character.name}: Terrain {self.terrain[new_y][new_x].value} is not traversable")
+            tval = self.terrain[new_y][new_x].value
+            if not _is_flier(character) and not _mount_crosses(character, tval):
+                logger.debug(f"Move failed for {character.name}: Terrain {tval} is not traversable")
                 return False
 
         # Walls are solid (bug-fix 2026-07-12): the installed guard rejects
