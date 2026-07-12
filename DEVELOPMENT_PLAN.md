@@ -3584,8 +3584,14 @@ a coherent, testable slice; ordered roughly by impact.
   current speed + the `[-/+] [.]` controls. `heartbeat` reads the chosen
   interval (None = paused). 6 tests. Remainder: persist the chosen speed as a
   setting.
-- [ ] **M.9c Spectator HUD.** Show the driven hero's current GOAL, plan, party
-  and renown as an overlay, so watching reads as a story, not a mystery.
+- [x] **M.9c Spectator HUD (2026-07-12e).** While the hero is agent-driven, a
+  small "what it's up to" card sits under the AUTOPLAY banner
+  (`ui/away_mode.spectator_lines` → `hud.draw_spectator_panel`): its AIM (the
+  live `agent_goal`), BEARING (disposition), STANDING (level · HP · gold) and
+  BAND (party members, or "alone"). So watching reads as a story — you can see
+  where the hero is headed and how it's faring — not a mystery. 4 tests.
+  Remainder: richer renown (fame/reputation beyond level) and the exact
+  current action verb.
 - [ ] **M.9d High-level goals & disposition presets.** Let the player set an
   AMBITION for the absence ("get rich", "clear the Dark Hollow", "become a
   master mage", "found a company") that biases the agent, beyond the six

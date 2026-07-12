@@ -77,6 +77,32 @@ class HUD:
         target.blit(surf, (screen_rect.centerx - surf.get_width() // 2,
                            screen_rect.y + 6))
 
+    def draw_spectator_panel(self, target, engine, screen_rect) -> None:
+        """A small 'what the away-hero is up to' card under the banner
+        (M.9c) — its aim, bearing, standing and band — so watching autoplay
+        reads as a story, not a mystery."""
+        if not self.font:
+            return
+        from ui.away_mode import spectator_lines
+        lines = spectator_lines(engine)
+        if not lines:
+            return
+        pad, lh = 6, self.font.get_height()
+        w = max(self.font.size(ln)[0] for ln in lines) + pad * 2
+        h = lh * len(lines) + pad * 2
+        top = screen_rect.y + (self.big_font.get_height() + 16
+                               if self.big_font else 6)
+        x = screen_rect.x + 6
+        card = pygame.Surface((w, h), pygame.SRCALPHA)
+        card.fill((10, 10, 20, 210))
+        target.blit(card, (x, top))
+        pygame.draw.rect(target, (200, 180, 100), (x, top, w, h), 1)
+        y = top + pad
+        for i, ln in enumerate(lines):
+            colour = (255, 225, 140) if i == 0 else (225, 220, 200)
+            target.blit(self.font.render(ln, True, colour), (x + pad, y))
+            y += lh
+
     def draw_hint_bar(self, target, engine, map_rect) -> None:
         """Contextual key hints along the bottom edge of the map view."""
         if not self.font:

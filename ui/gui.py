@@ -274,10 +274,12 @@ class GameGUI:
         if self.mode == "death":
             self._draw_death_popup()
 
-        # Top-most: the AUTOPLAY banner rides over everything in play
+        # Top-most: the AUTOPLAY banner + spectator card ride over play
         if self.mode == "play":
             self.hud.draw_autoplay_banner(
                 self.screen, self, self.screen.get_rect())
+            self.hud.draw_spectator_panel(
+                self.screen, self.engine, self.screen.get_rect())
 
         pygame.display.flip()
 

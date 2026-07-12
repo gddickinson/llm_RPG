@@ -115,6 +115,37 @@ def heartbeat(gui) -> None:
         pass
 
 
+def spectator_lines(engine):
+    """A few lines on what the driven hero is up to RIGHT NOW — its aim,
+    bearing, standing and band — for the M.9c spectator panel, so watching
+    autoplay reads as a story. None when the human is at the controls."""
+    try:
+        if not engine.roster.is_away(engine.player):
+            return None
+    except Exception:
+        return None
+    p = engine.player
+    meta = getattr(p, "metadata", {}) or {}
+    lines = ["◆ " + getattr(p, "name", "The hero")]
+    lines.append(f"Aim: {meta.get('agent_goal') or 'wandering'}")
+    try:
+        from engine.settings import get_setting
+        lines.append(f"Bearing: {get_setting(p, 'disposition')}")
+    except Exception:
+        pass
+    lines.append(f"Lvl {getattr(p, 'level', 1)}  ·  "
+                 f"{getattr(p, 'hp', 0)}/{getattr(p, 'max_hp', 0)} HP  ·  "
+                 f"{getattr(p, 'gold', 0)}g")
+    try:
+        party = list(getattr(engine.companion_manager, "party", []) or [])
+        names = [engine.npc_manager.npcs[n].name for n in party
+                 if n in engine.npc_manager.npcs]
+        lines.append("Band: " + (", ".join(names) if names else "alone"))
+    except Exception:
+        pass
+    return lines
+
+
 def banner_text(engine_or_gui):
     """The on-screen AUTOPLAY indicator (with the current speed + cadence
     controls, M.9b), or None when the human is at the controls."""

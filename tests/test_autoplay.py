@@ -181,5 +181,55 @@ class TestAutoplaySpeed(unittest.TestCase):
             self.assertFalse(hands_back(self.engine, ev))
 
 
+class TestSpectatorPanel(unittest.TestCase):
+    """M.9c — the spectator card tells the story of what the away-hero is up
+    to (aim, bearing, standing, band)."""
+
+    def setUp(self):
+        self.engine = GameEngine(llm_provider="heuristic",
+                                 enable_npc_processes=False)
+        self.engine.start_game()
+        self.p = self.engine.player
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def test_no_card_while_the_human_plays(self):
+        from ui.away_mode import spectator_lines
+        self.assertIsNone(spectator_lines(self.engine))
+
+    def test_card_shows_aim_bearing_standing(self):
+        from ui.away_mode import spectator_lines
+        self.engine.roster.set_away(self.p, True)
+        self.p.metadata["agent_goal"] = "Ruined Keep"
+        blob = " ".join(spectator_lines(self.engine))
+        self.assertIn("Ruined Keep", blob)         # aim
+        self.assertIn("Bearing", blob)              # disposition
+        self.assertIn("HP", blob)                   # standing
+        self.assertIn("g", blob)                    # gold
+
+    def test_band_reports_a_companion(self):
+        from ui.away_mode import spectator_lines
+        from world.monsters import build_monster
+        from characters.character_types import CharacterClass
+        self.engine.companion_manager.party = []
+        self.engine.roster.set_away(self.p, True)
+        ally = build_monster("wolf", (0, 0))
+        ally.id, ally.name = "kes", "Kestrel"
+        ally.character_class = CharacterClass("ranger")
+        self.engine.npc_manager.add_npc(ally)
+        self.engine.companion_manager.party.append("kes")
+        self.assertIn("Kestrel", " ".join(spectator_lines(self.engine)))
+
+    def test_band_alone_when_partyless(self):
+        from ui.away_mode import spectator_lines
+        self.engine.companion_manager.party = []
+        self.engine.roster.set_away(self.p, True)
+        self.assertIn("alone", " ".join(spectator_lines(self.engine)))
+
+
 if __name__ == "__main__":
     unittest.main()

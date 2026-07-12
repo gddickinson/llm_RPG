@@ -6150,3 +6150,15 @@ even from a pause. The GUI loop intercepts these keys before the hand-back
 current speed and the `[-/+] [.]` controls. `heartbeat` reads the chosen
 interval (None = paused, only single-step advances). 6 tests. Remainder:
 persist the chosen speed as a setting.
+
+## 2026-07-12 (cont.) — M.9c: the spectator card
+
+Rounds out the M.9 watchability trio. While the hero is agent-driven, a small
+card now sits under the AUTOPLAY banner telling you what it's up to:
+`ui/away_mode.spectator_lines` → `hud.draw_spectator_panel`. It shows the AIM
+(the live `agent_goal` — where it's headed), the BEARING (disposition), the
+STANDING (level · HP · gold), and the BAND (party members, or "alone"). With
+M.9a's return digest and M.9b's speed/step, watching autoplay now reads as a
+story you can follow — you see where the hero is going and how it's faring,
+not a marker drifting in silence. 4 tests. Remainder: richer renown
+(fame/reputation beyond level) and the exact current action verb.
