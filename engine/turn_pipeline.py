@@ -178,6 +178,10 @@ def run_turn(engine) -> None:
                 self.social_graph.run_day()
             except Exception as e:
                 logger.debug(f"Social graph error: {e}")
+            try:   # a spouse provides; grudges harden into rivalry (P20.6)
+                self.romance.run_day()
+            except Exception as e:
+                logger.debug(f"Romance error: {e}")
             self.faction_ticker.run_day()
             try:   # factions pursue agendas & diplomacy after the day's clash (P20.3)
                 self.faction_agendas.run_day()

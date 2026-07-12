@@ -3849,9 +3849,30 @@ This phase gives NPCs agency, a social web, and gods that act.
   the journal lines; empty saga; persistence). Remainder P20.5b: fold the
   saga into gossip so NPCs cite recent history, and a proper end-of-campaign
   "chronicle of your age" screen.)*
-- [ ] **P20.6 Romance & rivalry.** Courtship, friendship, rivalry and
+- [x] **P20.6 Romance & rivalry.** Courtship, friendship, rivalry and
   marriage with the player and between NPCs; jealousy. Turns the single
   affinity scalar into relationship *types*.
+  *(Round: `engine/romance.py`. `/court` (a new dialog slash-command,
+  wired beside `/bond`/`/persuade`) climbs a LADDER gated by regard —
+  courting (rel ≥25) → sweetheart (≥50) → betrothed (≥70) → married (≥85)
+  — a named relationship stored on `npc.metadata["romance"]`. Court a
+  SECOND while another is already your sweetheart+ and the first grows
+  JEALOUS: their regard drops 15 and a marriage is strained down a rung,
+  with a jealous `[Realm]` beat. You can't wed two. And the ledger runs
+  the other way: `provoke_rival` turns a deeply-soured NPC (regard ≤ −50,
+  not a partner) into a declared RIVAL who won't be wooed. Weddings,
+  betrothals and rivalries are `[Legend]` beats, so they write themselves
+  into the P20.5 chronicle. A nightly `RomanceSystem.run_day` has a spouse
+  quietly provide a small gift and hardens grudges into rivalry. Every
+  thread lives on the NPCs' `metadata`, riding the save; `/court` is
+  advertised in the dialog prompt. 11 tests (the gate refuses the cold;
+  the ladder climbs; marriage sets the spouse; you can't wed two;
+  jealousy cools the first and strains a marriage; a soured NPC turns
+  rival and won't be wooed while a partner never does; a spouse provides;
+  a wedding enters the chronicle). **Phase 20 (the Living Society & the
+  Gods) is complete.** Remainder P20.6b: courtship BETWEEN NPCs beyond the
+  P20.1 ambition-couples, and a spouse who lives with you at your P15.7
+  home.)*
 
 ## Phase 21 — Adventures, Choice & Consequence  (Ultraplan, 2026-07-12)
 

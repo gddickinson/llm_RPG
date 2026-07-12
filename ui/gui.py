@@ -215,7 +215,7 @@ class GameGUI:
                 name,
                 self.dialog_pending_reply or "",
                 prompt=(f"> {self.dialog_input}_   (Enter send, Esc leave, "
-                        f"/persuade /intimidate /deceive <argument>)"),
+                        f"/persuade /intimidate /deceive /court)"),
                 menu=self.dialog_menu,
             )
 

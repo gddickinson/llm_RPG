@@ -42,6 +42,12 @@ class DialogSystem:
             self.engine.advance_turn()
             return result
 
+        if lowered.startswith("/court"):        # P20.6 romance ladder
+            from engine.romance import court
+            result = court(self.engine, npc)
+            self.engine.advance_turn()
+            return result
+
         if lowered.startswith("/order"):
             if npc.id not in self.engine.companion_manager.party:
                 return f"{npc.name} doesn't take orders from you."

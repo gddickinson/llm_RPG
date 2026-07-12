@@ -102,6 +102,8 @@ def build_subsystems(engine, llm_model=None,
     from engine.chronicle import Chronicle
     self.chronicle = Chronicle(self)
     self.memory_manager.add_observer(self.chronicle.record)
+    from engine.romance import RomanceSystem
+    self.romance = RomanceSystem(self)
     self.dm = DMApi(self)
     self.dm_autonomous = AutonomousDM(self)
     try:

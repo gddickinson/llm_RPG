@@ -5497,3 +5497,34 @@ prefix-stripped capture; mundane events ignored; consecutive repeats
 dropped; the cap; the observer auto-wiring; the journal lines; an empty
 saga showing nothing; a persistence round-trip). Remainder P20.5b: NPCs
 citing the recent saga in gossip, and an end-of-campaign chronicle screen.
+
+## Romance & rivalry — the bond takes a shape (P20.6)
+
+The player's bond with an NPC was a single number that only ever went up or
+down. This round, the last of Phase 20, gives it a shape and a name. Type
+`/court` while talking to someone whose regard you've won, and — if they're
+warm enough to you — you climb a ladder: courting, then sweethearts, then
+betrothed, then wed. It's a real relationship, stored on the NPC, that
+rides the save; a spouse is a spouse when you come back to the game.
+
+It isn't consequence-free. Court a second while another is already your
+sweetheart and the first hears of it and burns — their regard for you
+cools, a marriage is strained back a rung, and a bitter word goes round the
+tavern. You can't wed two. And the ledger runs the other way too: someone
+whose feeling for you has soured deep enough becomes a declared rival, and
+will not be wooed at any price.
+
+The weddings and betrothals and rivalries all go out as `[Legend]` beats,
+which means last round's chronicle picks them up for free — the day you
+married Goren, the day Karim swore himself your rival, are written into the
+saga of your age alongside the wars and the slain nemeses. And a nightly
+upkeep gives a spouse a quiet life of small kindnesses, setting a little
+gold by for you most days, while grudges left to fester harden into rivalry
+on their own.
+
+11 tests (the gate refuses a courtship that's too cold; the ladder climbs
+rung by rung with regard; marriage names the spouse; you cannot wed two;
+jealousy cools the first partner and strains a marriage; a soured NPC turns
+rival and a rival won't be wooed, while a partner never sours to rivalry; a
+spouse provides; a wedding is chronicled). Phase 20 — the Living Society &
+the Gods — is complete.
