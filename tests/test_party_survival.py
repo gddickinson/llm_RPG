@@ -133,5 +133,56 @@ class TestCriticalFlee(_Base):
                 abs(self.mel.position[1] - fy)), 1)
 
 
+class TestDesertion(_Base):
+    """At death's door, a disloyal member bolts; a loyal one stands fast."""
+
+    def _corner(self):
+        self._place(self.mel, self.player.position[0],
+                    self.player.position[1] + 1)
+        self.mel.inventory = []
+        self.mel.hp = max(1, int(self.mel.max_hp * 0.12))   # critical
+        return self._foe_next_to(self.mel)
+
+    def test_a_disloyal_member_abandons_the_party(self):
+        self._corner()
+        self.mel.relationships[self.player.id] = -30        # estranged
+        self.engine.companion_manager.update()
+        self.assertNotIn("minstrel_01", self.engine.companion_manager.party)
+        self.assertTrue(self.mel.metadata.get("deserted"))
+
+    def test_a_loyal_member_stays_at_your_side(self):
+        self._corner()
+        self.mel.relationships[self.player.id] = 40         # fond & loyal
+        self.engine.companion_manager.update()
+        self.assertIn("minstrel_01", self.engine.companion_manager.party)
+
+    def test_not_critical_enough_holds(self):
+        foe = self._foe_next_to(self.mel)   # noqa: F841
+        self._place(self.mel, self.player.position[0],
+                    self.player.position[1] + 1)
+        self.mel.inventory = []
+        self.mel.hp = int(self.mel.max_hp * 0.30)           # hurt, not dying
+        self.mel.relationships[self.player.id] = -30
+        self.engine.companion_manager.update()
+        self.assertIn("minstrel_01", self.engine.companion_manager.party)
+
+    def test_a_potion_keeps_it_in_the_fight(self):
+        self._corner()
+        self.mel.relationships[self.player.id] = -30
+        self.mel.inventory.append(create_item("potion"))    # can self-save
+        self.engine.companion_manager.update()
+        self.assertIn("minstrel_01", self.engine.companion_manager.party)
+
+    def test_no_danger_no_desertion(self):
+        # critical & estranged but NO foe adjacent — it doesn't abandon ship
+        self._place(self.mel, self.player.position[0],
+                    self.player.position[1] + 1)
+        self.mel.inventory = []
+        self.mel.hp = max(1, int(self.mel.max_hp * 0.12))
+        self.mel.relationships[self.player.id] = -30
+        self.engine.companion_manager.update()
+        self.assertIn("minstrel_01", self.engine.companion_manager.party)
+
+
 if __name__ == "__main__":
     unittest.main()

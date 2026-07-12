@@ -3650,9 +3650,14 @@ today reacts only to HP — a real gap.
   `will_aid`; `CompanionManager._heal_ally` — a healer companion (knows Heal,
   has mana) mends the most-wounded nearby ally (hero or party) BUT only one it's
   willing to help (a soured/selfish healer withholds). `tests/test_party_aid.py`
-  (12). *Remainder:* companions eat/drink on the road (route M.10a self-care
-  through the party), a member at death's door LEAVES the party (and rejoins
-  when well), and memory-driven willingness (recent slights/kindnesses).
+  (12). *Leave-to-survive done:* `CompanionManager._maybe_desert` — a member at
+  death's door (< 18% HP), in danger, with no potion and no willing healer,
+  ABANDONS the party when its loyalty doesn't hold (`aid_willingness` toward
+  the hero < 40 — a selfish or estranged one bolts; a loyal/fond one stays and
+  fights or flees at your side). `tests/test_party_survival.py` (+5).
+  *Remainder:* companions eat/drink on the road (route M.10a self-care through
+  the party), a deserter REJOINS when well, and memory-driven willingness
+  (recent slights/kindnesses shift regard).
 
 ### M.6b / M.7b — the living-world remainders (already scoped above)
 - [~] **M.6b Rival adventuring parties.** Adventurers take their own quests,

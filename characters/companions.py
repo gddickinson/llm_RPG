@@ -19,6 +19,8 @@ AID_HP = 0.6              # M.10c: a healer mends an ally below this HP
 HEAL_MANA = 3             # mana a mending costs
 HEAL_AMOUNT = 12          # HP a mending restores
 AID_REACH = 4             # how near the wounded ally must be to mend it
+DESERT_HP = 0.18          # M.10c: at death's door, a disloyal member may bolt
+LOYALTY_HOLDS = 40        # willingness-to-stay at/above which a member stays
 
 
 def _load_banter():
@@ -168,6 +170,37 @@ class CompanionManager:
             f"{npc.name} gulps a {pot.name}, steadying themselves.")
         return True
 
+    def _maybe_desert(self, npc) -> bool:
+        """A critically wounded member, in danger, with no way to recover and
+        no loyalty to hold it, ABANDONS the party to save its own life (M.10c).
+        A loyal or fond companion stays; a selfish or estranged one bolts —
+        the same personality/relationship forces that gate aid (party_aid).
+        Returns True if it left the party this turn."""
+        if npc.hp >= npc.max_hp * DESERT_HP:
+            return False
+        from engine.agent_sense import _healing_item, _knows_heal
+        if _healing_item(npc) is not None:      # it can save itself in place
+            return False
+        from engine.tactics import adjacent_hostiles
+        if not adjacent_hostiles(self.engine, npc.position):
+            return False                        # not in immediate danger
+        from engine import party_aid
+        # a healer ally willing AND able to mend it? then it holds the line
+        for mate in self.members():
+            if mate.id != npc.id and _knows_heal(mate) \
+                    and party_aid.will_aid(mate, npc):
+                return False
+        # loyalty/fondness for the hero holds a good companion; a selfish or
+        # soured one has no reason to die here
+        if party_aid.aid_willingness(npc, self.engine.player) >= LOYALTY_HOLDS:
+            return False
+        self.party.remove(npc.id)
+        npc.metadata["deserted"] = True
+        npc.metadata["seeking_party"] = False
+        self.engine.memory_manager.add_event(
+            f"{npc.name} abandons the party to save their own life!")
+        return True
+
     def _heal_ally(self, healer) -> bool:
         """A healer companion (knows Heal, has the mana) mends the most-wounded
         ally within reach — the player or another party member — but only one
@@ -232,6 +265,11 @@ class CompanionManager:
             # quaffs its OWN potion, and one still critical BREAKS OFF even
             # without the /order flee — no fighting on to the death.
             if self._self_heal(npc):
+                continue
+            # M.10c: at death's door with no way out, a member whose loyalty
+            # doesn't hold ABANDONS the party to save itself (a loyal/fond one
+            # stays and fights or flees at your side).
+            if self._maybe_desert(npc):
                 continue
             order = npc.metadata.get("order", "follow")
             if self._flee_step(npc):

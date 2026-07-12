@@ -6245,3 +6245,17 @@ but ONLY one it's `will_aid`-willing to help, so a soured or selfish healer
 withholds its magic from someone it can't stand. 12 tests. Remainder: companions
 eat/drink on the road, a member at death's door LEAVES to survive, and
 memory-driven willingness (recent slights/kindnesses).
+
+## 2026-07-12 (cont.) — M.10c (sub-step): a member may LEAVE to survive
+
+The other half of "the party keeps everyone alive — or a member leaves to keep
+themselves alive." `CompanionManager._maybe_desert`: a companion at death's
+door (< 18% HP), a foe adjacent, no potion to quaff and no party healer willing
+and able to mend it, will ABANDON the party — but only if its loyalty doesn't
+hold. Loyalty is the SAME personality/relationship force that gates aid
+(`party_aid.aid_willingness` toward the hero): a loyal or fond companion (≥ 40)
+stands fast and fights or flees at your side; a selfish or estranged one (a poor
+regard, or stingy traits) bolts to save its own life, with a beat. So who stays
+when it's hopeless is a function of who they are and how they feel about you.
++5 tests (test_party_survival). Remainder: a deserter rejoins when well;
+companions eat/drink on the road; memory-driven regard shifts.
