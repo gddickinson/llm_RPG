@@ -76,6 +76,9 @@ class BattleSession:
                 continue
             for sol in sorted(sq.alive_soldiers, key=lambda s: s.sid):
                 soldiers.append((sol, sq))
+        # P17.9: remember where everyone stood so, once the tick resolves,
+        # we can flag who moved (a shot next tick pays the move penalty).
+        start_pos = {sol.sid: sol.pos for sol, _ in soldiers}
 
         for sol, sq in soldiers:
             if not sol.alive or sq.routed:
@@ -94,9 +97,13 @@ class BattleSession:
                 reach = SIEGE_RANGE if arty else 1
                 wall = self._wall_in_range(sol, reach, target)
                 if wall is not None:
+                    if arty and sol.reload_left > 0:
+                        continue             # still winching the arm back
                     if arty:                 # a visible lobbed shot
                         self.tracers.append((sol.x, sol.y,
                                              wall[0], wall[1]))
+                        if sq.stats.get("reload", 0) > 0:
+                            sol.reload_left = sq.stats["reload"] + 1
                     field.damage_struct(wall[0], wall[1],
                                         sq.structural_dmg)
                     continue
@@ -117,13 +124,23 @@ class BattleSession:
                     self._charge_melee(sol, sq, target)
                 else:
                     if d > ai.MELEE_REACH and \
-                            sq.stats.get("ranged", 0) > 0:
+                            sq.stats.get("ranged", 0) > 0 and \
+                            sol.reload_left <= 0:
                         self.tracers.append((sol.x, sol.y,
                                              target.x, target.y))
                     ai.attack(field, sol, sq, target, self.rng)
             else:
                 self._order_move(sol, sq, target,
                                  flows.get(sq.team, {}))
+
+        # P17.9: flag movers (for next tick's move-and-shoot penalty) and
+        # tick every reload timer down toward ready.
+        for sol, _ in soldiers:
+            if not sol.alive:
+                continue
+            sol.moved_last = sol.pos != start_pos.get(sol.sid, sol.pos)
+            if sol.reload_left > 0:
+                sol.reload_left -= 1
 
         from engine.battle import battle_fire     # P17.E4 fire spreads/burns
         battle_fire.tick(field, self.rng)

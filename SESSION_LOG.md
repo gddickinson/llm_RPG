@@ -4197,3 +4197,52 @@ six-tile box, so it visibly explores. The tested potter-toward-home
 branch is untouched. 5 new tests (idle barks are ambient and hidden on
 normal; the banner shows only while away; set_away keeps the setting
 honest; the idle hero roams within ROAM). Suite 1688, green.
+
+---
+
+## Round 141 — P17.9 Ranged fidelity (per-unit range · reload · move-and-shoot)
+
+The battle sim's ranged model was a single flat number: every archer
+reached exactly five tiles and loosed every tick, so a crossbow was a
+fast longbow and a horse-archer shot as truly on the gallop as standing
+still. P17.9 (the next step in the researched combat-fidelity order —
+the damage model deepening) makes shooting a real trade of range,
+cadence, and stillness, all data-driven and deterministic.
+
+**Per-unit range.** `battle_ai.ranged_reach(squad)` scales the base
+`RANGED_REACH` (5) by the archetype's `range_factor`: a longbow (1.5)
+reaches 7, a crossbow (1.3) reaches 6, a plain bow reaches 5, and a
+siege engine (2.0) throws far. `reach_of`, `attack`'s in-range test, and
+the session's shoot gate all read it, so the longbow genuinely
+outranges a foe the base archer can't touch — and a hill still adds its
+E1 `height_reach` on top.
+
+**Reload cadence.** `Soldier.reload_left` (round-trips) counts ticks
+until the weapon is ready. Loosing a weapon whose `reload` stat is > 0
+arms it (`reload + 1`, so the tick's-end decrement leaves exactly
+`reload` idle ticks); the session ticks every timer down once per tick
+and `attack` refuses the shot — and the session suppresses its tracer —
+while it's still loading. A reload-0 longbow is never gated (fires every
+tick); a crossbow (reload 1) looses every other tick, a catapult (2)
+every third, a trebuchet (3) every fourth. Bombardment against walls
+reloads the same way. Bows become devastating-but-slow instead of
+devastating-every-tick.
+
+**Move-and-shoot.** The session snapshots start-positions each tick and,
+once actions resolve, sets each soldier's `moved_last`. A shot the tick
+after the shooter stepped takes `MOVE_SHOOT_PENALTY` (−4 to-hit) — halt
+to aim — UNLESS the shooter `can_parthian` (a trained horse-archer, who
+looses accurately over the shoulder on the move). This is the mechanical
+half of the P17.20 Parthian shot: everyone else pays to shoot on the
+run; the horse-archer doesn't.
+
+Data: crossbow `reload 1`, fire-archer `reload 1`, catapult
+`range_factor 2.0`/`reload 2`, trebuchet `2.0`/`reload 3`. Two existing
+tests needed honest updates (the elevation range test hard-coded reach 5
+— now reads `ranged_reach`; the cover `_hits` loop revealed the reload
+must not gate a reload-0 weapon, which shaped the final +1-only-when-
+reload>0 rule). 10 new tests in `tests/test_battle_ranged.py`: range
+scales and out-of-range is no shot; the crossbow arms/holds and fires
+strictly less over a run while the longbow looses freely; the move
+penalty cuts hits but the Parthian shot ignores it; reload/moved survive
+a save round-trip. Suite 1698, green.

@@ -2592,13 +2592,31 @@ then doctrine AI (P17.19), then envelopment/feigned-retreat (P17.20).
 Ranged fidelity (P17.9) and armour/shields (P17.10) slot in as the
 damage model deepens. The BATTLEFIELD-ENVIRONMENT block (P17.E1–E4:
 elevation, terrain/obstacles, LOS, fire) is a parallel track.
-- [ ] **P17.9 Ranged fidelity.** Per-unit range from `range_factor`
+- [x] **P17.9 Ranged fidelity.** Per-unit range from `range_factor`
   (longbow reaches farther than a thrown axe); a RELOAD cooldown so
   crossbows/catapults don't fire every tick (they load, then loose);
   a MOVE-AND-SHOOT penalty — shoot accurately only if you held still
   last tick, so archers must stop to aim and horse-archers trade
   accuracy for mobility (the Parthian shot). This is what lets bows
   be devastating-but-slow instead of devastating-every-tick.
+  *(Round 141: `Soldier` gains `reload_left` + `moved_last` (both
+  round-trip). `battle_ai.ranged_reach(squad)` = `int(RANGED_REACH ×
+  range_factor)` so a longbow (1.5 → 7) outreaches a crossbow (1.3 →
+  6) outreaches a base archer (5); `reach_of`/`attack`/the session's
+  in-reach gate all read it. Loosing a weapon with `reload > 0` arms
+  `reload_left = reload + 1`; the session ticks every timer down at
+  end of tick and gates the shot (and its tracer) while loading — so
+  a crossbow (reload 1) looses every OTHER tick, a catapult (2) every
+  third, a trebuchet (3) every fourth, while a reload-0 longbow is
+  never gated. The session snapshots start-positions each tick and
+  flags `moved_last`; `attack` docks `MOVE_SHOOT_PENALTY` (−4 to-hit)
+  from a shot the tick after the shooter moved — UNLESS it's a
+  `can_parthian` horse-archer, which looses accurately on the move.
+  Data: crossbow reload 1, fire-archer 1, catapult range_factor 2.0 /
+  reload 2, trebuchet 2.0 / reload 3. 10 tests (range scaling &
+  out-of-range; reload arms/holds/ticks-down-over-a-battle; longbow
+  fires freely; move penalty reduces hits but the Parthian shot
+  ignores it; round-trip). Suite 1698, green.)*
 - [ ] **P17.10 Armour, shields & damage types.** Split `defense`
   into armour (value + weight) and a shield (front-arc bonus, worth
   MORE vs ranged than melee); damage carries a type (slash/pierce/

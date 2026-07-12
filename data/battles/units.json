@@ -51,6 +51,7 @@
     "morale_threshold": 22,
     "recruit_cost": 8,
     "range_factor": 1.3,
+    "reload": 1,
     "category": "archer"
   },
   "archer_fire": {
@@ -62,7 +63,8 @@
     "morale_threshold": 22,
     "recruit_cost": 12,
     "category": "archer",
-    "fire_arrow": true
+    "fire_arrow": true,
+    "reload": 1
   },
   "cavalry_light": {
     "melee": 12,
@@ -117,6 +119,8 @@
     "morale_threshold": 30,
     "recruit_cost": 50,
     "structural_dmg": 35,
+    "range_factor": 2.0,
+    "reload": 2,
     "category": "siege"
   },
   "siege_trebuchet": {
@@ -128,6 +132,8 @@
     "morale_threshold": 30,
     "recruit_cost": 80,
     "structural_dmg": 50,
+    "range_factor": 2.0,
+    "reload": 3,
     "category": "siege"
   },
   "siege_tower": {

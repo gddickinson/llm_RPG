@@ -96,10 +96,11 @@ class TestInBattle(unittest.TestCase):
         self.assertEqual(tgt2.soldiers[0].hp, hp0, "flat glances off")
 
     def test_high_ground_shoots_farther(self):
-        # an archer at the edge of + a tile of ordinary range
-        far = ai.RANGED_REACH + 1
+        # one tile beyond this archer's own flat reach (P17.9 per-unit
+        # range: the longbow already outreaches the base 5)
         bf = BattleField(30, 12)
         arch = Squad.raise_squad("a", "red", "archer_longbow", [(5, 6)])
+        far = ai.ranged_reach(arch) + 1
         tgt = Squad.raise_squad("t", "blue", "infantry_sword",
                                 [(5 + far, 6)])
         bf.add_squad(arch)

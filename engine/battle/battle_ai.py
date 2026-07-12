@@ -20,6 +20,7 @@ from engine.battle import battle_facing as facing
 
 MELEE_REACH = 1
 RANGED_REACH = 5
+MOVE_SHOOT_PENALTY = -4  # P17.9: loosing on the move, un-braced, is wild
 ROUT_CASCADE_R = 4       # a rout within this many tiles panics neighbours
 
 _NEIGH8 = ((1, 0), (-1, 0), (0, 1), (0, -1),
@@ -130,8 +131,16 @@ def step_toward(field, sol, tx: int, ty: int):
     return best
 
 
+def ranged_reach(squad) -> int:
+    """P17.9: a shooter's reach scales with its `range_factor` — a
+    longbow (1.5) outranges a crossbow (1.3) outranges a thrown weapon
+    (< 1). Base RANGED_REACH at factor 1.0."""
+    rf = squad.stats.get("range_factor", 1.0)
+    return max(1, int(RANGED_REACH * rf))
+
+
 def reach_of(squad) -> int:
-    return RANGED_REACH if squad.stats.get("ranged", 0) > 0 \
+    return ranged_reach(squad) if squad.stats.get("ranged", 0) > 0 \
         else MELEE_REACH
 
 
@@ -170,12 +179,19 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     ranged = False
     if d <= MELEE_REACH:
         power = st.get("melee", 0)
-    elif d <= RANGED_REACH + terrain.height_reach(field, atk_soldier.pos) \
-            and st.get("ranged", 0) > 0:
+    elif d <= ranged_reach(atk_squad) + terrain.height_reach(
+            field, atk_soldier.pos) and st.get("ranged", 0) > 0:
+        if atk_soldier.reload_left > 0:
+            return False                     # still loading — no shot (P17.9)
         if not terrain.has_los(field, atk_soldier.pos, target.pos):
             return False                     # can't shoot through cover (E3)
         power = st.get("ranged", 0)          # high ground shoots farther
         ranged = True
+        # loosing spends the load: a heavy shooter must reload before the
+        # next shot. A reload-0 weapon (a longbow) is never gated (+1 so
+        # the decrement at tick's end leaves exactly `reload` idle ticks).
+        if st.get("reload", 0) > 0:
+            atk_soldier.reload_left = st["reload"] + 1
     else:
         return False
     # d20 + power vs 10 + defence of the target's squad; a RANGED shot
@@ -192,6 +208,10 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     roll = rng.randint(1, 20) + power + to_hit
     roll += form.attack_penalty(atk_squad)     # P17.17 RING fights weaker
     roll += terrain.height_to_hit(field, atk_soldier.pos, target.pos)  # E1
+    # P17.9 move-and-shoot: loosing the tick after you moved is wild —
+    # unless you're a horse-archer trained to it (the Parthian shot).
+    if ranged and atk_soldier.moved_last and not can_parthian(atk_squad):
+        roll += MOVE_SHOOT_PENALTY
     if roll < dc:
         return False
     dmg = max(1, int(power // 3 * dmg_mult) + rng.randint(0, 2))

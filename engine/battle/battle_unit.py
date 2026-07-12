@@ -24,7 +24,8 @@ class Soldier:
     """One fighter: a grid token that belongs to a squad."""
 
     __slots__ = ("sid", "squad_id", "team", "x", "y", "hp",
-                 "max_hp", "alive", "move_accum", "facing")
+                 "max_hp", "alive", "move_accum", "facing",
+                 "reload_left", "moved_last")
 
     def __init__(self, sid: str, squad_id: str, team: str,
                  x: int, y: int, hp: int):
@@ -44,6 +45,13 @@ class Soldier:
         # which way this soldier looks (P17.11) — a blow from outside
         # this front takes flank/rear bonuses. Set as he moves/fights.
         self.facing = (1, 0)
+        # P17.9 ranged fidelity: `reload_left` counts down ticks-until-
+        # ready after loosing (a longbow reloads in 0, a crossbow/catapult
+        # more) so heavy shooters LOAD then LOOSE, not fire every tick;
+        # `moved_last` records whether he stepped last tick, so shooting
+        # on the move costs accuracy (halt to aim — or be a horse-archer).
+        self.reload_left = 0
+        self.moved_last = False
 
     @property
     def pos(self) -> Tuple[int, int]:
@@ -59,7 +67,9 @@ class Soldier:
                 "team": self.team, "x": self.x, "y": self.y,
                 "hp": self.hp, "max_hp": self.max_hp,
                 "alive": self.alive, "move_accum": self.move_accum,
-                "facing": list(self.facing)}
+                "facing": list(self.facing),
+                "reload_left": self.reload_left,
+                "moved_last": self.moved_last}
 
     @staticmethod
     def from_dict(d: dict) -> "Soldier":
@@ -69,6 +79,8 @@ class Soldier:
         s.alive = d["alive"]
         s.move_accum = d.get("move_accum", 0.0)
         s.facing = tuple(d.get("facing", (1, 0)))
+        s.reload_left = d.get("reload_left", 0)
+        s.moved_last = d.get("moved_last", False)
         return s
 
 
