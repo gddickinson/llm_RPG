@@ -4499,3 +4499,39 @@ strength, and the `_clash` helper returns a faction winner. Suite 1753,
 green. Remainder P17.8b is now just the two overworld↔battle-screen
 integrations: commander orders reaching overworld `[Clash]` events, and
 an overworld castle assault reusing the siege field.
+
+---
+
+## Soulslike death recovery (user-directed) — the game-over, replaced
+
+George: "what happens when a player's HP gets to 0?" — investigated the
+whole chain (dying ladder P12.4 → defeat table P4.7 → bones P12.13 →
+GUI death popup) and surfaced the one real wart: on a true death the [R]
+Restart button silently spun up a DEFAULT character in a fresh world
+(not a reload, not your created hero). Offered options; George chose the
+soulslike checkpoint: no hard game-over at all.
+
+`engine/checkpoint.py`: a fatal fall (the formerly-slain 10% overworld /
+100%-in-dungeon outcome) now drops a BLOODSTAIN where you fell — holding
+your carried gold, your whole pack, and a fifth of your XP (skimmed but
+never below the current level's floor, so a fall costs progress, not a
+level) — and you wake at the nearest sanctuary (temple, else town) at a
+third HP, four hours later. Walk back onto the stain and the turn
+pipeline auto-reclaims everything. Die again first and the fresh fall
+overwrites the old stain (the hoard is lost — the classic sting).
+Equipped gear stays on your body; it's the pack you have to go earn back.
+State is one dict on player.metadata, so it round-trips through a save,
+and the hint bar nags you toward your remains.
+
+`defeat.handle_player_defeat`'s slain branch now returns (survived=True,
+fall_and_recover(...)) instead of (False, "defeated"), so nothing ever
+sets player_dead. Bones (P12.13) is preserved — recorded at the fall, at
+the same rare frequency as the old slain branch, so the "a hero fell
+here" legend still seeds future campaigns' ghosts; you just live through
+it now. The GUI death popup is left in place, dormant, ready if a
+hardcore mode is ever added.
+
+10 new tests (drop/wake/xp-no-delevel/marker/reclaim/reclaim-only-on-the-
+spot/overwrite/auto-reclaim/no-game-over-even-in-a-zone/save-load) plus
+seven existing death-path tests updated from asserting permadeath to
+asserting the recovery. Suite 1765, green.

@@ -92,12 +92,16 @@ class TestDying(unittest.TestCase):
         self.assertIn("DYING 3/4", msg)
 
     def test_dying_four_hits_the_full_table(self):
+        from engine.checkpoint import has_bloodstain
         enter_dying(self.engine, self._wolf())
         self.engine.combat_system.rng = _FixedRng(1, rand=0.05)
         dying_tick(self.engine)      # nat 1: +2 -> 3
-        dying_tick(self.engine)      # -> 5 >= 4: final, slain roll
-        self.assertTrue(self.engine.player_dead,
-                        "Dying 4 can end the story")
+        dying_tick(self.engine)      # -> 5 >= 4: the full table
+        # soulslike: the bottom of the ladder is a bloodstain fall, not
+        # a game-over
+        self.assertFalse(self.engine.player_dead, "no game-over")
+        self.assertTrue(has_bloodstain(self.engine),
+                        "Dying 4 drops your pack and wakes you at sanctuary")
 
     def test_hits_while_down_worsen(self):
         wolf = self._wolf()

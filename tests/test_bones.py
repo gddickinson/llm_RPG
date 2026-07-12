@@ -146,7 +146,9 @@ class TestBones(unittest.TestCase):
         self.engine.combat_system.rng = _Doom()
         dying_tick(self.engine)
         dying_tick(self.engine)
-        self.assertTrue(self.engine.player_dead)
+        # soulslike: the hero SURVIVES the fall (no game-over), but the
+        # world still records where they fell — the bones legend endures
+        self.assertFalse(self.engine.player_dead, "no game-over")
         self.assertTrue(any(b["name"] == "Doomed"
                             for b in load_all()),
                         "the fall was recorded")

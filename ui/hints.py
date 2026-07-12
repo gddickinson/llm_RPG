@@ -49,6 +49,16 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    # Unclaimed bloodstain — your loot is out there (soulslike)
+    try:
+        from engine.checkpoint import bloodstain_pos
+        bp = bloodstain_pos(engine)
+        if bp is not None:
+            hints.append(f"[!] Your remains lie at ({bp[0]}, {bp[1]}) "
+                         f"— return to reclaim your pack")
+    except Exception:
+        pass
+
     # Tutorial lessons lead everything
     try:
         from engine.tutorial import hint_lines

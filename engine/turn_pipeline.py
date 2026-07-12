@@ -46,6 +46,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Dying tick error: {e}")
 
+    # Back on the spot you fell? Reclaim your bloodstain (soulslike)
+    try:
+        from engine.checkpoint import tick as checkpoint_tick
+        checkpoint_tick(self)
+    except Exception as e:
+        logger.debug(f"Checkpoint tick error: {e}")
+
     # A guard collects on the ledger (P12.9)
     try:
         self.law.check_contact()

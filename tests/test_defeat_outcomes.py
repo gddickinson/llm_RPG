@@ -65,18 +65,23 @@ class TestDefeatOutcomes(unittest.TestCase):
         self.assertGreaterEqual(self.engine.world.time - t0, 6 * 60)
         self.assertGreaterEqual(self.player.metadata.get("hunger", 0), 75)
 
-    def test_slain_outcome_on_bad_roll(self):
+    def test_worst_roll_now_drops_a_bloodstain(self):
+        # soulslike: the formerly-slain outcome is a survivable corpse-run
+        from engine.checkpoint import has_bloodstain
         survived, msg = handle_player_defeat(
             self.engine, self.wolf, rng=FixedRandom(0.05))
-        self.assertFalse(survived)
+        self.assertTrue(survived, "death is never terminal now")
+        self.assertTrue(has_bloodstain(self.engine))
 
-    def test_dungeon_defeat_is_always_final(self):
+    def test_dungeon_defeat_drops_a_bloodstain(self):
         from world.dungeon import generate_dungeon
+        from engine.checkpoint import has_bloodstain
         self.engine.current_dungeon = generate_dungeon(seed=3)
         survived, _ = handle_player_defeat(
             self.engine, self.wolf, rng=FixedRandom(0.99))
-        self.assertFalse(survived,
-                         "no rescue from the bottom of a dungeon")
+        self.assertTrue(survived,
+                        "you wake at sanctuary, your pack left behind")
+        self.assertTrue(has_bloodstain(self.engine))
         self.engine.current_dungeon = None
 
     def test_combat_integration_survivable(self):
@@ -99,6 +104,9 @@ class TestDefeatOutcomes(unittest.TestCase):
         self.assertEqual(self.player.status, "alive")
 
     def test_combat_integration_final(self):
+        # Dying 4 hits the full table — which, soulslike, is a survivable
+        # bloodstain fall, not a game-over
+        from engine.checkpoint import has_bloodstain
         self.engine._has_gui = True
         self.engine.combat_system.rng = FixedRandom(0.05)
         self.engine.combat_system.rng.randint = lambda a, b: a  # nat 1s
@@ -107,8 +115,9 @@ class TestDefeatOutcomes(unittest.TestCase):
             self.wolf, self.player, damage=5)
         from engine.dying import dying_tick
         dying_tick(self.engine)      # +2 -> 3
-        dying_tick(self.engine)      # -> 4: the full table, slain
-        self.assertTrue(self.engine.player_dead)
+        dying_tick(self.engine)      # -> 4: the full table
+        self.assertFalse(self.engine.player_dead, "no game-over")
+        self.assertTrue(has_bloodstain(self.engine))
 
     def test_victor_remembers(self):
         handle_player_defeat(self.engine, self.wolf,

@@ -38,7 +38,10 @@ def handle_player_defeat(engine, attacker,
 
     roll = rng.random()
     if in_zone or roll < 0.10:
-        return (False, "You have been defeated!")
+        # Soulslike (user-directed): what used to be a game-over is now a
+        # bloodstain corpse-run — you always wake somewhere, diminished.
+        from engine.checkpoint import fall_and_recover
+        return (True, fall_and_recover(engine, attacker))
 
     # The victor remembers besting you
     try:
