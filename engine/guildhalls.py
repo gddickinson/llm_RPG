@@ -11,8 +11,9 @@ offer.
 
 Content-as-data: the halls live in `data/guildhalls.json` (name, kind,
 settlement, a legend line). The Location markers ride the world save; the
-system persists its own small index of them. (Remainder M.7c: board-quests
-and training AT the halls.)
+system persists its own small index of them. M.7c added a TRAINING service
+(`train`/`training_fee` — pay for skill XP at the hall you're standing at);
+the remainder is board-quests posted AT the halls.
 """
 
 import logging
@@ -25,6 +26,12 @@ logger = logging.getLogger("llm_rpg.guildhalls")
 
 _WALKABLE = {TerrainType.GRASS, TerrainType.ROAD, TerrainType.BRIDGE,
              TerrainType.FARMLAND, TerrainType.FOREST}
+
+# M.7c training service — a hall is where you go to get BETTER, not only to
+# recruit. Pay a level-scaled fee for a lesson's worth of skill XP.
+TRAIN_BASE = 25          # base fee for a lesson
+TRAIN_PER_LEVEL = 12     # + per current skill level (mastery costs more)
+TRAIN_XP = 45            # skill XP a lesson grants
 
 
 class GuildHallSystem:
@@ -148,6 +155,34 @@ class GuildHallSystem:
             if abs(n.position[0] - hx) <= r and abs(n.position[1] - hy) <= r:
                 out.append(n)
         return out
+
+    # ---- M.7c training ---------------------------------------------
+
+    def training_fee(self, player, skill_id: str) -> int:
+        """The gold a lesson costs — dearer the more skilled you already are."""
+        from engine.skill_progression import level_for_xp, _skills_dict
+        lvl = level_for_xp(_skills_dict(player).get(skill_id, 0))
+        return TRAIN_BASE + TRAIN_PER_LEVEL * lvl
+
+    def train(self, skill_id: str) -> str:
+        """Pay for a lesson at the guild hall you're standing at: gold → skill
+        XP (M.7c). Returns a player-facing line."""
+        from engine.skill_progression import SKILLS, train_skill
+        engine, player = self.engine, self.engine.player
+        hall = self.hall_at(player.position)
+        if hall is None:
+            return "You must be at a guild hall to train."
+        if skill_id not in SKILLS:
+            return f"No trainer here teaches '{skill_id}'."
+        fee = self.training_fee(player, skill_id)
+        if getattr(player, "gold", 0) < fee:
+            return f"That lesson costs {fee}g — you can't afford it."
+        player.gold -= fee
+        train_skill(engine, skill_id, TRAIN_XP)
+        name = SKILLS[skill_id].get("name", skill_id)
+        engine.memory_manager.add_event(
+            f"[Guild] You pay {fee}g to train {name} at the {hall['name']}.")
+        return f"You train {name} for {fee}g."
 
     # ---- persistence -----------------------------------------------
 

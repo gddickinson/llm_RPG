@@ -96,6 +96,56 @@ class TestPersistence(_Base):
             shutil.rmtree(tmp, ignore_errors=True)
 
 
+class TestTraining(_Base):
+    """M.7c — a hall is where you go to get BETTER: pay for a lesson."""
+
+    def _stand_at_hall(self):
+        pos = tuple(self.gh.halls[0]["pos"])
+        self.engine.player.position = pos
+        return pos
+
+    def _a_skill(self):
+        from engine.skill_progression import SKILLS
+        return next(iter(SKILLS))
+
+    def test_training_spends_gold_and_grants_xp(self):
+        from engine.skill_progression import _skills_dict
+        self._stand_at_hall()
+        sid = self._a_skill()
+        self.engine.player.gold = 500
+        g0 = self.engine.player.gold
+        xp0 = _skills_dict(self.engine.player).get(sid, 0)
+        self.gh.train(sid)
+        self.assertLess(self.engine.player.gold, g0)
+        self.assertGreater(_skills_dict(self.engine.player).get(sid, 0), xp0)
+
+    def test_the_fee_scales_with_skill(self):
+        from engine.skill_progression import _skills_dict
+        self._stand_at_hall()
+        sid = self._a_skill()
+        low = self.gh.training_fee(self.engine.player, sid)
+        _skills_dict(self.engine.player)[sid] = 100000   # a far higher level
+        self.assertGreater(self.gh.training_fee(self.engine.player, sid), low)
+
+    def test_cannot_train_away_from_a_hall(self):
+        self.engine.player.position = (0, 0)
+        if self.gh.hall_at((0, 0)) is not None:
+            self.engine.player.position = (self.engine.world.map.width - 1,
+                                           self.engine.world.map.height - 1)
+        self.assertIn("guild hall", self.gh.train(self._a_skill()).lower())
+
+    def test_an_unknown_skill_is_refused(self):
+        self._stand_at_hall()
+        self.assertIn("trainer", self.gh.train("basketweaving").lower())
+
+    def test_cannot_afford_the_lesson(self):
+        self._stand_at_hall()
+        self.engine.player.gold = 0
+        msg = self.gh.train(self._a_skill())
+        self.assertIn("afford", msg.lower())
+        self.assertEqual(self.engine.player.gold, 0)     # nothing charged
+
+
 class TestValidation(unittest.TestCase):
     def test_bad_kind_is_flagged(self):
         from items.validate_world import check_guildhalls

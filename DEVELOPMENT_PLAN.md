@@ -3680,9 +3680,14 @@ today reacts only to HP — a real gap.
   adventurers gather at their home hall (`hall_spot`), and `hall_at`/`roster`
   expose who's on offer to recruit/hire. `tests/test_guildhalls.py` (6). The
   *quests + training* at halls is the M.7c remainder below.
-- [ ] **M.7c Quests & training at the guild halls.** Board-quests posted at a
+- [~] **M.7c Quests & training at the guild halls.** Board-quests posted at a
   hall and a training service (pay for skill XP / a lesson), so a hall is a place
-  you go to for WORK and to get BETTER, not only to recruit.
+  you go to for WORK and to get BETTER, not only to recruit. *Training done:*
+  `GuildHallSystem.train(skill_id)` / `training_fee` — standing at a hall, pay a
+  level-scaled fee (dearer the more skilled you are) for a lesson's worth of
+  skill XP, routed through `skill_progression.train_skill` (so a level-up + pet
+  roll fire), a `[Guild]` beat. `tests/test_guildhalls.py` (+5). *Remainder:*
+  board-quests posted AT the halls, and a player-facing hook (a hall menu / key).
 
 ### World balance & pacing (from the flee-heavy data)
 - [ ] **P27.1 Encounter-density & danger tiers.** The overworld is too thick

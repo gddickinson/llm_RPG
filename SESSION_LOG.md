@@ -6259,3 +6259,15 @@ regard, or stingy traits) bolts to save its own life, with a beat. So who stays
 when it's hopeless is a function of who they are and how they feel about you.
 +5 tests (test_party_survival). Remainder: a deserter rejoins when well;
 companions eat/drink on the road; memory-driven regard shifts.
+
+## 2026-07-12 (cont.) — M.7c (sub-step): training at the guild halls
+
+A guild hall stops being only a place to recruit — now it's where you go to
+get BETTER. `GuildHallSystem.train(skill_id)`: standing at a hall, pay a
+level-scaled fee (`training_fee` = 25 + 12×current skill level, so mastery
+costs more) for a lesson's worth of skill XP (45), routed through
+`skill_progression.train_skill` so a level-up message and the skill's pet-roll
+fire, with a `[Guild]` beat. Guarded: you must be at a hall, the skill must be
+real, and you must afford it (nothing charged otherwise). +5 tests. Remainder:
+board-quests posted at the halls, and a player-facing hook (a hall menu / key)
+so it's reachable in play.
