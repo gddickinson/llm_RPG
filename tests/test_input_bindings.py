@@ -124,5 +124,61 @@ class TestShopBinding(unittest.TestCase):
         self.gui.show_shop.assert_not_called()
 
 
+class TestDiagonalMovement(unittest.TestCase):
+    """The numpad walks all 8 ways — the fix for 'no diagonal
+    interactions' (the letter-corner keys are taken, so diagonals live on
+    the numpad)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.engine = GameEngine(
+            llm_provider="heuristic", enable_npc_processes=False)
+        cls.engine.start_game()
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            cls.engine.end_game()
+        except Exception:
+            pass
+
+    def setUp(self):
+        from world.world_map import TerrainType
+        self.gui = FakeGUI(self.engine)
+        self.handler = InputHandler(self.engine, self.gui)
+        # a clear patch of open ground to step around on
+        self.ox, self.oy = 6, 6
+        wmap = self.engine.world.map
+        for yy in range(self.oy - 2, self.oy + 3):
+            for xx in range(self.ox - 2, self.ox + 3):
+                wmap.terrain[yy][xx] = TerrainType.GRASS
+        wmap.remove_character(self.engine.player)
+        self.engine.player.position = (self.ox, self.oy)
+        wmap.place_character(self.engine.player, self.ox, self.oy)
+
+    def _press(self, key):
+        self.engine.player.position = (self.ox, self.oy)
+        self.handler.handle_event(FakeEvent(key))
+        return self.engine.player.position
+
+    def test_numpad_diagonals_step_diagonally(self):
+        cases = {pygame.K_KP9: (1, -1), pygame.K_KP7: (-1, -1),
+                 pygame.K_KP3: (1, 1), pygame.K_KP1: (-1, 1)}
+        for key, (dx, dy) in cases.items():
+            self.assertEqual(self._press(key),
+                             (self.ox + dx, self.oy + dy),
+                             f"numpad {key} should step ({dx},{dy})")
+
+    def test_numpad_orthogonals_also_move(self):
+        self.assertEqual(self._press(pygame.K_KP6), (self.ox + 1, self.oy))
+        self.assertEqual(self._press(pygame.K_KP8), (self.ox, self.oy - 1))
+
+    def test_numpad_five_waits_in_place(self):
+        t0 = self.engine.turn_counter
+        pos = self._press(pygame.K_KP5)
+        self.assertEqual(pos, (self.ox, self.oy), "you hold your ground")
+        self.assertGreater(self.engine.turn_counter, t0, "but time passes")
+
+
 if __name__ == "__main__":
     unittest.main()

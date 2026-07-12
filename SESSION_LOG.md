@@ -4535,3 +4535,26 @@ hardcore mode is ever added.
 spot/overwrite/auto-reclaim/no-game-over-even-in-a-zone/save-load) plus
 seven existing death-path tests updated from asserting permadeath to
 asserting the recovery. Suite 1765, green.
+
+---
+
+## Diagonal movement (George's playtest: "no diagonal interactions")
+
+George noticed you couldn't interact/fight on the diagonals. Investigated:
+the adjacency checks were already fine — melee (`melee_or_shoot`) and talk
+route through `presence.npc_adjacent_to_player` at radius 1.5 (Euclidean,
+so √2 ≈ 1.41 counts a diagonal neighbour), furniture uses a Chebyshev
+`abs(dx)≤1 and abs(dy)≤1`, and the engine's `move_player(dx, dy)` happily
+takes a diagonal delta. The gap was purely INPUT: the play-mode handler
+bound only the four orthogonal keys (WASD/arrows), so you could never
+step onto a diagonal in the first place — and the letter-corner keys a
+WASD player would reach for (Q/E/Z/C) are all taken (quit/interact/forage/
+sheet).
+
+Fix: 8-directional movement on the NUMPAD (the classic roguelike map) —
+KP7/8/9/4/6/1/2/3 walk all eight ways and KP5 waits a beat in place, all
+routed through the same `move_player` (so SHIFT-diagonal is still a
+careful disengage). Documented in the F1 controls reference. Now you
+approach, flank, and fight on the diagonals like any grid RPG. 3 tests
+(diagonals step true, orthogonal numpad also moves, KP5 waits while time
+passes). Suite 1774, green.

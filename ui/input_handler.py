@@ -16,6 +16,18 @@ except ImportError:  # pragma: no cover
 
 logger = logging.getLogger("llm_rpg.input")
 
+# 8-directional movement on the numpad (the letter-corner keys QEZC that
+# a WASD player would reach for are already bound to quit/interact/forage/
+# sheet, so the numpad carries the diagonals — the classic roguelike map).
+_NUMPAD_MOVE = {}
+if PYGAME_OK:
+    _NUMPAD_MOVE = {
+        pygame.K_KP8: (0, -1), pygame.K_KP2: (0, 1),
+        pygame.K_KP4: (-1, 0), pygame.K_KP6: (1, 0),
+        pygame.K_KP7: (-1, -1), pygame.K_KP9: (1, -1),
+        pygame.K_KP1: (-1, 1), pygame.K_KP3: (1, 1),
+    }
+
 
 class InputHandler:
     """Translate pygame events into engine method calls."""
@@ -170,6 +182,13 @@ class InputHandler:
             return True
         if k in (pygame.K_d, pygame.K_RIGHT):
             self.engine.move_player(1, 0, careful=shift)
+            return True
+        if k in _NUMPAD_MOVE:                    # 8-way: diagonals included
+            dx, dy = _NUMPAD_MOVE[k]
+            self.engine.move_player(dx, dy, careful=shift)
+            return True
+        if k == pygame.K_KP5:                    # wait a beat in place
+            self.engine.move_player(0, 0, careful=shift)
             return True
 
         # Attack adjacent (SHIFT+F = shove)

@@ -14,6 +14,7 @@ from typing import List, Tuple
 CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
     ("MOVE & EXPLORE", [
         ("WASD / Arrows", "walk (edge = new region)"),
+        ("Numpad 1-9", "walk 8 ways (diagonals; 5 waits)"),
         ("SHIFT + move", "disengage (no free enemy hit)"),
         ("TAB", "enter / leave building or cave"),
         ("SHIFT + TAB", "force a locked door (loud)"),
