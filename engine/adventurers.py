@@ -140,6 +140,7 @@ class AdventurerSystem:
             adv.metadata["adventurer"] = True
             adv.metadata["seeking_party"] = True
             adv.metadata["home_spot"] = list(spot)
+            adv.metadata["home_settlement"] = spec.get("home", "")
             try:
                 from engine.settings import set_setting
                 set_setting(adv, "disposition",
@@ -175,7 +176,12 @@ class AdventurerSystem:
 
     def run_turn(self) -> None:
         """Drive each free, living adventurer one step. Recruited ones are
-        the party's business (companion_manager); the dead are skipped."""
+        the party's business (companion_manager); the dead are skipped.
+        M.6b: co-located seekers first BAND into rival companies, and a
+        company's followers trail their leader as a party of their own."""
+        from engine import companies
+        companies.dissolve(self)
+        companies.form(self)
         party = getattr(getattr(self.engine, "companion_manager", None),
                         "party", {})
         driven = 0
@@ -188,10 +194,15 @@ class AdventurerSystem:
             if aid in party:                # now a companion — hands off
                 adv.metadata["seeking_party"] = False
                 continue
-            # seeking a band => stay by the tavern; else strike out
-            seeking = adv.metadata.get("seeking_party", True)
-            ctrl.home = tuple(adv.metadata.get("home_spot")) if seeking \
-                and adv.metadata.get("home_spot") else None
+            # a company FOLLOWER trails its leader; a leader (or a solo hero)
+            # roams free while seeking it loiters by its hall
+            trail = companies.leader_position(self, adv)
+            if trail is not None:
+                ctrl.home = trail
+            else:
+                seeking = adv.metadata.get("seeking_party", True)
+                ctrl.home = tuple(adv.metadata.get("home_spot")) if seeking \
+                    and adv.metadata.get("home_spot") else None
             try:
                 ctrl.take_turn(self.engine, adv)
                 driven += 1

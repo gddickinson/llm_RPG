@@ -3604,10 +3604,19 @@ a coherent, testable slice; ordered roughly by impact.
   ("Ambition: delve"). `tests/test_away_ambition.py` (13).
 
 ### M.6b / M.7b — the living-world remainders (already scoped above)
-- [ ] **M.6b Rival adventuring parties.** Adventurers take their own quests,
+- [~] **M.6b Rival adventuring parties.** Adventurers take their own quests,
   clear dungeons, band into rival companies, and COMPETE with the hero for
   quests/loot/hoards — a renown race — with a real fortune arc (grow strong,
-  or die and lose it all).
+  or die and lose it all). *Sub-step done (companies FORM):* `engine/companies.py`
+  bands the seeking, un-recruited adventurers who share a home settlement into
+  a COMPANY led by the strongest (`form`), gives it a stable name + a `[Realm]`
+  forming beat, and has the followers TRAVEL with their leader (run_turn homes a
+  follower's brain on the leader). `renown` = Σ member levels × 10 (the race's
+  score); `dissolve` disbands a company whose leader falls or is recruited. All
+  state on `metadata` (rides the save). `tests/test_companies.py` (14).
+  *Remainder:* companies take their own QUESTS + clear dungeons, COMPETE for
+  named hoards, renown grows on real wins (kill/quest ledger, not just levels),
+  and the full fortune arc (a wiped company loses its renown for good).
 - [ ] **M.7b Guild halls as places.** (see M.7 above) — where blades, quests
   and training reliably congregate.
 

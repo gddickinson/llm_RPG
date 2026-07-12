@@ -6177,3 +6177,21 @@ company as far as a sociable one (r=8). The M.9c spectator card names it
 ("Ambition: delve"). So "get rich" or "clear the Dark Hollow" or "found a
 company" now steers the whole absence, not just the moment-to-moment temper.
 `tests/test_away_ambition.py` (13). All green.
+
+## 2026-07-12 (cont.) — M.6b (sub-step): rival companies FORM
+
+The world's other heroes stop adventuring strictly solo. `engine/companies.py`
+bands the seeking, un-recruited adventurers who hail from the SAME settlement
+into a COMPANY led by the strongest of them (`form`) — Kestrel + Bram, both
+of Oakvale, become a named band under Bram (L4); Sable, alone at Riverside,
+stays a lone seeker. A company takes a stable name (derived from the leader id,
+so it survives a reload), announces itself with a `[Realm]` forming beat, and
+— the visible part — its followers TRAVEL with their leader: `AdventurerSystem.
+run_turn` now homes each follower's brain on the leader's tile, so the band
+clumps and roams as a rival party rather than three specks drifting apart.
+`renown` (Σ member levels × 10) is the first score for the renown race; a
+company whose leader falls (or is recruited) `dissolve`s back to seeking. All
+on `metadata`, so it rides the save with no new persistence. 14 tests.
+Remainder (noted in the plan): own quests + dungeon clears, competing for named
+hoards, a real win-ledger renown, and the fortune arc (a wiped company loses
+its renown for good).
