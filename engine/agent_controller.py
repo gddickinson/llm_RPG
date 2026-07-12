@@ -11,14 +11,15 @@ what lets an agent join the world (M.2) and keep a hero living when
 its human is away (M.3), instead of the character vanishing or being a
 puppet of the ambient NPC AI.
 
-`drive_agents(engine)` runs every agent-controlled roster hero once;
-it is called from the turn pipeline, where `advance_turn` is
-re-entrancy-guarded so a hero's move doesn't cascade a nested tick.
+`drive_agents(engine)` runs every agent hero once, from the turn
+pipeline (advance_turn re-entrancy-guarded against nested ticks).
 """
 
 import logging
 import random
 from contextlib import contextmanager
+
+from engine import agent_nav as nav
 
 logger = logging.getLogger("llm_rpg.agent")
 
@@ -34,6 +35,14 @@ def _is_hostile(npc) -> bool:
         in _HOSTILE
 
 
+def _colocated(zone_name, npc) -> bool:
+    """Is `npc` on the SAME grid as a hero whose zone is `zone_name` (or
+    None on the overworld)? Perceiving a foe across coordinate spaces is
+    what made the away-hero shoot a phantom forever (2026-07-12b)."""
+    nz = (getattr(npc, "metadata", {}) or {}).get("zone")
+    return nz == zone_name if zone_name else not nz
+
+
 def _dist(a, b) -> int:
     return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
 
@@ -41,11 +50,6 @@ def _dist(a, b) -> int:
 def _toward(frm, to):
     return ((to[0] > frm[0]) - (to[0] < frm[0]),
             (to[1] > frm[1]) - (to[1] < frm[1]))
-
-
-def _away(frm, to):
-    return ((frm[0] > to[0]) - (frm[0] < to[0]),
-            (frm[1] > to[1]) - (frm[1] < to[1]))
 
 
 def _healing_item(char):
@@ -116,11 +120,13 @@ class AgentController:
     # ---- perception --------------------------------------------
 
     def _foes_in_sight(self, engine, char):
+        zone = nav.active_zone(engine)
+        zname = getattr(zone, "name", None) if zone is not None else None
         out = []
         for npc in engine.npc_manager.npcs.values():
             if npc.id == char.id or not npc.is_active():
                 continue
-            if not _is_hostile(npc):
+            if not _is_hostile(npc) or not _colocated(zname, npc):
                 continue
             d = _dist(char.position, npc.position)
             if d <= SIGHT:
@@ -153,14 +159,19 @@ class AgentController:
         return best
 
     def _friendly_near(self, engine, char, r: int = 7):
-        """The nearest living, non-hostile, non-player soul — someone to
-        talk to, take a quest from, or recruit."""
+        """The nearest living, non-hostile, non-player soul ON OUR GRID —
+        someone to talk to, take a quest from, or recruit (no chatting
+        with folk sealed behind a building's walls)."""
+        zone = nav.active_zone(engine)
+        zname = getattr(zone, "name", None) if zone is not None else None
         best, bd = None, r + 1
         for npc in engine.npc_manager.npcs.values():
             if npc.id == char.id or not npc.is_active():
                 continue
             if _is_hostile(npc) or (getattr(npc, "metadata", {})
                                     or {}).get("player_char"):
+                continue
+            if not _colocated(zname, npc):
                 continue
             d = _dist(char.position, npc.position)
             if d < bd:
@@ -256,6 +267,32 @@ class AgentController:
         return (max(0, min(w.width - 1, x + self.rng.randint(-r, r))),
                 max(0, min(w.height - 1, y + self.rng.randint(-r, r))))
 
+    # ---- movement safety (delegated to agent_nav) ---------------
+
+    def _walkable(self, engine, char, pos) -> bool:
+        return nav.walkable(engine, char, pos)
+
+    def _flee_step(self, engine, char, threat_pos):
+        return nav.flee_step(engine, char, threat_pos)
+
+    def _zone_plan(self, engine, char, zone):
+        """Inside a building or dungeon. A BUILDING: make for the door and
+        step back outside, so the away-hero resumes its life rather than
+        freezing on unreachable overworld goals. A DUNGEON: prowl the
+        walkable floor. Always a reachable step — never a frozen hero."""
+        if getattr(engine, "current_interior", None) is not None:
+            door = getattr(zone, "door", None) or \
+                getattr(zone, "exit_pos", None)
+            if door is None or tuple(char.position) == tuple(door):
+                return ("exit_building",)
+            step = nav.safe_step(engine, char, tuple(door))
+            return ("move", step) if step != (0, 0) else ("exit_building",)
+        if self.goal is None or tuple(char.position) == tuple(self.goal) \
+                or not nav.walkable(engine, char, self.goal):
+            self.goal = nav.zone_roam(engine, char, zone, self.rng)
+        step = nav.safe_step(engine, char, self.goal)
+        return ("move", step) if step != (0, 0) else ("wait",)
+
     # ---- policy (decide, no side effects) -----------------------
 
     def decide(self, engine, char):
@@ -276,11 +313,16 @@ class AgentController:
             if _knows_heal(char):
                 return ("heal_spell",)
             if foes:
-                return ("flee", _away(char.position, foes[0][0].position))
+                step = self._flee_step(engine, char, foes[0][0].position)
+                if step is not None:
+                    return ("flee", step)
+                # cornered with no heals — fall through and fight for it
 
         # 2. don't stand and trade blows when swarmed in melee
         if len(adj) >= 2 and hp < SWARM_HP:
-            return ("flee", _away(char.position, adj[0].position))
+            step = self._flee_step(engine, char, adj[0].position)
+            if step is not None:
+                return ("flee", step)
 
         # a CAUTIOUS hero avoids a fight it hasn't been forced into
         avoid = disp == "cautious"
@@ -290,17 +332,26 @@ class AgentController:
         if target is not None:
             d = _dist(char.position, target.position)
             if avoid and d > 1:          # a cautious hero keeps its distance
-                return ("flee", _away(char.position, target.position))
+                step = self._flee_step(engine, char, target.position)
+                if step is not None:
+                    return ("flee", step)
+                # backed into a corner — a cautious hero still defends itself
             if d <= 1:
                 return ("attack", target)
             if _can_shoot(char) and d <= RANGED:
                 return ("shoot", target)
             self.goal = target.position
-            return ("move", _toward(char.position, target.position))
+            return ("move", nav.safe_step(engine, char, target.position))
 
         # grab loot right at our feet before wandering off to socialize
         if self._nearest_loot(engine, char, r=0) == tuple(char.position):
             return ("loot",)
+
+        # inside a building/dungeon: leave or prowl, never freeze on an
+        # unreachable overworld goal
+        zone = nav.active_zone(engine)
+        if zone is not None:
+            return self._zone_plan(engine, char, zone)
 
         # 4. a life among people — talk, take quests, gather a party
         social = self._social_plan(engine, char, disp)
@@ -311,14 +362,14 @@ class AgentController:
         if disp != "explorer":
             qgoal = self._quest_goal(engine, char)
             if qgoal is not None and tuple(char.position) != tuple(qgoal):
-                return ("move", _toward(char.position, qgoal))
+                return ("move", nav.safe_step(engine, char, qgoal))
 
         # 6. grab loot off the ground (a GREEDY hero looks wider)
         loot = self._nearest_loot(engine, char, r=8 if disp == "greedy" else 5)
         if loot is not None:
             if loot == tuple(char.position):
                 return ("loot",)
-            return ("move", _toward(char.position, loot))
+            return ("move", nav.safe_step(engine, char, loot))
 
         # 7. explore toward a class-flavoured place (mark it visited on arrival)
         if self.goal is None or char.position == self.goal:
@@ -327,7 +378,7 @@ class AgentController:
                 self.goal_name = None
             self.goal = self._named_goal(engine, char) \
                 or self._pick_goal(engine, char)
-        step = _toward(char.position, self.goal)
+        step = nav.safe_step(engine, char, self.goal)
         return ("move", step) if step != (0, 0) else ("wait",)
 
     def _social_plan(self, engine, char, disp):
@@ -404,6 +455,13 @@ class AgentController:
                     if npc.id in engine.companion_manager.party:
                         self._deed(engine, char,
                                    f"recruited {npc.name} to the party.")
+                except Exception:
+                    pass
+            elif k == "exit_building":
+                try:
+                    engine.exit_building()
+                    self.goal = None
+                    self._deed(engine, char, "stepped back outside.")
                 except Exception:
                     pass
             elif k in ("move", "flee"):

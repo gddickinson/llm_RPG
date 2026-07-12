@@ -134,6 +134,42 @@ class TestDisposition(_Base):
         self.assertIn(plan[0], ("move", "wait"))
 
 
+class TestFleeSafety(_Base):
+    """The away-hero must never freeze fleeing into a wall (2026-07-12):
+    a blocked escape is sidestepped; a true corner is fought."""
+
+    def _wall(self, x, y):
+        self.engine.world.map.terrain[y][x] = TerrainType.MOUNTAIN
+
+    def test_flee_sidesteps_a_blocked_escape(self):
+        from engine.agent_controller import _dist
+        # threat east; the straight-away (west) tiles are walled off
+        for yy in (9, 10, 11):
+            self._wall(9, yy)
+        step = self.ac._flee_step(self.engine, self.p, (12, 10))
+        self.assertIsNotNone(step)               # it does NOT freeze
+        nx, ny = self.p.position[0] + step[0], self.p.position[1] + step[1]
+        self.assertTrue(self.ac._walkable(self.engine, self.p, (nx, ny)))
+        # and the sidestep never moves toward the threat
+        self.assertGreaterEqual(_dist((nx, ny), (12, 10)),
+                                _dist(self.p.position, (12, 10)))
+
+    def test_a_cornered_hero_turns_and_fights(self):
+        # boxed in on every side, low HP, no heals: rather than 'flee'
+        # uselessly into stone forever, the hero attacks the adjacent foe
+        self.p.hp = 2
+        self.p.inventory = []                    # no healing draught
+        foe = build_monster("wolf", (11, 10))
+        self.engine.npc_manager.add_npc(foe)
+        self.engine.world.map.place_character(foe, 11, 10)
+        for (x, y) in [(9, 9), (10, 9), (11, 9), (9, 10),
+                       (9, 11), (10, 11), (11, 11)]:
+            self._wall(x, y)
+        self.assertIsNone(self.ac._flee_step(self.engine, self.p, (11, 10)))
+        plan = self.ac.decide(self.engine, self.p)
+        self.assertEqual(plan[0], "attack")
+
+
 class TestDeedTrail(_Base):
     def test_the_goal_is_visible_to_the_player(self):
         self.ac.take_turn(self.engine, self.p)
@@ -144,6 +180,73 @@ class TestDeedTrail(_Base):
         self.ac.take_turn(self.engine, self.p)
         if "ksana" in self.engine.companion_manager.party:
             self.assertIn("recruited", _recent(self.engine))
+
+
+class TestColocation(unittest.TestCase):
+    """A hero only perceives what shares its grid (2026-07-12b) — the
+    fix for shooting a phantom overworld foe through a tavern wall."""
+
+    def _npc(self, zone):
+        n = build_monster("wolf", (0, 0))
+        n.metadata = {"zone": zone} if zone else {}
+        return n
+
+    def test_overworld_ignores_the_underground(self):
+        from engine.agent_controller import _colocated
+        self.assertTrue(_colocated(None, self._npc(None)))
+        self.assertFalse(_colocated(None, self._npc("Deep Crypt")))
+
+    def test_a_zone_sees_only_its_own_natives(self):
+        from engine.agent_controller import _colocated
+        self.assertTrue(_colocated("Deep Crypt", self._npc("Deep Crypt")))
+        self.assertFalse(_colocated("Deep Crypt", self._npc(None)))
+        self.assertFalse(_colocated("Deep Crypt", self._npc("Tavern")))
+
+
+class TestInteriorNoFreeze(unittest.TestCase):
+    """Entering a building must not freeze the away-hero (2026-07-12b):
+    inside, it heads for the door and steps back out to its life."""
+
+    def setUp(self):
+        self.engine = GameEngine(llm_provider="heuristic",
+                                 enable_npc_processes=False)
+        self.engine.start_game()
+        self.engine.world.time = 12 * 60
+        self.p = self.engine.player
+        self.ac = AgentController()
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def _enter_a_building(self):
+        loc = next((l for l in self.engine.world.locations
+                    if l.name in self.engine.interiors), None)
+        self.assertIsNotNone(loc, "demo world needs an enterable building")
+        wmap = self.engine.world.map
+        wmap.remove_character(self.p)
+        self.p.position = (loc.x + loc.width // 2, loc.y + loc.height - 1)
+        wmap.place_character(self.p, *self.p.position)
+        self.engine.enter_building(loc, via_breach=True)
+        return loc
+
+    def test_away_hero_does_not_freeze_indoors(self):
+        self._enter_a_building()
+        self.assertIsNotNone(self.engine.active_zone(),
+                             "should be inside the building")
+        self.engine.roster.set_away(self.p, True)
+        seen = set()
+        exited = False
+        for _ in range(25):
+            self.ac.take_turn(self.engine, self.p)
+            seen.add(tuple(self.p.position))
+            if self.engine.active_zone() is None:
+                exited = True
+                break
+        # walked its rooms or stepped back outside — never frozen in place
+        self.assertTrue(exited or len(seen) > 1, "away-hero froze indoors")
 
 
 if __name__ == "__main__":

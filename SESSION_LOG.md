@@ -5778,3 +5778,40 @@ disposition bends the choice the right way — plus the goal made visible on
 metadata and a recruit written to the record. Remainder M.5b: a proper
 "while you were away" digest, finer tuning per disposition, and letting the
 hero use the wider systems — the bank, the forge, the shrines, a home.
+
+## 2026-07-12 (cont.) — Watching the away-hero: three freezes hunted down
+
+Playing the autoplay window live (George watching), the hero kept seizing
+up. Three distinct freezes, all now fixed, all under test:
+
+1. **Fleeing into a wall.** A low-HP hero with no heals flees the nearest
+   threat — but the flee was one fixed diagonal, and if that tile was a
+   wall or the map edge the move was silently refused and the hero spun in
+   place, taking hits forever (exactly George's "he doesn't do anything").
+   `flee_step` now tries every neighbour and takes the one that opens the
+   most distance; a truly cornered hero (no walkable escape) turns and
+   FIGHTS instead of miming a blocked flee.
+
+2. **Chasing an unreachable goal inside a building.** Indoors the hero
+   still aimed at overworld goals it could never walk to, so every step was
+   blocked. Movement is now walkability-checked end to end (`safe_step`
+   routes around walls toward the goal), and inside a building the hero
+   makes for the door and steps back outside (`_zone_plan` → the new
+   `exit_building` verb) to resume its life on the street.
+
+3. **Shooting a phantom through the wall.** The clincher: inside the
+   tavern the hero locked onto a hostile standing at its *overworld*
+   coordinates — 2 tiles away in overworld-space read as 2 tiles away in
+   zone-space — and "shot" it every turn, a shot that could never land
+   across the two grids. `_colocated` now gates perception (foes AND
+   friends) to the hero's own grid, mirroring the targeting system's
+   zone-membership rule: a foe underground or behind stone simply isn't
+   there.
+
+The movement-safety layer was pulled into a new `engine/agent_nav.py`
+(walkable / flee_step / safe_step / zone_roam — pure, zone-aware) to keep
+`agent_controller.py` under the 500-line line. Confirmed live: the hero
+now wanders Oakvale, greets Karim/Goren/Melody/Durgan, takes up their
+quests (16 `[Away]` beats in 150 turns), enters the tavern and walks back
+out — never frozen. 5 new tests (flee sidesteps / cornered fights / grid
+co-location / no-freeze-indoors), full suite green.

@@ -3394,9 +3394,19 @@ last. Networking was previously deferred — this supersedes that.
   Brenna", "took up 'A Small Favour'", "recruited Ksana"), and its current
   aim rides `char.metadata["agent_goal"]`. Also fixed the dry-fire bug
   George caught (empty quiver → close to melee). 11 living-agent tests + 3
-  ammo tests. Remainder M.5b: a "while you were away" digest screen, finer
-  per-disposition tuning, and the agent using the wider systems (bank,
-  craft, pray, home).
+  ammo tests.
+  **Freeze-proofing (2026-07-12b, watching live):** three distinct freezes
+  hunted down and fixed — (1) a hero fleeing into a wall spun in place
+  forever; `agent_nav.flee_step` now sidesteps to a walkable escape or,
+  cornered, turns and fights; (2) inside a building it chased unreachable
+  overworld goals; movement is now walkability-checked (`safe_step`) and it
+  makes for the door and steps back out (`_zone_plan`/`exit_building`);
+  (3) it "shot" a phantom foe seen at its overworld coordinates through an
+  interior wall; `_colocated` now gates perception to the hero's own grid.
+  New `engine/agent_nav.py` holds the movement-safety layer (keeps
+  agent_controller under 500). +5 tests. Remainder M.5b: a "while you were
+  away" digest screen, finer per-disposition tuning, and the agent using
+  the wider systems (bank, craft, pray, home).
 
 ## What NOT to build (explicitly deferred)
 
