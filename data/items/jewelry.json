@@ -128,5 +128,16 @@
       "armor": 2,
       "charisma": 2
     }
+  },
+  "teleport_ring": {
+    "id": "teleport_ring",
+    "name": "Wayfarer's Ring",
+    "item_type": "ring",
+    "value": 60,
+    "rarity": "common",
+    "description": "A plain brass band of the Wayfarers' Conclave — attune to a rune-circle platform and it carries you between the towns.",
+    "metadata": {
+      "teleport_access": true
+    }
   }
 }

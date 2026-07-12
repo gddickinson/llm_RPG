@@ -60,6 +60,9 @@ def create_default_player(spec=None) -> Character:
         starters = starter_ids
         gold = 50
 
+    # P28.1a — every hero starts with a Wayfarer's Ring for the waystones
+    starters = list(starters) + ["teleport_ring"]
+
     # Build inventory from item ids
     inventory = []
     for item_id in starters:

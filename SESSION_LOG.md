@@ -6319,3 +6319,20 @@ still can't out-regen a real threat, and neglect (hunger/thirst/infection)
 stalls it. Pairs with M.8a's rest and the potion/Heal path. 12 tests. Chosen as
 the P27.2 round deliberately away from the Phase 31 worldgen work the cloud
 /ultraplan session is building, to avoid a merge clash.
+
+## 2026-07-12 (cont.) — P28.1a: the Wayfarers' teleport platform network
+
+George's transport request, first piece: a public magical transit. `engine/
+teleport_network.py` `TeleportNetwork` plants a rune-circle WAYSTONE (a
+`Location` with a `waystone` property) beside each town at world start
+(`data/teleport_network.json` — Oakvale / Riverside / Stonepine), and a common
+Wayfarer's RING (`teleport_ring`, `metadata.teleport_access`, in
+`data/items/jewelry.json`) that EVERY hero now starts with. Stand on a waystone
+holding a ring and `teleport(dest_id)` steps you to any other waystone, landing
+on safe walkable ground beside it (its own `_safe_landing`). `has_ring` checks
+both the bag and worn slots (the ring auto-equips into the ring slot).
+Registered in `engine_setup` (seeded, gated with the guild halls so the general
+suite isn't perturbed) + `save_load` (the platform index persists). Recasts
+travel as PLACE-to-PLACE, distinct from the diary-gated `TravelSystem`. 9 tests.
+Remainder: the player-facing hook (a waystone menu / recast the U-key screen)
+and P28.1b arrival-collision diversion + P28.1c network-gated new regions.

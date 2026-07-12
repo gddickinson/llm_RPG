@@ -3722,7 +3722,7 @@ kind. Builds on `engine/travel.py` (teleports) and `engine/mount.py` (the
 P15.8b pack mule).
 
 ### P28.1 — Teleport platforms as PLACES (a public magical transit network)
-- [ ] **P28.1a Platforms & rings.** A teleport PLATFORM (a rune circle /
+- [~] **P28.1a Platforms & rings.** A teleport PLATFORM (a rune circle /
   waystone) is a physical `Location` seeded in each city/town/village —
   where folk safely teleport to and from. Using the network needs a
   teleport ITEM (a ring / bracelet / amulet), COMMON and provided by a
@@ -3732,6 +3732,16 @@ P15.8b pack mule).
   as place-to-place instead of anywhere-to-a-town-centre. Data:
   `data/teleport_network.json` (platforms + which settlements have them);
   the ring is a normal `data/items` entry with a `teleport_access` flag.
+  *Engine done:* `engine/teleport_network.py` `TeleportNetwork` seeds a
+  `waystone` `Location` beside each settlement (`seed`), `has_ring` (bag OR
+  worn — the ring auto-equips), `platform_at`/`destinations`/`teleport` (stand
+  on a waystone + hold a ring → step to another, safe landing). Data:
+  `data/teleport_network.json` + `teleport_ring` (Wayfarer's Ring,
+  `metadata.teleport_access`) in `data/items/jewelry.json`; every hero starts
+  with one. Registered in `engine_setup` + `save_load` (persists). Gated with
+  the guild halls in the general suite. `tests/test_teleport_network.py` (9).
+  *Remainder:* the player-facing HOOK (a waystone-standing menu / recast the
+  U-key travel screen to the network).
 - [ ] **P28.1b Arrival collision → safe space.** If a platform is occupied
   (several arriving at once, or an NPC standing on it), the arrival is
   diverted to a CLOSE, SAFE tile beside it — reuse `_safe_landing`, extended
