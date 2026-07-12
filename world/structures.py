@@ -69,8 +69,9 @@ class StructureBuilder:
             if not levels:
                 continue
             self._link(levels, spec.get("levels", []))
-            levels[0].ground = True
-            self.engine.interiors[loc.name] = levels[0]
+            gi = self._ground_index(spec.get("levels", []))
+            levels[gi].ground = True
+            self.engine.interiors[loc.name] = levels[gi]
             self._history_inscriptions(levels)
             self._sweep_footprint_loot(loc, levels, sid)
             self._authored_loot(levels, spec.get("levels", []), sid)
@@ -120,7 +121,10 @@ class StructureBuilder:
                 swept += [i for i in items if hasattr(i, "id")]
         if not swept:
             return
-        deepest = levels[-1]
+        # the DEEPEST chest — by floor when floors are used, else the last
+        deepest = min(levels, key=lambda z: z.floor) \
+            if all(getattr(z, "floor", None) is not None for z in levels) \
+            else levels[-1]
         chest = next((f for f in deepest.furniture
                       if f["name"] == "Chest"), None)
         if chest is None:
@@ -205,6 +209,7 @@ class StructureBuilder:
         inter.spawns = list(spec.get("monsters", []))
         inter.occupants = list(spec.get("occupants", []))   # P18.2 residents
         inter.puzzle = spec.get("puzzle")
+        inter.floor = spec.get("floor")                     # P18.3 elevation
         return inter
 
     # --------------------------------------------------------- puzzles
@@ -248,6 +253,18 @@ class StructureBuilder:
         return msg
 
     def _link(self, levels, specs) -> None:
+        floors = [s.get("floor") for s in specs]
+        if all(f is not None for f in floors):
+            # Link by ELEVATION (P18.3): a mid-stack ground level can then
+            # carry BOTH storeys above (apartments, battlements) AND a
+            # cellar/dungeon below — the linear chain couldn't branch.
+            order = sorted(range(len(levels)), key=lambda i: floors[i])
+            for a, b in zip(order, order[1:]):
+                lower, upper = levels[a], levels[b]
+                lower.level_above = upper
+                upper.level_below = lower
+            return
+        # Legacy linear chain by each level's `position` (above/below).
         for i in range(1, len(levels)):
             prev, cur = levels[i - 1], levels[i]
             if specs[i].get("position", "below") == "above":
@@ -256,6 +273,15 @@ class StructureBuilder:
             else:
                 prev.level_below = cur
                 cur.level_above = prev
+
+    @staticmethod
+    def _ground_index(specs) -> int:
+        """Which level you enter from the overworld — the `floor: 0` (or
+        `ground: true`) level if named, else the first (legacy)."""
+        for i, s in enumerate(specs):
+            if s.get("floor") == 0 or s.get("ground"):
+                return i
+        return 0
 
     # -------------------------------------------------------- populate
 

@@ -4595,3 +4595,40 @@ full court, the King talkable at his post, no duplicate court on
 re-entry, and the crypt still holds its dead). Suite 1781, green.
 Schedules that move residents about within the castle are a noted later
 refinement — for now they hold their places.
+
+---
+
+## P18.3 Battlements & towers — the keep climbs, the dungeon deepens
+
+The castle had a great hall you could descend from into its dungeons, but
+you couldn't go UP — no royal apartments, no battlements. The blocker was
+structural: the P9.1 level stack was strictly LINEAR (each level linked
+to its list-neighbour), so the ground level could branch up OR down, but
+never both.
+
+Fixed with ELEVATION linking. Each level may now carry a `floor` int;
+when every level has one, `StructureBuilder._link` links adjacent floors
+by height (so floor 0 gets floor +1 above AND floor −1 below), and
+`_ground_index` makes the `floor: 0` level the entry. It's fully
+backward-compatible — a structure with no `floor` fields keeps the old
+linear `position` chain entered at `levels[0]`, so the Ruined Keep and
+the rest are untouched.
+
+Bloodstone Castle grew from five floors to SEVEN, and the great hall now
+sits in the MIDDLE of the stack. Climbing: the Royal Apartments (floor
++1 — the solar, royal bedchambers, courtiers' quarters, and the library
+where "a king who reads is a king who rules"), then the Battlements
+(floor +2 — the crenellated wall-walk between the towers, archer posts at
+the arrow-loops, and the motto that the Bloodstone Guard has turned back
+seven sieges). Descending, as before: Undercroft (−1), Barracks (−2),
+Dungeons (−3), the Royal Crypt (−4). The hall gained an up-stair to reach
+it all, and `_sweep_footprint_loot` now finds the deepest chest by floor
+rather than list order.
+
+4 new tests (seven floors with the right range, the hall branches two up
+and four down, the battlements are the roofless top with a way back
+down). Suite 1783, green. Remainder P18.3b: the OVERWORLD footprint — a
+curtain-wall + gatehouse block the worldgen plants so the castle reads as
+a fortress from the map — is deferred to the placement rounds (P18.4 town
+/ P18.5 menu start), since a fortress blueprint is dead code until the
+castle is actually put in a world.

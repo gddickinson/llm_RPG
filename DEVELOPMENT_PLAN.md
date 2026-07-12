@@ -3375,11 +3375,29 @@ Sequenced into tested rounds:
   absent from the world, the hall seats the court, the King is talkable,
   no dup on re-entry, the crypt still holds its dead). Suite 1781, green.
   Schedules within the zone are a later refinement.)*
-- [ ] **P18.3 Battlements, towers & the gatehouse footprint.** The
+- [x] **P18.3 Battlements, towers & the gatehouse footprint.** The
   upward extension (royal apartments → wall-walk → tower tops with
   archer positions) as levels ABOVE the great hall, plus the overworld
   footprint — a curtain-wall + gatehouse building block the worldgen
   places so the castle reads as a fortress from the map.
+  *(Round — the upward extension is done: the P9.1 structure stack was
+  LINEAR (each level linked to one list-neighbour), so the ground could
+  go up OR down, never both. Added elevation linking — a `floor` int per
+  level; `StructureBuilder._link` links adjacent floors (so a mid-stack
+  ground can carry storeys above AND a cellar below) and `_ground_index`
+  makes the `floor: 0` level the entry (backward-compatible: no `floor`
+  → the legacy linear chain + `levels[0]`). The castle grew to SEVEN
+  floors: Battlements (+2, the crenellated wall-walk with archer posts
+  and the seven-sieges motto) → Royal Apartments (+1, solar, bedchambers,
+  courtiers' quarters, library) → Great Hall (0, entry — gained an
+  up-stair) → Undercroft (−1) → Barracks (−2) → Dungeons (−3) → Crypt
+  (−4). From the hall you now climb the keep to the battlements or
+  descend to the crypt. `_sweep_footprint_loot` picks the deepest by
+  floor. 4 tests (seven floors, floor range, hall branches up-2/down-4,
+  the battlements are the roofless top). Suite 1783, green. Remainder
+  P18.3b: the OVERWORLD footprint (curtain-wall + gatehouse block) is
+  deferred to the placement rounds (P18.4/P18.5) — a fortress blueprint
+  is dead code until the castle is actually planted in a world.)*
 - [ ] **P18.4 The castle town & supply villages.** A populated town at
   the gate (market, inn, temple, craftsmen) and a ring of farming
   villages whose P16 production feeds the castle larder — a real

@@ -14,14 +14,18 @@ from world.structures import STRUCTURES, StructureBuilder
 
 
 class TestCastleData(unittest.TestCase):
-    def test_the_castle_is_a_five_level_stack(self):
+    def test_the_castle_is_a_seven_floor_fortress(self):
         castle = STRUCTURES.get("bloodstone_castle")
         self.assertIsNotNone(castle, "the castle ships in structures.json")
         self.assertEqual(castle["attach_to"], "Bloodstone Castle")
-        self.assertEqual(len(castle["levels"]), 5)
+        self.assertEqual(len(castle["levels"]), 7)
         names = [lv["name"] for lv in castle["levels"]]
+        self.assertTrue(any("Battlements" in n for n in names))
         self.assertTrue(any("Great Hall" in n for n in names))
         self.assertTrue(any("Crypt" in n for n in names))
+        # floors run +2 (battlements) down to -4 (crypt), one ground floor
+        floors = sorted(lv["floor"] for lv in castle["levels"])
+        self.assertEqual(floors, [-4, -3, -2, -1, 0, 1, 2])
 
     def test_the_grids_are_rectangular_and_walled(self):
         for lv in STRUCTURES["bloodstone_castle"]["levels"]:
@@ -91,6 +95,36 @@ class TestCastleBuilds(unittest.TestCase):
                  self.builder.chest_contents.get(key, [])]
         self.assertTrue(any("Crown of Bloodstone" in n for n in names),
                         "the legendary crown is the crypt's prize")
+
+    def test_from_the_hall_you_climb_the_keep_and_descend_the_dungeon(self):
+        # P18.3 floor-based linking: the ground (great hall) branches BOTH
+        # up (apartments -> battlements) and down (undercroft -> ... crypt)
+        self.builder.build()
+        hall = self.engine.interiors["Bloodstone Castle"]
+        self.assertEqual(hall.floor, 0, "you enter at ground level")
+        up = []
+        z = hall
+        while getattr(z, "level_above", None) is not None:
+            z = z.level_above
+            up.append(z.name)
+        self.assertEqual(len(up), 2, "two storeys above the hall")
+        self.assertIn("Battlements", up[-1])
+        down = []
+        z = hall
+        while getattr(z, "level_below", None) is not None:
+            z = z.level_below
+            down.append(z.name)
+        self.assertEqual(len(down), 4, "four floors of depth below")
+        self.assertIn("Crypt", down[-1])
+
+    def test_the_battlements_are_the_top_with_archer_ground(self):
+        self.builder.build()
+        z = self.engine.interiors["Bloodstone Castle"]
+        while getattr(z, "level_above", None) is not None:
+            z = z.level_above
+        self.assertIn("Battlements", z.name)
+        self.assertIsNone(z.level_above, "nothing above the wall-walk")
+        self.assertIsNotNone(z.stairs_down, "you can climb back down")
 
 
 if __name__ == "__main__":
