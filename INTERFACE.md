@@ -162,6 +162,7 @@ llm_RPG/
 - **`biome.py`** — `Biome` enum and biome→terrain mapping.
 - **`calendar.py`** — `Date`, `Season`; 12-month calendar, day-night clock, season tints.
 - **`world_generator.py`** — `WorldGenerator`; procedural world. Two settlements (Oakvale + Riverside Hamlet) connected by road on 60×40+ maps.
+- **`building_types.py`** — P16.3 building-type catalog & room classification: `data/building_types.json` maps each building KIND → function + producer profession (P16.1's set) + marker furniture, plus settlement specializations. `profession_of_kind`/`is_workshop`/`classify_interior` (an anvil room IS a smithy). The P16.2 loop reads it so occupation follows the workplace building, not the character class.
 - **`interiors.py`** — Building interior mini-maps; multi-level stacks (P9A.5): tavern/inn bedroom lofts, shop/forge cellars, twinned stair tiles (`add_upper_floor`/`add_cellar`).
 - **`blueprints.py`** — Building footprint blueprints used by the world generator.
 - **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming); NPCs are region-scoped (each region caches its own cast; companions cross with the player).

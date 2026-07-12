@@ -80,12 +80,34 @@ class ProductionSystem:
             if meta.get("player_char"):
                 continue
             cls = getattr(npc.character_class, "value", "")
-            prof = pr.profession_for_skill(CLASS_TEACHES.get(cls, ""))
+            # occupation follows the WORKPLACE first (P16.3): a villager
+            # living in a farmhouse is a farmer, not a woodcutter-by-class
+            prof = (self._building_profession(npc)
+                    or pr.profession_for_skill(CLASS_TEACHES.get(cls, "")))
             if not prof:
                 continue
             s = self._nearest(settlements, npc.position)
             out[s.name].setdefault(prof, []).append(npc)
         return out
+
+    def _building_profession(self, npc) -> str:
+        """The trade an NPC's home building implies (P16.3): by its
+        blueprint kind, or by its furniture (an anvil room is a smithy)."""
+        home = getattr(npc, "home_location", "")
+        if not home:
+            return None
+        from world import building_types as bt
+        from world.blueprints import blueprint_for_location
+        bp = blueprint_for_location(home)
+        prof = bt.profession_of_kind(getattr(bp, "kind", "") if bp else "")
+        if prof:
+            return prof
+        inter = (getattr(self.engine, "interiors", {}) or {}).get(home)
+        if inter is not None:
+            kind = bt.classify_interior(inter)
+            if kind:
+                return bt.profession_of_kind(kind)
+        return None
 
     # ---- the daily step --------------------------------------------
 

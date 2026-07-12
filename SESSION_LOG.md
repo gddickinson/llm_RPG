@@ -3730,3 +3730,35 @@ of surplus between settlements and feeding it into shop stock (composing
 with P12.10 elastic prices); and the smith/ore chain stays dormant until a
 MINER profession has an NPC class to inhabit it (nothing teaches mining
 yet) — a hook for P16.3's settlement specialization.
+
+**Round 163 — P16.3 Building-type catalog + room classification.**
+The tie between the built environment and the economy. AW keys occupations
+off building TYPE and off the furniture a room holds; ported as data.
+`data/building_types.json` is a 24-kind catalogue — each building KIND maps
+to a FUNCTION, the producer PROFESSION that works there (a forge is a
+smith's smithy, a farmhouse a farmer's, a lodge a hunter's; civic/service
+buildings like shops and temples carry a null profession), and the MARKER
+furniture that identifies the room — plus three settlement SPECIALIZATIONS
+(mining → mine+smithy+warehouse, farming, coastal). `world/building_types.py`
+loads and queries it: `profession_of_kind`, `is_workshop`, and
+`classify_interior`, which reads a room's furniture so an anvil-bearing
+room IS a smithy and an altar room a temple — furniture → room-function →
+occupation, exactly the AW idea. The payoff lands in the P16.2 loop: an
+NPC's trade now follows their WORKPLACE building FIRST (`_building_profession`
+consults the home building's blueprint kind, then its furniture) and only
+falls back to their character class. That corrects a real miscategorisation
+the class-only mapping made — the Old Farmhouse is full of villagers, whom
+class-mapping called woodcutters, but they live in a FARMHOUSE and are now
+rightly FARMERS growing wheat; likewise the Hunter's Lodge staffs a hunter,
+the forge a smith, the Wizard's Tower an alchemist, whatever their classes
+say. A probe confirmed it across a fresh town's residents. Validator
+`_check_building_types` cross-references every catalogued profession
+against P16.1's producer set and every specialization against the
+catalogue. 10 tests: the catalogue queries, that every profession is a
+real producer, that specializations name real kinds, that an anvil room
+classifies as a smithy and an altar room a temple and a plain room as
+nothing, and that a real farmhouse villager comes out a farmer not a
+woodcutter. Suite 1561, green. REMAINDER (P16.3b): worldgen PLACING the new
+economic kinds (mine/bakery/sawmill/dock) and applying a settlement's
+specialization — the step that finally staffs a MINER and lights the
+dormant ore→bar→sword chain P16.2 left waiting.

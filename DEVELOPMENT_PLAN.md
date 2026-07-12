@@ -2193,7 +2193,7 @@ grid).
   dormant until a MINER profession has an NPC class to inhabit it — no
   class currently teaches mining — which P16.3 settlement
   specialization can supply.)*
-- [ ] **P16.3 Building-type catalog + room classification.** AW
+- [x] **P16.3 Building-type catalog + room classification.** AW
   `settlement_buildings.SPECIALIZATION_BUILDINGS` + `zones._classify_room`
   as data: ~40 typed buildings (dock/warehouse/mill/granary/
   smelter/sawmill/bakery/brewery/stable...) beyond our six, a
@@ -2201,6 +2201,24 @@ grid).
   warehouse"), and furniture→room-function so an anvil-bearing
   room IS a smithy whose owner works there. Ties P9A furniture to
   occupations.
+  *(Round 163: `data/building_types.json` — a 24-kind catalogue mapping
+  each building KIND → a FUNCTION, the producer PROFESSION that works
+  there (from P16.1's set, or null for civic/service), and the MARKER
+  furniture that identifies the room — plus three settlement
+  SPECIALIZATIONS (mining/farming/coastal). `world/building_types.py`
+  loads + queries it: `profession_of_kind`, `is_workshop`,
+  `classify_interior` (an anvil-bearing room → smithy, an altar room →
+  temple). Wired straight into the P16.2 loop: an NPC's trade now
+  follows their WORKPLACE building first (`_building_profession` — by
+  blueprint kind, else by furniture) and only falls back to their
+  character class — so the Old Farmhouse's villagers are FARMERS (were
+  woodcutters-by-class), the Hunter's Lodge a hunter, the forge a smith,
+  the Wizard's Tower an alchemist. Validator `_check_building_types`
+  cross-refs professions + specialization kinds; 10 tests. Suite 1561,
+  green. *(Remainder P16.3b: worldgen PLACING the new economic kinds
+  (mine/bakery/sawmill/dock) and applying a settlement's specialization
+  — which is what finally staffs a MINER and lights the dormant ore→bar→
+  sword chain from P16.2.)*)*
 - [ ] **P16.4 Resource nodes & regrowth.** AW resource tiles
   (ORE_VEIN/HERB_PATCH/BERRY_BUSH...) with `leaves_tile` +
   `forest_regrowth`: gathering becomes destructible-tile

@@ -40,6 +40,7 @@ def validate_all() -> List[str]:
     problems += _check_traversal()
     problems += check_battles()
     problems += _check_production()
+    problems += _check_building_types()
     return problems
 
 
@@ -307,6 +308,25 @@ def _check_production() -> List[str]:
                 ok = False
         if not ok:
             out.append(f"production raw {iid}: unknown source '{src}'")
+    return out
+
+
+def _check_building_types() -> List[str]:
+    """building_types.json (P16.3): every profession is a real producer
+    profession, and every specialization lists catalogued kinds."""
+    from world.building_types import TYPES, SPECIALIZATIONS
+    from engine.production import PROFESSIONS
+    out = []
+    for kind, spec in TYPES.items():
+        prof = spec.get("profession")
+        if prof is not None and prof not in PROFESSIONS:
+            out.append(f"building_types {kind}: unknown profession '{prof}'")
+        if "function" not in spec:
+            out.append(f"building_types {kind}: missing function")
+    for spec_name, kinds in SPECIALIZATIONS.items():
+        for k in kinds:
+            if k not in TYPES:
+                out.append(f"specialization {spec_name}: unknown kind '{k}'")
     return out
 
 
