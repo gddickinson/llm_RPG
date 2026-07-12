@@ -4420,3 +4420,48 @@ an adjacent foe but whiffs with nothing in reach; and the screen glue
 (E drops in, the camera-lock render runs, ESC releases then exits).
 Suite 1739, green. With this, the only P17 item left is P17.8 fold-back
 (battle_resolve into the off-screen faction battles).
+
+---
+
+## Round 146 — P17.8 fold-back, part 1: faction raids fight for real
+
+The battle system has been a testbed the player visits. P17.8 begins
+folding it BACK into the living world — starting with the off-screen
+faction skirmishes the world already runs every game-day, which until now
+were a single d10 roll: `if brigand_strength + 3d > guard_strength + 3d:
+raid succeeds`. A gang of horse thieves and a spear-armed watch resolved
+identically to two blobs of numbers.
+
+`engine/faction_battle.py` is the bridge. `army_for(faction, strength)`
+dresses a faction's abstract 0-100 STRENGTH as a real little army for the
+P17.1 Lanchester resolver: the body count scales with strength, split
+across troop types by shares in `data/battles/faction_armies.json` — the
+guards field a spear-and-sword line with a few bows, brigands a mounted
+rabble, monsters a beast warband. `resolve_raid(atk, atk_str, def,
+def_str, rng)` builds both armies, fights them with the real `resolve()`
+(RPS matchups, the cavalry charge, anti-cavalry spears, terrain, morale,
+medics — everything the grid sim's abstract cousin already models), and
+reads back the winner faction plus each side's survivor RATIO.
+
+`faction_ticker._brigand_raid` and `_guard_patrol` now settle through it.
+The winner is the actual battle outcome — so a brigand horse-rush can
+genuinely founder on the guards' spear hedge instead of winning on a lucky
+die — and the strength a faction sheds scales with how badly it was
+mauled (`_casualty_hit` = the fraction of the army lost, 1-10, then the
+existing `_clamp` keeps it in [5, 100]). A beaten raider band bleeds
+strength in proportion to the beating; a pyrrhic win costs the victor too.
+
+The content-as-data rule holds: rosters are JSON, and the battle
+validator gained `_check_faction_armies` to catch a roster naming a troop
+type that doesn't exist or a non-positive share. The existing ticker test
+(lopsided strength → predictable winner) still passes — an army built
+from strength 90 crushes one built from 10 no matter the seed.
+
+11 tests in `tests/test_faction_battle.py`: army scaling, roster
+character (guards have bows, brigands have horse), unknown-faction
+fallback, a spent faction still fielding a token force; the stronger side
+wins, ratios stay in [0,1], the winner is mauled less than the loser, and
+it's deterministic per seed; plus the ticker fold-back both ways and the
+bounded casualty hit. Suite 1750, green. Remainder P17.8b: retaliation's
+bounty-hunter clash, commander orders reaching overworld `[Clash]`
+events, and an overworld castle assault reusing the siege field.

@@ -58,17 +58,29 @@ class FactionTicker:
     def _roll(self) -> int:
         return self.rng.randint(1, 10)
 
+    @staticmethod
+    def _casualty_hit(ratio: float) -> int:
+        """Strength shed ~= the share of the army lost in the fight,
+        bounded so one skirmish can't gut a faction (P17.8)."""
+        return min(10, max(1, int(round((1.0 - ratio) * 12))))
+
     def _brigand_raid(self) -> List[str]:
-        force = self.state["brigands"]["strength"]
-        defense = self.state["guards"]["strength"]
-        atk, dfn = self._roll(), self._roll()
-        if force + atk * 3 > defense + dfn * 3:
+        # P17.8: the real Lanchester resolver settles it, not a die —
+        # a brigand mounted rush can founder on the guards' spear line.
+        from engine.faction_battle import resolve_raid
+        res = resolve_raid("brigands", self.state["brigands"]["strength"],
+                           "guards", self.state["guards"]["strength"],
+                           self.rng)
+        if res["winner"] == "brigands":
             self.state["villagers"]["stores"] -= 8
             self.state["brigands"]["stores"] += 8
-            self.state["brigands"]["strength"] += 3
+            self.state["brigands"]["strength"] += 2
+            self.state["guards"]["strength"] -= \
+                self._casualty_hit(res["def_ratio"])
             return ["Brigands raided an outlying farmstead and got away "
                     "with the stores."]
-        self.state["brigands"]["strength"] -= 6
+        self.state["brigands"]["strength"] -= \
+            self._casualty_hit(res["atk_ratio"])
         self.state["guards"]["strength"] += 2
         self._spawn_raider()
         return ["The guard repelled a brigand raid on the farmsteads."]
@@ -107,11 +119,18 @@ class FactionTicker:
         return False
 
     def _guard_patrol(self) -> List[str]:
-        if self._roll() + self.state["guards"]["strength"] // 10 >= 8:
-            self.state["brigands"]["strength"] -= 5
+        # P17.8: the patrol falls on a brigand camp — resolve the clash.
+        from engine.faction_battle import resolve_raid
+        res = resolve_raid("guards", self.state["guards"]["strength"],
+                           "brigands", self.state["brigands"]["strength"],
+                           self.rng)
+        if res["winner"] == "guards":
+            self.state["brigands"]["strength"] -= \
+                self._casualty_hit(res["def_ratio"])
             return ["A guard patrol broke up a brigand camp on the "
                     "east road."]
-        self.state["guards"]["strength"] -= 2
+        self.state["guards"]["strength"] -= \
+            self._casualty_hit(res["atk_ratio"])
         return ["A guard patrol returned empty-handed and footsore."]
 
     def _trade_caravan(self) -> List[str]:

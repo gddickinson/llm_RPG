@@ -38,6 +38,28 @@ def check_battles() -> List[str]:
         if not (0.0 <= cov <= 1.0):
             out.append(f"battle terrain {kind}: cover {cov} not in 0..1")
     out += _check_scenarios(set(UNITS), set(TERRAIN_COVER))
+    out += _check_faction_armies(set(UNITS))
+    return out
+
+
+def _check_faction_armies(unit_types: set) -> List[str]:
+    """P17.8 faction_armies.json: every roster's troop types are real
+    archetypes and shares are positive."""
+    from engine.battle.battle_data import _load
+    out = []
+    rosters = _load("faction_armies.json").get("rosters", {})
+    for fac, roster in rosters.items():
+        for entry in roster:
+            if (not isinstance(entry, list) or len(entry) != 2):
+                out.append(f"faction army {fac}: entry {entry} "
+                           "must be [unit_type, share]")
+                continue
+            utype, share = entry
+            if utype not in unit_types:
+                out.append(f"faction army {fac}: unknown unit '{utype}'")
+            if not (isinstance(share, (int, float)) and share > 0):
+                out.append(f"faction army {fac}: share for {utype} "
+                           "must be > 0")
     return out
 
 

@@ -2613,6 +2613,26 @@ is shippable and testable, de-risking UI last:
   dice in faction_ticker/retaliation off-screen battles; commander
   orders extend to overworld `[Clash]` events; a castle assault in
   the overworld reuses the siege field. Playtest, then Phase 18.
+  *(Round 146 — part 1 (faction raids) done: `engine/faction_battle.py`
+  bridges the abstract faction layer to the P17.1 Lanchester resolver.
+  `army_for(faction, strength)` dresses a faction's 0-100 STRENGTH as a
+  real little Army — body count scales with strength, split across troop
+  types by shares in `data/battles/faction_armies.json` (guards field
+  spears+swords+bows, brigands a mounted rabble, monsters beasts);
+  `resolve_raid(atk, atk_str, def, def_str, rng)` fights it with
+  `resolve()` and reads back the winner + both sides' survivor RATIOS.
+  `faction_ticker._brigand_raid`/`_guard_patrol` now settle the clash
+  through it instead of a d10 — the winner is the real battle outcome
+  and the strength shed scales with the mauling (`_casualty_hit` = the
+  share of the army lost, 1-10, clamped). So a brigand horse-rush can
+  founder on the guards' spears, and a beaten side bleeds strength in
+  proportion. Validator gained a `_check_faction_armies` referential
+  check. 11 tests (army scaling + roster character + fallback + token
+  force; stronger side wins, ratios bounded, winner mauled less,
+  deterministic; ticker fold-back both ways + bounded casualty hit).
+  Suite 1750, green. Remainder P17.8b: retaliation's bounty-hunter
+  clash, commander orders extending to overworld `[Clash]` events, and
+  an overworld castle assault reusing the siege field.)*
 
 ### Combat fidelity arc (user: "highly realistic battles")
 Speed (P17.4c) is the keystone; these layer real tactics on the grid
