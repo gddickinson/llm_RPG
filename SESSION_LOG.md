@@ -3628,3 +3628,38 @@ XP; buying AND selling training bartering; `train_hunting` crediting a
 wolf but ignoring a person; a real end-to-end combat kill of a wolf
 raising the skill; and a home repair training carpentry. Validator clean,
 suite 1521, green.
+
+**Round 160 — P15.12 Playtest Campaign 5.**
+A both-sides run across everything P15 added — I drove the mechanisms end
+to end in an exploratory session before writing a line of the regression.
+Most of it held up: roads saved real time on the actual move path (six
+strides, four minutes), a shop deal and a wolf kill trained bartering and
+hunting, a snowy conjunction night rendered with a blue-green wisp on the
+field and a prefix-coloured log, and a second hero driven by the agent
+moved on its own beside me. But one finding was real and sharp: sampling
+fresh worlds, the ONLY buildings that ever came up derelict were the
+village WELL and a wayside SHRINE — so the P15.7 homestead was both
+nonsensical and unreachable. Nonsensical because a well is derelict (it
+has no residents) so `claimable_here` happily let you "buy the village
+well" as a home; unreachable because no actual derelict DWELLING existed
+to claim, meaning the whole feature could never fire in normal play. The
+fix has four small parts. `homestead._is_dwelling` consults the building's
+blueprint kind and refuses infrastructure (well, shrine, stall, statue,
+fountain, monument, sign, gate) — you can't move into a well.
+`homes.assign` now treats any "Abandoned …" building as genuinely derelict
+and skips spawning residents into it, so an abandoned house stays empty
+and claimable. A "cottage" keyword maps to the farmhouse dwelling interior
+(bed + hearth), and an **Abandoned Cottage** is seeded into the wilderness
+building set — so a probe across eight worlds found a claimable starter
+home in all eight (the Cottage plus the already-present Abandoned
+Watchtower, which the same rule now activates). The RNG shift from the new
+building tripped a fragile assumption in `test_foraging` — it foraged the
+FIRST water tile expecting a fishing node, but a water tile touching a
+mountain resolves to MINING first (node_at checks adjacency), so the
+"pickaxe" message surfaced; hardened to seek a genuine fishing-node water
+tile rather than the first one. `tests/test_playtest5_findings.py` (8
+checks) is the scorecard: homestead reachable and sensible (a well is not
+a home, an abandoned building is derelict and empty, the full claim→
+repair→rest loop runs on a real derelict), roads save time, a trade and a
+hunt train the new skills, the night atmosphere renders, an agent hero
+acts. Validator clean, suite 1529, green. Phase 15 is complete.

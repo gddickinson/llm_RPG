@@ -374,6 +374,7 @@ class WorldGenerator:
         attempts = 0
         wanted = [
             ("Old Farmhouse", "A weathered farmhouse, fields gone fallow.", 2, 2),
+            ("Abandoned Cottage", "A tumbledown cottage, its roof half-caved and door hanging.", 2, 2),
             ("Roadside Farm", "A small farm beside the road.", 2, 2),
             ("Hunter's Lodge", "A log lodge with antlers above the door.", 2, 2),
             ("Wayside Shrine", "A lichen-covered roadside shrine.", 1, 1),

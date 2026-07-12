@@ -55,6 +55,11 @@ class HomeSystem:
             if loc.name not in engine.interiors or \
                     loc.name in occupied:
                 continue
+            # An "Abandoned ..." building stands empty on purpose — a
+            # derelict home the player can claim (P15.12).
+            if "abandoned" in loc.name.lower():
+                self._mark_derelict(loc)
+                continue
             bp = blueprint_for_location(loc.name)
             npc_class = getattr(bp, "npc_class", "") if bp else ""
             count = min(MAX_RESIDENTS,

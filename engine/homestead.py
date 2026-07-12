@@ -40,6 +40,11 @@ REST_DURATION = 240       # Well Rested, in minutes (matches the inn)
 WOOD_IDS = ("logs", "oak_logs", "yew_logs", "wood", "timber", "plank")
 STONE_IDS = ("stone", "cracked_riverstone", "rock", "cut_stone")
 
+# Infrastructure that's derelict (no residents) but is NOT a home you
+# could move into — a well or a shrine (P15.12 playtest finding).
+NON_DWELLING = {"well", "shrine", "stall", "statue", "fountain",
+                "monument", "sign", "gate"}
+
 
 # ---- ownership / lookup --------------------------------------------
 
@@ -81,8 +86,19 @@ def claim_price(loc) -> int:
     return CLAIM_BASE + loc.width * loc.height * SIZE_COST
 
 
+def _is_dwelling(loc) -> bool:
+    """A derelict you could actually live in — not a well or a shrine."""
+    try:
+        from world.blueprints import blueprint_for_location
+        bp = blueprint_for_location(loc.name)
+        kind = getattr(bp, "kind", "") if bp else ""
+    except Exception:
+        kind = ""
+    return kind not in NON_DWELLING
+
+
 def claimable_here(engine):
-    """The derelict the player may buy right now, or None."""
+    """The derelict HOME the player may buy right now, or None."""
     if owns_home(engine.player):
         return None
     loc = engine.player_location()
@@ -91,6 +107,8 @@ def claimable_here(engine):
     if not loc.get_property("derelict", False):
         return None
     if loc.get_property("owner"):
+        return None
+    if not _is_dwelling(loc):
         return None
     return loc
 

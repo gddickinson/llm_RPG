@@ -92,7 +92,7 @@ llm_RPG/
 - **`pantheon.py`** — `PantheonSystem` (P8.4): five gods from `data/pantheon.json`; deeds build favor (player_deeds hook), SHIFT+P prayer at shrines/temples, favor-funded miracles (heal/bless/fortune/cure/insight), nightly omens at deep favor.
 - **`market.py`** — `MarketSystem` (P8.5): tâtonnement price indices per category (arms/provisions/goods/arcana); purchases/sales move prices, nights drift them home; multiplies buy AND sell in shop pricing; persisted.
 - **`doors.py`** — `DoorManager` (P9A.1): door policies from `data/doors.json` (homes locked, shops night-locked, taverns open); key/lockpick/SHIFT+TAB-force paths; forcing is noisy and remembered; dawn resets; persisted.
-- **`homestead.py`** — P15.7 claim a home: buy an unowned derelict (`claim`, size-scaled, ownership on `location.properties`), a staged repair ConstructionProject (`repair`/`home_action`, spends timber+stone+coin+time, furnishes bed/hearth/chest on completion), free Well-Rested sleep at your finished home (`can_rest_home`, wired into `rest.py`), and a persistent storage chest (`deposit`/`withdraw`/`chest_interact`, item dicts on `player.metadata`). One home at a time; E-key + I-panel `H` + hint-bar wired.
+- **`homestead.py`** — P15.7 claim a home: buy an unowned derelict (`claim`, size-scaled, ownership on `location.properties`), a staged repair ConstructionProject (`repair`/`home_action`, spends timber+stone+coin+time, furnishes bed/hearth/chest on completion), free Well-Rested sleep at your finished home (`can_rest_home`, wired into `rest.py`), and a persistent storage chest (`deposit`/`withdraw`/`chest_interact`, item dicts on `player.metadata`). One home at a time; E-key + I-panel `H` + hint-bar wired. P15.12: `_is_dwelling` gates claiming to real homes (a well/shrine is derelict but not claimable); reachable via the seeded Abandoned Cottage/Watchtower.
 - **`furniture.py`** — P9A.2: E beside interior furniture — beds rest (+30% HP/day), hearths cook, altars pray, shelves surface rumors, chests/barrels rummage; flavor for the rest; cooldowns in player.metadata.
 - **`trespass.py`** — `TrespassSystem` (P9A.4): private homes + after-hours shops; witnessed trespass costs rep/relationship/memory; forced entry is a crime — guards converge on the alert, repeat offenses reach the P7.2 bounty ladder.
 - **`presence.py`** — P9A.7: NPCs within an enterable footprint are INDOORS — hidden from the street, shown inside as the same entities at zone-local spots; `npc_adjacent_to_player` is THE adjacency check (talk/hints/melee/barter).
@@ -150,7 +150,7 @@ llm_RPG/
 - **`companions.py`** — `CompanionManager`; party recruitment, follow-and-fight; P15.5 depth: /order follow|hold|flee, authored travel banter (data/banter.json), camp watch (halves ambush), bond-gated personal quests.
 - **`families.py`** — Static family ties for preset NPCs.
 - **`gossip.py`** — Gossip lines pulled from family ties + recent memory events.
-- **`homes.py`** — `HomeSystem` (P9A.3): explicit occupant binding at world start — preset homes kept, guards to the watchtower, blueprint npc_class residents for unowned buildings, derelict flags; `occupants_of`/`owner_of`/`is_derelict`.
+- **`homes.py`** — `HomeSystem` (P9A.3): explicit occupant binding at world start — preset homes kept, guards to the watchtower, blueprint npc_class residents for unowned buildings, derelict flags; `occupants_of`/`owner_of`/`is_derelict`. P15.12: an "Abandoned …" building is forced derelict with no residents (a claimable P15.7 home).
 
 ### world/ — World, map, calendar, locations
 

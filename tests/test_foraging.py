@@ -40,9 +40,25 @@ class TestForaging(unittest.TestCase):
     def test_water_teaches_fishing_instead_of_foraging(self):
         # Water became a fishing node in P2.2: Z without a rod should
         # teach the tool requirement, not claim there's nothing here.
-        spot = self._find_terrain(TerrainType.WATER)
+        # Pick a water tile that genuinely resolves to a fishing node —
+        # a water tile touching a mountain resolves to MINING first
+        # (node_at checks adjacency), so the plain "first water tile" is
+        # not a reliable fishing spot.
+        gm = self.engine.gathering_manager
+        wmap = self.engine.world.map
+        spot = None
+        for y in range(wmap.height):
+            for x in range(wmap.width):
+                if wmap.terrain[y][x] != TerrainType.WATER:
+                    continue
+                node = gm.node_at(x, y)
+                if node and node[0] == "fishing":
+                    spot = (x, y)
+                    break
+            if spot:
+                break
         if not spot:
-            self.skipTest("no water tile")
+            self.skipTest("no fishing-node water tile")
         self.engine.player.position = spot
         msg = self.engine.forage()
         self.assertIn("fishing rod", msg.lower())

@@ -2119,8 +2119,26 @@ UI polish.
   home repair awarded XP to a non-existent "crafting" skill (silently
   dropped). 10 tests. Suite 1521, green. The pattern is now a template
   for any future skill.)*
-- [ ] **P15.12 Playtest Campaign 5.** Both-sides session across the
+- [x] **P15.12 Playtest Campaign 5.** Both-sides session across the
   P15 systems; findings become fixes or Phase 16.
+  *(Round 160: drove the P15 mechanisms end to end — homestead, roads,
+  skill breadth, the atmosphere layer, the agent roster. Most passed
+  clean (roads saved time on the real move path, a trade + a hunt
+  trained bartering/hunting, a snowy conjunction night rendered with a
+  wisp, an agent hero moved on its own). ONE real finding, fixed this
+  round: the only derelicts a fresh world produced were a WELL and a
+  SHRINE — so P15.7 homestead was both nonsensical (you could "buy the
+  village well") AND unreachable (no derelict dwelling existed). Fix in
+  four parts: `homestead._is_dwelling` rejects infrastructure kinds
+  (well/shrine/stall/…); `homes.assign` marks any "Abandoned …" building
+  genuinely derelict with no residents; a "cottage" keyword maps to a
+  farmhouse dwelling interior; and an **Abandoned Cottage** is seeded in
+  the wilderness — so 8/8 sampled worlds now offer a claimable starter
+  HOME (the Cottage + the already-present Abandoned Watchtower). A
+  fragile worldgen-RNG assumption in `test_foraging` (first water tile =
+  fishing) surfaced from the new building shifting placement; hardened
+  to pick a genuine fishing node. `tests/test_playtest5_findings.py`
+  (8 checks) locks the scorecard. Suite 1529, green.)*
 
 ## Phase 16 — Living world imports (Autonomous World survey, 2026-07-11)
 

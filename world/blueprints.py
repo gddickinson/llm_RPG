@@ -358,6 +358,7 @@ def blueprint_for_location(loc_name: str) -> Optional[Blueprint]:
         ("wheelwright", "wheelwright"),
         ("watchtower", "watchtower"),
         ("farmhouse", "farmhouse"),
+        ("cottage", "farmhouse"),
         ("stable", "stable"),
         ("library", "library"),
         ("market", "stall"),
