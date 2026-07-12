@@ -131,6 +131,9 @@ def spectator_lines(engine):
     try:
         from engine.settings import get_setting
         lines.append(f"Bearing: {get_setting(p, 'disposition')}")
+        amb = get_setting(p, "ambition")
+        if amb and amb != "none":
+            lines.append(f"Ambition: {amb}")
     except Exception:
         pass
     lines.append(f"Lvl {getattr(p, 'level', 1)}  ·  "

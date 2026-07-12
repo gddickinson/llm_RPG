@@ -29,6 +29,9 @@ OPTIONS: List[dict] = [
     {"key": "disposition", "label": "Away disposition",
      "choices": ["balanced", "valiant", "cautious", "sociable",
                  "explorer", "greedy"], "default": "balanced"},
+    {"key": "ambition", "label": "Away ambition",
+     "choices": ["none", "wealth", "delve", "mastery", "fellowship"],
+     "default": "none"},
 ]
 _BY_KEY = {o["key"]: o for o in OPTIONS}
 

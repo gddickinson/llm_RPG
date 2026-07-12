@@ -3592,10 +3592,16 @@ a coherent, testable slice; ordered roughly by impact.
   where the hero is headed and how it's faring — not a mystery. 4 tests.
   Remainder: richer renown (fame/reputation beyond level) and the exact
   current action verb.
-- [ ] **M.9d High-level goals & disposition presets.** Let the player set an
+- [x] **M.9d High-level goals & disposition presets.** Let the player set an
   AMBITION for the absence ("get rich", "clear the Dark Hollow", "become a
   master mage", "found a company") that biases the agent, beyond the six
-  dispositions.
+  dispositions. *Done:* a fifth `ambition` setting (none/wealth/delve/
+  mastery/fellowship) on top of the six dispositions. `agent_goals.AMBITION_DRAW`
+  redraws where the away hero roams — wealth→markets/towns, delve→caves/ruins/
+  lairs, mastery→towers/shrines, fellowship→taverns/guilds — OVERRIDING the class
+  calling; wealth also widens the loot reach (greedy's r=8) and fellowship the
+  social reach (sociable's r=8). Shown on the M.9c spectator card
+  ("Ambition: delve"). `tests/test_away_ambition.py` (13).
 
 ### M.6b / M.7b — the living-world remainders (already scoped above)
 - [ ] **M.6b Rival adventuring parties.** Adventurers take their own quests,

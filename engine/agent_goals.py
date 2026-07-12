@@ -23,12 +23,31 @@ CLASS_DRAW = {
 
 ROAM = 10                 # how far an idle away hero strikes out
 
+# M.9d — a high-level AMBITION the player sets for the absence draws the
+# hero to the kinds of place that serve it, OVERRIDING the class calling
+AMBITION_DRAW = {
+    "wealth": ("market", "town", "village", "hamlet", "shop", "camp"),
+    "delve": ("cave", "ruin", "keep", "lair", "hollow", "barrow",
+              "warren", "den", "crypt", "dungeon"),
+    "mastery": ("tower", "stones", "barrow", "shrine", "temple", "college"),
+    "fellowship": ("tavern", "inn", "guild", "hall", "village", "hamlet"),
+}
+
+
+def ambition(char) -> str:
+    try:
+        from engine.settings import get_setting
+        return str(get_setting(char, "ambition") or "none").lower()
+    except Exception:
+        return "none"
+
 
 def named_goal(ctrl, engine, char):
-    """The nearest UNVISITED named place the hero's calling draws it to,
-    else any unvisited place. Records the choice on `ctrl.goal_name`."""
+    """The nearest UNVISITED named place the hero is drawn to — its AMBITION
+    (M.9d) if the player set one, else its class calling. Records the choice
+    on `ctrl.goal_name`."""
     cls = getattr(getattr(char, "character_class", None), "value", "")
-    draw = CLASS_DRAW.get(cls, ())
+    draw = AMBITION_DRAW.get(ambition(char)) or CLASS_DRAW.get(cls, ())
     px, py = char.position
     pref, other = [], []
     for loc in getattr(engine.world, "locations", []):

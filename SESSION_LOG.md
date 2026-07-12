@@ -6162,3 +6162,18 @@ M.9a's return digest and M.9b's speed/step, watching autoplay now reads as a
 story you can follow — you see where the hero is going and how it's faring,
 not a marker drifting in silence. 4 tests. Remainder: richer renown
 (fame/reputation beyond level) and the exact current action verb.
+
+## 2026-07-12 (cont.) — M.9d: an AMBITION for the absence
+
+Closes the M.9 arc. Beyond the six dispositions (how the away hero behaves),
+the player can now set an AMBITION (what it's *for*): none / wealth / delve /
+mastery / fellowship, a fifth `settings` option. `engine/agent_goals.py` grows
+`AMBITION_DRAW` — a set ambition REDRAWS where the hero roams, overriding its
+class calling: wealth pulls it toward markets/towns, delve toward
+caves/ruins/lairs/barrows, mastery toward towers/shrines/temples, fellowship
+toward taverns/guilds/villages. Two dispositions' widenings ride the ambition
+too: wealth reaches as far for loot as a greedy hero (r=8), fellowship seeks
+company as far as a sociable one (r=8). The M.9c spectator card names it
+("Ambition: delve"). So "get rich" or "clear the Dark Hollow" or "found a
+company" now steers the whole absence, not just the moment-to-moment temper.
+`tests/test_away_ambition.py` (13). All green.

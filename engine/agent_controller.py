@@ -205,8 +205,8 @@ class AgentController:
     def decide(self, engine, char):
         """A hero with a life: survive, fight when it must, but also chat,
         take and pursue quests, gather a party, and explore toward the
-        places its calling draws it — weighted by the disposition the
-        player set. Returns a plan; executes nothing."""
+        places its calling — or the AMBITION the player set (M.9d) — draws
+        it, weighted by the disposition. Returns a plan; executes nothing."""
         hp = char.hp / max(1, char.max_hp)
         disp = agoals.disposition(char)
         foes = self._foes_in_sight(engine, char)
@@ -332,7 +332,8 @@ class AgentController:
                                               self.recent))
 
         # 6. grab loot off the ground (a GREEDY hero looks wider)
-        loot = self._nearest_loot(engine, char, r=8 if disp == "greedy" else 5)
+        greedy = disp == "greedy" or agoals.ambition(char) == "wealth"
+        loot = self._nearest_loot(engine, char, r=8 if greedy else 5)
         if loot is not None:
             if loot == tuple(char.position):
                 return ("loot",)
@@ -354,7 +355,8 @@ class AgentController:
     def _social_plan(self, engine, char, disp):
         """Near someone? Take their quest, recruit them, or say hello —
         biased by disposition (a SOCIABLE hero seeks people out)."""
-        reach = 8 if disp == "sociable" else 4
+        outgoing = disp == "sociable" or agoals.ambition(char) == "fellowship"
+        reach = 8 if outgoing else 4
         friend = self._friendly_near(engine, char, r=reach)
         if friend is None:
             return None
