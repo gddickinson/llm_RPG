@@ -96,6 +96,7 @@ def _fortress(world, cx, cy, fw, fh) -> tuple:
                    "the gatehouse — the seat of the kings of Bloodstone.",
                    x0, y0, fw, fh)
     loc.add_property("type", "castle")
+    loc.add_property("garrison", 45)     # the Bloodstone Guard's strength
     world.add_location(loc)
     return (gate_x, min(wm.height - 1, y1))
 

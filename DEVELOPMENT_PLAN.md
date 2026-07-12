@@ -2609,7 +2609,7 @@ is shippable and testable, de-risking UI last:
   embody_attack hits an adjacent foe / whiffs out of reach, and a
   headless screen-wire smoke test (E drops in, camera-lock render, ESC
   releases then exits). Suite 1739, green.)*
-- [ ] **P17.8 Fold-back.** `battle_resolve.resolve` replaces the
+- [x] **P17.8 Fold-back.** `battle_resolve.resolve` replaces the
   dice in faction_ticker/retaliation off-screen battles; commander
   orders extend to overworld `[Clash]` events; a castle assault in
   the overworld reuses the siege field. Playtest, then Phase 18.
@@ -2657,10 +2657,26 @@ is shippable and testable, de-risking UI last:
   crown garrison that loses 0/30 in the open HOLDS 30/30 behind its wall
   against a rabble with no engines, while a besieging host with engines
   breaches 30/30. So off-screen faction sieges now reuse the same siege
-  field as the on-screen scenario. 5 tests. Suite 1815, green. Remaining
-  P17.8d (thin): commander orders reaching overworld `[Clash]` events, and
-  a live gameplay trigger firing `resolve_siege`/the scenario when a
-  hostile force actually assaults the castle.)*
+  field as the on-screen scenario. 5 tests. Suite 1815, green.)*
+  *(P17.8d LIVE trigger done — ITEM COMPLETE. `engine/castle_siege_event.py`
+  makes the castle a target in the world sim: fired nightly from the
+  day-change stack, when the strongest hostile faction swells past
+  SIEGE_THRESHOLD it may raise a HOST and march on the castle (a `type:
+  castle` location carrying a `garrison` strength, planted by
+  `castle_region`). `lay_siege` settles it through `resolve_siege` — the
+  Bloodstone Guard fights from behind its walls, so a raw host (≤ the ~100
+  faction cap) is turned back at the stone and shattered (loses strength),
+  a `[Realm]` "the walls held" beat; only an overwhelming host breaches
+  the gate and the castle FALLS (flagged, not besieged again), a `[Realm]`
+  "has FALLEN" beat. 7 tests (no castle → no siege; the walls turn back a
+  raw host & bloody it; an overwhelming host takes the keep; the trigger
+  needs real pressure; a strong realm raises a host; a fallen castle is
+  spared). Suite 1822, green. Deliberately deferred: "commander orders in
+  overworld `[Clash]`" — the P7.1 overworld conflict is individual d20,
+  not squad-based, so the P17.5 order layer has nothing to attach to
+  until/unless that becomes group combat; the fold-back's real intent
+  (off-screen battles on the real resolver + a castle assault that reuses
+  the siege field, now LIVE) is complete, and Phase 18 is built.)*
 
 ### Combat fidelity arc (user: "highly realistic battles")
 Speed (P17.4c) is the keystone; these layer real tactics on the grid

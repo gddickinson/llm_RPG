@@ -4803,3 +4803,41 @@ fort; deterministic per seed). Suite 1815, green. P17.8 narrows to a thin
 P17.8d — commander orders in the overworld `[Clash]`, and a live gameplay
 trigger that fires the siege when a hostile force actually marches on the
 castle.
+
+---
+
+## The living siege — the castle is a target in the world (P17.8d, P17.8 COMPLETE)
+
+The castle had its on-screen siege scenario and its off-screen
+`resolve_siege`; this round gives the world a reason to use them. A war
+can now come to Bloodstone. `engine/castle_siege_event.py`, fired nightly
+from the day-change stack, watches the hostile factions: when the
+strongest (brigands or monsters) swells past a war-threshold, it may
+raise a HOST and march on the castle — the `type: castle` location that
+`castle_region` plants, carrying a `garrison` strength on its properties.
+
+`lay_siege` settles the clash through `resolve_siege`, so the walls do
+what walls do. The Bloodstone Guard fights from behind the stone: a raw
+host — anything up to the ~100 faction cap — is turned back at the wall
+and its army shattered (it sheds strength, and the realm hears "the
+siege was broken, the walls held"). Only an overwhelming host, larger
+than the realm's own factions can normally muster, batters the gate down
+and storms the keep — and then the castle FALLS, flagged so it isn't
+besieged again, and "Bloodstone Castle has FALLEN" runs through the
+`[Realm]` log. So the castle is a genuine, defensible piece of the living
+world: safe from any ordinary threat, in real danger only when the wilds
+or the brigand bands grow to their utmost.
+
+7 tests (the default world has no siege; the walls turn back a raw host
+and bloody it; an overwhelming host takes the keep; the trigger needs
+real pressure; a strong realm raises a host; a fallen castle is spared).
+Suite 1822, green.
+
+With this P17.8 is COMPLETE and ticked. Its fold-back intent is met —
+off-screen faction battles (raids, patrols, incursions) and now sieges
+all run on the real Lanchester resolver, and a castle assault reuses the
+siege field on screen, off screen, and live in the world. The one
+deliberately-deferred sub-part is "commander orders in the overworld
+[Clash]": the P7.1 overworld conflict is individual d20, not squad-based,
+so the P17.5 order layer has nothing to attach to until that ever becomes
+group combat — noted, not forced.
