@@ -5175,3 +5175,40 @@ strongest is leader; stale tags clear; one shared focus; focus on the
 wounded ally then back to the player when the party is healthy; leader
 death breaks the pack; a broken beast flees; a steady pack presses the
 attack). Remainder P19.3b: planned flank/encirclement positioning.
+
+## Monster tribes — a hostile society that presses (P19.4)
+
+"Are there tribes of monsters that act like actual populations?" — not
+yet: monsters were isolated random spawns while the human factions had a
+whole living ticker. This round mirrors that ticker for the wild peoples.
+
+`engine/monster_tribes.py` reads `data/tribes.json` — the Gorge Goblins
+in the forest, the Crag Trolls in the mountains — each a population with a
+strength that climbs every night. When a tribe crosses its raid
+threshold it swarms out to raid the nearest settlement: it strips that
+town's P16 production larder, spends some of its own strength on the
+sortie, and — if the raid falls within sight of the player — spills a raid
+party onto the map. Those raiders are tagged with their tribe, which
+double-tags them for the P19.3 pack brain, so they don't trickle in one
+at a time: they come as a coordinated band, and at high strength a
+champion (the chieftain) rides out at their head.
+
+The loop closes on the player's blade. Every tagged raider cut down calls
+back to the tribe (`on_defeat`, hooked into combat resolution) and knocks
+its strength down; repel a raid and the tribe drops below its threshold
+and stays broken for nights, a quiet `[Realm]` "beaten back" beat. Leave
+it alone and it grows, and it comes again. A settlement the player never
+defends slowly bleeds its stores to the raids.
+
+It composes with what came before: the raiders spill through the P19.2
+lair/pack tagging and coordinate through the P19.3 focus-and-leader brain,
+so a goblin raid on Oakvale is a real, organised assault, not a scatter of
+individuals. Strength persists across saves.
+
+14 tests (tribes load and grow, capped; below threshold is quiet;
+crossing it raids with a [Realm] beat; a raid spends strength and drains
+the larder; a near raid spills raiders that form a pack, a far one stays
+an abstract report; a slain raider beats the tribe back while an untagged
+kill does nothing; crossing back below the threshold announces the
+repulse; strength round-trips a save). Remainder P19.4b: bind a tribe's
+home to a P19.2 lair so clearing it wipes the tribe.

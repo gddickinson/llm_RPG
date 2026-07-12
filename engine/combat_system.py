@@ -288,6 +288,11 @@ class CombatSystem:
         # Notify quest manager
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             self.engine.quest_manager.on_npc_defeated(defender.id, kls)
+        try:   # a slain raider beats its tribe back (P19.4)
+            if (defender.metadata or {}).get("tribe"):
+                self.engine.monster_tribes.on_defeat(defender)
+        except Exception:
+            pass
         # XP + faction rep changes for player kills
         if attacker.id == self.engine.player.id:
             self._award_xp(defender)

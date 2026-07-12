@@ -3660,11 +3660,29 @@ Phase-17 tactical AI.
   beast flees; a steady pack attacks). Remainder P19.3b: explicit flank
   positioning via `squad_tactics.surround_step`/`flank_tile` (today's
   flanking is still the incidental +2, not planned encirclement).)*
-- [ ] **P19.4 Monster tribes as populations.** A monster faction
+- [x] **P19.4 Monster tribes as populations.** A monster faction
   (goblins / trolls) with a lair, a chieftain, population growth,
   territory, and raids on settlements — the human `faction_ticker`
   mirrored for monsters, so the world has a hostile society that grows,
   presses, and can be beaten back. The "actual populations" ask.
+  *(Round: `engine/monster_tribes.py` `MonsterTribeSystem` over
+  `data/tribes.json` (The Gorge Goblins, The Crag Trolls — each a race, a
+  `strength` 0-100, a `growth`, a `raid_threshold`/`raid_cost`, a raider
+  + champion template, a home terrain). `run_day()` (nightly, after the
+  faction ticker) grows every tribe; a tribe over its threshold swarms out
+  to raid the NEAREST settlement — draining that settlement's P16
+  production store, spending `raid_cost`, and, when the raid is within
+  sight of the player, spilling a raid party onto the map: raiders tagged
+  `metadata["tribe"]` AND `metadata["lair"]="tribe:<id>"` so the P19.3
+  pack brain runs them as a coordinated band under a champion (chieftain)
+  that rides out at high strength. Beaten back: every tagged raider the
+  player fells calls `on_defeat` (hooked in `combat_system._resolve`),
+  knocking the tribe's strength down — repel a raid and the tribe drops
+  below its threshold for nights, a `[Realm]` "beaten back" beat; ignore
+  it and it grows and returns. Strength persists (`to_dict`/`from_dict`
+  registered in `save_load`). 14 tests. Suite green. Remainder P19.4b:
+  tie a tribe's home to a P19.2 lair so CLEARING the lair wipes the tribe;
+  and scale the raider encounter weight by tribe strength.)*
 - [ ] **P19.5 The endgame curve.** Elite / champion variants and
   party-scaled packs so a high-level party meets worthy resistance; a
   roaming world-boss that stalks the map. No more trivial wilderness.

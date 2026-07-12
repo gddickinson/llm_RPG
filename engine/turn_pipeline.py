@@ -171,6 +171,10 @@ def run_turn(engine) -> None:
                 logger.debug(f"Pet night error: {e}")
             self.world_director.run_night()
             self.faction_ticker.run_day()
+            try:   # wild tribes grow and raid the settlements (P19.4)
+                self.monster_tribes.run_day()
+            except Exception as e:
+                logger.debug(f"Monster tribes error: {e}")
             try:   # a war-host may march on the castle (P17.8d)
                 from engine.castle_siege_event import maybe_besiege
                 maybe_besiege(self, self.faction_ticker.rng)
