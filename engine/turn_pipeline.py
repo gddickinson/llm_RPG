@@ -170,6 +170,10 @@ def run_turn(engine) -> None:
             except Exception as e:
                 logger.debug(f"Pet night error: {e}")
             self.world_director.run_night()
+            try:   # NPCs pursue their private ambitions (P20.1)
+                self.ambitions.run_day()
+            except Exception as e:
+                logger.debug(f"Ambitions error: {e}")
             self.faction_ticker.run_day()
             try:   # wild tribes grow and raid the settlements (P19.4)
                 self.monster_tribes.run_day()

@@ -3734,10 +3734,30 @@ Phase-17 tactical AI.
 The player-facing NPC layer is excellent; the world *behind* it is inert.
 This phase gives NPCs agency, a social web, and gods that act.
 
-- [ ] **P20.1 Ambitions that drive action.** A nightly, heuristic
+- [x] **P20.1 Ambitions that drive action.** A nightly, heuristic
   goal→action layer so an NPC's goal string produces real behaviour —
   save to retire, court a sweetheart, open a shop, avenge a wrong,
   migrate. The biggest "living world" gap: goals that *do* something.
+  *(Round: `engine/ambitions.py` `AmbitionSystem` over
+  `data/ambitions.json`. Each NPC's goal strings are matched by keyword to
+  an AMBITION — wealth / romance / mastery / vengeance / escape (cached on
+  metadata; a "duty" goal like "protect the village" earns none). `run_day`
+  (nightly) accrues quiet progress toward it and, when it fills, REALISES
+  it with a real, persistent effect and a `[Realm]` beat the gossip system
+  carries: a merchant prospers and pockets a retirement nest-egg
+  (`prospered`, +gold); two unattached civilians become sweethearts (a
+  MUTUAL `partner` link + a +45 relationship — an emergent couple, a peer
+  bond, not a spoke to the player); a crafter is hailed a master
+  (`master`, +1 level); an old score is settled; a troubled past is laid
+  to rest. Keyword coverage tuned to the real cast's authored goals
+  ("make a profit", "earn coin", "advance in rank"), so ~8 of the Oakvale
+  cast now pursue something. One quiet progress line a night so it's felt,
+  not spammed; all state on `npc.metadata` (rides the NPC's save). 13
+  tests (classification incl. a duty→none and caching; progress accrues;
+  the goal realises and announces; done ambitions don't re-fire; wealth /
+  mastery / romance effects; player-chars skipped). Remainder P20.1b:
+  ambitions that MOVE the NPC (migrate, open a new shop building) and
+  vengeance that seeks a real target.)*
 - [ ] **P20.2 The NPC social graph.** Peer-to-peer relationships
   (like / dislike / trust / rivalry) that form and evolve from shared
   events, gossip, and proximity — friendships and feuds in heuristic mode,

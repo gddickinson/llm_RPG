@@ -5276,3 +5276,41 @@ It composes the whole phase into one antagonist: a wilderness elite
 (P19.5) that leads a warband (P19.3), rises through a tribe's raids
 (P19.4) or a lair (P19.2), survives you, and returns by name until one of
 you ends it. 10 tests. Phase 19 — Monsters & Menace — is complete.
+
+## Ambitions — goals that finally do something (P20.1)
+
+The NPC-depth survey's sharpest finding: every NPC is born with one to
+three goal strings — "earn enough to retire", "find romance", "avenge a
+past wrong" — and not one of them ever did anything. They were shown in a
+prompt and forgotten. This round, the first of Phase 20, makes them move
+the world a little every night.
+
+`engine/ambitions.py` reads each NPC's goals and matches them, by keyword
+from `data/ambitions.json`, to an AMBITION: wealth, romance, mastery,
+vengeance, or escape. A goal that's really a duty — "protect the village",
+"bless travelers" — earns none, and that's right; a personal ambition is a
+private wanting. Every night the NPC makes a little quiet progress toward
+it, and when the progress fills, the ambition is REALISED — with a real,
+persistent effect and a `[Realm]` beat the gossip system can pick up and
+carry through the taverns:
+
+- a merchant prospers and sets by enough to retire (a `prospered` flag and
+  a heavier purse);
+- two unattached souls become sweethearts — a MUTUAL partner link and a
+  warm relationship, an emergent couple that formed on its own, a bond
+  between NPCs rather than one more spoke pointing at the player;
+- a crafter is finally hailed a master of the craft;
+- an old score is settled; a troubled past is laid to rest.
+
+The keywords are tuned to the cast the game actually ships — "make a
+profit", "earn coin", "advance in rank" — so it isn't a handful of
+procedural NPCs that stir but the named people of Oakvale: the merchants
+save, the guard climbs toward his rank. One quiet line a night keeps it
+felt rather than spammed, and every scrap of state rides on the NPC's own
+metadata, so an ambition half-pursued survives a save.
+
+13 tests (classification, including a duty that earns no ambition and the
+cache; progress accrues; the goal realises and announces; a done ambition
+never re-fires; the wealth, mastery and romance effects; player-characters
+skipped). Remainder P20.1b: ambitions that physically MOVE the NPC —
+migrate, open a shop — and a vengeance that hunts a real target.
