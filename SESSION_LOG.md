@@ -5935,3 +5935,30 @@ befriend into a free companion (seeking_party) OR simply pay. The system is
 stateless — the whole contract rides the normal NPC save — so nothing new to
 persist. 8 tests. Remainder M.7b: GUILDS as places (a mercenaries' hall, an
 adventurers' guild) where blades-for-hire reliably gather.
+
+## 2026-07-12 (cont.) — "Autoplay doesn't seem to work" — the UX was eating it
+
+George reported the GUI autoplay function doesn't work. It took a long
+investigation because the DRIVING was fine all along — the heartbeat ticks
+the world every ~0.5s and `drive_agents` moves the away hero (verified it
+walks and acts over a run). The bug was in the CONTROL handoff: the GUI's
+"any keypress hands control back to the human" (M.3) fired on EVERY key —
+including the ',' you press to open the settings overlay where the autoplay
+toggle lives. So the sequence was self-defeating: toggle autoplay on, close
+the menu (fine) — but reopen the menu to confirm, and the ',' that opened it
+silently set the hero back to human control, showing autoplay "off." Any
+stray key killed it too. From the outside: "it doesn't work / doesn't
+stick."
+
+Fix (`ui/away_mode.hands_back`): control only hands back on a key that
+actually DIRECTS the hero — movement (WASD/arrows/numpad) or an action
+(attack, etc.). OBSERVE keys — the settings comma, the journals
+(I/C/Q/O/J/U/Y), look, help, save/load, Esc — leave autoplay running, so you
+can open the settings overlay to confirm it's on, watch it, and inspect your
+gear while the agent plays. Taking the reins now also logs a line so it's
+unambiguous. The banner nudge changed from "press any key" to "move or act
+to take control."
+
+`gui.py` was over the 500-line line (508), so the defeat overlay moved to a
+new `ui/death_popup.py` (`draw_death_popup`), bringing gui.py to 462. 6 new
+tests (hand-back classification + the heartbeat actually driving the hero).

@@ -155,12 +155,14 @@ class GameGUI:
                         event.key == pygame.K_F11:
                     self.toggle_fullscreen()
                     continue
-                # M.3: any keypress in play hands control back to the human
-                # (set_away also flips the autoplay setting so the overlay
-                # stays honest)
-                if event.type == pygame.KEYDOWN and self.mode == "play" \
-                        and self.engine.roster.is_away(self.engine.player):
+                # M.3: a hero-directing key (move/act) hands control back;
+                # an observe/panel key does not, so you can check on autoplay
+                # without switching it off (2026-07-12d).
+                from ui.away_mode import hands_back
+                if self.mode == "play" and hands_back(self.engine, event):
                     self.engine.roster.set_away(self.engine.player, False)
+                    self.engine.memory_manager.add_event(
+                        "You take the reins back from the agent.")
                 self.input_handler.handle_event(event)
             from ui.away_mode import heartbeat
             heartbeat(self)               # M.3 tick the world while away
@@ -262,56 +264,8 @@ class GameGUI:
         pygame.display.flip()
 
     def _draw_death_popup(self) -> None:
-        """Centered popup with Restart / Quit options."""
-        screen_rect = self.screen.get_rect()
-        # Dim the world behind the popup
-        veil = pygame.Surface(screen_rect.size, pygame.SRCALPHA)
-        veil.fill((0, 0, 0, 170))
-        self.screen.blit(veil, (0, 0))
-
-        # Popup box
-        w, h = 460, 220
-        box = pygame.Rect((screen_rect.width - w) // 2,
-                          (screen_rect.height - h) // 2, w, h)
-        pygame.draw.rect(self.screen, (25, 10, 12), box)
-        pygame.draw.rect(self.screen, (200, 60, 60), box, 3)
-
-        # Title
-        if self.hud.big_font:
-            title_surf = self.hud.big_font.render(
-                "You have been defeated!", True, (255, 90, 90))
-            self.screen.blit(
-                title_surf,
-                (box.centerx - title_surf.get_width() // 2, box.y + 28),
-            )
-        if self.hud.font:
-            xp = (self.engine.player.metadata or {}).get("xp", 0)
-            level = self.engine.player.level
-            sub = self.hud.font.render(
-                f"Final level: {level}    XP: {xp}    Turn: {self.engine.turn_counter}",
-                True, (220, 220, 220))
-            self.screen.blit(
-                sub,
-                (box.centerx - sub.get_width() // 2, box.y + 72),
-            )
-            opt1 = self.hud.font.render(
-                "[R] Restart", True, (160, 230, 160))
-            self.screen.blit(
-                opt1,
-                (box.centerx - opt1.get_width() // 2, box.y + 120),
-            )
-            opt2 = self.hud.font.render(
-                "[Q] Quit", True, (230, 160, 160))
-            self.screen.blit(
-                opt2,
-                (box.centerx - opt2.get_width() // 2, box.y + 150),
-            )
-            hint = self.hud.font.render(
-                "(or press ESC to quit)", True, (160, 160, 180))
-            self.screen.blit(
-                hint,
-                (box.centerx - hint.get_width() // 2, box.y + 184),
-            )
+        from ui.death_popup import draw_death_popup
+        draw_death_popup(self)
 
     def restart(self) -> None:
         """Rebuild the engine and resume play. Called from the death popup."""

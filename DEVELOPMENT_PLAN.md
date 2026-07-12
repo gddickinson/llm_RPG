@@ -3461,6 +3461,72 @@ last. Networking was previously deferred — this supersedes that.
   `engine/guild.py` rank system, P16 building-types, and M.6's seeking-party
   recruiting.
 
+## Phase 27 — Autoplay-driven improvement backlog (ultraplan, 2026-07-12d)
+
+Findings from a 500-turn autoplay observation session (balanced hero): the
+agent genuinely PLAYS — it fought, fled, looted, took & completed quests,
+recruited a party (two adventurers), and levelled 1→3. But the verb mix was
+`flee 606 / loot 582 / attack 252 / move 1687` with only `talk 10 /
+accept_quest 11`, the hero sat chronically wounded (12/37 HP), and it NEVER
+cast a spell, crafted, gathered/foraged/mined/fished, cooked, rested at an
+inn/camp, banked, prayed, shopped, trained a skill, or hired a blade. Whole
+subsystems the game already has go untouched — by the agent AND, by
+implication, by a casual human. This backlog turns that into rounds. Each is
+a coherent, testable slice; ordered roughly by impact.
+
+### M.8 — The away-hero uses the WHOLE game (deepen autoplay)
+- [ ] **M.8a Rest & recovery loop.** A wounded, safe hero seeks healing:
+  drink a potion below a threshold, rest at an inn when it can afford one,
+  camp in the wilds when it can't, cast or receive Heal. Ends the "chronic
+  12/37 HP" attrition. (Agent policy + the existing rest/camp/food systems.)
+- [ ] **M.8b Economy loop.** The hero SPENDS: sell junk loot at a shop, buy
+  potions/ammo/better gear, bank a surplus, HIRE a blade (M.7) when flush and
+  short-handed. Right now it hoards gold it never uses.
+- [ ] **M.8c Magic in the field.** A caster actually casts — offensive spells
+  in a fight, utility (light/farsight/water-walk) on the road — and manages
+  mana (rest to recover). Ties into P26.2's magic overhaul.
+- [ ] **M.8d Gather & craft.** With a workstation and a known recipe (or a
+  gathering node in reach), the hero gathers raws and crafts potions/gear/
+  ammo — a self-sufficiency loop instead of pure scavenging.
+- [ ] **M.8e Worship, consumables & buffs.** Pray at a shrine for a boon;
+  eat for the well-fed bonus; use scrolls/tomes it's carrying rather than
+  letting them rot in the pack.
+- [ ] **M.8f Homesteading.** Claim and improve a derelict home; stash loot in
+  its chest; rest there free. A base of operations for a long-lived hero.
+
+### M.9 — Watchability: autoplay as a spectator feature
+- [ ] **M.9a "While you were away" digest (was M.5b).** A readable screen of
+  what the hero did, whom it met, what it won/lost — the `[Away]` deed ledger
+  surfaced, not buried in the event log.
+- [ ] **M.9b Autoplay speed & step.** Let the watcher speed up / slow down /
+  single-step the heartbeat (the fixed 0.5s cadence is the only speed today).
+- [ ] **M.9c Spectator HUD.** Show the driven hero's current GOAL, plan, party
+  and renown as an overlay, so watching reads as a story, not a mystery.
+- [ ] **M.9d High-level goals & disposition presets.** Let the player set an
+  AMBITION for the absence ("get rich", "clear the Dark Hollow", "become a
+  master mage", "found a company") that biases the agent, beyond the six
+  dispositions.
+
+### M.6b / M.7b — the living-world remainders (already scoped above)
+- [ ] **M.6b Rival adventuring parties.** Adventurers take their own quests,
+  clear dungeons, band into rival companies, and COMPETE with the hero for
+  quests/loot/hoards — a renown race — with a real fortune arc (grow strong,
+  or die and lose it all).
+- [ ] **M.7b Guild halls as places.** (see M.7 above) — where blades, quests
+  and training reliably congregate.
+
+### World balance & pacing (from the flee-heavy data)
+- [ ] **P27.1 Encounter-density & danger tiers.** The overworld is too thick
+  with lairs/nests (flee was 36% of turns). Scale danger by region/distance,
+  keep roads & near-town safer, give the early game breathing room.
+- [ ] **P27.2 Wound/recovery balance.** Chronic low HP shouldn't be the
+  default state; make recovery accessible without trivialising wounds
+  (pairs with M.8a).
+
+*(Existing planned items that autoplay reconfirms as high-value: P21.6
+Treasure & legend, P22.6 non-blocking spellcasting, P22.7 readable buildings,
+P26.1 advancement rebalance, P26.2 magic overhaul.)*
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the

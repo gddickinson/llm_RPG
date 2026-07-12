@@ -8,7 +8,39 @@ the world, alive until the human returns. Any keypress hands back.
 HEARTBEAT_FRAMES = 15        # ~0.5s at 30fps between auto-ticks
 
 BANNER = ("◆ AUTOPLAY — the agent has your hero  "
-          "·  press any key to take control")
+          "·  move or act to take control")
+
+try:
+    import pygame
+    # Keys that OBSERVE without taking the reins — you press these to CHECK
+    # ON autoplay (open settings, a journal, the map, help, save/load), not
+    # to end it. Everything else — movement and actions — hands control
+    # back. Bug-fix 2026-07-12d: the old 'any key hands back' meant opening
+    # the settings overlay to confirm autoplay silently switched it OFF, so
+    # it 'never worked'.
+    _OBSERVE_KEYS = frozenset({
+        pygame.K_COMMA, pygame.K_F1, pygame.K_F11, pygame.K_F5, pygame.K_F9,
+        pygame.K_i, pygame.K_c, pygame.K_q, pygame.K_o, pygame.K_j,
+        pygame.K_u, pygame.K_y, pygame.K_l, pygame.K_ESCAPE,
+        pygame.K_SLASH, pygame.K_QUESTION,
+    })
+except Exception:                       # headless without pygame
+    pygame = None
+    _OBSERVE_KEYS = frozenset()
+
+
+def hands_back(engine, event) -> bool:
+    """True if this keypress should return control to the human: a key that
+    DIRECTS the hero (move/attack/act) while the hero is agent-driven. An
+    observe/panel/system key never ends autoplay."""
+    if pygame is None or getattr(event, "type", None) != pygame.KEYDOWN:
+        return False
+    if getattr(event, "key", None) in _OBSERVE_KEYS:
+        return False
+    try:
+        return bool(engine.roster.is_away(engine.player))
+    except Exception:
+        return False
 
 
 def heartbeat(gui) -> None:
