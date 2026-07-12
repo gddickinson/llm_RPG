@@ -3896,8 +3896,26 @@ This phase gives NPCs agency, a social web, and gods that act.
   castle suite still green. Remainder P21.1b: NPCs/factions that REACT to
   the choice flags (Voss's faction favors a player who sided with him),
   and a dialog choice-menu to make the pick in-fiction.)*
-- [ ] **P21.2 The main arc.** An overarching questline with a spine, a
+- [x] **P21.2 The main arc.** An overarching questline with a spine, a
   climax, and an ending — a world-goal the campaign builds toward.
+  *(Round: an authored five-stage main line in `data/quests.json`, each
+  `main: true` and chained by prereq — Alzara the wizard reads dark omens
+  (The Stirring Wilds → The Source in the Deep → The Old Lore →
+  The Gathering Night → **The Reckoning**), climaxing in slaying the Elder
+  Wyrm in its lair. `engine/campaign.py` is the thin spine over it:
+  `main_line`/`finale_id`, `is_won` (the finale's `sets_flag` "campaign_won",
+  P21.1), and `check_finale` (run each turn) which fires a once-only
+  triumphant `[Legend]` ending the moment the campaign is won; `summary`
+  composes the ENDING from the P20.5 chronicle — the saga you actually
+  wrote closes the age, shown in the Y-journal. To let the finale target a
+  NAMED quarry, `quest_manager.on_npc_defeated` now also matches a KILL
+  objective by the monster's TEMPLATE (e.g. `elder_dragon`), not only its
+  class — a general improvement radiant bounties can use too. Validator
+  clean. 8 tests (the arc is authored & chained; the finale is the
+  reckoning targeting the wyrm; the spine orders; a template-death completes
+  the finale; turn-in wins; the ending fires once; it reads the chronicle).
+  Remainder P21.2b: a proper full-screen ending sequence, and the arc
+  reacting to the P21.1 choice-flags / the living-world state.)*
 - [ ] **P21.3 Puzzles II.** Levers & gates, pressure plates,
   riddles-with-answers, combination locks, item-fit puzzles — many
   instances, beyond the single sigil ward.
@@ -3924,6 +3942,23 @@ This phase gives NPCs agency, a social web, and gods that act.
   tints, richer weather.
 - [ ] **P22.5 UI theming.** A cohesive, art-styled HUD and panels with
   iconography.
+- [ ] **P22.6 Non-blocking spellcasting (George, 2026-07-12).** The X-key
+  spellbook overlay blocks the whole view — fatal when you're casting mid-
+  combat and need to see the field. Design a spell system that stays out
+  of the way: a quick-cast hotbar / number-key slots for favourited spells,
+  or a compact radial/side rail that leaves the battlefield visible, with a
+  target already picked (P8.7 targeting). Research how action-RPGs surface
+  spells in combat (Diablo/Path of Exile hotbars, Tyranny/Pillars quick-
+  cast, Caves of Qud ability slots). Important for combat feel.
+- [ ] **P22.7 Buildings you can read at a glance (George, 2026-07-12).**
+  Every building looks alike, so you can't tell a smithy from a home or
+  find the vendor. Give them IDENTITY: per-kind building styles/roof
+  colours (the `renderer_buildings` height/colour data already keys off
+  kind — extend it), hanging SIGNS over shops/inns/temples (an anvil, a
+  mug, a sun), and a genuinely better 2.5D pass for multi-storey builds
+  (the castle, towers, the inn's loft). Research town-rendering in other
+  games + Autonomous World. "Important to making the game enticing to
+  play."
 
 ## Phase 23 — Law, Witness & the Society of Estates  (George, 2026-07-12) — the "affected by the player" arc
 

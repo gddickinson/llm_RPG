@@ -5563,3 +5563,45 @@ paths; a reward choice pays the option you picked and defaults to the
 first; the castle fork exists and is mutually exclusive) plus the castle
 suite still green. Remainder P21.1b: NPCs and factions that react to the
 choice flags, and a dialog choice-menu to make the pick in-fiction.
+
+## The main arc — a spine and an ending (P21.2)
+
+The game had a hundred things to do and nothing to do them for: no
+overarching story, no world-goal, no ending. You could climb to level 20,
+marry, master a craft, break a nemesis — and the game just kept going,
+shapeless. This round gives it a spine and a close.
+
+Alzara the tower-wizard reads dark omens, and sets you on a five-stage
+path: cull the stirring wilds, seek the source in the deep, learn the old
+lore of the wyrms from Brother Anselm, survive the gathering night, and
+face the Elder Wyrm in its lair. It's authored data — five `main` quests
+chained by prerequisite, each with real objectives on the systems the game
+already has: a kill, a descent, a talk, a night survived, and at the end a
+single monster to slay. `engine/campaign.py` is the thin spine over it —
+which quests form the main line, whether the age is won, and the ending
+itself. The finale sets a `campaign_won` flag through last round's branching
+plumbing, a per-turn check catches the moment it flips, and the shadow
+lifts: a triumphant beat, once and only once, and the campaign is over.
+
+The ending isn't a fixed cutscene — it's a reading of the chronicle you
+actually wrote. The victory screen in the Y-journal opens "THE SHADOW
+LIFTS" and then recites the saga of your years: the nemesis you ran to
+ground, the war that broke out, the night the gods contended, the day you
+wed — the age of your own making, closed. So the two threads of this arc
+meet: Phase 20's chronicle becomes Phase 21's ending.
+
+One general improvement fell out of it: a KILL objective could only name a
+class ("monster"), never a specific quarry, so the climax couldn't ask for
+the Elder Dragon in particular. `on_npc_defeated` now also matches by the
+monster's template, so a quest can name its wyrm — and radiant bounties can
+name theirs too.
+
+8 tests (the arc is authored and chained; the finale is the reckoning and
+targets the wyrm; the spine orders; a template-death completes the finale;
+turn-in wins the campaign; the ending fires exactly once; and it reads the
+chronicle into its close). Remainder P21.2b: a full-screen ending sequence,
+and the arc bending to the choices you made along the way.
+
+Also captured two of George's play notes into Phase 22 — a non-blocking
+spellcasting system (the X-menu hides the fight) and buildings you can read
+at a glance (signs, styles, a better 2.5D for multi-storey builds).

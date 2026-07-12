@@ -34,7 +34,9 @@ def _quest_from_entry(quest_id: str, entry: dict) -> Quest:
                         "quest_points", "requires_bond",
                         # branching (P21.1)
                         "excludes", "excluded_by", "sets_flag",
-                        "prereq_flag", "blocked_by_flag", "reward_choices")
+                        "prereq_flag", "blocked_by_flag", "reward_choices",
+                        # the main arc (P21.2)
+                        "main", "main_finale")
             if key in entry
         },
     )

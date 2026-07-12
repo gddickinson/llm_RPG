@@ -377,6 +377,12 @@ class GameGUI:
             lines += self.engine.chronicle.lines()
         except Exception:
             pass
+        try:   # the ending, once the age is won (P21.2)
+            from engine.campaign import is_won, summary
+            if is_won(self.engine):
+                lines += summary(self.engine)
+        except Exception:
+            pass
         self.overlay = ("Journal — Topics, Legends & Chronicle", lines)
         self.mode = "menu"
 

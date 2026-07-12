@@ -59,6 +59,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Lair clear-check error: {e}")
 
+    # The main arc's finale — the age is won (P21.2)
+    try:
+        from engine.campaign import check_finale
+        check_finale(self)
+    except Exception as e:
+        logger.debug(f"Campaign finale error: {e}")
+
     # A guard collects on the ledger (P12.9)
     try:
         self.law.check_contact()

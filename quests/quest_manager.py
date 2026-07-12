@@ -272,15 +272,18 @@ class QuestManager:
 
     def on_npc_defeated(self, npc_id: str, npc_class: str = "") -> None:
         hostile = npc_class in ("monster", "brigand", "troll")
+        # the monster TEMPLATE, e.g. "elder_dragon" from "enc_elder_dragon_a1"
+        template = ("_".join(npc_id.split("_")[1:-1])
+                    if npc_id.startswith("enc_") else "")
         for quest in self.active():
             for obj in quest.objectives:
                 if obj.obj_type != ObjectiveType.KILL:
                     continue
-                # Match by exact id, by class — and 'monster' as a
-                # forgiving authoring default matches ANY hostile
-                # kill (PT3.3: DM quests targeting 'monster' never
-                # completed on brigand-class victims)
+                # Match by exact id, by TEMPLATE (a named quarry like the
+                # Elder Dragon), by class — and 'monster' as a forgiving
+                # authoring default matching ANY hostile kill (PT3.3).
                 if obj.target == npc_id or obj.target == npc_class \
+                        or (template and obj.target == template) \
                         or (obj.target == "monster" and hostile):
                     obj.increment(1)
                     self._newly_completed(quest, obj)

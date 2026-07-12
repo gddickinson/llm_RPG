@@ -461,5 +461,99 @@
       }
     ],
     "quest_points": 5
+  },
+  "main_1_the_stirring": {
+    "title": "The Stirring Wilds",
+    "description": "Alzara the wizard has read dark omens: the wilds stir with an unnatural menace. Cull the beasts and prove the threat is real.",
+    "giver_id": "tower_wizard_01",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "monster",
+        "required": 3,
+        "description": "Slay 3 stirring beasts"
+      }
+    ],
+    "main": true,
+    "reward_gold": 60,
+    "reward_xp": 150,
+    "quest_points": 1
+  },
+  "main_2_the_source": {
+    "title": "The Source in the Deep",
+    "description": "Something calls the beasts out of the dark. Seek its source in the deep places of the world.",
+    "giver_id": "tower_wizard_01",
+    "prereq_quest": "main_1_the_stirring",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "Dark Cave",
+        "required": 1,
+        "description": "Descend into the Dark Cave"
+      }
+    ],
+    "main": true,
+    "reward_gold": 90,
+    "reward_xp": 250,
+    "quest_points": 2
+  },
+  "main_3_the_lore": {
+    "title": "The Old Lore",
+    "description": "Brother Anselm keeps the old lore of the wyrms. Learn what you face before it is too late.",
+    "giver_id": "hamlet_priest_01",
+    "prereq_quest": "main_2_the_source",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "hamlet_priest_01",
+        "required": 1,
+        "description": "Hear Brother Anselm's lore of the wyrms"
+      }
+    ],
+    "main": true,
+    "reward_gold": 80,
+    "reward_xp": 250,
+    "quest_points": 2
+  },
+  "main_4_the_gathering_night": {
+    "title": "The Gathering Night",
+    "description": "The darkness gathers to a head. Steel yourself and survive the coming night; at dawn, the reckoning waits.",
+    "giver_id": "tower_wizard_01",
+    "prereq_quest": "main_3_the_lore",
+    "objectives": [
+      {
+        "type": "survive",
+        "target": "night",
+        "required": 1,
+        "description": "Survive the gathering night"
+      }
+    ],
+    "main": true,
+    "reward_gold": 120,
+    "reward_xp": 350,
+    "quest_points": 3
+  },
+  "main_5_the_reckoning": {
+    "title": "The Reckoning",
+    "description": "The shadow over the realm has a name and a shape: the Elder Wyrm. Face it in its lair and end the darkness \u2014 or fall, and let it consume all.",
+    "giver_id": "tower_wizard_01",
+    "prereq_quest": "main_4_the_gathering_night",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "elder_dragon",
+        "required": 1,
+        "description": "Slay the Elder Dragon and end the shadow"
+      }
+    ],
+    "main": true,
+    "main_finale": true,
+    "sets_flag": "campaign_won",
+    "reward_gold": 1000,
+    "reward_xp": 2000,
+    "reward_items": [
+      "ring_protection"
+    ],
+    "quest_points": 10
   }
 }
