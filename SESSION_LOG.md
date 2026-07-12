@@ -6229,3 +6229,19 @@ mends the most-wounded ally, companions eat/drink on the road, a member at
 death's door LEAVES to survive — and aid-willingness gated by alignment /
 relationship / personality / memory (George: different characters help each
 other differently).
+
+## 2026-07-12 (cont.) — M.10c (sub-step): aid depends on WHO you are
+
+George: different characters, with different alignments and alliances/enmities,
+act differently in a party — some less willing to help a given ally or the hero;
+their personalities and relationships should drive it, in a party and out. First
+tested slice: `engine/party_aid.py` scores `aid_willingness(giver, recipient)`
+0–100 from the RELATIONSHIP the giver holds toward the one in need (the biggest
+lever), personality TRAITS (loyal/kind/generous lift it, selfish/greedy/cruel
+sink it), and ALIGNMENT (good helps freely, evil hoards) — you always help
+yourself. `CompanionManager._heal_ally` puts it to work: a healer companion
+(knows Heal, has mana) now mends the most-wounded nearby ally — hero or party —
+but ONLY one it's `will_aid`-willing to help, so a soured or selfish healer
+withholds its magic from someone it can't stand. 12 tests. Remainder: companions
+eat/drink on the road, a member at death's door LEAVES to survive, and
+memory-driven willingness (recent slights/kindnesses).

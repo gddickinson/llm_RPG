@@ -3634,7 +3634,7 @@ today reacts only to HP — a real gap.
   companion still critical after healing BREAKS OFF even on follow/hold.
   Verified injuries flow through `_resolve`→`take_damage`.
   `tests/test_party_survival.py` (7).
-- [ ] **M.10c Party welfare & cooperation (+ personality-driven aid).**
+- [~] **M.10c Party welfare & cooperation (+ personality-driven aid).**
   Companions satisfy their own needs on the road (eat/drink), a HEALER companion
   mends the most-wounded ally, and a member at death's door with no way to
   recover LEAVES the party to save itself (a beat), rejoining when well. The
@@ -3644,7 +3644,15 @@ today reacts only to HP — a real gap.
   a selfish or hostile-leaning member is slower to spend its potion on someone
   it dislikes, a loyal or good-aligned one readily helps; the same forces shape
   behaviour OUT of a party too. Aid-willingness = f(regard, alignment, traits,
-  recent memories), a gate on the heal/share decision.
+  recent memories), a gate on the heal/share decision. *Sub-step done
+  (personality-gated healing):* `engine/party_aid.py` `aid_willingness`
+  (0–100 from relationship + generous/stingy traits + good/evil alignment) +
+  `will_aid`; `CompanionManager._heal_ally` — a healer companion (knows Heal,
+  has mana) mends the most-wounded nearby ally (hero or party) BUT only one it's
+  willing to help (a soured/selfish healer withholds). `tests/test_party_aid.py`
+  (12). *Remainder:* companions eat/drink on the road (route M.10a self-care
+  through the party), a member at death's door LEAVES the party (and rejoins
+  when well), and memory-driven willingness (recent slights/kindnesses).
 
 ### M.6b / M.7b — the living-world remainders (already scoped above)
 - [~] **M.6b Rival adventuring parties.** Adventurers take their own quests,

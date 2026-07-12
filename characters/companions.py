@@ -15,6 +15,10 @@ logger = logging.getLogger("llm_rpg.companions")
 
 BANTER_EVERY = 45
 SELF_HEAL_HP = 0.5        # M.10b: a companion below half HP quaffs its potion
+AID_HP = 0.6              # M.10c: a healer mends an ally below this HP
+HEAL_MANA = 3             # mana a mending costs
+HEAL_AMOUNT = 12          # HP a mending restores
+AID_REACH = 4             # how near the wounded ally must be to mend it
 
 
 def _load_banter():
@@ -164,6 +168,37 @@ class CompanionManager:
             f"{npc.name} gulps a {pot.name}, steadying themselves.")
         return True
 
+    def _heal_ally(self, healer) -> bool:
+        """A healer companion (knows Heal, has the mana) mends the most-wounded
+        ally within reach — the player or another party member — but only one
+        it is WILLING to help (M.10c: relationship / traits / alignment gate).
+        Returns True if it spent the turn healing."""
+        from engine.agent_sense import _knows_heal
+        if not _knows_heal(healer):
+            return False
+        from engine import party_aid
+
+        def near(c):
+            hx, hy = healer.position
+            cx, cy = c.position
+            return max(abs(hx - cx), abs(hy - cy)) <= AID_REACH
+
+        cands = [self.engine.player] + [m for m in self.members()
+                                        if m.id != healer.id]
+        hurt = [c for c in cands
+                if c is not None and c.is_active()
+                and c.hp < c.max_hp * AID_HP and near(c)
+                and party_aid.will_aid(healer, c)]
+        if not hurt:
+            return False
+        target = min(hurt, key=lambda c: c.hp / max(1, c.max_hp))
+        meta = healer.metadata
+        meta["mana"] = meta.get("mana", 0) - HEAL_MANA
+        target.hp = min(target.max_hp, target.hp + HEAL_AMOUNT)
+        self.engine.memory_manager.add_event(
+            f"{healer.name} channels a mending light over {target.name}.")
+        return True
+
     def banter_tick(self) -> None:
         """P15.5: the road talks. One authored line every
         BANTER_EVERY quiet turns, cycling per companion."""
@@ -200,6 +235,10 @@ class CompanionManager:
                 continue
             order = npc.metadata.get("order", "follow")
             if self._flee_step(npc):
+                continue
+            # M.10c: a HEALER mends the most-wounded nearby ally — but only
+            # one it's WILLING to help (a soured or selfish healer won't)
+            if self._heal_ally(npc):
                 continue
             # Focus fire: the player's current target comes first (P7.3)
             focus = player_focus_target(self.engine)

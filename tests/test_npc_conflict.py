@@ -72,13 +72,21 @@ class TestNPCConflict(unittest.TestCase):
                         f"hp {bandit.hp}/{hp_before})")
 
     def test_hostile_raids_nearby_civilian(self):
+        from world.world_map import TerrainType
         self._park_player_far()
+        self._clear_other_hostiles()       # no rival hostile steals/blocks it
         villager = next(
             n for n in self.engine.npc_manager.npcs.values()
             if getattr(n.character_class, "value", "") in
             ("villager", "merchant") and n.is_active())
-        # No guards in sight: clear a corner for the ambush
+        # No guards in sight: clear an open, walkable lane for the ambush so
+        # the bandit's approach never stalls on worldgen terrain or a bystander
         vx, vy = 3, self.wmap.height - 4
+        for x in range(1, 8):
+            self.wmap.terrain[vy][x] = TerrainType.GRASS
+            occ = self.wmap.get_character_at(x, vy)
+            if occ is not None and occ is not villager:
+                self.wmap.remove_character(occ)
         self._put(villager, vx, vy)
         bandit = self._spawn("bandit", vx + 2, vy)
         hp_before = villager.hp
