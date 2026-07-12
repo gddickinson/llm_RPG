@@ -102,10 +102,13 @@ class BattleSession:
                     continue
             d = ai._dist(sol.pos, target.pos)
             reach = ai.reach_of(sq)
-            if sq.stats.get("ranged", 0) > 0:    # high ground shoots farther
+            ranged_unit = sq.stats.get("ranged", 0) > 0
+            shoot_ok = True
+            if ranged_unit:                      # high ground shoots farther,
                 from engine.battle import battle_terrain as terrain
                 reach += terrain.height_reach(field, sol.pos)
-            if d <= reach:
+                shoot_ok = terrain.has_los(field, sol.pos, target.pos)  # E3
+            if d <= reach and shoot_ok:
                 # face what you fight — so a foe striking from outside
                 # this front takes the flank/rear bonus (P17.11)
                 sol.facing = facing.face_toward(sol.x, sol.y,

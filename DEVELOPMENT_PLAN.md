@@ -2857,10 +2857,24 @@ driven and folds into the battle grid (its own terrain strings +
   front bonus and no morale where an open one takes the flank). No battle
   regressions. Suite 1657, green. *(Remainder shares P17.E1b's loader
   hook: authoring obstacle terrain + elevation into the scenario grids.)*)*
-- [ ] **P17.E3 Battle line-of-sight.** Trees/buildings/walls/ramparts
+- [x] **P17.E3 Battle line-of-sight.** Trees/buildings/walls/ramparts
   BLOCK sight (reuse `world/fov.overworld_los`) so ranged units can't
   target through cover — closes the P17.6b "no wall LOS" gap and makes
   cover concealment as well as protection.
+  *(Round 175: `battle_terrain.has_los(field, a, b)` walks the line
+  between shooter and target and returns False if any tile on it is a
+  SIGHT_BLOCK terrain (wall/gate/mountain/forest/building/cliff/rampart);
+  the endpoints never block, so an archer fires FROM the edge of a wood
+  but not THROUGH it, and low cover (hedge/sandbags) is seen over. Wired
+  two ways: `attack`'s ranged branch refuses a shot with no LOS, and the
+  session tick gates a ranged unit's in-reach test on LOS so a blocked
+  archer REPOSITIONS toward a clear lane instead of freezing behind the
+  wall. Started on `world/fov`'s FOV-per-shot but that doubled the suite
+  runtime, so it's a Bresenham line-walk (O(distance), same semantics) —
+  the suite is back to normal. 8 tests (clear/wall/treeline/hedge/self-
+  in-wood LOS; no shot through a wall but a clear lane lands; firing from
+  the edge of a wood). No battle regressions; cover is now concealment as
+  well as protection. Suite 1672, green.)*
 - [ ] **P17.E4 Fire & the battle surface layer.** A sparse grid
   `surfaces` layer (port `engine/surfaces.py`): fire arrows, battle-
   magic, and boiling oil (P17.6e) IGNITE oil/forest/wooden structures;

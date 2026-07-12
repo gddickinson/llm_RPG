@@ -4099,3 +4099,31 @@ where an open flank takes the full flank to-hit and shakes. No battle
 regressions. Suite 1657, green. REMAINDER: shares P17.E1b's one missing
 piece — a loader hook to author obstacle terrain and elevation into the
 scenario grids (the field API for both is complete).
+
+**Round 175 — P17.E3 Battle line-of-sight.**
+The environment track's third piece, and the one that finally makes cover
+CONCEAL as well as protect: you cannot loose an arrow through a treeline, a
+wall, or a ridge. `battle_terrain.has_los(field, a, b)` walks the line from
+shooter to target and fails the moment it crosses a SIGHT_BLOCK terrain —
+wall, gate, mountain, forest, building, cliff, rampart — while low cover, a
+hedge or a bank of sandbags, is seen over (it still blunts the shot via the
+P17.6 cover model, but doesn't hide the target). The endpoints never block
+their own line, which encodes the right feel: an archer fires FROM the edge
+of a wood but not THROUGH it, and a target standing at the near fringe of
+cover is still a target. It wires in two places. `attack`'s ranged branch
+now refuses the shot outright when the lane is blocked — closing the
+long-standing gap where bowmen could shoot through a wall. And the session
+tick gates a ranged unit's in-reach test on line-of-sight, so a blocked
+archer doesn't stand uselessly behind the obstruction: with no clear shot
+it falls through to MOVEMENT and repositions toward a lane, exactly what a
+real archer does. One performance note worth recording: the plan says to
+reuse `world/fov.overworld_los`, and I did at first — but that computes a
+whole shadowcast FOV per shot, and with archers checking LOS every tick it
+more than doubled the test suite's runtime (22s → 54s). A point-to-point
+shot doesn't need a full field of view, only the straight line, so it
+became a Bresenham line-walk — O(distance), the same terrain-blocks-the-
+line semantics — and the suite dropped straight back to 24s. 8 tests: the
+predicate over clear ground, a wall, a treeline, low cover, and the
+shooter's own wood; and in battle, no shot landing through a wall, a clear
+lane hitting, and an archer firing from inside the trees. No battle
+regressions. Suite 1672, green.

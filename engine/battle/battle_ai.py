@@ -172,6 +172,8 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
         power = st.get("melee", 0)
     elif d <= RANGED_REACH + terrain.height_reach(field, atk_soldier.pos) \
             and st.get("ranged", 0) > 0:
+        if not terrain.has_los(field, atk_soldier.pos, target.pos):
+            return False                     # can't shoot through cover (E3)
         power = st.get("ranged", 0)          # high ground shoots farther
         ranged = True
     else:

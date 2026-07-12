@@ -23,6 +23,12 @@ MAX_REACH = 2           # cap the extra ranged tiles from height
 # tile entered (1 = normal ground).
 MOVE_COST = {"stream": 2, "ditch": 2, "bog": 3, "marsh": 2, "mud": 2}
 
+# E3: terrain tall/dense enough to BLOCK sight — you can't loose an arrow
+# through a treeline, a wall, or a hill. Low cover (hedge/sandbags) you
+# shoot over; a forest you cannot see through.
+SIGHT_BLOCK = ("wall", "gate", "mountain", "forest", "building",
+               "cliff", "rampart")
+
 
 def _diff(field, atk_pos, def_pos) -> int:
     return field.elevation_at(*atk_pos) - field.elevation_at(*def_pos)
@@ -79,3 +85,37 @@ def anchored(field, atk_pos, def_pos, facing) -> bool:
             (p2[0] * vx + p2[1] * vy) else p2
     tx, ty = dx + side[0], dy + side[1]
     return field.in_bounds(tx, ty) and field.is_blocking(tx, ty)
+
+
+# ---- E3: battle line-of-sight ---------------------------------------
+
+def has_los(field, a, b) -> bool:
+    """Can a shooter at `a` see (and so hit) `b`? Sight-blocking terrain
+    on the line between them — a treeline, a wall, a ridge — hides the
+    target (P17.E3). The shooter's own tile and the target's tile don't
+    block, so an archer fires FROM the edge of a wood but not THROUGH it.
+
+    A Bresenham line-walk (O(distance)) rather than a full FOV per shot —
+    the same idea as `world/fov.overworld_los`, sized for a battle that
+    checks LOS every tick per archer."""
+    x0, y0 = a
+    x1, y1 = b
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+    x, y = x0, y0
+    while (x, y) != (x1, y1):
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x += sx
+        if e2 < dx:
+            err += dx
+            y += sy
+        if (x, y) == (x1, y1):              # reached the target — endpoints
+            break                           # never block their own line
+        if field.in_bounds(x, y) and field.terrain[y][x] in SIGHT_BLOCK:
+            return False
+    return True
