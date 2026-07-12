@@ -3878,11 +3878,18 @@ template), `world/structures.py` (walls as HP structures), `world/blueprints.py`
 (footprints). P27.1 already makes a settlement's environs a no-spawn SAFE ZONE.
 The work is to UNIFY these into one standalone generator and enrich the output.
 
-- [ ] **P31.1 Walled, guarded, monster-free start town.** The default start
+- [x] **P31.1 Walled, guarded, monster-free start town.** The default start
   settlement (Oakvale) gets a WALL ring + gate(s) with posted GUARDS, composing
   `castle_region`'s curtain-wall approach into the ordinary town. Combined with
   P27.1's safe zone, the town has no monsters wandering inside; guards turn back
-  what approaches the gate. The visible, immediate win George asked for.
+  what approaches the gate. The visible, immediate win George asked for. *Done:*
+  `world/fortify.py` — `fortify(wmap, location, margin=2)` rings a town's
+  perimeter with WALL (BUILDING), leaves ROAD crossings as GATES (cuts one on
+  the south edge if no road crosses), leaves water/mountain as natural barriers,
+  never touches the interior; `post_guards` stands a GUARD at each gate. Wired
+  into `world_generator._fortify_start_town` (walls Oakvale, records gates on
+  the Location) + `demo_setup` (posts the guards after spawn). Player-not-trapped
+  verified by BFS. `tests/test_fortify.py` (9).
 - [ ] **P31.2 A standalone world-generation entrypoint.** A `worldgen` CLI/script
   (separate from play) that generates a full world to a SEED — terrain, rivers,
   tiered settlements, roads, history, landmarks — and writes it to a durable

@@ -6288,3 +6288,19 @@ stays positive everywhere, so the weather/omen encounter-RATIO tests are
 untouched. +4 tests. The physical walls + gate guards on the start town, and a
 standalone persistent world generator with history/settlements/lands, are
 ultraplanned as Phase 31 (George's world-map request).
+
+## 2026-07-12 (cont.) — P31.1: the walled, guarded start town
+
+George: the starting town should be a walled, guarded town without monsters
+wandering inside. P27.1 stopped the wandering spawns; this raises the walls.
+`world/fortify.py` `fortify(wmap, location, margin=2)` rings a settlement with
+a curtain wall (BUILDING tiles) two tiles out from its footprint, leaving a
+GATE wherever a road crosses the ring (and cutting one on the south edge if
+none does), and leaving water/mountain as natural barriers — the interior is
+never touched, so the town stays connected. `post_guards` stands a guard just
+inside each gate. `world_generator._fortify_start_town` walls Oakvale at the
+end of generation (recording the gate tiles on the Location); `demo_setup`
+posts the guards after the cast + player spawn. A BFS test proves the player,
+who starts inside, can always reach the open world through a gate — never
+trapped. 9 tests. The standalone persistent world generator + tiered
+settlements + generated history + lands (P31.2–6) remain.

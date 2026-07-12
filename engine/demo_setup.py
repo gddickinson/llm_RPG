@@ -223,6 +223,17 @@ def initialize_demo_world(engine, player_spec=None,
     engine.player.position = spawn or _resolve_player_spawn(engine)
     engine.world.map.place_character(engine.player, *engine.player.position)
 
+    # P31.1 — post guards at the walled start town's gates (default world)
+    if not castle:
+        try:
+            from world.fortify import post_guards
+            oak = next((l for l in engine.world.locations
+                        if l.name == "Oakvale Village"), None)
+            gates = (oak.get_property("gates") if oak else None) or []
+            post_guards(engine, [tuple(g) for g in gates])
+        except Exception as e:
+            logger.debug(f"gate guards: {e}")
+
     engine.memory_manager.add_event(
         "You stand before the gates of Bloodstone Castle." if castle
         else "You arrive at the outskirts of Oakvale Village.")

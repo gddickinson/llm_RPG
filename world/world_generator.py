@@ -58,8 +58,21 @@ class WorldGenerator:
             self._add_wilderness_buildings()
             self._add_murkfen_swamp()
         self._add_wilderness_features()
+        self._fortify_start_town()
         logger.info(f"Procedural world generated ({self.w}x{self.h}) "
                     f"with {len(self.world.locations)} locations")
+
+    def _fortify_start_town(self) -> None:
+        """P31.1 — ring Oakvale with a curtain wall, gates where the roads
+        cross, so the start town is defensible and monster-free (guards are
+        posted at the gates in demo_setup, where the NPC manager lives)."""
+        from world.fortify import fortify
+        oak = next((l for l in self.world.locations
+                    if l.name == "Oakvale Village"), None)
+        if oak is None:
+            return
+        gates = fortify(self.world.map, oak, margin=2)
+        oak.add_property("gates", [list(g) for g in gates])
 
     # ----- terrain ----------------------------------------------------
 
