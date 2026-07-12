@@ -86,5 +86,32 @@ class TestTickerFoldBack(unittest.TestCase):
         self.assertTrue(1 <= FactionTicker._casualty_hit(0.5) <= 10)
 
 
+class TestMonsterIncursionFold(unittest.TestCase):
+    def _ticker(self):
+        from engine.faction_ticker import FactionTicker
+        return FactionTicker(engine=None, seed=1)
+
+    def test_a_beast_tide_presses_in(self):
+        t = self._ticker()
+        t.state["monsters"]["strength"] = 95
+        t.state["villagers"]["strength"] = 8
+        self.assertIn("pressed in", t._monster_incursion()[0])
+
+    def test_the_militia_drives_the_beasts_back(self):
+        t = self._ticker()
+        t.state["monsters"]["strength"] = 10
+        t.state["villagers"]["strength"] = 95
+        m0 = t.state["monsters"]["strength"]
+        notes = t._monster_incursion()
+        self.assertIn("drove the beasts back", notes[0])
+        self.assertLess(t.state["monsters"]["strength"], m0,
+                        "the broken warband loses strength")
+
+    def test_clash_helper_returns_a_faction_winner(self):
+        t = self._ticker()
+        res = t._clash("brigands", "guards")
+        self.assertIn(res["winner"], ("brigands", "guards", None))
+
+
 if __name__ == "__main__":
     unittest.main()

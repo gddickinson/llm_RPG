@@ -64,13 +64,20 @@ class FactionTicker:
         bounded so one skirmish can't gut a faction (P17.8)."""
         return min(10, max(1, int(round((1.0 - ratio) * 12))))
 
-    def _brigand_raid(self) -> List[str]:
-        # P17.8: the real Lanchester resolver settles it, not a die —
-        # a brigand mounted rush can founder on the guards' spear line.
+    def _clash(self, atk: str, dfn: str, terrain: str = "plains") -> dict:
+        """P17.8: settle an off-screen clash between two factions with
+        the real Lanchester resolver, dressing each side's strength as an
+        army. The caller reads `winner` and applies its own store/flavor
+        effects; strength losses scale with the mauling via _casualty_hit."""
         from engine.faction_battle import resolve_raid
-        res = resolve_raid("brigands", self.state["brigands"]["strength"],
-                           "guards", self.state["guards"]["strength"],
-                           self.rng)
+        return resolve_raid(atk, self.state[atk]["strength"],
+                            dfn, self.state[dfn]["strength"],
+                            self.rng, terrain=terrain)
+
+    def _brigand_raid(self) -> List[str]:
+        # P17.8: the real resolver settles it, not a die — a brigand
+        # mounted rush can founder on the guards' spear line.
+        res = self._clash("brigands", "guards")
         if res["winner"] == "brigands":
             self.state["villagers"]["stores"] -= 8
             self.state["brigands"]["stores"] += 8
@@ -120,10 +127,7 @@ class FactionTicker:
 
     def _guard_patrol(self) -> List[str]:
         # P17.8: the patrol falls on a brigand camp — resolve the clash.
-        from engine.faction_battle import resolve_raid
-        res = resolve_raid("guards", self.state["guards"]["strength"],
-                           "brigands", self.state["brigands"]["strength"],
-                           self.rng)
+        res = self._clash("guards", "brigands")
         if res["winner"] == "guards":
             self.state["brigands"]["strength"] -= \
                 self._casualty_hit(res["def_ratio"])
@@ -145,12 +149,18 @@ class FactionTicker:
                 "are gone."]
 
     def _monster_incursion(self) -> List[str]:
-        if self._roll() >= 5:
-            self.state["monsters"]["strength"] += 4
+        # P17.8: beasts out of the wilds (forest) fall on the village
+        # militia — the resolver weighs terror & charge against numbers.
+        res = self._clash("monsters", "villagers", terrain="forest")
+        if res["winner"] == "monsters":
+            self.state["monsters"]["strength"] += 2
             self.state["villagers"]["stores"] -= 4
+            self.state["villagers"]["strength"] -= \
+                self._casualty_hit(res["def_ratio"])
             return ["Beasts pressed in from the wilds; shepherds count "
                     "their losses."]
-        self.state["monsters"]["strength"] -= 4
+        self.state["monsters"]["strength"] -= \
+            self._casualty_hit(res["atk_ratio"])
         return ["Hunters drove the beasts back from the pastures."]
 
     def _good_harvest(self) -> List[str]:

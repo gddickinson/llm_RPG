@@ -2630,9 +2630,21 @@ is shippable and testable, de-risking UI last:
   check. 11 tests (army scaling + roster character + fallback + token
   force; stronger side wins, ratios bounded, winner mauled less,
   deterministic; ticker fold-back both ways + bounded casualty hit).
-  Suite 1750, green. Remainder P17.8b: retaliation's bounty-hunter
-  clash, commander orders extending to overworld `[Clash]` events, and
-  an overworld castle assault reusing the siege field.)*
+  Suite 1750, green.)*
+  *(Round 147 — the faction-ticker fold is now COMPLETE: the three
+  off-screen battle events all route through a shared `_clash(atk, dfn,
+  terrain)` helper. `_monster_incursion` joined `_brigand_raid` /
+  `_guard_patrol` — a beast tide out of the wilds (`terrain="forest"`)
+  falls on the village militia, the resolver weighing the beasts'
+  terror & charge against the peasants' numbers, and the loser bleeds
+  strength by `_casualty_hit`. Retaliation was examined and left alone:
+  its `run_night` SPAWNS a converging bounty-hunter NPC for on-screen
+  combat, not an off-screen army clash, so there's nothing to hand the
+  resolver. 3 tests (beast tide presses in, militia drives them back &
+  the warband loses strength, the clash helper). Suite 1753, green.
+  Remainder P17.8b: commander orders extending to overworld `[Clash]`
+  events, and an overworld castle assault reusing the siege field —
+  both overworld↔battle-screen integrations, not pure resolver folds.)*
 
 ### Combat fidelity arc (user: "highly realistic battles")
 Speed (P17.4c) is the keystone; these layer real tactics on the grid

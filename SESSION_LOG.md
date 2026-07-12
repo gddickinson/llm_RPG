@@ -4465,3 +4465,37 @@ it's deterministic per seed; plus the ticker fold-back both ways and the
 bounded casualty hit. Suite 1750, green. Remainder P17.8b: retaliation's
 bounty-hunter clash, commander orders reaching overworld `[Clash]`
 events, and an overworld castle assault reusing the siege field.
+
+---
+
+## Round 147 — P17.8 fold-back: the faction-ticker fold completed
+
+Part 1 (round 146) folded two of the ticker's three off-screen combat
+events onto the real resolver. This round finishes the set and tidies
+the seam.
+
+A shared `FactionTicker._clash(atk, dfn, terrain)` helper now dresses
+both factions from their strength and runs `faction_battle.resolve_raid`,
+returning the result for the caller to read; `_brigand_raid` and
+`_guard_patrol` were refactored onto it (killing the duplicated
+resolve_raid boilerplate part 1 introduced), and `_monster_incursion`
+— the last d10 combat event — joined them. A beast tide out of the wilds
+fights on `terrain="forest"`, so the resolver weighs the monsters' terror
+and charge against the village militia's numbers, and whichever side
+breaks bleeds strength in proportion (`_casualty_hit`). Every off-screen
+battle the world runs each day now goes through the same army model the
+Battle Testbed does.
+
+Retaliation was examined for the same treatment and deliberately left
+alone: its `run_night` doesn't resolve an off-screen battle — it SPAWNS a
+level-scaled bounty-hunter NPC that converges on the player for an
+on-screen fight (via the P7.1 conflict system). There's no army clash to
+hand the resolver, so folding it would be forcing a fit. Noted in the
+plan.
+
+3 new tests: a beast tide presses in (monsters win, militia loses
+stores), the militia drives the beasts back and the broken warband loses
+strength, and the `_clash` helper returns a faction winner. Suite 1753,
+green. Remainder P17.8b is now just the two overworld↔battle-screen
+integrations: commander orders reaching overworld `[Clash]` events, and
+an overworld castle assault reusing the siege field.
