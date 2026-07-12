@@ -3939,9 +3939,20 @@ This phase gives NPCs agency, a social web, and gods that act.
   prayer fall-through, the keep's authored gate, persistence). Remainder
   P21.3b: riddles-with-typed-answers, pressure plates, and more authored
   instances.)*
-- [ ] **P21.4 Set-piece variety.** Escort / protect, stealth / heist,
+- [x] **P21.4 Set-piece variety.** Escort / protect, stealth / heist,
   timed / chase, and boss-tied quests; a player-joinable siege or battle
   (the P17 layer the player fights *in*, not watches).
+  *(Round — the TIMED set-piece (chase against the clock): a quest with a
+  `time_limit` starts a countdown (`turns_left`) on acceptance;
+  `on_turn_advanced` runs it down each turn (beside the SURVIVE tick), and
+  one that expires unfinished FAILS through P21.1's `fail_quest` — beat the
+  clock and the countdown clears. A `time_left(id)` query feeds a HUD
+  timer. Authored: "Before the Trail Goes Cold", a 60-turn bounty on a
+  marauder. `quest_templates` carries `time_limit`. 6 tests (the clock
+  starts on accept, ticks down, expires to FAILED, clears on completion,
+  leaves untimed quests alone; the content). Remainder P21.4b: escort /
+  protect (an NPC that must reach a place alive), stealth / heist, and a
+  player-JOINABLE P17 battle rather than an off-screen one.)*
 - [ ] **P21.5 Landmarks off-origin.** Streamed regions seed named
   locations, dungeons, and mini-quests instead of procedural noise;
   richer, real biomes.

@@ -69,10 +69,23 @@ def _knows_heal(char) -> bool:
 
 
 def _can_shoot(char) -> bool:
+    """A drawn bow is no use without arrows — an agent that dry-fires an
+    empty quiver forever just stands and 'shoots' (bug-fix 2026-07-12).
+    Require matching ammo unless the weapon is thrown."""
     try:
         from characters.equipment import equipped_weapon
+        from items.item import Item
         w = equipped_weapon(char)
-        return w is not None and w.is_ranged_weapon()
+        if w is None or not w.is_ranged_weapon():
+            return False
+        if getattr(w, "weapon_kind", "") == "thrown":
+            return True                       # thrown needs no ammo
+        ammo = getattr(w, "ammo_type", "")
+        if not ammo:
+            return True
+        return any(isinstance(it, Item) and it.is_ammo()
+                   and it.ammo_type == ammo and it.quantity > 0
+                   for it in getattr(char, "inventory", []))
     except Exception:
         return False
 

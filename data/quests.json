@@ -555,5 +555,21 @@
       "ring_protection"
     ],
     "quest_points": 10
+  },
+  "timed_bounty": {
+    "title": "Before the Trail Goes Cold",
+    "description": "A marauder was sighted at the edge of the wilds. Run it down before it slips away \u2014 you have only until dusk.",
+    "giver_id": "guard_01",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "brigand",
+        "required": 1,
+        "description": "Slay the marauder before time runs out"
+      }
+    ],
+    "time_limit": 60,
+    "reward_gold": 120,
+    "reward_xp": 200
   }
 }

@@ -36,7 +36,9 @@ def _quest_from_entry(quest_id: str, entry: dict) -> Quest:
                         "excludes", "excluded_by", "sets_flag",
                         "prereq_flag", "blocked_by_flag", "reward_choices",
                         # the main arc (P21.2)
-                        "main", "main_finale")
+                        "main", "main_finale",
+                        # set-pieces (P21.4)
+                        "time_limit")
             if key in entry
         },
     )

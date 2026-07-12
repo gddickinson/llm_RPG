@@ -97,6 +97,7 @@ class TestPolicy(unittest.TestCase):
         bow = create_item("bow")
         self.hero.inventory.append(bow)
         equip(self.hero, bow)
+        self.hero.inventory.append(create_item("arrow"))   # a quiver to draw
         self.assertTrue(equipped_weapon(self.hero).is_ranged_weapon())
         self._wolf_at((3, 0))                    # in bow range, not adjacent
         self.assertEqual(self.ctrl.decide(self.engine, self.hero)[0],

@@ -91,6 +91,10 @@ class QuestManager:
             return False
         quest.status = QuestStatus.ACTIVE
         self._log(f"Quest accepted: {quest.title}")
+        # Against the clock (P21.4): start the countdown on acceptance
+        limit = quest.metadata.get("time_limit")
+        if limit:
+            quest.metadata["turns_left"] = int(limit)
         # Choosing this path shuts the door on its rivals (P21.1)
         for ex_id in quest.metadata.get("excludes", []):
             self.fail_quest(ex_id, reason=f"you sided with \"{quest.title}\"")
@@ -324,6 +328,24 @@ class QuestManager:
                 if obj.obj_type == ObjectiveType.SURVIVE:
                     obj.increment(1)
                     self._newly_completed(quest, obj)
+        self._tick_deadlines()
+
+    def _tick_deadlines(self) -> None:
+        """Timed quests (P21.4) run down; one that expires unfinished FAILS."""
+        for quest in list(self.active()):
+            if "turns_left" not in quest.metadata:
+                continue
+            if quest.is_complete():
+                quest.metadata.pop("turns_left", None)   # beat the clock
+                continue
+            quest.metadata["turns_left"] -= 1
+            if quest.metadata["turns_left"] <= 0:
+                self.fail_quest(quest.id, reason="time ran out")
+
+    def time_left(self, quest_id: str):
+        """Turns remaining on a timed quest, or None if it isn't timed."""
+        q = self.quests.get(quest_id)
+        return q.metadata.get("turns_left") if q else None
 
     # ----- save/load ---------------------------------------------------------
 

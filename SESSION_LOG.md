@@ -5675,3 +5675,33 @@ Also captured two of George's balance notes into a new Phase 26 —
 advancement is too fast and cheap (levels, skills), and casters are too
 strong because mana refills too quickly; both want slower, training-gated
 mastery.
+
+## Timed quests, and an agent that stops dry-firing (P21.4 + a live fix)
+
+Two things this round, one of them caught while George watched the game
+play itself.
+
+The set-piece: quests against the clock. A quest with a `time_limit` now
+starts a countdown the moment you accept it, ticks down every turn beside
+the survive-counter, and — if it expires with the deed undone — FAILS,
+through the same `fail_quest` the branching work wired last round. Beat the
+clock and the countdown just clears. There's a `time_left` for a HUD timer,
+and an authored instance to show it: "Before the Trail Goes Cold", a
+sixty-turn bounty on a marauder slipping toward the wilds. It's the first
+of the missing set-pieces; escort, stealth and a player-joinable battle are
+noted for next.
+
+The live fix: George opened the game with the hero on autoplay and watched
+it stand in one spot "shooting his bow but not doing anything else." The
+autoplay brain's `_can_shoot` only asked whether a ranged weapon was
+equipped — never whether there were arrows for it. So the moment the quiver
+ran dry, the agent kept choosing to shoot, the shot no-op'd for want of
+ammo, and the hero froze on the spot firing nothing forever. Now
+`_can_shoot` requires matching ammunition (thrown weapons excepted), so an
+empty-quivered agent falls through to closing the distance and fighting in
+melee — it moves, and it's watchable again.
+
+6 timed-quest tests (the clock starts, ticks, expires to FAILED, clears on
+completion, and leaves untimed quests alone; the authored bounty) and 3
+agent tests (no ammo can't shoot, ammo can, an empty quiver closes to melee
+instead of firing).
