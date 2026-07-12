@@ -174,6 +174,7 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     """Resolve one strike. Returns True if the target fell."""
     from engine.battle import battle_formation as form
     from engine.battle import battle_terrain as terrain
+    from engine.battle import battle_armour as armour
     st = atk_squad.stats
     d = _dist(atk_soldier.pos, target.pos)
     ranged = False
@@ -200,10 +201,16 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     tgt_squad = field.squads.get(target.squad_id)
     defence = tgt_squad.stats.get("defense", 0) if tgt_squad else 0
     dc = 10 + defence
+    # the defender's arc to this attacker (P17.11) — governs the shield
+    # (P17.10) and the morale shock below; computed once.
+    def_arc = form.effective_arc(
+        tgt_squad, facing.arc(target.facing, atk_soldier.pos, target.pos)
+    ) if tgt_squad is not None else None
     if ranged:
         dc += round(field.cover_at(target.x, target.y) * 10)
     if tgt_squad is not None:      # P17.16 LINE shield-overlap
         dc += form.defense_bonus(field, tgt_squad, target, atk_soldier)
+        dc += armour.shield_dc_bonus(tgt_squad.stats, def_arc, ranged)  # P17.10
     to_hit, dmg_mult = _position_mods(field, atk_soldier, target)
     roll = rng.randint(1, 20) + power + to_hit
     roll += form.attack_penalty(atk_squad)     # P17.17 RING fights weaker
@@ -217,6 +224,9 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     dmg = max(1, int(power // 3 * dmg_mult) + rng.randint(0, 2))
     if ranged and tgt_squad is not None:   # P17.16 LOOSE spreads the volley
         dmg = max(1, int(dmg * form.incoming_ranged_mult(tgt_squad)))
+    if tgt_squad is not None:              # P17.10 armour turns some types
+        dmg = armour.apply_resist(dmg, tgt_squad.stats.get("armour_type"),
+                                  st.get("damage_type"))
     if ranged and st.get("fire_arrow"):    # P17.E4 fire arrows set tiles alight
         from engine.battle import battle_fire
         battle_fire.ignite(field, target.x, target.y)
@@ -224,9 +234,7 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     # P17.15: a blow from the flank or rear shakes the whole squad's
     # nerve — but an all-facing RING (P17.17) has no exposed side.
     if tgt_squad is not None and not tgt_squad.routed:
-        ar = form.effective_arc(tgt_squad,
-                                facing.arc(target.facing,
-                                           atk_soldier.pos, target.pos))
+        ar = def_arc
         if ar in ("flank", "rear") and terrain.anchored(
                 field, atk_soldier.pos, target.pos, target.facing):
             ar = "front"                      # anchored — no morale shock (E2)

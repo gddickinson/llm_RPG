@@ -27,6 +27,7 @@ def _load(name: str) -> dict:
 UNITS = _load("units.json")
 FORMATIONS = _load("formations.json")
 FORTIFICATIONS = _load("fortifications.json")
+ARMOUR = _load("armour.json")           # P17.10 armour classes + shield
 _MATCH = _load("matchups.json")
 MATCHUP = _MATCH.get("matchup", {})
 TERRAIN = _MATCH.get("terrain", {})

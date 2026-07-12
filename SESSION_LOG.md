@@ -4246,3 +4246,55 @@ scales and out-of-range is no shot; the crossbow arms/holds and fires
 strictly less over a run while the longbow looses freely; the move
 penalty cuts hits but the Parthian shot ignores it; reload/moved survive
 a save round-trip. Suite 1698, green.
+
+---
+
+## Round 142 — P17.10 Armour, shields & damage types
+
+The grid battle knew one `defense` number. P17.10 splits protection into
+three things an archetype opts into — all data-driven
+(`data/battles/armour.json`) and all OPTIONAL, so an archetype naming
+none behaves exactly as it did — and with it the last big
+rock-paper-scissors of the arm falls into place.
+
+**Armour vs damage type.** An `armour_type` maps to a per-type resist
+multiplier. Mail shrugs a slash (0.78) but an arrow or a pick (pierce,
+1.1) punches straight through the rings; plate turns both blade (0.6)
+and point (0.8), yet a mace's blunt shock (1.2) transfers through the
+steel regardless. `battle_armour.apply_resist` folds this into the
+damage; `battle_ai.attack` calls it after the position/formation
+multipliers.
+
+**Shields.** A `shield` is a FRONT-ARC bonus to the to-hit DC — worth
+more against arrows (+3) than blades (+1), because you catch a shaft on
+it but a flanker just steps around it. `attack` now computes the
+defender's arc once and feeds it to both the shield DC and the P17.15
+morale shock.
+
+**Weight** (remainder P17.10b). `weight_of`/`speed_penalty` compute the
+tax an armoured, shielded unit pays — but the wiring into `Squad.speed`
+is deferred: the per-archetype speeds already encode heaviness (heavy
+cav < light, pike < sword), so a mechanical tax on top double-counts,
+and the int-truncated move budget lets even a 0.2 drop stop a unit
+moving every tick (it broke the wading and rout-flee tests outright).
+Wiring it wants a base-speed rebalance that separates raw mobility from
+armour weight; the math lives and is tested meanwhile.
+
+The data assignments make the RPS real: sword=slash+mail+shield,
+spear/pike=pierce+mail, archers=pierce+leather, light lance=pierce+
+leather+shield, heavy lance=pierce+PLATE+shield, war-beasts blunt/pierce.
+So arrows shred mailed foot but glance off a plated knight — **heavy
+cavalry finally ride out the arrow-storm**, the missing half of
+cavalry-vs-archers — while a maul is the answer to plate and a shield
+wall turns a frontal charge or volley (but not a flank).
+
+Balancing this perturbed two razor-thin existing tests, both retuned
+honestly: the elevation "downhill lands where flat misses" marginal roll
+now has to clear the target's new front-shield DC (fixed 6→8), and the
+`seize_the_hill` scenario — whose capture win hung on a 2-tick knife-edge
+against the elimination race — got its hold requirement eased 14→10 so
+the intended "hold it and the day is yours" outcome is robust across
+seeds rather than a coin-flip. 12 new tests in `tests/test_battle_armour.py`
+(resist table, shield front-arc & anti-ranged, weight, and in-battle:
+plate rides out arrows, a shield catches a frontal shaft a rear shot
+lands). Suite 1710, green.

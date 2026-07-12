@@ -2617,12 +2617,36 @@ elevation, terrain/obstacles, LOS, fire) is a parallel track.
   out-of-range; reload arms/holds/ticks-down-over-a-battle; longbow
   fires freely; move penalty reduces hits but the Parthian shot
   ignores it; round-trip). Suite 1698, green.)*
-- [ ] **P17.10 Armour, shields & damage types.** Split `defense`
+- [x] **P17.10 Armour, shields & damage types.** Split `defense`
   into armour (value + weight) and a shield (front-arc bonus, worth
   MORE vs ranged than melee); damage carries a type (slash/pierce/
   blunt) that armour resists unevenly (mail shrugs slashes, a pick
   punches through); armour weight taxes `speed`. Now heavy cavalry
   survive the arrow-storm — the missing half of cavalry-vs-archers.
+  *(Round 142: `engine/battle/battle_armour.py` (pure) over
+  `data/battles/armour.json` — armour CLASSES map an `armour_type` to
+  a per-damage-type resist multiplier (mail: slash 0.78 / pierce 1.1;
+  plate: slash 0.6 / pierce 0.8 / blunt 1.2 — a mace still tells) and
+  a weight; a SHIELD is a FRONT-ARC DC bonus worth more vs ranged
+  (+3) than melee (+1). `battle_ai.attack` computes the defender's arc
+  once → `shield_dc_bonus` on the DC and `apply_resist` on the damage;
+  every field is OPTIONAL so an archetype naming none behaves exactly
+  as before. Data: sword=slash+mail+shield, spear/pike=pierce+mail,
+  archers=pierce+leather, cav lances=pierce (light+leather+shield,
+  heavy+plate+shield), beasts=blunt/pierce. The RPS lands — arrows
+  (pierce) shred mailed foot but glance off a plated knight, so heavy
+  cavalry finally ride out the arrow-storm; a mace (blunt) is the
+  answer to plate; a shield wall turns a frontal charge or volley but
+  a flanker steps around it. Two fragile tests honestly retuned
+  (elevation's marginal roll now clears the shield DC; the razor-thin
+  `seize_the_hill` capture hold 14→10 so the win no longer hinges on a
+  2-tick knife-edge). 12 tests. Suite 1710, green. Remainder P17.10b:
+  the armour-WEIGHT→speed tax is built + tested in
+  `battle_armour.speed_penalty`/`weight_of` but NOT wired into
+  `Squad.speed` — the per-archetype speeds already encode heaviness,
+  so layering the tax double-counts and, worse, the int-truncated move
+  budget lets a 0.2 drop stop a unit moving every tick; wiring it
+  wants a base-speed rebalance that separates raw mobility from weight.)*
 - [x] **P17.11 Facing, flanking & surround (RESEARCH STEP 1).** A
   per-soldier facing (8-dir) + front/flank/rear arc test.
   *(Round 138: `engine/battle/battle_facing.py` — pure geometry:

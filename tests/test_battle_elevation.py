@@ -84,15 +84,16 @@ class TestInBattle(unittest.TestCase):
         return bf, atk, tgt
 
     def test_downhill_lands_where_flat_misses(self):
-        # a marginal roll: the height edge is what carries it home
+        # a marginal roll: the height edge is what carries it home (the
+        # roll clears the target's mail+front-shield DC only downhill)
         bf, atk, tgt = self._duel(atk_lv=2, def_lv=0)
         hp0 = tgt.soldiers[0].hp
-        ai.attack(bf, atk.soldiers[0], atk, tgt.soldiers[0], _Fixed(6))
+        ai.attack(bf, atk.soldiers[0], atk, tgt.soldiers[0], _Fixed(8))
         self.assertLess(tgt.soldiers[0].hp, hp0, "downhill lands")
 
         bf2, atk2, tgt2 = self._duel(atk_lv=0, def_lv=0)   # flat, same roll
         hp0 = tgt2.soldiers[0].hp
-        ai.attack(bf2, atk2.soldiers[0], atk2, tgt2.soldiers[0], _Fixed(6))
+        ai.attack(bf2, atk2.soldiers[0], atk2, tgt2.soldiers[0], _Fixed(8))
         self.assertEqual(tgt2.soldiers[0].hp, hp0, "flat glances off")
 
     def test_high_ground_shoots_farther(self):

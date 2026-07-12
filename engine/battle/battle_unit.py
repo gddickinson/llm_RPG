@@ -128,7 +128,15 @@ class Squad:
 
     @property
     def speed(self) -> float:
-        """Tiles per marching tick (P17.4c). Horse > foot > siege."""
+        """Tiles per marching tick (P17.4c). Horse > foot > siege.
+
+        NOTE (P17.10b): the per-archetype speed already encodes heaviness
+        (heavy cav < light, pike < sword), so layering `battle_armour`'s
+        weight tax on top here double-counts AND destabilises the
+        int-truncated move budget (a 0.2 drop can stop a unit moving every
+        tick). The weight→speed wiring waits on a base-speed rebalance
+        that separates raw mobility from armour weight; the tax math lives
+        (and is tested) in `battle_armour.speed_penalty` meanwhile."""
         return float(self.stats.get("speed", 1.0))
 
     @property
