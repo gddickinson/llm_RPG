@@ -3540,3 +3540,32 @@ and a smoke render of the coloured log + fogged minimap. Suite 1489,
 green. REMAINDER (P15.3b — the untestable pixel half): 9-slice paneled
 HUD borders and the procedural NPC-portrait face compositor for the
 dialog box.
+
+**Round 157 — P15.8 Roads earn their keep (the speed core).**
+Track A's turn. P15.8 is a three-part item (road speed, a buyable mule, a
+boat crossing); this round takes the headline — making roads actually
+faster — and notes the mount and boat as remainder. The wrinkle is that
+the world clock is 1 minute per turn, hardwired into `advance_turn`, so a
+step can't cost LESS than a minute directly. The fix mirrors the P11.4
+haste economy: `traversal._road_pace` makes every Nth stride on a
+ROAD/BRIDGE tile FREE — the world simply doesn't tick that step — so a
+road costs fewer minutes AND meets fewer wilderness encounters, which is
+exactly right (a road is the safe, quick way, and a straggler is far less
+likely to jump you on the king's highway than in the deep forest). A clean
+integer stride counter (free every 3rd step ≈ 1.5× pace; every 2nd ≈ 2×
+when `mounted`, the forward hook the mule will flip) resets the moment you
+step off fast ground, and the road advertises itself once the first time
+it saves you time ("You make good time on the road."). It slots into
+`advance_after_move` just ahead of the haste check, and the counter lives
+on `player.metadata`, so it needs no new save code. Because a free step
+skips the whole turn pipeline (encounters, needs, fatigue), roads are also
+less tiring — the benefit compounds. 8 tests: the stride pattern
+(False,False,True,… on foot; every-second on a mount), bridges counting as
+fast ground, open ground never freeing and resetting the counter, a free
+step leaving `turn_counter` untouched while an ordinary one ticks it, the
+headline (six road strides cost 4 turns against 6 on open ground), and the
+one-time advert. No existing test walks the player far enough down a road
+to notice the cadence change; suite 1497, green. REMAINDER (P15.8b): the
+buyable MULE (carry +8, follows like a pet, a KO-able body under ransom
+rules, flips `mounted` for the 2× pace) and the diary-unlocked Stonepine
+BOAT crossing.

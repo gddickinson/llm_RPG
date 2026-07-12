@@ -36,6 +36,14 @@ DATA_PATH = Path(__file__).resolve().parent.parent / "data" / \
     "traversal.json"
 BAD_FAIL_MARGIN = 5      # miss the DC by this much and get hurt
 
+# P15.8: roads earn their keep. Every Nth step on a road/bridge is FREE
+# (no world tick), so a road costs fewer minutes AND meets fewer
+# wilderness encounters — the safe, quick way. A mount (the mule,
+# P15.8b) shortens the interval, so it saves even more.
+ROAD_FREE_EVERY = 3      # every 3rd road step is free (~1.5x pace)
+MOUNT_FREE_EVERY = 2     # on a mount, every 2nd (~2x)
+FAST_TERRAIN = (TerrainType.ROAD, TerrainType.BRIDGE)
+
 
 def _load_rules() -> dict:
     try:
@@ -226,11 +234,42 @@ class TraversalSystem:
         self.engine.player.metadata["last_slog"] = \
             wmap.terrain[ny][nx].value
 
+    def _road_pace(self) -> bool:
+        """Fast ground (road/bridge) makes every Nth step FREE (P15.8).
+        Returns True on a free step (caller skips the world tick).
+        Off-road resets the stride counter."""
+        player = self.engine.player
+        x, y = player.position
+        try:
+            terr = self.engine.world.map.terrain[y][x]
+        except Exception:
+            terr = None
+        if terr not in FAST_TERRAIN:
+            player.metadata["road_steps"] = 0
+            return False
+        every = (MOUNT_FREE_EVERY if player.metadata.get("mounted")
+                 else ROAD_FREE_EVERY)
+        step = player.metadata.get("road_steps", 0) + 1
+        player.metadata["road_steps"] = step
+        if step % every == 0:
+            if not player.metadata.get("road_hint_shown"):
+                player.metadata["road_hint_shown"] = True
+                try:
+                    self.engine.memory_manager.add_event(
+                        "You make good time on the road.")
+                except Exception:
+                    pass
+            return True
+        return False
+
     def advance_after_move(self) -> None:
         """Haste/slow turn economics (P11.4): hasted, every second
-        step is free; slowed, the world takes two turns per step."""
+        step is free; slowed, the world takes two turns per step. Fast
+        ground (P15.8) also banks the occasional free step."""
         from characters.status_effects import has_effect
         player = self.engine.player
+        if self._road_pace():
+            return               # a road stride costs no world-time
         if has_effect(player, "hasted"):
             free = not player.metadata.get("haste_step", False)
             player.metadata["haste_step"] = free

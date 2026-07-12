@@ -1985,10 +1985,22 @@ UI polish.
   TROPHIES displayed in the home, a pick-any storage panel (withdraw is
   top-item-first for now), and the cooperative multiplayer
   ConstructionProject.)*
-- [ ] **P15.8 Roads, mounts & speed.** Roads earn their keep
-  (fewer minutes per step on ROAD/BRIDGE), a buyable mule (carry
-  +8, follows like a pet, and it's a body — ransom rules apply),
-  and a diary-unlocked Stonepine boat crossing.
+- [x] **P15.8 Roads earn their keep (speed core).** ROAD/BRIDGE
+  travel is now genuinely faster: `traversal._road_pace` makes every
+  Nth stride on fast ground FREE — the world doesn't tick, so a road
+  costs fewer minutes AND meets fewer wilderness encounters (the safe,
+  quick way), mirroring the P11.4 haste turn-economy. A clean integer
+  stride counter (free every 3rd step ≈1.5× pace; every 2nd ≈2× while
+  `mounted` — the forward hook for the mule) resets off-road, and the
+  road advertises itself once ("You make good time on the road.").
+  Wired into `advance_after_move` ahead of the haste check; state on
+  `player.metadata` (save-free). 8 tests (the stride pattern on/off a
+  mount, bridges count, open ground never frees + resets, a free step
+  skips the tick, six road strides cost 4 turns vs 6 on open ground,
+  the one-time advert). Suite 1497, green.
+  *(Remainder P15.8b: the buyable MULE — carry +8, follows like a pet,
+  a KO-able body under ransom rules, and it flips `mounted` for the 2×
+  road pace — and the diary-unlocked Stonepine BOAT crossing.)*
 - [x] **P15.9 Character detail: body-part health (George, live
   2026-07-11).** DETAILED HEALTH SYSTEM: body-part damage (head/
   torso/arms/legs) with consequences, layered under HP/dying.
