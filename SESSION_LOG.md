@@ -5916,3 +5916,22 @@ overworld it actually occupies. The active away-hero driving ITSELF (owner
 == character) still exits a building as before (M.5b). +1 regression test;
 the player now stays put in a building while the world's other heroes go
 about their business outside.
+
+## 2026-07-12 (cont.) — Hirelings: a party you pay for (M.7, part 1)
+
+George's idea: paid party members. A recruit throws in out of trust; a
+hireling throws in for coin. `engine/hirelings.py` (`HirelingSystem`): `/hire`
+in the dialog handler takes an upfront signing fee (level-scaled) and adds
+an adventuring-class NPC to the party on a contract written to
+`npc.metadata["hire"]` — wage, term, what they've been paid through. Bare
+`/hire` is an open salary; `/hire 5` is a five-day term. Each night the turn
+pipeline calls `run_day`, which draws the day's wage from your purse: pay it
+and they're content; let an expired term lapse and they leave with a nod;
+leave the purse empty and, after a day's grace grumble, they spit, break the
+contract, sour on you (−20 regard), and walk.
+
+It composes cleanly with M.6: any adventurer you meet you can now either
+befriend into a free companion (seeking_party) OR simply pay. The system is
+stateless — the whole contract rides the normal NPC save — so nothing new to
+persist. 8 tests. Remainder M.7b: GUILDS as places (a mercenaries' hall, an
+adventurers' guild) where blades-for-hire reliably gather.

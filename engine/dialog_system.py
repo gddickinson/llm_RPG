@@ -48,6 +48,13 @@ class DialogSystem:
             self.engine.advance_turn()
             return result
 
+        if lowered.startswith("/hire"):         # M.7 paid party member
+            from engine.hirelings import HirelingSystem
+            days = HirelingSystem.parse_days(message)
+            result = self.engine.hirelings.hire(npc.id, days)
+            self.engine.advance_turn()
+            return result
+
         if lowered.startswith("/order"):
             if npc.id not in self.engine.companion_manager.party:
                 return f"{npc.name} doesn't take orders from you."

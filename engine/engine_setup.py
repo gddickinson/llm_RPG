@@ -146,6 +146,8 @@ def build_subsystems(engine, llm_model=None,
     # Companion / party
     from characters.companions import CompanionManager
     self.companion_manager = CompanionManager(self)
+    from engine.hirelings import HirelingSystem
+    self.hirelings = HirelingSystem(self)
 
     # NPC-vs-NPC conflict (P7.1) + retaliation (P7.2)
     from engine.npc_conflict import NPCConflictSystem

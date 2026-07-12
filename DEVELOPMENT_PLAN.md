@@ -3442,18 +3442,24 @@ last. Networking was previously deferred — this supersedes that.
   parties, actively COMPETING with the hero for quests/loot/hoards, and the
   full fortune arc — growing powerful, or dying and losing everything.
 - [ ] **M.7 Hirelings & guilds (George, 2026-07-12).** Two linked ideas
-  layered on M.6's adventurers. (1) HIRELINGS — party members you PAY rather
-  than befriend: they join for an agreed term (a specific job, a fixed
-  number of days, and/or an ongoing salary) and walk once the coin stops or
-  the contract ends; unpaid wages sour them. A hireling contract on
-  `npc.metadata` (`terms`, `wage`, `paid_through`); the guild/tavern is
-  where you meet them. (2) GUILDS as PLACES — an adventurers' guild, a
+  layered on M.6's adventurers.
+  **(1) HIRELINGS — DONE (2026-07-12c).** Party members you PAY rather than
+  befriend: `engine/hirelings.py` (`HirelingSystem`). `/hire` takes an
+  upfront signing fee (level-scaled) and adds an adventuring-class NPC to
+  the party on a contract (`npc.metadata["hire"]`: wage / term_end /
+  paid_through); `/hire N` sets an N-day term, bare `/hire` an open salary.
+  `run_day` settles wages nightly from the turn pipeline — pay the day's
+  wage, end an expired term amiably, or (purse empty past one day's grace)
+  let the hireling walk SOURED. Stateless; the contract rides the NPC save.
+  Any M.6 adventurer can thus be befriended into a free companion OR simply
+  hired. 8 tests.
+  **(2) GUILDS as PLACES — remainder M.7b.** An adventurers' guild, a
   mercenaries' hall, a mages' college — locations where a particular kind of
   character/hireling/service reliably congregates (seed M.6 adventurers and
-  future hirelings there, plus board-quests and training), so the player
-  knows where to go to hire a blade or find a party. Builds on the existing
-  `engine/guild.py` rank system (rename-or-extend), P16 building-types, and
-  M.6's seeking-party recruiting.
+  hirelings there, plus board-quests and training), so the player knows
+  where to go to hire a blade or find a party. Builds on the existing
+  `engine/guild.py` rank system, P16 building-types, and M.6's seeking-party
+  recruiting.
 
 ## What NOT to build (explicitly deferred)
 

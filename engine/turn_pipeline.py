@@ -189,6 +189,10 @@ def run_turn(engine) -> None:
                 self.romance.run_day()
             except Exception as e:
                 logger.debug(f"Romance error: {e}")
+            try:   # paid party members draw their wage — or walk (M.7)
+                self.hirelings.run_day(day)
+            except Exception as e:
+                logger.debug(f"Hireling upkeep error: {e}")
             self.faction_ticker.run_day()
             try:   # factions pursue agendas & diplomacy after the day's clash (P20.3)
                 self.faction_agendas.run_day()
