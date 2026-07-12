@@ -131,6 +131,20 @@ def skill_for_profession(profession: str) -> Optional[str]:
     return PROFESSIONS.get(profession)
 
 
+def profession_for_skill(skill: str) -> Optional[str]:
+    """The canonical producer profession for a skill (P16.2 uses this to
+    turn an NPC's taught skill into what they make)."""
+    return _SKILL_PROF.get(skill)
+
+
+def primary_raw(profession: str) -> Optional[str]:
+    """The main raw a gathering profession pulls (its first raw)."""
+    for item in producers(profession):
+        if is_raw(item):
+            return item
+    return None
+
+
 def inputs_of(item_id: str) -> Dict[str, int]:
     """The crafted inputs of an item (empty for raws / unknowns)."""
     o = _INDEX.get(item_id)

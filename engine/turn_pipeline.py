@@ -158,6 +158,10 @@ def run_turn(engine) -> None:
                 logger.debug(f"Pet night error: {e}")
             self.world_director.run_night()
             self.faction_ticker.run_day()
+            try:   # villages make goods overnight (P16.2)
+                self.production.run_day()
+            except Exception as e:
+                logger.debug(f"Production loop error: {e}")
             self.retaliation.run_night()
             self.disease.run_day()
             self.farm_manager.run_day()

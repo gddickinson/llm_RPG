@@ -2171,13 +2171,28 @@ grid).
   recipe has an origin) and a chain check (every crafted good grounds
   out in raws). Suite 1541, green. The producer/profession map P16.2's
   NPC work loop stands on.)*
-- [ ] **P16.2 NPC production loop.** AW `systems/npc_work.py`
-  FSM (gather → carry → deposit → craft → deliver) against a
-  per-settlement store dict: gatherers fill village stores from
-  resource tiles, crafters consume inputs and produce goods,
-  merchants arbitrage surplus between settlements (composes with
-  P12.10 elastic prices). Turns static villages into a living
-  economy; heuristic, no per-tick LLM.
+- [x] **P16.2 NPC production loop (gather + craft core).** AW
+  `systems/npc_work.py` FSM adapted: instead of pathing every villager
+  to a tile each tick (a forbidden per-tick cost), the economy resolves
+  ABSTRACTLY once per game-day in the nightly stack beside the faction
+  ticker. `engine/production_loop.py` `ProductionSystem`: each
+  settlement keeps a STORE ({item: qty} larder); its resident producers
+  work it — GATHERERS (woodcutter/forager/fisher/hunter) pull their raw
+  into the store, CRAFTERS (cook/alchemist/smith) consume the inputs the
+  store holds and turn them into goods. Who works where is FREE from
+  existing data: an NPC's class → skill (`CLASS_TEACHES`) → profession +
+  outputs (P16.1) — so a village of villagers, a cleric and a wizard
+  quietly turns fish/herbs/logs into cooked meals and potions, night
+  after night, and the log breathes one quiet line a day. Settlement
+  detection excludes buildings that merely carry the word (the "Village
+  Well" is not a town — same P15.12 lesson). Larder capped; heuristic,
+  no per-tick LLM; stores persist (save_load + a round-trip test). 10
+  tests. Suite 1551, green. *(Remainder P16.2b: merchant ARBITRAGE of
+  surplus between settlements + feeding surplus into shop stock
+  (composing with P12.10 elastic prices); and the smith/ore chain is
+  dormant until a MINER profession has an NPC class to inhabit it — no
+  class currently teaches mining — which P16.3 settlement
+  specialization can supply.)*
 - [ ] **P16.3 Building-type catalog + room classification.** AW
   `settlement_buildings.SPECIALIZATION_BUILDINGS` + `zones._classify_room`
   as data: ~40 typed buildings (dock/warehouse/mill/granary/

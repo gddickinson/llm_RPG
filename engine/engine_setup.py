@@ -79,6 +79,8 @@ def build_subsystems(engine, llm_model=None,
     self.radiant_quests = RadiantQuestGenerator(self)
     self.guild = GuildSystem(self)
     self.faction_ticker = FactionTicker(self)
+    from engine.production_loop import ProductionSystem
+    self.production = ProductionSystem(self)
     self.dm = DMApi(self)
     self.dm_autonomous = AutonomousDM(self)
     try:

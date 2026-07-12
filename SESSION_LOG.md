@@ -3695,3 +3695,38 @@ merge is complete) and a CHAIN check (walking any crafted good's inputs
 eventually reaches raw materials — nothing is made from thin air). Suite
 1541, green. Pure data + queries, no state — the map the P16.2 NPC work
 loop will walk.
+
+**Round 162 — P16.2 NPC production loop (gather + craft core).**
+The living-economy step that walks P16.1's map. AW's `npc_work` pathed
+every villager to a resource tile each tick; we forbid per-tick cost, so
+the port ADAPTS: the economy resolves abstractly once per game-day, folded
+into the nightly stack right after the faction ticker. `engine/
+production_loop.py`'s `ProductionSystem` gives each settlement a STORE — a
+{item: qty} larder — and lets its resident producers work it. GATHERERS
+(woodcutter, forager, fisher, hunter) pull their raw into the store;
+CRAFTERS (cook, alchemist, smith) consume whatever inputs the store holds
+and turn them into goods. The elegant part is that WHO works where costs
+no new data: an NPC's class already maps to a taught skill via the bond
+`CLASS_TEACHES`, and P16.1 maps that skill to a profession and its
+outputs — so a villager is a woodcutter, a bard a fisher, a cleric a cook,
+a wizard an alchemist, and a settlement of them quietly turns fish and
+herbs and logs into cooked meals and potions, night after night, whether
+the player is watching or not. A probe over eight days showed Oakvale's
+lone fisher feeding its cook sixteen cooked trout while the granary filled
+with wheat and timber. Two design guards: the larder is capped so it can't
+grow forever, and settlement detection excludes buildings that merely
+carry the word — the "Village Well" and "Hamlet Chapel" have interiors and
+are NOT towns (the same lesson P15.12 taught about claimable homes), which
+without the guard split producers across four phantom settlements. The
+log breathes just one quiet line a day ("Oakvale Village's workshops
+turned out 2 cooked trout") so the economy is felt, not spammed. Stores
+persist through save/load (registered in `save_load`, round-tripped in a
+test). 10 tests: settlements are real towns not buildings, producers map
+by class, a gatherer fills the larder and a crafter empties it into goods
+(and makes nothing without inputs), the cap holds, a week of days
+produces something, and the stores survive a full save→load. Heuristic,
+no per-tick LLM. Suite 1551, green. REMAINDER (P16.2b): merchant ARBITRAGE
+of surplus between settlements and feeding it into shop stock (composing
+with P12.10 elastic prices); and the smith/ore chain stays dormant until a
+MINER profession has an NPC class to inhabit it (nothing teaches mining
+yet) — a hook for P16.3's settlement specialization.
