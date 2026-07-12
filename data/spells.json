@@ -285,5 +285,19 @@
       "wizard",
       "druid"
     ]
+  },
+  "keen_sight": {
+    "id": "keen_sight",
+    "name": "Keen Sight",
+    "mana_cost": 4,
+    "range": 1.0,
+    "description": "Your sight sharpens past stone and timber \u2014 for a while you glimpse the figures moving behind the walls.",
+    "status_effect": "keen_sight",
+    "duration": 20,
+    "classes": [
+      "wizard",
+      "cleric",
+      "druid"
+    ]
   }
 }

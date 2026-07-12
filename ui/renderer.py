@@ -158,15 +158,15 @@ class MapRenderer:
 
         # Characters (NPCs + player) — procedural body renderer
         from ui.body_renderer import draw_body, update_anim, draw_projectile
-        from engine.presence import is_indoors
+        from engine.presence import hidden_by_walls
         all_chars = list(engine.npc_manager.npcs.values()) + [engine.player]
         for char in all_chars:
             if hasattr(char, "is_active") and not char.is_active():
                 continue
-            # No seeing through walls (P9A.7): the indoors are hidden
+            # No seeing through walls (P9A.7) — unless keen_sight pierces
+            # them (P14.2 magical sight)
             try:
-                if char.id != engine.player.id and \
-                        is_indoors(engine, char):
+                if hidden_by_walls(engine, char):
                     continue
             except Exception:
                 pass

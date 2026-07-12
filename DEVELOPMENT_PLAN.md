@@ -1854,8 +1854,16 @@ debt and the door to whatever George's next play session surfaces.
   data/module_packs/smugglers_cache.json — a dark cellar under the
   Old Farmhouse: Restless Bones on guard, a chest of lockpicks and
   wine, and a beam scratched "Wulf pays best. Ask no names.")*;
-  cooperative ConstructionProject (lands in P15.7); windows /
-  magical sight through walls.
+  cooperative ConstructionProject (lands in P15.7); ~~magical sight
+  through walls~~ *(Round: done — a `keen_sight` status effect + the
+  "Keen Sight" self-buff spell (wizard/cleric/druid, 4 mana, 20 turns).
+  While it lasts, `presence.sees_through_walls` is true and the renderer's
+  `presence.hidden_by_walls` stops hiding indoor NPCs from the street —
+  you glimpse the merchant at his counter through the wall. SIGHT ONLY:
+  `npc_adjacent_to_player` is untouched, so reach still stops at the stone
+  (you see him but can't barter through it). 6 tests. Suite 1828, green.)*;
+  the WINDOWS half (a physical, always-on glimpse into a building you
+  stand beside) is still awaiting a pull.
 - [x] **P14.3 Playtest findings (George, live, 2026-07-11).**
   a) "The event log shows events occurring a long distance away" —
   `presence.in_earshot` (Chebyshev radius 14) gates actor-local

@@ -38,6 +38,31 @@ def is_indoors(engine, npc) -> Optional[str]:
     return building_containing(engine, *npc.position)
 
 
+def sees_through_walls(engine) -> bool:
+    """Magical sight (P14.2): a `keen_sight` effect lets the player glimpse
+    the figures behind walls. SIGHT only — reach still stops at the stone
+    (`npc_adjacent_to_player` is unchanged), so you see the merchant at his
+    counter but still can't barter through the wall."""
+    try:
+        from characters.status_effects import has_effect
+        return has_effect(engine.player, "keen_sight")
+    except Exception:
+        return False
+
+
+def hidden_by_walls(engine, npc) -> bool:
+    """The renderer's 'no seeing through walls' rule (P9A.7), relaxed by
+    magical sight (P14.2): an NPC standing inside a building is hidden from
+    the street UNLESS the player's keen_sight pierces the wall."""
+    if npc.id == engine.player.id:
+        return False
+    try:
+        return bool(is_indoors(engine, npc)) and \
+            not sees_through_walls(engine)
+    except Exception:
+        return False
+
+
 def assign_visitors(engine, interior, loc_name: str) -> Dict:
     """Deterministic zone-local positions for everyone inside."""
     from world.interiors import _free_tiles

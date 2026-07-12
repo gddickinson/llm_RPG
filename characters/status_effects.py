@@ -37,7 +37,8 @@ VALID_EFFECTS = ("poisoned", "paralyzed", "blessed",
                  "water_walking", "swimmers_grace",
                  "flying", "hasted", "slowed",
                  "prone", "blinded", "off_guard",
-                 "persistent_damage", "well_rested")
+                 "persistent_damage", "well_rested",
+                 "keen_sight")     # P14.2: magical sight through walls
 
 # Valued conditions (P12.2, PF2e): entries may carry a "value";
 # these decay by 1 at end of turn and expire at 0 (duration ignored)

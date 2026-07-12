@@ -252,7 +252,7 @@ class SpellSystem:
         if spell.heal or spell.id in ("farsight",) or \
                 spell.status_effect in (
                 "blessed", "cursed", "water_walking",
-                "swimmers_grace", "flying", "hasted"):
+                "swimmers_grace", "flying", "hasted", "keen_sight"):
             if not name or name.lower() in ("me", "self", caster.name.lower()):
                 return caster
         if not name:

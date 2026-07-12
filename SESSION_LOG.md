@@ -4841,3 +4841,33 @@ deliberately-deferred sub-part is "commander orders in the overworld
 [Clash]": the P7.1 overworld conflict is individual d20, not squad-based,
 so the P17.5 order layer has nothing to attach to until that ever becomes
 group combat — noted, not forced.
+
+---
+
+## Magical sight through walls (P14.2 candidate)
+
+Pulled a candidate from the P14.2 backlog. Since P9A.7 the presence system
+has hidden indoor NPCs from the street — "no seeing through walls" — with
+a note that a windows / magical-sight refinement could come later. This
+round adds the magical half.
+
+A new `keen_sight` status effect, granted by the "Keen Sight" self-buff
+spell (wizard/cleric/druid, 4 mana, 20 turns), sharpens the player's
+sight past stone and timber. The seam is one testable helper:
+`presence.hidden_by_walls(engine, npc)` is the renderer's indoor-hiding
+rule made explicit — an NPC inside a building is hidden UNLESS
+`sees_through_walls` (the player carries keen_sight). The renderer now
+consults it instead of the raw `is_indoors` check, so while the spell
+lasts you glimpse the merchant at his counter or the guard in the
+gatehouse through the wall.
+
+The deliberate line: it's SIGHT, not reach. `npc_adjacent_to_player` —
+the one adjacency check every talk / barter / melee routes through — is
+completely untouched, so you can see the figure behind the wall but still
+can't barter or strike through the stone. Magical eyes, ordinary hands.
+
+6 tests (keen_sight is a valid effect; the indoors are hidden without it;
+it pierces the wall; sight is not reach; the player is never hidden from
+themselves; the spell grants the sight). Suite 1828, green. The WINDOWS
+half of the candidate — a physical, always-on glimpse into a building you
+stand beside — is left in the backlog for a future pull.
