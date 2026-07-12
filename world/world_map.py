@@ -48,6 +48,7 @@ class WorldMap:
         self.objects = {}  # Key: (x, y), Value: Object at that location
         self.characters = {}  # Key: (x, y), Value: Character at that location
         self._tile_callbacks = []  # fired by set_terrain (P10.0)
+        self.wall_guard = None  # engine-installed wall check (2026-07-12)
         logger.info(f"Map initialized with size {width}x{height}")
 
     def register_tile_callback(self, fn) -> None:
@@ -107,6 +108,16 @@ class WorldMap:
         if self.terrain[new_y][new_x] == TerrainType.WATER or self.terrain[new_y][new_x] == TerrainType.MOUNTAIN:
             if not _is_flier(character):
                 logger.debug(f"Move failed for {character.name}: Terrain {self.terrain[new_y][new_x].value} is not traversable")
+                return False
+
+        # Walls are solid (bug-fix 2026-07-12): the installed guard rejects
+        # a move that would phase through a building footprint (overworld)
+        # or a zone wall (a zone-native monster while the player is inside).
+        guard = getattr(self, "wall_guard", None)
+        if guard is not None:
+            old = getattr(character, "position", None)
+            if old is not None and guard(character, old, (new_x, new_y)):
+                logger.debug(f"Move failed for {character.name}: wall guard blocked ({new_x},{new_y})")
                 return False
 
         # Check if position is occupied by another character

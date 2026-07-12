@@ -120,6 +120,11 @@ class GameEngine(GameAPIMixin):
         self.turn_counter = 0
         self.player_dead = False
         self.memory_manager.add_event("The adventure begins.")
+        try:   # walls are solid — install the movement guard (2026-07-12)
+            from engine.movement import ensure_wall_guard
+            ensure_wall_guard(self)
+        except Exception as e:
+            logger.debug(f"Wall guard: {e}")
         try:   # seed the opening fog-of-war view (P15.11)
             from engine.discovery import update as _disc
             _disc(self)
@@ -287,6 +292,11 @@ class GameEngine(GameAPIMixin):
         """Synchronous NPC turn (kept for terminal mode)."""
         if not self._npc_turns_due():
             return
+        try:   # re-assert after any map swap (streaming keeps it; a fresh
+            from engine.movement import ensure_wall_guard  # map re-installs)
+            ensure_wall_guard(self)
+        except Exception:
+            pass
         for npc_id, npc in list(self.npc_manager.npcs.items()):
             if hasattr(npc, "is_active") and not npc.is_active():
                 continue

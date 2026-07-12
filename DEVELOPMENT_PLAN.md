@@ -3530,3 +3530,217 @@ Sequenced into tested rounds:
   Suite 1804, green. Remainder P18.6b: the SIEGE set-piece — hand the P17
   battle layer the castle's own garrison (the P18.2 guard) and its walls
   for a defend-the-keep battle.)*
+
+---
+
+## The Ultraplan — playtest & survey findings (George, 2026-07-12)
+
+A long driven playtest (grind to L20, recruit, fight the hardest monster,
+probe coop) plus four parallel code surveys (monsters/combat, NPC depth &
+group goals, adventures/puzzles/exploration, graphics/living-world) plus
+cross-game research (Shadow of Mordor's Nemesis, Dwarf Fortress emergent
+history/ecology, RimWorld's storyteller, Crusader Kings intrigue/ambitions,
+Caves of Qud/DF active gods, Baldur's Gate branching, Kenshi living
+factions). The verdict: the engineering is broad and clean, but the game
+is **shallow where it should thrill**. Hard findings:
+
+- **No dragons / apex tier.** Hardest monster is the L8 Giant Warlord.
+  Worse: the built bosses (warlord, wisp queen, hill giant) have
+  `encounter_weight: 0` — **fully-mechanical dead content, reachable only
+  in tests.** A L20 party has nothing worthy to fight.
+- **Monsters barely cooperate.** Only wolves howl (same-name convergence).
+  The sophisticated Phase-17 `battle_ai` (focus-fire, flanking arcs,
+  morale, rout cascade, hammer-and-anvil) is **walled off** from the
+  overworld — the single highest-leverage asset in the codebase.
+- **No monster tribes/populations.** Solo random spawns; no lairs,
+  chieftains, growth, or raids. Group dynamics exist only for humans.
+- **NPC goals are inert.** 1-3 goal strings are generated and shown in
+  prompts but never drive a single action. No NPC↔NPC relationship graph;
+  factions are two scalars with no agenda; society freezes off-screen.
+- **Gods are passive bookkeeping.** They only react to the player and grant
+  small self-buffs — no divine events, wrath, cults, or god-vs-god.
+- **Adventures don't branch.** 19 quests chain but never fork; the `FAILED`
+  state is defined and never used; no main arc / ending; one puzzle
+  mechanic with one instance; off-origin world is procedural noise.
+- **Graphics snap.** Procedural vectors, tile-to-tile teleport (no
+  tweening), no attack/hurt animation, no portraits.
+
+Phases 19–22 answer these directly. **The through-line: wire up what's
+already built, then deepen.** Much of the highest value (the dead bosses,
+the walled-off battle AI, the inert NPC goals) is *connection*, not new
+tech — exactly the lesson of Phase 0.
+
+---
+
+## Phase 19 — Monsters & Menace  (George's Ultraplan, 2026-07-12) — the "Dragons? Coop? Tribes?" arc
+
+The endgame has no teeth and the world's creatures don't behave like
+creatures. This phase gives the player things worth fearing and monsters
+that act like a coordinated, populous ecology. Content-as-data throughout;
+leans on the existing boss framework (`engine/bosses.py`) and the
+Phase-17 tactical AI.
+
+- [ ] **P19.1 The apex tier: dragons & fire-breath.** Author a true apex
+  tier in `data/monsters.json` — a young + an elder dragon (and a wyvern /
+  a drake / a lich as the roster grows), each a `boss` with a telegraphed
+  breath, phases, and terror. Extend `engine/bosses.py` with a **`breath`
+  telegraph kind** that scorches the struck tiles (dragonfire leaves
+  burning ground via the surface layer) and a **`terror` phase action**
+  that Frightens the player (P12.2 condition). Make the new tier
+  **reachable, not dead**: deep dungeon den-lords draw from a depth-scaled
+  apex pool (so the built-but-unspawnable warlord/wisp-queen/hill-giant
+  finally appear), not only the Tyrant. Validator + tests.
+- [ ] **P19.2 Lairs on the overworld.** Seeded monster lairs (a dragon's
+  roost on a peak, a goblin warren, a troll den) as overworld locations
+  that hold an apex or a pack over a hoard; clearing one yields the hoard,
+  a legend, and lasting quiet. The reachable, hand-placed home for the
+  P19.1 tier outside dungeons.
+- [ ] **P19.3 Packs that fight like a group.** Bridge the walled-off
+  Phase-17 `battle_ai` (or extend `squad_tactics`) so overworld monster
+  packs focus-fire the softest target, flank, hold a leader, and break
+  when the leader falls — real coordination, not incidental adjacency.
+- [ ] **P19.4 Monster tribes as populations.** A monster faction
+  (goblins / trolls) with a lair, a chieftain, population growth,
+  territory, and raids on settlements — the human `faction_ticker`
+  mirrored for monsters, so the world has a hostile society that grows,
+  presses, and can be beaten back. The "actual populations" ask.
+- [ ] **P19.5 The endgame curve.** Elite / champion variants and
+  party-scaled packs so a high-level party meets worthy resistance; a
+  roaming world-boss that stalks the map. No more trivial wilderness.
+- [ ] **P19.6 The Nemesis.** Named monster champions (Shadow-of-Mordor
+  style) that survive a losing fight, remember the player, rise in power
+  and title, recruit, and return for revenge — tied to the bones /
+  legendarium so grudges become legend.
+
+## Phase 20 — The Living Society & the Gods  (Ultraplan, 2026-07-12) — the Autonomous-World imports
+
+The player-facing NPC layer is excellent; the world *behind* it is inert.
+This phase gives NPCs agency, a social web, and gods that act.
+
+- [ ] **P20.1 Ambitions that drive action.** A nightly, heuristic
+  goal→action layer so an NPC's goal string produces real behaviour —
+  save to retire, court a sweetheart, open a shop, avenge a wrong,
+  migrate. The biggest "living world" gap: goals that *do* something.
+- [ ] **P20.2 The NPC social graph.** Peer-to-peer relationships
+  (like / dislike / trust / rivalry) that form and evolve from shared
+  events, gossip, and proximity — friendships and feuds in heuristic mode,
+  not the LLM-only director path. A world of relationships, not spokes to
+  the player.
+- [ ] **P20.3 Faction agendas.** Factions gain objectives (expand / raid /
+  ally / hoard) and pursue them with territory and diplomacy state — wars
+  with aims, not dice.
+- [ ] **P20.4 The active pantheon.** Gods that INITIATE: divine events,
+  boons and wrath on factions and NPCs, god-vs-god tension, cults,
+  festivals, demands with consequences. The Autonomous-World gods import
+  the user asked for — the pantheon becomes a set of meddling agents.
+- [ ] **P20.5 Runtime history & the saga.** The chronicle accrues at
+  runtime — player and faction deeds append to `world_history`, producing
+  an emergent saga readable in the Y-journal, so the world remembers.
+- [ ] **P20.6 Romance & rivalry.** Courtship, friendship, rivalry and
+  marriage with the player and between NPCs; jealousy. Turns the single
+  affinity scalar into relationship *types*.
+
+## Phase 21 — Adventures, Choice & Consequence  (Ultraplan, 2026-07-12)
+
+- [ ] **P21.1 Branching quests.** Choices, mutually-exclusive outcomes,
+  reward-choice, and the long-dormant `FAILED` state wired in — side with
+  Duke Voss or expose him; consequences that stick.
+- [ ] **P21.2 The main arc.** An overarching questline with a spine, a
+  climax, and an ending — a world-goal the campaign builds toward.
+- [ ] **P21.3 Puzzles II.** Levers & gates, pressure plates,
+  riddles-with-answers, combination locks, item-fit puzzles — many
+  instances, beyond the single sigil ward.
+- [ ] **P21.4 Set-piece variety.** Escort / protect, stealth / heist,
+  timed / chase, and boss-tied quests; a player-joinable siege or battle
+  (the P17 layer the player fights *in*, not watches).
+- [ ] **P21.5 Landmarks off-origin.** Streamed regions seed named
+  locations, dungeons, and mini-quests instead of procedural noise;
+  richer, real biomes.
+- [ ] **P21.6 Treasure & legend.** Legendary hoards and unique named
+  artifacts tied to discoverable lore and the legendarium; a treasure-map
+  loop that pays exploration.
+
+## Phase 22 — Graphics & Game-Feel  (Ultraplan, 2026-07-12)
+
+- [ ] **P22.1 Tweened movement.** Smooth interpolated tile-to-tile motion
+  for player, NPCs and monsters (headless-safe math in `ui/animation.py`).
+  The single biggest perceived-quality win.
+- [ ] **P22.2 Action animation.** Attack lunges, cast flares, hurt recoil,
+  death throes — frame states on the body renderer.
+- [ ] **P22.3 NPC portraits.** Procedural face art in the dialog box,
+  driven by race / class / mood.
+- [ ] **P22.4 Living tiles.** Animated water and foliage, seasonal terrain
+  tints, richer weather.
+- [ ] **P22.5 UI theming.** A cohesive, art-styled HUD and panels with
+  iconography.
+
+## Phase 23 — Law, Witness & the Society of Estates  (George, 2026-07-12) — the "affected by the player" arc
+
+The world should SEE the player and answer for it, and it should be a
+society of interlocking estates the player can shake. Foundations exist
+(`law.py` bounties + stolen flags + witness-outfit memory, `trespass.py`,
+`discovery.can_witness` fresh-LOS gate, P16 professions) — this phase
+turns them into a living justice-and-society loop.
+
+- [x] **P23.0 Walls are solid (bug-fix).** NPCs and monsters phased
+  through building walls — on the overworld (`move_character` blocked
+  only WATER/MOUNTAIN, never BUILDING) and inside a zone (zone-native
+  monsters were stepped on the OVERWORLD grid at their zone-local coords,
+  ignoring the zone's own walls). *(Round: a new `engine/movement.py`
+  wall guard, installed on the active `WorldMap` and consulted by the one
+  movement chokepoint `move_character`. It validates each move against the
+  grid the mover ACTUALLY occupies: a zone-native creature — dungeon
+  monster / interior visitor / tutorial cast — against the active zone's
+  terrain (a BUILDING tile is a wall, fliers included); everyone else
+  against the overworld, where a BUILDING footprint is solid except its
+  south door tile, so nothing enters or leaves a building through a wall
+  (a breach is RUBBLE, not BUILDING, so it still admits). The player is
+  untouched — it never reaches `move_character` on a building tile and
+  moves in zones via `_move_in_zone`. Installed idempotently at
+  `start_game` and re-asserted each NPC turn; streaming mutates the map in
+  place so the guard survives. 7 tests. Suite 1867, green.)*
+- [ ] **P23.1 Witness & consequence.** NPCs and guards that see the
+  player (fresh LOS via `can_witness`, plus overheard/reported) react to
+  what they witness — theft, assault, a break-in, a drawn blade in town —
+  with alarm, memory, relationship and reputation hits, and a guard
+  response. Extends the P12.9 law ledger and the P9A.4 trespass alarm
+  into a general witnessed-crime system.
+- [ ] **P23.2 Arrest, jail & trial.** A caught criminal can be seized by
+  guards, disarmed, and locked in a cell (the player as prisoner — a real
+  jail zone), then face a trial whose verdict turns on evidence,
+  witnesses, reputation and social checks (persuade/bribe/confess/resist),
+  with outcomes from fine to sentence to escape. Builds on the law
+  confrontation menu (`law.py`, jail option).
+- [ ] **P23.3 The society of estates.** A structured society whose roles
+  interlock and answer to each other — Crown & court, sergeant-at-arms &
+  garrison/army, magistrates & courts, guildmasters & tradesmen,
+  farmers/miners/craftsmen feeding the P16 economy — each an estate with
+  standing, duties, and a stake the player can raise, ruin, or overturn.
+  The P16 professions become a social order, not just a supply chain.
+- [ ] **P23.4 Standing & office.** The player earns (or loses) standing
+  within an estate — a commission in the guard, a guild rank, a title at
+  court, a seat at a magistrate's table — that unlocks powers and duties
+  and makes the player a mover in the society, not only its guest.
+
+## Phase 24 — A World of Places  (George, 2026-07-12) — cities, towns, villages, ruins & the teleport network
+
+The origin region is rich; everything past it is procedural noise
+(`chunked_world` light-touch fill). This phase makes the wider world a
+map of real places worth travelling between.
+
+- [ ] **P24.1 Settlement tiers.** A generator for CITIES, towns and
+  villages at distinct scales — a walled city with districts, quarters and
+  a market; towns; hamlets — each with its own cast, trades, and P16
+  economy, seeded into streamed regions instead of noise. (Autonomous
+  World / Kenshi / Mount & Blade town models.)
+- [ ] **P24.2 Ruins & lost places.** Ruined cities, abandoned keeps,
+  overgrown temples and battlefields as explorable set-pieces with lore,
+  hazards, and hoards — the emergent history (`history_sim`) written onto
+  the map as places, not just log lines.
+- [ ] **P24.3 The teleport network.** Public teleportation platforms
+  (waystones / gate-pylons) that link major settlements for fast travel —
+  a networked map the player unlocks and pays or attunes to, extending the
+  P11 diary-teleport into a visible, shared transit system.
+- [ ] **P24.4 Roads, trade & travellers.** The places are stitched by
+  roads the P16.2b caravans and NPC travellers actually use, so the world
+  between towns is alive with traffic, not empty.

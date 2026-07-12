@@ -5016,3 +5016,44 @@ store gives what little it has; nothing is created in the move; an empty
 store still leaves the merchant's usual wares; the gold budget accounts
 for the produce). Suite 1860, green. Remainder P16.2d: the smith/ore
 chain still waits on a MINER profession with an NPC class to inhabit it.
+
+## The Ultraplan, and walls that hold (2026-07-12)
+
+A long playtest plus four parallel code surveys (monsters/combat, NPC
+depth & group goals, adventures/puzzles/exploration, graphics/living-
+world) and cross-game research produced a hard gap analysis: no dragons
+(the built bosses are `weight:0` dead content, reachable only in tests),
+monsters that barely cooperate while the sophisticated Phase-17 battle AI
+sits walled off, no monster tribes, inert NPC goals, passive gods,
+quests that chain but never branch, and snap-frame graphics. That became
+Phases 19-24 in DEVELOPMENT_PLAN.md — Monsters & Menace, the Living
+Society & the Gods, Adventures/Choice/Consequence, Graphics & Game-Feel,
+Law/Witness/Society-of-Estates, and A World of Places (cities, ruins,
+teleport network). The through-line: much of the highest value is
+*wiring up what's already built*, not new tech.
+
+The first fix answers a bug George caught in play: NPCs and monsters
+walked straight through building walls. Two ways, both closed. On the
+overworld, `move_character` — the single chokepoint every NPC step goes
+through — blocked only WATER and MOUNTAIN, never BUILDING, so anything
+could phase through a footprint. And while the player stood inside a
+zone, zone-native monsters were being stepped on the OVERWORLD grid at
+their zone-local coordinates, ignoring the zone's own walls entirely.
+
+A new `engine/movement.py` installs a wall guard on the active map that
+`move_character` consults, validating each move against the grid the
+mover ACTUALLY occupies: a zone-native creature (a dungeon monster, an
+interior visitor, the tutorial cast) against the active zone's terrain —
+a BUILDING tile is a wall and blocks everyone, fliers included; everyone
+else against the overworld, where a BUILDING footprint is a solid
+building whose only gap is its south door tile, so nothing enters or
+leaves through a wall (a breach is RUBBLE, not BUILDING, so it still
+admits). The player is untouched — its own door logic and `_move_in_zone`
+run before it ever reaches the guard. Installed idempotently at
+`start_game` and re-asserted each NPC turn; streaming mutates the map in
+place so the guard survives a region change.
+
+7 tests (a monster can't enter a building wall; a flier can't phase one
+either; open ground still walks; the door still admits; an NPC on a side
+wall can't leave through it; a zone monster can't phase a zone wall; zone
+floors stay walkable). Suite 1867, green.
