@@ -108,7 +108,16 @@ class BattleScreen:
 
     def _key(self, k) -> Optional[str]:
         if k in (pygame.K_ESCAPE, pygame.K_q):
+            if self.session.embodied is not None:
+                self.session.unembody()          # P17.7 back to command
+                return None
             return "exit"
+        if k == pygame.K_e:                       # P17.7 role-swap toggle
+            self._toggle_embody()
+            return None
+        if self.session.embodied is not None:
+            self._embodied_key(k)
+            return None
         if k == pygame.K_SPACE:
             self.playing = not self.playing
         elif k == pygame.K_n:
@@ -136,6 +145,36 @@ class BattleScreen:
         if event.button == 4:
             self.cam.zoom_in()
         elif event.button == 5:
+            self.cam.zoom_out()
+
+    # ------------------------------------------------ P17.7 role-swap
+
+    def _toggle_embody(self) -> None:
+        """E: drop into (or out of) the lead soldier of the selected
+        squad. In-body, WASD/arrows drive it and F strikes."""
+        if self.session.embodied is not None:
+            self.session.unembody()
+            return
+        sq = self._selected()
+        alive = sq.alive_soldiers if sq is not None else []
+        if alive:
+            self.session.embody(alive[0].sid)
+
+    def _embodied_key(self, k) -> None:
+        step = {pygame.K_LEFT: (-1, 0), pygame.K_a: (-1, 0),
+                pygame.K_RIGHT: (1, 0), pygame.K_d: (1, 0),
+                pygame.K_UP: (0, -1), pygame.K_w: (0, -1),
+                pygame.K_DOWN: (0, 1), pygame.K_s: (0, 1)}
+        if k in step:
+            self.session.embody_move(*step[k])
+        elif k in (pygame.K_f, pygame.K_SPACE):
+            self.session.embody_attack()
+        elif k == pygame.K_n:
+            if not self.session.over():
+                self.session.tick()
+        elif k in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS):
+            self.cam.zoom_in()
+        elif k in (pygame.K_MINUS, pygame.K_KP_MINUS):
             self.cam.zoom_out()
 
     # ------------------------------------------------ command layer
@@ -205,6 +244,9 @@ class BattleScreen:
     # ----------------------------------------------------- render
 
     def _render(self) -> None:
+        driven = self.session.embodied_soldier()
+        if driven is not None:                     # P17.7 camera locks on
+            self.cam.center_on(driven.x + 0.5, driven.y + 0.5)
         self.screen.fill(_BG)
         self._draw_terrain()
         if self.cam.blob_mode:
@@ -358,7 +400,7 @@ class BattleScreen:
         self._draw_command_line(y + 26)
         hint = ("SPACE play  N step  R reset  +/- zoom  WASD pan  |  "
                 "TAB select  C harge  H old  F ocus  G fall-back  "
-                "M ove(click)  ESC back")
+                "M ove(click)  E mbody  ESC back")
         self.screen.blit(self.small.render(hint, True, (150, 150, 160)),
                          (12, y + 48))
         # team strength bars
@@ -373,6 +415,19 @@ class BattleScreen:
             self._banner(res)
 
     def _draw_command_line(self, y: int) -> None:
+        if self.session.embodied is not None:     # P17.7 embodied readout
+            sol = self.session.embodied_soldier()
+            if sol is not None:
+                esq = self.field.squads.get(sol.squad_id)
+                txt = (f"EMBODIED ‹{sol.sid}› "
+                       f"{esq.category if esq else ''}  "
+                       f"hp {sol.hp}/{sol.max_hp}  —  "
+                       f"WASD move · F strike · E/ESC release")
+            else:
+                txt = "EMBODIED — your soldier has fallen (E/ESC release)"
+            self.screen.blit(self.font.render(txt, True, (255, 220, 120)),
+                             (12, y))
+            return
         sq = self._selected()
         col = _team_color(self.player_team)
         if sq is None:

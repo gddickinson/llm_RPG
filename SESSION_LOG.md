@@ -4381,3 +4381,42 @@ when already on the best cover; won't break range to reach far cover;
 only foot archers seek it (not cavalry or foot); and in a live battle the
 archer ducks into the wood then stays put, still killing from cover.
 Suite 1728, green.
+
+---
+
+## Round 145 — P17.7 Player role-swap (get down into the ranks)
+
+Until now the Battle Testbed was a commander's chair: you selected
+squads and gave orders (P17.5), but you never touched a sword. P17.7
+lets you drop INTO one soldier and fight it yourself while its squad —
+and the whole battle — carries on around you.
+
+The engine core is small and clean. `BattleSession.embodied` holds the
+sid of the one soldier the human drives; the tick's action loop skips it
+(`if sol.sid == self.embodied: continue`), so the AI moves and fights
+every man in its squad EXCEPT that one, which waits for the player. The
+player's two verbs are `embody_move(dx, dy)` — step a tile, flagging
+`moved_last` so a shot the same beat still pays the P17.9 move-and-shoot
+penalty (no free potshots on the run) — and `embody_attack`, which
+strikes the best in-reach foe through the very same `battle_ai.attack`
+its squadmates use, so the player has no special powers, just a body.
+`embody`/`unembody`/`embodied_soldier` manage the reins (a fallen driver
+reads back None).
+
+The battle-screen glue: **E** drops into the selected squad's lead
+soldier and toggles back out. (The sketch said TAB, but TAB is the P17.5
+squad-cycler, so E is the role-swap key — the one deliberate deviation.)
+In-body, WASD/arrows drive the soldier and F strikes; the camera
+`center_on`s it every frame so it locks on as you move; ESC releases to
+the commander view before it ever leaves the screen; and the command
+line turns into an EMBODIED readout with the soldier's HP and its
+controls.
+
+10 engine tests + 1 headless screen-wire smoke test in
+`tests/test_battle_embody.py`: embody/unembody and dead-driver → None;
+the tick skips the driver while its squadmate charges on; embody_move
+steps, is stopped by a wall, and needs a body; embody_attack cuts down
+an adjacent foe but whiffs with nothing in reach; and the screen glue
+(E drops in, the camera-lock render runs, ESC releases then exits).
+Suite 1739, green. With this, the only P17 item left is P17.8 fold-back
+(battle_resolve into the off-screen faction battles).

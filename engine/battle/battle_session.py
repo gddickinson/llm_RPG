@@ -34,6 +34,11 @@ class BattleSession:
         # tracers: (x0, y0, x1, y1). Refreshed every tick; the sim
         # never reads them, so they don't touch determinism.
         self.tracers = []
+        # P17.7 player role-swap: the sid of the ONE soldier the human
+        # drives directly. The tick skips its AI (the player moves and
+        # fights it via embody_move/embody_attack); the rest of its squad
+        # fights on as normal. None = pure commander view.
+        self.embodied = None
 
     # ------------------------------------------------------- flow
 
@@ -81,6 +86,8 @@ class BattleSession:
         start_pos = {sol.sid: sol.pos for sol, _ in soldiers}
 
         for sol, sq in soldiers:
+            if sol.sid == self.embodied:
+                continue                     # P17.7 the human drives this one
             if not sol.alive or sq.routed:
                 if sq.routed:
                     self._flee(sol, sq, flows)
@@ -169,6 +176,60 @@ class BattleSession:
         if step is None:
             return False
         return self._move(sol, *step)
+
+    # ------------------------------------------------- P17.7 role-swap
+
+    def embody(self, sid) -> bool:
+        """Hand the player the reins of one soldier (its squad fights on
+        around it). Returns False if there's no such live soldier."""
+        for sq in self.field.squads.values():
+            for s in sq.soldiers:
+                if s.sid == sid and s.alive:
+                    self.embodied = sid
+                    return True
+        return False
+
+    def unembody(self) -> None:
+        """Back out to the pure commander view."""
+        self.embodied = None
+
+    def embodied_soldier(self):
+        """The live soldier the player drives, or None."""
+        if not self.embodied:
+            return None
+        for sq in self.field.squads.values():
+            for s in sq.soldiers:
+                if s.sid == self.embodied:
+                    return s if s.alive else None
+        return None
+
+    def embody_move(self, dx: int, dy: int) -> bool:
+        """Step the driven soldier one tile. Marks it as having moved so
+        a shot the same beat pays the P17.9 move-and-shoot penalty."""
+        sol = self.embodied_soldier()
+        if sol is None or (dx == 0 and dy == 0):
+            return False
+        if self._move(sol, sol.x + dx, sol.y + dy):
+            sol.moved_last = True
+            return True
+        return False
+
+    def embody_attack(self) -> bool:
+        """The driven soldier strikes its best in-reach foe (melee or a
+        shot), through the same `battle_ai.attack` its squadmates use."""
+        sol = self.embodied_soldier()
+        if sol is None:
+            return False
+        sq = self.field.squads.get(sol.squad_id)
+        target = ai.pick_target(self.field, sol, sq)
+        if target is None or \
+                ai._dist(sol.pos, target.pos) > ai.reach_of(sq):
+            return False
+        sol.facing = facing.face_toward(sol.x, sol.y,
+                                        target.x, target.y)
+        ai.attack(self.field, sol, sq, target, self.rng)
+        sol.moved_last = False
+        return True
 
     def _cast_spell(self, sol, sq, target) -> None:
         """P17.12: a battle-mage looses its spell at the target's tile —

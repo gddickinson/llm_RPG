@@ -2584,11 +2584,31 @@ is shippable and testable, de-risking UI last:
   green. Remainder: wall-walk elevation (multi-level battle grid) and
   the AI seeking cover WHILE advancing (only the in-range hunker is done)
   — both niche; could yield to P17.7 role-swap.)*
-- [ ] **P17.7 Player role-swap.** An `embodied` flag on the
+- [x] **P17.7 Player role-swap.** An `embodied` flag on the
   session: set → input routes to normal grid-soldier controls,
   camera locks in; None → commander order layer, free camera; TAB
   toggles. The player's squad runs the same AI, skipping the
   driven soldier.
+  *(Round 145: `BattleSession.embodied` = the sid of the ONE soldier
+  the human drives. The tick's action loop SKIPS it (`if sol.sid ==
+  self.embodied: continue`) so the rest of its squad fights on around a
+  soldier the AI leaves alone; the human moves and fights it via
+  `embody_move(dx,dy)` (steps one tile, sets `moved_last` so a shot the
+  same beat pays the P17.9 move penalty) and `embody_attack` (strikes
+  the best in-reach foe through the same `battle_ai.attack` the squad
+  uses). `embody(sid)`/`unembody`/`embodied_soldier` round it out (a
+  dead driver reads back None). GUI (`ui/battle_screen.py`): **E** drops
+  into the selected squad's lead and toggles back out (TAB stays the
+  P17.5 squad-cycler, so E is the role-swap key — the one deviation from
+  the sketch); in-body WASD/arrows drive the soldier and F strikes; the
+  camera `center_on`s the driven soldier every frame (locks in); ESC
+  releases to command before it leaves the screen; the command line
+  becomes an EMBODIED readout (hp + controls). 11 tests: embody/unembody
+  state, dead-driver → None, the tick skips the driver while its mate
+  charges on, embody_move steps/blocks-on-a-wall/needs-a-body,
+  embody_attack hits an adjacent foe / whiffs out of reach, and a
+  headless screen-wire smoke test (E drops in, camera-lock render, ESC
+  releases then exits). Suite 1739, green.)*
 - [ ] **P17.8 Fold-back.** `battle_resolve.resolve` replaces the
   dice in faction_ticker/retaliation off-screen battles; commander
   orders extend to overworld `[Clash]` events; a castle assault in
