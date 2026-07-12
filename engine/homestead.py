@@ -164,9 +164,9 @@ def repair(engine) -> Optional[str]:
     engine.world.advance_time(STAGE_MINUTES)
     proj["stage"] = proj.get("stage", 0) + 1
     p.metadata["home_project"] = proj
-    try:
-        from engine.skill_progression import add_skill_xp
-        add_skill_xp(p, "crafting", 60)
+    try:   # repairing your home trains Carpentry (P15.9b)
+        from engine.skill_progression import train_skill
+        train_skill(engine, "carpentry", 60)
     except Exception:
         pass
     if proj["stage"] >= proj.get("total", REPAIR_STAGES):

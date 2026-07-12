@@ -2098,10 +2098,27 @@ UI polish.
   targeting gate was redundant with can_hit's own true-LOS, so it
   came out, and can_witness switched to fresh LOS. 10 tests. Suite
   1198, green x3.)*
-- [ ] **P15.9b Skill breadth (deferred half of P15.9).** More
+- [x] **P15.9b Skill breadth (deferred half of P15.9).** More
   lattice skills for richness beyond the 8 (a combat/social/craft
   spread), each with a pet, a teacher, and a use-site that trains
   it — sized as its own round.
+  *(Round 159: three new lattice skills across the spread —
+  **bartering** (social), **hunting** (combat), **carpentry** (craft) —
+  each shipped with the full kit: a definition in `data/skills.json`, a
+  skilling PET in `data/pets.json` (Sterling the magpie / Scout the
+  hound / Chip the beaver), a TEACHER via the bond lesson (new
+  `CLASS_TEACHES` rows rogue→bartering, barbarian→hunting,
+  artificer→carpentry), and a USE-SITE that trains it: every completed
+  shop deal sharpens bartering (`economy_system` + the B-key
+  `shop_panel`), felling a WILD BEAST (not a person or construct) trains
+  hunting (`combat_system._handle_defeat` → `skill_progression.
+  train_hunting`), and repairing your home trains carpentry
+  (`homestead.repair`). A shared `skill_progression.train_skill(engine,
+  id, xp)` helper is the one-liner every use-site calls — award XP, log
+  the level-up, roll the pet — and it fixed a latent P15.7 bug where
+  home repair awarded XP to a non-existent "crafting" skill (silently
+  dropped). 10 tests. Suite 1521, green. The pattern is now a template
+  for any future skill.)*
 - [ ] **P15.12 Playtest Campaign 5.** Both-sides session across the
   P15 systems; findings become fixes or Phase 16.
 

@@ -3597,3 +3597,34 @@ wisp on the field without raising. Suite 1511, green. REMAINDER (P15.4b):
 shadow direction by sun hour, rain ripples on P10.3 water pools, and
 forge/hearth interior colour — the pieces that want a new render pass
 rather than a tint.
+
+**Round 159 — P15.9b Skill breadth.**
+The deferred half of P15.9: more lattice skills for richness beyond the
+nine, "a combat/social/craft spread, each with a pet, a teacher, and a
+use-site that trains it." Three new skills, one per axis. BARTERING
+(social) is sharpened by every completed shop deal — hooked into both the
+engine-level `economy_system` buy/sell and the B-key `shop_panel`, so it
+trains whichever way you trade. HUNTING (combat) is trained by felling a
+WILD BEAST — a keyword check (`skill_progression.train_hunting`) means a
+wolf or a bear counts but a guard or a golem doesn't, and the XP scales
+with the quarry's level; wired into `combat_system._handle_defeat` on the
+player's kills. CARPENTRY (craft) is trained by repairing your home
+(`homestead.repair`) — which happened to fix a latent bug from P15.7,
+where the repair awarded XP to a skill called "crafting" that never
+existed, so `add_skill_xp` silently dropped it on the floor. Each skill
+shipped with the whole kit: a definition in `data/skills.json`, a skilling
+PET in `data/pets.json` (Sterling the coin-hoarding magpie, Scout the
+tracking hound, Chip the peg-gnawing beaver), and a TEACHER through the
+existing bond lesson — three new `CLASS_TEACHES` rows (rogue→bartering,
+barbarian→hunting, artificer→carpentry) using classes that weren't already
+teaching, so no existing lesson changed. The connective tissue is one new
+helper, `skill_progression.train_skill(engine, id, xp)`: award the XP, log
+any level-up, roll for that skill's pet — the shape every use-site now
+calls in a line, and the template for any skill added later. It also kept
+`combat_system.py` under the 500 ceiling by living in `skill_progression`
+rather than the combat file (which the first cut pushed to 501). 10 tests:
+the three skills registered with pets and teachers; `train_skill` awarding
+XP; buying AND selling training bartering; `train_hunting` crediting a
+wolf but ignoring a person; a real end-to-end combat kill of a wolf
+raising the skill; and a home repair training carpentry. Validator clean,
+suite 1521, green.

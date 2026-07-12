@@ -117,7 +117,7 @@ llm_RPG/
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks; P12.1 degrees of success: `check()` → `CheckResult` with `Degree` (crit ±10 margins, nat 20/1 shift one degree) — lockpicking, forcing, persuasion, shove, and forage all route through it.
 - **`leveling.py`** — XP curve, auto level-up with HP/stat increases.
-- **`skill_progression.py`** — 8-skill lattice from `data/skills.json`; geometric curve, `add_skill_xp()`, levels 1–50.
+- **`skill_progression.py`** — 12-skill lattice from `data/skills.json`; geometric curve, `add_skill_xp()`, levels 1–50. P15.9b: `train_skill(engine,id,xp)` (award + log + pet-roll, the shared use-site one-liner) and `train_hunting` (beast kills); new skills bartering (shop deals) / hunting (felling beasts) / carpentry (home repair), each with a pet + a bond teacher.
 - **`collection_log.py`** — `CollectionLog`; unique items/kills/crafts/places vs registry totals (O-key overlay).
 - **`pets.py`** — `PetSystem`; rare skilling-pet rolls from `data/pets.json`, follower trails the player; P12.14 loyalty 1–20 (SHIFT+Z treats +1, nightly neglect −1, 0 walks away), apport fetch at 12+.
 - **`diaries.py`** — `DiaryManager`; regional task tiers from `data/diaries.json`, auto-claim rewards + shop discounts (J-key overlay).

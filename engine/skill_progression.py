@@ -107,6 +107,39 @@ def add_skill_xp(character, skill_id: str, xp: float) -> List[str]:
     return messages
 
 
+def train_skill(engine, skill_id: str, xp: float) -> List[str]:
+    """A use-site's one-liner (P15.9b): award XP to a lattice skill,
+    log any level-up, and roll for that skill's pet — the shared shape
+    every training action (trade, hunt, repair, …) follows."""
+    notes = add_skill_xp(engine.player, skill_id, xp)
+    for n in notes:
+        try:
+            engine.memory_manager.add_event(n)
+        except Exception:
+            pass
+    try:
+        msg = engine.pet_system.maybe_award(skill_id)
+        if msg:
+            engine.memory_manager.add_event(msg)
+    except Exception:
+        pass
+    return notes
+
+
+_BEASTS = ("wolf boar bear deer stag spider rat bat snake fox lynx hound "
+           "direwolf hare vulture scorpion crab serpent").split()
+
+
+def train_hunting(engine, defeated) -> None:
+    """A felled WILD BEAST trains Hunting; men and constructs don't
+    (P15.9b). XP scales with the quarry's level."""
+    tag = (getattr(defeated, "id", "") + " " +
+           getattr(defeated, "name", "")).lower()
+    if any(b in tag for b in _BEASTS):
+        train_skill(engine, "hunting",
+                    12 + 6 * getattr(defeated, "level", 1))
+
+
 def skill_summary(character) -> List[str]:
     """Lines for the character sheet: name, level, progress."""
     out = []

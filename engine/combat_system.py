@@ -292,6 +292,11 @@ class CombatSystem:
         if attacker.id == self.engine.player.id:
             self._award_xp(defender)
             self._update_faction_rep(kls)
+            try:   # felling a wild beast trains Hunting (P15.9b)
+                from engine.skill_progression import train_hunting
+                train_hunting(self.engine, defender)
+            except Exception:
+                pass
             try:
                 self.engine.collection_log.record_kill(defender)
                 from engine.player_deeds import record_deed

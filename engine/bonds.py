@@ -37,6 +37,8 @@ CLASS_TEACHES = {
     "wizard": "alchemy", "cleric": "cooking", "ranger": "foraging",
     "merchant": "smithing", "guard": "agility", "paladin": "agility",
     "bard": "fishing", "villager": "woodcutting",
+    # P15.9b — teachers for the new lattice skills
+    "rogue": "bartering", "barbarian": "hunting", "artificer": "carpentry",
 }
 
 

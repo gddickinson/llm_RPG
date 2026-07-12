@@ -34,5 +34,17 @@
   "swimming": {
     "name": "Swimming",
     "description": "Cross deep water without the river deciding for you."
+  },
+  "bartering": {
+    "name": "Bartering",
+    "description": "Haggle keener prices; every deal sharpens your eye for worth."
+  },
+  "hunting": {
+    "name": "Hunting",
+    "description": "Track and fell wild beasts; the wilds yield to a hunter."
+  },
+  "carpentry": {
+    "name": "Carpentry",
+    "description": "Raise beams and shore up walls; timber and stone made whole."
   }
 }

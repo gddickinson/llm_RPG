@@ -155,6 +155,7 @@ class ShopPanel:
             self.engine.market.note_purchase(item)   # P8.5 demand
         except Exception:
             pass
+        self._train_bartering()
         return True
 
     def _sell_one(self, item=None) -> bool:
@@ -203,7 +204,16 @@ class ShopPanel:
             self.engine.market.note_sale(item)   # P8.5 supply
         except Exception:
             pass
+        self._train_bartering()
         return True
+
+    def _train_bartering(self) -> None:
+        """The B-key deal trains Bartering too (P15.9b)."""
+        try:
+            from engine.skill_progression import train_skill
+            train_skill(self.engine, "bartering", 5)
+        except Exception:
+            pass
 
     # ---------------- render ----------------------------------------
 

@@ -88,5 +88,35 @@
       220
     ],
     "description": "A shimmer of water that paddles along beside you."
+  },
+  "bartering": {
+    "name": "Sterling",
+    "kind": "magpie",
+    "color": [
+      120,
+      120,
+      140
+    ],
+    "description": "A sleek magpie that hoards bright coins in your pack."
+  },
+  "hunting": {
+    "name": "Scout",
+    "kind": "tracking hound",
+    "color": [
+      150,
+      120,
+      80
+    ],
+    "description": "A lean hound that noses out the next trail."
+  },
+  "carpentry": {
+    "name": "Chip",
+    "kind": "beaver",
+    "color": [
+      130,
+      90,
+      60
+    ],
+    "description": "A busy beaver that gnaws spare pegs into shape."
   }
 }

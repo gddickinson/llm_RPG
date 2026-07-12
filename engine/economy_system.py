@@ -123,6 +123,7 @@ class EconomySystem:
         self.engine.player.inventory.append(item)
         msg = f"You buy {item.name} for {price}g."
         self._log(msg)
+        self._train_bartering()
         return msg
 
     def _exec_sell_player(self, item_name: str, buyer) -> str:
@@ -136,7 +137,16 @@ class EconomySystem:
         buyer.inventory.append(item)
         msg = f"You sell {item.name} for {price}g."
         self._log(msg)
+        self._train_bartering()
         return msg
+
+    def _train_bartering(self) -> None:
+        """Every completed deal sharpens Bartering (P15.9b)."""
+        try:
+            from engine.skill_progression import train_skill
+            train_skill(self.engine, "bartering", 5)
+        except Exception:
+            pass
 
     # ---- helpers ------------------------------------------------------
 
