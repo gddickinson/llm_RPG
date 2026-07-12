@@ -5891,3 +5891,28 @@ MAX_DRIVEN=4), skipped by the ambient NPC AI, validated
 the normal NPC save, the system just rebuilds a brain for each on load. 9
 tests. The big remainder (M.6b): their own quests and dungeon-clears, rival
 parties, real competition with the hero, and the fortune arc — power or ruin.
+
+## 2026-07-12 (cont.) — Bug: entering a building teleported the player
+
+George, playing: "when I enter a building I keep being teleported to another
+location on the map." Root cause was a sharp edge exposed by M.6's driven
+adventurers. The building/dungeon a player is inside lives in GLOBAL engine
+state (`current_interior` / `current_dungeon`), but `acting_as` — the
+context manager that lets the agent drive a character through the real
+player-action API — only swapped `engine.player`, not the zone. So each turn
+a driven adventurer (standing on the OVERWORLD) inherited the *player's*
+interior, its `_zone_plan` decided it was indoors and called
+`exit_building`, which cleared the interior and left whoever was
+`engine.player` at that instant stranded at the zone-local door tile — i.e.
+teleported onto the overworld. It fired even with autoplay OFF, because the
+adventurers drive every turn.
+
+Fix: `acting_as` now neutralises the zone context when driving a character
+that is NOT the zone's owner (`character is not prev` while a zone is
+active) — saving and restoring `current_interior`/`current_dungeon` around
+the driven turn — so the whole action path (movement, `active_zone`,
+`_zone_plan`) treats the driven adventurer/away-hero as being on the
+overworld it actually occupies. The active away-hero driving ITSELF (owner
+== character) still exits a building as before (M.5b). +1 regression test;
+the player now stays put in a building while the world's other heroes go
+about their business outside.

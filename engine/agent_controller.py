@@ -35,13 +35,35 @@ SWARM_HP = 0.75                             # back off a pack below this
 @contextmanager
 def acting_as(engine, character):
     """Point `engine.player` at `character` for one action so the real
-    player-action API operates on it, then restore the prior player."""
+    player-action API operates on it, then restore the prior player.
+
+    The building/dungeon a player is inside (`current_interior`/
+    `current_dungeon`) is GLOBAL engine state, but a driven adventurer or
+    away-hero stands on the OVERWORLD, not in that zone. Bug-fix
+    2026-07-12c: when we drive someone who is NOT the owner of the current
+    zone, neutralise the zone context for the duration so the whole action
+    path (movement, the agent's `active_zone`, `_zone_plan`) treats them as
+    being on the overworld they actually occupy — otherwise the driven
+    character would `exit_building` the PLAYER out of their own interior,
+    stranding them at the zone-local door tile (George: "entering a
+    building keeps teleporting me")."""
     prev = engine.player
     engine.player = character
+    swap = character is not prev and (
+        getattr(engine, "current_interior", None) is not None
+        or getattr(engine, "current_dungeon", None) is not None)
+    if swap:
+        saved_i = engine.current_interior
+        saved_d = engine.current_dungeon
+        engine.current_interior = None
+        engine.current_dungeon = None
     try:
         yield
     finally:
         engine.player = prev
+        if swap:
+            engine.current_interior = saved_i
+            engine.current_dungeon = saved_d
 
 
 class AgentController:

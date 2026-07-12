@@ -96,6 +96,25 @@ class TestSafeDriving(_Base):
         for ctrl in self.advs.controllers.values():
             self.assertFalse(ctrl.social)
 
+    def test_driving_does_not_eject_the_player_from_a_building(self):
+        # the player is inside a building; a driven adventurer shares the
+        # GLOBAL current_interior via acting_as and must NOT exit_building
+        # the player out of it (2026-07-12c teleport bug)
+        loc = next(l for l in self.engine.world.locations
+                   if l.name in self.engine.interiors)
+        w = self.engine.world.map
+        w.remove_character(self.engine.player)
+        self.engine.player.position = (loc.x + loc.width // 2,
+                                       loc.y + loc.height - 1)
+        w.place_character(self.engine.player, *self.engine.player.position)
+        self.engine.enter_building(loc, via_breach=True)
+        self.assertIsNotNone(self.engine.active_zone())
+        inside = self.engine.player.position
+        for _ in range(5):
+            self.advs.run_turn()
+        self.assertIsNotNone(self.engine.active_zone())    # still indoors
+        self.assertEqual(self.engine.player.position, inside)
+
 
 class TestCombatAttribution(_Base):
     def test_a_kill_is_not_pinned_on_the_player(self):
