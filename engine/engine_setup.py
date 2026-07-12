@@ -93,6 +93,8 @@ def build_subsystems(engine, llm_model=None,
     self.nemesis = NemesisSystem(self)
     from engine.ambitions import AmbitionSystem
     self.ambitions = AmbitionSystem(self)
+    from engine.social_graph import SocialGraph
+    self.social_graph = SocialGraph(self)
     self.dm = DMApi(self)
     self.dm_autonomous = AutonomousDM(self)
     try:

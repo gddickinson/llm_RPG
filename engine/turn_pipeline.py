@@ -174,6 +174,10 @@ def run_turn(engine) -> None:
                 self.ambitions.run_day()
             except Exception as e:
                 logger.debug(f"Ambitions error: {e}")
+            try:   # the peer social graph drifts — friends & feuds (P20.2)
+                self.social_graph.run_day()
+            except Exception as e:
+                logger.debug(f"Social graph error: {e}")
             self.faction_ticker.run_day()
             try:   # wild tribes grow and raid the settlements (P19.4)
                 self.monster_tribes.run_day()

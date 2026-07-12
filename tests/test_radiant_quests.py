@@ -71,10 +71,14 @@ class TestRadiantQuests(unittest.TestCase):
         # Force the bounty path for determinism
         self.gen._from_shortage = lambda: None
         quest = self.gen._generate(0, 0)
-        self.assertEqual(quest.objectives[0].obj_type.value, "kill")
+        obj = quest.objectives[0]
+        self.assertEqual(obj.obj_type.value, "kill")
         self.qm.quests[quest.id] = quest
         self.qm.accept_quest(quest.id)
-        self.qm.on_npc_defeated(wolf.id, wolf.character_class.value)
+        # Slay a creature of the bounty's OWN target kind — the wild now
+        # holds lair monsters (P19.2), so the bounty may not be the wolf.
+        for _ in range(obj.required):
+            self.qm.on_npc_defeated(wolf.id, obj.target)
         self.assertEqual(self.qm.get(quest.id).status,
                          QuestStatus.COMPLETED)
 

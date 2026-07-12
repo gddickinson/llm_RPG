@@ -3758,11 +3758,29 @@ This phase gives NPCs agency, a social web, and gods that act.
   mastery / romance effects; player-chars skipped). Remainder P20.1b:
   ambitions that MOVE the NPC (migrate, open a new shop building) and
   vengeance that seeks a real target.)*
-- [ ] **P20.2 The NPC social graph.** Peer-to-peer relationships
+- [x] **P20.2 The NPC social graph.** Peer-to-peer relationships
   (like / dislike / trust / rivalry) that form and evolve from shared
   events, gossip, and proximity — friendships and feuds in heuristic mode,
   not the LLM-only director path. A world of relationships, not spokes to
   the player.
+  *(Round: `engine/social_graph.py` `SocialGraph.run_day()` (nightly,
+  after ambitions). Each night it walks the cast (monsters excluded),
+  picks each NPC an associate — same-faction peers plus a couple of
+  outsiders so it isn't only cliques — and drifts their MUTUAL
+  relationship: kin and same-faction folk warm (`+`), a settlement's
+  neighbours grow familiar, the lawful and the outlaw grate (`−3`). Left
+  to run, edges cross thresholds on their own: `FRIEND` (+55) mints a
+  friendship, `FEUD` (−45) a bitter feud — each latched once in
+  `metadata["social"]` and announced as a `[Realm]` beat the gossip system
+  carries (the heuristic answer to the director's LLM-only feud). Every
+  edge lives in the NPCs' own `relationships` + `metadata`, so the whole
+  graph rides the save. Composes with P20.1 — the romance couples are this
+  same graph at its warmest. 9 tests (same-faction bonds, lawful/outlaw
+  friction, strangers-aren't-kin; crossing into friendship and into feud,
+  mutual and announced-once; run_day drifts a private pair; monsters stay
+  out; friends AND feuds emerge over 40 nights). Remainder P20.2b: gossip
+  that SHAPES opinion (hearing ill of someone lowers your regard for
+  them), and alliances/rivalries at the FACTION scale.)*
 - [ ] **P20.3 Faction agendas.** Factions gain objectives (expand / raid /
   ally / hoard) and pursue them with territory and diplomacy state — wars
   with aims, not dice.

@@ -5314,3 +5314,36 @@ cache; progress accrues; the goal realises and announces; a done ambition
 never re-fires; the wealth, mastery and romance effects; player-characters
 skipped). Remainder P20.1b: ambitions that physically MOVE the NPC —
 migrate, open a shop — and a vengeance that hunts a real target.
+
+## The social graph — a world of relationships (P20.2)
+
+The reputation system was a wheel of spokes: every relationship pointed at
+the player, and the only bond between two NPCs that ever moved was the
+world director's feud — which fired on the LLM path alone, so on the
+default heuristic backend the townsfolk had no feelings about each other
+at all. This round gives them a peer graph that lives.
+
+`engine/social_graph.py` walks the cast each night. For each person it
+picks an associate — their own faction's people, mostly, plus a couple of
+outsiders so the town isn't a set of sealed cliques — and nudges the two
+of them toward or away from each other. Kin warm to kin, a faction's folk
+warm to their own, a settlement's neighbours grow familiar; the lawful and
+the outlaw grate. None of it is loud: a couple of points a night. But let
+it run and the edges cross thresholds on their own — two people become
+fast friends, or fall into a bitter feud — and each crossing latches once
+and surfaces as a `[Realm]` beat the gossip system carries into the
+taverns. It is the heuristic answer to the director's LLM-only falling-out,
+and it runs on every backend.
+
+It sits naturally alongside last round's ambitions: the romance couples
+P20.1 mints are this same graph at its warmest, a +45 edge that skips
+straight to the top. And every edge is stored where it belongs — in the
+NPCs' own relationship dicts and metadata — so a friendship a month in the
+making, or a feud that's been festering, both survive a save.
+
+9 tests (same-faction bonds and lawful/outlaw friction and
+strangers-aren't-kin; crossing into friendship and into feud, each mutual
+and announced only once; run_day drifting a private pair; monsters kept
+out of the graph; and friends AND feuds emerging on their own across 40
+nights). Remainder P20.2b: gossip that shapes opinion, and rivalry at the
+faction scale.
