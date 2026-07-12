@@ -6346,3 +6346,18 @@ another body occupies is diverted to the nearest free, walkable tile, and a
 second arrival takes a different tile again. Locked in with 2 collision tests
 (test-only; no engine change, P28.1a's suite already green at 2250). Remainder:
 P28.1c (platforms gate access to new regions) + the player-facing hook.
+
+## 2026-07-12 (cont.) — P28.2a: mounts of every kind (data-driven roster)
+
+George: "basically anything can serve as a mount." `data/mounts.json` is now a
+roster — mule, pack donkey, riding horse, war-horse, elephant, magic carpet —
+each with carry, cost, road speed, where it's sold, the terrain it can cross,
+and combat/trample/flight flags. `engine/mounts.py` generalises the P15.8b mule:
+`buy_mount(engine, kind)` buys at the matching SELLER (a stable for a horse, a
+market for an elephant), gold-gated, one mount at a time; `carry_bonus`/
+`active_mount` drive `carry.capacity` (and honour the legacy `mule` flag so old
+saves and the mule path keep working); `mount_follow` trails ANY mount a step
+behind. 13 tests (+ the 11 legacy mule tests still green). Remainder folded into
+P28.2b/c: per-mount ROAD SPEED (the pace is still binary `mounted`), the
+`traverses` terrain crossings (a carpet flying over water/mountain), and a
+buy-UI/E-key to pick which beast.

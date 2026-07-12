@@ -18,10 +18,13 @@ BASE_SLOTS = 18
 def capacity(player) -> int:
     mod = (getattr(player, "strength", 10) - 10) // 2
     base = max(8, BASE_SLOTS + 2 * mod)
-    meta = getattr(player, "metadata", None)
-    if isinstance(meta, dict) and meta.get("mule"):
-        from engine.mount import MULE_CARRY       # P15.8b pack mule
-        base += MULE_CARRY
+    # P28.2a: a mount hauls extra — the data-driven roster (a mule, donkey,
+    # elephant…), honouring the legacy P15.8b `mule` flag too
+    try:
+        from engine.mounts import carry_bonus
+        base += carry_bonus(player)
+    except Exception:
+        pass
     return base
 
 

@@ -3755,12 +3755,20 @@ P15.8b pack mule).
   P21.5 landmarks / chunked_world regions.
 
 ### P28.2 — Mounts of every kind (basically anything rideable)
-- [ ] **P28.2a Data-driven mounts.** Generalise `engine/mount.py` (today just
+- [x] **P28.2a Data-driven mounts.** Generalise `engine/mount.py` (today just
   the pack mule) to a `data/mounts.json` roster: HORSE (fast road pace),
   MULE / PACK DONKEY (carry), ELEPHANT (big carry, slow, tramples),
   WAR-HORSE (a combat mount), MAGIC CARPET (flies)… each with speed, carry
   bonus, cost, where it's sold (stable / market / bazaar), and a trail-behind
   follower. "Basically anything can serve as a mount" — the data decides.
+  *Done:* `data/mounts.json` (6 mounts, each with carry/cost/speed_mult/sold_at/
+  traverses/flags) + `engine/mounts.py` — `buy_mount(engine, kind)` (bought at
+  the right SELLER kind, gold-gated, one at a time), `carry_bonus`/`active_mount`
+  (honours the legacy P15.8b `mule` flag), `release_mount`, `mount_follow` (any
+  mount trails a step behind). `carry.capacity` + the move-follow hook now read
+  this layer. `tests/test_mounts.py` (13; legacy mule green). *Remainder folded
+  into P28.2b/c:* per-mount ROAD SPEED (road pace is still binary `mounted`), the
+  `traverses` terrain crossings, and the buy-UI/E-key to pick a mount kind.
 - [ ] **P28.2b Terrain abilities.** A mount's `traverses` list lets it cross
   what a walker can't — a magic carpet / griffon FLIES over water & mountains
   (compose with `world_map._is_flier`), a horse fords shallows, a camel

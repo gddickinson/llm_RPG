@@ -1,0 +1,31 @@
+{
+  "_doc": "P28.2a mounts roster — basically anything can be ridden; the data decides. Each mount: carry (extra pack slots), cost (gold), speed_mult (road pace), sold_at (location KIND where it's bought — stable/market/…), traverses (terrain a rider crosses, P28.2b), and flags tramples/combat/flies + flavor.",
+  "mounts": {
+    "mule": {
+      "name": "mule", "carry": 8, "cost": 120, "speed_mult": 2.0,
+      "sold_at": "stable", "flavor": "a sturdy pack mule"
+    },
+    "donkey": {
+      "name": "pack donkey", "carry": 10, "cost": 90, "speed_mult": 1.5,
+      "sold_at": "stable", "flavor": "a patient pack donkey"
+    },
+    "horse": {
+      "name": "riding horse", "carry": 4, "cost": 220, "speed_mult": 2.0,
+      "sold_at": "stable", "flavor": "a swift riding horse"
+    },
+    "war_horse": {
+      "name": "war-horse", "carry": 4, "cost": 400, "speed_mult": 2.0,
+      "sold_at": "stable", "combat": true, "flavor": "a barded war-horse"
+    },
+    "elephant": {
+      "name": "elephant", "carry": 16, "cost": 800, "speed_mult": 1.0,
+      "sold_at": "market", "tramples": true,
+      "flavor": "a great tusked elephant"
+    },
+    "magic_carpet": {
+      "name": "magic carpet", "carry": 4, "cost": 1000, "speed_mult": 2.0,
+      "sold_at": "market", "flies": true, "traverses": ["water", "mountain"],
+      "flavor": "a woven flying carpet"
+    }
+  }
+}

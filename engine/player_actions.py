@@ -274,9 +274,9 @@ class PlayerActions:
             self.engine.pet_system.on_player_moved(old_pos)
         except Exception:
             pass
-        try:   # the pack mule trails a step behind (P15.8b)
-            from engine.mount import mule_follow
-            mule_follow(self.engine, old_pos)
+        try:   # the mount trails a step behind (P15.8b mule / P28.2a roster)
+            from engine.mounts import mount_follow
+            mount_follow(self.engine, old_pos)
         except Exception:
             pass
 
