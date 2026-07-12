@@ -5396,3 +5396,35 @@ and it's waiting where you left it.
 4 tests (loot doesn't bleed into a new region; a region's loot returns when
 you come back; a fresh region starts empty; and loot dropped abroad stays
 abroad). Suite green.
+
+## Faction agendas — wars with aims, not dice (P20.3)
+
+The faction ticker moved five factions' strength and stores every night,
+but no faction ever wanted anything: a die picked the event, and nobody
+expanded, allied, or declared war on purpose. This round gives them intent.
+
+`engine/faction_agendas.py` layers on top of the ticker's numbers. Each
+faction now holds an AGENDA and pursues it every night after the day's
+clash: the brigands expand, the merchants hoard, the guards muster to
+protect, the monsters spill out of the wilds, the villagers work toward a
+good year. Pursuit nudges that faction's own strength and stores toward
+its aim — and because the ticker's raids and the wilderness encounter
+weight already read those numbers, an expanding brigand faction really
+does put more bandits on the roads. Wanting something has consequences.
+
+They also hold a diplomacy web. Sworn enemies drift toward war — faster
+when both are strong and spoiling for it — and natural friends drift toward
+alliance; crossing the line latches once and breaks a `[Realm]` beat, so
+the taverns hear that the brigands and the guards are at war, or that the
+guards and the merchants have sworn an alliance. And an agenda is not
+fixed: a faction grown strong turns from expansion to domination, one
+beaten low falls back to lick its wounds and rebuild, and once recovered it
+resumes its nature. Left to run, the map's politics move on their own.
+
+Agendas, relations and the war/alliance latches all persist. 13 tests
+(initial agendas and hostile/warm starting relations; pursuit nudging
+strength and stores; enemies reaching war and friends reaching alliance,
+each declared once; a strong faction turning to dominate, a beaten one to
+recover, a recovered one back to its nature; a run_day [Realm] beat; and a
+persistence round-trip). Remainder P20.3b: diplomacy that steers which
+factions actually clash, and territory they hold and contest.

@@ -3781,9 +3781,27 @@ This phase gives NPCs agency, a social web, and gods that act.
   out; friends AND feuds emerge over 40 nights). Remainder P20.2b: gossip
   that SHAPES opinion (hearing ill of someone lowers your regard for
   them), and alliances/rivalries at the FACTION scale.)*
-- [ ] **P20.3 Faction agendas.** Factions gain objectives (expand / raid /
+- [x] **P20.3 Faction agendas.** Factions gain objectives (expand / raid /
   ally / hoard) and pursue them with territory and diplomacy state — wars
   with aims, not dice.
+  *(Round: `engine/faction_agendas.py` `FactionAgendas` layers intent onto
+  the faction ticker's `{strength, stores}` state, over
+  `data/faction_agendas.json`. Each faction holds an AGENDA — brigands
+  expand, merchants hoard, guards protect, monsters spread, villagers
+  prosper — and every night `run_day` (after the ticker's clash) PURSUES
+  it, nudging that faction's own strength/stores toward the aim (which the
+  ticker's raids and the wilderness encounter weight already read, so an
+  expanding brigand faction really does put more bandits on the roads). A
+  DIPLOMACY web drifts too: sworn enemies slide toward war (faster when
+  both are strong), natural friends toward alliance, and crossing a
+  threshold latches once and fires a `[Realm]` beat — "the brigands and
+  the guards are at war", "the guards and the merchants have sworn an
+  alliance". And an agenda SHIFTS on fortune: a faction grown strong turns
+  to `dominate`, one beaten low falls back to `recover`, then resumes its
+  nature. Agendas + relations + latches persist (`to_dict`/`from_dict`
+  registered in `save_load`). 13 tests. Suite green. Remainder P20.3b:
+  diplomacy that SELECTS the ticker's events (a war makes the two factions
+  actually raid each other) and territory the factions hold and contest.)*
 - [ ] **P20.4 The active pantheon.** Gods that INITIATE: divine events,
   boons and wrath on factions and NPCs, god-vs-god tension, cults,
   festivals, demands with consequences. The Autonomous-World gods import

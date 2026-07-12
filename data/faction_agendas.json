@@ -1,0 +1,26 @@
+{
+  "agendas": {
+    "expand":   {"strength": 3, "stores": 1, "verb": "presses outward to grow its reach"},
+    "hoard":    {"strength": 0, "stores": 3, "verb": "piles up its stores"},
+    "protect":  {"strength": 2, "stores": 0, "verb": "musters to defend the land"},
+    "prosper":  {"strength": 1, "stores": 2, "verb": "works toward a good year"},
+    "spread":   {"strength": 3, "stores": 0, "verb": "spills out of the wilds"},
+    "recover":  {"strength": 2, "stores": 1, "verb": "licks its wounds and rebuilds"},
+    "dominate": {"strength": 2, "stores": 2, "verb": "moves to dominate its rivals"}
+  },
+  "initial": {
+    "villagers": "prosper",
+    "guards": "protect",
+    "merchants": "hoard",
+    "brigands": "expand",
+    "monsters": "spread"
+  },
+  "enemies": [["brigands", "guards"], ["brigands", "villagers"],
+              ["monsters", "villagers"], ["monsters", "guards"]],
+  "friends": [["villagers", "guards"], ["villagers", "merchants"],
+              ["guards", "merchants"]],
+  "war_at": -60,
+  "ally_at": 60,
+  "strong": 72,
+  "weak": 24
+}

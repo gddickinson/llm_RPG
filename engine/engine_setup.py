@@ -95,6 +95,8 @@ def build_subsystems(engine, llm_model=None,
     self.ambitions = AmbitionSystem(self)
     from engine.social_graph import SocialGraph
     self.social_graph = SocialGraph(self)
+    from engine.faction_agendas import FactionAgendas
+    self.faction_agendas = FactionAgendas(self)
     self.dm = DMApi(self)
     self.dm_autonomous = AutonomousDM(self)
     try:

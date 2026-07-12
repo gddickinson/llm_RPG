@@ -27,6 +27,18 @@ class TestTargeting(unittest.TestCase):
         self.wmap.remove_character(self.player)
         self.player.position = (self.ox + 1, self.oy + 4)
         self.wmap.place_character(self.player, *self.player.position)
+        # Hermetic targeting: clear pre-existing HOSTILES so only this
+        # test's own spawns are candidates. The wild now seeds lair
+        # wanderers (P19.2) that can fall within range+LOS; civilians stay
+        # (they aren't targetable unless provoked, and one test needs one).
+        _hostile = ("monster", "troll", "brigand")
+        for nid in list(self.engine.npc_manager.npcs.keys()):
+            other = self.engine.npc_manager.npcs.get(nid)
+            if (other is not None and other.id != self.player.id
+                    and getattr(other.character_class, "value", "")
+                    in _hostile):
+                self.wmap.remove_character(other)
+                self.engine.npc_manager.remove_npc(nid)
 
     def tearDown(self):
         try:
