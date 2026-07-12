@@ -21,6 +21,17 @@ def execute(ctrl, engine, char, plan) -> None:
             engine.shoot_ranged(plan[1].name)
         elif k == "heal_potion":
             engine.use_item(plan[1].name)
+        elif k == "drink":                    # slake thirst (M.10a)
+            if plan[1] is not None:
+                engine.use_item(plan[1].name)
+                deed(f"drank {plan[1].name} to slake its thirst.")
+            else:
+                from characters.needs import drink
+                drink(char)
+                deed("knelt and drank from the water's edge.")
+        elif k == "eat":                      # quiet hunger (M.10a)
+            engine.use_item(plan[1].name)
+            deed(f"ate {plan[1].name} to quiet its hunger.")
         elif k == "heal_spell":
             engine.cast_spell("heal")
         elif k == "cast":                     # attack spell (M.8c)

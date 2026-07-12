@@ -3603,6 +3603,44 @@ a coherent, testable slice; ordered roughly by impact.
   social reach (sociable's r=8). Shown on the M.9c spectator card
   ("Ambition: delve"). `tests/test_away_ambition.py` (13).
 
+## M.10 — Needs-aware autonomy & party welfare (George, 2026-07-12)
+
+George, watching autoplay: "make sure the controlled players monitor their
+needs and satisfy them sensibly (thirsty → find water, hungry → eat, injured
+→ heal, tired → rest); don't die from thirst without trying. Do party members
+suffer injuries in combat, and do they satisfy needs? They should work together
+to keep everyone alive — or a member may have to LEAVE to survive." The driven
+hero accrues `thirst`/`hunger`/`fatigue` (`characters/needs.py`) but the agent
+today reacts only to HP — a real gap.
+
+- [x] **M.10a Driven-hero needs self-care.** In `AgentController.decide`, a
+  SAFE hero tends its body BEFORE it's dire: DRINK when thirsty (a carried
+  drink item, or step to an adjacent WATER tile and drink from the river), EAT
+  when hungry (a carried food), and REST when merely tired (not only when badly
+  wounded). Sensing in `agent_sense`, execution in `agent_exec` (reusing
+  `use_item`/`needs.drink`). So a driven hero never dies of thirst/hunger untried.
+  *Done:* `agent_sense._thirsty/_hungry/_tired/_drink_item/_food_item/
+  _adjacent_water/_water_toward` (thresholds 55/60/65, below the exhaustion
+  rungs); decide's recovery block now handles thirst→hunger→HP→fatigue in that
+  order (thirst is the fastest clock); `agent_exec` `drink`/`eat` verbs.
+  `tests/test_away_needs.py` (12).
+- [ ] **M.10b Companion combat survival.** Confirm companions take combat
+  damage (they do — HP drops, `_flee_step` reacts < 30%) and give a wounded
+  companion self-preservation: quaff its OWN healing potion when hurt, and flee
+  when critical even without the /order flee. A party member fights on too long
+  and dies today.
+- [ ] **M.10c Party welfare & cooperation (+ personality-driven aid).**
+  Companions satisfy their own needs on the road (eat/drink), a HEALER companion
+  mends the most-wounded ally, and a member at death's door with no way to
+  recover LEAVES the party to save itself (a beat), rejoining when well. The
+  party keeps everyone alive together. **But not uniformly** (George, 2026-07-12):
+  a character's ALIGNMENT, its RELATIONSHIP/alliance/enmity toward the hero and
+  each other, its PERSONALITY, and its MEMORIES drive how freely it gives aid —
+  a selfish or hostile-leaning member is slower to spend its potion on someone
+  it dislikes, a loyal or good-aligned one readily helps; the same forces shape
+  behaviour OUT of a party too. Aid-willingness = f(regard, alignment, traits,
+  recent memories), a gate on the heal/share decision.
+
 ### M.6b / M.7b — the living-world remainders (already scoped above)
 - [~] **M.6b Rival adventuring parties.** Adventurers take their own quests,
   clear dungeons, band into rival companies, and COMPETE with the hero for
@@ -3675,6 +3713,73 @@ P15.8b pack mule).
   ride/dismount (a key); the mount can be spooked, tire, or (war-mounts) fight;
   loyalty/feed like the P12.14 pet. See `autonomous_world` for the breadth of
   rideable creatures.
+
+## Phase 29 — The Productive World: NPC construction, terraforming & the material economy (ultraplan, George, 2026-07-12)
+
+George: "NPCs and characters should be able to DESTROY and BUILD objects,
+including buildings — given the right resources, tools and skills — as part of
+their economy: harvesting, mining, crafting, selling, building, renovating.
+NPCs hireable to build and TRANSFORM tiles (fell trees → timber, mine → metals,
+quarry → stone); goods TRANSPORTABLE (pack animals, porters, magical transport);
+magic-users conjure resources / terraform / raise buildings. It all feeds the
+economy and drives NPC (and monster) action. See Autonomous World; research
+efficient approaches."
+
+**Grounding — a lot already exists to build on (mapped 2026-07-12):**
+`engine/production_loop.py` (nightly settlement STORES; gatherers add raws,
+crafters consume `inputs_of`→goods; `_arbitrage` caravans) but it works
+ABSTRACTLY — never touches tiles/nodes. `world/resource_nodes.py`
+(`harvest`→`_deplete` TRANSFORMS the tile; `run_day` regrows) but is called
+only from the PLAYER gather path. `engine/tile_damage.py` (tile HP + materials;
+BUILDING→RUBBLE, FOREST→GRASS, MOUNTAIN→GRASS via `damage_tile`/`damage_radius`)
+— destruction is real. `engine/giants.py` `run_night_labor` (crews clear rubble,
+masons rebuild breached walls) — the only NPC-construction template, hardcoded.
+`engine/homestead.py` (a staged `ConstructionProject`-in-spirit: timber+stone+
+coin+time→furnished building) but PLAYER-only, `player.metadata`-backed.
+`engine/mount.py` (pack mule +carry), `engine/spells.py:171` (razes via
+`damage_radius` — no symmetric CREATE path). `world/building_types.py`
+(KIND→profession, `classify_interior`). Each sub-step below is one tested round.
+
+- [ ] **P29.1 NPC terrain-harvesting (raws come from real tiles).** New node
+  KINDS in `data/resource_nodes.json` — an ORE vein (mountain → depleted rock)
+  and a STONE quarry — beside the shipped grove (forest → grass). Let an NPC
+  PRODUCER working near a live node harvest it (generalise
+  `ResourceNodeSystem.harvest` past the player-only path), transforming the
+  tile; `production._work` gatherers pull from a real nearby node when present
+  (abstract yield only as fallback), so store raws came from somewhere on the
+  map. Extend `items/validate_economy.py` for the new kinds.
+- [ ] **P29.2 A general `ConstructionProject` (NPCs build & renovate).** Extract
+  the staged-construction pattern into a reusable `engine/construction.py`
+  `ConstructionProject` (site + kind + staged inputs timber/stone/coin/labour +
+  progress + on-finish effect), usable by NPCs, not just the player. An NPC crew
+  with the materials + carpentry/masonry skill advances a project each day
+  (generalising the `giants` mason loop); on finish it stamps a real BUILDING
+  footprint or renovates a derelict. Its own persisted subsystem.
+- [ ] **P29.3 The build economy drives NPC action.** A settlement with surplus
+  raws + a need (a ruined/derelict/RUBBLE'd building, or growth) COMMISSIONS a
+  project; producers route gather→haul→build, consuming materials from the
+  store. Destruction feeds it (a burned building becomes a renovation job).
+  Ties production stores ↔ building_types ↔ construction.
+- [ ] **P29.4 Physical transport of goods (haulers).** Goods move as real loads,
+  not abstract integers: a PORTER / pack-animal / caravan NPC carries a load
+  from source (node/settlement) to workshop/market via `carry`/`mount`
+  (generalise `mount.py` to NPC pack animals). Augments `_arbitrage` with a
+  VISIBLE carrier when the player is near.
+- [ ] **P29.5 Magic shortcuts (conjure & terraform).** Symmetric to the raze
+  path: CREATION/TERRAFORM spells — conjure raw stone/wood into a store or pack,
+  transform a tile (raise stone, grow forest, part water), or raise a simple
+  structure — mana/level-gated, data-driven. A mage-for-hire shortcuts a
+  construction project; conjured goods enter the same economy.
+- [ ] **P29.6 Hire NPCs to build & harvest.** Extend `hirelings.py`: hire a
+  labourer/mason/miner/mage to execute a specific JOB — fell a wood, quarry
+  stone, build a structure, terraform a tile — for pay, on the player's behalf
+  (e.g. to expand a homestead). The specialist runs a ConstructionProject or a
+  harvest loop.
+- [ ] **P29.7 Monsters & the economy react.** Monsters/tribes (P19.4) raid the
+  material economy — burn buildings (making renovation jobs), plunder stores,
+  occupy nodes (denying them) — and prosperity/scarcity (`market.py`, faction
+  stores) drives encounter weight + NPC/monster behaviour. Closes the loop:
+  production ↔ destruction ↔ prices ↔ action.
 
 ## What NOT to build (explicitly deferred)
 

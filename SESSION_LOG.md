@@ -6195,3 +6195,21 @@ on `metadata`, so it rides the save with no new persistence. 14 tests.
 Remainder (noted in the plan): own quests + dungeon clears, competing for named
 hoards, a real win-ledger renown, and the fortune arc (a wiped company loses
 its renown for good).
+
+## 2026-07-12 (cont.) — M.10a: a driven hero tends its NEEDS
+
+George, watching autoplay: the controlled hero should monitor its needs and
+satisfy them sensibly — "don't die from thirst without trying to find water."
+It was true: the away hero accrues thirst/hunger/fatigue (`characters/needs.py`)
+but the agent reacted only to HP. Now, between fights and while safe, the hero
+tends its body in order of urgency: THIRST first (the fastest clock — drink a
+carried waterskin/ale, or if a river tile is adjacent kneel and drink from it,
+or step toward water within sight), then HUNGER (eat carried bread/jerky/pie),
+then HP (the M.8a potion/Heal/camp), then plain TIREDNESS (make camp when
+fatigued even if not bleeding, still gated on provisions so it never loops a
+fruitless doze). Sensing predicates in `agent_sense` (`_thirsty/_hungry/_tired/
+_drink_item/_food_item/_adjacent_water/_water_toward`, thresholds 55/60/65 set
+below the exhaustion rungs), execution verbs `drink`/`eat` in `agent_exec`
+(reusing `use_item` + `needs.drink`). 12 tests. Next (M.10b/c): companion
+combat survival and party welfare — a hurt companion quaffs its own potion and
+flees when critical; a healer mends allies; a dying member LEAVES to survive.

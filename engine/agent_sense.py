@@ -216,3 +216,85 @@ def _provisioned(char, need: int = 8) -> bool:
             if total >= need:
                 return True
     return False
+
+
+# --- M.10a needs self-care ------------------------------------------
+# A driven hero accrues thirst/hunger/fatigue (`characters/needs.py`) and
+# must ACT on a need before it's dire, so it never dies of thirst untried.
+# Thresholds sit below the exhaustion rungs so it drinks/eats/rests early.
+THIRSTY = 55
+HUNGRY = 60
+TIRED = 65
+
+
+def _thirsty(char) -> bool:
+    from characters.needs import get_thirst
+    return get_thirst(char) >= THIRSTY
+
+
+def _hungry(char) -> bool:
+    from characters.needs import get_hunger
+    return get_hunger(char) >= HUNGRY
+
+
+def _tired(char) -> bool:
+    from characters.needs import get_fatigue
+    return get_fatigue(char) >= TIRED
+
+
+def _drink_item(char):
+    """A carried drink that slakes thirst (a P12.3 drink carries a `thirst`
+    payload on `use_effect`)."""
+    for it in getattr(char, "inventory", []):
+        eff = getattr(it, "use_effect", None) or {}
+        if isinstance(eff, dict) and eff.get("thirst"):
+            return it
+    return None
+
+
+def _food_item(char):
+    """A carried edible that quiets hunger (P12.5 food — `use_effect.food`
+    with a heal payload)."""
+    for it in getattr(char, "inventory", []):
+        eff = getattr(it, "use_effect", None) or {}
+        if isinstance(eff, dict) and eff.get("food") \
+                and getattr(it, "heal_amount", 0) > 0:
+            return it
+    return None
+
+
+def _adjacent_water(engine, char) -> bool:
+    """A WATER tile next to us — we can drink straight from the river."""
+    from world.world_map import TerrainType
+    wmap = engine.world.map
+    x, y = char.position
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < wmap.width and 0 <= ny < wmap.height \
+                    and wmap.terrain[ny][nx] == TerrainType.WATER:
+                return True
+    return False
+
+
+def _water_toward(engine, char, r: int = 6):
+    """The nearest WATER tile within `r` to step toward and drink, or None.
+    Overworld only — a dungeon floor has no river to make for."""
+    try:
+        if engine.active_zone() is not None:
+            return None
+    except Exception:
+        pass
+    from world.world_map import TerrainType
+    wmap = engine.world.map
+    x, y = char.position
+    best, bd = None, r + 1
+    for dx in range(-r, r + 1):
+        for dy in range(-r, r + 1):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < wmap.width and 0 <= ny < wmap.height \
+                    and wmap.terrain[ny][nx] == TerrainType.WATER:
+                d = max(abs(dx), abs(dy))
+                if d < bd:
+                    best, bd = (nx, ny), d
+    return best

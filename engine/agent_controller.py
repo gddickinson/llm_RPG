@@ -26,7 +26,9 @@ from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
                                 _knows_heal, _can_shoot, _provisioned,
                                 _attack_spell, _gatherable, _learn_item,
-                                _can_pray, _can_stash, _claim_target)
+                                _can_pray, _can_stash, _claim_target,
+                                _thirsty, _hungry, _tired, _drink_item,
+                                _food_item, _adjacent_water, _water_toward)
 
 logger = logging.getLogger("llm_rpg.agent")
 
@@ -270,19 +272,40 @@ class AgentController:
         if self._nearest_loot(engine, char, r=0) == tuple(char.position):
             return ("loot",)
 
-        # 3b. recover between fights (M.8a) — a SAFE, wounded hero tops up
-        # rather than soldiering on at a sliver of health: a potion, a Heal
-        # spell, or (badly hurt on the open overworld, out of quick heals)
-        # make CAMP. Ends the chronic-attrition death-by-a-thousand-cuts.
-        if not foes and hp < REST_HP:
-            pot = _healing_item(char)
-            if pot is not None:
-                return ("heal_potion", pot)
-            if _knows_heal(char):
-                return ("heal_spell",)
-            # only make camp if it'll actually mend us — a REAL camp needs
-            # provisions, else it's a fruitless doze we'd repeat every night
-            if self.social and hp < LOW_HP \
+        # 3b. tend the body between fights (M.8a + M.10a needs) — a SAFE hero
+        # acts on a NEED before it's dire: slake thirst (a drink, or step to
+        # the river and drink), eat when hungry, mend HP, and camp when tired
+        # — so it never dies of thirst/hunger/attrition untried.
+        if not foes:
+            # thirst is the fastest clock — deal with it first
+            if _thirsty(char):
+                drink = _drink_item(char)
+                if drink is not None:
+                    return ("drink", drink)
+                if _adjacent_water(engine, char):
+                    return ("drink", None)
+                water = _water_toward(engine, char)
+                if water is not None:
+                    return ("move", nav.safe_step(engine, char, water,
+                                                  self.recent))
+            if _hungry(char):
+                food = _food_item(char)
+                if food is not None:
+                    return ("eat", food)
+            if hp < REST_HP:
+                pot = _healing_item(char)
+                if pot is not None:
+                    return ("heal_potion", pot)
+                if _knows_heal(char):
+                    return ("heal_spell",)
+                # a REAL camp needs provisions, else it's a fruitless doze
+                # we'd repeat every night
+                if self.social and hp < LOW_HP \
+                        and nav.active_zone(engine) is None \
+                        and _provisioned(char):
+                    return ("rest",)
+            # merely tired (not bleeding) — camp if it'll actually mend us
+            if _tired(char) and self.social \
                     and nav.active_zone(engine) is None \
                     and _provisioned(char):
                 return ("rest",)
