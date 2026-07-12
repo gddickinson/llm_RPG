@@ -167,7 +167,8 @@ class CombatSystem:
             damage *= 2
 
         # Damage-type vs target weakness (e.g. silver vs trolls)
-        damage = self._apply_damage_type_modifier(attacker, defender, damage)
+        from engine.combat_math import damage_type_modifier
+        damage = damage_type_modifier(attacker, defender, damage)
 
         defender.take_damage(damage)
         try:   # damage forces the keep-it check (P12.7)
@@ -218,6 +219,16 @@ class CombatSystem:
         # The player's defeat is a story beat, not always a game over
         if defender.id == self.engine.player.id:
             return self._handle_player_defeat(attacker, damage)
+
+        # An elite you strike down may escape as a nemesis instead (P19.6)
+        # — before the person/monster split, so it works for either.
+        if attacker.id == self.engine.player.id:
+            try:
+                escape = self.engine.nemesis.intercept_death(defender)
+                if escape is not None:
+                    return escape
+            except Exception:
+                pass
 
         # People are knocked out; monsters die (P12.4, Kenshi)
         try:
@@ -458,31 +469,6 @@ class CombatSystem:
         except Exception:
             pass
         return 0
-
-    def _apply_damage_type_modifier(self, attacker, defender, damage: int) -> int:
-        """Silver vs trolls/undead, fire vs trolls, etc."""
-        try:
-            from characters.equipment import equipped_weapon
-            w = equipped_weapon(attacker)
-            if w is None:
-                return damage
-            kind = (w.damage_kind or "slash").lower()
-            target_class = getattr(defender.character_class, "value", "")
-            target_race = getattr(defender.race, "value", "")
-
-            # Silver / holy vs troll, monster
-            if "silver" in (w.id or "") or "silver" in (w.name.lower() or ""):
-                if target_race == "troll" or target_class in ("troll", "monster"):
-                    return int(damage * 1.5)
-            if kind == "holy" and target_class in ("monster", "brigand"):
-                return int(damage * 1.3)
-            # Fire vs troll (regenerator)
-            if kind == "fire" and target_race == "troll":
-                return int(damage * 1.5)
-            # Frost mildly weaker vs frost-naturalish? skip
-        except Exception:
-            pass
-        return damage
 
     def _step_toward(self, attacker, target) -> bool:
         # Approach the nearest FREE tile beside the target rather than

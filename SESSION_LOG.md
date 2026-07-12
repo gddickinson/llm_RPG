@@ -5244,3 +5244,35 @@ title, HP and level; the tier climbs with the gap; apply_tier's buffs;
 the warband's size and its cap; and a fixed-seed level-20 field that
 reliably meets elites and warbands over its spawns). Remainder P19.5b: a
 named roaming world-boss that stalks the map and hunts the player.
+
+## The Nemesis — foes that remember you (P19.6)
+
+Shadow of Mordor's best idea, ported small, and the capstone of Phase
+19's monster arc. When you almost kill an elite champion (the P19.5 tier),
+it may not die. It flees your blade, earns a name and a title, and swears
+revenge — and nights later it comes back for you, grander and stronger.
+
+`engine/nemesis.py` hangs the whole loop off one hook. `intercept_death`
+runs inside `combat_system._handle_defeat`, placed BEFORE the split that
+knocks people out and kills monsters — so it works whether the champion
+is a bandit or a beast — and gated to the player's own blade, because you
+are the one who makes enemies. At death's door an elite may be born a
+nemesis (named "Vashka", titled "the Cruel") and vanish from the field
+rather than fall; a nemesis with escapes left flees again and RISES, its
+power climbing and its title with it — the Fierce, the Cruel, the Scarred,
+the Dreaded, the Unkillable. Run its luck out and the next killing blow
+lands for real: it passes into the Legendarium with its tally of escapes,
+and a "[Legend] … falls at last — the grudge ends" beat.
+
+Between fights it doesn't sit still. Each night `run_day` may bring a
+living, off-field nemesis back to hunt the player — rebuilt as a champion
+scaled to its power in level, health and strength, and tagged both `elite`
+and `nemesis_id` so it inherits the P19.5 elite handling and, if it brings
+company, the P19.3 pack brain. Ordinary foes never touch any of this;
+they die when you kill them. The roster persists, so a grudge outlives a
+save.
+
+It composes the whole phase into one antagonist: a wilderness elite
+(P19.5) that leads a warband (P19.3), rises through a tribe's raids
+(P19.4) or a lair (P19.2), survives you, and returns by name until one of
+you ends it. 10 tests. Phase 19 — Monsters & Menace — is complete.

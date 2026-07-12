@@ -3704,10 +3704,30 @@ Phase-17 tactical AI.
   warband size and cap; a fixed-seed L20 field meets elites/warbands).
   Remainder P19.5b: a named ROAMING world-boss that stalks the overworld
   map (the apex that hunts YOU), distinct from the lair-bound P19.2 tier.)*
-- [ ] **P19.6 The Nemesis.** Named monster champions (Shadow-of-Mordor
+- [x] **P19.6 The Nemesis.** Named monster champions (Shadow-of-Mordor
   style) that survive a losing fight, remember the player, rise in power
   and title, recruit, and return for revenge — tied to the bones /
   legendarium so grudges become legend.
+  *(Round: `engine/nemesis.py` `NemesisSystem` over `data/nemesis.json`
+  (name pool, escalating titles, config). `intercept_death`, hooked into
+  `combat_system._handle_defeat` BEFORE the person/monster split (so it
+  works for a human or a beast) and gated to the PLAYER's own blade: an
+  ELITE (P19.5) at death's door may be BORN a nemesis — given a name and
+  a title — and flee the field instead of dying; an existing nemesis with
+  escapes left flees and RISES (power +1, a grander title from the
+  ladder); one out of escapes dies for real and passes into the
+  Legendarium (`dm_library.record_legend`) with a `[Legend]` "falls at
+  last" beat. `run_day` (nightly) brings a living, off-field nemesis back
+  to hunt the player — a champion scaled by its power (level + HP + STR),
+  tagged `elite` + `nemesis_id` so the P19.5 elite handling and the P19.3
+  pack brain both apply. Ordinary foes are untouched (intercept returns
+  early); the roster persists (`to_dict`/`from_dict` in `save_load`). 10
+  tests (an ordinary foe dies; a nemesis escapes and rises and earns a
+  grander title; out of escapes it dies and becomes legend; an elite can
+  be born a nemesis; it returns scaled; `_on_field` liveness; no duplicate
+  while on field; persistence; and killing a tagged elite in real combat
+  makes it escape). This completes Phase 19's monster arc. Remainder
+  P19.6b: nemeses that RECRUIT underlings and hold ranks.)*
 
 ## Phase 20 — The Living Society & the Gods  (Ultraplan, 2026-07-12) — the Autonomous-World imports
 

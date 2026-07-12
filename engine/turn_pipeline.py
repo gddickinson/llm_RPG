@@ -175,6 +175,10 @@ def run_turn(engine) -> None:
                 self.monster_tribes.run_day()
             except Exception as e:
                 logger.debug(f"Monster tribes error: {e}")
+            try:   # a nemesis may return to hunt the player (P19.6)
+                self.nemesis.run_day()
+            except Exception as e:
+                logger.debug(f"Nemesis error: {e}")
             try:   # a war-host may march on the castle (P17.8d)
                 from engine.castle_siege_event import maybe_besiege
                 maybe_besiege(self, self.faction_ticker.rng)

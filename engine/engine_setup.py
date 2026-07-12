@@ -89,6 +89,8 @@ def build_subsystems(engine, llm_model=None,
     self.monster_packs = MonsterPackSystem(self)
     from engine.monster_tribes import MonsterTribeSystem
     self.monster_tribes = MonsterTribeSystem(self)
+    from engine.nemesis import NemesisSystem
+    self.nemesis = NemesisSystem(self)
     self.dm = DMApi(self)
     self.dm_autonomous = AutonomousDM(self)
     try:

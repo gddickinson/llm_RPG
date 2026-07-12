@@ -1,0 +1,11 @@
+{
+  "names": ["Grukk", "Vashka", "Morgath", "Skarn", "Druzka", "Thok",
+            "Grisha", "Rukk", "Vurn", "Kargh", "Ozruk", "Snaga"],
+  "titles": ["the Fierce", "the Cruel", "the Scarred", "the Dreaded",
+             "the Unbroken", "the Unkillable"],
+  "max_escapes": 2,
+  "birth_chance": 0.5,
+  "return_chance": 0.5,
+  "power_hp_mult": 0.5,
+  "power_level_bonus": 2
+}
