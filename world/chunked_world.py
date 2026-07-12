@@ -36,6 +36,9 @@ class ChunkedWorld:
     # region keeps its own cast so the same villagers don't reappear in
     # the next map over.
     cached_npcs: Dict[Tuple[int, int], list] = field(default_factory=dict)
+    # dropped loot & bodies belong to their region too (bug-fix 2026-07-12):
+    # keyed by (x,y), they used to bleed into the next map at the same coords.
+    cached_ground_items: Dict[Tuple[int, int], dict] = field(default_factory=dict)
     current_region: Tuple[int, int] = (0, 0)
 
     def plan_for(self, rx: int, ry: int) -> RegionPlan:
@@ -148,6 +151,12 @@ class WorldStreamer:
         wmap = self.engine.world.map
         self.cw.cached_terrain[(rx, ry)] = [list(row) for row in wmap.terrain]
         self.cw.cached_locations[(rx, ry)] = list(self.engine.world.locations)
+        # stow this region's dropped loot & bodies, then clear the world's
+        # so they don't reappear in the next map (bug-fix 2026-07-12)
+        world = self.engine.world
+        self.cw.cached_ground_items[(rx, ry)] = dict(
+            getattr(world, "ground_items", {}) or {})
+        world.ground_items = {}
         # stow this region's cast and pull them OUT of the live manager,
         # so they don't bleed into the next region we walk into.
         self.cw.cached_npcs[(rx, ry)] = self._pop_region_npcs()
@@ -176,6 +185,9 @@ class WorldStreamer:
         locations = self.cw.cached_locations[(rx, ry)]
         self.engine.world.map.terrain = [list(row) for row in terrain]
         self.engine.world.locations = list(locations)
+        # this region's own dropped loot & bodies come back with it
+        self.engine.world.ground_items = dict(
+            self.cw.cached_ground_items.get((rx, ry), {}))
         self._reset_map_characters()
         # bring this region's own cast back to life at their old posts
         for npc in self.cw.cached_npcs.get((rx, ry), []):
@@ -188,8 +200,9 @@ class WorldStreamer:
     def _generate(self, rx: int, ry: int) -> None:
         plan = self.cw.plan_for(rx, ry)
         from world.world_generator import WorldGenerator
-        # Wipe world state
+        # Wipe world state — a fresh region starts with no dropped loot
         self.engine.world.locations = []
+        self.engine.world.ground_items = {}
         gen = WorldGenerator(self.engine.world, seed=plan.seed)
         # Light-touch fill based on flavor
         if plan.flavor == "wilderness":

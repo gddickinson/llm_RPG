@@ -185,7 +185,7 @@ llm_RPG/
 - **`building_types.py`** — P16.3 building-type catalog & room classification: `data/building_types.json` maps each building KIND → function + producer profession (P16.1's set) + marker furniture, plus settlement specializations. `profession_of_kind`/`is_workshop`/`classify_interior` (an anvil room IS a smithy). The P16.2 loop reads it so occupation follows the workplace building, not the character class.
 - **`interiors.py`** — Building interior mini-maps; multi-level stacks (P9A.5): tavern/inn bedroom lofts, shop/forge cellars, twinned stair tiles (`add_upper_floor`/`add_cellar`).
 - **`blueprints.py`** — Building footprint blueprints used by the world generator.
-- **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming); NPCs are region-scoped (each region caches its own cast; companions cross with the player).
+- **`chunked_world.py`** — `WorldStreamer`; off-map region transitions (chunk streaming); NPCs are region-scoped (each region caches its own cast; companions cross with the player). P25.0 bug-fix: dropped loot & bodies (`world.ground_items`) are region-scoped too — `cached_ground_items` stows/restores them per region so they no longer bleed across the border.
 - **`encounters.py`** — `EncounterManager`; wilderness monster spawns (weather-scaled chance).
 - **`monsters.py`** — Monster templates from `data/monsters.json`; terrain-filtered encounters + dungeons; `build_monster()`. P19.1 `apex_pool(depth)`: the boss-tier templates (opted in via `boss_depth`) a dungeon of that depth may crown its deepest floor with — the once-dead warlord/wisp-queen/tyrant, plus the dragon family below depth 3/5.
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.

@@ -5376,3 +5376,23 @@ bleeding across region boundaries because the streamer never caches
 of grouping), then magical bags & rucksacks, a drag-and-drop
 character/items window, and a much wider skill lattice with skill-gated
 items and features to make the skills matter.
+
+## Ground items stay home (P25.0 bug-fix)
+
+George caught it in play: cross into a new region and the treasure you
+dropped — and the bodies you left — were lying there again at the same
+coordinates. The streamer was careful to give each region its own terrain,
+its own locations and its own cast, but `world.ground_items` is a single
+flat (x,y) dict, and nobody ever swapped it. So it bled straight across the
+border.
+
+Now it travels with the region, like everything else. A `cached_ground_items`
+map on the chunk store keyed by region: leaving a region stows its dropped
+loot and clears the live dict, returning to a known region brings that loot
+back exactly where it lay, and a freshly-generated region starts empty. Walk
+east and the potion you dropped is gone from the new grass; walk back west
+and it's waiting where you left it.
+
+4 tests (loot doesn't bleed into a new region; a region's loot returns when
+you come back; a fresh region starts empty; and loot dropped abroad stays
+abroad). Suite green.

@@ -3906,12 +3906,18 @@ Two live bugs in how the world holds its stuff, then a real inventory
 experience and a much wider skill/item web. Bugs first (they're cheap and
 they bite every session).
 
-- [ ] **P25.0 (BUG) Region-change ground items.** Dropped treasure and
+- [x] **P25.0 (BUG) Region-change ground items.** Dropped treasure and
   KO'd bodies reappear in a NEW region at the same coordinates: the
   streamer (`world/chunked_world.py`) caches terrain, locations and NPCs
   per region but never caches or clears `world.ground_items`, so the flat
   (x,y) dict bleeds across the boundary. Fix: cache & restore `ground_items`
   per region alongside the rest (and clear for a freshly-generated region).
+  *(Round: a `cached_ground_items` map on the `ChunkedWorld` store, keyed
+  by region. `_cache_current` stows the leaving region's `world.ground_items`
+  then clears the live dict; `_restore` brings a visited region's loot back;
+  `_generate` starts a fresh region empty. So dropped treasure and bodies
+  now travel with their region — gone when you cross the border, waiting
+  where you left them when you return. 4 tests. Suite green.)*
 - [ ] **P25.1 (BUG) Stackable items don't group.** Arrows and other
   stackables take one inventory slot EACH instead of stacking, filling the
   pack. `Item` already carries `stackable`/`quantity` and renders "name
