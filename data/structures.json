@@ -7,18 +7,26 @@
         "description": "Fallen beams, a cold hearth, and the collapsed barracks beyond a spill of rubble.",
         "grid": [
           "WWWWWWWWWWWWWW",
-          "WF...T....WBBW",
+          "WF...TL...WBBW",
           "WF.K......WFFW",
-          "WF........W.RW",
+          "WF...L....W.RW",
           "WF...F....F.FW",
-          "WF.K......WFFW",
+          "WF.K.L....WFFW",
           "WF.......>WCFW",
           "WWWWWWDWWWWWWW"
         ],
         "inscriptions": [
           "$history",
-          "$history"
-        ]
+          "Three iron levers bar the descent: throw the first and the last, but never the middle."
+        ],
+        "puzzle": {
+          "kind": "lever",
+          "pattern": [
+            0,
+            2
+          ],
+          "wards": "down"
+        }
       },
       {
         "name": "Ruined Keep \u2014 Crypt",

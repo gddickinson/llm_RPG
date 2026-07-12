@@ -62,6 +62,8 @@ def _kind(name: str) -> str:
         return "inscription"
     if "sigil" in low:
         return "sigil"
+    if "lever" in low:
+        return "lever"
     return low
 
 
@@ -91,6 +93,20 @@ def interact(engine) -> Optional[str]:
             return engine.structures.touch_sigil(interior, piece)
         except Exception:
             return "The sigil is cold and inert."
+    if kind == "lever":
+        try:
+            return engine.structures.pull_lever(interior, piece)
+        except Exception:
+            return "The lever won't budge."
+    if kind == "altar":
+        # only an altar bearing an item-fit PUZZLE is offered to (P21.3);
+        # a plain altar falls through to prayer (the handler below)
+        puz = getattr(interior, "puzzle", None)
+        if puz and puz.get("kind") == "altar":
+            try:
+                return engine.structures.offer_at_altar(interior, piece)
+            except Exception:
+                return "The altar is bare, cold stone."
     if kind == "inscription":
         msg = f"The carving reads: \"{piece.get('text', '...')}\""
         engine.memory_manager.add_event(msg)

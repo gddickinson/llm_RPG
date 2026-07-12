@@ -67,7 +67,7 @@ def check_module_packs() -> List[str]:
         from world.structures import CELL_FURNITURE
         from world.monsters import MONSTER_TEMPLATES as MT
         from items.item_registry import ITEM_REGISTRY as IR
-        known = set("WFD.<>KG") | set(CELL_FURNITURE)
+        known = set("WFD.<>KGL") | set(CELL_FURNITURE)   # L = lever (P21.3)
         for sid, sspec in pack.get("structures", {}).items():
             for i, lv in enumerate(sspec.get("levels", [])):
                 bad = set("".join(lv.get("grid", []))) - known

@@ -85,7 +85,7 @@ def _check_traversal() -> List[str]:
 def _check_structures() -> List[str]:
     from world.structures import STRUCTURES, CELL_FURNITURE
     from world.monsters import MONSTER_TEMPLATES
-    known = set("WFD.<>KG") | set(CELL_FURNITURE)
+    known = set("WFD.<>KGL") | set(CELL_FURNITURE)   # L = lever (P21.3)
     out = []
     for sid, spec in STRUCTURES.items():
         if not spec.get("attach_to"):

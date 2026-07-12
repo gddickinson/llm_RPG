@@ -5635,3 +5635,43 @@ a drop; leaving restores the overworld and the zone drop doesn't bleed; a
 real building isolates a drop end-to-end; a zone save keeps overworld items
 separate). Remainder: persisting zone-dropped items across a save (the
 overworld's already persist).
+
+## Puzzles II — levers and offerings (P21.3)
+
+The game had exactly one puzzle: the sigil ward in the Wizard's Tower. This
+round makes the sigil plumbing general and hangs two new kinds of puzzle
+off it, so a dungeon can hold more than one riddle in stone.
+
+A puzzle spec now carries a `kind`. The old sigil order is one; the two new
+ones are a LEVER-GATE and an ITEM-FIT ALTAR. The gate is a bank of levers:
+throw them until the set you've raised matches the mechanism's pattern and
+the warded stairs grind open — and if you raise the wrong one, throwing it
+back down recovers, so it's a fair little logic lock rather than a
+one-mistake reset. The altar hungers for a particular thing: lay the item
+it requires upon it and the ward dissolves, the offering consumed. Both
+seal a staircase exactly as the sigils do, through the same
+`stairs_warded`, so they slot into the existing structure without new
+plumbing downstream.
+
+They're driven the way everything else in a structure is — from the grid
+and a small data block. A new `L` cell drops a numbered lever into a level
+(just as `G` drops a sigil), the `S` altar cell was already there, and the
+furniture layer routes an E-press on a lever to the gate and an E-press on
+an altar to the offering — but only when that altar's level actually bears
+an offering puzzle, so every ordinary altar in the game still answers a
+prayer, not a demand for tribute. Lever progress persists with the rest of
+the structure state.
+
+And it's shown, not just built: the Ruined Keep's Great Hall now holds a
+three-lever gate over the stair down to the crypt, with an inscription that
+tells you the trick — "throw the first and the last, but never the middle."
+
+9 tests (both mechanics; recovering from a wrong lever; the furniture
+routing, including the crucial check that a plain altar still prays; the
+keep's authored gate; and lever-state persistence). Remainder P21.3b:
+riddles with typed answers, pressure plates, and more authored instances.
+
+Also captured two of George's balance notes into a new Phase 26 —
+advancement is too fast and cheap (levels, skills), and casters are too
+strong because mana refills too quickly; both want slower, training-gated
+mastery.

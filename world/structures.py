@@ -48,6 +48,8 @@ class StructureBuilder:
         # Sigil puzzles (P9.4): touch progress + solved wards
         self.puzzle_progress: Dict[str, list] = {}
         self.solved: List[str] = []
+        # Lever/gate puzzles (P21.3): which levers are thrown, per zone
+        self.lever_state: Dict[str, list] = {}
 
     # ------------------------------------------------------------ build
 
@@ -201,6 +203,11 @@ class StructureBuilder:
                               if f["name"] == "Sigil")
                     inter.furniture.append(
                         {"name": "Sigil", "x": x, "y": y, "idx": idx})
+                elif cell == "L":          # lever (P21.3), numbered in order
+                    idx = sum(1 for f in inter.furniture
+                              if f["name"] == "Lever")
+                    inter.furniture.append(
+                        {"name": "Lever", "x": x, "y": y, "idx": idx})
                 elif cell in CELL_FURNITURE:
                     inter.furniture.append(
                         {"name": CELL_FURNITURE[cell], "x": x, "y": y})
@@ -249,6 +256,56 @@ class StructureBuilder:
             self.puzzle_progress[zone.name] = []
             msg = (f"The {name} sigil flares angrily; all the sigils "
                    f"go dark. (Read the inscription.)")
+        self.engine.memory_manager.add_event(msg)
+        return msg
+
+    def pull_lever(self, zone, piece) -> str:
+        """E on a lever (P21.3): throw levers until the up-set matches the
+        mechanism's pattern, and the gate/ward grinds open."""
+        puzzle = getattr(zone, "puzzle", None)
+        if not puzzle or puzzle.get("kind") != "lever":
+            return "The lever won't budge."
+        if zone.name in self.solved:
+            return "The mechanism is already sprung; the way is open."
+        idx = piece.get("idx", 0)
+        up = self.lever_state.setdefault(zone.name, [])
+        if idx in up:
+            up.remove(idx)
+        else:
+            up.append(idx)
+        if set(up) == set(puzzle.get("pattern", [])):
+            self.solved.append(zone.name)
+            self.lever_state.pop(zone.name, None)
+            msg = ("With a deep clank the gears catch — the gate grinds "
+                   "open and the way is clear!")
+        else:
+            msg = ("The lever throws with a heavy clunk; somewhere stone "
+                   "shifts. (The levers must all sit just so.)")
+        self.engine.memory_manager.add_event(msg)
+        return msg
+
+    def offer_at_altar(self, zone, piece) -> str:
+        """E on an altar (P21.3): an item-fit puzzle — lay the thing the
+        altar hungers for upon it and the ward dissolves."""
+        puzzle = getattr(zone, "puzzle", None)
+        if not puzzle or puzzle.get("kind") != "altar":
+            return "The altar is bare, cold stone."
+        if zone.name in self.solved:
+            return "The altar is spent; its ward is long gone."
+        need = puzzle.get("requires", "")
+        player = self.engine.player
+        held = next((it for it in player.inventory
+                     if getattr(it, "id", "") == need
+                     or need and need in getattr(it, "name", "").lower()),
+                    None)
+        if held is None:
+            return puzzle.get(
+                "hint", "The altar hungers for something you do not carry.")
+        player.inventory.remove(held)
+        self.solved.append(zone.name)
+        msg = puzzle.get(
+            "solve_line",
+            "Your offering flares and is gone — the ward dissolves!")
         self.engine.memory_manager.add_event(msg)
         return msg
 
@@ -341,7 +398,9 @@ class StructureBuilder:
                 "looted": list(self.looted),
                 "solved": list(self.solved),
                 "puzzle_progress": {k: list(v) for k, v in
-                                    self.puzzle_progress.items()}}
+                                    self.puzzle_progress.items()},
+                "lever_state": {k: list(v) for k, v in
+                                self.lever_state.items()}}
 
     def from_dict(self, data: dict) -> None:
         from items.item import Item
@@ -352,6 +411,8 @@ class StructureBuilder:
         self.puzzle_progress = {k: list(v) for k, v in
                                 data.get("puzzle_progress",
                                          {}).items()}
+        self.lever_state = {k: list(v) for k, v in
+                            data.get("lever_state", {}).items()}
         self.chest_contents = {}
         for key, dicts in data.get("chests", {}).items():
             try:

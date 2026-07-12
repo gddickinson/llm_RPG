@@ -3916,9 +3916,29 @@ This phase gives NPCs agency, a social web, and gods that act.
   the finale; turn-in wins; the ending fires once; it reads the chronicle).
   Remainder P21.2b: a proper full-screen ending sequence, and the arc
   reacting to the P21.1 choice-flags / the living-world state.)*
-- [ ] **P21.3 Puzzles II.** Levers & gates, pressure plates,
+- [x] **P21.3 Puzzles II.** Levers & gates, pressure plates,
   riddles-with-answers, combination locks, item-fit puzzles — many
   instances, beyond the single sigil ward.
+  *(Round: the sigil-ward plumbing generalised with a puzzle `kind` and
+  two new types in `world/structures.py`. `pull_lever` — a LEVER-GATE:
+  throw the levers until the thrown-set matches the mechanism's `pattern`
+  and the warded stairs grind open (toggle a wrong one back off to
+  recover). `offer_at_altar` — an ITEM-FIT altar: lay the item it
+  `requires` upon it and the ward dissolves, the offering consumed. Both
+  gate stairs through the existing `stairs_warded`. Wired through
+  `furniture.py` (a "Lever" routes to `pull_lever`; an "Altar" routes to
+  `offer_at_altar` ONLY when its level bears an altar-puzzle, else it
+  falls through to prayer as before) and the grid builder (`L` = lever,
+  numbered like sigils; `S` altar already exists). Lever progress persists
+  (`lever_state` in `to_dict`/`from_dict`); the generic `solved` set carries
+  the rest. Authored in CONTENT: a three-lever gate in the Ruined Keep's
+  Great Hall wards the descent to the crypt — "throw the first and the
+  last, but never the middle" (pattern [0,2]) — the game's second puzzle,
+  and the first of a kind. Validator learns `L`. 9 tests (both mechanics,
+  the recover-from-wrong toggle, furniture routing incl. the plain-altar
+  prayer fall-through, the keep's authored gate, persistence). Remainder
+  P21.3b: riddles-with-typed-answers, pressure plates, and more authored
+  instances.)*
 - [ ] **P21.4 Set-piece variety.** Escort / protect, stealth / heist,
   timed / chase, and boss-tied quests; a player-joinable siege or battle
   (the P17 layer the player fights *in*, not watches).
@@ -4088,3 +4108,27 @@ they bite every session).
   + reagents), lockpicking real locks (Thievery + picks), taming a beast
   companion (Beastcraft + bait), brewing (Alchemy II), runes (Runecrafting)
   — each a feature + the items it needs, content-as-data.
+
+## Phase 26 — Balance & the Weight of Mastery  (George's play notes, 2026-07-12)
+
+Advancement is too cheap and too fast. Levels, skills and spellcasting all
+come easily, so nothing feels earned and casters run away with the game.
+This phase re-paces mastery so time and training are the real cost —
+investigate the current curves first, then deepen.
+
+- [ ] **P26.1 Character advancement re-paced (George).** Characters gain
+  XP, levels and skills too quickly. Investigate `engine/leveling.py`
+  (the XP curve) and `engine/skill_progression.py` (the 12-skill lattice),
+  then build a more advanced, slower, training-gated system across ALL
+  character aspects — level XP that respects the difficulty of what you
+  fought, skills that need real practice/time (and maybe a trainer) rather
+  than a few actions, and diminishing returns on grinding. "More balanced
+  with time and training needed to learn skills."
+- [ ] **P26.2 Magic overhauled (George).** Spellcasters are too powerful:
+  mana replenishes far too fast, so there's no cost to casting. Overhaul
+  the magic system (`engine/spells.py`) — a slower, more advanced mana /
+  spell-power recovery (rest-gated regen, a spend that actually bites,
+  perhaps spell slots or a fatigue cost), and a real system for LEARNING
+  spells (study, tomes, a teacher, prerequisites) instead of simply knowing
+  them. Research how CRPGs pace casters (Vancian slots, cooldowns, spell
+  points with slow regen).
