@@ -20,6 +20,11 @@ _packs = tempfile.mkdtemp(prefix="llm_rpg_test_packs_")
 os.environ["LLM_RPG_MODULE_PACKS"] = _packs
 atexit.register(shutil.rmtree, _packs, ignore_errors=True)
 
+# Adventurer NPCs (P-M.6) are driven each turn and roam, which would
+# perturb turn-advancing tests; disable them by default. test_adventurers
+# clears this flag to exercise the band.
+os.environ.setdefault("LLM_RPG_NO_ADVENTURERS", "1")
+
 
 def clean_dm_library():
     """Wipe the per-run DM library (tests that define ids call this in

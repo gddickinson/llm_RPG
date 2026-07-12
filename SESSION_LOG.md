@@ -5857,3 +5857,37 @@ hidden from the street — they only show when the hero stands beside the
 building (P14.2 windows). To stop them reading as "standing on the roof,"
 `body_renderer.draw_glimpsed` now draws a glimpsed indoor NPC dimmed and
 behind a glazed pane. +9 tests; full suite green.
+
+## 2026-07-12 (cont.) — Adventurer NPCs: the world's other heroes (M.6)
+
+George's idea: turn the away-hero lessons outward. The adventuring-class
+NPCs — the ones who *could* join a party, not the farmers and smiths —
+should live lives of their own. When they haven't found a company they hang
+about the taverns looking for a band; otherwise they're out adventuring,
+driven by their own goals, gaining experience or coming to grief. And, to
+answer the standing question: make the party actually form.
+
+`engine/adventurers.py` (`AdventurerSystem`) seeds a small band from
+`data/adventurers.json` — Kestrel the ranger, Bram Ironjaw the dwarf
+axeman, Sable the hedge-wizard — at the taverns, each flagged
+`seeking_party`. The keystone insight is reuse: they run the SAME
+`AgentController` that drives the away-hero, with every freeze/loop fix from
+this session baked in — but `social=False`, so an adventurer never touches
+the PLAYER's quest log or party. It fights, loots, and roams; combat XP
+already flows to whoever acts, so it grows in level by fighting. A seeking
+one loiters by its tavern (`ctrl.home`); an un-recruited one strikes out.
+
+The party forms because a `seeking_party` adventurer will throw in with a
+capable leader before deep trust (`companions.can_recruit` bypasses the
+rel-30 gate for them) — that's *why* they haunt the taverns. So the
+away-hero, which already tries to recruit a willing ally, now finds Kestrel
+by the Oakvale Tavern and takes her on. Recruiting clears the flag and hands
+her to the companion manager.
+
+Wired in: constructed in `engine_setup`, seeded at `start_game` (after the
+lairs), driven each turn in `turn_pipeline` after the away-heroes (capped at
+MAX_DRIVEN=4), skipped by the ambient NPC AI, validated
+(`data_validate._check_adventurers`), and persisted — the Characters ride
+the normal NPC save, the system just rebuilds a brain for each on load. 9
+tests. The big remainder (M.6b): their own quests and dungeon-clears, rival
+parties, real competition with the hero, and the fortune arc — power or ruin.

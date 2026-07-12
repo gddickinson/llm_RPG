@@ -150,6 +150,10 @@ class GameEngine(GameAPIMixin):
             self.lairs.seed()
         except Exception as e:
             logger.debug(f"Lairs: {e}")
+        try:   # the world's OTHER heroes seek bands at the taverns (P-M.6)
+            self.adventurers.seed()
+        except Exception as e:
+            logger.debug(f"Adventurers: {e}")
         try:
             from engine.module_packs import install_packs
             install_packs(self)
@@ -318,8 +322,10 @@ class GameEngine(GameAPIMixin):
             except Exception:
                 pass
             # roster player-characters are driven by their controller
-            # (human / M.2 agent), never the ambient NPC AI (M.1b)
-            if (getattr(npc, "metadata", {}) or {}).get("player_char"):
+            # (human / M.2 agent), never the ambient NPC AI (M.1b); the same
+            # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
+            meta = getattr(npc, "metadata", {}) or {}
+            if meta.get("player_char") or meta.get("adventurer"):
                 continue
             try:
                 npc_x, npc_y = npc.position
@@ -384,8 +390,10 @@ class GameEngine(GameAPIMixin):
             except Exception:
                 pass
             # roster player-characters are driven by their controller
-            # (human / M.2 agent), never the ambient NPC AI (M.1b)
-            if (getattr(npc, "metadata", {}) or {}).get("player_char"):
+            # (human / M.2 agent), never the ambient NPC AI (M.1b); the same
+            # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
+            meta = getattr(npc, "metadata", {}) or {}
+            if meta.get("player_char") or meta.get("adventurer"):
                 continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \

@@ -61,8 +61,11 @@ class CompanionManager:
                         f"you to follow.")
         except Exception:
             pass
-        # Need positive relationship
-        if npc.get_relationship(self.engine.player.id) < 30:
+        # An adventurer LOOKING for a band will throw in with a capable
+        # leader before deep trust — that's why they haunt the taverns
+        # (P-M.6). Everyone else must trust you first.
+        seeking = (getattr(npc, "metadata", {}) or {}).get("seeking_party")
+        if not seeking and npc.get_relationship(self.engine.player.id) < 30:
             return f"{npc.name} doesn't trust you enough yet."
         cap = 3
         try:
@@ -81,6 +84,7 @@ class CompanionManager:
         if reason:
             return reason
         self.party.append(npc_id)
+        npc.metadata["seeking_party"] = False   # found a band (P-M.6)
         msg = f"{npc.name} joins your party!"
         self.engine.memory_manager.add_event(msg)
         npc.add_memory(f"I joined {self.engine.player.name}'s party.", 3)

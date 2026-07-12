@@ -273,6 +273,12 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Agent drive error: {e}")
 
+    # The world's OTHER heroes live their own adventuring lives (P-M.6)
+    try:
+        self.adventurers.run_turn()
+    except Exception as e:
+        logger.debug(f"Adventurer drive error: {e}")
+
     # The world fights its own battles (P7.1)
     try:
         self.npc_conflict.update()

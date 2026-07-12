@@ -116,8 +116,11 @@ class TestDirector(unittest.TestCase):
         now = self.engine.world.time
         self.engine.world.time = ((now // (24 * 60)) + 1) * 24 * 60
         self.engine.advance_turn()
+        # search a wide slice, not just the last few: the number of nightly
+        # events varies with RNG/test-ordering, so an 8-entry window can
+        # evict the [Overnight] line even when it fired
         log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-8:])
+                       self.engine.memory_manager.game_history[-40:])
         self.assertIn("[Overnight]", log)
 
     def test_state_persists_in_saves(self):

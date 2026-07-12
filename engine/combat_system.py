@@ -364,7 +364,16 @@ class CombatSystem:
     def _award_xp(self, defeated) -> None:
         from engine.leveling import award_xp
         xp = 20 + 30 * getattr(defeated, "level", 1)
-        msgs = award_xp(self.engine.player, xp)
+        actor = self.engine.player
+        msgs = award_xp(actor, xp)
+        # an adventurer NPC (P-M.6) driven through this path gains the XP,
+        # but the player-phrased "You gain … / You reached level …" would
+        # misattribute to the player — give it a quiet third-person beat
+        if (getattr(actor, "metadata", {}) or {}).get("adventurer"):
+            if msgs:
+                self.engine.memory_manager.add_event(
+                    f"[Realm] {actor.name} grows more seasoned in the craft.")
+            return
         self.engine.memory_manager.add_event(f"You gain {xp} XP.")
         for m in msgs:
             self.engine.memory_manager.add_event(m)
@@ -372,7 +381,10 @@ class CombatSystem:
     def _update_faction_rep(self, victim_class: str) -> None:
         try:
             from characters.factions import on_defeat
-            deltas = on_defeat(self.engine.player, victim_class)
+            actor = self.engine.player
+            deltas = on_defeat(actor, victim_class)
+            if (getattr(actor, "metadata", {}) or {}).get("adventurer"):
+                return              # an adventurer's rep is its own, not shown
             for faction, delta in deltas.items():
                 sign = "+" if delta > 0 else ""
                 self.engine.memory_manager.add_event(

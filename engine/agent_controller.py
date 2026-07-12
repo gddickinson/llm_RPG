@@ -57,6 +57,7 @@ class AgentController:
         self.recent = []          # a short trail of tiles (anti-oscillation)
         self._gd = None           # last distance to goal, to notice a stall
         self._stall = 0           # turns without getting closer to the goal
+        self.social = True        # False for adventurer NPCs (no player state)
 
     # ---- perception --------------------------------------------
 
@@ -306,13 +307,16 @@ class AgentController:
         if zone is not None:
             return self._zone_plan(engine, char, zone)
 
-        # 4. a life among people — talk, take quests, gather a party
-        social = self._social_plan(engine, char, disp)
-        if social is not None:
-            return social
+        # 4. a life among people — talk, take quests, gather a party.
+        # (adventurer NPCs run social=False: they don't touch the PLAYER's
+        # quest log or party — they fight, loot and roam on their own)
+        if self.social:
+            social = self._social_plan(engine, char, disp)
+            if social is not None:
+                return social
 
         # 5. pursue a quest we've taken on — go where it wants us
-        if disp != "explorer":
+        if self.social and disp != "explorer":
             qgoal = self._quest_goal(engine, char)
             if qgoal is not None and tuple(char.position) != tuple(qgoal):
                 return ("move", nav.safe_step(engine, char, qgoal,

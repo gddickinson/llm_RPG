@@ -3424,6 +3424,36 @@ last. Networking was previously deferred — this supersedes that.
   Remainder M.5b: a "while you were away" digest screen, finer
   per-disposition tuning, EARNING an ally's trust so a party actually
   forms, and the agent using the wider systems (bank, craft, pray, home).
+- [x] **M.6 Adventurer NPCs — the world's other heroes (George, 2026-07-12).**
+  "Apply the autoplay lessons to adventurer NPCs" + "make the party form."
+  A new `engine/adventurers.py` (`AdventurerSystem` over
+  `data/adventurers.json`) seeds a small band of adventuring-class NPCs
+  (Kestrel the ranger, Bram the axeman, Sable the wizard) at the taverns,
+  SEEKING a company — so `companions.can_recruit` now lets the player (or a
+  driven away-hero) recruit a `seeking_party` adventurer before deep trust:
+  **the party forms.** They ride the very same `AgentController` brain the
+  away-hero uses — with all its freeze/loop fixes — but `social=False`, so
+  they fight, loot and roam WITHOUT ever touching the player's quest log or
+  party. Combat XP flows to whoever acts, so an adventurer grows in level by
+  fighting; a seeking one loiters by its tavern, an un-recruited one strikes
+  out. Driven each turn (capped at `MAX_DRIVEN`), skipped by the ambient NPC
+  AI, and they ride the save. +9 tests. **Remainder M.6b (the big one):**
+  adventurers taking their OWN quests and clearing dungeons, forming RIVAL
+  parties, actively COMPETING with the hero for quests/loot/hoards, and the
+  full fortune arc — growing powerful, or dying and losing everything.
+- [ ] **M.7 Hirelings & guilds (George, 2026-07-12).** Two linked ideas
+  layered on M.6's adventurers. (1) HIRELINGS — party members you PAY rather
+  than befriend: they join for an agreed term (a specific job, a fixed
+  number of days, and/or an ongoing salary) and walk once the coin stops or
+  the contract ends; unpaid wages sour them. A hireling contract on
+  `npc.metadata` (`terms`, `wage`, `paid_through`); the guild/tavern is
+  where you meet them. (2) GUILDS as PLACES — an adventurers' guild, a
+  mercenaries' hall, a mages' college — locations where a particular kind of
+  character/hireling/service reliably congregates (seed M.6 adventurers and
+  future hirelings there, plus board-quests and training), so the player
+  knows where to go to hire a blade or find a party. Builds on the existing
+  `engine/guild.py` rank system (rename-or-extend), P16 building-types, and
+  M.6's seeking-party recruiting.
 
 ## What NOT to build (explicitly deferred)
 
