@@ -2756,12 +2756,30 @@ build on P17.11 (facing) first.
   then-shock (a softened debuff a follow-up melee exploits) and line-
   relief / reserve-rally (movement AI — a spent squad withdraws through
   a gap, a fresh one steps up).)*)*
-- [ ] **P17.19 Doctrine AI.** Teach the commander AI to deploy in
-  templates (screen → anchor centre → reserve cavalry → commit at the
-  decisive point), **anchor flanks on terrain**, refuse a flank /
-  oblique order, **brace when it sees a charge coming**, and commit
-  reserves where a local advantage already exists. Makes the above
-  legible to a watching player.
+- [x] **P17.19 Doctrine AI (brace-vs-charge + commit-reserves core).**
+  Teach the commander AI to deploy in templates (screen → anchor centre
+  → reserve cavalry → commit at the decisive point), **anchor flanks on
+  terrain**, refuse a flank / oblique order, **brace when it sees a
+  charge coming**, and commit reserves where a local advantage already
+  exists. Makes the above legible to a watching player.
+  *(Round 171: `engine/battle/battle_doctrine.py` — the squad-level
+  instincts that finally make the AI USE the tactics layers, run each
+  tick from the session. BRACE WHEN YOU SEE A CHARGE COMING: a brace-
+  capable spear/pike (`should_brace`) sets `braced=True` the moment an
+  enemy CHARGE unit (`incoming_charger`, charge_bonus > 1 within 6
+  tiles) bears down, and stands the hedge down again once it's gone —
+  so P17.17's brace stance happens without a human hand. COMMIT WHERE
+  YOU WIN: a HOLDING reserve not itself facing a charge and not already
+  in melee piles into a nearby fight (`should_commit` — enemy within 8,
+  `local_advantage` ≥ 1.5) rather than sitting idle while a won flank
+  goes unexploited. `apply` writes the stance back each tick;
+  deterministic, no rng. 10 tests (sees/ignores a charge, only
+  pike/spear brace, infantry isn't a charger; commits on advantage but
+  not when charging / outnumbered / already engaged; a spear line
+  braces inside a live `tick`). No regression across the 85 battle
+  tests. Suite 1638, green. *(Remainder P17.19b: deployment templates,
+  anchoring flanks on terrain, and refusing a flank — the setup-phase
+  doctrine that needs a deploy step.)*)*
 - [ ] **P17.20 Envelopment & feigned retreat (capstone).** Scripted
   feigned rout → wheel → sprung flank (with the **don't-over-pursue
   discipline check** that counters it), Cannae elastic-centre double

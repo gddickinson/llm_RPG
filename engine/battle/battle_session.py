@@ -60,8 +60,10 @@ class BattleSession:
         flows = self._flows()
         self.tracers = []
 
+        from engine.battle import battle_doctrine as doctrine
         for sq in field.squads.values():
             ai.update_morale(field, sq)
+            doctrine.apply(field, sq)      # P17.19 commander instincts
 
         # deterministic soldier order: by squad id then soldier id
         soldiers = []

@@ -3977,3 +3977,36 @@ tests once the two-squad rule went in. Suite 1628, green. REMAINDER
 (P17.18b): soften-then-shock (a softened debuff a follow-up melee exploits)
 and line-relief / reserve-rally (movement AI — a spent squad withdraws
 through a gap while a fresh one steps up).
+
+**Round 171 — P17.19 Doctrine AI (brace-vs-charge + commit-reserves).**
+Every tactic built across P17.11–P17.18 — facing, positional morale,
+formations, bracing, the wedge, hammer-and-anvil — was only ever as good
+as the AI that CHOSE to use it, and until now a human had to set the brace
+or commit the reserve by hand. `engine/battle/battle_doctrine.py` gives the
+commander two standing instincts, run for every squad each tick right after
+the morale update, so the battle plays itself intelligently and legibly.
+The first is the headline: BRACE WHEN YOU SEE A CHARGE COMING. A brace-
+capable spear or pike line (`should_brace`) sets itself to receive the
+instant an enemy CHARGE unit — cavalry, a war-beast, anything with a charge
+bonus — comes within six tiles (`incoming_charger`), and stands the hedge
+back down once the horse has passed, so P17.17's brace stance finally
+happens on its own; a pike wall now visibly braces as the cavalry bears
+down, exactly what a watching player expects. The second is reserve
+judgement: COMMIT WHERE YOU ALREADY WIN. A squad on HOLD that isn't itself
+the anchor a charge is closing on, and isn't already trading blows, piles
+into a nearby fight its side dominates locally (`should_commit`: an enemy
+within eight tiles and a `local_advantage` of at least 1.5 to 1) rather
+than standing idle while a won flank goes unexploited — P17.18's reserve
+commitment as an automatic behaviour. Both are pure, deterministic
+functions of the board, and `apply` writes the stance back; the
+determinism the session tests demand is untouched (no rng). The care was
+in the gates: a squad already engaged (a soldier with an adjacent enemy)
+is left to fight rather than re-ordered, and a brace-capable anchor facing
+a charge holds instead of chasing. 10 tests: a spear sees and braces
+against a charge but stands down when it's gone, only pike/spear brace and
+infantry isn't a charger; a reserve commits on advantage but not when
+already charging, when outnumbered, or when already engaged; and a spear
+line braces inside a live `tick`. No regression across the 85 battle tests.
+Suite 1638, green. REMAINDER (P17.19b): deployment templates, anchoring
+flanks on terrain, and refusing a flank — the setup-phase doctrine that
+needs a deploy step.
