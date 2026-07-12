@@ -98,11 +98,11 @@ class TestAwayFlag(unittest.TestCase):
         self.assertEqual(settings.get_setting(self.p, "autoplay"), "off")
 
     def test_autoplay_banner_only_while_away(self):
-        from ui.away_mode import banner_text, BANNER
+        from ui.away_mode import banner_text
         r = self.engine.roster
         self.assertIsNone(banner_text(self.engine))    # human at controls
         r.set_away(self.p, True)
-        self.assertEqual(banner_text(self.engine), BANNER)
+        self.assertIn("AUTOPLAY", banner_text(self.engine) or "")
         r.set_away(self.p, False)
         self.assertIsNone(banner_text(self.engine))
 

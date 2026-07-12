@@ -155,6 +155,14 @@ class GameGUI:
                         event.key == pygame.K_F11:
                     self.toggle_fullscreen()
                     continue
+                # M.9b: while away, [-/+] change the autoplay speed and [.]
+                # single-steps — handled here so they neither hand back nor
+                # reach the play handler
+                if self.mode == "play" and event.type == pygame.KEYDOWN \
+                        and self.engine.roster.is_away(self.engine.player):
+                    from ui.away_mode import handle_speed_key
+                    if handle_speed_key(self, event):
+                        continue
                 # M.3: a hero-directing key (move/act) hands control back;
                 # an observe/panel key does not, so you can check on autoplay
                 # without switching it off (2026-07-12d).
@@ -269,7 +277,7 @@ class GameGUI:
         # Top-most: the AUTOPLAY banner rides over everything in play
         if self.mode == "play":
             self.hud.draw_autoplay_banner(
-                self.screen, self.engine, self.screen.get_rect())
+                self.screen, self, self.screen.get_rect())
 
         pygame.display.flip()
 

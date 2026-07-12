@@ -6135,3 +6135,18 @@ very key that took control back doesn't instantly dismiss it. 6 tests.
 
 Remainder: richer content (quests completed, a death, the weightiest
 [Legend]/[Realm] beats), and a key to re-read the last digest.
+
+## 2026-07-12 (cont.) — M.9b: pacing the autoplay (speed & step)
+
+Watching autoplay was stuck at one fixed 0.5s tick. M.9b hands the watcher a
+throttle. `ui/away_mode.py` gains a `SPEEDS` ladder — paused / slow / normal /
+fast / blitz (frames between auto-ticks) — with `cycle_speed`, `single_step`
+and `handle_speed_key`. While the hero is agent-driven, `[-]`/`[+]` slow down
+and speed up (slow one more notch than 'slow' and it PAUSES), and `[.]`
+single-steps exactly one world tick — so you can walk an action beat by beat,
+even from a pause. The GUI loop intercepts these keys before the hand-back
+(they neither end autoplay nor reach the play handler, and they're in
+`_OBSERVE_KEYS` as belt-and-braces), and the AUTOPLAY banner now shows the
+current speed and the `[-/+] [.]` controls. `heartbeat` reads the chosen
+interval (None = paused, only single-step advances). 6 tests. Remainder:
+persist the chosen speed as a setting.

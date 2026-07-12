@@ -110,5 +110,76 @@ class TestHeartbeatDrives(unittest.TestCase):
         self.assertEqual(self.engine.turn_counter, turn0)     # frozen
 
 
+class TestAutoplaySpeed(unittest.TestCase):
+    """M.9b — the watcher can slow/speed/pause/step the autoplay cadence."""
+
+    def setUp(self):
+        self.engine = GameEngine(llm_provider="heuristic",
+                                 enable_npc_processes=False)
+        self.engine.start_game()
+        self.engine.roster.set_away(self.engine.player, True)
+
+        class _Gui:
+            pass
+        self.gui = _Gui()
+        self.gui.engine = self.engine
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def test_default_speed_is_normal(self):
+        from ui.away_mode import speed_label
+        self.assertEqual(speed_label(self.gui), "normal")
+
+    def test_speed_clamps_at_both_ends(self):
+        from ui.away_mode import cycle_speed, speed_label
+        for _ in range(5):
+            cycle_speed(self.gui, 1)
+        self.assertEqual(speed_label(self.gui), "blitz")
+        for _ in range(9):
+            cycle_speed(self.gui, -1)
+        self.assertEqual(speed_label(self.gui), "paused")
+
+    def test_paused_does_not_tick(self):
+        from ui.away_mode import cycle_speed, heartbeat
+        for _ in range(9):
+            cycle_speed(self.gui, -1)                 # -> paused
+        t0 = self.engine.turn_counter
+        for _ in range(40):
+            heartbeat(self.gui)
+        self.assertEqual(self.engine.turn_counter, t0)
+
+    def test_single_step_advances_even_when_paused(self):
+        from ui.away_mode import cycle_speed, single_step
+        for _ in range(9):
+            cycle_speed(self.gui, -1)
+        t0 = self.engine.turn_counter
+        single_step(self.gui)
+        self.assertEqual(self.engine.turn_counter, t0 + 1)
+
+    def test_blitz_ticks_more_than_normal(self):
+        from ui.away_mode import heartbeat, cycle_speed
+        t0 = self.engine.turn_counter
+        for _ in range(30):
+            heartbeat(self.gui)                       # normal
+        normal = self.engine.turn_counter - t0
+        for _ in range(3):
+            cycle_speed(self.gui, 1)                  # -> blitz
+        t1 = self.engine.turn_counter
+        for _ in range(30):
+            heartbeat(self.gui)
+        self.assertGreater(self.engine.turn_counter - t1, normal)
+
+    def test_cadence_keys_consumed_and_never_hand_back(self):
+        from ui.away_mode import handle_speed_key
+        for key in (pygame.K_EQUALS, pygame.K_MINUS, pygame.K_PERIOD):
+            ev = pygame.event.Event(pygame.KEYDOWN, key=key)
+            self.assertTrue(handle_speed_key(self.gui, ev))
+            self.assertFalse(hands_back(self.engine, ev))
+
+
 if __name__ == "__main__":
     unittest.main()

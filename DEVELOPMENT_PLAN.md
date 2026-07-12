@@ -3573,8 +3573,17 @@ a coherent, testable slice; ordered roughly by impact.
   `continue`s so the very key that handed control back doesn't dismiss it).
   6 tests. Remainder: richer content (quests completed, deaths, weighty
   `[Legend]`/`[Realm]` beats), and a key to RE-VIEW the last digest.
-- [ ] **M.9b Autoplay speed & step.** Let the watcher speed up / slow down /
-  single-step the heartbeat (the fixed 0.5s cadence is the only speed today).
+- [x] **M.9b Autoplay speed & step (2026-07-12e).** The watcher now paces the
+  autoplay: `ui/away_mode.py` `SPEEDS` (paused / slow / normal / fast / blitz —
+  frames between auto-ticks), driven by `cycle_speed`, `single_step` and
+  `handle_speed_key`. While away, `[-]`/`[+]` slow down / speed up (slowing
+  past 'slow' PAUSES), and `[.]` single-steps one world tick — perfect for
+  watching an action beat by beat, even while paused. The GUI loop intercepts
+  these before the hand-back (so they neither end autoplay nor reach the play
+  handler; they're also in `_OBSERVE_KEYS`), and the AUTOPLAY banner shows the
+  current speed + the `[-/+] [.]` controls. `heartbeat` reads the chosen
+  interval (None = paused). 6 tests. Remainder: persist the chosen speed as a
+  setting.
 - [ ] **M.9c Spectator HUD.** Show the driven hero's current GOAL, plan, party
   and renown as an overlay, so watching reads as a story, not a mystery.
 - [ ] **M.9d High-level goals & disposition presets.** Let the player set an

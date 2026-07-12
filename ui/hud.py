@@ -56,14 +56,14 @@ class HUD:
         if "map" in layout and settings.enabled(engine.player, "hints"):
             self.draw_hint_bar(target, engine, layout["map"])
 
-    def draw_autoplay_banner(self, target, engine, screen_rect) -> None:
+    def draw_autoplay_banner(self, target, gui, screen_rect) -> None:
         """A can't-miss top-of-screen banner while the hero is agent-
-        driven (M.3 autoplay) — so the player knows it's on and that a
-        keypress resumes control."""
+        driven (M.3 autoplay) — so the player knows it's on, at what speed
+        (M.9b), and that a directing key resumes control."""
         if not self.big_font:
             return
         from ui.away_mode import banner_text
-        text = banner_text(engine)
+        text = banner_text(gui)
         if not text:
             return
         surf = self.big_font.render(text, True, (20, 20, 30))
