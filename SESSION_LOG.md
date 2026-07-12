@@ -5962,3 +5962,24 @@ to take control."
 `gui.py` was over the 500-line line (508), so the defeat overlay moved to a
 new `ui/death_popup.py` (`draw_death_popup`), bringing gui.py to 462. 6 new
 tests (hand-back classification + the heartbeat actually driving the hero).
+
+## 2026-07-12 (cont.) — Guild halls: a place to find blades (M.7b, M.7 done)
+
+The M.6 adventurers were scattered by the taverns; M.7b gives them a home
+you can seek out. `engine/guildhalls.py` (`GuildHallSystem`) plants a named
+`Location` marker from `data/guildhalls.json` beside each settlement at world
+start — the Adventurers' Guild by Oakvale, the Mercenaries' Rest by Riverside
+— each carrying a `guildhall` kind property. The adventurers now gather at
+their HOME settlement's hall (`AdventurerSystem._gathering_spot` asks the
+guild-hall system first, falling back to a tavern), so Kestrel and Bram wait
+at the Oakvale guild while Sable sits at the Riverside mercenaries' rest.
+
+`roster(hall_id)` lists the blades on offer there, `hall_at(pos)` names the
+hall you're standing at, `hall_spot(settlement)` is the gathering tile. The
+markers ride the world save (Location.properties persists) alongside a small
+persisted index; seeding is gated with the adventurers so a couple of extra
+markers don't perturb the general suite. Validation moved to a new
+`items/validate_world.py` (adventurers + guildhalls) to keep data_validate
+under 500. 7 tests. That completes M.7 (hirelings + guilds). Remainder M.7c:
+board-quests and training AT the halls, an enterable interior, a mages'
+college.

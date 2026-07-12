@@ -125,45 +125,8 @@ class GameEngine(GameAPIMixin):
             ensure_wall_guard(self)
         except Exception as e:
             logger.debug(f"Wall guard: {e}")
-        try:   # seed the opening fog-of-war view (P15.11)
-            from engine.discovery import update as _disc
-            _disc(self)
-        except Exception:
-            pass
-        try:
-            self.farm_manager.ensure_plots()
-        except Exception as e:
-            logger.debug(f"Farm plots: {e}")
-        try:
-            self.homes.assign()
-        except Exception as e:
-            logger.debug(f"Home assignment: {e}")
-        try:
-            self.resource_nodes.seed()
-        except Exception as e:
-            logger.debug(f"Resource nodes: {e}")
-        try:
-            self.structures.build()
-        except Exception as e:
-            logger.debug(f"Structures: {e}")
-        try:   # plant the overworld lairs — dragon roost, warren, den (P19.2)
-            self.lairs.seed()
-        except Exception as e:
-            logger.debug(f"Lairs: {e}")
-        try:   # the world's OTHER heroes seek bands at the taverns (P-M.6)
-            self.adventurers.seed()
-        except Exception as e:
-            logger.debug(f"Adventurers: {e}")
-        try:
-            from engine.module_packs import install_packs
-            install_packs(self)
-            try:   # a past failure may haunt this world (P12.13)
-                from engine.bones import maybe_load_bones
-                maybe_load_bones(self)
-            except Exception as e:
-                logger.debug(f"Bones load skipped: {e}")
-        except Exception as e:
-            logger.warning(f"Module packs unavailable: {e}")
+        from engine.engine_setup import seed_world
+        seed_world(self)
 
     def end_game(self) -> None:
         self.running = False

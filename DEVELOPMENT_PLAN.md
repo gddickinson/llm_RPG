@@ -3441,7 +3441,7 @@ last. Networking was previously deferred — this supersedes that.
   adventurers taking their OWN quests and clearing dungeons, forming RIVAL
   parties, actively COMPETING with the hero for quests/loot/hoards, and the
   full fortune arc — growing powerful, or dying and losing everything.
-- [ ] **M.7 Hirelings & guilds (George, 2026-07-12).** Two linked ideas
+- [x] **M.7 Hirelings & guilds (George, 2026-07-12).** Two linked ideas
   layered on M.6's adventurers.
   **(1) HIRELINGS — DONE (2026-07-12c).** Party members you PAY rather than
   befriend: `engine/hirelings.py` (`HirelingSystem`). `/hire` takes an
@@ -3453,13 +3453,16 @@ last. Networking was previously deferred — this supersedes that.
   let the hireling walk SOURED. Stateless; the contract rides the NPC save.
   Any M.6 adventurer can thus be befriended into a free companion OR simply
   hired. 8 tests.
-  **(2) GUILDS as PLACES — remainder M.7b.** An adventurers' guild, a
-  mercenaries' hall, a mages' college — locations where a particular kind of
-  character/hireling/service reliably congregates (seed M.6 adventurers and
-  hirelings there, plus board-quests and training), so the player knows
-  where to go to hire a blade or find a party. Builds on the existing
-  `engine/guild.py` rank system, P16 building-types, and M.6's seeking-party
-  recruiting.
+  **(2) GUILDS as PLACES — DONE (2026-07-12d).** `engine/guildhalls.py`
+  (`GuildHallSystem`) plants a named `Location` marker — the Adventurers'
+  Guild by Oakvale, the Mercenaries' Rest by Riverside — beside a settlement
+  at world start (from `data/guildhalls.json`), and the M.6 adventurers now
+  gather at their home settlement's hall (`AdventurerSystem._gathering_spot`)
+  instead of just any tavern. `roster(hall)` lists the blades on offer,
+  `hall_at(pos)` names the hall you're standing at; the markers ride the
+  world save + a small persisted index. So you know where to go to recruit a
+  companion or hire a blade. 7 tests. Remainder M.7c: board-quests and
+  TRAINING at the halls, an enterable interior, and a mages' college.
 
 ## Phase 27 — Autoplay-driven improvement backlog (ultraplan, 2026-07-12d)
 

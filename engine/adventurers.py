@@ -73,8 +73,14 @@ class AdventurerSystem:
         return placed
 
     def _gathering_spot(self, home: str) -> Optional[Tuple[int, int]]:
-        """A walkable tile beside a tavern/inn (in the named settlement if
-        we can find one) — where an adventurer loiters seeking a band."""
+        """Where an adventurer loiters seeking a band: its home's GUILD HALL
+        (M.7b) if there is one, else a walkable tile beside a tavern/inn."""
+        gh = getattr(self.engine, "guildhalls", None)
+        if gh is not None:
+            spot = gh.hall_spot(settlement=home)
+            if spot is not None:
+                near = self._walkable_beside(spot[0], spot[1])
+                return near or spot
         locs = getattr(self.engine.world, "locations", [])
         taverns = [l for l in locs
                    if any(w in l.name.lower() for w in ("tavern", "inn"))]

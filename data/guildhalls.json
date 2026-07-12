@@ -1,0 +1,18 @@
+{
+  "guildhalls": [
+    {
+      "id": "adventurers_guild",
+      "name": "Adventurers' Guild",
+      "kind": "adventurers",
+      "settlement": "Oakvale",
+      "legend": "A hall of maps, trophies and hungry-eyed folk after a company to run with."
+    },
+    {
+      "id": "mercenaries_rest",
+      "name": "The Mercenaries' Rest",
+      "kind": "mercenaries",
+      "settlement": "Riverside",
+      "legend": "Where blades sit sharpening, waiting to be bought."
+    }
+  ]
+}

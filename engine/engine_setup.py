@@ -85,6 +85,8 @@ def build_subsystems(engine, llm_model=None,
     self.resource_nodes = ResourceNodeSystem(self)
     from engine.lairs import LairSystem
     self.lairs = LairSystem(self)
+    from engine.guildhalls import GuildHallSystem
+    self.guildhalls = GuildHallSystem(self)
     from engine.adventurers import AdventurerSystem
     self.adventurers = AdventurerSystem(self)
     from engine.monster_packs import MonsterPackSystem
@@ -186,3 +188,40 @@ def build_subsystems(engine, llm_model=None,
     # player); the keystone for multiplayer + agent-driven heroes.
     from engine.player_roster import PlayerRoster
     self.roster = PlayerRoster(self)
+
+
+def seed_world(engine) -> None:
+    """Plant the world's seeded content at new-game start (moved out of
+    GameEngine.start_game to hold the 500-line line): the opening
+    fog-of-war view, farm plots, home occupants, resource nodes,
+    structures, lairs, guild halls + adventurers, and the module packs
+    (which may raise a past failure's bones)."""
+    self = engine
+    try:   # seed the opening fog-of-war view (P15.11)
+        from engine.discovery import update as _disc
+        _disc(self)
+    except Exception:
+        pass
+    for label, fn in (
+        ("Farm plots", lambda: self.farm_manager.ensure_plots()),
+        ("Home assignment", lambda: self.homes.assign()),
+        ("Resource nodes", lambda: self.resource_nodes.seed()),
+        ("Structures", lambda: self.structures.build()),
+        ("Lairs", lambda: self.lairs.seed()),           # P19.2
+        ("Guild halls", lambda: self.guildhalls.seed()),  # M.7b
+        ("Adventurers", lambda: self.adventurers.seed()),  # P-M.6
+    ):
+        try:
+            fn()
+        except Exception as e:
+            logger.debug(f"{label}: {e}")
+    try:
+        from engine.module_packs import install_packs
+        install_packs(self)
+        try:   # a past failure may haunt this world (P12.13)
+            from engine.bones import maybe_load_bones
+            maybe_load_bones(self)
+        except Exception as e:
+            logger.debug(f"Bones load skipped: {e}")
+    except Exception as e:
+        logger.warning(f"Module packs unavailable: {e}")

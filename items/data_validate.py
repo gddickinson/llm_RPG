@@ -45,42 +45,10 @@ def validate_all() -> List[str]:
     problems += check_production()
     problems += check_building_types()
     problems += check_resource_nodes()
-    problems += _check_adventurers()
+    from items.validate_world import check_adventurers, check_guildhalls
+    problems += check_adventurers()
+    problems += check_guildhalls()
     return problems
-
-
-def _check_adventurers() -> List[str]:
-    """adventurers.json: valid class/race and resolvable kit (P-M.6)."""
-    import json
-    from pathlib import Path
-    problems: List[str] = []
-    path = Path(__file__).resolve().parent.parent / "data" / \
-        "adventurers.json"
-    if not path.exists():
-        return problems
-    try:
-        band = json.loads(path.read_text()).get("adventurers", [])
-    except Exception as e:
-        return [f"adventurers.json unparseable: {e}"]
-    from characters.character_types import CharacterClass, CharacterRace
-    from items.item_registry import create_item
-    classes = {c.value for c in CharacterClass}
-    races = {r.value for r in CharacterRace}
-    recruitable = {"warrior", "ranger", "wizard", "cleric", "bard", "paladin"}
-    for a in band:
-        aid = a.get("id", "?")
-        if a.get("class") not in classes:
-            problems.append(f"adventurer {aid}: bad class '{a.get('class')}'")
-        elif a.get("class") not in recruitable:
-            problems.append(f"adventurer {aid}: class '{a.get('class')}' "
-                            f"is not recruitable — cannot join a party")
-        if a.get("race") not in races:
-            problems.append(f"adventurer {aid}: bad race '{a.get('race')}'")
-        for iid in a.get("inventory", []):
-            if create_item(iid) is None:
-                problems.append(f"adventurer {aid}: unknown item '{iid}'")
-    return problems
-
 
 
 def _check_traversal() -> List[str]:
