@@ -116,5 +116,17 @@
     "metadata": {
       "armor_set": "iron"
     }
+  },
+  "crown_of_bloodstone": {
+    "id": "crown_of_bloodstone",
+    "name": "Crown of Bloodstone",
+    "item_type": "amulet",
+    "value": 1200,
+    "rarity": "legendary",
+    "description": "The blood-red circlet of the kings of Bloodstone, cold and heavy with old authority.",
+    "equip_bonuses": {
+      "armor": 2,
+      "charisma": 2
+    }
   }
 }

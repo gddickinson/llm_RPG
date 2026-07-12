@@ -201,5 +201,169 @@
         ]
       }
     ]
+  },
+  "bloodstone_castle": {
+    "attach_to": "Bloodstone Castle",
+    "levels": [
+      {
+        "name": "Bloodstone Castle \u2014 The Great Hall",
+        "description": "Banners hang the length of a vaulted hall; the Bloodstone Throne sits cold at its head.",
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWWWW",
+          "WBB.WK....TT....W..T..CW",
+          "WFF.W.........WWWWWWW..W",
+          "W...D.........D.....D..W",
+          "W.........TT..........>W",
+          "WK...TT.......TT.......W",
+          "W.....................WW",
+          "W..WWWWW.......WWWWW...W",
+          "W..W.C.D.......D.T.W...W",
+          "W..WBB.W.......W.BBW...W",
+          "WWWWWWWWWWWDWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "The Bloodstone Throne \u2014 won in the War of the Two Rivers, never yet lost.",
+          "Here feast the King's household; strangers sit below the salt."
+        ],
+        "chest_loot": [
+          "ring_health",
+          "royal_seal"
+        ]
+      },
+      {
+        "name": "Bloodstone Castle \u2014 Servants' Undercroft",
+        "description": "Kitchens, larders and the servants' hall, thick with woodsmoke and the clatter of work.",
+        "position": "below",
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<...RR...WTT....W.BBW",
+          "W....RR...D......D.FFW",
+          "W.A.......W......W...W",
+          "W.........WWWDWWWW...W",
+          "WK..TT..............>W",
+          "W.......RR..RR......CW",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "The cook rules here more surely than the King rules above."
+        ],
+        "chest_loot": [
+          "greater_potion",
+          "potion"
+        ]
+      },
+      {
+        "name": "Bloodstone Castle \u2014 Barracks & Armoury",
+        "description": "The garrison's bunks and the racked steel of the castle guard.",
+        "position": "below",
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<.BBBB....WA.....CCCW",
+          "W..BBBB....D.........W",
+          "W.........W.........>W",
+          "WK.....TT.WWWWWDWWWWWW",
+          "W.BBBB.............FFW",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Oath of the Bloodstone Guard: the walls hold while one of us still stands."
+        ],
+        "chest_loot": [
+          "longsword",
+          "chainmail"
+        ]
+      },
+      {
+        "name": "Bloodstone Castle \u2014 The Dungeons",
+        "description": "Damp cells off a black corridor; something scratches in the dark.",
+        "position": "below",
+        "dark": true,
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<..W.CW.CW.CW.CW....W",
+          "W...D..D..D..D..D....W",
+          "WK..................>W",
+          "W...D..D..D..D..D....W",
+          "W...W.RW..W..W..W....W",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Scratched into the stone, a tally of days that stops abruptly."
+        ],
+        "monsters": [
+          {
+            "template": "restless_bones",
+            "at": [
+              10,
+              3
+            ]
+          },
+          {
+            "template": "restless_bones",
+            "at": [
+              6,
+              3
+            ]
+          },
+          {
+            "template": "goblin",
+            "at": [
+              14,
+              3
+            ]
+          }
+        ],
+        "chest_loot": [
+          "lockpicks",
+          "rusty_key"
+        ]
+      },
+      {
+        "name": "Bloodstone Castle \u2014 The Royal Crypt",
+        "description": "The kings of Bloodstone lie in ranked sarcophagi. The air is very cold, and very still.",
+        "position": "below",
+        "dark": true,
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<...................W",
+          "W.SS..SS..SS..SS..SS.W",
+          "WK..................KW",
+          "W.SS..SS..SS..SS..SS.W",
+          "W........C.C.........W",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "SLEEP LIGHTLY, KINGS OF BLOODSTONE, AGAINST THE DAY YOU ARE CALLED.",
+          "The last sarcophagus is empty. Its lid lies aside."
+        ],
+        "monsters": [
+          {
+            "template": "restless_bones",
+            "at": [
+              10,
+              3
+            ]
+          },
+          {
+            "template": "restless_bones",
+            "at": [
+              7,
+              4
+            ]
+          },
+          {
+            "template": "restless_bones",
+            "at": [
+              13,
+              4
+            ]
+          }
+        ],
+        "chest_loot": [
+          "crown_of_bloodstone",
+          "ring_protection"
+        ]
+      }
+    ]
   }
 }

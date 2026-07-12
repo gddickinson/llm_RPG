@@ -148,5 +148,13 @@
     "use_effect": {
       "teach_spell": "fireball"
     }
+  },
+  "royal_seal": {
+    "id": "royal_seal",
+    "name": "Royal Seal of Bloodstone",
+    "item_type": "misc",
+    "value": 150,
+    "rarity": "rare",
+    "description": "A wax-and-silver seal that speaks with the King's own voice. Doors open for the one who bears it."
   }
 }

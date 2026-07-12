@@ -3311,3 +3311,68 @@ last. Networking was previously deferred — this supersedes that.
   quality/richness goals. (Networked multiplayer moved to Phase M.)
 - LLM-generated main plot (AI Dungeon's trap) and voice I/O.
 - Punishing survival mechanics for the player (needs stay light).
+
+## Phase 18 — The Royal Castle (George, 2026-07-11) — MAJOR
+
+George: "Introduce a huge castle with detailed buildings, courtyards,
+ramparts, defenses and a royal family, staff, courtiers, soldiers.
+Multiple levels, towers, battlements and an extensive dungeon... an
+entire adventure to explore the castle and interact with all of its
+inhabitants. A menu option to start the game in the castle. A populated
+town nearby, surrounded by villages that have farms and other resources
+to supply the castle."
+
+**Research basis** (real castle architecture + game precedents). A
+medieval castle is CONCENTRIC and layered: an outer CURTAIN WALL studded
+with mural TOWERS and pierced by a GATEHOUSE (portcullis + murder-holes)
+→ an OUTER BAILEY (stables, barracks, chapel, well, smithy — the working
+yard) → an INNER WARD → the KEEP / donjon (the great hall on the ground,
+royal solar and bedchambers above, storerooms and the dungeon/oubliette
+below) → the BATTLEMENTS & wall-walk with crenellations and arrow-loops.
+A LIVING castle (the Autonomous World lesson, cf. Skyrim's Whiterun /
+Dragon Age's Denerim / CK-style courts) layers a social order on that
+stone: a royal family with a line of succession, a steward/chamberlain
+and household staff, courtiers and their intrigues, a garrison under a
+captain, and a supply chain — the castle EATS, so a town clusters at its
+gate and villages farm its hinterland. Our engine already has the pieces:
+the P9.1 multi-level `structures.json` stack (keep + dungeon), NPC
+presets + schedules (the cast), the P16 production/supply chain (farms →
+stores → the castle larder), and the Phase-17 battle layer (siege
+defense). This phase assembles them into one place.
+
+Sequenced into tested rounds:
+
+- [x] **P18.1 The castle keep & crypt (the stone).** A 5-level
+  `bloodstone_castle` structure in `data/structures.json`: the Great
+  Hall & Bloodstone Throne (entry), the Servants' Undercroft (kitchens/
+  larders), the Barracks & Armoury, the Dungeons (cells, dark, guarded),
+  and the Royal Crypt (dark, undead-warded, the legendary Crown of
+  Bloodstone as its prize). Two signature treasures added
+  (`crown_of_bloodstone` amulet, `royal_seal`). *(Round: the linear
+  P9.1 stack fits a vertical keep→dungeon descent; battlements/towers
+  (the UP direction) are P18.3. 6 tests: data shape, rectangular walled
+  grids, build/link the 5-level chain, throne inscription + loot, the
+  dark guarded crypt, the crown in the deepest chest. Validator clean;
+  suite 1771, green.)*
+- [ ] **P18.2 The living cast.** The royal family (king/queen/heir/
+  rivals), the steward + household staff (cook, maids, stablehands),
+  courtiers, and the garrison (captain + guards) as `data/npcs/*` presets
+  placed into the castle zones as friendly INDOOR occupants (extend the
+  structure populator to seat NPCs, not just monsters), each with a
+  schedule and a place. Court relationships + a few secrets/topics.
+- [ ] **P18.3 Battlements, towers & the gatehouse footprint.** The
+  upward extension (royal apartments → wall-walk → tower tops with
+  archer positions) as levels ABOVE the great hall, plus the overworld
+  footprint — a curtain-wall + gatehouse building block the worldgen
+  places so the castle reads as a fortress from the map.
+- [ ] **P18.4 The castle town & supply villages.** A populated town at
+  the gate (market, inn, temple, craftsmen) and a ring of farming
+  villages whose P16 production feeds the castle larder — a real
+  supply chain the player can see and disrupt.
+- [ ] **P18.5 "Begin at the Castle" — the menu start.** A start-menu
+  option that generates a castle-centered world (castle + town +
+  villages) and drops the newly-made character at the gate.
+- [ ] **P18.6 The castle adventure.** Quests and court intrigue (a
+  succession plot, a spy in the household, the thing stirring in the
+  crypt), and a siege set-piece that hands the P17 battle layer the
+  castle's own garrison and walls.
