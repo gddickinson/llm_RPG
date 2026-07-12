@@ -29,9 +29,15 @@ class TestKeenSight(unittest.TestCase):
                        if l.name in self.engine.interiors)
             self.indoor = next(iter(self.engine.npc_manager.npcs.values()))
             self.indoor.position = (loc.x, loc.y)
-        # the player just outside the wall
-        self.p.position = (self.indoor.position[0] - 1,
-                           self.indoor.position[1])
+        # stand the player WELL AWAY from the building, so only the
+        # magical sight (not a window glimpse) could reveal the figure
+        bldg = is_indoors(self.engine, self.indoor)
+        loc = next(l for l in self.engine.world.locations
+                   if l.name == bldg)
+        far_x = loc.x + loc.width + 4
+        if far_x >= self.engine.world.map.width - 1:
+            far_x = max(1, loc.x - 4)
+        self.p.position = (far_x, loc.y)
 
     def tearDown(self):
         try:

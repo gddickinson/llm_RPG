@@ -1836,8 +1836,8 @@ debt and the door to whatever George's next play session surfaces.
   the rule. Suite 1145 green x3 through the split (two extraction
   slips — module-scope imports and an indent — caught by the suite
   within minutes).
-- [ ] **P14.2 Candidates awaiting a pull** (pick when wanted, no
-  order): ~~DOS2 leftovers (blood pools, electrified water)~~
+- [x] **P14.2 Candidates awaiting a pull** (pick when wanted, no
+  order) — ALL PULLED: ~~DOS2 leftovers (blood pools, electrified water)~~
   *(Round 119, done: serious wounds (damage ≥5, overworld) splash
   BLOOD pools (40 turns, dark red overlay); blood CONDUCTS but
   never burns. `surfaces.electrify(x,y)` races a charge through
@@ -1862,8 +1862,12 @@ debt and the door to whatever George's next play session surfaces.
   you glimpse the merchant at his counter through the wall. SIGHT ONLY:
   `npc_adjacent_to_player` is untouched, so reach still stops at the stone
   (you see him but can't barter through it). 6 tests. Suite 1828, green.)*;
-  the WINDOWS half (a physical, always-on glimpse into a building you
-  stand beside) is still awaiting a pull.
+  ~~windows~~ *(Round: done — `presence.at_a_window` (the player stands
+  within a tile of a building's footprint) folds into the same
+  `hidden_by_walls` seam: beside a building you glimpse its occupants
+  through the windows, from afar the walls still hide them, and — like
+  keen_sight — it's SIGHT not reach (the wall keeps them). 5 tests. Suite
+  1833, green.)*. With that the whole P14.2 backlog is emptied.
 - [x] **P14.3 Playtest findings (George, live, 2026-07-11).**
   a) "The event log shows events occurring a long distance away" —
   `presence.in_earshot` (Chebyshev radius 14) gates actor-local

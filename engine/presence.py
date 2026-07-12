@@ -50,15 +50,34 @@ def sees_through_walls(engine) -> bool:
         return False
 
 
+def at_a_window(engine, bldg_name: str) -> bool:
+    """P14.2 windows: is the player standing BESIDE this building (within a
+    tile of its footprint)? If so they can glimpse in through its windows —
+    a physical, always-on peek, as opposed to keen_sight's magic. (Reach is
+    unaffected: the wall is still between you and the folk inside.)"""
+    loc = next((l for l in engine.world.locations
+                if l.name == bldg_name), None)
+    if loc is None:
+        return False
+    px, py = engine.player.position
+    return (loc.x - 1 <= px <= loc.x + loc.width and
+            loc.y - 1 <= py <= loc.y + loc.height)
+
+
 def hidden_by_walls(engine, npc) -> bool:
     """The renderer's 'no seeing through walls' rule (P9A.7), relaxed by
-    magical sight (P14.2): an NPC standing inside a building is hidden from
-    the street UNLESS the player's keen_sight pierces the wall."""
+    magical sight (P14.2 keen_sight, anywhere) and by WINDOWS (P14.2, when
+    you stand beside the building): an NPC inside a building is hidden from
+    the street unless one of those lets you glimpse in."""
     if npc.id == engine.player.id:
         return False
     try:
-        return bool(is_indoors(engine, npc)) and \
-            not sees_through_walls(engine)
+        bldg = is_indoors(engine, npc)
+        if not bldg:
+            return False
+        if sees_through_walls(engine):        # keen_sight — see anywhere
+            return False
+        return not at_a_window(engine, bldg)  # else only the one beside you
     except Exception:
         return False
 

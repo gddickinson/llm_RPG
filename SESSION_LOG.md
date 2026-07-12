@@ -4871,3 +4871,34 @@ it pierces the wall; sight is not reach; the player is never hidden from
 themselves; the spell grants the sight). Suite 1828, green. The WINDOWS
 half of the candidate — a physical, always-on glimpse into a building you
 stand beside — is left in the backlog for a future pull.
+
+---
+
+## Windows — a glimpse through the wall you stand beside (P14.2 emptied)
+
+The magical half of "see into buildings" landed last round (keen_sight).
+This round adds the mundane half and closes the P14.2 backlog.
+
+`presence.at_a_window(engine, bldg_name)` asks the simple question: is the
+player standing within a tile of that building's footprint? If so, they're
+at a window, and it folds into the same `hidden_by_walls` seam the
+renderer already consults — so an indoor NPC is revealed from the street
+when the player has keen_sight (magic, anywhere) OR stands beside the
+building (a window, here). From across the way the walls still hide the
+folk inside; up against the wall, you glimpse them through the glass.
+
+And it keeps the same honest line the magical version drew: a window is
+SIGHT, not reach. `npc_adjacent_to_player` is untouched, so you can see
+the innkeeper at his hearth through the window but still have to walk in
+the door to talk to him.
+
+The one interaction to mind was the keen_sight tests, which had stood the
+player right beside the building — which is now a window. They moved the
+player well away so they still isolate the MAGICAL sight; the new window
+tests are the ones that stand beside the wall. 5 window tests (beside is
+at a window, afar is not, the window reveals the folk inside, from afar
+the walls hide them, and a window is sight not reach). Suite 1833, green.
+
+With windows pulled, the whole P14.2 "candidates awaiting a pull" backlog
+is emptied and the item is ticked. Every checkbox in the plan is now
+green — the sequential phases and the optional backlog alike.
