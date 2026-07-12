@@ -214,7 +214,8 @@ llm_RPG/
 - **`gui.py`** — `GameGUI`; pygame main window + death popup mode; PUX.4c responsive `compute_layout(width,height)` (resizable window, `VIDEORESIZE`→`resize`, F11 `toggle_fullscreen`).
 - **`start_menu.py`** — Title screen with New Game / Load / Quit; routes into the character creator.
 - **`character_creator.py`** — Multi-step character creation flow + `CharacterSpec`, race/class data.
-- **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting; `_render_zone()` draws dungeons/interiors.
+- **`renderer.py`** — `MapRenderer`; map tiles + sprites + lighting; `_render_zone()` draws dungeons/interiors; P16.5 `draw_buildings` pass over the flat tiles.
+- **`renderer_buildings.py`** — P16.5 2.5D building render: pure geometry+colour (`height_for` per building kind, `cube_faces`, `roof_faces`, `face_colors`) + a thin `draw_buildings` pass that shades a lifted, ridge-roofed block over each explored BUILDING tile (on top of the P15.1 base, fog-respecting). Headless-testable math.
 - **`sprite_loader.py`** — Procedural sprite generation + P15.1 PNG tileset pipeline: data/tiles/<name>/ via config.TILESET_NAME or LLM_RPG_TILESET, per-image graceful fallback to procedural; contract in data/tiles/README.md.
 - **`crafting_panel.py`** — `CraftingPanel`; K-key recipe browser with have/need counts, crafts via `engine.craft()`.
 - **`controls.py`** — PUX.3 the controls reference as audited data (single source of truth for the F1/? help): `CONTROLS`, `help_columns()` (two balanced columns that fit one screen), `documented_keys()`.

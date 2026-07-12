@@ -112,6 +112,13 @@ class MapRenderer:
                     shade.fill((10, 10, 20, 130))
                     target.blit(shade, dest)
 
+        try:   # 2.5D building blocks over the flat tiles (P16.5)
+            from ui.renderer_buildings import draw_buildings
+            draw_buildings(target, engine, view_rect, cam_x, cam_y,
+                           self.tile_size)
+        except Exception:
+            pass
+
         # Surfaces: fire / oil / water overlays (P10.3); P15.2 flicker
         try:
             from ui.animation import surface_fill

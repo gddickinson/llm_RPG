@@ -2241,12 +2241,28 @@ grid).
   felling → grass + regrow scheduled, regrows only after its rest,
   chopping a grove via the real gather path, and a full save/load).
   Suite 1571, green.)*
-- [ ] **P16.5 2.5D building render.** AW
+- [x] **P16.5 2.5D building render.** AW
   `ui/renderer_buildings.py` (`_draw_building_heights`,
   `_draw_pitched_roofs`, per-kind roof tiles): a render pass that
   gives top-down buildings lit cube faces + pitched-roof shading,
   tileset-compatible (shades over the P15.1 PNG base). The biggest
   single graphics upgrade for the least code — belongs in Track G.
+  *(Round 165: `ui/renderer_buildings.py`, the Track-G way (pure math +
+  a thin pass, like animation/hud_style/light_palette). Each BUILDING
+  tile becomes a little block — its roof LIFTED by a per-KIND height
+  (`height_for`: a wizard's tower stands taller than a farmhouse than a
+  well), a shaded FRONT wall below it (`cube_faces`), and the roof split
+  by a ridge line into a lit northern slope and a shadowed southern one
+  (`roof_faces`) — drawn OVER the flat P15.1 tiles the main renderer
+  already lays down (so it shades, doesn't replace), respecting the
+  P15.11 fog (unexplored tiles skipped). Wired as a guarded one-call
+  pass after the terrain loop. 11 tests: heights ordered by kind +
+  default + min + scaling, the top face lifted and the front wall
+  reaching the base, the ridge splitting lit-north/shadow-south, the
+  lit roof brighter than the shadow and the wall darker still, and a
+  smoke render over a real building tile. Suite 1582, green. *(Remainder
+  P16.5b: per-kind roof COLOURS/tiles — one roof palette for all right
+  now.)*)*
 - [ ] **P16.6 Worldgen leap.** AW `river_gen._trace_river_path`
   (elevation → downhill rivers) + settlement-site scoring
   (`world_plan._score_city_location`: near water, varied

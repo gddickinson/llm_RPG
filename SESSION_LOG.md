@@ -3793,3 +3793,31 @@ gather path spends its charge, and the nodes survive a full save→load.
 Suite 1571, green. REMAINDER (P16.4b): the other node kinds (ore veins /
 herb patches / berry bushes) — data + seeding — and deeper P10.2
 composition.
+
+**Round 165 — P16.5 2.5D building render.**
+A Track-G break in the Phase 16 economy work, and the survey's "biggest
+single graphics upgrade for the least code." AW extrudes top-down
+buildings into little blocks with pitched roofs; ported the way every
+Track-G round since P15.2 has gone — the geometry and colours are pure,
+headless functions and a thin pass draws them. `ui/renderer_buildings.py`:
+`height_for` gives each building KIND a roof lift (a wizard's tower stands
+proud at 0.95 of a tile, a farmhouse at 0.4, a well barely at 0.15),
+`cube_faces` turns a tile into a raised top face plus the front wall
+beneath it, `roof_faces` splits that top face with a ridge line into a lit
+northern slope and a shadowed southern one, and `face_colors` shades the
+three. `draw_buildings` walks the visible BUILDING tiles and blits the
+block OVER the flat P15.1 tile the main renderer already drew — so it
+shades rather than replaces, stays tileset-compatible, and honours the
+P15.11 fog (an unexplored tile is skipped). It hooks into the renderer as
+one guarded call right after the terrain loop; the kind of a tile comes
+from its location's blueprint. A smoke render put the player in Oakvale
+with the town revealed and drew the whole skyline without a hitch — towers
+at 30px, forges at 14, farmhouses at 12, wells at 4 for a 32px tile. 11
+tests: heights ordered tower > farmhouse > well with a default and a floor
+and tile-size scaling, the top face lifted by exactly the height and the
+front wall reaching the tile's base, the ridge at the roof's midline with
+the lit slope north and the shadow south, the lit roof brighter than its
+shadow and the wall darker than the roof, every colour a valid RGB, and a
+crash-free draw over a real building tile. Suite 1582, green. REMAINDER
+(P16.5b): per-kind roof COLOURS/tiles — one roof palette dresses every
+building for now.
