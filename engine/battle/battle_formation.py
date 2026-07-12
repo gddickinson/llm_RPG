@@ -27,6 +27,7 @@ from engine.battle import battle_facing as facing
 LINE = "line"
 LOOSE = "loose"
 RING = "ring"            # orbis / schiltron — all-facing (P17.17)
+WEDGE = "wedge"          # Companion / svinfylking / cataphract (P17.18)
 BREAK_COHESION = 0.5
 
 _NEIGH8 = ((1, 0), (-1, 0), (0, 1), (0, -1),
@@ -96,6 +97,13 @@ def attack_penalty(squad) -> int:
     """A RING fights outward and defensive — its blows land a little
     weaker (offense traded for all-round guard)."""
     return -2 if squad is not None and squad.formation == RING else 0
+
+
+def wedge_charge_bonus(squad) -> int:
+    """A charging WEDGE concentrates its impact at one point to BREACH a
+    line (P17.18) — a +3 to-hit on the charge. It pays with defence: a
+    wedge is no shield wall (it gets none of LINE/RING's guard)."""
+    return 3 if squad is not None and squad.formation == WEDGE else 0
 
 
 def _right_mate_stands(field, squad, soldier) -> bool:

@@ -2731,14 +2731,31 @@ build on P17.11 (facing) first.
   regressions (63 battle tests green). Suite 1622, green x2. *(Remainder:
   a commander BRACE verb + SET_FORMATION→ring in the order/UI layer —
   the mechanics are complete; only the button is glue.)*)*
-- [ ] **P17.18 Combined arms & reserves.** Hammer-and-anvil (a squad
-  PINNED in front then charged in flank/rear = rout trigger), soften-
-  then-shock (a pre-melee missile volley strips cohesion/AC then the
-  shock bonus applies — the Roman pilum), **line relief/reserve rally**
-  (a spent front squad withdraws through a gap while a fresh one steps
-  up / a shaken squad rallies on a reserve line behind), and **wedge**
-  formations (Companion/svinfylking/cataphract) that concentrate the
-  charge and breach a line.
+- [x] **P17.18 Combined arms & reserves (hammer-anvil + wedge core).**
+  Hammer-and-anvil (a squad PINNED in front then charged in flank/rear =
+  rout trigger), soften-then-shock (a pre-melee missile volley strips
+  cohesion/AC then the shock bonus applies — the Roman pilum), **line
+  relief/reserve rally** (a spent front squad withdraws through a gap
+  while a fresh one steps up / a shaken squad rallies on a reserve line
+  behind), and **wedge** formations (Companion/svinfylking/cataphract)
+  that concentrate the charge and breach a line.
+  *(Round 170: the two self-contained "pin and break" mechanics.
+  HAMMER-AND-ANVIL — in `attack`, a flank/rear blow that lands while a
+  DIFFERENT enemy squad pins the target's FRONT (`_is_pinned(...,
+  exclude=atk_squad)`) triggers a −6 rout-shock on top of the P17.15
+  flank morale; the two-squad requirement is deliberate — a lone squad
+  enveloping isn't a hammer-and-anvil (that's already the surround
+  bonus), which also KEPT the cavalry-overruns-a-line RPS intact. WEDGE
+  joined `battle_formation` as a charge formation: `wedge_charge_bonus`
+  gives a charging wedge +3 to-hit in `charge_attack` to BREACH a line,
+  bought with zero defensive bonus (a wedge is no shield wall). 6 tests
+  (pinned+flanked routs, a flank without a pin is just a flank, one
+  squad enveloping is NOT hammer-and-anvil; a wedge breaches a front a
+  plain charge stalls against, and gets no LINE/RING guard). No battle-
+  session regressions. Suite 1628, green. *(Remainder P17.18b: soften-
+  then-shock (a softened debuff a follow-up melee exploits) and line-
+  relief / reserve-rally (movement AI — a spent squad withdraws through
+  a gap, a fresh one steps up).)*)*
 - [ ] **P17.19 Doctrine AI.** Teach the commander AI to deploy in
   templates (screen → anchor centre → reserve cavalry → commit at the
   decisive point), **anchor flanks on terrain**, refuse a flank /

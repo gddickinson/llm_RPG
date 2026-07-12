@@ -57,6 +57,23 @@ def is_surrounded(field, sol) -> bool:
     return True
 
 
+def _is_pinned(field, squad, exclude=None) -> bool:
+    """Held in place by an enemy pressed against a man's FRONT — the
+    ANVIL. Hammer-and-anvil is two forces, so the frontal pin must be a
+    DIFFERENT squad than `exclude` (the flanking hammer); a lone squad
+    enveloping on its own isn't one (P17.18)."""
+    for s in squad.alive_soldiers:
+        for dx, dy in _NEIGH8:
+            occ = field.soldier_at(s.x + dx, s.y + dy)
+            esq = _squad_of(field, occ) if occ else None
+            if esq is not None and esq.team != squad.team and \
+                    esq is not exclude and \
+                    facing.arc(s.facing, (s.x + dx, s.y + dy), s.pos) \
+                    == "front":
+                return True
+    return False
+
+
 def _position_mods(field, atk_sol, target):
     """(to-hit bonus, damage multiplier) from where the blow lands —
     flank/rear arc, being ganged up on, and being surrounded. An all-
@@ -173,6 +190,12 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
             tgt_squad.adjust_morale(-3)
         elif ar == "flank":
             tgt_squad.adjust_morale(-2)
+        # P17.18 hammer-and-anvil: flanked by THIS squad while a DIFFERENT
+        # one pins the front — the anvil holds them fast while the hammer
+        # falls = a rout trigger (two coordinating forces, not envelopment).
+        if ar in ("flank", "rear") and \
+                _is_pinned(field, tgt_squad, exclude=atk_squad):
+            tgt_squad.adjust_morale(-6)
     if not target.alive:
         field.vacate(target)
         return True
@@ -231,12 +254,14 @@ def charge_attack(field, atk_sol, atk_sq, tgt_sol, tgt_sq, rng) -> str:
             field.vacate(atk_sol)
             return "repelled"
         return "stopped"                  # the wall holds; charge blunted
-    # a charge into a flank or rear is even more devastating (P17.11)
+    # a charge into a flank or rear is even more devastating (P17.11);
+    # a WEDGE concentrates its impact to breach the line (P17.18)
+    from engine.battle import battle_formation as form
     ar = facing.arc(tgt_sol.facing, atk_sol.pos, tgt_sol.pos)
     r = _strike(rng, a.get("melee", 0),
                 a.get("charge_bonus", 1.0) * facing.ARC_DMG[ar],
                 tgt_sol, t.get("defense", 0),
-                to_hit=facing.ARC_TO_HIT[ar])
+                to_hit=facing.ARC_TO_HIT[ar] + form.wedge_charge_bonus(atk_sq))
     if r == "kill":
         field.vacate(tgt_sol)
         return "overrun"

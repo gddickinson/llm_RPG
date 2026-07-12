@@ -3946,3 +3946,34 @@ missile-vulnerable. No regression across the 63 existing battle tests.
 Suite 1622, green x2. REMAINDER: a commander BRACE verb and
 SET_FORMATION→ring in the order/UI layer — the mechanics are done; only
 the button is glue.
+
+**Round 170 — P17.18 Combined arms & reserves (hammer-anvil + wedge).**
+The "pin and break" that wins battles: the anvil holds the enemy in place,
+the hammer comes round the side. Two of P17.18's four mechanics this round,
+the two that are self-contained on the systems already built.
+HAMMER-AND-ANVIL: in `attack`, a flank or rear blow that lands while a
+DIFFERENT enemy squad pins the target's FRONT triggers a −6 rout-shock on
+top of P17.15's flank morale — the anvil holds them fast while the hammer
+falls, and a squad caught this way collapses. The subtlety, and the thing
+that first broke the suite, is the TWO-SQUAD requirement: my first cut
+fired the trigger for any squad pinned-and-flanked, which meant a cavalry
+charge riding into a sword line got enveloped, hammer-and-anviled by the
+swords, and routed — reversing the cavalry-overruns-foot RPS the charge
+tests enshrine. The fix is faithful to the real tactic: a lone squad
+enveloping on its own isn't a hammer-and-anvil (that's just the surround
+bonus it already gets); the frontal pin must come from a DIFFERENT squad
+than the flanking hammer (`_is_pinned(..., exclude=atk_squad)`). With that,
+the RPS holds and the trigger only fires when two forces coordinate — the
+whole point. WEDGE joined the formation set as an offensive charge shape
+(Companion/svinfylking/cataphract): a charging wedge concentrates its
+impact for +3 to-hit in `charge_attack` to BREACH a line, and pays for it
+with zero defensive bonus — a wedge is no shield wall, so it gets none of
+LINE's shield or RING's all-round guard. 6 tests: a pinned-then-flanked
+squad takes the full −8 while a flank without a pin is just a flank and a
+single enveloping squad is explicitly NOT hammer-and-anvil; a wedge
+overruns a front that a plain charge (same roll) stalls against, and a
+wedge is confirmed to carry no guard. No regression across the 63 battle
+tests once the two-squad rule went in. Suite 1628, green. REMAINDER
+(P17.18b): soften-then-shock (a softened debuff a follow-up melee exploits)
+and line-relief / reserve-rally (movement AI — a spent squad withdraws
+through a gap while a fresh one steps up).
