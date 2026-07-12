@@ -6213,3 +6213,19 @@ below the exhaustion rungs), execution verbs `drink`/`eat` in `agent_exec`
 (reusing `use_item` + `needs.drink`). 12 tests. Next (M.10b/c): companion
 combat survival and party welfare — a hurt companion quaffs its own potion and
 flees when critical; a healer mends allies; a dying member LEAVES to survive.
+
+## 2026-07-12 (cont.) — M.10b: companions don't fight to the death
+
+George asked whether party members suffer injuries in combat (they do —
+`_resolve`→`take_damage` drops their HP) and whether they look after
+themselves (they didn't). Now `CompanionManager.update` opens each
+companion's turn with self-preservation: `_self_heal` quaffs its OWN healing
+potion when it drops below half HP (the potion is spent, with a beat), and the
+flee gate — previously only honoured under the `/order flee` — now fires for
+ANY order, so a companion still critical after (or without) a heal BREAKS OFF
+even while set to follow or hold. Survival comes before orders; a party member
+no longer trades blows down to zero. 7 tests. Next (M.10c): a HEALER companion
+mends the most-wounded ally, companions eat/drink on the road, a member at
+death's door LEAVES to survive — and aid-willingness gated by alignment /
+relationship / personality / memory (George: different characters help each
+other differently).

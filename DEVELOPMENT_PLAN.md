@@ -3624,11 +3624,16 @@ today reacts only to HP — a real gap.
   rungs); decide's recovery block now handles thirst→hunger→HP→fatigue in that
   order (thirst is the fastest clock); `agent_exec` `drink`/`eat` verbs.
   `tests/test_away_needs.py` (12).
-- [ ] **M.10b Companion combat survival.** Confirm companions take combat
+- [x] **M.10b Companion combat survival.** Confirm companions take combat
   damage (they do — HP drops, `_flee_step` reacts < 30%) and give a wounded
   companion self-preservation: quaff its OWN healing potion when hurt, and flee
   when critical even without the /order flee. A party member fights on too long
-  and dies today.
+  and dies today. *Done:* `CompanionManager._self_heal` (below `SELF_HEAL_HP`
+  = ½, quaff a carried potion — consumed, a beat) runs at the top of `update`,
+  and the flee gate now fires for ANY order (survival before orders), so a
+  companion still critical after healing BREAKS OFF even on follow/hold.
+  Verified injuries flow through `_resolve`→`take_damage`.
+  `tests/test_party_survival.py` (7).
 - [ ] **M.10c Party welfare & cooperation (+ personality-driven aid).**
   Companions satisfy their own needs on the road (eat/drink), a HEALER companion
   mends the most-wounded ally, and a member at death's door with no way to

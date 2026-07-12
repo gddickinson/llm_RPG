@@ -14,6 +14,7 @@ from typing import List, Optional
 logger = logging.getLogger("llm_rpg.companions")
 
 BANTER_EVERY = 45
+SELF_HEAL_HP = 0.5        # M.10b: a companion below half HP quaffs its potion
 
 
 def _load_banter():
@@ -140,6 +141,29 @@ class CompanionManager:
                 f"{npc.name} breaks off, bleeding.")
         return bool(moved)
 
+    def _self_heal(self, npc) -> bool:
+        """A companion below half HP quaffs its OWN healing potion rather
+        than fighting on at a sliver of health (M.10b). Returns True if it
+        spent the turn healing."""
+        if npc.hp >= npc.max_hp * SELF_HEAL_HP:
+            return False
+        from engine.agent_sense import _healing_item
+        pot = _healing_item(npc)
+        if pot is None:
+            return False
+        heal = getattr(pot, "heal_amount", 0) or 15
+        npc.hp = min(npc.max_hp, npc.hp + heal)
+        if getattr(pot, "quantity", 1) > 1:
+            pot.quantity -= 1
+        else:
+            try:
+                npc.inventory.remove(pot)
+            except ValueError:
+                pass
+        self.engine.memory_manager.add_event(
+            f"{npc.name} gulps a {pot.name}, steadying themselves.")
+        return True
+
     def banter_tick(self) -> None:
         """P15.5: the road talks. One authored line every
         BANTER_EVERY quiet turns, cycling per companion."""
@@ -169,8 +193,13 @@ class CompanionManager:
         for npc in self.members():
             if not npc.is_active():
                 continue
+            # M.10b self-preservation comes before orders: a hurt companion
+            # quaffs its OWN potion, and one still critical BREAKS OFF even
+            # without the /order flee — no fighting on to the death.
+            if self._self_heal(npc):
+                continue
             order = npc.metadata.get("order", "follow")
-            if order == "flee" and self._flee_step(npc):
+            if self._flee_step(npc):
                 continue
             # Focus fire: the player's current target comes first (P7.3)
             focus = player_focus_target(self.engine)
