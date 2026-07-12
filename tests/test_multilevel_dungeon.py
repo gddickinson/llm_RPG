@@ -54,11 +54,15 @@ class TestMultiLevelDungeon(unittest.TestCase):
                          self.engine.npc_manager.npcs.values()
                          if n.metadata.get("zone") == deep.name]
         self.assertTrue(top_monsters and deep_monsters)
-        from world.monsters import MONSTER_TEMPLATES
+        from world.monsters import MONSTER_TEMPLATES, apex_pool
+        # den-lords crowning the boss floor wear authored boss stats, not
+        # depth scaling (P19.1) — exclude the whole apex pool, not just one
+        apex_names = {MONSTER_TEMPLATES[t]["name"]
+                      for t in apex_pool(getattr(deep, "depth", 2))}
         for n in deep_monsters:
             tid = "_".join(n.id.split("_")[1:-1])
             spec = MONSTER_TEMPLATES.get(tid)
-            if spec is None or "Tyrant" in n.name:
+            if spec is None or n.name in apex_names:
                 continue
             self.assertGreater(n.max_hp, spec.get("hp", 0),
                                "depth must scale danger")

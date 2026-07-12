@@ -3374,6 +3374,29 @@ last. Networking was previously deferred — this supersedes that.
   binding. The single-process game never imports the wire; it is opt-in.
   *(Remaining M.4c polish: a `--serve`/menu entry point, snapshot DELTAS
   instead of full snapshots, and reconnection — none blocking.)*
+- [x] **M.5 The living away-hero (George, watching autoplay, 2026-07-12).**
+  The autoplay/agent brain was a combatant — survive, fight, loot, wander —
+  so a watched hero just moved a little and shot. Now it has a LIFE. Beyond
+  combat, `engine/agent_controller.decide` chats with the folk it meets
+  (`talk` → `dialog_system.player_to_npc`, once per soul), TAKES the quests
+  they offer (`accept_quest` from `offered_by`) and pursues them (heads for
+  a quest's target NPC or named location), RECRUITS willing allies
+  (`recruit` when the party has room and regard is warm), and EXPLORES
+  toward places its CALLING draws it — a warrior to lairs and keeps, a
+  wizard to towers and standing stones, a bard to taverns — each a real
+  named `Location`, marked visited so it moves on to the next. The player
+  SETS the disposition first (a new `disposition` setting: balanced /
+  valiant / cautious / sociable / explorer / greedy) and it biases the
+  weighting — a cautious hero keeps its distance from a fight, a sociable
+  one seeks people out, an explorer roams over its errands, a greedy one
+  ranges wider for loot. And it leaves a TRAIL the player can review: its
+  notable deeds go into the record as `[Away]` beats ("fell to talking with
+  Brenna", "took up 'A Small Favour'", "recruited Ksana"), and its current
+  aim rides `char.metadata["agent_goal"]`. Also fixed the dry-fire bug
+  George caught (empty quiver → close to melee). 11 living-agent tests + 3
+  ammo tests. Remainder M.5b: a "while you were away" digest screen, finer
+  per-disposition tuning, and the agent using the wider systems (bank,
+  craft, pray, home).
 
 ## What NOT to build (explicitly deferred)
 

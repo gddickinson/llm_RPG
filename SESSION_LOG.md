@@ -5733,3 +5733,48 @@ is left alone; it keeps its authored Oakvale.
 they're deterministic per region; a cave-mouth landmark is a genuine
 dungeon entrance). Remainder P21.5b: little mini-quests and small casts at
 the landmarks, and making the biome enum real instead of aspirational.
+
+## The living away-hero (M.5)
+
+George opened the game on autoplay and watched the hero move a little and
+shoot his bow and do nothing else, and asked the natural question: could it
+actually live — talk to people, take quests, build a party, chase
+ambitions of its own, and leave a trail he could read afterwards? This
+round makes the away-brain a person instead of a turret.
+
+The old policy was four rungs: survive, don't get swarmed, fight, wander.
+The new one keeps those but opens a whole life above them. When the hero
+isn't in danger it looks for people: it walks up to a townsperson and falls
+to talking (once per soul, so it doesn't pester), it TAKES the quests they
+offer and then goes and pursues them — heading for the NPC or the place the
+quest names — and it RECRUITS the ones willing to follow, when the party
+has room. And when there's no one about, it doesn't jitter in a circle: it
+picks a destination its CALLING draws it to and journeys there. A warrior
+makes for the lairs and the ruined keeps; a wizard for the towers and the
+standing stones; a bard for the taverns. Each is a real named place on the
+map — including the off-origin landmarks from last round — and once it
+arrives it marks the place seen and sets out for the next.
+
+The player is in charge of the shape of all this. A new disposition setting
+sits in the options — balanced, valiant, cautious, sociable, explorer,
+greedy — and it tilts the weighting: a cautious hero keeps its distance
+from a fight it wasn't forced into, a sociable one seeks people out from
+further off, an explorer wanders over its errands, a greedy one ranges
+wider for loot. Set it before you step away and the hero plays the part.
+
+And it doesn't do all this silently. Its notable moments go into the record
+as `[Away]` beats — the day it fell to talking with Brenna, took up "A
+Small Favour", recruited Ksana — sitting in the same memory the player
+already reads, and its current aim rides its own metadata so you can see,
+at a glance, where it's headed. The relationships it builds and the party
+it gathers are all real and all persist. (The dry-fire bug from the last
+watch is fixed here too, folded in: an empty quiver now sends it in to
+melee.)
+
+11 tests on the living behaviour — it takes an offered quest, recruits a
+willing ally, chats with a stranger and records the deed, picks a
+class-flavoured goal and doesn't re-seek a place it's been, and each
+disposition bends the choice the right way — plus the goal made visible on
+metadata and a recruit written to the record. Remainder M.5b: a proper
+"while you were away" digest, finer tuning per disposition, and letting the
+hero use the wider systems — the bank, the forge, the shrines, a home.
