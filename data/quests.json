@@ -300,5 +300,119 @@
     "reward_xp": 150,
     "quest_points": 2,
     "requires_bond": 25
+  },
+  "castle_audience": {
+    "title": "An Audience with the King",
+    "description": "Captain Ser Brannock will present you to King Aldric III in the Great Hall. Mind your manners.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "king_bloodstone",
+        "required": 1,
+        "description": "Be presented to King Aldric III"
+      }
+    ],
+    "giver_id": "captain_bloodstone",
+    "reward_gold": 50,
+    "reward_xp": 100,
+    "quest_points": 1,
+    "reward_items": [
+      "potion"
+    ]
+  },
+  "castle_whispers": {
+    "title": "Whispers in the Hall",
+    "description": "Queen Maera fears Duke Voss moves against her son. Sound out those who see and hear everything at court \u2014 the maid and the bard.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "maid_bloodstone",
+        "required": 1,
+        "description": "Ask Maid Rowena what she has seen"
+      },
+      {
+        "type": "talk",
+        "target": "bard_bloodstone",
+        "required": 1,
+        "description": "Ask Lyle the Lute what he has heard"
+      }
+    ],
+    "giver_id": "queen_bloodstone",
+    "reward_gold": 75,
+    "reward_xp": 150,
+    "quest_points": 2,
+    "prereq_quest": "castle_audience"
+  },
+  "castle_the_spy": {
+    "title": "The Spy in the Household",
+    "description": "The trail leads to the Duke's own apartments. Find the proof of his plot and carry it to the Queen.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "dukes_cipher",
+        "required": 1,
+        "description": "Recover Duke Voss's cipher from the Royal Apartments"
+      },
+      {
+        "type": "deliver",
+        "target": "dukes_cipher:queen_bloodstone",
+        "required": 1,
+        "description": "Deliver the cipher to Queen Maera"
+      }
+    ],
+    "giver_id": "maid_bloodstone",
+    "reward_gold": 120,
+    "reward_xp": 250,
+    "quest_points": 3,
+    "reward_items": [
+      "ring_protection"
+    ],
+    "prereq_quest": "castle_whispers"
+  },
+  "castle_gambit": {
+    "title": "The Duke's Gambit",
+    "description": "With the cipher in hand, Prince Cedric asks you to stand with him and lay the Duke's treason before the King.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "king_bloodstone",
+        "required": 1,
+        "description": "Expose Duke Voss's plot to the King"
+      },
+      {
+        "type": "talk",
+        "target": "duke_voss",
+        "required": 1,
+        "description": "Face Duke Voss with his treason"
+      }
+    ],
+    "giver_id": "heir_bloodstone",
+    "reward_gold": 250,
+    "reward_xp": 500,
+    "quest_points": 5,
+    "reward_items": [
+      "longsword"
+    ],
+    "prereq_quest": "castle_the_spy"
+  },
+  "castle_crypt": {
+    "title": "What Stirs Below",
+    "description": "Mother Aldith cannot keep the dead of Bloodstone at rest. Descend to the Royal Crypt and put the restless bones back to sleep.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "monster",
+        "required": 3,
+        "description": "Lay the restless dead of the crypt to rest"
+      }
+    ],
+    "giver_id": "chaplain_bloodstone",
+    "reward_gold": 150,
+    "reward_xp": 300,
+    "quest_points": 3,
+    "reward_items": [
+      "amulet_warding"
+    ],
+    "prereq_quest": "castle_audience"
   }
 }

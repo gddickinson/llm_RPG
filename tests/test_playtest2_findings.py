@@ -22,13 +22,18 @@ class TestPlaytest2Findings(unittest.TestCase):
     def test_every_authored_quest_has_a_ui_turn_in_path(self):
         """Finding: giver '' quests complete but can never be turned in
         through the GUI (dialog turn-in needs giver adjacency)."""
+        from characters.npc_presets import NPC_SPECS
         for qid, quest in self.engine.quest_manager.quests.items():
             if qid.startswith("radiant_"):
                 continue
             self.assertTrue(quest.giver_id,
                             f"quest {qid} has no giver")
-            self.assertIsNotNone(
-                self.engine.npc_manager.get_npc(quest.giver_id),
+            # reachable if in the open world, OR a preset NPC seated in a
+            # zone (P18.2 castle residents give quests inside the castle)
+            reachable = (self.engine.npc_manager.get_npc(quest.giver_id)
+                         is not None or quest.giver_id in NPC_SPECS)
+            self.assertTrue(
+                reachable,
                 f"quest {qid} giver '{quest.giver_id}' not in world")
 
     def test_tavern_intro_full_gui_flow(self):

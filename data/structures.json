@@ -246,6 +246,7 @@
           "This solar catches the morning; here the Queen holds her own small court."
         ],
         "chest_loot": [
+          "dukes_cipher",
           "amulet_warding",
           "greater_potion"
         ]

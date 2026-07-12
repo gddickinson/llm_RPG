@@ -42,19 +42,23 @@ class PlaytestSession(unittest.TestCase):
         from quests.quest import ObjectiveType
         from world.monsters import MONSTER_TEMPLATES
         from characters.character_types import CharacterClass
+        from characters.npc_presets import NPC_SPECS
         present = set(self.engine.npc_manager.npcs)
         classes = {c.value for c in CharacterClass}
+        # a preset NPC is reachable even if zone-bound (seated in its zone,
+        # e.g. the P18.2 castle court) rather than in the open world
+        def reachable(actor):
+            return (actor in present or actor in NPC_SPECS
+                    or actor in MONSTER_TEMPLATES or actor in classes)
         for qid, factory in QUEST_TEMPLATES.items():
             q = factory()
             if q.giver_id:
-                self.assertIn(q.giver_id, present,
-                              f"{qid}: giver not in the world")
+                self.assertTrue(reachable(q.giver_id),
+                                f"{qid}: giver not in the world")
             for o in q.objectives:
                 if o.obj_type in (ObjectiveType.KILL, ObjectiveType.TALK):
-                    self.assertTrue(
-                        o.target in present or o.target in MONSTER_TEMPLATES
-                        or o.target in classes,
-                        f"{qid}: target '{o.target}' unreachable")
+                    self.assertTrue(reachable(o.target),
+                                    f"{qid}: target '{o.target}' unreachable")
 
     # 4. ECONOMY — earn, craft, and a sink to reach ---------------
     def test_economy_loop_closes(self):

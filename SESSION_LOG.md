@@ -4700,3 +4700,39 @@ default start is still Oakvale; the option is on the menu; and choosing
 it routes through character creation carrying the castle flag, which then
 resets). Suite 1796, green. The whole castle — stone, court, realm, and
 now the front door — is playable end-to-end.
+
+---
+
+## P18.6 The castle adventure — court intrigue as a quest chain
+
+The castle was explorable and populated; P18.6 gives it stakes. A
+five-quest chain, all content-as-data given by the P18.2 residents,
+dramatises the succession plot that their relationships already seeded.
+
+You start as a stranger at the gate. "An Audience with the King" —
+Captain Ser Brannock presents you to King Aldric III. That opens two
+threads. Down one, Queen Maera, who fears for her son, sets you on
+"Whispers in the Hall" — sound out the maid (who sees everything) and the
+bard (who hears everything); then "The Spy in the Household," where Maid
+Rowena points you to the Duke's own apartments to recover his cipher (a
+new `dukes_cipher` item, planted in the Royal Apartments chest) and carry
+the proof to the Queen; and finally "The Duke's Gambit," where Prince
+Cedric asks you to stand with him, lay the treason before the King, and
+face Duke Voss. Down the other thread, Chaplain Mother Aldith — keeper of
+the crypt — sends you below in "What Stirs Below" to put the restless
+dead of Bloodstone back to sleep. The chain is gated by `prereq_quest`,
+so it unfolds in order.
+
+Wiring the castle cast as quest-givers surfaced a real assumption in two
+playtest guards: they demanded every quest giver (and kill/talk target)
+be present in the OPEN world. But the castle residents are zone-bound —
+reachable in their zone, not on the overworld. Both guards now accept a
+preset NPC as reachable wherever it's seated, which is the honest rule.
+
+8 tests (the chain is authored; the givers are the castle cast; the
+intrigue targets the rival, the crown, and the dead; the cipher waits in
+the apartments; the audience gates the rest; turning it in unlocks the
+whispers; a TALK completes on the King's words; the crypt quest counts
+three of the restless dead). Suite 1804, green. Remainder P18.6b: the
+siege — hand the P17 battle layer the castle's own guard and walls for a
+defend-the-keep set-piece.

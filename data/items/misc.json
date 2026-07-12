@@ -156,5 +156,13 @@
     "value": 150,
     "rarity": "rare",
     "description": "A wax-and-silver seal that speaks with the King's own voice. Doors open for the one who bears it."
+  },
+  "dukes_cipher": {
+    "id": "dukes_cipher",
+    "name": "Duke Voss's Cipher",
+    "item_type": "misc",
+    "value": 0,
+    "rarity": "rare",
+    "description": "A folded cipher in the Duke's own hand \u2014 proof, if it can be read, of a plot against the heir."
   }
 }

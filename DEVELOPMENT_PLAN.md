@@ -3437,7 +3437,24 @@ Sequenced into tested rounds:
   default start is still Oakvale, the option is on the menu, and choosing
   it routes through creation with the flag then resets). Suite 1796,
   green. The castle is now playable end-to-end from the title screen.)*
-- [ ] **P18.6 The castle adventure.** Quests and court intrigue (a
+- [x] **P18.6 The castle adventure.** Quests and court intrigue (a
   succession plot, a spy in the household, the thing stirring in the
   crypt), and a siege set-piece that hands the P17 battle layer the
   castle's own garrison and walls.
+  *(Round — the intrigue quest chain is done (all content-as-data, given
+  by the P18.2 cast): 1) "An Audience with the King" (Captain Brannock
+  presents you → talk the King); 2) "Whispers in the Hall" (Queen Maera →
+  sound out the maid and the bard who see & hear all); 3) "The Spy in the
+  Household" (Maid Rowena → recover Duke Voss's cipher, planted in the
+  Royal Apartments chest, and deliver it to the Queen); 4) "The Duke's
+  Gambit" (Prince Cedric → expose the plot to the King and face the Duke);
+  5) "What Stirs Below" (Chaplain Aldith → lay the crypt's restless dead).
+  Chained by `prereq_quest`; a new `dukes_cipher` evidence item. Two
+  playtest guards taught to accept zone-bound (in-zone) quest givers &
+  targets, not just open-world ones. 8 tests (chain authored, givers are
+  the castle cast, the intrigue targets the rival/crown/dead, the cipher
+  waits in the apartments, the audience gates the rest, turn-in unlocks
+  the next, a TALK completes on the King, the crypt counts three dead).
+  Suite 1804, green. Remainder P18.6b: the SIEGE set-piece — hand the P17
+  battle layer the castle's own garrison (the P18.2 guard) and its walls
+  for a defend-the-keep battle.)*
