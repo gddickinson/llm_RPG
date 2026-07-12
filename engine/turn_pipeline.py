@@ -53,6 +53,12 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Checkpoint tick error: {e}")
 
+    # A lair whose last defender has fallen yields its hoard (P19.2)
+    try:
+        self.lairs.check_cleared()
+    except Exception as e:
+        logger.debug(f"Lair clear-check error: {e}")
+
     # A guard collects on the ledger (P12.9)
     try:
         self.law.check_contact()

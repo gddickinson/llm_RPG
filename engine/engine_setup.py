@@ -83,6 +83,8 @@ def build_subsystems(engine, llm_model=None,
     self.production = ProductionSystem(self)
     from world.resource_nodes import ResourceNodeSystem
     self.resource_nodes = ResourceNodeSystem(self)
+    from engine.lairs import LairSystem
+    self.lairs = LairSystem(self)
     self.dm = DMApi(self)
     self.dm_autonomous = AutonomousDM(self)
     try:

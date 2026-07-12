@@ -5095,3 +5095,42 @@ a dragon is met on the overworld — a lair (P19.2).
 apex pool gates by depth and only grows; breath sets the ground ablaze;
 the roar Frightens; a deep boss floor crowns an apex) plus one retuned
 multilevel-dungeon test. Suite 1878, green.
+
+## Lairs — a dragon finally has a home (P19.2)
+
+P19.1 gave the game dragons but they only reached play at the bottom of a
+deep dungeon, where the breath telegraph stays quiet (the conflict scan
+that fires it is overworld-only). This round gives the apex tier a home
+where it fights with everything it has: the overworld lair.
+
+`engine/lairs.py`'s `LairSystem` reads `data/lairs.json` — three
+archetypes to start: a Dragon's Roost (a lone young dragon on a mountain
+shoulder), a Goblin Warren (four goblins and a bandit ringleader in the
+forest) and a Troll Den (a wandering troll and two bog lurkers by the
+fens). Each carries a hoard, a purse of gold, a terrain the lair likes to
+sit near, and a legend line for the day it falls. At world start `seed()`
+plants up to one of each on a walkable tile near its terrain, at least 18
+tiles from where the player wakes and clear of any town, spawns the
+occupants, and drops a named map marker so the place reads as somewhere —
+"Dragon's Roost" on the map, not just a monster.
+
+`check_cleared()` runs each turn, cheap: it watches each lair's defenders,
+and the moment the last one falls the hoard spills onto the ground, the
+gold fills your purse, and a `[Legend]` line marks the deed. The lair
+stays quiet for good. Because the fight happens on the OVERWORLD, the
+dragon's P19.1 breath telegraph fires — a roost is the first place in the
+game you actually face a wyrm breathing fire and leaving the ground
+burning where you stood.
+
+Clearing a lair surfaced a latent bug worth fixing properly:
+`find_character` returned the FIRST character matching a name, so once a
+Wandering Troll lived both in a den and in the Ruined Keep crypt, "attack
+the Wandering Troll" could swing at the wrong one across the map. It now
+prefers the nearest active match — the troll in front of you.
+
+State persists (stores + cleared flags + a seeded guard so a loaded world
+never re-seeds). 11 new tests (archetypes load with real items; lairs
+seed with live occupants and a marker; a roost holds a dragon boss; lairs
+sit far from the start; seeding is once-only; a live lair yields nothing;
+clearing drops the hoard and gold and writes a legend; no double reward;
+persistence round-trips) plus the retuned structures test.

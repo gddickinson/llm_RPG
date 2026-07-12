@@ -3609,11 +3609,31 @@ Phase-17 tactical AI.
   phases and the heavy melee make a genuinely hard fight; the full breath
   comes online when a dragon is met on the overworld (a lair — P19.2). 11
   new tests + 1 retuned dungeon test. Suite 1878, green.)*
-- [ ] **P19.2 Lairs on the overworld.** Seeded monster lairs (a dragon's
+- [x] **P19.2 Lairs on the overworld.** Seeded monster lairs (a dragon's
   roost on a peak, a goblin warren, a troll den) as overworld locations
   that hold an apex or a pack over a hoard; clearing one yields the hoard,
   a legend, and lasting quiet. The reachable, hand-placed home for the
   P19.1 tier outside dungeons.
+  *(Round: `engine/lairs.py` `LairSystem` over `data/lairs.json`
+  archetypes (occupants + hoard + gold + a `near` terrain affinity + a
+  legend line). `seed()` (from `start_game`, after structures) plants up
+  to one of each archetype on a walkable site near its terrain, ≥18 tiles
+  from the player start and clear of towns; it spawns the occupants
+  (tagged `metadata["lair"]`), drops a named `Location` marker so the
+  place reads on the map, and records the lair. `check_cleared()` (per
+  turn, cheap) watches each lair's defenders — when the last falls, the
+  hoard spills onto the ground, the gold fills your purse, and a
+  `[Legend]` line marks the deed; the lair stays cleared for good.
+  Because a lair sits on the OVERWORLD, an apex there gets its FULL kit —
+  the P19.1 breath telegraph fires (it only paints while `active_zone()`
+  is None), so a roost is where you actually face a dragon breathing fire
+  and scorching the ground. State persists (`to_dict`/`from_dict`
+  registered in `save_load`; `_seeded` guards re-seeding on load). One
+  latent bug surfaced and fixed: `find_character` returned the FIRST
+  name match, so with a Wandering Troll now in both a den and a crypt,
+  "attack the Wandering Troll" could reach for the wrong one — it now
+  prefers the NEAREST active match (`_nearest_active`). 11 lair tests + 1
+  retuned. Suite green.)*
 - [ ] **P19.3 Packs that fight like a group.** Bridge the walled-off
   Phase-17 `battle_ai` (or extend `squad_tactics`) so overworld monster
   packs focus-fire the softest target, flank, hold a leader, and break

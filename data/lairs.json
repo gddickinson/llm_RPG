@@ -1,0 +1,37 @@
+{
+  "dragon_roost": {
+    "name": "Dragon's Roost",
+    "near": "mountain",
+    "occupants": [
+      {"template": "young_dragon", "count": 1}
+    ],
+    "hoard": ["greater_potion", "greater_potion", "potion_might", "tome_of_fireball", "ring_protection"],
+    "gold": 400,
+    "legend": "The dragon of the high roost is slain — its fire will scorch the land no more.",
+    "weight": 1
+  },
+  "goblin_warren": {
+    "name": "Goblin Warren",
+    "near": "forest",
+    "occupants": [
+      {"template": "goblin", "count": 4},
+      {"template": "bandit", "count": 1}
+    ],
+    "hoard": ["potion", "potion", "scroll_heal", "coins"],
+    "gold": 80,
+    "legend": "The goblin warren is cleared — the woods breathe easier tonight.",
+    "weight": 3
+  },
+  "troll_den": {
+    "name": "Troll Den",
+    "near": "swamp",
+    "occupants": [
+      {"template": "wandering_troll", "count": 1},
+      {"template": "bog_lurker", "count": 2}
+    ],
+    "hoard": ["greater_potion", "amulet_health", "coins"],
+    "gold": 150,
+    "legend": "The troll den is broken — the fens lose their terror.",
+    "weight": 2
+  }
+}

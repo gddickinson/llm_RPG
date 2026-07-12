@@ -146,6 +146,10 @@ class GameEngine(GameAPIMixin):
             self.structures.build()
         except Exception as e:
             logger.debug(f"Structures: {e}")
+        try:   # plant the overworld lairs — dragon roost, warren, den (P19.2)
+            self.lairs.seed()
+        except Exception as e:
+            logger.debug(f"Lairs: {e}")
         try:
             from engine.module_packs import install_packs
             install_packs(self)
@@ -451,20 +455,36 @@ class GameEngine(GameAPIMixin):
         # By id
         if name_or_id in self.npc_manager.npcs:
             return self.npc_manager.npcs[name_or_id]
-        # By name
-        for npc in self.npc_manager.npcs.values():
-            if npc.name.lower() == text:
-                return npc
+        # By name — prefer the NEAREST active match. Names can collide now
+        # (P19.2: a Wandering Troll in an overworld den and one in a crypt),
+        # so "attack the Wandering Troll" must mean the one in front of you.
+        exact = [n for n in self.npc_manager.npcs.values()
+                 if n.name.lower() == text]
+        if exact:
+            return self._nearest_active(exact)
         # Substring match
-        for npc in self.npc_manager.npcs.values():
-            if npc.name.lower() in text or text in npc.name.lower():
-                return npc
+        subs = [n for n in self.npc_manager.npcs.values()
+                if n.name.lower() in text or text in n.name.lower()]
+        if subs:
+            return self._nearest_active(subs)
         # Symbol
         if len(name_or_id) == 1:
             for npc in self.npc_manager.npcs.values():
                 if npc.symbol.lower() == text:
                     return npc
         return None
+
+    def _nearest_active(self, candidates):
+        """Of same-named characters, the nearest active one to the player
+        (an inactive one only if nothing else matches)."""
+        px, py = self.player.position
+
+        def key(n):
+            x, y = n.position
+            return (0 if n.is_active() else 1,
+                    (px - x) ** 2 + (py - y) ** 2)
+
+        return min(candidates, key=key)
 
     def _distance_to_player(self, x: int, y: int) -> float:
         px, py = self.player.position
