@@ -4736,3 +4736,38 @@ whispers; a TALK completes on the King's words; the crypt quest counts
 three of the restless dead). Suite 1804, green. Remainder P18.6b: the
 siege — hand the P17 battle layer the castle's own guard and walls for a
 defend-the-keep set-piece.
+
+---
+
+## The Siege of Bloodstone — the castle assault reuses the siege field
+## (P17.8b part 3 / P18.6b)
+
+The two threads finally meet: the P17 battle layer (walls, gates, siege
+engines, breaching, morale) and the Phase-18 castle. `castle_siege` — a
+new scenario, "The Siege of Bloodstone" — is a defend-the-keep set-piece
+built entirely out of the existing siege field: a stone curtain wall
+(500-hp segments) ringing the keep, one gatehouse, four corner towers
+with their archer slots, and a cauldron of boiling oil over the gate. The
+Bloodstone Guard holds it — spearmen at the gate, longbows on the
+battlements, a keep-guard in reserve — against a besieging host of
+sword-foot backed by four rams and three catapults.
+
+Tuning it into a real siege (rather than a slaughter in the ditch)
+surfaced the sim's own logic: the siege engines are SLOW (ram 0.3,
+catapult 0.2 tiles/tick), so a host starting far off has its fast foot
+cut down by the wall's archers long before the rams arrive — the garrison
+wins untouched, which is no siege at all. Advancing the besiegers' lines
+so the engines open the assault at the wall fixed it: now the rams batter
+the gatehouse down every time (breach at ~50-63 ticks) and the host
+storms the breach — but the victors always pay a heavy toll to the walls,
+the oil, and the bows (they win with barely 20 of ~36). A hard-fought
+storming, playable from either side in the Battle Testbed with the P17.5
+orders and the P17.7 embodied controls.
+
+One incidental fix: the retuned squad anchors also cleared a soldier
+overlap the battle-screen placement guard had caught. 6 tests (the
+scenario ships; walls/gate/towers/oil are raised; both armies field their
+troops and the host its siege engines; the siege resolves; the gate is
+battered down; and even the victors pay for the walls). Suite 1810,
+green. P18.6b done; P17.8 narrows to just the overworld-clash commander
+orders and a live trigger (P17.8c).

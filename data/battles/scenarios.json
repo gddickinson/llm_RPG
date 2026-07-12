@@ -1544,7 +1544,7 @@
   },
   "the_war_mage": {
     "name": "The War-Mage",
-    "desc": "War-mages behind a spear guard rain fireballs into the packed enemy block — each burst crumps a cluster of men and leaves the ground ablaze, the fire spreading through the ranks. Concentration is death against area magic: charge home before you burn.",
+    "desc": "War-mages behind a spear guard rain fireballs into the packed enemy block \u2014 each burst crumps a cluster of men and leaves the ground ablaze, the fire spreading through the ranks. Concentration is death against area magic: charge home before you burn.",
     "width": 40,
     "height": 22,
     "armies": [
@@ -1555,7 +1555,10 @@
             "id": "red_mages",
             "type": "battle_mage",
             "size": 3,
-            "anchor": [6, 10],
+            "anchor": [
+              6,
+              10
+            ],
             "cols": 1,
             "order": "hold",
             "target": "blue_block"
@@ -1564,7 +1567,10 @@
             "id": "red_guard",
             "type": "infantry_spear",
             "size": 8,
-            "anchor": [10, 8],
+            "anchor": [
+              10,
+              8
+            ],
             "cols": 2,
             "order": "hold",
             "target": "blue_block"
@@ -1578,10 +1584,377 @@
             "id": "blue_block",
             "type": "infantry_sword",
             "size": 20,
-            "anchor": [28, 8],
+            "anchor": [
+              28,
+              8
+            ],
             "cols": 4,
             "order": "charge",
             "target": "red_mages"
+          }
+        ]
+      }
+    ]
+  },
+  "castle_siege": {
+    "name": "The Siege of Bloodstone",
+    "desc": "The host is at the gates. Behind the stone curtain wall and its corner towers, the Bloodstone Guard holds the keep \u2014 spears at the gate, bows on the battlements. Rams batter the gatehouse while catapults pound the wall; break in, or die in the ditch.",
+    "width": 48,
+    "height": 28,
+    "walls": [
+      {
+        "type": "stone_wall",
+        "cells": [
+          [
+            30,
+            6
+          ],
+          [
+            30,
+            7
+          ],
+          [
+            30,
+            8
+          ],
+          [
+            30,
+            9
+          ],
+          [
+            30,
+            10
+          ],
+          [
+            30,
+            11
+          ],
+          [
+            30,
+            12
+          ],
+          [
+            30,
+            14
+          ],
+          [
+            30,
+            15
+          ],
+          [
+            30,
+            16
+          ],
+          [
+            30,
+            17
+          ],
+          [
+            30,
+            18
+          ],
+          [
+            30,
+            19
+          ],
+          [
+            30,
+            20
+          ],
+          [
+            30,
+            21
+          ],
+          [
+            31,
+            5
+          ],
+          [
+            31,
+            22
+          ],
+          [
+            32,
+            5
+          ],
+          [
+            32,
+            22
+          ],
+          [
+            33,
+            5
+          ],
+          [
+            33,
+            22
+          ],
+          [
+            34,
+            5
+          ],
+          [
+            34,
+            22
+          ],
+          [
+            35,
+            5
+          ],
+          [
+            35,
+            22
+          ],
+          [
+            36,
+            5
+          ],
+          [
+            36,
+            22
+          ],
+          [
+            37,
+            5
+          ],
+          [
+            37,
+            22
+          ],
+          [
+            38,
+            5
+          ],
+          [
+            38,
+            22
+          ],
+          [
+            39,
+            5
+          ],
+          [
+            39,
+            22
+          ],
+          [
+            40,
+            5
+          ],
+          [
+            40,
+            22
+          ],
+          [
+            41,
+            5
+          ],
+          [
+            41,
+            22
+          ],
+          [
+            42,
+            5
+          ],
+          [
+            42,
+            22
+          ],
+          [
+            43,
+            5
+          ],
+          [
+            43,
+            22
+          ],
+          [
+            44,
+            6
+          ],
+          [
+            44,
+            7
+          ],
+          [
+            44,
+            8
+          ],
+          [
+            44,
+            9
+          ],
+          [
+            44,
+            10
+          ],
+          [
+            44,
+            11
+          ],
+          [
+            44,
+            12
+          ],
+          [
+            44,
+            13
+          ],
+          [
+            44,
+            14
+          ],
+          [
+            44,
+            15
+          ],
+          [
+            44,
+            16
+          ],
+          [
+            44,
+            17
+          ],
+          [
+            44,
+            18
+          ],
+          [
+            44,
+            19
+          ],
+          [
+            44,
+            20
+          ],
+          [
+            44,
+            21
+          ]
+        ]
+      },
+      {
+        "type": "tower",
+        "cells": [
+          [
+            30,
+            5
+          ],
+          [
+            30,
+            22
+          ],
+          [
+            44,
+            5
+          ],
+          [
+            44,
+            22
+          ]
+        ]
+      },
+      {
+        "type": "gate",
+        "cells": [
+          [
+            30,
+            13
+          ]
+        ]
+      },
+      {
+        "type": "boiling_oil",
+        "cells": [
+          [
+            29,
+            13
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_rams",
+            "type": "siege_ram",
+            "size": 4,
+            "anchor": [
+              27,
+              12
+            ],
+            "cols": 1,
+            "order": "charge",
+            "target": "blue_gate"
+          },
+          {
+            "id": "red_guns",
+            "type": "siege_catapult",
+            "size": 2,
+            "anchor": [
+              23,
+              6
+            ],
+            "cols": 1,
+            "order": "charge",
+            "target": "blue_gate"
+          },
+          {
+            "id": "red_host",
+            "type": "infantry_sword",
+            "size": 30,
+            "anchor": [
+              13,
+              10
+            ],
+            "cols": 5,
+            "order": "charge",
+            "target": "blue_gate"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_gate",
+            "type": "infantry_spear",
+            "size": 10,
+            "anchor": [
+              33,
+              11
+            ],
+            "cols": 3,
+            "order": "hold",
+            "target": "red_host"
+          },
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 8,
+            "anchor": [
+              38,
+              7
+            ],
+            "cols": 5,
+            "order": "hold",
+            "target": "red_host"
+          },
+          {
+            "id": "blue_keep",
+            "type": "infantry_sword",
+            "size": 10,
+            "anchor": [
+              39,
+              15
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_host"
           }
         ]
       }

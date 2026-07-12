@@ -2642,9 +2642,16 @@ is shippable and testable, de-risking UI last:
   combat, not an off-screen army clash, so there's nothing to hand the
   resolver. 3 tests (beast tide presses in, militia drives them back &
   the warband loses strength, the clash helper). Suite 1753, green.
-  Remainder P17.8b: commander orders extending to overworld `[Clash]`
-  events, and an overworld castle assault reusing the siege field —
-  both overworld↔battle-screen integrations, not pure resolver folds.)*
+  Remainder P17.8b (narrowing): the castle-assault-reuses-the-siege-field
+  part is DONE — the `castle_siege` scenario ("The Siege of Bloodstone")
+  is a full siege set-piece over the P17 field: a stone curtain wall with
+  a gatehouse, corner towers and boiling oil, the Bloodstone Guard (spears
+  + longbows + keep-guard) defending, and a host with rams + catapults
+  that batter the gate down and storm the breach (the victors always pay
+  a toll to the walls). 6 tests. Suite 1810, green. Only P17.8c remains:
+  commander orders reaching overworld `[Clash]` events, and a live
+  overworld trigger that launches this siege when the castle is
+  assaulted.)*
 
 ### Combat fidelity arc (user: "highly realistic battles")
 Speed (P17.4c) is the keystone; these layer real tactics on the grid
