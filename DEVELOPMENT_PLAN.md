@@ -2833,12 +2833,30 @@ driven and folds into the battle grid (its own terrain strings +
   *(Remainder P17.E1b: authoring elevation into scenario grids (the field
   API is ready; only the loader hook is missing), and the SIGHT half —
   moot until the battle sim has fog to see through.)*)*
-- [ ] **P17.E2 Terrain & obstacles.** Ditches/moats/streams/rivers as
+- [x] **P17.E2 Terrain & obstacles.** Ditches/moats/streams/rivers as
   movement-cost or blocking tiles (wade slow, deep = impassable/anchor);
   a flank resting on impassable terrain (river/cliff/wall) **cannot be
   flanked on that side** (removes the arc — the first thing good
   deployment does). Extends the P11.x traversal ideas onto the battle
   grid.
+  *(Round 174: two mechanics on the battle grid. OBSTACLES — moat/cliff/
+  chasm join `BLOCKING` (impassable, can't be crossed), and stream/ditch/
+  bog/marsh join `PASSABLE` but SLOW: `battle_terrain.move_cost` charges
+  extra movement budget to enter one, and `_advance` now spends a real
+  budget so a rider wading a stream makes visibly less ground than one
+  on open turf. ANCHORED FLANK — `battle_terrain.anchored` checks whether
+  the defender's flank/rear tile on the ATTACKER's side rests on
+  impassable terrain (a river, wall, cliff), and if so `_position_mods`
+  AND the P17.15 flank-morale treat the blow as front — so a line with
+  its wing on a river takes no flank to-hit, damage, or morale from that
+  quarter, the first thing good deployment buys. It matters most for
+  RANGED flankers (an adjacent melee flanker can't stand on an impassable
+  tile anyway). Zero-cost on open ground. 7 tests (moat/cliff block +
+  can't wade; move-cost; wading slower than open ground in a live tick;
+  the anchored predicate up/down/front; an anchored flank taking the
+  front bonus and no morale where an open one takes the flank). No battle
+  regressions. Suite 1657, green. *(Remainder shares P17.E1b's loader
+  hook: authoring obstacle terrain + elevation into the scenario grids.)*)*
 - [ ] **P17.E3 Battle line-of-sight.** Trees/buildings/walls/ramparts
   BLOCK sight (reuse `world/fov.overworld_los`) so ranged units can't
   target through cover — closes the P17.6b "no wall LOS" gap and makes

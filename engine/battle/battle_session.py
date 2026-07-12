@@ -220,16 +220,20 @@ class BattleSession:
 
     def _advance(self, sol, sq, target, flow) -> None:
         """March toward the target, up to the speed budget; stop the
-        moment a step brings the target into reach (attack next tick)."""
+        moment a step brings the target into reach (attack next tick).
+        Wading slow ground (a stream, a bog) spends extra budget (E2)."""
         field = self.field
+        from engine.battle import battle_terrain as terrain
         melee = sq.stats.get("ranged", 0) == 0
-        for _ in range(self._steps(sol, sq)):
+        budget = self._steps(sol, sq)
+        while budget >= 1:
             goal = ai.role_goal(field, sol, sq, flow)
             if goal is None and melee:
                 # flow blocked by the enemy line — push into contact
                 goal = ai.step_toward(field, sol, target.x, target.y)
             if goal is None or not self._move(sol, *goal):
                 break
+            budget -= terrain.move_cost(field, *goal)
             if ai._dist(sol.pos, target.pos) <= ai.reach_of(sq):
                 break
 

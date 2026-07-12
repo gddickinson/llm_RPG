@@ -22,10 +22,13 @@ from engine.battle.battle_unit import Squad
 # are passable COVER terrains (P17.6): you fight from them, they blunt
 # incoming ranged fire.
 PASSABLE = ("grass", "road", "rubble", "scorched", "mud",
-            "forest", "hedge", "sandbags")
+            "forest", "hedge", "sandbags",
+            "stream", "ditch", "bog", "marsh")   # E2: passable but SLOW
 WALL = "wall"
 GATE = "gate"
-BLOCKING = ("wall", "gate", "water", "mountain")
+# E2: moats/cliffs/chasms are impassable obstacles — a flank anchored on
+# one cannot be turned (the enemy can't get past it).
+BLOCKING = ("wall", "gate", "water", "mountain", "moat", "cliff", "chasm")
 
 
 class BattleField:

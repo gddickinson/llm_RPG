@@ -4069,3 +4069,33 @@ REMAINDER (P17.E1b): authoring elevation into the scenario grids (the
 field API is ready — only a loader hook is missing) and the SIGHT half of
 "extends sight", which stays moot until the battle sim grows fog to see
 through.
+
+**Round 174 — P17.E2 Terrain & obstacles.**
+The environment track's second stone: the ground you fight over as an
+obstacle and an anchor. Two mechanics, both on the battle grid.
+OBSTACLES: moats, cliffs and chasms join the `BLOCKING` set — impassable,
+you simply cannot cross them — while streams, ditches, bogs and marsh join
+the passable set but SLOW: `battle_terrain.move_cost` charges extra
+movement budget to enter one, and `_advance` was reworked to spend a real
+float budget rather than a fixed step count, so a light horseman wading a
+stream corridor makes visibly less ground in a tick than one galloping
+open turf (a test proves the gap). ANCHORED FLANK — the deployment
+mechanic every good general reaches for first: rest your wing on a river
+and it cannot be turned. `battle_terrain.anchored` asks whether the
+defender's flank or rear tile ON THE ATTACKER'S SIDE is impassable, and if
+it is, both `_position_mods` and the P17.15 flank-morale treat the blow as
+if it came from the front — no flank to-hit, no rear damage multiplier, no
+morale shock from that quarter. The geometry insight that made it clean:
+it matters most for RANGED flankers, because an adjacent melee flanker
+can't stand on the impassable tile in the first place, so the anchor guards
+the arc a bowman would otherwise exploit from three tiles off. All of it is
+zero-cost on open, flat ground, so the whole existing battle suite, fought
+on the level, is untouched. 7 tests: moat/cliff/chasm block passage and a
+soldier can't wade a moat; the move-cost of a stream and a bog; wading
+slower than open ground in a live tick; the anchored predicate reading
+true on a walled flank, false on an open one, never on a frontal blow; and
+in-battle proof that an anchored flank takes the front bonus and no morale
+where an open flank takes the full flank to-hit and shakes. No battle
+regressions. Suite 1657, green. REMAINDER: shares P17.E1b's one missing
+piece — a loader hook to author obstacle terrain and elevation into the
+scenario grids (the field API for both is complete).

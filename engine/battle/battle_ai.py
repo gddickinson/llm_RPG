@@ -79,9 +79,14 @@ def _position_mods(field, atk_sol, target):
     flank/rear arc, being ganged up on, and being surrounded. An all-
     facing RING (P17.17) shows its front to every side, so no arc bonus."""
     from engine.battle import battle_formation as form
+    from engine.battle import battle_terrain as terrain
     tgt_sq = field.squads.get(target.squad_id)
     ar = form.effective_arc(tgt_sq, facing.arc(target.facing,
                                                atk_sol.pos, target.pos))
+    # a flank anchored on impassable terrain can't be turned (P17.E2)
+    if ar in ("flank", "rear") and \
+            terrain.anchored(field, atk_sol.pos, target.pos, target.facing):
+        ar = "front"
     to_hit = facing.ARC_TO_HIT[ar]
     dmg = facing.ARC_DMG[ar]
     if adjacent_enemies(field, target) >= 2:      # multiple sides
@@ -197,6 +202,9 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
         ar = form.effective_arc(tgt_squad,
                                 facing.arc(target.facing,
                                            atk_soldier.pos, target.pos))
+        if ar in ("flank", "rear") and terrain.anchored(
+                field, atk_soldier.pos, target.pos, target.facing):
+            ar = "front"                      # anchored — no morale shock (E2)
         if ar == "rear":
             tgt_squad.adjust_morale(-3)
         elif ar == "flank":
