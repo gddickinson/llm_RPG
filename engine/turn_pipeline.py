@@ -184,6 +184,11 @@ def run_turn(engine) -> None:
                 self.pet_system.run_night()
             except Exception as e:
                 logger.debug(f"Pet night error: {e}")
+            try:   # a neglected mount bolts (P28.2c)
+                from engine.mounts import run_night as mount_night
+                mount_night(self)
+            except Exception as e:
+                logger.debug(f"Mount night error: {e}")
             self.world_director.run_night()
             try:   # NPCs pursue their private ambitions (P20.1)
                 self.ambitions.run_day()

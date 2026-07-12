@@ -131,6 +131,66 @@ class TestEffects(_Base):
         self.assertEqual(capacity(self.p) - base_no, 8)
 
 
+class TestCare(_Base):
+    """P28.2c — lifecycle & care: dismount/remount, feed for loyalty, and a
+    neglected mount bolts by morning (the P12.14 pet pattern)."""
+
+    def _a_horse(self):
+        self._seller("stable")
+        mounts.buy_mount(self.engine, "horse")
+
+    def test_a_fresh_mount_starts_loyal_and_ridden(self):
+        self._a_horse()
+        self.assertEqual(mounts.mount_loyalty(self.p), mounts.LOYALTY_START)
+        self.assertTrue(mounts.is_riding(self.p))
+
+    def test_dismount_and_remount_toggle_the_saddle(self):
+        self._a_horse()
+        mounts.dismount(self.engine)
+        self.assertFalse(mounts.is_riding(self.p))
+        self.assertEqual(mounts.active_mount(self.p), "horse")  # still yours
+        mounts.remount(self.engine)
+        self.assertTrue(mounts.is_riding(self.p))
+
+    def test_feeding_builds_loyalty(self):
+        from items.item_registry import create_item
+        self._a_horse()
+        self.p.inventory.append(create_item("bread"))
+        before = mounts.mount_loyalty(self.p)
+        msg = mounts.feed_mount(self.engine)
+        self.assertIn("loyalty", msg.lower())
+        self.assertEqual(mounts.mount_loyalty(self.p), before + 1)
+
+    def test_no_food_no_feeding(self):
+        self._a_horse()
+        self.p.inventory = []
+        msg = mounts.feed_mount(self.engine)
+        self.assertIn("nothing", msg.lower())
+
+    def test_an_unfed_mount_loses_loyalty(self):
+        self._a_horse()
+        self.p.metadata["mount"]["fed_day"] = -1     # not fed today
+        before = mounts.mount_loyalty(self.p)
+        mounts.run_night(self.engine)
+        self.assertEqual(mounts.mount_loyalty(self.p), before - 1)
+
+    def test_a_fed_mount_is_not_neglected(self):
+        from items.item_registry import create_item
+        self._a_horse()
+        self.p.inventory.append(create_item("bread"))
+        mounts.feed_mount(self.engine)               # marks fed today
+        before = mounts.mount_loyalty(self.p)
+        mounts.run_night(self.engine)
+        self.assertEqual(mounts.mount_loyalty(self.p), before)
+
+    def test_a_starved_mount_bolts(self):
+        self._a_horse()
+        self.p.metadata["mount"]["loyalty"] = 1
+        self.p.metadata["mount"]["fed_day"] = -1
+        mounts.run_night(self.engine)
+        self.assertIsNone(mounts.active_mount(self.p))   # gone by morning
+
+
 class TestTerrainCrossing(_Base):
     """P28.2b — a mount's `traverses` list lets the rider cross what a walker
     can't (a magic carpet over water & mountains)."""

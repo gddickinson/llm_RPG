@@ -6373,3 +6373,14 @@ FLIES over water and mountains, a plain horse is still stopped at the shore, and
 parting with the carpet grounds you. +4 tests (flight/traversal suites
 unaffected). Remainder: a flying rider bypassing the P11.2 drown/swim hazards
 (edge case), a desert terrain, and P28.2c per-mount road speed + a buy-UI.
+
+## 2026-07-12 (cont.) — P28.2c: mount lifecycle & care
+
+The mount is now cared for like the P12.14 pet. `engine/mounts.py`: `dismount`/
+`remount`/`is_riding` step you out of and back into the saddle (dropping/raising
+the road pace) without giving up the beast; `feed_mount` spends a food item for
++1 loyalty (1–20, starts at 10) and marks it fed today; `run_night` (wired into
+the nightly stack) slips an unfed mount's loyalty a point and, at 0, it BOLTS by
+morning — the same neglect arc as a pet. A fresh mount starts loyal and ridden.
++7 tests (legacy mule still green). Remainder: a spooked/tiring mount, a
+war-mount that fights, and the ride/feed KEY bindings.

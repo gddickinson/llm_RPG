@@ -3780,10 +3780,16 @@ P15.8b pack mule).
   `_is_flier`). A carpet crosses water & mountain; a plain horse is still
   blocked; releasing grounds you. `tests/test_mounts.py` (+4). *Remainder:*
   a flying rider bypassing the P11.2 drown/swim HAZARDS (edge case), and desert.
-- [ ] **P28.2c Mount lifecycle & care.** Buy/stable/release at a stable;
+- [~] **P28.2c Mount lifecycle & care.** Buy/stable/release at a stable;
   ride/dismount (a key); the mount can be spooked, tire, or (war-mounts) fight;
   loyalty/feed like the P12.14 pet. See `autonomous_world` for the breadth of
-  rideable creatures.
+  rideable creatures. *Done:* `engine/mounts.py` — `dismount`/`remount`/
+  `is_riding` (toggle the saddle/road-pace without releasing), `feed_mount`
+  (spend a food → +1 loyalty, marks fed today), `mount_loyalty` (1–20 from
+  `LOYALTY_START`=10), and `run_night` (an unfed mount loses a loyalty point;
+  at 0 it BOLTS by morning — the P12.14 neglect pattern), wired into the nightly
+  stack. `tests/test_mounts.py` (+7). *Remainder:* a spooked/tiring mount and a
+  war-mount fighting; the ride/dismount + feed KEY bindings (a UI hook).
 
 ## Phase 29 — The Productive World: NPC construction, terraforming & the material economy (ultraplan, George, 2026-07-12)
 
