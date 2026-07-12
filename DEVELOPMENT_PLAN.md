@@ -3786,6 +3786,45 @@ coin+time→furnished building) but PLAYER-only, `player.metadata`-backed.
   stores) drives encounter weight + NPC/monster behaviour. Closes the loop:
   production ↔ destruction ↔ prices ↔ action.
 
+## Phase 30 — Data architecture: a unified entity layer (evaluated, George, 2026-07-12)
+
+George asked whether the game should move to DATABASES (per type: NPCs,
+monsters, items…) for rapidly accessible, editable state. **Decision after
+mapping the codebase: NO SQL on the hot path — but do consolidate the
+in-memory organisation, in phases.**
+
+*Why not a DB for live state:* single-process, small active population
+(~12–25 open-world NPCs + spawns; adventurers capped `MAX_DRIVEN=4`).
+Lookup is already `npc_manager.npcs[id]` (O(1) dict) + `world_map.characters
+[(x,y)]` (O(1) spatial) — FASTER than any DB (no SQL parse / (de)serialise;
+even `:memory:` SQLite would be slower per tick). Content-vs-state split is
+clean (read-only JSON registries → live `Character` objects); state rides
+`metadata` → "saves free." Games use in-memory/ECS, not SQL per frame.
+
+*The real weakness the question is sensing (organisation, not storage):*
+(1) ~30 subsystems stash arbitrary keys on one untyped `Character.metadata`
+bag — no schema/discoverability, typo/collision risk; TWO memory stores
+(`Character.memories` written by two writers). (2) No query layer, and **62
+sites scan ALL NPCs every turn** (needs/status/conflict) with no spatial
+scoping — the actual perf smell (a DB wouldn't fix it). (3) Whole-file JSON
+save rewrite (~300 KB, no dirty-tracking).
+
+- [ ] **P30.1 `EntityIndex` query service (highest value, low risk).** A thin
+  façade over `npc_manager` + `world_map`: indexed queries by id, by
+  position/radius (reuse the spatial index), by tag/faction/flag; replace the
+  per-turn full `npcs.values()` scans with spatially-scoped iteration. Migrates
+  NO state — pure speed + the "rapid access" ergonomics, no risk.
+- [ ] **P30.2 Typed components over `metadata`.** A `needs/social/combat/ai`
+  component layer with accessors + a light schema registry; migrate subsystems
+  off the raw bag INCREMENTALLY (each still rides the save). Unify the two
+  memory writers. Fixes scatter + typo-risk, keeps "saves free."
+- [ ] **P30.3 History store where a DB actually helps.** The append-only,
+  cross-session, query-heavy HISTORY (Legendarium, chronicle, bones, telemetry)
+  → stdlib `sqlite3` (zero dep) or JSON-per-record, generalising the existing
+  `engine/dm_library.py` mini-DB. The only place SQL earns its keep.
+- Explicitly NOT: SQL for per-tick state; a big-bang rewrite (2195 tests, works
+  today → incremental, opt-in only).
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
