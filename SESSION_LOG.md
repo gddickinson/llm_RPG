@@ -5347,3 +5347,32 @@ and announced only once; run_day drifting a private pair; monsters kept
 out of the graph; and friends AND feuds emerging on their own across 40
 nights). Remainder P20.2b: gossip that shapes opinion, and rivalry at the
 faction scale.
+
+## Docs refresh + Phase 25 opened (2026-07-12)
+
+At George's request, brought the docs up to the game's real state after the
+long Phase 19–20 arc and captured a fresh batch of requirements.
+
+The README was remade from the ground up: it had frozen around the
+pre-Phase-6 game (eight skills, three settlements, no battle layer). The
+new one describes the game as it is — the living world that moves every
+night, the monster ecology (packs, tribes, elites, dragons, the nemesis),
+the living society (ambitions, the social graph), the tactical battle
+layer, the royal castle, the Dungeon Master, and multiplayer — with a
+systems table, an accurate controls reference pulled from the single
+source of truth (`ui/controls.py`), and current build/status notes.
+
+Three figures were re-captured headlessly (pygame renders to an in-memory
+surface under the dummy driver, so `pygame.image.save` works with no
+display): a fresh gameplay shot of Oakvale in the rain (now showing the
+lighting, fog-of-war, and an event log carrying lore/DM/legend beats), the
+inventory/gear panel, and a new shot of the Phase-17 battle testbed
+mid-siege of Bloodstone.
+
+And Phase 25 — Inventory, Items & the Skill Web — was opened from a new
+round of playtest notes: two live bugs first (dropped treasure and bodies
+bleeding across region boundaries because the streamer never caches
+`ground_items`; and stackable items like arrows taking a slot each instead
+of grouping), then magical bags & rucksacks, a drag-and-drop
+character/items window, and a much wider skill lattice with skill-gated
+items and features to make the skills matter.

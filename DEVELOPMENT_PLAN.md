@@ -3899,3 +3899,41 @@ map of real places worth travelling between.
 - [ ] **P24.4 Roads, trade & travellers.** The places are stitched by
   roads the P16.2b caravans and NPC travellers actually use, so the world
   between towns is alive with traffic, not empty.
+
+## Phase 25 — Inventory, Items & the Skill Web  (George's Ultraplan 2, 2026-07-12)
+
+Two live bugs in how the world holds its stuff, then a real inventory
+experience and a much wider skill/item web. Bugs first (they're cheap and
+they bite every session).
+
+- [ ] **P25.0 (BUG) Region-change ground items.** Dropped treasure and
+  KO'd bodies reappear in a NEW region at the same coordinates: the
+  streamer (`world/chunked_world.py`) caches terrain, locations and NPCs
+  per region but never caches or clears `world.ground_items`, so the flat
+  (x,y) dict bleeds across the boundary. Fix: cache & restore `ground_items`
+  per region alongside the rest (and clear for a freshly-generated region).
+- [ ] **P25.1 (BUG) Stackable items don't group.** Arrows and other
+  stackables take one inventory slot EACH instead of stacking, filling the
+  pack. `Item` already carries `stackable`/`quantity` and renders "name
+  xN" — the miss is on the add path (`inventory.append` everywhere). Fix:
+  a single `give_item`/`add_to_inventory` helper that merges a stackable
+  into an existing stack (by id) and is used by pickup, buy, trade, loot.
+- [ ] **P25.2 Magical bags & rucksacks.** Containers that raise carry —
+  a plain rucksack, a quiver (ammo only), a magical bottomless bag — as
+  `data/items` gear that `engine/carry.py` reads for its slot budget; some
+  slot-typed (a quiver holds arrows, not armour).
+- [ ] **P25.3 The character & items window.** A dedicated drag-and-drop
+  screen: the paperdoll with equipment slots, the bag grid, the quiver —
+  drag an item onto the character to equip, between bags to move, with
+  item graphics. The GUI face of the inventory the game has always had in
+  data.
+- [ ] **P25.4 The skill web — vastly expanded.** Many more skills beyond
+  the current 12 (thievery/lockpicking, herbalism, enchanting, arcana &
+  the magic schools, taming/beastcraft, tailoring, runecrafting,
+  scavenging…), each with its XP curve, a pet, and a teacher — the
+  `data/skills.json` lattice widened.
+- [ ] **P25.5 Skill-gated items & features.** New content that REQUIRES a
+  skill and its tools, so the skills matter: an enchanting table (Enchanting
+  + reagents), lockpicking real locks (Thievery + picks), taming a beast
+  companion (Beastcraft + bait), brewing (Alchemy II), runes (Runecrafting)
+  — each a feature + the items it needs, content-as-data.

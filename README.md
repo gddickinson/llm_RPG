@@ -1,207 +1,144 @@
 # LLM-RPG
 
-**A locally-runnable, D&D-style role-playing game with LLM-powered NPCs.**
-Runs entirely offline out of the box (a heuristic AI keeps the world alive), and
-plugs into Ollama, Anthropic Claude, or OpenAI for richer NPC minds.
+**A locally-runnable, D&D-style role-playing game with a living world and
+LLM-powered NPCs.** It runs entirely offline out of the box — a heuristic AI
+keeps the whole world alive with zero API calls — and plugs into Ollama,
+Anthropic Claude, or OpenAI when you want richer NPC minds.
 
 ![Gameplay — Oakvale Village in the rain](docs/img/gameplay.png)
-*Exploring Oakvale Village in the rain: procedural sprites, day/night lighting,
-live minimap, event log with world lore from the pre-game history simulation.*
+*Oakvale in the rain: procedural sprites, eased day/night lighting and weather,
+fog-of-war, a live minimap, and an event log threaded with world lore, DM beats,
+and the legends of the fallen.*
 
 ```bash
 pip install -r requirements.txt
-python main.py                                  # Pygame GUI, no LLM needed
+python main.py                       # Pygame GUI, no LLM needed (heuristic AI)
+python main.py --tutorial            # start on Tutorial Island
 python main.py --provider anthropic --model claude-haiku-4-5-20251001
+python main.py --ui terminal         # text UI
 ```
 
 ---
 
-## The game today
+## What the game is today
 
-A living-world RPG on a 120×80 tile map: three settlements (Oakvale Village,
-Riverside Hamlet, Stonepine Camp) plus the Murkfen swamp, joined by roads,
-wilderness, caves that descend into procedural dungeons, a Tutorial Island
-starter zone (`--tutorial`), and named NPCs with families, schedules, needs,
-memories, opinions, and secrets.
+A living-world RPG on a streaming, effectively-endless tile map. You wake near
+**Oakvale Village**, and from there the world is yours: three settlements and
+the Murkfen swamp joined by roads, caves that drop into procedural multi-level
+dungeons, hand-built structures (a wizard's tower, a ruined keep, a seven-floor
+**royal castle**), and a wilderness that gets more dangerous the stronger you
+grow. A new game can even **begin at the castle** from the title screen.
 
-**Progression** (the RuneScape-inspired lattice): 8 skills with geometric XP
-curves and tiered gathering (mining/woodcutting/fishing → smelting/cooking/
-alchemy), gear durability with forge repairs, a collection log, skilling
-pets, regional achievement diaries, quest points + guild ranks, earned
-teleports and Agility shortcuts, and a sleep/day-summary loop.
+Nothing here waits for you. NPCs keep daily schedules, tend needs, remember what
+you did, form opinions, and — now — pursue private ambitions and drift into
+friendships and feuds with each other. Factions raid and trade overnight;
+villages produce goods and caravan them to where they're scarce; the gods watch
+your deeds; and monsters band into packs, grow into tribes that raid the towns,
+and rise into named nemeses that survive your blade and come back for revenge.
 
-**The LLM as a gameplay pillar** (all optional — the heuristic default plays
-fully offline): NPC dialog runs a structured JSON protocol where the engine
-validates every proposed action; NPCs hold injection-proof gated secrets,
-remember conversations with retrieval-scored memory, form nightly opinions,
-and notice your deeds; `/persuade`, `/intimidate`, `/deceive` are judged
-social checks with real stakes; a nightly world director and daily faction
-ticker move the world while you sleep; radiant quests keep the board alive.
+### The pillars
 
-**The Dungeon Master layer**: a charter-enforced command API (no touching
-the player, capped creations, daily budgets, full audit notebook) lets a DM
-reshape the world — new monsters, items, buildings, quests, terrain, staged
-multi-day arcs, atomic adventure modules. Three drivers: a live Claude Code
-session over the `--dm-bridge` file bridge, an autonomous in-game LLM DM
-(one planning call per game-day with campaign memory), or none.
+- **A world that lives without you.** Every night a stack of heuristic systems
+  moves the world: a world director emits rumors and events, a faction ticker
+  fights off-screen battles with a real army model, villages produce and trade,
+  the market drifts, gods drop omens, tribes grow, ambitions advance, and the
+  social graph reshapes who likes whom. All of it runs on the offline default.
 
-![NPC dialog](docs/img/dialog.png)
-*Free-text NPC conversation with quest offers inline — plus /persuade,
-/intimidate and /deceive as judged social checks with real stakes.*
+- **Monsters that behave like an ecology.** Wolves hunt in packs that focus-fire
+  the softest target and break when their leader falls; goblin and troll tribes
+  grow in strength and raid the settlements until you beat them back; the
+  wilderness scales to your party with elite champions and warbands; dragons
+  breathe fire from mountain lairs; and a champion you almost kill can become a
+  named **nemesis** who flees, rises in title, and hunts you for the rest of the
+  campaign.
+
+- **The LLM as a gameplay pillar, never a crutch.** All LLM features are optional
+  and mirrored by a heuristic path, so the game is fully playable offline. NPC
+  dialog runs a structured JSON protocol the *engine* validates; NPCs hold
+  injection-proof gated secrets, remember conversations with retrieval-scored
+  memory, and react to your deeds; `/persuade` `/intimidate` `/deceive` are
+  judged social checks with real stakes; and an optional **Dungeon Master** layer
+  plans campaign beats within a code-enforced charter.
+
+![The battle testbed — the Siege of Bloodstone](docs/img/battle.png)
+*The Phase-17 tactical layer: squads with morale, formations, flanking arcs,
+armour-vs-damage-type, siege engines and breachable walls — here a war-host
+storms the castle's curtain wall.*
 
 ### Systems overview
 
-```mermaid
-flowchart LR
-    subgraph World
-        WG[Procedural worldgen<br/>3 settlements, dungeons]
-        CAL[Calendar & seasons<br/>360-day year]
-        WX[Weather]
-        HIST[Pre-game history sim]
-    end
-    subgraph Characters
-        SCHED[NPC schedules & needs]
-        FAM[Families & gossip]
-        FAC[8 factions & reputation]
-        COMP[Companions]
-    end
-    subgraph Player
-        CBT[d20 combat<br/>crits, flanking, damage types]
-        EQ[6 equipment slots<br/>ammo, AC, bonuses]
-        SPL[Spells & mana]
-        QST[Quests & quest boards]
-        ECO[Shops, banking, crafting]
-    end
-    LLM[LLM providers<br/>heuristic / Ollama / Claude / OpenAI]
-    World --> Characters --> Player
-    LLM -.NPC actions & dialog.-> Characters
-```
-
-![Inventory](docs/img/inventory.png)
-*The inventory overlay: worn equipment slots up top, scrollable bag below.*
-
-### What's under the hood
-
-| | |
+| Area | What's in it |
 |---|---|
-| Engine | Python + pygame, single process, no asset files (procedural sprites) |
-| Codebase | ~19k lines, all modules < 500 lines, dependency-injected subsystems |
-| Tests | 650+ unit tests, content cross-reference validator |
-| Combat | 1d20 + ability mod + proficiency vs AC; nat-20 crits, flanking, silver/fire/holy damage types |
-| World | Chunk-streamed 120×80 map, BSP dungeons, weather, foraging, interiors |
-| NPCs | Class schedules (work/eat/drink/sleep), hunger & fatigue, families, gossip, faction reputation |
-| LLM layer | Pluggable providers; the default heuristic needs no LLM at all |
+| **Progression** | 12-skill lattice with geometric XP curves, tiered gathering & crafting, gear durability + forge repair, a collection log, skilling pets with loyalty, regional achievement diaries, quest points → guild ranks, earned teleports & Agility shortcuts |
+| **Combat depth** | degrees of success, flanking & opportunity attacks, cover & true line-of-sight, ranged fidelity (ammo, aim, reload), concentration spells, weapon actions, body-part wounds, infection, dying/stabilize, a Souls-like bloodstain on death |
+| **Monsters & menace** | dragons + apex tier, overworld lairs with hoards, coordinated packs, tribes that grow & raid, party-scaled elites & warbands, the Shadow-of-Mordor nemesis system |
+| **The living world** | nightly world director, faction ticker with a real Lanchester army model, settlement production + caravans + market prices, five gods with favor & miracles, disease, weather, two moons & conjunctions |
+| **The living society** | NPC needs & schedules, retrieval-scored memory & nightly opinions, gated secrets, bond ceremonies, heart events, a topic journal, ambitions that pay off (retire, wed, master a craft), and a peer social graph of friendships & feuds |
+| **The world itself** | streaming endless regions, destructible tiles & breachable walls, fire/oil/water/blood surfaces, floods, giants that smash & rebuild, environmental traversal (wade/swim/climb/dive) with a breath clock, claimable homes, a pack mule |
+| **Set-pieces** | multi-level buildings & dungeons, boss fights with telegraphed AoE & phases, a seven-floor royal castle with a living court and an intrigue questline, on-screen and off-screen sieges |
+| **The Dungeon Master** | a typed, budgeted, charter-checked command set; one planning call per game-day; a persistent Legendarium of everything created and everything slain |
+| **Multiplayer & agents** | a transport-free client/world contract with an optional TCP wire; agent-driven heroes that play through the real player API; an away-mode heartbeat |
 
-### Status
-
-Phases 0–5 of the development plan are **complete** (July 2026): the repair
-phase, the data-driven content layer, the progression lattice, the LLM
-pillar, quests & world, and combat & feel. Phase 6 (the Dungeon Master) is
-largely complete; Phase 7 (visible NPC conflict, conspiracy, squad tactics)
-is queued from playtest findings. Development runs in small tested rounds on
-`v2-development` — see `SESSION_LOG.md` for the full record.
+![Inventory & gear](docs/img/inventory.png)
+*The I-panel: equipment, bags, and use/equip/drop — the character screen the game
+drives from data.*
 
 ---
-
-## The plan: from tech demo to professional RPG
-
-Full detail in [`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md). It was built from a
-line-level code audit plus design research into Old School RuneScape, Stardew
-Valley, Caves of Qud, Kenshi, and shipped LLM-NPC games (Suck Up!, Dead Meat,
-1001 Nights, the Generative Agents paper).
-
-```mermaid
-flowchart TD
-    P0["Phase 0 — Repair<br/>fix save/load data loss, unreachable shop,<br/>crafting & companion UIs, wire weather/needs,<br/>discoverability hints"]
-    P1["Phase 1 — Data-driven content<br/>items/quests/monsters/spells as JSON"]
-    P2["Phase 2 — Progression lattice (RuneScape layer)<br/>8–10 skills, gathering nodes, production chains,<br/>collection log, pets, diaries, shortcuts & teleports"]
-    P3["Phase 3 — LLM as gameplay pillar<br/>structured dialog protocol, per-NPC memory,<br/>gated secrets, LLM-judged persuasion,<br/>nightly world director"]
-    P4["Phase 4 — Quests & world<br/>radiant quest generation, 8–12 handcrafted quests,<br/>Tutorial Island, regional identity, history relics"]
-    P5["Phase 5 — Combat & feel<br/>enemy AI profiles, spell UI, tactical verbs,<br/>faction ticker, sound, day-summary loop"]
-    P0 --> P1 --> P2 --> P4
-    P0 --> P3 --> P4 --> P5
-```
-
-### The three design pillars
-
-1. **A RuneScape-style progression lattice.** Many parallel skill tracks with a
-   geometric XP curve and an unlock every few levels; gather → process → consume
-   chains in a closed "Ironman" economy where combat eats food, ammo, and potions;
-   collection log, skilling pets, and regional achievement diaries for long-tail
-   goals.
-2. **LLM NPCs that matter mechanically.** *Engine owns truth, LLM owns voice*:
-   structured JSON dialog actions, secrets held as gated tokens (immune to prompt
-   injection by construction), persuasion checks the LLM adjudicates against your
-   CHA with real stakes, per-NPC retrieval memory that survives saves, and one
-   nightly "director" call that spawns world events instead of costly per-NPC
-   simulation.
-3. **A handcrafted world worth exploring.** Quests whose rewards are capability
-   unlocks (teleports, shortcuts, access) rather than XP; a Tutorial Island of
-   LLM instructor NPCs; history simulation that leaves relics, ruins, and grudges
-   you can actually find.
-
-### Milestones
-
-| Milestone | Delivers |
-|---|---|
-| **M1 Repair** | Everything advertised actually works, zero save-data loss |
-| **M2 Foundation** | All content data-driven (JSON), scaling unblocked |
-| **M3 Progression** | 10+ hours of self-directed skill/collection play |
-| **M4 The Pillar** | Talk your way into secrets, discounts, quests, and out of fights |
-| **M5 The World** | Radiant + handcrafted quests, tutorial, themed regions |
-| **M6 Polish** | Tactical combat, spell UI, sound, day-loop hooks |
-
----
-
-## Quick start
-
-```bash
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python main.py                        # GUI, heuristic NPCs (no LLM)
-.venv/bin/python main.py --ui terminal          # terminal mode
-.venv/bin/python main.py --provider ollama --model llama3
-.venv/bin/python main.py --provider anthropic --model claude-haiku-4-5-20251001
-.venv/bin/python main.py --load                 # resume quicksave
-.venv/bin/python main.py --tutorial             # start on Tutorial Island
-.venv/bin/python main.py --dm-bridge            # enable the DM file bridge
-```
-
-For cloud providers: `pip install anthropic` or `pip install openai` and set the
-matching API key environment variable.
 
 ## Controls (GUI)
 
-| Key | Action | Key | Action |
-|---|---|---|---|
-| WASD / arrows | Move | I | Inventory |
-| SPACE / F | Attack | Q | Quest log |
-| T | Talk to NPC | C | Character sheet |
-| 1–9 (dialog) | Accept / turn in quest | Z | Forage |
-| G / E | Pick up | X / V | Fireball / Heal |
-| H | Drink potion | N / M | Bank deposit / withdraw |
-| B | Barter with adjacent merchant | R | Ranged attack |
-| K | Crafting menu | L | Look around |
-| P | Recruit / dismiss companion | X | Spellbook |
-| O | Collection log | J | Achievement diaries |
-| U | Travel menu | Y | Topic & legends journal |
-| ENTER | Sleep at inn (day summary) | SHIFT+move | Disengage |
-| SHIFT+F | Shove | SHIFT+R | Aimed shot |
-| TAB | Enter building / cave | F5 / F9 | Save / Load |
-| F1 or `/` | Help | ESC | Close / quit |
+**Move & explore** — `WASD`/arrows walk (a map edge streams a new region);
+`Numpad 1-9` walk in 8 directions; `SHIFT+move` disengage; `TAB` enter/leave a
+building or cave; `SHIFT+TAB` force a locked door; `L` look, `SHIFT+L` event-log
+detail; `ENTER` sleep at an inn or camp outdoors.
+
+**Fight** — `SPACE`/`F` melee; `R` ranged, `SHIFT+R` aimed shot; `[` `]` cycle
+target; `SHIFT+F` shove; `SHIFT+V` weapon action; `SHIFT+T` trip; `SHIFT+I`
+demoralize; `SHIFT+B` feint; `SHIFT+H` battle medicine; `X` spellbook, `V`
+quick-Heal; `H` drink a potion.
+
+**People & world** — `T` talk (`/persuade` `/intimidate` `/deceive`); `B` barter;
+`G`/`E` pick up · use furniture · dig; `SHIFT+G` carry a downed body; `Z` forage
+/ harvest; `SHIFT+Z` treat your pet; `P` party; `SHIFT+P` pray; `K` craft;
+`N`/`M` bank; `1–5` answer a confronting guard.
+
+**Panels** — `I` inventory & gear · `C` character · `Q` quests · `O` collection
+· `J` diaries · `U` travel · `Y` topic journal · `,` settings · `F1`/`?` help ·
+`F5`/`F9` quicksave/quickload · `F11` fullscreen · `ESC` close.
+
+---
 
 ## Development
 
-```bash
-.venv/bin/python -m unittest discover tests/    # 650+ tests
-.venv/bin/python -m items.data_validate         # content cross-ref checks
-```
+- **Branch:** work happens on `v2-development` in small, tested rounds; every
+  green round is committed **and** pushed.
+- **Tests:** `.venv/bin/python -m unittest discover tests/` — **1950+** unit
+  tests, kept green. Content is validated with
+  `.venv/bin/python -m items.data_validate` after any `data/` edit.
+- **Navigation:** read **[`INTERFACE.md`](INTERFACE.md)** first — it maps every
+  module. **[`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md)** holds the phased plan;
+  **[`SESSION_LOG.md`](SESSION_LOG.md)** narrates every round.
+- **Content is data, not code.** Items, recipes, spells, monsters, quests, NPCs,
+  skills, structures, lairs, tribes and more live in `data/*.json`. New content
+  is a JSON edit plus a validator pass — never a re-hardcode.
+- **File-size rule:** every source file stays under 500 lines; modules are split
+  before they grow past it.
 
-- [`INTERFACE.md`](INTERFACE.md) — codebase navigation map (read first)
-- [`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md) — the full phased plan
-- [`SESSION_LOG.md`](SESSION_LOG.md) — development history
-- All source files stay under 500 lines; content additions should go through the
-  (upcoming) JSON data layer.
+### Status
+
+Phases 0–18 are complete (repair → progression → the LLM pillar → quests & world
+→ combat depth → the Dungeon Master → conflict → autonomous-world imports →
+living buildings → destructible world → traversal → the rules of living →
+advanced graphics → the living economy → the tactical battle layer → the royal
+castle). **Phase 19 (Monsters & Menace)** — dragons, lairs, packs, tribes,
+elites, the nemesis — is complete. **Phase 20 (the Living Society & the Gods)**
+is in progress. See `DEVELOPMENT_PLAN.md` for what's next.
+
+## Requirements
+
+Python 3.12, `pygame`, `numpy`, `pytest` (see `requirements.txt`). No network is
+required to play — LLM providers are strictly opt-in.
 
 ## License
 
-MIT
+See repository for license details.
