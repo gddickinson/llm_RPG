@@ -95,6 +95,53 @@ class TestSocial(_Base):
         self.assertTrue(self.ac.greeted)
 
 
+class TestEconomy(_Base):
+    """The away-hero SPENDS (M.8b): clears junk for coin and buys the
+    potion/ammo it's short of when it deals with a merchant."""
+
+    def _junk(self):
+        from items.item import Item, ItemType, ItemRarity
+        return Item(id="trinket", name="Bent Trinket", description="",
+                    item_type=ItemType.MISC, rarity=ItemRarity.COMMON,
+                    value=3)
+
+    def _merchant(self):
+        m = self._friend("shopkeep", 11, 10, cls="merchant", rel=0)
+        m.gold = 200
+        return m
+
+    def test_trades_with_an_adjacent_merchant(self):
+        self._merchant()
+        self.p.inventory = [self._junk()]
+        self.p.gold = 100
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "trade")
+
+    def test_trade_clears_junk_and_buys_a_potion(self):
+        from engine import agent_trade
+        from engine.trade_info import junk_items
+        from engine.agent_sense import _healing_item
+        m = self._merchant()
+        self.p.inventory = [self._junk(), self._junk()]
+        self.p.gold = 100
+        agent_trade.do_trade(self.engine, self.p, m)
+        self.assertFalse(junk_items(self.p))            # junk sold off
+        self.assertIsNotNone(_healing_item(self.p))     # a potion bought
+
+    def test_no_trade_with_a_plain_warrior(self):
+        self._friend("brawn", 11, 10, cls="warrior", rel=0)
+        self.p.inventory = [self._junk()]
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "trade")
+
+    def test_shop_buy_and_sell_helpers(self):
+        m = self._merchant()
+        j = self._junk()
+        self.p.inventory = [j]
+        self.p.gold = 50
+        self.assertTrue(self.engine.shop_manager.sell_for(self.p, j, m))
+        self.assertGreater(self.p.gold, 50)            # got paid
+        self.assertNotIn(j, self.p.inventory)
+
+
 class TestRecovery(_Base):
     """A safe, wounded hero recovers (M.8a) instead of soldiering on at a
     sliver of health — a potion, a Heal, or making camp."""

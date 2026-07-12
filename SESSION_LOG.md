@@ -6009,3 +6009,26 @@ new `engine/agent_goals.py`. 5 new tests. The camp path stays dormant until
 the hero HAS provisions (no base item sets `use_effect.food` yet — that comes
 with M.8d gather/cook); fully ending attrition also wants P27.1 (combat
 density) and M.8b (buy potions/food).
+
+## 2026-07-12 (cont.) — M.8b: the away-hero SPENDS (economy loop)
+
+The autoplay hero hoarded gold (50→200 over a session) it never used. M.8b
+closes the loop. Its social rounds already walk it up to the folk it meets;
+now, standing by a MERCHANT, it strikes a deal — `engine/agent_trade.py`
+(`wants_to_trade`/`do_trade`) sells all its JUNK loot for coin and buys the
+essentials it's short of: a healing potion when it carries none (which feeds
+straight back into the M.8a recovery loop) and ammunition when it packs a bow
+it can't fire.
+
+The shop's stock lives in the catalogue, not the merchant's inventory, and
+the transaction logic was embedded in the shop panel — so the buy at first
+did nothing. Fix: `ShopManager.buy_for`/`sell_for`, a programmatic mirror of
+the panel's transaction over the real catalogue (one buy/sell path,
+reusable). A 400-turn greedy-disposition session struck 6 trades and the hero
+ended CARRYING A POTION — loot → gold → readiness, exactly the gap the
+observation flagged. The economy helpers live in their own module so
+`agent_controller` stays under 500. 4 tests.
+
+Remainder: buying BETTER gear (compare & upgrade), banking a surplus, and
+reaching indoor shop merchants (the hero skirts buildings, so for now it
+trades the ones it meets on the street / at stalls).

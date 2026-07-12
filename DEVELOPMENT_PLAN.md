@@ -3494,9 +3494,19 @@ a coherent, testable slice; ordered roughly by impact.
   `use_effect.food` — that arrives with M.8d gather/cook), and inn-rest wants
   the hero to seek an inn (M.8b navigation). Fully ending attrition also
   needs P27.1 (combat density) + M.8b (buy potions/food).
-- [ ] **M.8b Economy loop.** The hero SPENDS: sell junk loot at a shop, buy
-  potions/ammo/better gear, bank a surplus, HIRE a blade (M.7) when flush and
-  short-handed. Right now it hoards gold it never uses.
+- [x] **M.8b Economy loop (2026-07-12d).** The hero SPENDS instead of
+  hoarding: standing by a merchant (its social rounds already walk it up to
+  folk) it strikes a deal — `engine/agent_trade.py` (`wants_to_trade` /
+  `do_trade`) sells all its JUNK loot for coin and buys the essentials it's
+  short of: a healing potion when it carries none (which FEEDS the M.8a
+  recovery loop) and ammunition when it packs a bow it can't fire. Runs
+  through new `ShopManager.buy_for`/`sell_for` (a programmatic mirror of the
+  shop-panel transaction over the real catalogue — one buy path). A 400-turn
+  autoplay session: 6 trades, and the hero ends CARRYING A POTION (loot →
+  gold → readiness). 4 tests. Remainder: buying BETTER GEAR (compare &
+  upgrade), banking a surplus, and reaching INDOOR shop merchants (the hero
+  skirts buildings, so it trades the ones it meets on the street/at stalls);
+  hiring a blade is already covered by M.6 free recruiting.
 - [ ] **M.8c Magic in the field.** A caster actually casts — offensive spells
   in a fight, utility (light/farsight/water-walk) on the road — and manages
   mana (rest to recover). Ties into P26.2's magic overhaul.

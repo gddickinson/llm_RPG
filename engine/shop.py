@@ -314,6 +314,40 @@ class ShopManager:
             pass
         return max(1, int(round(base * mult)))
 
+    def buy_for(self, player, item, merchant_npc) -> bool:
+        """Programmatic purchase of a catalogue item (the agent economy,
+        M.8b) — mirrors the shop panel's transaction so there is one buy
+        path. Returns True on success."""
+        from engine.carry import can_carry
+        price = self.buy_price(player, item, merchant_npc)
+        if not can_carry(player) or getattr(player, "gold", 0) < price:
+            return False
+        cat = self.catalog_for(merchant_npc)
+        player.gold -= price
+        cat.gold += price
+        if getattr(item, "stackable", False) and getattr(item, "quantity", 1) > 1:
+            from items.item_registry import create_item
+            bought = create_item(item.id, quantity=1) or item
+            bought.quantity = 1
+            player.inventory.append(bought)
+            item.quantity -= 1
+        else:
+            player.inventory.append(item)
+            if item in cat.items:
+                cat.items.remove(item)
+        return True
+
+    def sell_for(self, player, item, merchant_npc) -> bool:
+        """Programmatic sale of an item to a merchant (the agent economy)."""
+        if item not in getattr(player, "inventory", []):
+            return False
+        price = self.sell_price(player, item, merchant_npc)
+        player.gold += price
+        player.inventory.remove(item)
+        cat = self.catalog_for(merchant_npc)
+        cat.gold = max(0, cat.gold - price)
+        return True
+
     def _discount_multiplier(self, player, merchant_npc,
                              selling: bool = False) -> float:
         """Compute price multiplier based on faction rep + relationship.

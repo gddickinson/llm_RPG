@@ -21,6 +21,7 @@ from contextlib import contextmanager
 
 from engine import agent_nav as nav
 from engine import agent_goals as agoals
+from engine import agent_trade as agtrade
 from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
                                 _knows_heal, _can_shoot, _provisioned)
@@ -329,6 +330,12 @@ class AgentController:
             return None
         adjacent = _dist(char.position, friend.position) <= 1
         if adjacent:
+            # deal with a merchant we're standing by (M.8b): clear junk for
+            # coin, buy the potion/ammo we're short of
+            from engine.conversation import is_merchant
+            if is_merchant(friend) \
+                    and agtrade.wants_to_trade(engine, char, friend):
+                return ("trade", friend)
             qm = getattr(engine, "quest_manager", None)
             offered = qm.offered_by(friend.id) if qm else []
             if offered:
@@ -344,18 +351,23 @@ class AgentController:
             return None
         # walk over to a NEW face worth meeting — but once greeted, leave
         # them be (re-approaching a greeted friend forever oscillated)
-        if friend.id not in self.greeted or self._offers(engine, friend):
+        if friend.id not in self.greeted or self._offers(engine, char, friend):
             return ("move", nav.safe_step(engine, char, friend.position,
                                           self.recent))
         return None
 
-    def _offers(self, engine, friend) -> bool:
-        """Still a reason to walk over — an untaken quest or a recruitable
-        ally — even if we've already said hello."""
+    def _offers(self, engine, char, friend) -> bool:
+        """Still a reason to walk over — an untaken quest, a recruitable
+        ally, or a merchant we've goods to trade — even after we've said
+        hello."""
         qm = getattr(engine, "quest_manager", None)
         if qm and qm.offered_by(friend.id):
             return True
         try:
+            from engine.conversation import is_merchant
+            if is_merchant(friend) \
+                    and agtrade.wants_to_trade(engine, char, friend):
+                return True
             return self._room_in_party(engine) and \
                 engine.companion_manager.can_recruit(friend) == ""
         except Exception:
@@ -409,6 +421,9 @@ class AgentController:
                 if engine.quest_manager.accept_quest(quest.id):
                     self._deed(engine, char,
                                f"took up \"{quest.title}\" from {npc.name}.")
+            elif k == "trade":
+                agtrade.do_trade(engine, char, plan[1],
+                                 lambda t: self._deed(engine, char, t))
             elif k == "recruit":
                 npc = plan[1]
                 try:
