@@ -295,6 +295,24 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
                          (bx, by, int(bw * ratio), bh))
 
 
+def draw_glimpsed(surface, char, sx: int, sy: int, tile_size: int,
+                  is_player: bool = False) -> None:
+    """Draw a character SEEN THROUGH A WINDOW (P14.2) — dimmed and behind a
+    faint pane — so an NPC glimpsed inside a building reads as indoors
+    rather than standing on top of the wall. Reuses `draw_body` on a
+    scratch tile, then knocks its alpha down and glazes it."""
+    if not PYGAME_OK:
+        return
+    glass = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
+    draw_body(glass, char, 0, 0, tile_size)
+    glass.fill((255, 255, 255, 135), special_flags=pygame.BLEND_RGBA_MULT)
+    surface.blit(glass, (sx, sy))
+    pane = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
+    pygame.draw.rect(pane, (140, 170, 205, 70), pane.get_rect(),
+                     max(1, tile_size // 16))
+    surface.blit(pane, (sx, sy))
+
+
 def _draw_weapon(surface, weapon: str, x: int, y: int, scale: float) -> None:
     s = max(1.0, scale)
     if weapon == "sword":

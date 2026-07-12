@@ -157,8 +157,8 @@ class MapRenderer:
                              view_rect.y + (gy - cam_y) * self.tile_size))
 
         # Characters (NPCs + player) — procedural body renderer
-        from ui.body_renderer import draw_body, update_anim, draw_projectile
-        from engine.presence import hidden_by_walls
+        from ui.body_renderer import draw_body, draw_glimpsed, update_anim, draw_projectile  # noqa: E501
+        from engine.presence import hidden_by_walls, is_indoors
         all_chars = list(engine.npc_manager.npcs.values()) + [engine.player]
         for char in all_chars:
             if hasattr(char, "is_active") and not char.is_active():
@@ -184,11 +184,16 @@ class MapRenderer:
             update_anim(char, 1.0 / 30.0)
             sx = view_rect.x + (cx - cam_x) * self.tile_size
             sy = view_rect.y + (cy - cam_y) * self.tile_size
-            # the active player AND any other roster hero draw as heroes
+            # heroes draw as heroes; an NPC glimpsed through a window is glazed
             is_player = char.id == engine.player.id or \
                 (getattr(char, "metadata", {}) or {}).get("player_char",
                                                           False)
-            draw_body(target, char, sx, sy, self.tile_size, is_player=is_player)
+            try:
+                glimpsed = not is_player and bool(is_indoors(engine, char))
+            except Exception:
+                glimpsed = False
+            (draw_glimpsed if glimpsed else draw_body)(
+                target, char, sx, sy, self.tile_size, is_player=is_player)
 
         # The ranged lock (P8.7)
         try:

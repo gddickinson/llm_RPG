@@ -14,6 +14,7 @@ import unittest
 
 from engine.game_engine import GameEngine
 from engine.agent_controller import AgentController
+from engine import agent_nav as nav
 from engine.settings import get_setting, set_setting
 from world.monsters import build_monster
 from world.world_map import TerrainType
@@ -146,10 +147,10 @@ class TestFleeSafety(_Base):
         # threat east; the straight-away (west) tiles are walled off
         for yy in (9, 10, 11):
             self._wall(9, yy)
-        step = self.ac._flee_step(self.engine, self.p, (12, 10))
+        step = nav.flee_step(self.engine, self.p, (12, 10))
         self.assertIsNotNone(step)               # it does NOT freeze
         nx, ny = self.p.position[0] + step[0], self.p.position[1] + step[1]
-        self.assertTrue(self.ac._walkable(self.engine, self.p, (nx, ny)))
+        self.assertTrue(nav.walkable(self.engine, self.p, (nx, ny)))
         # and the sidestep never moves toward the threat
         self.assertGreaterEqual(_dist((nx, ny), (12, 10)),
                                 _dist(self.p.position, (12, 10)))
@@ -165,7 +166,7 @@ class TestFleeSafety(_Base):
         for (x, y) in [(9, 9), (10, 9), (11, 9), (9, 10),
                        (9, 11), (10, 11), (11, 11)]:
             self._wall(x, y)
-        self.assertIsNone(self.ac._flee_step(self.engine, self.p, (11, 10)))
+        self.assertIsNone(nav.flee_step(self.engine, self.p, (11, 10)))
         plan = self.ac.decide(self.engine, self.p)
         self.assertEqual(plan[0], "attack")
 
@@ -180,6 +181,42 @@ class TestDeedTrail(_Base):
         self.ac.take_turn(self.engine, self.p)
         if "ksana" in self.engine.companion_manager.party:
             self.assertIn("recruited", _recent(self.engine))
+
+
+class TestNoLoops(_Base):
+    """The away-hero must never lock into a loop (2026-07-12b): looting an
+    unpickable corpse, looting with a full pack, shuffling in a doorway, or
+    wading into a lair to die over and over."""
+
+    def test_a_body_marker_is_not_loot(self):
+        # a plain-string ground entry (a KO'd body) is NOT pickable — the
+        # hero must not fixate on it forever
+        self.engine.world.add_item_to_ground("Fallen Guard", 10, 10)
+        self.assertIsNone(self.ac._nearest_loot(self.engine, self.p, r=0))
+
+    def test_a_full_pack_stops_looting(self):
+        from items.item_registry import create_item
+        self.engine.world.add_item_to_ground(create_item("arrow"), 10, 10)
+        self.assertEqual(self.ac._nearest_loot(self.engine, self.p, r=0),
+                         (10, 10))
+        from engine.carry import can_carry
+        while can_carry(self.p):           # stuff the pack until it's full
+            self.p.inventory.append(create_item("arrow"))
+        self.assertIsNone(self.ac._nearest_loot(self.engine, self.p, r=0))
+
+    def test_the_agent_skirts_buildings(self):
+        self.engine.world.map.terrain[10][11] = TerrainType.BUILDING
+        self.assertFalse(nav.walkable(self.engine, self.p, (11, 10)))
+
+    def test_a_closing_pack_is_a_retreat(self):
+        # three foes within four tiles = a lair; withdraw, don't wade in
+        for i, pos in enumerate([(13, 10), (12, 12), (13, 12)]):
+            f = build_monster("goblin", pos)
+            f.id = f"pack_{i}"
+            self.engine.npc_manager.add_npc(f)
+            self.engine.world.map.place_character(f, *pos)
+        plan = self.ac.decide(self.engine, self.p)
+        self.assertEqual(plan[0], "flee")
 
 
 class TestColocation(unittest.TestCase):

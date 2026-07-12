@@ -5815,3 +5815,45 @@ now wanders Oakvale, greets Karim/Goren/Melody/Durgan, takes up their
 quests (16 `[Away]` beats in 150 turns), enters the tavern and walks back
 out — never frozen. 5 new tests (flee sidesteps / cornered fights / grid
 co-location / no-freeze-indoors), full suite green.
+
+## 2026-07-12 (cont.) — The away-hero loop hunt (live watch, part 2)
+
+George kept the autoplay window open and reported freeze after freeze. Each
+was a policy returning the same non-progressing action; each is now fixed
+and under test.
+
+- **Loot loop.** The hero stood on a spot pumping `loot` forever. Two
+  causes: (1) a plain-string BODY MARKER (a KO'd/slain body — `rob_body`
+  leaves it on the ground) was being counted as loot; (2) a FULL pack can't
+  pick anything up, so a real item underfoot looped. `_nearest_loot` now
+  skips body markers and returns nothing when the pack is full.
+- **Doorway shuffle.** A class-flavoured explore goal that was a *building*
+  (a bard's tavern, a warrior's keep) pulled the hero onto the door tile →
+  auto-enter → `_zone_plan` exits → re-enter... 133 exits in 200 turns. The
+  agent now treats overworld BUILDING tiles as solid (`agent_nav.walkable`)
+  and skirts them; on exit it marks the building visited so it doesn't turn
+  straight back.
+- **Death loop.** Planted among a lair's goblins/trolls/wolves by one of the
+  above, the hero was killed, revived, killed again. New rule 2b: a closing
+  pack of 3+ foes within four tiles is a RETREAT (only a valiant hero at
+  full health wades in), so it withdraws before it's boxed. With the loot
+  loop gone it no longer plants itself in the kill zone — 0 deaths across
+  200-turn drives on every disposition.
+- **Oscillation.** Two sources: `flee_step` had no memory, so it ping-ponged
+  between two tiles when a threat shifted; and a SOCIABLE hero re-approached
+  friends it had already greeted, fighting the explore pull. Both fixed — a
+  `recent` trail penalises backtracking in flee/step, and a greeted friend
+  is left alone unless it still has a quest to give or can be recruited.
+
+`agent_controller` was over 500 again, so the stateless helpers were split
+out: `engine/agent_sense.py` (is-hostile / same-grid / can-heal / can-shoot)
+and the movement layer stayed in `engine/agent_nav.py`. Behaviour now reads
+right across all six dispositions: balanced roams widest, valiant hunts,
+cautious keeps its distance, sociable works a crowd, greedy sweeps loot,
+explorer covers ground.
+
+Also, the building-tile NPC question: those NPCs ARE indoors and correctly
+hidden from the street — they only show when the hero stands beside the
+building (P14.2 windows). To stop them reading as "standing on the roof,"
+`body_renderer.draw_glimpsed` now draws a glimpsed indoor NPC dimmed and
+behind a glazed pane. +9 tests; full suite green.

@@ -57,7 +57,10 @@ def walkable(engine, char, pos) -> bool:
                     and npc.id.startswith(("enc_", "tut_")):
                 return False
         return True
-    if t in _SOLID:
+    # overworld: skirt buildings entirely — an away hero has no reason to
+    # be indoors, and stepping on a door auto-enters, then it exits, then
+    # re-enters... an endless doorway shuffle (2026-07-12b)
+    if t in _SOLID or t == TerrainType.BUILDING:
         return False
     guard = getattr(grid, "wall_guard", None)
     old = getattr(char, "position", None)
@@ -66,40 +69,46 @@ def walkable(engine, char, pos) -> bool:
     return (x, y) not in grid.characters
 
 
-def flee_step(engine, char, threat_pos):
+def flee_step(engine, char, threat_pos, avoid=()):
     """A WALKABLE step that opens (or at least doesn't lose) distance from
     `threat_pos`. Tries every neighbour and takes the one that gets
-    furthest away — so a hero pinned against a wall sidesteps instead of
-    spinning uselessly in place. None when truly cornered (every escape
-    blocked or closes in): the caller then turns and FIGHTS."""
+    furthest away, breaking ties AGAINST recently-stood tiles (`avoid`) so
+    a hero doesn't ping-pong between two spots when the threat shifts. None
+    when truly cornered (every escape blocked or closes in): the caller
+    then turns and FIGHTS."""
     x, y = char.position
     cur = _dist(char.position, threat_pos)
-    best, bd = None, cur - 1            # require not moving closer
+    best, score = None, None
     for dx, dy in DIRS8:
-        gain = _dist((x + dx, y + dy), threat_pos)
-        if gain <= bd:
+        nxt = (x + dx, y + dy)
+        gain = _dist(nxt, threat_pos)
+        if gain <= cur - 1 or not walkable(engine, char, nxt):
             continue
-        if not walkable(engine, char, (x + dx, y + dy)):
-            continue
-        best, bd = (dx, dy), gain
+        s = gain - (0.5 if nxt in avoid else 0)     # shun the way we came
+        if score is None or s > score:
+            best, score = (dx, dy), s
     return best
 
 
-def safe_step(engine, char, goal):
+def safe_step(engine, char, goal, avoid=()):
     """Step toward `goal`, but only onto a tile the hero can actually
     reach. If the straight-toward tile is blocked, take the walkable
     neighbour that gets closest to the goal — so a hero heading for an
     awkward or unreachable goal routes around walls instead of walking
-    on the spot. (0, 0) only when boxed in on every side."""
+    on the spot. `avoid` (recently-stood tiles) is penalised so the hero
+    doesn't oscillate back and forth between two spots at a dead end.
+    (0, 0) only when boxed in on every side."""
     x, y = char.position
     want = _toward(char.position, goal)
-    if want != (0, 0) and walkable(engine, char, (x + want[0], y + want[1])):
+    fwd = (x + want[0], y + want[1])
+    if want != (0, 0) and walkable(engine, char, fwd) and fwd not in avoid:
         return want
     best, bd = (0, 0), None
     for dx, dy in DIRS8:
-        if not walkable(engine, char, (x + dx, y + dy)):
+        nxt = (x + dx, y + dy)
+        if not walkable(engine, char, nxt):
             continue
-        d = _dist((x + dx, y + dy), goal)
+        d = _dist(nxt, goal) + (4 if nxt in avoid else 0)   # break 2-cycles
         if bd is None or d < bd:
             best, bd = (dx, dy), d
     return best

@@ -20,6 +20,9 @@ import random
 from contextlib import contextmanager
 
 from engine import agent_nav as nav
+from engine.agent_nav import _dist, _toward
+from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
+                                _knows_heal, _can_shoot)
 
 logger = logging.getLogger("llm_rpg.agent")
 
@@ -27,71 +30,6 @@ SIGHT = 8                                   # tiles an agent notices a foe
 RANGED = 5                                  # tiles a bow can reach
 LOW_HP = 0.4                                # heal / flee at or below this
 SWARM_HP = 0.75                             # back off a pack below this
-_HOSTILE = ("brigand", "troll", "monster")  # matches the game's foe check
-
-
-def _is_hostile(npc) -> bool:
-    return getattr(getattr(npc, "character_class", None), "value", "") \
-        in _HOSTILE
-
-
-def _colocated(zone_name, npc) -> bool:
-    """Is `npc` on the SAME grid as a hero whose zone is `zone_name` (or
-    None on the overworld)? Perceiving a foe across coordinate spaces is
-    what made the away-hero shoot a phantom forever (2026-07-12b)."""
-    nz = (getattr(npc, "metadata", {}) or {}).get("zone")
-    return nz == zone_name if zone_name else not nz
-
-
-def _dist(a, b) -> int:
-    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
-
-
-def _toward(frm, to):
-    return ((to[0] > frm[0]) - (to[0] < frm[0]),
-            (to[1] > frm[1]) - (to[1] < frm[1]))
-
-
-def _healing_item(char):
-    """A drinkable in the bag that mends wounds (id-matched — the heal
-    payload isn't on `use_effect`)."""
-    for it in getattr(char, "inventory", []):
-        try:
-            if not it.is_consumable():
-                continue
-        except Exception:
-            continue
-        iid = getattr(it, "id", "").lower()
-        if "potion" in iid or "heal" in iid or "remedy" in iid:
-            return it
-    return None
-
-
-def _knows_heal(char) -> bool:
-    m = getattr(char, "metadata", {}) or {}
-    return "heal" in m.get("spells_known", []) and m.get("mana", 0) >= 3
-
-
-def _can_shoot(char) -> bool:
-    """A drawn bow is no use without arrows — an agent that dry-fires an
-    empty quiver forever just stands and 'shoots' (bug-fix 2026-07-12).
-    Require matching ammo unless the weapon is thrown."""
-    try:
-        from characters.equipment import equipped_weapon
-        from items.item import Item
-        w = equipped_weapon(char)
-        if w is None or not w.is_ranged_weapon():
-            return False
-        if getattr(w, "weapon_kind", "") == "thrown":
-            return True                       # thrown needs no ammo
-        ammo = getattr(w, "ammo_type", "")
-        if not ammo:
-            return True
-        return any(isinstance(it, Item) and it.is_ammo()
-                   and it.ammo_type == ammo and it.quantity > 0
-                   for it in getattr(char, "inventory", []))
-    except Exception:
-        return False
 
 
 @contextmanager
@@ -116,6 +54,9 @@ class AgentController:
         self.greeted = set()      # NPCs we've already struck up a chat with
         self.visited = set()      # named places we've already sought out
         self.goal_name = None     # the place we're currently journeying to
+        self.recent = []          # a short trail of tiles (anti-oscillation)
+        self._gd = None           # last distance to goal, to notice a stall
+        self._stall = 0           # turns without getting closer to the goal
 
     # ---- perception --------------------------------------------
 
@@ -145,12 +86,21 @@ class AgentController:
         return foes[0][0] if foes else None
 
     def _nearest_loot(self, engine, char, r: int = 5):
+        try:   # a full pack can't pick anything up — don't loop on it
+            from engine.carry import can_carry
+            if not can_carry(char):
+                return None
+        except Exception:
+            pass
         x, y = char.position
         best, bd = None, r + 1
         try:
             for dx in range(-r, r + 1):
                 for dy in range(-r, r + 1):
-                    if engine.world.get_items_at(x + dx, y + dy):
+                    its = engine.world.get_items_at(x + dx, y + dy)
+                    # real items only — a plain-string BODY MARKER is not
+                    # loot (rob_body leaves it), so pursuing it loops forever
+                    if its and any(hasattr(i, "id") for i in its):
                         d = max(abs(dx), abs(dy))
                         if d < bd:
                             best, bd = (x + dx, y + dy), d
@@ -267,14 +217,6 @@ class AgentController:
         return (max(0, min(w.width - 1, x + self.rng.randint(-r, r))),
                 max(0, min(w.height - 1, y + self.rng.randint(-r, r))))
 
-    # ---- movement safety (delegated to agent_nav) ---------------
-
-    def _walkable(self, engine, char, pos) -> bool:
-        return nav.walkable(engine, char, pos)
-
-    def _flee_step(self, engine, char, threat_pos):
-        return nav.flee_step(engine, char, threat_pos)
-
     def _zone_plan(self, engine, char, zone):
         """Inside a building or dungeon. A BUILDING: make for the door and
         step back outside, so the away-hero resumes its life rather than
@@ -285,12 +227,12 @@ class AgentController:
                 getattr(zone, "exit_pos", None)
             if door is None or tuple(char.position) == tuple(door):
                 return ("exit_building",)
-            step = nav.safe_step(engine, char, tuple(door))
+            step = nav.safe_step(engine, char, tuple(door), self.recent)
             return ("move", step) if step != (0, 0) else ("exit_building",)
         if self.goal is None or tuple(char.position) == tuple(self.goal) \
                 or not nav.walkable(engine, char, self.goal):
             self.goal = nav.zone_roam(engine, char, zone, self.rng)
-        step = nav.safe_step(engine, char, self.goal)
+        step = nav.safe_step(engine, char, self.goal, self.recent)
         return ("move", step) if step != (0, 0) else ("wait",)
 
     # ---- policy (decide, no side effects) -----------------------
@@ -313,14 +255,23 @@ class AgentController:
             if _knows_heal(char):
                 return ("heal_spell",)
             if foes:
-                step = self._flee_step(engine, char, foes[0][0].position)
+                step = nav.flee_step(engine, char, foes[0][0].position,
+                                     self.recent)
                 if step is not None:
                     return ("flee", step)
                 # cornered with no heals — fall through and fight for it
 
         # 2. don't stand and trade blows when swarmed in melee
         if len(adj) >= 2 and hp < SWARM_HP:
-            step = self._flee_step(engine, char, adj[0].position)
+            step = nav.flee_step(engine, char, adj[0].position, self.recent)
+            if step is not None:
+                return ("flee", step)
+
+        # 2b. a PACK closing in (a lair/warband) — withdraw before it boxes
+        # us in and butchers us; only a valiant hero at full health wades in
+        pack = [f for f, d in foes if d <= 4]
+        if len(pack) >= 3 and not (disp == "valiant" and hp > SWARM_HP):
+            step = nav.flee_step(engine, char, pack[0].position, self.recent)
             if step is not None:
                 return ("flee", step)
 
@@ -332,7 +283,8 @@ class AgentController:
         if target is not None:
             d = _dist(char.position, target.position)
             if avoid and d > 1:          # a cautious hero keeps its distance
-                step = self._flee_step(engine, char, target.position)
+                step = nav.flee_step(engine, char, target.position,
+                                     self.recent)
                 if step is not None:
                     return ("flee", step)
                 # backed into a corner — a cautious hero still defends itself
@@ -341,7 +293,8 @@ class AgentController:
             if _can_shoot(char) and d <= RANGED:
                 return ("shoot", target)
             self.goal = target.position
-            return ("move", nav.safe_step(engine, char, target.position))
+            return ("move", nav.safe_step(engine, char, target.position,
+                                          self.recent))
 
         # grab loot right at our feet before wandering off to socialize
         if self._nearest_loot(engine, char, r=0) == tuple(char.position):
@@ -362,23 +315,27 @@ class AgentController:
         if disp != "explorer":
             qgoal = self._quest_goal(engine, char)
             if qgoal is not None and tuple(char.position) != tuple(qgoal):
-                return ("move", nav.safe_step(engine, char, qgoal))
+                return ("move", nav.safe_step(engine, char, qgoal,
+                                              self.recent))
 
         # 6. grab loot off the ground (a GREEDY hero looks wider)
         loot = self._nearest_loot(engine, char, r=8 if disp == "greedy" else 5)
         if loot is not None:
             if loot == tuple(char.position):
                 return ("loot",)
-            return ("move", nav.safe_step(engine, char, loot))
+            return ("move", nav.safe_step(engine, char, loot, self.recent))
 
-        # 7. explore toward a class-flavoured place (mark it visited on arrival)
-        if self.goal is None or char.position == self.goal:
-            if self.goal_name and self.goal is not None:
+        # 7. explore a class-flavoured place; abandon one we can't close on
+        if self.goal is None or char.position == self.goal or self._stall > 8:
+            if self.goal_name is not None:
                 self.visited.add(self.goal_name)
-                self.goal_name = None
+            self.goal_name, self._stall, self._gd = None, 0, None
             self.goal = self._named_goal(engine, char) \
                 or self._pick_goal(engine, char)
-        step = nav.safe_step(engine, char, self.goal)
+        gd = _dist(char.position, self.goal)
+        self._stall = self._stall + 1 if self._gd is not None and gd >= self._gd else 0
+        self._gd = gd
+        step = nav.safe_step(engine, char, self.goal, self.recent)
         return ("move", step) if step != (0, 0) else ("wait",)
 
     def _social_plan(self, engine, char, disp):
@@ -403,10 +360,24 @@ class AgentController:
             if friend.id not in self.greeted:
                 return ("talk", friend)
             return None
-        # walk over to a new face worth meeting
-        if friend.id not in self.greeted or disp == "sociable":
-            return ("move", _toward(char.position, friend.position))
+        # walk over to a NEW face worth meeting — but once greeted, leave
+        # them be (re-approaching a greeted friend forever oscillated)
+        if friend.id not in self.greeted or self._offers(engine, friend):
+            return ("move", nav.safe_step(engine, char, friend.position,
+                                          self.recent))
         return None
+
+    def _offers(self, engine, friend) -> bool:
+        """Still a reason to walk over — an untaken quest or a recruitable
+        ally — even if we've already said hello."""
+        qm = getattr(engine, "quest_manager", None)
+        if qm and qm.offered_by(friend.id):
+            return True
+        try:
+            return self._room_in_party(engine) and \
+                engine.companion_manager.can_recruit(friend) == ""
+        except Exception:
+            return False
 
     # ---- act (execute through the real player-action route) -----
 
@@ -419,6 +390,7 @@ class AgentController:
             pass
 
     def take_turn(self, engine, char) -> str:
+        self.recent = (self.recent + [tuple(char.position)])[-3:]
         plan = self.decide(engine, char)
         # keep the hero's current aim visible to the player (reviewable)
         char.metadata["agent_goal"] = self.goal_name or (
@@ -460,7 +432,9 @@ class AgentController:
             elif k == "exit_building":
                 try:
                     engine.exit_building()
-                    self.goal = None
+                    if self.goal_name:            # don't head straight back
+                        self.visited.add(self.goal_name)
+                    self.goal = self.goal_name = None
                     self._deed(engine, char, "stepped back outside.")
                 except Exception:
                     pass

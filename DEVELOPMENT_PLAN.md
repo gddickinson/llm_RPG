@@ -3404,9 +3404,26 @@ last. Networking was previously deferred — this supersedes that.
   (3) it "shot" a phantom foe seen at its overworld coordinates through an
   interior wall; `_colocated` now gates perception to the hero's own grid.
   New `engine/agent_nav.py` holds the movement-safety layer (keeps
-  agent_controller under 500). +5 tests. Remainder M.5b: a "while you were
-  away" digest screen, finer per-disposition tuning, and the agent using
-  the wider systems (bank, craft, pray, home).
+  agent_controller under 500). +5 tests.
+  **Loop-proofing (2026-07-12b, part 2):** the live watch surfaced four
+  more loops, all fixed — a LOOT loop (a plain-string body marker counted
+  as loot, and a full pack pumping pickup forever → `_nearest_loot` skips
+  both), a DOORWAY shuffle (a building explore-goal auto-entered then
+  exited then re-entered → the agent now skirts overworld buildings and
+  marks a left building visited), a DEATH loop (planted in a lair's kill
+  zone → new rule 2b retreats from a closing 3+ pack; 0 deaths across
+  200-turn drives), and OSCILLATION (flee ping-pong + a sociable hero
+  re-approaching greeted friends → a `recent` anti-backtrack trail and a
+  leave-greeted-friends-be rule). Stateless helpers split to
+  `engine/agent_sense.py`. Party capability CONFIRMED: the hero recruits a
+  willing ally and adventures with it (the ally trails and fights) — but no
+  demo NPC starts trusted enough (all rel 0) and a chat doesn't raise
+  trust, so a party doesn't form in a short session (M.5b: earn trust via
+  quests/bonds). +9 tests. Also `body_renderer.draw_glimpsed` draws an
+  indoor NPC seen through a window behind glass (not on the wall).
+  Remainder M.5b: a "while you were away" digest screen, finer
+  per-disposition tuning, EARNING an ally's trust so a party actually
+  forms, and the agent using the wider systems (bank, craft, pray, home).
 
 ## What NOT to build (explicitly deferred)
 
