@@ -2215,12 +2215,17 @@ grid).
   detection excludes buildings that merely carry the word (the "Village
   Well" is not a town — same P15.12 lesson). Larder capped; heuristic,
   no per-tick LLM; stores persist (save_load + a round-trip test). 10
-  tests. Suite 1551, green. *(Remainder P16.2b: merchant ARBITRAGE of
-  surplus between settlements + feeding surplus into shop stock
-  (composing with P12.10 elastic prices); and the smith/ore chain is
-  dormant until a MINER profession has an NPC class to inhabit it — no
-  class currently teaches mining — which P16.3 settlement
-  specialization can supply.)*
+  tests. Suite 1551, green. *(Remainder P16.2b — merchant ARBITRAGE
+  done: production_loop._arbitrage runs each night after production —
+  for every good a caravan carries CARAVAN_LOAD from the settlement
+  with the GLUT to the one with the SCARCITY when the gap is real
+  (CARAVAN_MIN_GAP), so plenty flows to want (the villages' surplus
+  drifts toward the consuming town/castle) and the log breathes one
+  quiet '[Realm] A caravan carried N from A to B' a day; nothing is
+  minted or lost. 7 tests. Suite 1854, green. Remainder P16.2c:
+  feeding the settlement surplus into SHOP STOCK (with P12.10 elastic
+  prices), and the smith/ore chain still dormant until a MINER
+  profession has an NPC class to inhabit it.)*
 - [x] **P16.3 Building-type catalog + room classification.** AW
   `settlement_buildings.SPECIALIZATION_BUILDINGS` + `zones._classify_room`
   as data: ~40 typed buildings (dock/warehouse/mill/granary/

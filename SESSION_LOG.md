@@ -4957,3 +4957,31 @@ it trails the tile behind you; release lets it go; and it survives a
 save). Suite 1847, green. Remainder P15.8c: the mule as a KO-able
 follower body under ransom rules, and the diary-unlocked Stonepine boat
 crossing.
+
+---
+
+## Merchant arbitrage — the caravans that carry plenty to want (P16.2b)
+
+The P16.2 production loop had each settlement quietly making goods, but
+they piled up where they were made — a fishing village drowning in cooked
+fish while the castle town went without. P16.2b sends the caravans out.
+
+`production_loop._arbitrage`, run each night after production, looks across
+the settlement stores good by good: it finds where each is most abundant
+and where it's most scarce, and when the gap is real (`CARAVAN_MIN_GAP`) a
+caravan carries a load (`CARAVAN_LOAD`) from the glut to the want. So the
+villages' surplus grain drifts toward the consuming town and castle, the
+market prices (P12.10, elastic on scarcity) do their work, and once a day
+or so the realm log breathes a quiet "A caravan carried 4 cooked fish
+from Oakvale Village to Riverside Hamlet." The caravan only carries —
+nothing is minted or destroyed in transit, so the economy stays honest.
+
+This is the living-world half of the P18.4 castle supply chain finally in
+motion: the ring of farming villages produces, and now the grain actually
+travels to the crown.
+
+7 tests (a glut flows to scarcity; the caravan load is bounded; a small
+gap moves nothing; nothing is created or lost; it needs two settlements
+to trade; deterministic; and the daily loop runs the caravans). Suite
+1854, green. Remainder P16.2c: feeding a settlement's surplus into its
+SHOP STOCK, and the smith/ore chain still waiting on a miner class.

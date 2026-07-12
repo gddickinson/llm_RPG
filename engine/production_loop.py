@@ -33,6 +33,8 @@ logger = logging.getLogger("llm_rpg.production_loop")
 GATHER_YIELD = 3        # raw units a gatherer pulls per day
 CRAFT_CAP = 2           # goods a crafter makes per day, per good
 STORE_CAP = 99          # a larder only holds so much
+CARAVAN_LOAD = 4        # goods a caravan shifts between settlements/day
+CARAVAN_MIN_GAP = 8     # only when the glut vs scarcity gap is real (P16.2b)
 SETTLEMENT_KEYS = ("village", "hamlet", "town")
 
 
@@ -124,7 +126,48 @@ class ProductionSystem:
             made = self._work(pr, store, profs)
             if made:
                 summaries.append((s.name, made))
-        return self._announce(summaries)
+        moves = self._arbitrage(settlements)     # P16.2b caravans
+        notes = self._announce(summaries)
+        self._announce_caravan(moves)
+        return notes
+
+    def _arbitrage(self, settlements) -> List[tuple]:
+        """P16.2b: a caravan carries a settlement's GLUT of a good to
+        where it's scarce — plenty flows to want, the merchant's trade.
+        Redistributes the stores; returns the moves for the announcer."""
+        if len(settlements) < 2:
+            return []
+        goods = set()
+        for s in settlements:
+            goods |= set(self.store_of(s.name))
+        moves = []
+        for good in sorted(goods):
+            rich = max(settlements,
+                       key=lambda s: self.store_of(s.name).get(good, 0))
+            poor = min(settlements,
+                       key=lambda s: self.store_of(s.name).get(good, 0))
+            if rich is poor:
+                continue
+            have = self.store_of(rich.name).get(good, 0)
+            want = self.store_of(poor.name).get(good, 0)
+            if have - want < CARAVAN_MIN_GAP:
+                continue
+            load = min(CARAVAN_LOAD, (have - want) // 2)
+            if load <= 0:
+                continue
+            self.store_of(rich.name)[good] = have - load
+            self.store_of(poor.name)[good] = min(STORE_CAP, want + load)
+            moves.append((good, load, rich.name, poor.name))
+        return moves
+
+    def _announce_caravan(self, moves) -> None:
+        """One quiet caravan line a day (the state moved either way)."""
+        if not moves or self.rng.random() > 0.5:
+            return
+        good, load, frm, to = self.rng.choice(moves)
+        label = good.replace("_", " ")
+        self.engine.memory_manager.add_event(
+            f"[Realm] A caravan carried {load} {label} from {frm} to {to}.")
 
     def _work(self, pr, store, profs) -> Dict[str, int]:
         """Gather raws, then craft goods; returns what was CRAFTED."""
