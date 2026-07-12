@@ -3569,3 +3569,31 @@ to notice the cadence change; suite 1497, green. REMAINDER (P15.8b): the
 buyable MULE (carry +8, follows like a pet, a KO-able body under ransom
 rules, flips `mounted` for the 2× pace) and the diary-unlocked Stonepine
 BOAT crossing.
+
+**Round 158 — P15.4 Light & weather II (colour + atmosphere).**
+Back to Track G, and the same discipline as P15.2/P15.3: the colour
+DECISIONS behind the atmosphere ("given this source / this night, what
+colour?") move into a pure, headless `ui/light_palette.py` so they can be
+pinned by tests, and the lighting overlay just calls them. Two functions.
+`light_color(kind)` names the coloured light SOURCES — a forge burns
+orange, a marsh wisp glows blue-green, a torch is warm — so the overlay
+can punch a wisp's bog a different hue than your torch lights the road.
+`sky_tint(hour, conjunction, weather, season)` is the whole-sky wash: a
+green AURORA on clear conjunction nights (P8.1's two moons together, and
+only when the sky is actually clear — cloud blocks it) and a cool winter
+CHILL while it snows (day or night) or on a deep winter night, all fading
+in on the same eased night curve the day/night overlay uses
+(`animation.ambient_darkness`, so the atmosphere breathes with dusk and
+dawn rather than snapping on). Both wired into `ui/lighting.py`: the apply
+loop now scans for wisp NPCs and punches `light_color("wisp")` into the
+dark around them, and after the darkness pass a new `_apply_sky_tint`
+blends the tint over the view. 14 tests: the source palette (named +
+default + valid RGB), the night factor (noon 0, deep night 1, bounded),
+and the sky wash (aurora on a clear conjunction night but not by day and
+not through fog; snow tinting even by day and stronger at night; the
+winter-night chill; a clear summer night left untouched; every tint a
+valid RGBA) — plus a lighting smoke that renders a snowy night with a
+wisp on the field without raising. Suite 1511, green. REMAINDER (P15.4b):
+shadow direction by sun hour, rain ripples on P10.3 water pools, and
+forge/hearth interior colour — the pieces that want a new render pass
+rather than a tint.

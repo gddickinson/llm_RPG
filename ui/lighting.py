@@ -143,8 +143,45 @@ class LightingOverlay:
         except Exception:
             pass
 
+        # Coloured light sources (P15.4): marsh wisps glow blue-green
+        try:
+            from ui.light_palette import light_color
+            for npc in engine.npc_manager.npcs.values():
+                if not npc.is_active():
+                    continue
+                tag = (getattr(npc, "id", "") + " " +
+                       getattr(npc, "name", "")).lower()
+                if "wisp" in tag:
+                    self._punch_light(
+                        npc.position, view_rect, cam_x, cam_y, tile_size,
+                        radius_tiles=2.4, color=light_color("wisp"),
+                        strength=darkness * 0.75)
+        except Exception:
+            pass
+
         # Apply
         target.blit(self._overlay, view_rect.topleft)
+
+        # The whole-sky wash: aurora on conjunction nights, winter chill
+        # while it snows (P15.4).
+        self._apply_sky_tint(target, view_rect, engine, size)
+
+    def _apply_sky_tint(self, target, view_rect, engine, size) -> None:
+        try:
+            from ui.light_palette import sky_tint
+            from world.astronomy import is_conjunction
+            hour = (engine.world.time % 1440) / 60.0
+            conj = is_conjunction(engine.world.time // (24 * 60))
+            weather = engine.weather_system.state.current.value
+            season = engine.world.get_date().season.value
+            tint = sky_tint(hour, conjunction=conj, weather=weather,
+                            season=season)
+            if tint[3] > 0:
+                wash = pygame.Surface(size, pygame.SRCALPHA)
+                wash.fill(tint)
+                target.blit(wash, view_rect.topleft)
+        except Exception:
+            pass
 
     # ------------------------------------------------------------------
 

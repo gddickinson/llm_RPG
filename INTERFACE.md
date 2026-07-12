@@ -227,7 +227,8 @@ llm_RPG/
 - **`shop_panel.py`** — B-key two-column buy/sell overlay; PUX.2 Trading II: an inspect/compare + price-breakdown pane, Shift+Enter bulk ×5, and `J` sell-all-junk (via `engine/trade_info.py`).
 - **`body_renderer.py`** — Layered character body sprites (race/class/equipment).
 - **`combat_effects.py`** — Damage popups, hit flashes, death particles.
-- **`lighting.py`** — Night darkness + torch/window light punches (weather-scaled).
+- **`light_palette.py`** — P15.4 pure light/weather colour: `light_color(kind)` (coloured light sources — forge orange, wisp blue-green, …) and `sky_tint(hour, conjunction, weather, season)` (green aurora on clear conjunction nights, cool winter chill while snowing / on winter nights, eased by `animation.ambient_darkness`). Used by `lighting.py`.
+- **`lighting.py`** — Night darkness + torch/window light punches (weather-scaled); P15.4 marsh-wisp blue-green light + `_apply_sky_tint` (aurora / winter wash) via `light_palette`.
 - **`weather_overlay.py`** — Rain/snow/fog particle overlays.
 - **`sound.py`** — Procedural SFX (numpy-synthesized) via event observer + weather ambience loops.
 - **`animation.py`** — P15.2 pure, headless-testable animation math behind the pixels (the `battle_camera` move for the main renderer): `clamp`/`lerp`/`smoothstep`/`lerp_color` interpolation vocabulary, `frame_index` (two-frame animation clock), `surface_fill` (P10.3 surface palette as data — fire flicker / electrified crackle / water shimmer, oil+blood inert; used by `renderer`), `ambient_darkness(hour)` (eased per-minute day↔night curve; used by `lighting`).

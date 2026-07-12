@@ -1924,10 +1924,21 @@ UI polish.
   discovery has ticked). 12 tests. Suite 1489, green. *(Remainder
   P15.3b — the untestable pixel half: 9-slice paneled borders and the
   procedural NPC-portrait face compositor for the dialog box.)*
-- [ ] **P15.4 Light & weather II.** Colored light sources (forge
-  orange, wisp blue-green), shadow direction by sun hour, rain
-  ripples on P10.3 water pools, winter snow-accumulation tint,
-  aurora on conjunction nights.
+- [x] **P15.4 Light & weather II (colour + atmosphere).** The
+  colour decisions behind the lighting, pulled into a pure
+  `ui/light_palette.py` (the P15.2/P15.3 move): `light_color(kind)`
+  gives coloured light SOURCES (forge orange, marsh-wisp blue-green,
+  torch warm, …) and `sky_tint(hour, conjunction, weather, season)`
+  gives the whole-sky wash — a green AURORA on clear conjunction nights
+  (P8.1's two moons together) and a cool winter CHILL while it snows or
+  on a deep winter night — fading in on the same eased night curve
+  (`ambient_darkness`). Wired into `ui/lighting.py`: marsh wisps now
+  punch blue-green light into their bog (distinct from your warm
+  torch), and after the darkness pass the overlay blends the sky tint
+  (`_apply_sky_tint`). 14 tests. Suite 1511, green. *(Remainder
+  P15.4b: shadow direction by sun hour, rain ripples on P10.3 water
+  pools, and forge/hearth interior colour — the pieces that need new
+  render passes rather than a tint.)*
 
 **Track A — advanced gameplay**
 - [x] **P15.5 Companion depth.** Loyalty arcs on the bond system:
