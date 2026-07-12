@@ -24,7 +24,8 @@ from engine import agent_goals as agoals
 from engine import agent_trade as agtrade
 from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
-                                _knows_heal, _can_shoot, _provisioned)
+                                _knows_heal, _can_shoot, _provisioned,
+                                _attack_spell)
 
 logger = logging.getLogger("llm_rpg.agent")
 
@@ -251,6 +252,11 @@ class AgentController:
                 if step is not None:
                     return ("flee", step)
                 # backed into a corner — a cautious hero still defends itself
+            # a caster fights with MAGIC (M.8c): the best damage spell it
+            # knows, can pay for, and that reaches — before blade or bow
+            spell = _attack_spell(char, d)
+            if spell is not None:
+                return ("cast", spell, target)
             if d <= 1:
                 return ("attack", target)
             if _can_shoot(char) and d <= RANGED:
@@ -399,6 +405,8 @@ class AgentController:
                 engine.use_item(plan[1].name)
             elif k == "heal_spell":
                 engine.cast_spell("heal")
+            elif k == "cast":                     # attack spell (M.8c)
+                engine.cast_spell(plan[1], plan[2].name)
             elif k == "loot":
                 engine.pickup_item()
             elif k == "rest":

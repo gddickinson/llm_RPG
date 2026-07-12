@@ -6032,3 +6032,25 @@ observation flagged. The economy helpers live in their own module so
 Remainder: buying BETTER gear (compare & upgrade), banking a surplus, and
 reaching indoor shop merchants (the hero skirts buildings, so for now it
 trades the ones it meets on the street / at stalls).
+
+## 2026-07-12 (cont.) — M.8c: casters fight with magic
+
+The away-agent only ever cast Heal; a wizard hero waded in with a staff and
+got chewed up. M.8c gives casters their spells. `agent_sense._attack_spell`
+picks the most mana-EFFICIENT reachable damage spell the hero knows and can
+pay for — damage-per-mana, a bigger nuke breaking ties — and `decide`'s
+engage step casts it (the new `cast` verb) before blade or bow, falling back
+to melee/bow when the mana runs dry (the cheaper spells stretch the pool; the
+M.8a rest tops mana back up). It composes: a caster nukes at range, so it
+rarely takes the wounds M.8a would mend.
+
+The efficiency choice matters — always reaching for the biggest nuke
+(fireball, 5 mana) drains the pool in two casts; magic_missile (6 dmg, 2
+mana) lets a wizard fling six. A 300-turn valiant-wizard session bore it out:
+471 casts (468 magic_missile, a few firebolt when low), ZERO melee, ZERO
+flee, ending at FULL HP level 3 — the wolves die at range before they ever
+reach it. Adventurer casters (Sable) fight the same way. 4 tests.
+
+Remainder: utility spells on the road (light / farsight / water-walk,
+self-buffs before a fight) and resting to recover mana specifically — folds
+into P26.2's magic overhaul.

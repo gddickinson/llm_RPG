@@ -62,6 +62,35 @@ def _can_shoot(char) -> bool:
         return False
 
 
+def _attack_spell(char, dist):
+    """The best DAMAGE spell the caster knows, can afford the mana for, and
+    that reaches `dist` — its id, or None. Lets a caster away-hero fight
+    with magic instead of trading melee blows (M.8c)."""
+    meta = getattr(char, "metadata", {}) or {}
+    known = meta.get("spells_known", [])
+    if not known:
+        return None
+    mana = meta.get("mana", 0)
+    try:
+        from engine.spells import SPELL_REGISTRY
+    except Exception:
+        return None
+    # pick the most mana-EFFICIENT reachable spell (damage per mana), so
+    # the pool lasts across many fights; a bigger nuke breaks ties
+    scored = []
+    for sid in known:
+        sp = SPELL_REGISTRY.get(sid)
+        if sp is None or sp.damage <= 0:
+            continue
+        if sp.mana_cost > mana or sp.range < dist:
+            continue
+        scored.append((sp.damage / max(1, sp.mana_cost), sp.damage, sid))
+    if not scored:
+        return None
+    scored.sort(reverse=True)
+    return scored[0][2]
+
+
 def _provisioned(char, need: int = 8) -> bool:
     """Enough food in the pack for a REAL camp (a proper half-heal, not a
     hungry doze). Gating rest on this is what keeps a wounded hero from

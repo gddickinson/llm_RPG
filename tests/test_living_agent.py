@@ -95,6 +95,48 @@ class TestSocial(_Base):
         self.assertTrue(self.ac.greeted)
 
 
+class TestMagic(_Base):
+    """A caster away-hero fights with magic (M.8c) — the best affordable,
+    reaching damage spell before blade or bow; falls back when out of mana."""
+
+    def _wizard(self, mana=12):
+        self.p.character_class = CharacterClass.WIZARD
+        self.p.metadata["spells_known"] = ["magic_missile", "fireball",
+                                           "firebolt"]
+        self.p.metadata["mana"] = mana
+        self.p.metadata["max_mana"] = 12
+
+    def _foe(self, x=13, y=10):
+        foe = build_monster("wolf", (x, y))
+        self.engine.npc_manager.add_npc(foe)
+        self.engine.world.map.place_character(foe, x, y)
+        return foe
+
+    def test_a_caster_flings_a_spell(self):
+        self._wizard()
+        self._foe()
+        plan = self.ac.decide(self.engine, self.p)
+        self.assertEqual(plan[0], "cast")
+
+    def test_it_picks_the_mana_efficient_spell(self):
+        self._wizard()
+        self._foe()
+        # magic_missile (6 dmg / 2 mana) beats fireball (12 / 5) on efficiency
+        self.assertEqual(self.ac.decide(self.engine, self.p)[1],
+                         "magic_missile")
+
+    def test_out_of_mana_falls_back_to_the_blade(self):
+        self._wizard(mana=0)
+        self._foe(x=11, y=10)                        # adjacent
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "attack")
+
+    def test_a_warrior_casts_nothing(self):
+        self.p.character_class = CharacterClass.WARRIOR
+        self.p.metadata.pop("spells_known", None)
+        self._foe(x=11, y=10)
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "cast")
+
+
 class TestEconomy(_Base):
     """The away-hero SPENDS (M.8b): clears junk for coin and buys the
     potion/ammo it's short of when it deals with a merchant."""

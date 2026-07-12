@@ -3507,9 +3507,18 @@ a coherent, testable slice; ordered roughly by impact.
   upgrade), banking a surplus, and reaching INDOOR shop merchants (the hero
   skirts buildings, so it trades the ones it meets on the street/at stalls);
   hiring a blade is already covered by M.6 free recruiting.
-- [ ] **M.8c Magic in the field.** A caster actually casts — offensive spells
-  in a fight, utility (light/farsight/water-walk) on the road — and manages
-  mana (rest to recover). Ties into P26.2's magic overhaul.
+- [x] **M.8c Magic in the field (2026-07-12d).** A caster away-hero now
+  FIGHTS with magic: `agent_sense._attack_spell` picks the most mana-EFFICIENT
+  reachable damage spell it knows and can pay for (damage-per-mana, a bigger
+  nuke breaking ties), and `decide`'s engage step casts it (the `cast` verb →
+  `engine.cast_spell`) before blade or bow — falling back to melee/bow when
+  the mana runs dry (the cheaper spells carry it further; the M.8a rest
+  restores mana). Adventurer casters (Sable the wizard) fight this way too. A
+  300-turn wizard session: 471 casts (468 magic_missile), NO melee, NO flee,
+  ending at FULL HP level 3 — it kills wolves at range before they close, so
+  it takes no damage. 4 tests. Remainder: UTILITY spells on the road
+  (light/farsight/water-walk, self-buffs before a fight) and resting
+  specifically to recover mana; ties into P26.2's magic overhaul.
 - [ ] **M.8d Gather & craft.** With a workstation and a known recipe (or a
   gathering node in reach), the hero gathers raws and crafts potions/gear/
   ammo — a self-sufficiency loop instead of pure scavenging.
