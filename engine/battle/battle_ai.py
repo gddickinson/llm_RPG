@@ -197,6 +197,9 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     dmg = max(1, int(power // 3 * dmg_mult) + rng.randint(0, 2))
     if ranged and tgt_squad is not None:   # P17.16 LOOSE spreads the volley
         dmg = max(1, int(dmg * form.incoming_ranged_mult(tgt_squad)))
+    if ranged and st.get("fire_arrow"):    # P17.E4 fire arrows set tiles alight
+        from engine.battle import battle_fire
+        battle_fire.ignite(field, target.x, target.y)
     target.hurt(dmg)
     # P17.15: a blow from the flank or rear shakes the whole squad's
     # nerve — but an all-facing RING (P17.17) has no exposed side.

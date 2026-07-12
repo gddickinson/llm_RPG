@@ -4127,3 +4127,34 @@ predicate over clear ground, a wall, a treeline, low cover, and the
 shooter's own wood; and in battle, no shot landing through a wall, a clear
 lane hitting, and an archer firing from inside the trees. No battle
 regressions. Suite 1672, green.
+
+**Round 176 — P17.E4 Fire & the battle surface layer.**
+The battlefield-environment track's last stone, and the one the user
+always circles back to: trees and buildings that can be set alight.
+`BattleField` gains a sparse `surfaces` layer of FIRE and OIL (round-
+tripped in the field dict), and `engine/battle/battle_fire.py` ports the
+DOS2 fire model from `engine/surfaces.py` onto the grid. `ignite` sets a
+tile alight — and if that tile is oil, a flood-fill runs the whole
+connected pool up to fire at once, the classic trap. `pour_oil` slicks a
+patch (a cauldron of boiling oil from P17.6e, a broken cask). And `tick`,
+run each round from the session after the soldiers act, is the
+simulation: a fire BURNS whoever stands in it (−4 a tick), EATS the
+combustible terrain under it so a treeline or a hedge burns down to bare
+scorched ground and the cover it gave is simply gone, GNAWS a timber gate
+or wooden wall toward a breach while stone shrugs the flame off, SPREADS
+to neighbouring combustibles by a per-tile chance, and finally gutters
+out and leaves scorched earth. The wired ignition source is a fire arrow:
+a new `archer_fire` archetype carries `fire_arrow: true`, and `attack`
+lights the struck tile on any ranged hit, so a volley of fire arrows into
+a wood or against a gate does exactly what you'd hope. Battle-magic as an
+igniter waits on P17.12, but the API — `ignite` — is the single hook it
+and the DM will both call. 11 tests: ignite makes fire; fire burns a
+soldier, eats a treeline, and guts out to scorched; it spreads to
+adjacent forest but not across bare ground; a two-radius oil pool all
+goes up the instant one corner is touched; fire breaches a timber gate
+but leaves stone untouched; a fire arrow lights its target's tile; and
+the surface layer survives a save round-trip. No battle regressions.
+Suite 1683, green. With E4 in, the battlefield-environment track (E1
+elevation, E2 obstacles & anchored flanks, E3 line-of-sight, E4 fire) is
+complete — and so, bar the noted remainders, is Phase 17's whole combat
+build.

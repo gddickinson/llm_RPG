@@ -43,6 +43,9 @@ class BattleField:
         # per-tile ELEVATION (P17.E1): 0 = flat, + = a hill/rampart,
         # − = a depression. Sparse; the high ground is the advantage.
         self.elevation: Dict[Tuple[int, int], int] = {}
+        # sparse SURFACE layer (P17.E4): (x,y) -> {"kind": fire|oil,
+        # "turns": n}. Fire burns/spreads; oil waits to catch.
+        self.surfaces: Dict[Tuple[int, int], dict] = {}
         self.squads: Dict[str, Squad] = {}
         self._occupied: Dict[Tuple[int, int], str] = {}   # pos->sid
         # capture points (P17.6c): each is a dict with id/tile/radius/
@@ -189,6 +192,8 @@ class BattleField:
                             self.struct_kind.items()],
             "elevation": [[x, y, lv] for (x, y), lv in
                           self.elevation.items()],
+            "surfaces": [[x, y, s["kind"], s["turns"]] for (x, y), s in
+                         self.surfaces.items()],
             "squads": [sq.to_dict() for sq in self.squads.values()],
             "objectives": self.objectives,
         }
@@ -203,6 +208,8 @@ class BattleField:
                           d.get("struct_kind", [])}
         bf.elevation = {(x, y): lv for x, y, lv in
                         d.get("elevation", [])}
+        bf.surfaces = {(x, y): {"kind": k, "turns": t} for x, y, k, t in
+                       d.get("surfaces", [])}
         for sd in d.get("squads", []):
             bf.add_squad(Squad.from_dict(sd))
         bf.objectives = d.get("objectives", [])

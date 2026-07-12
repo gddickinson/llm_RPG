@@ -53,6 +53,17 @@
     "range_factor": 1.3,
     "category": "archer"
   },
+  "archer_fire": {
+    "melee": 3,
+    "ranged": 10,
+    "defense": 4,
+    "hp": 16,
+    "speed": 1.0,
+    "morale_threshold": 22,
+    "recruit_cost": 12,
+    "category": "archer",
+    "fire_arrow": true
+  },
   "cavalry_light": {
     "melee": 12,
     "ranged": 0,

@@ -2875,11 +2875,29 @@ driven and folds into the battle grid (its own terrain strings +
   in-wood LOS; no shot through a wall but a clear lane lands; firing from
   the edge of a wood). No battle regressions; cover is now concealment as
   well as protection. Suite 1672, green.)*
-- [ ] **P17.E4 Fire & the battle surface layer.** A sparse grid
+- [x] **P17.E4 Fire & the battle surface layer.** A sparse grid
   `surfaces` layer (port `engine/surfaces.py`): fire arrows, battle-
   magic, and boiling oil (P17.6e) IGNITE oil/forest/wooden structures;
   fire spreads tile-to-tile, damages occupants, and destroys cover/
   walls. Unifies P17.12 (AoE/magic), P17.6e (boiling oil), and the
+  *(Round 176 — closes the environment track. `BattleField` gains a
+  sparse `surfaces` layer (fire/oil, round-tripped), and
+  `engine/battle/battle_fire.py` ports the DOS2 fire model to the grid:
+  `ignite` lights a tile (a connected OIL pool floods to fire the instant
+  flame touches any part of it), `pour_oil` slicks a patch (boiling
+  oil/P17.6e), and `tick` runs each round from the session — a fire
+  BURNS the soldier standing in it (−4/tick), EATS combustible terrain
+  (a treeline or hedge → bare scorched ground, so cover is gone), GNAWS a
+  timber gate/wooden wall to a breach (stone shrugs it off), SPREADS to
+  neighbouring combustibles, then gutters out to scorched. A new
+  `archer_fire` archetype carries `fire_arrow: true`, and `attack` lights
+  the struck tile on a ranged hit — the wired ignition source (magic is
+  P17.12). 11 tests (ignite/burn/eat-forest/gut-to-scorched; spread to
+  forest but not bare ground; an oil pool all going up; a gate breaching
+  while stone doesn't; a fire arrow lighting its target; the surface
+  round-trip). No battle regressions. Suite 1683, green. The battlefield-
+  environment track (E1–E4) is complete.)*
+  Also unifies P17.12 (AoE/magic), P17.6e (boiling oil), and the
   user's "trees and buildings can be set on fire" into one system.
 
 ## Playability, UX & a GUI gameplay test (user-directed, HIGH PRIORITY)

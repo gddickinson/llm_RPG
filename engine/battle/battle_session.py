@@ -125,6 +125,8 @@ class BattleSession:
                 self._order_move(sol, sq, target,
                                  flows.get(sq.team, {}))
 
+        from engine.battle import battle_fire     # P17.E4 fire spreads/burns
+        battle_fire.tick(field, self.rng)
         self._update_objectives()            # capture points last
 
     def _charge_melee(self, sol, sq, target) -> None:
