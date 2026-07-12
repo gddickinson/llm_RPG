@@ -2222,10 +2222,17 @@ grid).
   (CARAVAN_MIN_GAP), so plenty flows to want (the villages' surplus
   drifts toward the consuming town/castle) and the log breathes one
   quiet '[Realm] A caravan carried N from A to B' a day; nothing is
-  minted or lost. 7 tests. Suite 1854, green. Remainder P16.2c:
-  feeding the settlement surplus into SHOP STOCK (with P12.10 elastic
-  prices), and the smith/ore chain still dormant until a MINER
-  profession has an NPC class to inhabit it.)*
+  minted or lost. 7 tests. Suite 1854, green.)*
+  *(Remainder P16.2c — SHOP STOCK feeding done: `shop._stock_from_surplus`
+  (run when a merchant (re)stocks) moves up to `SHELF_STOCK` of each good
+  in the NEAREST settlement's production store onto the merchant's shelves
+  and decrements the store — the village that cut the logs (or, with a
+  crafter, cooked the fish) now SELLS it, composing with the P12.10
+  elastic prices and the merchant's gold budget scaling to the fuller
+  stall. The produce → caravan → shop → player loop is closed; nothing is
+  minted moving to the shelf. 6 tests. Suite 1860, green. Remainder
+  P16.2d: the smith/ore chain stays dormant until a MINER profession has
+  an NPC class to inhabit it (no class teaches mining yet).)*
 - [x] **P16.3 Building-type catalog + room classification.** AW
   `settlement_buildings.SPECIALIZATION_BUILDINGS` + `zones._classify_room`
   as data: ~40 typed buildings (dock/warehouse/mill/granary/

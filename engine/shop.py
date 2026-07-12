@@ -79,6 +79,7 @@ def _load_regional():
 REGIONAL = _load_regional()      # settlement -> category factors
 STOCK_K = 0.05                   # price move per unit of deviation
 STOCK_CLAMP = (0.5, 2.0)
+SHELF_STOCK = 3                  # units of each local surplus good on sale (P16.2c)
 HAGGLE_PATIENCE = 3
 HAGGLE_CAP = 0.15
 
@@ -121,9 +122,41 @@ class ShopManager:
             if item:
                 items.append(item)
         cat.items = items
+        self._stock_from_surplus(cat, npc)     # P16.2c local produce
         cat.last_refreshed_minute = self.engine.world.time
         # Buying budget scales with the shop's wares; refills each restock
-        cat.gold = 100 + sum(it.value for it in items) // 4
+        cat.gold = 100 + sum(it.value for it in cat.items) // 4
+
+    def _stock_from_surplus(self, cat: ShopCatalog, npc) -> None:
+        """P16.2c: the local settlement's production SURPLUS reaches the
+        merchant's shelves — the village that made cooked fish (or cut the
+        logs) now sells it. The goods MOVE from the store onto the stall,
+        closing the produce → caravan → shop → player loop."""
+        prod = getattr(self.engine, "production", None)
+        if prod is None or not getattr(prod, "stores", None):
+            return
+        try:
+            setts = prod._settlements()
+        except Exception:
+            return
+        if not setts:
+            return
+        px, py = npc.position
+        sett = min(setts, key=lambda s: abs(s.center()[0] - px) +
+                   abs(s.center()[1] - py))
+        store = prod.stores.get(sett.name)
+        if not store:
+            return
+        for good, qty in list(store.items()):
+            if qty <= 0:
+                continue
+            moved = 0
+            for _ in range(min(SHELF_STOCK, qty)):
+                it = create_item(good, quantity=1)
+                if it is not None:
+                    cat.items.append(it)
+                    moved += 1
+            store[good] = qty - moved
 
     def refresh_all_if_due(self, minutes_between: int = 24 * 60) -> None:
         now = self.engine.world.time

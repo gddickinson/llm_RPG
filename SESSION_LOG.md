@@ -4985,3 +4985,34 @@ gap moves nothing; nothing is created or lost; it needs two settlements
 to trade; deterministic; and the daily loop runs the caravans). Suite
 1854, green. Remainder P16.2c: feeding a settlement's surplus into its
 SHOP STOCK, and the smith/ore chain still waiting on a miner class.
+
+---
+
+## The produce reaches the stall (P16.2c) — closing the supply loop
+
+The last two rounds gave the world a producing economy (P16.2) and
+caravans to spread it (P16.2b), but the player never saw any of it — the
+goods sat in an abstract settlement "store" they couldn't touch. P16.2c
+puts the produce on the shelves.
+
+`shop._stock_from_surplus`, run whenever a merchant (re)stocks, finds the
+settlement nearest that merchant, and for each good in its production
+store moves up to `SHELF_STOCK` units onto the stall — real Item objects
+the player can buy — decrementing the store as it goes. So the woodcutter
+village that filled its larder with logs now has a merchant selling logs;
+add a cook or an alchemist and it's cooked fish and potions. It composes
+cleanly with what was already there: the P12.10 elastic prices move with
+the fuller or thinner stall, and the merchant's buying budget scales to
+the wares on offer.
+
+The whole loop is finally visible end to end: NPCs PRODUCE into the store,
+caravans CARRY the surplus toward where it's scarce (P16.2b), the local
+merchant STOCKS it, and the player BUYS it — the living economy you can
+reach into. Nothing is minted moving to the shelf; the goods only change
+hands.
+
+6 tests (surplus reaches the shelf; the goods leave the store; a thin
+store gives what little it has; nothing is created in the move; an empty
+store still leaves the merchant's usual wares; the gold budget accounts
+for the produce). Suite 1860, green. Remainder P16.2d: the smith/ore
+chain still waits on a MINER profession with an NPC class to inhabit it.
