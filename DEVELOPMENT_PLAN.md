@@ -3683,9 +3683,27 @@ Phase-17 tactical AI.
   registered in `save_load`). 14 tests. Suite green. Remainder P19.4b:
   tie a tribe's home to a P19.2 lair so CLEARING the lair wipes the tribe;
   and scale the raider encounter weight by tribe strength.)*
-- [ ] **P19.5 The endgame curve.** Elite / champion variants and
+- [x] **P19.5 The endgame curve.** Elite / champion variants and
   party-scaled packs so a high-level party meets worthy resistance; a
   roaming world-boss that stalks the map. No more trivial wilderness.
+  *(Round: `engine/elites.py` scales the wild to the party WITHOUT
+  re-authoring monsters. `party_level` reads the strongest member plus a
+  nudge for party size. When a fresh wilderness spawn is out-levelled,
+  `maybe_promote` may crown it an ELITE from `data/elites.json` tiers —
+  a Dire (gap ≥2), a Champion (≥5), an Ancient (≥9) — retitled and buffed
+  (hp ×, +levels, +STR, an `elite` tag), the tier and its odds climbing
+  with the gap; and `extra_pack` draws a WARBAND (up to 3 extra beasts)
+  for a strong party. Wired into `encounters.maybe_spawn`: the promoted
+  spawn leads, the extras share a `warband:<id>` tag so the P19.3 pack
+  brain runs them under it — cut the elite leader down and the warband
+  breaks. The HUD line reflects it ("A fearsome Ancient Troll…", "A pack
+  of Dire Wolves…"). Low-level play is untouched — no gap, no promotion,
+  no warband. 11 tests (party level solo and with a party; no promotion
+  without a gap; a high party promotes and the title/HP/level change; the
+  chance can decline; the tier grows with the gap; `apply_tier` buffs;
+  warband size and cap; a fixed-seed L20 field meets elites/warbands).
+  Remainder P19.5b: a named ROAMING world-boss that stalks the overworld
+  map (the apex that hunts YOU), distinct from the lair-bound P19.2 tier.)*
 - [ ] **P19.6 The Nemesis.** Named monster champions (Shadow-of-Mordor
   style) that survive a losing fight, remember the player, rise in power
   and title, recruit, and return for revenge — tied to the bones /

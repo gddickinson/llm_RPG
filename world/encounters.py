@@ -90,11 +90,56 @@ class EncounterManager:
             pass
         template = _weighted_pick(table, self.rng)
         monster = _build_monster(template, spawn_pos)
+        # The endgame curve (P19.5): a party that out-levels the wild draws
+        # an ELITE, and sometimes a whole warband under it.
+        from engine import elites
+        base_level = monster.level
+        promoted = elites.maybe_promote(self.engine, monster, self.rng)
+        extra = elites.extra_pack(self.engine, base_level, self.rng)
         self.engine.npc_manager.add_npc(monster)
         self.engine.world.map.place_character(monster, *spawn_pos)
+        placed_extra = 0
+        if extra:
+            tag = f"warband:{monster.id}"       # the P19.3 pack brain bands them
+            monster.metadata["lair"] = tag
+            for epos in self._nearby_spawns(spawn_pos, extra):
+                em = _build_monster(template, epos)
+                em.metadata["lair"] = tag
+                self.engine.npc_manager.add_npc(em)
+                self.engine.world.map.place_character(em, *epos)
+                placed_extra += 1
         self._cooldown_until = self.engine.turn_counter + ENCOUNTER_COOLDOWN_TURNS
-        msg = f"A {monster.name} appears in the distance!"
-        return msg
+        if placed_extra:
+            return (f"A pack of {monster.name}s "
+                    f"appears in the distance!")
+        if promoted:
+            return f"A fearsome {monster.name} appears in the distance!"
+        return f"A {monster.name} appears in the distance!"
+
+    def _nearby_spawns(self, pos, n) -> List[Tuple[int, int]]:
+        """Up to n free walkable tiles adjacent-ish to a spawn point."""
+        wmap = self.engine.world.map
+        px, py = pos
+        out = []
+        for r in (1, 2, 3):
+            for dy in range(-r, r + 1):
+                for dx in range(-r, r + 1):
+                    if max(abs(dx), abs(dy)) != r:
+                        continue
+                    x, y = px + dx, py + dy
+                    if not (0 <= x < wmap.width and 0 <= y < wmap.height):
+                        continue
+                    if wmap.terrain[y][x] in (TerrainType.WATER,
+                                              TerrainType.MOUNTAIN,
+                                              TerrainType.BUILDING,
+                                              TerrainType.CAVE):
+                        continue
+                    if (x, y) in wmap.characters:
+                        continue
+                    out.append((x, y))
+                    if len(out) >= n:
+                        return out
+        return out
 
     def spawn_chance(self) -> float:
         """Base chance, raised in poor visibility — monsters ambush in

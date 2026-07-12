@@ -1,0 +1,10 @@
+{
+  "tiers": [
+    {"min_gap": 2, "title": "Dire {name}", "hp_mult": 1.6, "level_bonus": 2, "str_bonus": 2, "chance": 0.30},
+    {"min_gap": 5, "title": "{name} Champion", "hp_mult": 2.3, "level_bonus": 5, "str_bonus": 4, "chance": 0.40},
+    {"min_gap": 9, "title": "Ancient {name}", "hp_mult": 3.2, "level_bonus": 9, "str_bonus": 6, "chance": 0.50}
+  ],
+  "pack_min_gap": 3,
+  "pack_extra_max": 3,
+  "pack_chance": 0.5
+}

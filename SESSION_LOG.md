@@ -5212,3 +5212,35 @@ an abstract report; a slain raider beats the tribe back while an untagged
 kill does nothing; crossing back below the threshold announces the
 repulse; strength round-trips a save). Remainder P19.4b: bind a tribe's
 home to a P19.2 lair so clearing it wipes the tribe.
+
+## The endgame curve — the wild scales to the party (P19.5)
+
+The playtest's blunt finding: the wilderness table tops out around level
+3-4 while the hero climbs to 20, so a strong party had nothing in the open
+worth drawing a sword for. This round scales the wild to the party without
+re-authoring a single monster.
+
+`engine/elites.py` reads the party's power — the strongest member, plus a
+nudge for how many blades ride together — and measures it against each
+fresh wilderness spawn. When the party out-levels a beast, that beast may
+be promoted to an ELITE from the `data/elites.json` tiers: a Dire at a
+small gap, a Champion at a wider one, an Ancient when the party towers
+over it — each retitled ("Ancient Wandering Troll") and buffed in health,
+level and strength, the tier and its odds both climbing with the gap. A
+strong party doesn't just meet a tougher beast, either: it draws a
+warband, up to three extra of the kind, spilled around the elite.
+
+The pieces compose. The warband shares a tag with its elite leader, so
+the P19.3 pack brain picks it up for free — the extras fight as a
+coordinated band under the champion, focus-fire and all, and cutting the
+elite down breaks the survivors. The HUD says which it is: "A fearsome
+Ancient Troll appears in the distance," or "A pack of Dire Wolves." And
+low-level play is left exactly as it was — with no level gap there is no
+promotion and no warband, so the early game keeps its gentle wolves.
+
+11 tests (party level solo and with a companion; no promotion without a
+gap and none when the roll declines; a high party promotes with a changed
+title, HP and level; the tier climbs with the gap; apply_tier's buffs;
+the warband's size and its cap; and a fixed-seed level-20 field that
+reliably meets elites and warbands over its spawns). Remainder P19.5b: a
+named roaming world-boss that stalks the map and hunts the player.
