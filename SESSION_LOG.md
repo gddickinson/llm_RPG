@@ -4927,3 +4927,33 @@ recreated; and end-to-end, a notice pinned to the Oakvale board is back
 after a save → reset-to-defaults → load). Suite 1836, green. With this
 P0.1b is closed, and the plan — every phase and every noted remainder in
 this early stretch — is that much tighter.
+
+---
+
+## The pack mule — P15.8b (roads earn their keep, part two)
+
+P15.8 wired a road-pace stride counter with a `mounted` lever it had no
+mount to pull yet; P15.8b delivers the mount. `engine/mount.py` is the
+buyable pack MULE. Stand at a stable, press E (or the hint-bar advert
+calls it out), and 120 gold buys you a sturdy mule that does three things:
+it hauls +8 pack slots (`carry.capacity` grows with a mule on the
+metadata), it flips `player.metadata["mounted"]` so every SECOND road or
+bridge step is free — the 2× road pace the stride counter was already
+built to run — and it trails a step behind you (`mule_follow`, called from
+`player_actions.move` right beside the pet's trail, stepping onto the tile
+you just left). The mule lives on `player.metadata["mule"]`, so it
+round-trips a save.
+
+Wiring the E-key hook pushed `input_handler.py` (already sitting near the
+line at ~519) over 500, so I split its three self-contained tail helpers
+— look-around, party toggle, open-shop — into a small new
+`ui/input_actions.py`, bringing the handler back to 478 and the mule hook
+(`mount.try_buy_at_stable`) to a single call.
+
+11 tests (none at start; a stable-only sale; buying costs gold, grants
+the mule, and lifts carry; the mule takes the overflow past your old cap;
+it flips mounted; the no-stable / can't-afford / no-second-mule refusals;
+it trails the tile behind you; release lets it go; and it survives a
+save). Suite 1847, green. Remainder P15.8c: the mule as a KO-able
+follower body under ransom rules, and the diary-unlocked Stonepine boat
+crossing.

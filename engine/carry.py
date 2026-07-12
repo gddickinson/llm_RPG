@@ -17,7 +17,12 @@ BASE_SLOTS = 18
 
 def capacity(player) -> int:
     mod = (getattr(player, "strength", 10) - 10) // 2
-    return max(8, BASE_SLOTS + 2 * mod)
+    base = max(8, BASE_SLOTS + 2 * mod)
+    meta = getattr(player, "metadata", None)
+    if isinstance(meta, dict) and meta.get("mule"):
+        from engine.mount import MULE_CARRY       # P15.8b pack mule
+        base += MULE_CARRY
+    return base
 
 
 def used_slots(player) -> int:

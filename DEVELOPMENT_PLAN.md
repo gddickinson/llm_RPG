@@ -2027,9 +2027,19 @@ UI polish.
   mount, bridges count, open ground never frees + resets, a free step
   skips the tick, six road strides cost 4 turns vs 6 on open ground,
   the one-time advert). Suite 1497, green.
-  *(Remainder P15.8b: the buyable MULE — carry +8, follows like a pet,
-  a KO-able body under ransom rules, and it flips `mounted` for the 2×
-  road pace — and the diary-unlocked Stonepine BOAT crossing.)*
+  *(Remainder P15.8b DONE — the pack MULE: `engine/mount.py`. Bought at
+  a stable (`buy_mule`, `stable_nearby`, 120g), it adds +8 carry slots
+  (`carry.capacity`), flips `mounted` so every SECOND road/bridge step
+  is free (the 2× road pace the P15.8 counter already had wired), and
+  trails a step behind you (`mule_follow`, run from `player_actions.move`
+  beside the pet trail). E-key at a stable buys it, hint-bar advertised;
+  state on `player.metadata["mule"]` round-trips a save. 11 tests
+  (none-at-start, stable-only sale, buy costs gold & grants it & lifts
+  carry, the mule takes the overflow, it flips mounted, no-stable/
+  can't-afford/no-second-mule refusals, it trails behind, release lets it
+  go, survives a save). Suite 1847, green. Remainder P15.8c: the mule as
+  a KO-able body under ransom rules (a real follower entity), and the
+  diary-unlocked Stonepine BOAT crossing.)*
 - [x] **P15.9 Character detail: body-part health (George, live
   2026-07-11).** DETAILED HEALTH SYSTEM: body-part damage (head/
   torso/arms/legs) with consequences, layered under HP/dying.

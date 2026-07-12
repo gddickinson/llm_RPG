@@ -104,7 +104,8 @@ llm_RPG/
 - **`furniture.py`** — P9A.2: E beside interior furniture — beds rest (+30% HP/day), hearths cook, altars pray, shelves surface rumors, chests/barrels rummage; flavor for the rest; cooldowns in player.metadata.
 - **`trespass.py`** — `TrespassSystem` (P9A.4): private homes + after-hours shops; witnessed trespass costs rep/relationship/memory; forced entry is a crime — guards converge on the alert, repeat offenses reach the P7.2 bounty ladder.
 - **`presence.py`** — P9A.7: NPCs within an enterable footprint are INDOORS — hidden from the street, shown inside as the same entities at zone-local spots; `npc_adjacent_to_player` is THE adjacency check (talk/hints/melee/barter). P14.2 seeing in: `hidden_by_walls` (the renderer's indoor-hiding rule) is relaxed two ways — `sees_through_walls` (magical `keen_sight`, anywhere) and `at_a_window` (standing beside the building, a physical glimpse) — but reach (`npc_adjacent_to_player`) still stops at the stone.
-- **`carry.py`** — carry capacity (George): slot-based pack, 18 + 2 per STR modifier; `can_carry`/`full_message` enforced at pickup/forage/gather/harvest/shop/rummage/chests.
+- **`carry.py`** — carry capacity (George): slot-based pack, 18 + 2 per STR modifier (+8 with a P15.8b mule); `can_carry`/`full_message` enforced at pickup/forage/gather/harvest/shop/rummage/chests.
+- **`mount.py`** — P15.8b the pack MULE: `buy_mule`/`stable_nearby`/`has_mule`/`release_mule` (bought at a stable, 120g), `mule_follow` (trails a step behind, run from `player_actions.move`), `try_buy_at_stable` (the E-key hook). Adds +8 carry and flips `player.metadata["mounted"]` for the 2× road pace; state round-trips a save.
 - **`targeting.py`** — `TargetingSystem` (P8.7): [ ] cycle / click-to-target locks with range + true LOS; auto-refresh each turn; reticle + hint bar; bow and attack spells fire at the lock.
 - **`tile_damage.py`** — `TileDamage` (P10.2): sparse tile HP + materials (stone resists fire, wood burns); walls crack → RUBBLE (a breach is a second door); fire scorches; persisted.
 - **`surfaces.py`** — `SurfaceLayer` (P10.3): sparse fire/oil/water per-tile surfaces; fire burns occupants + tiles and spreads; oil pools chain-ignite; water douses; per-turn tick; persisted; DM-paintable. P14.2a: blood pools from serious wounds (conduct, never burn) + `electrify` — lightning races through connected water/blood (shock spell triggers it), zapping occupants, fading back to water.
@@ -237,6 +238,7 @@ llm_RPG/
 - **`dialog_input.py`** — dialog-typing key handler (split from input_handler to hold the line).
 - **`dialog_menu.py`** — PUX.6 conversation-menu dispatch (a numbered pick accepts/turns-in a quest, opens the shop, speaks a topic, or reveals a secret).
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
+- **`input_actions.py`** — Play-mode action helpers split out of `input_handler` to hold the 500-line line: `look_around`, `toggle_party`, `open_shop`.
 - **`terminal_ui.py`** — Text-based UI.
 - **`inventory_panel.py`** — I-key equipment + bag overlay (equip/use/drop).
 - **`shop_panel.py`** — B-key two-column buy/sell overlay; PUX.2 Trading II: an inspect/compare + price-breakdown pane, Shift+Enter bulk ×5, and `J` sell-all-junk (via `engine/trade_info.py`).

@@ -100,6 +100,13 @@ def context_hints(engine) -> List[str]:
     elif getattr(engine, "current_dungeon", None):
         hints.append("[TAB] climb back to the surface")
 
+    try:   # a stable sells a pack mule (P15.8b)
+        from engine.mount import stable_nearby, has_mule, MULE_COST
+        if stable_nearby(engine) and not has_mule(engine.player):
+            hints.append(f"[E] buy a pack mule ({MULE_COST}g)")
+    except Exception:
+        pass
+
     adjacent = _adjacent_npcs(engine)
     enemies = [n for n in adjacent if _hostile(n)]
     friendly = [n for n in adjacent if not _hostile(n)]

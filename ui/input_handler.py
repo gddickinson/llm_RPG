@@ -16,6 +16,8 @@ except ImportError:  # pragma: no cover
 
 logger = logging.getLogger("llm_rpg.input")
 
+from ui import input_actions
+
 # 8-directional movement on the numpad (the letter-corner keys QEZC that
 # a WASD player would reach for are already bound to quit/interact/forage/
 # sheet, so the numpad carries the diagonals — the classic roguelike map).
@@ -248,7 +250,7 @@ class InputHandler:
                 from engine.event_filter import cycle_verbosity
                 cycle_verbosity(self.engine)
             else:
-                self._look_around()
+                input_actions.look_around(self.engine)
             return True
 
         # Cycle ranged targets ([ back, ] forward) (P8.7)
@@ -258,7 +260,7 @@ class InputHandler:
             return True
 
         if k == pygame.K_b:   # barter (S is shadowed by move-down)
-            self._open_shop()
+            input_actions.open_shop(self)
             return True
 
         if k == pygame.K_k:   # crafting overlay
@@ -266,7 +268,8 @@ class InputHandler:
             return True
 
         if k == pygame.K_p:   # SHIFT: pray; plain: party toggle
-            self.engine.pray() if shift else self._toggle_party()
+            (self.engine.pray() if shift
+             else input_actions.toggle_party(self))
             return True
 
         if k == pygame.K_RETURN:   # sleep / camp (P12.6)
@@ -329,6 +332,9 @@ class InputHandler:
                     msg = self.engine.use_furniture() or self.engine.home_action()
                     if msg:
                         return True
+            from engine.mount import try_buy_at_stable   # P15.8b mule
+            if try_buy_at_stable(self.engine):
+                return True
             msg = self.engine.pickup_item()
             return True
 
@@ -468,51 +474,5 @@ class InputHandler:
                 return
             self.engine.memory_manager.add_event(
                 "There's nothing to enter here.")
-        except Exception:
-            pass
-
-    def _look_around(self) -> None:
-        try:
-            x, y = self.engine.player.position
-            visible = self.engine.world.map.get_visible_description(x, y)
-            for line in visible.split("\n"):
-                if line.strip():
-                    self.engine.memory_manager.add_event(line)
-        except Exception:
-            pass
-
-    def _toggle_party(self) -> None:
-        """P key — dismiss an adjacent party member, or try to recruit."""
-        try:
-            npc = self._find_adjacent_npc()
-            if npc is None:
-                self.engine.memory_manager.add_event(
-                    "No one nearby to recruit.")
-                return
-            if npc.id in self.engine.companion_manager.party:
-                self.engine.dismiss_companion(npc.id)
-                return
-            msg = self.engine.recruit(npc.id)
-            # Success is logged by the manager; log refusals too
-            if "joins your party" not in msg:
-                self.engine.memory_manager.add_event(msg)
-        except Exception:
-            pass
-
-    def _open_shop(self) -> None:
-        try:
-            from engine.shop import merchants_near
-            merchants = merchants_near(self.engine, self.engine.player,
-                                       radius=2.0)
-            if not merchants:
-                self.engine.memory_manager.add_event(
-                    "There's no merchant nearby.")
-                return
-            refusal = self.engine.shop_manager.trade_refusal(
-                self.engine.player, merchants[0])   # P12.11
-            if refusal:
-                self.engine.memory_manager.add_event(refusal)
-                return
-            self.gui.show_shop(merchants[0])
         except Exception:
             pass
