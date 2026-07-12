@@ -86,6 +86,46 @@ class TestTickerFoldBack(unittest.TestCase):
         self.assertTrue(1 <= FactionTicker._casualty_hit(0.5) <= 10)
 
 
+class TestSiegeFold(unittest.TestCase):
+    """P17.8c: a castle assault settled off-screen through the resolver's
+    siege math — the defender fights from behind walls."""
+
+    def test_walls_turn_a_losing_garrison_into_a_holding_one(self):
+        # in the open the crown garrison loses to a stronger rabble...
+        openf = fb.resolve_raid("brigands", 60, "crown", 45,
+                                random.Random(0))
+        self.assertEqual(openf["winner"], "brigands",
+                         "open field: numbers tell")
+        # ...but behind its walls, with no siege engines against it, it holds
+        walled = fb.resolve_siege("brigands", 60, "crown", 45,
+                                  random.Random(0))
+        self.assertEqual(walled["winner"], "crown",
+                         "the wall keeps the rabble out")
+
+    def test_a_rabble_cannot_breach_a_wall(self):
+        res = fb.resolve_siege("brigands", 70, "crown", 40,
+                               random.Random(1))
+        self.assertFalse(res["breached"],
+                         "no engines, no breach — the wall stands")
+
+    def test_a_besieging_host_with_engines_breaches(self):
+        res = fb.resolve_siege("besiegers", 60, "crown", 45,
+                               random.Random(2))
+        self.assertTrue(res["breached"],
+                        "rams and catapults batter the wall down")
+
+    def test_the_defender_carries_a_fort(self):
+        army = fb.army_for("crown", 50, forts=["stone_wall"])
+        self.assertEqual(len(army.forts), 1)
+        self.assertEqual(army.forts[0].fort_type, "stone_wall")
+
+    def test_deterministic_for_a_seed(self):
+        a = fb.resolve_siege("besiegers", 55, "crown", 50, random.Random(7))
+        b = fb.resolve_siege("besiegers", 55, "crown", 50, random.Random(7))
+        self.assertEqual(a["winner"], b["winner"])
+        self.assertEqual(a["breached"], b["breached"])
+
+
 class TestMonsterIncursionFold(unittest.TestCase):
     def _ticker(self):
         from engine.faction_ticker import FactionTicker

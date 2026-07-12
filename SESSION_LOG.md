@@ -4771,3 +4771,35 @@ troops and the host its siege engines; the siege resolves; the gate is
 battered down; and even the victors pay for the walls). Suite 1810,
 green. P18.6b done; P17.8 narrows to just the overworld-clash commander
 orders and a live trigger (P17.8c).
+
+---
+
+## Off-screen sieges — the walls matter in the living world (P17.8c)
+
+Last round the castle assault got its on-screen set-piece (the
+`castle_siege` scenario). This round it gets the OFF-SCREEN counterpart,
+so a siege the player never watches still resolves through the same siege
+logic. `faction_battle.resolve_siege` settles a castle assault the way
+`resolve_raid` settles an open-field clash — except the defender fights
+from behind a `Fort`. `army_for` gained a `forts` parameter to man the
+walls, and two new rosters joined `data/battles/faction_armies.json`: a
+`besiegers` host (sword & spear foot to storm the breach, a ram and a
+catapult to make it) and the `crown` garrison (spears at the gate,
+longbows above).
+
+The result is exactly the resolver's siege truth, made measurable at the
+faction scale: the crown garrison that loses every open-field fight
+against a stronger rabble (0 of 30 seeds) becomes IMPREGNABLE behind its
+wall to that same rabble (holds 30 of 30) — because a force with no siege
+engines simply can't get through the stone. But a proper besieging host,
+rams and catapults in the line, breaches the wall every time (30 of 30)
+and storms it. Walls turn a losing garrison into a holding one, and only
+engines change that — the whole point of a castle, now true whether the
+battle plays on screen or off.
+
+5 tests (walls flip a losing garrison to a holding one; a rabble can't
+breach; a besieging host with engines does; the defender carries its
+fort; deterministic per seed). Suite 1815, green. P17.8 narrows to a thin
+P17.8d — commander orders in the overworld `[Clash]`, and a live gameplay
+trigger that fires the siege when a hostile force actually marches on the
+castle.

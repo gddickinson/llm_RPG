@@ -2648,10 +2648,19 @@ is shippable and testable, de-risking UI last:
   a gatehouse, corner towers and boiling oil, the Bloodstone Guard (spears
   + longbows + keep-guard) defending, and a host with rams + catapults
   that batter the gate down and storm the breach (the victors always pay
-  a toll to the walls). 6 tests. Suite 1810, green. Only P17.8c remains:
-  commander orders reaching overworld `[Clash]` events, and a live
-  overworld trigger that launches this siege when the castle is
-  assaulted.)*
+  a toll to the walls). 6 tests. Suite 1810, green.)*
+  *(P17.8c OFF-SCREEN siege done: `faction_battle.resolve_siege` settles a
+  castle assault through the resolver's siege math — `army_for` gains a
+  `forts` param so the defender fights from behind walls (a `Fort`), and
+  the new `besiegers`/`crown` rosters give a proper siege host (rams +
+  catapults) and the garrison (spears + bows). The walls decide it: the
+  crown garrison that loses 0/30 in the open HOLDS 30/30 behind its wall
+  against a rabble with no engines, while a besieging host with engines
+  breaches 30/30. So off-screen faction sieges now reuse the same siege
+  field as the on-screen scenario. 5 tests. Suite 1815, green. Remaining
+  P17.8d (thin): commander orders reaching overworld `[Clash]` events, and
+  a live gameplay trigger firing `resolve_siege`/the scenario when a
+  hostile force actually assaults the castle.)*
 
 ### Combat fidelity arc (user: "highly realistic battles")
 Speed (P17.4c) is the keystone; these layer real tactics on the grid

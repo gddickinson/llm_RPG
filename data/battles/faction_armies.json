@@ -1,11 +1,105 @@
 {
   "_doc": "P17.8 fold-back. Each faction's abstract strength (0-100) is dressed as a little army for battle_resolve: the shares below split the body count across troop types that fit the faction's character. `_default` covers any faction without its own line.",
   "rosters": {
-    "guards":    [["infantry_spear", 3], ["infantry_sword", 3], ["archer_longbow", 2]],
-    "brigands":  [["infantry_sword", 4], ["cavalry_light", 2], ["archer_crossbow", 1]],
-    "villagers": [["infantry_sword", 4], ["infantry_spear", 2]],
-    "merchants": [["infantry_sword", 3], ["cavalry_light", 1]],
-    "monsters":  [["war_dire_wolf", 3], ["war_elephant", 1]],
-    "_default":  [["infantry_sword", 3], ["infantry_spear", 2]]
+    "guards": [
+      [
+        "infantry_spear",
+        3
+      ],
+      [
+        "infantry_sword",
+        3
+      ],
+      [
+        "archer_longbow",
+        2
+      ]
+    ],
+    "brigands": [
+      [
+        "infantry_sword",
+        4
+      ],
+      [
+        "cavalry_light",
+        2
+      ],
+      [
+        "archer_crossbow",
+        1
+      ]
+    ],
+    "villagers": [
+      [
+        "infantry_sword",
+        4
+      ],
+      [
+        "infantry_spear",
+        2
+      ]
+    ],
+    "merchants": [
+      [
+        "infantry_sword",
+        3
+      ],
+      [
+        "cavalry_light",
+        1
+      ]
+    ],
+    "monsters": [
+      [
+        "war_dire_wolf",
+        3
+      ],
+      [
+        "war_elephant",
+        1
+      ]
+    ],
+    "_default": [
+      [
+        "infantry_sword",
+        3
+      ],
+      [
+        "infantry_spear",
+        2
+      ]
+    ],
+    "besiegers": [
+      [
+        "infantry_sword",
+        4
+      ],
+      [
+        "infantry_spear",
+        2
+      ],
+      [
+        "siege_ram",
+        1
+      ],
+      [
+        "siege_catapult",
+        1
+      ]
+    ],
+    "crown": [
+      [
+        "infantry_spear",
+        3
+      ],
+      [
+        "infantry_sword",
+        2
+      ],
+      [
+        "archer_longbow",
+        2
+      ]
+    ]
   }
 }
