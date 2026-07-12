@@ -3398,10 +3398,28 @@ Sequenced into tested rounds:
   P18.3b: the OVERWORLD footprint (curtain-wall + gatehouse block) is
   deferred to the placement rounds (P18.4/P18.5) — a fortress blueprint
   is dead code until the castle is actually planted in a world.)*
-- [ ] **P18.4 The castle town & supply villages.** A populated town at
+- [x] **P18.4 The castle town & supply villages.** A populated town at
   the gate (market, inn, temple, craftsmen) and a ring of farming
   villages whose P16 production feeds the castle larder — a real
   supply chain the player can see and disrupt.
+  *(Round: `world/castle_region.py` — `build_castle_region(world)` plants
+  the whole Bloodstone realm on a map. The FORTRESS: a curtain-walled
+  keep with a single gatehouse in the south wall and a grass bailey,
+  under the "Bloodstone Castle" location the P18.1-3 seven-floor
+  structure attaches to — so this ALSO satisfies P18.3b (the overworld
+  footprint; the castle now reads as a fortress from the map). At the
+  gate, Kingsgate Town (The King's Rest Inn, Kingsgate Market, Temple of
+  the Crown, the Royal Smithy — tavern/shop/temple/forge tagged). A ring
+  of three farming villages (Wheatfield/Millbrook/Greenhollow), each a
+  farmhouse beside a patch of FARMLAND the P8.3 farms + P16 loop bring to
+  life. Roads stitch every village to the town to the gate — the supply
+  routes. The town and villages register as P16 production settlements,
+  so grain flows toward the crown by the existing loop. 7 tests (whole
+  realm planted, the walled fortress with one gate, farmland, roads, the
+  town's trades, the 7-floor structure attaches to the footprint, and
+  the settlements are recognised by the production loop). Suite 1790,
+  green. Planting this into a LIVE world (and dropping the player at the
+  gate) is P18.5 — this is the reusable region the menu-start will call.)*
 - [ ] **P18.5 "Begin at the Castle" — the menu start.** A start-menu
   option that generates a castle-centered world (castle + town +
   villages) and drops the newly-made character at the gate.

@@ -4632,3 +4632,39 @@ curtain-wall + gatehouse block the worldgen plants so the castle reads as
 a fortress from the map — is deferred to the placement rounds (P18.4 town
 / P18.5 menu start), since a fortress blueprint is dead code until the
 castle is actually put in a world.
+
+---
+
+## P18.4 The castle town & supply villages — the realm around the keep
+
+The castle had seven floors of interior (P18.1-3) but nowhere to stand on
+the map, and no world around it. `world/castle_region.py` gives it a
+realm.
+
+`build_castle_region(world)` plants the whole Bloodstone realm. At its
+heart, the FORTRESS: a curtain wall of building tiles around a grass
+bailey, breached by a single ROAD gatehouse in the south wall — and the
+footprint IS the "Bloodstone Castle" location, so the P18.1-3 seven-floor
+structure attaches to it and the castle finally reads as a fortress from
+the overworld (this is the P18.3b footprint, delivered here). At the gate
+sits Kingsgate Town — The King's Rest Inn, Kingsgate Market, the Temple
+of the Crown, and the Royal Smithy that shoes the cavalry — each tagged
+so the tavern/shop/temple/forge systems recognise it. Ringing the castle,
+three farming villages (Wheatfield, Millbrook, Greenhollow), each a
+farmhouse beside a patch of real FARMLAND the P8.3 farm calendar and the
+P16 production loop bring to life. Roads run from every village through
+the town to the gate — the supply routes made visible.
+
+Because the town and villages carry settlement keywords and aren't
+enterable buildings, the P16 production loop already counts them as
+settlements: the villages grow grain, the loop moves it, and the crown's
+custom fattens the town. The "supply chain the player can see and
+disrupt" is that layout plus the existing living-world loop.
+
+7 tests (the whole realm planted; the walled fortress with exactly one
+gate; farmland; the supply roads; the town's four trades; and two
+integration checks — the 7-floor keep structure attaches to the planted
+footprint, and the production loop recognises the town + villages).
+Suite 1790, green. Planting this into a live world and dropping the
+player at the gate is P18.5 — this is the reusable region that
+menu-start will call.
