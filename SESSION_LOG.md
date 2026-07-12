@@ -4902,3 +4902,28 @@ the walls hide them, and a window is sight not reach). Suite 1833, green.
 With windows pulled, the whole P14.2 "candidates awaiting a pull" backlog
 is emptied and the item is ticked. Every checkbox in the plan is now
 green — the sequential phases and the optional backlog alike.
+
+---
+
+## Quest-board persistence — closing the P0.1b save/load gap
+
+Every plan checkbox is green, so this round pulled the earliest noted
+inline remainder in phase order: P0.1b, the tail of the Phase-0 save/load
+repair. Most of it had already been quietly closed — dungeon state and
+place-state, shop stock, and the structure interiors all gained their
+save/load in later rounds. The one gap left was the QUEST BOARDS.
+
+The tavern board isn't static: `radiant.py` posts a fresh notice each
+morning (and unposts expired ones), and the DM can pin a quest to it too.
+But `QuestBoardManager` had no `to_dict`/`from_dict` and wasn't in the
+save/load subsystem list, so every load reset the board to its five
+default postings — any radiant or DM notice you'd been eyeing simply
+vanished. Now the manager serializes each board's live `posted_quest_ids`
+(and recreates a board that existed only in the save, e.g. a DM-raised
+one), wired into `save_load` alongside shops and dungeons.
+
+3 tests (the manager round-trips a posting; a save-only board is
+recreated; and end-to-end, a notice pinned to the Oakvale board is back
+after a save → reset-to-defaults → load). Suite 1836, green. With this
+P0.1b is closed, and the plan — every phase and every noted remainder in
+this early stretch — is that much tighter.

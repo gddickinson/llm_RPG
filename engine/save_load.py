@@ -161,6 +161,8 @@ class SaveManager:
             "dm_state": self._subsystem_dict(engine, "dm"),
             "world_history": list(getattr(engine, "world_history", [])),
             "shops": self._subsystem_dict(engine, "shop_manager"),
+            "quest_boards": self._subsystem_dict(engine,
+                                                 "quest_board_manager"),
             "dungeons": {key: dg.to_dict()
                          for key, dg in getattr(engine, "dungeons", {}).items()},
             "place_state": self._serialize_place_state(engine),
@@ -306,7 +308,8 @@ class SaveManager:
                           ("surfaces", "surfaces_layer"),
                           ("flood", "flood_system"),
                           ("dm_state", "dm"),
-                          ("shops", "shop_manager")):
+                          ("shops", "shop_manager"),
+                          ("quest_boards", "quest_board_manager")):
             sub = getattr(engine, attr, None)
             payload = data.get(key)
             if sub is not None and payload is not None and hasattr(sub, "from_dict"):

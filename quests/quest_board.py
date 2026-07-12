@@ -81,3 +81,24 @@ class QuestBoardManager:
         if quest_id not in board.posted_quest_ids:
             return False
         return self.engine.accept_quest(quest_id)
+
+    # ---- persistence (P0.1b) -------------------------------------------
+
+    def to_dict(self) -> dict:
+        """Each board's LIVE postings — radiant notices and DM quests get
+        added/removed at runtime, so the defaults alone don't round-trip."""
+        return {"boards": {b.location_name: list(b.posted_quest_ids)
+                           for b in self.boards}}
+
+    def from_dict(self, data: dict) -> None:
+        saved = data.get("boards", {})
+        known = {b.location_name for b in self.boards}
+        for b in self.boards:
+            if b.location_name in saved:
+                b.posted_quest_ids = list(saved[b.location_name])
+        # a board that existed only in the save (a DM-raised board) — keep it
+        for loc, ids in saved.items():
+            if loc not in known:
+                self.boards.append(
+                    QuestBoard(location_name=loc,
+                               posted_quest_ids=list(ids)))

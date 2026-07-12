@@ -32,8 +32,14 @@ they transform the experience.
 
 - [x] **P0.1 Fix save/load data loss.** *(done 2026-07-09 — save v3: metadata,
   equipment, symbol/faction, weather, foraging, companions all round-trip;
-  6 regression tests in `tests/test_save_full_state.py`. Remainder: dungeon/
-  interior state, quest boards, shop stock still not persisted — tracked as P0.1b.)* `character.to_dict()` (`characters/character.py:209`)
+  6 regression tests in `tests/test_save_full_state.py`. P0.1b (the noted
+  remainder) is now CLOSED: dungeon state + place-state and shop stock got
+  their `to_dict`/`from_dict` in later rounds, structure interiors persist
+  through the structures subsystem, and the last gap — QUEST BOARDS —
+  landed here: `QuestBoardManager.to_dict`/`from_dict` round-trips each
+  board's live `posted_quest_ids`, so radiant notices and DM-posted quests
+  survive a load instead of reverting to the defaults (wired into
+  `save_load`, 3 tests, suite 1836).)* `character.to_dict()` (`characters/character.py:209`)
   omits `metadata` and `equipment`; `save_load._rebuild_character` never restores them.
   On every F9 load the player loses equipped gear (it's moved out of inventory by
   `equip()`), XP, faction reputation, bank balance, mana, and known spells. Also not
