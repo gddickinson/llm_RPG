@@ -3673,8 +3673,16 @@ today reacts only to HP — a real gap.
   *Remainder:* companies take their own QUESTS + clear dungeons, COMPETE for
   named hoards, renown grows on real wins (kill/quest ledger, not just levels),
   and the full fortune arc (a wiped company loses its renown for good).
-- [ ] **M.7b Guild halls as places.** (see M.7 above) — where blades, quests
-  and training reliably congregate.
+- [x] **M.7b Guild halls as places.** (see M.7 above) — where BLADES reliably
+  congregate. *Done (already shipped; checkbox was stale):* `engine/guildhalls.py`
+  `GuildHallSystem` seeds named `guildhall` `Location` markers beside settlements
+  (Adventurers' Guild @ Oakvale, Mercenaries' Rest @ Riverside), the M.6
+  adventurers gather at their home hall (`hall_spot`), and `hall_at`/`roster`
+  expose who's on offer to recruit/hire. `tests/test_guildhalls.py` (6). The
+  *quests + training* at halls is the M.7c remainder below.
+- [ ] **M.7c Quests & training at the guild halls.** Board-quests posted at a
+  hall and a training service (pay for skill XP / a lesson), so a hall is a place
+  you go to for WORK and to get BETTER, not only to recruit.
 
 ### World balance & pacing (from the flee-heavy data)
 - [ ] **P27.1 Encounter-density & danger tiers.** The overworld is too thick
