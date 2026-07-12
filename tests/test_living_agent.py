@@ -95,17 +95,65 @@ class TestSocial(_Base):
         self.assertTrue(self.ac.greeted)
 
 
+class TestRecovery(_Base):
+    """A safe, wounded hero recovers (M.8a) instead of soldiering on at a
+    sliver of health — a potion, a Heal, or making camp."""
+
+    def test_safe_wounded_hero_drinks_a_potion(self):
+        from items.item_registry import create_item
+        self.p.hp = int(self.p.max_hp * 0.5)      # below REST, above LOW
+        self.p.inventory = [create_item("potion")]
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0],
+                         "heal_potion")
+
+    def _rations(self, heal=10):
+        class _Food:
+            use_effect = {"food": True}
+            heal_amount = heal
+            quantity = 1
+        return _Food()
+
+    def test_badly_hurt_provisioned_hero_makes_camp(self):
+        self.p.hp = int(self.p.max_hp * 0.3)      # below LOW, out of heals
+        self.p.inventory = [self._rations()]      # but has trail rations
+        self.p.metadata.pop("spells_known", None)
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "rest")
+
+    def test_no_camp_without_provisions(self):
+        # a fruitless doze would just loop — so with no food, no camp
+        self.p.hp = int(self.p.max_hp * 0.3)
+        self.p.inventory = []
+        self.p.metadata.pop("spells_known", None)
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "rest")
+
+    def test_no_rest_with_a_foe_near(self):
+        self.p.hp = int(self.p.max_hp * 0.3)
+        self.p.inventory = []
+        foe = build_monster("wolf", (13, 10))
+        self.engine.npc_manager.add_npc(foe)
+        self.engine.world.map.place_character(foe, 13, 10)
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "rest")
+
+    def test_an_adventurer_never_sleeps_the_world_away(self):
+        self.ac.social = False                     # a driven adventurer NPC
+        self.p.hp = int(self.p.max_hp * 0.3)
+        self.p.inventory = [self._rations()]       # even provisioned
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "rest")
+
+
 class TestExplore(_Base):
     def test_a_named_goal_is_class_flavoured(self):
+        from engine import agent_goals as agoals
         self.p.character_class = CharacterClass.WIZARD
-        goal = self.ac._named_goal(self.engine, self.p)
+        goal = agoals.named_goal(self.ac, self.engine, self.p)
         self.assertIsNotNone(goal)
         self.assertIsNotNone(self.ac.goal_name)
 
     def test_visited_places_are_not_re_sought(self):
-        goal1 = self.ac._named_goal(self.engine, self.p)
+        from engine import agent_goals as agoals
+        goal1 = agoals.named_goal(self.ac, self.engine, self.p)
         self.ac.visited.add(self.ac.goal_name)
-        goal2 = self.ac._named_goal(self.engine, self.p)
+        goal2 = agoals.named_goal(self.ac, self.engine, self.p)
         self.assertNotEqual(goal1, goal2)
 
 

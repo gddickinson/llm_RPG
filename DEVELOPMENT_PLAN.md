@@ -3478,10 +3478,22 @@ implication, by a casual human. This backlog turns that into rounds. Each is
 a coherent, testable slice; ordered roughly by impact.
 
 ### M.8 — The away-hero uses the WHOLE game (deepen autoplay)
-- [ ] **M.8a Rest & recovery loop.** A wounded, safe hero seeks healing:
-  drink a potion below a threshold, rest at an inn when it can afford one,
-  camp in the wilds when it can't, cast or receive Heal. Ends the "chronic
-  12/37 HP" attrition. (Agent policy + the existing rest/camp/food systems.)
+- [x] **M.8a Rest & recovery loop (2026-07-12d).** A SAFE, wounded hero now
+  recovers (`agent_controller.decide` step 3b, `REST_HP` 0.55) instead of
+  soldiering on at a sliver: a potion, a Heal spell, or — badly hurt on the
+  open overworld and out of quick heals — making CAMP. Crucially the camp is
+  gated on `agent_sense._provisioned` (a real camp needs food worth
+  `SUPPLY_NEED`): without it, camping is a fruitless doze the hero would
+  repeat every night — the first cut of this LOOPED 223 times. With the gate,
+  a 400-turn autoplay session went from mean 0.40 HP / 289-turns-wounded (the
+  rest-loop) to **mean 0.72 HP / 112-turns-wounded, zero rest-loops**, and
+  fleeing nearly halved. Adventurer NPCs (`social=False`) never rest (they'd
+  advance the world clock). 5 tests; the goal/disposition helpers split to
+  `engine/agent_goals.py` to hold the line. Remainder: the camp path stays
+  dormant until the hero HAS provisions (no base food item sets
+  `use_effect.food` — that arrives with M.8d gather/cook), and inn-rest wants
+  the hero to seek an inn (M.8b navigation). Fully ending attrition also
+  needs P27.1 (combat density) + M.8b (buy potions/food).
 - [ ] **M.8b Economy loop.** The hero SPENDS: sell junk loot at a shop, buy
   potions/ammo/better gear, bank a surplus, HIRE a blade (M.7) when flush and
   short-handed. Right now it hoards gold it never uses.

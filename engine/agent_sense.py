@@ -60,3 +60,18 @@ def _can_shoot(char) -> bool:
                    for it in getattr(char, "inventory", []))
     except Exception:
         return False
+
+
+def _provisioned(char, need: int = 8) -> bool:
+    """Enough food in the pack for a REAL camp (a proper half-heal, not a
+    hungry doze). Gating rest on this is what keeps a wounded hero from
+    sleeping the same fruitless night over and over (M.8a)."""
+    total = 0
+    for it in getattr(char, "inventory", []):
+        eff = getattr(it, "use_effect", None) or {}
+        heal = getattr(it, "heal_amount", 0)
+        if eff.get("food") and heal > 0:
+            total += heal * max(1, getattr(it, "quantity", 1))
+            if total >= need:
+                return True
+    return False

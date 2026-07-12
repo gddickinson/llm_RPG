@@ -20,15 +20,17 @@ import random
 from contextlib import contextmanager
 
 from engine import agent_nav as nav
+from engine import agent_goals as agoals
 from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
-                                _knows_heal, _can_shoot)
+                                _knows_heal, _can_shoot, _provisioned)
 
 logger = logging.getLogger("llm_rpg.agent")
 
 SIGHT = 8                                   # tiles an agent notices a foe
 RANGED = 5                                  # tiles a bow can reach
 LOW_HP = 0.4                                # heal / flee at or below this
+REST_HP = 0.55                              # top up / rest when safe below this
 SWARM_HP = 0.75                             # back off a pack below this
 
 
@@ -177,69 +179,6 @@ class AgentController:
                         return loc.center()
         return None
 
-    # class → the kinds of place a hero of that calling is drawn to (P-agent)
-    _CLASS_DRAW = {
-        "warrior": ("lair", "warren", "den", "keep", "cave", "ruin"),
-        "barbarian": ("lair", "den", "cave", "warren"),
-        "paladin": ("keep", "temple", "shrine", "lair"),
-        "wizard": ("tower", "stones", "shrine", "barrow", "temple"),
-        "sorcerer": ("tower", "stones", "barrow"),
-        "warlock": ("barrow", "stones", "hollow", "tower"),
-        "rogue": ("cave", "market", "ruin", "barrow", "hollow"),
-        "ranger": ("hollow", "camp", "cave", "forest", "ruin"),
-        "druid": ("hollow", "shrine", "stones", "forest"),
-        "cleric": ("temple", "shrine", "chapel"),
-        "monk": ("temple", "shrine", "stones"),
-        "bard": ("tavern", "market", "inn", "village"),
-    }
-
-    def _named_goal(self, engine, char):
-        """A class-flavoured destination: the nearest UNVISITED named place
-        the hero's calling draws it to, else any unvisited place."""
-        cls = getattr(getattr(char, "character_class", None), "value", "")
-        draw = self._CLASS_DRAW.get(cls, ())
-        px, py = char.position
-        pref, other = [], []
-        for loc in getattr(engine.world, "locations", []):
-            if loc.name in self.visited:
-                continue
-            cx, cy = loc.center()
-            d = (cx - px) ** 2 + (cy - py) ** 2
-            low = loc.name.lower()
-            (pref if any(k in low for k in draw) else other).append((d, loc))
-        pool = pref or other
-        if not pool:
-            return None
-        pool.sort(key=lambda t: t[0])
-        loc = pool[0][1]
-        self.goal_name = loc.name
-        return loc.center()
-
-    def _disposition(self, engine, char) -> str:
-        """How the player asked the hero to behave in their absence."""
-        try:
-            from engine.settings import get_setting
-            d = get_setting(char, "disposition")
-            if d:
-                return str(d).lower()
-        except Exception:
-            pass
-        return (getattr(char, "metadata", {}) or {}).get("disposition",
-                                                         "balanced")
-
-    ROAM = 10                 # how far an idle away hero strikes out
-
-    def _pick_goal(self, engine, char):
-        # an away hero potters back toward home (M.3); otherwise strike
-        # out on a wider foray so it visibly explores rather than jitter
-        if self.home is not None and tuple(char.position) != tuple(self.home):
-            return tuple(self.home)
-        w = engine.world.map
-        x, y = char.position
-        r = self.ROAM
-        return (max(0, min(w.width - 1, x + self.rng.randint(-r, r))),
-                max(0, min(w.height - 1, y + self.rng.randint(-r, r))))
-
     def _zone_plan(self, engine, char, zone):
         """Inside a building or dungeon. A BUILDING: make for the door and
         step back outside, so the away-hero resumes its life rather than
@@ -266,7 +205,7 @@ class AgentController:
         places its calling draws it — weighted by the disposition the
         player set. Returns a plan; executes nothing."""
         hp = char.hp / max(1, char.max_hp)
-        disp = self._disposition(engine, char)
+        disp = agoals.disposition(char)
         foes = self._foes_in_sight(engine, char)
         adj = [f for f, d in foes if d <= 1]
 
@@ -323,6 +262,23 @@ class AgentController:
         if self._nearest_loot(engine, char, r=0) == tuple(char.position):
             return ("loot",)
 
+        # 3b. recover between fights (M.8a) — a SAFE, wounded hero tops up
+        # rather than soldiering on at a sliver of health: a potion, a Heal
+        # spell, or (badly hurt on the open overworld, out of quick heals)
+        # make CAMP. Ends the chronic-attrition death-by-a-thousand-cuts.
+        if not foes and hp < REST_HP:
+            pot = _healing_item(char)
+            if pot is not None:
+                return ("heal_potion", pot)
+            if _knows_heal(char):
+                return ("heal_spell",)
+            # only make camp if it'll actually mend us — a REAL camp needs
+            # provisions, else it's a fruitless doze we'd repeat every night
+            if self.social and hp < LOW_HP \
+                    and nav.active_zone(engine) is None \
+                    and _provisioned(char):
+                return ("rest",)
+
         # inside a building/dungeon: leave or prowl, never freeze on an
         # unreachable overworld goal
         zone = nav.active_zone(engine)
@@ -356,8 +312,8 @@ class AgentController:
             if self.goal_name is not None:
                 self.visited.add(self.goal_name)
             self.goal_name, self._stall, self._gd = None, 0, None
-            self.goal = self._named_goal(engine, char) \
-                or self._pick_goal(engine, char)
+            self.goal = agoals.named_goal(self, engine, char) \
+                or agoals.pick_goal(self, engine, char)
         gd = _dist(char.position, self.goal)
         self._stall = self._stall + 1 if self._gd is not None and gd >= self._gd else 0
         self._gd = gd
@@ -433,6 +389,13 @@ class AgentController:
                 engine.cast_spell("heal")
             elif k == "loot":
                 engine.pickup_item()
+            elif k == "rest":
+                try:                          # camp/inn to mend (M.8a)
+                    from engine.rest import sleep
+                    sleep(engine)
+                    self._deed(engine, char, "made camp to mend its wounds.")
+                except Exception:
+                    pass
             elif k == "talk":
                 npc = plan[1]
                 self.greeted.add(npc.id)

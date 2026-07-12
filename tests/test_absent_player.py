@@ -71,19 +71,22 @@ class TestAwayFlag(unittest.TestCase):
             self.engine._advancing = False
 
     def test_away_hero_potters_toward_home(self):
+        from engine import agent_goals as agoals
         ctrl = AgentController(seed=1)
         ctrl.home = (self.p.position[0] + 4, self.p.position[1])
-        self.assertEqual(ctrl._pick_goal(self.engine, self.p), ctrl.home)
+        self.assertEqual(agoals.pick_goal(ctrl, self.engine, self.p),
+                         ctrl.home)
 
     def test_idle_away_hero_strikes_out_to_explore(self):
         # with no home to hug (or standing on it), it roams within ROAM
+        from engine import agent_goals as agoals
         ctrl = AgentController(seed=3)
         ctrl.home = None
         x, y = self.p.position
         for _ in range(20):
-            gx, gy = ctrl._pick_goal(self.engine, self.p)
-            self.assertLessEqual(abs(gx - x), ctrl.ROAM)
-            self.assertLessEqual(abs(gy - y), ctrl.ROAM)
+            gx, gy = agoals.pick_goal(ctrl, self.engine, self.p)
+            self.assertLessEqual(abs(gx - x), agoals.ROAM)
+            self.assertLessEqual(abs(gy - y), agoals.ROAM)
 
     def test_set_away_keeps_the_autoplay_setting_honest(self):
         from engine import settings

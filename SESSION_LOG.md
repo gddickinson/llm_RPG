@@ -5983,3 +5983,29 @@ markers don't perturb the general suite. Validation moved to a new
 under 500. 7 tests. That completes M.7 (hirelings + guilds). Remainder M.7c:
 board-quests and training AT the halls, an enterable interior, a mages'
 college.
+
+## 2026-07-12 (cont.) — M.8a: the away-hero recovers (and a rest-loop dodged)
+
+First of the Phase 27 autoplay-backlog items. The 500-turn observation had
+the away-hero sitting chronically wounded (12/37 HP) because it only healed
+at LOW_HP mid-combat and never rested. M.8a adds a recovery step to
+`decide`: a SAFE hero below `REST_HP` (0.55) tops up with a potion or a Heal
+spell, and — badly hurt on the open overworld, out of quick heals — makes
+CAMP (the new `rest` verb → `engine.rest.sleep`, which camps outdoors).
+
+The first cut LOOPED spectacularly: with no provisions a camp is a fruitless
+"doze" that heals almost nothing, so the hero rested 223 of 400 turns,
+sleeping 223 nights and still bleeding. The fix is `agent_sense._provisioned`
+— a real camp needs food worth `SUPPLY_NEED`, so without it the hero doesn't
+bother. With the gate, a 400-turn session went from mean 0.40 HP /
+289-turns-wounded (the loop) to **mean 0.72 HP / 112-turns-wounded, zero
+rest-loops**, and fleeing nearly halved — the proactive potion timing alone
+keeps it much healthier. Adventurer NPCs (`social=False`) never rest — they'd
+advance the whole world clock.
+
+`agent_controller` was over 500 with the additions, so the goal/disposition
+cluster (`CLASS_DRAW`, `named_goal`, `pick_goal`, `disposition`) moved to a
+new `engine/agent_goals.py`. 5 new tests. The camp path stays dormant until
+the hero HAS provisions (no base item sets `use_effect.food` yet — that comes
+with M.8d gather/cook); fully ending attrition also wants P27.1 (combat
+density) and M.8b (buy potions/food).
