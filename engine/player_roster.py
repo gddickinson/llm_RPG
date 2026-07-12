@@ -196,6 +196,12 @@ class PlayerRoster:
                                    or (0, 0))
         elif not away:
             ctrl.away_home = None
+        if away:   # stamp the away-start state for the M.9a return digest
+            try:
+                from engine.away_digest import snapshot
+                snapshot(self.engine, character)
+            except Exception:
+                pass
         # the `autoplay` setting is the persisted mirror of away-state:
         # keep it honest so the settings overlay never lies (e.g. a
         # keypress that hands control back also clears the toggle)

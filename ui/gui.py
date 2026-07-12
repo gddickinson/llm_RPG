@@ -163,6 +163,16 @@ class GameGUI:
                     self.engine.roster.set_away(self.engine.player, False)
                     self.engine.memory_manager.add_event(
                         "You take the reins back from the agent.")
+                    # M.9a: greet the returning player with what happened
+                    try:
+                        from engine.away_digest import build_digest
+                        dg = build_digest(self.engine, self.engine.player)
+                        if dg:
+                            self.overlay = dg
+                            self.mode = "menu"
+                            continue      # don't let this key dismiss it
+                    except Exception:
+                        pass
                 self.input_handler.handle_event(event)
             from ui.away_mode import heartbeat
             heartbeat(self)               # M.3 tick the world while away

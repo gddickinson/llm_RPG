@@ -3562,9 +3562,17 @@ a coherent, testable slice; ordered roughly by impact.
   gathers, worships and homesteads — it uses the whole game.*
 
 ### M.9 — Watchability: autoplay as a spectator feature
-- [ ] **M.9a "While you were away" digest (was M.5b).** A readable screen of
-  what the hero did, whom it met, what it won/lost — the `[Away]` deed ledger
-  surfaced, not buried in the event log.
+- [x] **M.9a "While you were away" digest (2026-07-12e).** When the human
+  takes the reins back from the autoplay agent, a "While You Were Away" screen
+  greets them with what the hero got up to — `engine/away_digest.py`:
+  `set_away(True)` stamps a snapshot (turn/day/level/gold/party + a memory
+  index), and `build_digest` reads it back to tally the DELTAS (days away,
+  levels gained, purse change, new companions) and list the `[Away]` deed
+  beats logged since, as a `(title, lines)` overlay — consuming the snapshot
+  so it shows ONCE. The GUI's hand-back pops it as a menu overlay (and
+  `continue`s so the very key that handed control back doesn't dismiss it).
+  6 tests. Remainder: richer content (quests completed, deaths, weighty
+  `[Legend]`/`[Realm]` beats), and a key to RE-VIEW the last digest.
 - [ ] **M.9b Autoplay speed & step.** Let the watcher speed up / slow down /
   single-step the heartbeat (the fixed 0.5s cadence is the only speed today).
 - [ ] **M.9c Spectator HUD.** Show the driven hero's current GOAL, plan, party

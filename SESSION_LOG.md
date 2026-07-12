@@ -6119,3 +6119,19 @@ With this, the M.8 arc (a–f) is complete: the away-hero rests, spends, casts,
 gathers, worships and homesteads. It genuinely uses the whole game — the
 chronically-wounded, gold-hoarding scavenger of the first observation is now
 a self-sufficient adventurer.
+
+## 2026-07-12 (cont.) — M.9a: the "While You Were Away" digest
+
+First of the M.9 watchability items. The away-hero has been writing `[Away]`
+deed beats all along, but they scrolled past in the event log — when the
+human took control back they saw nothing. Now they're greeted with a screen.
+`engine/away_digest.py`: `set_away(True)` stamps a snapshot (turn, day, level,
+gold, party, and the memory length as an index); `build_digest` reads it back,
+tallies the DELTAS — days away, levels gained, purse change, new companions —
+and lists the `[Away]` deeds logged since, returning a `(title, lines)`
+overlay. It CONSUMES the snapshot, so the summary shows exactly once. The
+GUI's hand-back builds it and pops it as a menu overlay, `continue`-ing so the
+very key that took control back doesn't instantly dismiss it. 6 tests.
+
+Remainder: richer content (quests completed, a death, the weightiest
+[Legend]/[Realm] beats), and a key to re-read the last digest.
