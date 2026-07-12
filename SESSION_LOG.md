@@ -6336,3 +6336,13 @@ suite isn't perturbed) + `save_load` (the platform index persists). Recasts
 travel as PLACE-to-PLACE, distinct from the diary-gated `TravelSystem`. 9 tests.
 Remainder: the player-facing hook (a waystone menu / recast the U-key screen)
 and P28.1b arrival-collision diversion + P28.1c network-gated new regions.
+
+## 2026-07-12 (cont.) — P28.1b: no two travellers stack on a waystone
+
+Small follow-on to P28.1a, and already satisfied by the design: an arrival
+lands via `TeleportNetwork._safe_landing`, which fans out r=0→7 and skips any
+tile already in `wmap.characters` — so a traveller stepping onto a waystone
+another body occupies is diverted to the nearest free, walkable tile, and a
+second arrival takes a different tile again. Locked in with 2 collision tests
+(test-only; no engine change, P28.1a's suite already green at 2250). Remainder:
+P28.1c (platforms gate access to new regions) + the player-facing hook.

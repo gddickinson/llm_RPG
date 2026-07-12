@@ -113,6 +113,48 @@ class TestTravel(_Base):
         self.assertIn("ring", msg.lower())
 
 
+class TestArrivalCollision(_Base):
+    """P28.1b — an arrival never STACKS on an occupied platform; it's diverted
+    to a close, safe, free tile beside it."""
+
+    def _occupy(self, x, y):
+        from world.monsters import build_monster
+        n = build_monster("wolf", (x, y))
+        self.engine.npc_manager.add_npc(n)
+        self.engine.world.map.remove_character(n)
+        n.position = (x, y)
+        self.engine.world.map.place_character(n, x, y)
+        return n
+
+    def test_arrival_diverts_off_an_occupied_waystone(self):
+        src, dst = self.tn.platforms[0], self.tn.platforms[1]
+        dx, dy = dst["pos"]
+        self._occupy(dx, dy)                 # someone standing on the waystone
+        self._stand_on(src)
+        self.tn.teleport(dst["id"])
+        self.assertNotEqual(tuple(self.p.position), (dx, dy),
+                            "must not stack onto the occupied waystone")
+        # and it landed on a free, walkable tile
+        wmap = self.engine.world.map
+        self.assertNotIn(wmap.terrain[self.p.position[1]][self.p.position[0]],
+                         (TerrainType.BUILDING, TerrainType.WATER,
+                          TerrainType.MOUNTAIN))
+
+    def test_two_arrivals_do_not_stack(self):
+        src, dst = self.tn.platforms[0], self.tn.platforms[1]
+        # first traveller lands
+        self._stand_on(src)
+        self.tn.teleport(dst["id"])
+        first = tuple(self.p.position)
+        # a second traveller (jump the player back to the source and arrive
+        # again while the first landing tile is now occupied by a marker)
+        self._occupy(*first)
+        self._stand_on(src)
+        self.tn.teleport(dst["id"])
+        self.assertNotEqual(tuple(self.p.position), first,
+                            "a second arrival takes a different tile")
+
+
 class TestPersistence(_Base):
     def test_platforms_survive_a_save(self):
         tmp = tempfile.mkdtemp()

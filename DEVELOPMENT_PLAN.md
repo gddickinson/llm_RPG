@@ -3742,10 +3742,13 @@ P15.8b pack mule).
   the guild halls in the general suite. `tests/test_teleport_network.py` (9).
   *Remainder:* the player-facing HOOK (a waystone-standing menu / recast the
   U-key travel screen to the network).
-- [ ] **P28.1b Arrival collision → safe space.** If a platform is occupied
+- [x] **P28.1b Arrival collision → safe space.** If a platform is occupied
   (several arriving at once, or an NPC standing on it), the arrival is
   diverted to a CLOSE, SAFE tile beside it — reuse `_safe_landing`, extended
   to also avoid occupied tiles and fan out. So two travellers never stack.
+  *Done:* `TeleportNetwork._safe_landing` fans out r=0→7 and skips any tile in
+  `wmap.characters`, so an arrival never lands on an occupied waystone and a
+  second arrival takes a different tile. `tests/test_teleport_network.py` (+2).
 - [ ] **P28.1c The network grows.** Later, platforms gate access to NEW
   REGIONS: an unlocked (quest / guild-rank / paid) far platform is how you
   reach a new area — the network as progression, run by the guild. Ties into
