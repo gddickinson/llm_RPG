@@ -3690,9 +3690,17 @@ today reacts only to HP — a real gap.
   board-quests posted AT the halls, and a player-facing hook (a hall menu / key).
 
 ### World balance & pacing (from the flee-heavy data)
-- [ ] **P27.1 Encounter-density & danger tiers.** The overworld is too thick
+- [x] **P27.1 Encounter-density & danger tiers.** The overworld is too thick
   with lairs/nests (flee was 36% of turns). Scale danger by region/distance,
-  keep roads & near-town safer, give the early game breathing room.
+  keep roads & near-town safer, give the early game breathing room. *Done:*
+  `EncounterManager` — a hard SAFE ZONE in `maybe_spawn` (no wandering spawns
+  within `SAFE_RADIUS`=7 of a settlement, so a town — the walled start town
+  included — has no monsters wandering in), plus a `danger_multiplier` on
+  `spawn_chance`: a settlement's fringe (≤14) is quieter (×0.4), roads/bridges
+  are safer (×0.45), and the deep wild ramps up with distance (+0.2 per 22
+  tiles, cap ×1.75). Always > 0 so the weather/omen RATIO tests hold. The start
+  town (where early play hugs) is now breathing room; straying far has stakes.
+  `tests/test_encounters.py` (+4).
 - [ ] **P27.2 Wound/recovery balance.** Chronic low HP shouldn't be the
   default state; make recovery accessible without trivialising wounds
   (pairs with M.8a).
@@ -3850,6 +3858,52 @@ save rewrite (~300 KB, no dirty-tracking).
   `engine/dm_library.py` mini-DB. The only place SQL earns its keep.
 - Explicitly NOT: SQL for per-tick state; a big-bang rewrite (2195 tests, works
   today → incremental, opt-in only).
+
+## Phase 31 — Standalone persistent world generation (ultraplan, George, 2026-07-12)
+
+George: "The starting town (Oakvale) should be a WALLED, GUARDED town without
+monsters wandering inside. Ultraplan the world map better — a HISTORY,
+settlements, and lands to explore. There should be a generation system that can
+be run SEPARATELY to generate a world, which then PERSISTS until recreated.
+Learn from Autonomous World's methods."
+
+**Grounding — the pieces already exist, scattered:** `world/world_generator.py`
+(procedural: 2 settlements + a road on a 60×40 map), `world/river_gen.py`
+(elevation field, downhill river tracing, `score_site` settlement suitability,
+`is_shore`), `world/history_sim.py` (pre-game history: faction shifts, a ruined
+keep, lore lines, themed relics), `world/chunked_world.py` (region streaming +
+`_seed_landmarks` from `data/landmarks.json`), `world/castle_region.py` (a
+CURTAIN-WALLED fortress + gate town + farming villages — the walled-settlement
+template), `world/structures.py` (walls as HP structures), `world/blueprints.py`
+(footprints). P27.1 already makes a settlement's environs a no-spawn SAFE ZONE.
+The work is to UNIFY these into one standalone generator and enrich the output.
+
+- [ ] **P31.1 Walled, guarded, monster-free start town.** The default start
+  settlement (Oakvale) gets a WALL ring + gate(s) with posted GUARDS, composing
+  `castle_region`'s curtain-wall approach into the ordinary town. Combined with
+  P27.1's safe zone, the town has no monsters wandering inside; guards turn back
+  what approaches the gate. The visible, immediate win George asked for.
+- [ ] **P31.2 A standalone world-generation entrypoint.** A `worldgen` CLI/script
+  (separate from play) that generates a full world to a SEED — terrain, rivers,
+  tiered settlements, roads, history, landmarks — and writes it to a durable
+  WORLD file; the game loads that world and plays on it. Generate-once, play-many;
+  regenerating is an explicit, separate step.
+- [ ] **P31.3 Richer, tiered settlements.** Beyond two towns: a CITY + towns +
+  villages + hamlets, placed by `river_gen.score_site` suitability (near water,
+  terrain variety, off-edge), each with walls/gates scaled to size and stitched
+  by roads. Register all as P16 production settlements.
+- [ ] **P31.4 Generated HISTORY woven in.** Extend `history_sim` into a pre-game
+  chronicle of AGES (founding, wars, fallen keeps, relics, legendary figures)
+  that stamps named ruins/landmarks/relics on the map and seeds the P20.5
+  chronicle + P6.7 legends the player later discovers — so the world has a past.
+- [ ] **P31.5 Lands to explore.** Distinct regions/biomes (deep forest, swamp,
+  mountains, coast) each with their own flavour, landmarks
+  (`chunked_world._seed_landmarks`), and P27.1 danger tier, stitched by roads +
+  the P28.1 teleport network — a world that rewards straying.
+- [ ] **P31.6 Persist-until-recreated.** The generated world is a durable
+  artifact (a seed manifest + world file) separate from a playthrough save;
+  loading is deterministic from it, and only an explicit regenerate replaces it.
+  Study `autonomous_world`'s world-model for the durable-world pattern.
 
 ## What NOT to build (explicitly deferred)
 

@@ -6271,3 +6271,20 @@ fire, with a `[Guild]` beat. Guarded: you must be at a hall, the skill must be
 real, and you must afford it (nothing charged otherwise). +5 tests. Remainder:
 board-quests posted at the halls, and a player-facing hook (a hall menu / key)
 so it's reachable in play.
+
+## 2026-07-12 (cont.) — P27.1: danger tiers (a safe town, a dangerous deep wild)
+
+The flee-heavy playtest data said the overworld was too thick with foes, and
+George wants the start town walled, guarded, and monster-free. First half of
+that: `EncounterManager` now knows WHERE danger belongs. A hard SAFE ZONE in
+`maybe_spawn` — no wandering monster spawns within `SAFE_RADIUS` (7) of a
+settlement — so a town has none wandering in (the walled start town too), and
+early play (which hugs the start town) gets real breathing room. Layered on
+top, a `danger_multiplier` scales the spawn chance by WHERE you stand: a
+settlement's fringe (≤14) is quieter (×0.4), roads and bridges are travelled
+and safer (×0.45), and the deep wilderness ramps up with distance from any town
+(+0.2 per 22 tiles, capped ×1.75) — so straying far has stakes. The multiplier
+stays positive everywhere, so the weather/omen encounter-RATIO tests are
+untouched. +4 tests. The physical walls + gate guards on the start town, and a
+standalone persistent world generator with history/settlements/lands, are
+ultraplanned as Phase 31 (George's world-map request).

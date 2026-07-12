@@ -30,6 +30,19 @@ ENCOUNTER_COOLDOWN_TURNS = 25
 # Per-tick chance to roll an encounter
 ENCOUNTER_CHANCE = 0.18
 
+# P27.1 danger tiers — a settlement's guarded environs have NO wandering
+# spawns; its fringe is quieter; the deep wilderness ramps up with distance;
+# roads are travelled and safer. Early play (which hugs the start town) gets
+# breathing room, and straying far has stakes.
+SAFE_RADIUS = 7          # no wilderness spawns this near a settlement
+FRINGE_RADIUS = 14       # a settlement's fringe: encounters are rarer
+FRINGE_MULT = 0.4
+ROAD_MULT = 0.45         # roads/bridges are travelled — safer
+FAR_STEP = 22            # every N tiles past the fringe ramps danger up
+FAR_BONUS = 0.2
+FAR_CAP = 1.75
+_SETTLEMENT_KEYS = ("village", "hamlet", "town")
+
 
 def _weighted_pick(table, rng):
     total = sum(w for _, w in table)
@@ -70,6 +83,11 @@ class EncounterManager:
         terrain = self.engine.world.map.get_terrain_at(*player.position)
         if terrain not in (TerrainType.FOREST, TerrainType.GRASS,
                            TerrainType.SWAMP):
+            return None
+        # P27.1: a settlement's guarded environs are SAFE — no monsters
+        # wander in or right around a town (the walled starting town too)
+        d = self._nearest_settlement_dist(player.position)
+        if d is not None and d <= SAFE_RADIUS:
             return None
         if self.rng.random() > self.spawn_chance():
             return None
@@ -155,7 +173,46 @@ class EncounterManager:
                 mult = 1.5           # omen nights are dangerous
         except Exception:
             pass
-        return ENCOUNTER_CHANCE * (2.0 - mod) * mult
+        return ENCOUNTER_CHANCE * (2.0 - mod) * mult * self.danger_multiplier()
+
+    def _nearest_settlement_dist(self, pos) -> Optional[float]:
+        """Distance to the nearest SETTLEMENT (village/hamlet/town), or None
+        if the world has none placed."""
+        px, py = pos
+        best = None
+        for loc in getattr(self.engine.world, "locations", []):
+            name = getattr(loc, "name", "").lower()
+            if not any(k in name for k in _SETTLEMENT_KEYS):
+                continue
+            try:
+                cx, cy = loc.center()
+            except Exception:
+                cx, cy = getattr(loc, "x", px), getattr(loc, "y", py)
+            dd = ((cx - px) ** 2 + (cy - py) ** 2) ** 0.5
+            if best is None or dd < best:
+                best = dd
+        return best
+
+    def danger_multiplier(self) -> float:
+        """P27.1 tier factor on the spawn chance: quieter near a settlement,
+        ramping up the deeper into the wild, softened on a road. Always > 0 —
+        the hard no-spawn town zone lives in `maybe_spawn`."""
+        px, py = self.engine.player.position
+        d = self._nearest_settlement_dist((px, py))
+        if d is None:
+            mult = 1.0
+        elif d <= FRINGE_RADIUS:
+            mult = FRINGE_MULT
+        else:
+            steps = (d - FRINGE_RADIUS) / FAR_STEP
+            mult = min(FAR_CAP, 1.0 + FAR_BONUS * steps)
+        try:
+            if self.engine.world.map.get_terrain_at(px, py) in (
+                    TerrainType.ROAD, TerrainType.BRIDGE):
+                mult *= ROAD_MULT
+        except Exception:
+            pass
+        return mult
 
     def _find_spawn_position(self) -> Optional[Tuple[int, int]]:
         wmap = self.engine.world.map
