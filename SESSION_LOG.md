@@ -6304,3 +6304,18 @@ posts the guards after the cast + player spawn. A BFS test proves the player,
 who starts inside, can always reach the open world through a gate — never
 trapped. 9 tests. The standalone persistent world generator + tiered
 settlements + generated history + lands (P31.2–6) remain.
+
+## 2026-07-12 (cont.) — P27.2: wounds knit on their own (no more chronic low HP)
+
+The flee-heavy playtest data showed the hero living at a sliver of HP: it only
+mended at a bed or from a potion, so every fight left it fragile until the next
+inn. `engine/regen.py` adds PASSIVE wound recovery to the turn pipeline —
+`tick_hp_regen` restores +1 HP every 8 safe game-minutes (5 while well-rested).
+It's gated by `can_regen` so it never trivialises a fight: no hostile within 3
+tiles (you don't heal with a foe closing), and a DYING, STARVING (hunger ≥ 90),
+PARCHED (thirst ≥ 90), or badly INFECTED (≥ 60) body doesn't knit at all. So a
+wound now heals between fights — meaningful over a stretch of travel, but you
+still can't out-regen a real threat, and neglect (hunger/thirst/infection)
+stalls it. Pairs with M.8a's rest and the potion/Heal path. 12 tests. Chosen as
+the P27.2 round deliberately away from the Phase 31 worldgen work the cloud
+/ultraplan session is building, to avoid a merge clash.

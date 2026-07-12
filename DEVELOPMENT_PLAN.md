@@ -3701,9 +3701,14 @@ today reacts only to HP — a real gap.
   tiles, cap ×1.75). Always > 0 so the weather/omen RATIO tests hold. The start
   town (where early play hugs) is now breathing room; straying far has stakes.
   `tests/test_encounters.py` (+4).
-- [ ] **P27.2 Wound/recovery balance.** Chronic low HP shouldn't be the
+- [x] **P27.2 Wound/recovery balance.** Chronic low HP shouldn't be the
   default state; make recovery accessible without trivialising wounds
-  (pairs with M.8a).
+  (pairs with M.8a). *Done:* `engine/regen.py` — passive HP recovery in the
+  turn pipeline: +1 HP every 8 safe minutes (5 while well-rested), gated by
+  `can_regen` so it NEVER trivialises a fight — no threat within 3 tiles, and a
+  dying / starving (hunger≥90) / parched (thirst≥90) / badly infected (≥60)
+  body doesn't knit. A wound now heals on its own between fights, so the hero
+  isn't stuck at a sliver until it finds a bed. `tests/test_regen.py` (12).
 
 *(Existing planned items that autoplay reconfirms as high-value: P21.6
 Treasure & legend, P22.6 non-blocking spellcasting, P22.7 readable buildings,

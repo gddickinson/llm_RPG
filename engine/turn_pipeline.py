@@ -104,6 +104,14 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Mana regen error: {e}")
 
+    # P27.2 slow passive HP recovery between fights — a wound knits on its
+    # own when safe & provided for, so chronic low HP isn't the default state
+    try:
+        from engine.regen import tick_hp_regen
+        tick_hp_regen(self)
+    except Exception as e:
+        logger.debug(f"HP regen error: {e}")
+
     # Random wilderness encounter
     try:
         msg = self.encounter_manager.maybe_spawn()
