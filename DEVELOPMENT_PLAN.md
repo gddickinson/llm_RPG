@@ -2564,10 +2564,26 @@ is shippable and testable, de-risking UI last:
   the footmen storm the breach (red 8/8). 3 tests (artillery bombards
   from range without closing, a ram deals nothing until it touches,
   the scenario breaches + wins); suite 1305, green.)*
-- [ ] **P17.6e Siege III.** Wall-walk elevation via the multi-level
-  stacks; boiling oil = a `surfaces` paint on the battle grid (needs
-  a grid surface layer); and the AI actively seeking cover (deferred
-  from P17.6a). Increasingly niche — could yield to P17.7 role-swap.
+- [x] **P17.6e Siege III — AI seeks cover (the tractable third).** The
+  boiling-oil `surfaces` paint landed in P17.E4 (`battle_fire.pour_oil`);
+  wall-walk elevation via the multi-level stacks stays deferred (it
+  needs a multi-LEVEL battle grid the field doesn't have yet — noted
+  below). The third piece, **the AI actively seeking cover** (deferred
+  from P17.6a), is done. *(Round 144: `battle_ai.cover_seek_step` — a
+  foot archer (`category == "archer"`) already in shooting range but
+  caught in the OPEN sidesteps to the best adjacent COVER that keeps the
+  shot alive (the tile is in `ranged_reach` AND has LOS to the target),
+  hunkering in the treeline instead of trading arrows in the clear;
+  returns the tile or None to hold. The session's `_seek_cover` fires it
+  in the shoot branch — an in-range foot archer ducks to cover this tick
+  (spending it) and looses from cover next, converging on the local
+  cover max and then holding (no thrash). Mounted archers, siege, and
+  melee never hunker. 7 tests (finds the treeline; holds on best cover;
+  won't break range for far cover; only foot archers; in-battle: moves
+  into the wood then holds, and still kills from cover). Suite 1728,
+  green. Remainder: wall-walk elevation (multi-level battle grid) and
+  the AI seeking cover WHILE advancing (only the in-range hunker is done)
+  — both niche; could yield to P17.7 role-swap.)*
 - [ ] **P17.7 Player role-swap.** An `embodied` flag on the
   session: set → input routes to normal grid-soldier controls,
   camera locks in; None → commander order layer, free camera; TAB

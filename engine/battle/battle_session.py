@@ -136,6 +136,9 @@ class BattleSession:
                 elif is_ranged and sq.stats.get("spell") and \
                         sol.reload_left <= 0:
                     self._cast_spell(sol, sq, target)   # P17.12 battle-mage
+                elif is_ranged and \
+                        self._seek_cover(sol, sq, target):
+                    pass                     # P17.6e stepped to cover; hold
                 else:
                     if is_ranged and sol.reload_left <= 0:
                         self.tracers.append((sol.x, sol.y,
@@ -157,6 +160,15 @@ class BattleSession:
         from engine.battle import battle_fire     # P17.E4 fire spreads/burns
         battle_fire.tick(field, self.rng)
         self._update_objectives()            # capture points last
+
+    def _seek_cover(self, sol, sq, target) -> bool:
+        """P17.6e: a foot archer caught in the open ducks into nearby
+        cover that still lets it shoot (in range + LOS). Returns True if
+        it repositioned — spending the tick to loose from cover next one."""
+        step = ai.cover_seek_step(self.field, sol, sq, target)
+        if step is None:
+            return False
+        return self._move(sol, *step)
 
     def _cast_spell(self, sol, sq, target) -> None:
         """P17.12: a battle-mage looses its spell at the target's tile —

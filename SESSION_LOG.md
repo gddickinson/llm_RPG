@@ -4343,3 +4343,41 @@ fire on the cluster and burns plate and cloth alike; an oil cast slicks
 the ground; and in a real battle a war-mage scorches a cluster (leaving
 the ground ablaze) while a catapult crumps the man pressed to the wall.
 Suite 1721, green.
+
+---
+
+## Round 144 — P17.6e (the tractable third): the AI seeks cover
+
+P17.6e "Siege III" bundled three things. The boiling-oil surface paint
+already landed in P17.E4 (`battle_fire.pour_oil`), and wall-walk
+elevation genuinely needs a multi-LEVEL battle grid the field doesn't
+have (deferred, noted in the plan). The third — **the AI actively
+seeking cover**, deferred all the way from P17.6a — is the tractable,
+testable one, so that's this round.
+
+The gap: cover terrain (a treeline, rubble) has blunted incoming arrows
+since P17.6a, but nothing MADE the archers use it. An archer stopped
+wherever it first came into range — often in the open — and traded
+volleys in the clear. Now `battle_ai.cover_seek_step` gives a foot
+archer (`category == "archer"`) that's already in range but standing in
+the open a look at its eight neighbours: the best tile with MORE cover
+that still keeps the shot alive — in `ranged_reach` of the target AND
+with line of sight to it — wins, and the archer sidesteps into it. The
+session's `_seek_cover` fires this in the shoot branch: an in-range foot
+archer spends the tick ducking to cover and looses from it next tick,
+climbing to the local cover maximum and then holding (it only ever moves
+to STRICTLY better cover, so it converges and never thrashes). Mounted
+archers (they kite), siege engines, and melee never hunker.
+
+The one subtlety worth recording: a forest tile is sight-blocking, so
+cover ON the firing line blocks the archer's CURRENT shot — but standing
+IN it is fine (your own tile is the line's endpoint, which never blocks),
+so an archer happily moves into a wood and shoots out of it; it just
+won't try to shoot THROUGH one. The check is on the destination tile's
+LOS, exactly right.
+
+7 tests in `tests/test_battle_cover_seek.py`: finds the treeline; holds
+when already on the best cover; won't break range to reach far cover;
+only foot archers seek it (not cavalry or foot); and in a live battle the
+archer ducks into the wood then stays put, still killing from cover.
+Suite 1728, green.

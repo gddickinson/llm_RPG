@@ -349,6 +349,32 @@ def role_goal(field, soldier, squad, dist):
     return step_down(field, soldier.x, soldier.y, dist)
 
 
+def cover_seek_step(field, soldier, squad, target):
+    """P17.6e: a foot archer already in shooting range but caught in the
+    OPEN sidesteps to the best nearby COVER that keeps the shot alive (the
+    tile is in range AND has line of sight to the target) — hunkering in
+    the treeline instead of trading arrows in the clear. Returns the tile
+    to step to, or None to hold and shoot where it stands."""
+    if squad.category != "archer":
+        return None
+    from engine.battle import battle_terrain as terrain
+    reach = ranged_reach(squad)
+    best, best_cover = None, field.cover_at(soldier.x, soldier.y)
+    for dx, dy in _NEIGH8:
+        nx, ny = soldier.x + dx, soldier.y + dy
+        if not field.passable(nx, ny):
+            continue
+        cov = field.cover_at(nx, ny)
+        if cov <= best_cover:
+            continue
+        if _dist((nx, ny), target.pos) > reach:
+            continue
+        if not terrain.has_los(field, (nx, ny), target.pos):
+            continue
+        best, best_cover = (nx, ny), cov
+    return best
+
+
 def update_morale(field, squad) -> None:
     """Strength ratio, being outnumbered locally, and allies routing
     all press on the squad's ONE morale bar (colosseum model)."""
