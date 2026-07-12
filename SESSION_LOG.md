@@ -3762,3 +3762,34 @@ woodcutter. Suite 1561, green. REMAINDER (P16.3b): worldgen PLACING the new
 economic kinds (mine/bakery/sawmill/dock) and applying a settlement's
 specialization — the step that finally staffs a MINER and lights the
 dormant ore→bar→sword chain P16.2 left waiting.
+
+**Round 164 — P16.4 Resource nodes & regrowth.**
+Gathering that leaves a mark on the land. AW's resource tiles carry a
+`leaves_tile` (what a spent node becomes) and `forest_regrowth` (the land
+healing over time); ported onto our fixed grid as `world/resource_nodes.py`.
+A NODE sits on a matching terrain tile with a few CHARGES; working it
+spends one, and when it runs dry the tile TRANSFORMS — and the elegant
+part is that the transform is what enforces depletion: a grove felled to
+GRASS is, by definition, no longer a woodcutting node (grass isn't
+gatherable), so it drops out of the pool on its own, no special-casing. A
+whole stretch of woodland can thus be logged out. Then the ground returns:
+`run_day` regrows every node whose rest is up (six days for a grove),
+grass back to forest, charges refilled. It's seeded across 12% of matching
+terrain at world start, ticks in the nightly stack beside the production
+loop, hooks into `gathering.gather` (a chop spends the grove's charge),
+and persists. This round ships and fully wires GROVES — the canonical
+forest_regrowth case — with the kinds held in `data/resource_nodes.json`
+so ore veins, herb patches and berry bushes are a config addition, not new
+code. A probe watched a grove go forest → (four chops) → grass → (six
+days) → forest again, charges restored. Housekeeping: the three P16
+economy validators (production, building_types, resource_nodes) moved into
+a new `items/validate_economy.py` because `data_validate.py` had reached
+497 lines — it's back to 443, and the new check rides in the new file. 10
+tests: groves seed only on forest and seeding is idempotent, a harvest
+spends a charge but the wrong skill spends nothing, felling turns the tile
+to grass and schedules regrowth, a dry node spends nothing, it regrows
+only after its rest (not a day early), chopping a grove through the REAL
+gather path spends its charge, and the nodes survive a full save→load.
+Suite 1571, green. REMAINDER (P16.4b): the other node kinds (ore veins /
+herb patches / berry bushes) — data + seeding — and deeper P10.2
+composition.

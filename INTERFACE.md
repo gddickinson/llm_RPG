@@ -171,6 +171,7 @@ llm_RPG/
 - **`weather.py`** — `WeatherSystem`; rain/fog/snow/storm tied to season, with visibility multipliers.
 - **`astronomy.py`** — P8.1 pure sky math from `data/astronomy.json`: seasonal day length, solar intensity, two moons (Lunara 28d / Thal 47d) with phases, `moonlight()`, `is_conjunction()` + `announce_conjunction()` omen nights (brighter clear nights, ×1.5 encounters).
 - **`farming.py`** — `FarmManager` (P8.3): farm locations claim FARMLAND fields; fallow→planted→growing→mature→harvested by season with solar-intensity ripening; Z-key player harvest (wheat + XP); autumn farmer harvest fills village stores; persisted.
+- **`resource_nodes.py`** — `ResourceNodeSystem` (P16.4): depletable, regrowing resource tiles from `data/resource_nodes.json`. A node has CHARGES; `harvest` spends one, and a dry node transforms the tile (`leaves_tile`) — a felled grove → grass, out of the gathering pool — then `run_day` regrows it (grass → forest) after `regrow_days`. Seeded at world start (12% of matching terrain), hooked into `gathering.gather`, persisted. Ships groves; ore/herb kinds are config.
 - **`foraging.py`** — `ForageManager`; pickable herbs/berries from forest tiles with cooldown.
 - **`gathering.py`** — `GatheringManager`; mining/woodcutting/fishing nodes from `data/gathering.json`, tier level gates, tool checks.
 - **`dungeon.py`** — `Dungeon`, `generate_dungeon`, `populate_dungeon`; BSP-lite procedural dungeons accessible from cave tiles.
@@ -185,7 +186,7 @@ llm_RPG/
 
 - **`item.py`** — `Item` dataclass; types, rarity, effects.
 - **`data_loader.py`** — `load_data_dir()`; merges `data/<subdir>/*.json` content files (Phase 1 data layer).
-- **`data_validate.py`** — `validate_all()` / `python -m items.data_validate`; cross-reference checks for all content.
+- **`data_validate.py`** — `validate_all()` / `python -m items.data_validate`; cross-reference checks for all content. P16 economy checks (production/building_types/resource_nodes) live in **`validate_economy.py`**; battle/pack checks in `validate_battles.py`/`validate_packs.py`.
 - **`item_registry.py`** — thin loader over `data/items/*.json` (69 items); `create_item()`, `item_by_name()`.
 - **`loot_tables.py`** — Drop tables by enemy class.
 - **`crafting.py`** — `craft()` + recipes loaded from `data/recipes.json` (forge-gated, ingredients).

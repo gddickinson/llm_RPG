@@ -130,6 +130,10 @@ class GameEngine(GameAPIMixin):
         except Exception as e:
             logger.debug(f"Home assignment: {e}")
         try:
+            self.resource_nodes.seed()
+        except Exception as e:
+            logger.debug(f"Resource nodes: {e}")
+        try:
             self.structures.build()
         except Exception as e:
             logger.debug(f"Structures: {e}")

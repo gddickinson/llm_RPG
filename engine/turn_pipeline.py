@@ -162,6 +162,10 @@ def run_turn(engine) -> None:
                 self.production.run_day()
             except Exception as e:
                 logger.debug(f"Production loop error: {e}")
+            try:   # logged-out groves regrow (P16.4)
+                self.resource_nodes.run_day()
+            except Exception as e:
+                logger.debug(f"Resource regrowth error: {e}")
             self.retaliation.run_night()
             self.disease.run_day()
             self.farm_manager.run_day()

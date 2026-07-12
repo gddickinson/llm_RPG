@@ -2219,11 +2219,28 @@ grid).
   (mine/bakery/sawmill/dock) and applying a settlement's specialization
   — which is what finally staffs a MINER and lights the dormant ore→bar→
   sword chain from P16.2.)*)*
-- [ ] **P16.4 Resource nodes & regrowth.** AW resource tiles
+- [x] **P16.4 Resource nodes & regrowth.** AW resource tiles
   (ORE_VEIN/HERB_PATCH/BERRY_BUSH...) with `leaves_tile` +
   `forest_regrowth`: gathering becomes destructible-tile
   interaction (composes with P10.2) that regrows over time.
   Feeds P16.1's raw-material sources.
+  *(Round 164: `world/resource_nodes.py` `ResourceNodeSystem` — a node
+  sits on matching terrain with CHARGES; harvesting spends one, and a
+  dry node TRANSFORMS the tile (`leaves_tile`) so it can't be worked
+  again until it REGROWS after `regrow_days` and the ground returns.
+  Seeded at world start (12% of matching tiles), ticked nightly, hooked
+  into `gathering.gather`, persisted. This first cut ships GROVES: chop
+  a forest tile four times and it falls to GRASS — which, being no
+  longer a woodcutting node, takes itself out of the gathering pool, so
+  a stretch of woodland can be logged out — then after six days the
+  forest grows back and refills. Kinds are data (`resource_nodes.json`);
+  ore veins / herb patches / berry bushes are a config addition
+  (P16.4b). The P16 economy validators moved to `items/validate_economy.py`
+  (data_validate was brushing 500). 10 tests (seed on forest +
+  idempotent, harvest spends a charge, wrong skill spends nothing,
+  felling → grass + regrow scheduled, regrows only after its rest,
+  chopping a grove via the real gather path, and a full save/load).
+  Suite 1571, green.)*
 - [ ] **P16.5 2.5D building render.** AW
   `ui/renderer_buildings.py` (`_draw_building_heights`,
   `_draw_pitched_roofs`, per-kind roof tiles): a render pass that

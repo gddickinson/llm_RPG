@@ -1,0 +1,4 @@
+{
+  "_doc": "Depletable, regrowing resource nodes (P16.4). A node sits on matching TERRAIN with CHARGES; harvesting spends one, and when a node runs dry it TRANSFORMS the tile (leaves_tile) so it can't be worked again until it REGROWS after regrow_days and the ground returns. Ports AW's forest_regrowth idea onto our terrain grid; composes with gathering (a felled forest becomes grass, which is no longer a woodcutting node) and P10.2 terrain. Seeded + ticked by world/resource_nodes.py. More kinds (ore veins, herb patches, berry bushes) are a config addition here.",
+  "grove": {"skill": "woodcutting", "terrain": "forest", "leaves_tile": "grass", "regrow_days": 6, "charges": 4}
+}

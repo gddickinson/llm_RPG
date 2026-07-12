@@ -150,6 +150,10 @@ class GatheringManager:
 
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             self.engine.quest_manager.on_item_acquired(item.id)
+        try:   # a grove here loses a charge; felled, it becomes grass (P16.4)
+            self.engine.resource_nodes.harvest(x, y, skill_id)
+        except Exception:
+            pass
         return msg
 
     def _weighted_pick(self, tiers):
