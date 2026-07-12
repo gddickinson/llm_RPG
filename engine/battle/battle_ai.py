@@ -59,8 +59,12 @@ def is_surrounded(field, sol) -> bool:
 
 def _position_mods(field, atk_sol, target):
     """(to-hit bonus, damage multiplier) from where the blow lands —
-    flank/rear arc, being ganged up on, and being surrounded."""
-    ar = facing.arc(target.facing, atk_sol.pos, target.pos)
+    flank/rear arc, being ganged up on, and being surrounded. An all-
+    facing RING (P17.17) shows its front to every side, so no arc bonus."""
+    from engine.battle import battle_formation as form
+    tgt_sq = field.squads.get(target.squad_id)
+    ar = form.effective_arc(tgt_sq, facing.arc(target.facing,
+                                               atk_sol.pos, target.pos))
     to_hit = facing.ARC_TO_HIT[ar]
     dmg = facing.ARC_DMG[ar]
     if adjacent_enemies(field, target) >= 2:      # multiple sides
@@ -70,7 +74,6 @@ def _position_mods(field, atk_sol, target):
         dmg *= 1.5
     # P17.15: a routed squad is RUN DOWN — fleeing men can't defend, so
     # a blow lands easy and bites deep.
-    tgt_sq = field.squads.get(target.squad_id)
     if tgt_sq is not None and tgt_sq.routed:
         to_hit += 4
         dmg *= 1.5
@@ -130,6 +133,7 @@ def pick_target(field, soldier, squad):
 
 def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     """Resolve one strike. Returns True if the target fell."""
+    from engine.battle import battle_formation as form
     st = atk_squad.stats
     d = _dist(atk_soldier.pos, target.pos)
     ranged = False
@@ -149,21 +153,22 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     if ranged:
         dc += round(field.cover_at(target.x, target.y) * 10)
     if tgt_squad is not None:      # P17.16 LINE shield-overlap
-        from engine.battle import battle_formation as form
         dc += form.defense_bonus(field, tgt_squad, target, atk_soldier)
     to_hit, dmg_mult = _position_mods(field, atk_soldier, target)
     roll = rng.randint(1, 20) + power + to_hit
+    roll += form.attack_penalty(atk_squad)     # P17.17 RING fights weaker
     if roll < dc:
         return False
     dmg = max(1, int(power // 3 * dmg_mult) + rng.randint(0, 2))
     if ranged and tgt_squad is not None:   # P17.16 LOOSE spreads the volley
-        from engine.battle import battle_formation as form
         dmg = max(1, int(dmg * form.incoming_ranged_mult(tgt_squad)))
     target.hurt(dmg)
     # P17.15: a blow from the flank or rear shakes the whole squad's
-    # nerve, not just the body it lands on — flanking pays in MORALE.
+    # nerve — but an all-facing RING (P17.17) has no exposed side.
     if tgt_squad is not None and not tgt_squad.routed:
-        ar = facing.arc(target.facing, atk_soldier.pos, target.pos)
+        ar = form.effective_arc(tgt_squad,
+                                facing.arc(target.facing,
+                                           atk_soldier.pos, target.pos))
         if ar == "rear":
             tgt_squad.adjust_morale(-3)
         elif ar == "flank":
@@ -201,6 +206,13 @@ def _shove(field, victim, charger) -> bool:
     return True
 
 
+def _is_braced(squad) -> bool:
+    """Set to receive (P17.17): a brace-capable squad only stops a charge
+    when braced — holding still, facing the threat. On 'hold' it braces
+    by default; caught charging or moving, the hedge is just infantry."""
+    return getattr(squad, "braced", False) or squad.order == "hold"
+
+
 def charge_attack(field, atk_sol, atk_sq, tgt_sol, tgt_sq, rng) -> str:
     """A charge into an occupied tile. Returns:
       'overrun'  — the way is cleared (footman killed or shoved), ride on
@@ -210,7 +222,9 @@ def charge_attack(field, atk_sol, atk_sq, tgt_sol, tgt_sq, rng) -> str:
     first; loose infantry get trampled unless they defend and counter."""
     a, t = atk_sq.stats, tgt_sq.stats
     anti_cav = t.get("bonus_vs_cavalry", 1.0)
-    if anti_cav > 1.0:                     # the hedge of points
+    if anti_cav > 1.0 and _is_braced(tgt_sq):   # the hedge, SET TO RECEIVE
+        # braced pike/spear negate the charge and strike the interrupt
+        # first (P17.17); caught un-braced, the hedge is just infantry.
         r = _strike(rng, t.get("melee", 0), anti_cav, atk_sol,
                     a.get("defense", 0))
         if r == "kill":

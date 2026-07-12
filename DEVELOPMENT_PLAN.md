@@ -2706,13 +2706,31 @@ build on P17.11 (facing) first.
   shock, persistence). Suite 1613, green. *(Remainder P17.16b: explicit
   slot assignment — cohesion uses facing-unity + clustering as the slot
   proxy for now.)*)*
-- [ ] **P17.17 Bracing & the all-facing formation (RPS spine).** A
+- [x] **P17.17 Bracing & the all-facing formation (RPS spine).** A
   BRACE flag (hold still + face the threat) makes pike/spear **negate
   the charge bonus and strike an interrupt first** (formalises P17.13's
   half-RPS into a stance, not an archetype quirk); the **all-facing
   formation** (orbis/schiltron ring) turns every arc to "front" —
   removes flank/rear bonuses (the surround-counter) at the cost of
   offense + mobility, and is missile-vulnerable (Falkirk).
+  *(Round 169: BRACE became a stance — `charge_attack`'s anti-cavalry
+  hedge now only fires when the target `_is_braced` (its new `braced`
+  flag, or simply holding — so a pike line on `hold` still stops horse
+  as before, but one ORDERED TO CHARGE with no brace gets trampled: the
+  half-RPS is now a decision). The all-facing RING joined
+  `battle_formation` as a third formation: `effective_arc` flattens
+  every incoming arc to "front", wired into `_position_mods` AND the
+  P17.15 flank-morale in `attack`, so a ring takes no flank/rear to-hit,
+  damage, OR morale — the surround-counter. Its price: half speed
+  (`speed_mult`), a −2 attack penalty (`attack_penalty`, offense traded
+  for guard), and ×1.5 from missiles (`incoming_ranged_mult` — Falkirk).
+  `braced` round-trips in the Squad dict. 9 tests (a braced hold-spear
+  stops the charge while an unbraced charging one is overrun and a brace
+  flag restores it; the ring denies the rear to-hit/damage/morale; ring
+  is slow + missile-vulnerable + weaker on offense). No battle-session
+  regressions (63 battle tests green). Suite 1622, green x2. *(Remainder:
+  a commander BRACE verb + SET_FORMATION→ring in the order/UI layer —
+  the mechanics are complete; only the button is glue.)*)*
 - [ ] **P17.18 Combined arms & reserves.** Hammer-and-anvil (a squad
   PINNED in front then charged in flank/rear = rout trigger), soften-
   then-shock (a pre-melee missile volley strips cohesion/AC then the

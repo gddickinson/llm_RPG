@@ -3915,3 +3915,34 @@ the 41 existing battle tests; every battle file under the line
 (battle_formation 114). Suite 1613, green. REMAINDER (P17.16b): explicit
 slot assignment — cohesion uses facing-unity + clustering as the slot
 proxy for now.
+
+**Round 169 — P17.17 Bracing & the all-facing formation (RPS spine).**
+The stance that turns the pike-vs-horse rock-paper-scissors from an
+archetype quirk into a DECISION, plus the ring that answers the flank.
+Bracing first: the anti-cavalry hedge in `charge_attack` — a spear or
+pike striking the interrupt and stopping the charge — used to fire
+automatically off the `bonus_vs_cavalry` stat, so pikes always beat
+horse. Now it only fires when the target is SET TO RECEIVE
+(`_is_braced`: its new `braced` flag, or simply on `hold`). A pike line
+holding the line still stops a charge exactly as before — so the RPS the
+old tests depend on holds — but a pike squad ORDERED TO CHARGE, points
+up and unbraced, gets trampled like any loose foot. The half-RPS is a
+stance you have to take. The all-facing RING (orbis/schiltron) joined
+`battle_formation` as a third formation, and its whole trick is one pure
+function, `effective_arc`, that flattens every incoming arc to "front" —
+wired into BOTH `_position_mods` and the P17.15 flank-morale in `attack`,
+so a ring suffers no flank or rear to-hit, no rear damage multiplier, and
+no flank/rear morale shock: the surround-counter, the thing that let a
+Roman orbis or a Scots schiltron face cavalry on every side. It pays for
+it the way history did — half speed, a −2 to its own blows (offense
+traded for all-round guard), and ×1.5 damage from missiles, which is
+precisely how Edward's longbows unmade the schiltrons at Falkirk. The
+`braced` flag round-trips in the Squad dict beside `formation`. 9 tests:
+a braced hold-spear stops a heavy charge while an unbraced charging one
+is overrun, and the brace flag restores the hedge mid-move; the ring
+denies the rear its to-hit, its damage, and its morale, where an open
+squad takes all three; and the ring is slow, weaker on offense, and
+missile-vulnerable. No regression across the 63 existing battle tests.
+Suite 1622, green x2. REMAINDER: a commander BRACE verb and
+SET_FORMATION→ring in the order/UI layer — the mechanics are done; only
+the button is glue.

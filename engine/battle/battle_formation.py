@@ -26,6 +26,7 @@ from engine.battle import battle_facing as facing
 
 LINE = "line"
 LOOSE = "loose"
+RING = "ring"            # orbis / schiltron — all-facing (P17.17)
 BREAK_COHESION = 0.5
 
 _NEIGH8 = ((1, 0), (-1, 0), (0, 1), (0, -1),
@@ -66,13 +67,35 @@ def is_broken(field, squad) -> bool:
 # ---- effects --------------------------------------------------------
 
 def speed_mult(squad) -> float:
-    """A dense LINE marches at half pace; everything else is unslowed."""
-    return 0.5 if squad.formation == LINE else 1.0
+    """A dense LINE and an all-facing RING both crawl; else unslowed."""
+    return 0.5 if squad.formation in (LINE, RING) else 1.0
 
 
 def incoming_ranged_mult(squad) -> float:
-    """Spread-out skirmishers take HALF from missiles and area effects."""
-    return 0.5 if squad.formation == LOOSE else 1.0
+    """LOOSE skirmishers take HALF from missiles/AoE; an all-facing RING
+    packs tight and outward-facing, so it's MISSILE-VULNERABLE (Falkirk)."""
+    if squad.formation == LOOSE:
+        return 0.5
+    if squad.formation == RING:
+        return 1.5
+    return 1.0
+
+
+def all_facing(squad) -> bool:
+    return squad.formation == RING
+
+
+def effective_arc(squad, base_arc: str) -> str:
+    """A RING presents its front to EVERY side (P17.17) — the surround-
+    counter: no flank or rear bonus lands on an all-facing formation."""
+    return "front" if squad is not None and squad.formation == RING \
+        else base_arc
+
+
+def attack_penalty(squad) -> int:
+    """A RING fights outward and defensive — its blows land a little
+    weaker (offense traded for all-round guard)."""
+    return -2 if squad is not None and squad.formation == RING else 0
 
 
 def _right_mate_stands(field, squad, soldier) -> bool:
