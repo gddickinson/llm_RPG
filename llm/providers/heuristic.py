@@ -237,6 +237,13 @@ class HeuristicProvider(LLMProvider):
             return self._wrap(character, "move", away,
                               "(breaks and runs!)", "terrified")
 
+        # Pack morale: its leader is dead, the pack breaks (P19.3)
+        if meta.get("pack_broken") and ppos:
+            away = self._dir_between(ppos, mypos)
+            return self._wrap(character, "move", away,
+                              "(its leader is down — it breaks and flees!)",
+                              "terrified")
+
         # Territorial: never stray far from the lair
         radius = behavior.get("territorial", 0)
         home = meta.get("home_pos")
@@ -274,9 +281,11 @@ class HeuristicProvider(LLMProvider):
                 return self._wrap(character, "move", toward,
                                   "", "hunting")
 
-        # Default hostility
+        # Default hostility — a pack piles onto its shared focus (P19.3),
+        # the softest reachable target; a loner just takes the player
         if player_in_view:
-            return self._wrap(character, "attack", "player",
+            target = meta.get("focus_name") or "player"
+            return self._wrap(character, "attack", target,
                               self.rng.choice(_GREETINGS.get("brigand",
                                                              [""])),
                               "angry")

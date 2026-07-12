@@ -301,6 +301,10 @@ class GameEngine(GameAPIMixin):
             ensure_wall_guard(self)
         except Exception:
             pass
+        try:   # band nearby hostiles into packs before they act (P19.3)
+            self.monster_packs.update()
+        except Exception as e:
+            logger.debug(f"Monster packs: {e}")
         for npc_id, npc in list(self.npc_manager.npcs.items()):
             if hasattr(npc, "is_active") and not npc.is_active():
                 continue

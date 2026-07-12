@@ -5134,3 +5134,44 @@ seed with live occupants and a marker; a roost holds a dragon boss; lairs
 sit far from the start; seeding is once-only; a live lair yields nothing;
 clearing drops the hoard and gold and writes a legend; no double reward;
 persistence round-trips) plus the retuned structures test.
+
+## Packs that fight like a group (P19.3)
+
+"Do monsters work together to fight?" — barely, was the survey's answer:
+each hostile picked the player on its own, and the game's real tactical
+brain (the Phase-17 battle AI with focus-fire, morale and rout) was
+walled off in the battle screen. This round is the light bridge that
+brings a piece of that to the overworld.
+
+`engine/monster_packs.py`'s `MonsterPackSystem.update()` runs at the top
+of the monster turn, before the creatures act. It bands the hostiles near
+the player into packs — a lair's own occupants (they share a `lair` tag,
+so a goblin warren's goblins and its bandit ringleader band together) or
+a cluster of the same kind (a wolf pack) — crowns the strongest as the
+leader, and writes two intents onto the members' metadata that the
+heuristic brain already knows how to read:
+
+- a shared **focus**: the whole pack piles onto ONE target — the softest
+  thing it can reach. Alone, that is just the player (nothing changes).
+  Adventuring with a party, the pack reads the field and gangs the
+  wounded companion instead of trading blows with a healthy hero.
+- **morale by leader**: kill the leader and the survivors' nerve breaks —
+  `_hostile_action` turns them and they flee.
+
+The subtle part is remembering the leader. The obvious version re-forms
+the pack from the survivors each turn — but the dead leader isn't among
+them, so the pack would quietly crown a new one and never break. So the
+leader's identity is held system-side, keyed by the pack, and a leader
+who is gone or dead means the pack is broken, full stop.
+
+Solo monsters and party-less play are untouched by design: a lone beast
+has no pack, and with no companions the focus is the player, exactly as
+before — which kept the change from rippling through the combat tests.
+The emergent beat is the good one: face the goblin warren, and cutting
+down the bandit who leads it sends the goblins scattering.
+
+11 tests (formation by kind and by shared lair; the lone beast; the
+strongest is leader; stale tags clear; one shared focus; focus on the
+wounded ally then back to the player when the party is healthy; leader
+death breaks the pack; a broken beast flees; a steady pack presses the
+attack). Remainder P19.3b: planned flank/encirclement positioning.

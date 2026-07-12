@@ -3634,10 +3634,32 @@ Phase-17 tactical AI.
   "attack the Wandering Troll" could reach for the wrong one — it now
   prefers the NEAREST active match (`_nearest_active`). 11 lair tests + 1
   retuned. Suite green.)*
-- [ ] **P19.3 Packs that fight like a group.** Bridge the walled-off
+- [x] **P19.3 Packs that fight like a group.** Bridge the walled-off
   Phase-17 `battle_ai` (or extend `squad_tactics`) so overworld monster
   packs focus-fire the softest target, flank, hold a leader, and break
   when the leader falls — real coordination, not incidental adjacency.
+  *(Round: `engine/monster_packs.py` `MonsterPackSystem.update()`, run at
+  the top of `process_npc_turns` (before the creatures act). Each turn it
+  bands the hostiles near the player into packs — a lair's own occupants
+  (shared `lair` tag, so mixed kinds band) or a cluster of the same kind —
+  crowns the strongest as leader (remembered SYSTEM-SIDE across turns, so
+  a survivor-only regroup can't quietly re-crown and hide the leader's
+  death), and writes two intents the heuristic brain already honours:
+  a shared **focus** (the whole pack piles onto ONE target — the softest
+  it can reach, a wounded companion over a hale player) and **morale by
+  leader** (`pack_broken` when the remembered leader has fallen). Two
+  small hooks in `heuristic._hostile_action`: a broken-pack member breaks
+  and flees (ahead of the default hostility), and the default attack aims
+  at the pack's `focus_name` instead of always the player. Solo monsters
+  and party-less fights are untouched — a loner has no pack, and with no
+  companions the focus is just the player, exactly as before. No
+  persistence (tags are transient, recomputed each turn). 11 tests
+  (formation by kind and by lair; the lone beast; strongest-is-leader;
+  stale tags cleared; one shared focus; focus on the soft ally then back
+  to the player when healthy; leader-death breaks the pack; a broken
+  beast flees; a steady pack attacks). Remainder P19.3b: explicit flank
+  positioning via `squad_tactics.surround_step`/`flank_tile` (today's
+  flanking is still the incidental +2, not planned encirclement).)*
 - [ ] **P19.4 Monster tribes as populations.** A monster faction
   (goblins / trolls) with a lair, a chieftain, population growth,
   territory, and raids on settlements — the human `faction_ticker`
