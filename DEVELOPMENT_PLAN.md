@@ -3912,6 +3912,69 @@ The work is to UNIFY these into one standalone generator and enrich the output.
   loading is deterministic from it, and only an explicit regenerate replaces it.
   Study `autonomous_world`'s world-model for the durable-world pattern.
 
+### Autonomous World — concrete methods to emulate (reviewed 2026-07-12)
+
+`autonomous_world`'s worldgen/history is ~11.3k LOC over ~16 modules under
+`game/world/`, orchestrated by one `WorldPlan.generate()` (`world_plan.py:167`).
+The best-to-port ideas, ranked impact-vs-effort for our small pygame RPG (which
+already has elevation fields, downhill rivers, site scoring, a light
+`history_sim`, and chunk streaming):
+
+- **The coarse elevation cache (the enabling trick, → P31.2/P31.4).**
+  `world_plan._build_elevation_cache` samples 1 tile per 10, and ALL placement /
+  history / river planning runs on that cheap grid; full-res tiles regenerate
+  deterministically per chunk. This is what lets a 500-year sim finish in
+  seconds — adopt it so history/settlement planning is affordable.
+- **Tribe-based history simulation (the star, → P31.4).** `history_sim.py`
+  (`HistorySimulation.run(years=500)`, `:1800`): a handful of `Tribe`s with
+  traits + `RACE_AFFINITY` migrate, `_try_settle` by scored sites, `_grow_
+  settlements`, wage **Lanchester-ratio warfare** (`_handle_warfare:982`,
+  win prob `ratio/(1+ratio)`, wall×1.8 / high-ground×1.3), coalesce into
+  kingdoms (`_form_kingdoms:1098`), and spawn historical figures
+  (`_generate_historical_figures:1413` — wizards physically build towers,
+  villains sack towns). Emergently produces settlement placement + roads + a
+  legends log in ONE pass. We already have `faction_battle` Lanchester + a
+  `history_sim` stub — a trimmed 3–4 tribe / ~200-year sim is the upgrade.
+- **History stamps the map (→ P31.4).** Destroyed settlements → typed, NAMED
+  ruins (`_KIND_TO_RUIN:154`, `ANCIENT_RUIN_NAME_PARTS:164`,
+  `_generate_ruin_name:1190`); plus standalone wizard towers / dragon lairs /
+  watchtowers (`_place_standalone_structures:1233`) — abstract history becomes
+  explorable POIs. Feeds our P21.5 landmarks + P6.7 Legendarium + gossip.
+- **Whittaker biomes (→ P31.5).** `whittaker_biome` (`terrain_gen.py:227-255`):
+  temperature = base − elevation×lapse_rate, then `np.digitize` into a 5×5
+  temp×moisture table; + rain-shadow moisture (`:261-263`). ~20 lines, replaces
+  ad-hoc biome thresholds with real climate bands.
+- **D8 flow-accumulation rivers + priority-flood sink-fill (→ P31.5).**
+  `river_gen.compute_flow_accum`/`compute_rivers` (tributaries merge into trunk
+  rivers, ranked major/medium/stream) + `terrain_gen.fill_sinks` (Barnes 2014
+  priority flood so rivers reach the sea and lakes form in real basins) — a real
+  upgrade over our single-path downhill trace in `world/river_gen.py`.
+- **Rift-arm island + ridged-multifractal spine (→ P31.5).**
+  `island_elevation:74` (3–4 lobes at ~120°, domain-warped coast) +
+  `generate_spine:272` (branching mountain waypoints) — non-blobby coastlines
+  and believable ridgelines.
+- **MST + 20% redundant-edge roads, tiered by importance (→ P31.3).**
+  `_build_road_network:2076` — a connected-but-not-complete graph that reads as
+  a real trade network; road tier (king_road/paved/gravel/dirt) by settlement
+  rank, A* waypoints.
+- **Strategic site scoring (→ P31.3).** `_score_strategic_value:647`
+  (mountain passes, river fords) + `_score_trade_potential:610` (on-corridor
+  between two settlements) — richer than our water/variety scoring.
+- **Seed + deltas persistence (→ P31.6).** `world_save.py`: store the seed +
+  gen config + only MODIFIED tiles (sparse `"x,y"→type`) + last 50 chronicle
+  entries; on load, regenerate everything from the seed (`restore_world_plan:306`)
+  then re-apply deltas. Tiny saves, pairs with chunk streaming. Caveat: full
+  history isn't durably stored — it relies on deterministic regen, so if we want
+  the exact legends to persist we must save them explicitly.
+- **Optional: skill-tiered lore reveal.** `planet.py:get_planetary_knowledge`
+  (`:456`) — an NPC knows more world history as its literacy/history/arcana
+  rises. Cheap flavour that composes with our `topics`/`secrets` journals.
+
+Porting principle: emulate the METHODS (coarse cache, tribe sim, Whittaker,
+D8 rivers, seed+deltas), keep our content-as-data + save-v3 conventions, and
+reuse what we already have (`faction_battle` Lanchester, `river_gen`,
+`chunked_world`, `history_sim`, `dm_library` for persisted named entities).
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
