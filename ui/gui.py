@@ -373,7 +373,11 @@ class GameGUI:
             lines += legend_lines(self.engine)
         except Exception:
             pass
-        self.overlay = ("Journal — Topics & Legends", lines)
+        try:   # the runtime saga (P20.5)
+            lines += self.engine.chronicle.lines()
+        except Exception:
+            pass
+        self.overlay = ("Journal — Topics, Legends & Chronicle", lines)
         self.mode = "menu"
 
     def show_travel(self) -> None:

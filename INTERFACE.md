@@ -77,6 +77,7 @@ llm_RPG/
 - **`guild.py`** — `GuildSystem`; quest points → ranks (Member/Veteran/Champion) with radiant/teleport/party perks.
 - **`tutorial.py`** — `TutorialManager`; teach-by-doing steps, hint-bar lessons, one-way boat departure.
 - **`legends.py`** — Relic pickups reveal authored legends; Legends section of the Y journal; gossip citations.
+- **`chronicle.py`** — P20.5 `Chronicle`, an observer on the event log (`memory_manager.add_observer`): watches for age-shaping beats (`[Legend]` deaths/clears + the weightiest `[Realm]` wars/alliances/divine-contentions/tribe-raids/sieges by keyword) and writes each as a DATED entry into a growing, capped, persisted saga. `lines()` renders the "Chronicle of the Age" the Y-journal shows beneath the pre-game legends — the runtime memory of what you and the factions did.
 - **`defeat.py`** — Failure-as-story defeat outcomes: robbed / left for dead / slain.
 - **`dying.py`** — P12.4 Dying & Wounded: 0 HP → Dying 1–4 with per-turn flat recovery checks; stabilize = +1 Wounded + gentle story beat, Dying 4 = the full defeat table; people (not monsters) are KO'd into robbable bodies that wake overnight with grudges.
 - **`item_use.py`** — `use_item(engine, name)`: every on-use payload (scrolls, tomes, manuals, potions, remedies, P12.3 drinks, food); `transmute_item` (P13.1: any carried item → 40% value in gold, mana-gated, [T] in the I-panel); identity-first `_remove_one`.

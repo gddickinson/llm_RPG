@@ -5464,3 +5464,36 @@ opposing gods build tension to a storm that resets while unopposed acts
 raise none; tension persists; and a run_day announces its divine beats).
 Remainder P20.4b: cults the NPCs join, festival days, and a god's demand
 with teeth.
+
+## The chronicle — the world remembers (P20.5)
+
+The realm had a past but no memory of the present. `world/history_sim`
+wrote eight events before the game began and never added a ninth;
+everything that happened after — a nemesis run to ground, two factions
+going to war, a god's wrath, a castle besieged — flickered through a
+five-slot rumor pool and was gone. Phase 19 and 20 gave the world a great
+deal to remember, and nothing was remembering it.
+
+`engine/chronicle.py` is a scribe sitting on the event log. Registered as
+an observer, it reads every beat the game emits and keeps the ones that
+shape an age: anything the game already marks `[Legend]` — a nemesis's
+fall, a lair cleared, a true death — and the weightiest `[Realm]` beats it
+recognises by their words: wars declared and alliances sworn, the gods
+contending, a tribe swarming out or beaten back, a siege laid. Each becomes
+a dated line in a growing saga, its prefix stripped and its repeats
+dropped; the mundane traffic — the caravans, the quiet nightly production —
+is let past unrecorded, so the chronicle stays a record of the memorable,
+not a log.
+
+You read it where you read the old legends: the Y-journal now shows a
+"Chronicle of the Age" beneath the pre-game myths, the story of your own
+deeds and the realm's, in the order they happened. And because it rides the
+save, the saga is still there when you come back to it — the nemesis you
+finally killed on day 30, the war that broke out on day 12, the night the
+gods contended overhead.
+
+11 tests (which beats are age-worthy and which are mere noise; a dated,
+prefix-stripped capture; mundane events ignored; consecutive repeats
+dropped; the cap; the observer auto-wiring; the journal lines; an empty
+saga showing nothing; a persistence round-trip). Remainder P20.5b: NPCs
+citing the recent saga in gossip, and an end-of-campaign chronicle screen.

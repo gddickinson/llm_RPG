@@ -3827,9 +3827,28 @@ This phase gives NPCs agency, a social web, and gods that act.
   storm that resets while non-opposing acts don't; tension persists; a
   run_day announces divine beats). Remainder P20.4b: cults NPCs join,
   festival days, and a god's DEMAND with consequences.)*
-- [ ] **P20.5 Runtime history & the saga.** The chronicle accrues at
+- [x] **P20.5 Runtime history & the saga.** The chronicle accrues at
   runtime — player and faction deeds append to `world_history`, producing
   an emergent saga readable in the Y-journal, so the world remembers.
+  *(Round: `engine/chronicle.py` `Chronicle`, registered as an observer on
+  the event log (`memory_manager.add_observer`). It watches for the beats
+  that shape an age — anything already marked `[Legend]` (a nemesis's fall,
+  a lair cleared, a true death) plus the weightiest `[Realm]` beats caught
+  by keyword (wars & alliances, a god contending, a tribe swarming out or
+  beaten back, a siege, a slaying) — and writes each as a DATED entry into
+  a growing saga, prefix stripped, consecutive repeats dropped, capped at
+  60. The mundane `[Realm]` traffic (caravans, quiet production) is left
+  out. `lines()` renders a "Chronicle of the Age" section the Y-journal now
+  shows beneath the pre-game Legends (`gui.show_topics`), so the world
+  remembers what you and the factions did to it — and it persists
+  (`to_dict`/`from_dict` registered in `save_load`). Composes with the
+  whole of Phases 19-20: the nemesis, the wars, the divine contentions and
+  the tribe raids all write themselves into the record. 11 tests
+  (worthiness of legends/saga-realm/mundane; dated & cleaned capture;
+  mundane ignored; consecutive dups dropped; the cap; the observer wiring;
+  the journal lines; empty saga; persistence). Remainder P20.5b: fold the
+  saga into gossip so NPCs cite recent history, and a proper end-of-campaign
+  "chronicle of your age" screen.)*
 - [ ] **P20.6 Romance & rivalry.** Courtship, friendship, rivalry and
   marriage with the player and between NPCs; jealousy. Turns the single
   affinity scalar into relationship *types*.

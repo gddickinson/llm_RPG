@@ -99,6 +99,9 @@ def build_subsystems(engine, llm_model=None,
     self.faction_agendas = FactionAgendas(self)
     from engine.divine_acts import DivineActs
     self.divine_acts = DivineActs(self)
+    from engine.chronicle import Chronicle
+    self.chronicle = Chronicle(self)
+    self.memory_manager.add_observer(self.chronicle.record)
     self.dm = DMApi(self)
     self.dm_autonomous = AutonomousDM(self)
     try:
