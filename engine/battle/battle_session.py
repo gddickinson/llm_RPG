@@ -201,8 +201,10 @@ class BattleSession:
     @staticmethod
     def _steps(sol, sq) -> int:
         """Whole tiles this soldier may move this tick from its speed
-        budget; the fractional remainder carries to the next tick."""
-        sol.move_accum += sq.speed
+        budget; the fractional remainder carries to the next tick. A
+        dense LINE marches at half pace (P17.16)."""
+        from engine.battle import battle_formation as form
+        sol.move_accum += sq.speed * form.speed_mult(sq)
         n = int(sol.move_accum)
         sol.move_accum -= n
         return min(n, MAX_STEPS)

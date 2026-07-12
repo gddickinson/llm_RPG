@@ -86,7 +86,8 @@ class Squad:
         self.routed = False
         self.order = "hold"          # move/hold/charge/focus/fallback
         self.order_target = None     # a tile or a squad id
-        self.formation = None
+        self.formation = None        # None / "line" / "loose" (P17.16)
+        self.formation_broken = False
 
     # ---- construction --------------------------------------------
 
@@ -169,6 +170,7 @@ class Squad:
             "morale": self.morale, "routed": self.routed,
             "order": self.order, "order_target": self.order_target,
             "formation": self.formation,
+            "formation_broken": self.formation_broken,
             "soldiers": [s.to_dict() for s in self.soldiers],
         }
 
@@ -182,4 +184,5 @@ class Squad:
         sq.order = d.get("order", "hold")
         sq.order_target = d.get("order_target")
         sq.formation = d.get("formation")
+        sq.formation_broken = d.get("formation_broken", False)
         return sq

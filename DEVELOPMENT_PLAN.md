@@ -2679,7 +2679,7 @@ build on P17.11 (facing) first.
   break. 7 tests (rear > flank > front morale, a hemmed-in squad breaks
   but a deep one holds, run-down bonus, close rout panics more than a
   far one). Suite 1600, green.)*
-- [ ] **P17.16 Formations I — line & loose, with cohesion (the user's
+- [x] **P17.16 Formations I — line & loose, with cohesion (the user's
   "different formations").** A formation is a squad property: assigned
   slots, a shared FACING, spacing, and a 0–1 COHESION (soldiers in-
   slot & facing right / living). Two archetypes first: **dense LINE**
@@ -2689,6 +2689,23 @@ build on P17.11 (facing) first.
   weak floor, easily flanked). Formation BREAKS when cohesion drops
   (flanked slot, failed shove, charged unbraced) → bonuses gone, morale
   step-loss. Gives P17.5's `SET_FORMATION` real grid effects.
+  *(Round 168: `engine/battle/battle_formation.py`. COHESION = the share
+  of the squad that both faces the body's DOMINANT direction and stands
+  beside a mate — a tight, unified line scores 1.0; scatter it or split
+  its facings and it falls (a uniformly-TURNED squad stays cohesive,
+  which is right). Below the break point (0.5) the formation is BROKEN:
+  bonuses vanish and `check_break` latches a one-time −4 morale shock.
+  LINE gives a man with a standing right-hand shieldmate +2 FRONT-arc
+  defence (wired into `attack`'s DC), STEADIES morale by depth (+1..3/
+  tick in `update_morale`), and marches at HALF pace (`_steps`); LOOSE
+  takes HALF from missiles/AoE (wired into `attack`'s ranged damage) but
+  gets no shield and no floor. `formation`/`formation_broken` round-trip
+  in the Squad dict. 13 tests (cohesion of a tight line vs a split one,
+  ½ speed, shield-overlap front-only + gone when flanked / mate-down /
+  broken, a loose squad taking half a longbow volley, the one-time break
+  shock, persistence). Suite 1613, green. *(Remainder P17.16b: explicit
+  slot assignment — cohesion uses facing-unity + clustering as the slot
+  proxy for now.)*)*
 - [ ] **P17.17 Bracing & the all-facing formation (RPS spine).** A
   BRACE flag (hold still + face the threat) makes pike/spear **negate
   the charge bonus and strike an interrupt first** (formalises P17.13's

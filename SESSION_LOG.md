@@ -3882,3 +3882,36 @@ where a ten-man one holds, the run-down bonus stacks on a routed target,
 and a close rout panics a neighbour more than a distant one. No regression
 in the deterministic battle sessions; `battle_ai` at 304 lines. Suite
 1600, green.
+
+**Round 168 — P17.16 Formations I (line & loose, with cohesion).**
+The user's "different formations" ask, and the researched-priority next
+after positional morale. A formation was already a squad property in name
+(P17.5's SET_FORMATION set it); this gives it grid teeth in
+`engine/battle/battle_formation.py`. The spine is COHESION, 0–1: the share
+of a squad that both faces the body's DOMINANT direction and stands beside
+a mate. A tight, unified file scores 1.0; scatter it or SPLIT its facings
+and it falls — while a squad that turns UNIFORMLY stays cohesive, which is
+the right call (a phalanx that wheels together hasn't come apart). Below
+the break point (0.5) the formation is BROKEN: its bonuses vanish and a
+latch, `check_break`, spends a one-time −4 morale shock the tick it goes.
+Two archetypes carry real effects now. A dense LINE gives any man with a
+standing right-hand shieldmate +2 to his FRONT-arc defence (folded into
+`attack`'s to-hit DC, so a shield wall is genuinely hard to break from the
+front but no help at all once flanked), STEADIES the morale by depth
+(+1..3 a tick, the floor that keeps a deep line from routing at the first
+push), and marches at HALF pace (`_steps`), full weight to AoE. A LOOSE
+skirmish line is the mirror: it takes HALF from missiles and area effects
+(folded into `attack`'s ranged damage — a longbow volley that fells an
+open target only grazes a spread-out one), stays quick, but gets no shield
+overlap and no morale floor, so it's mobile and fragile. Both
+`formation` and the new `formation_broken` latch ride the Squad's dict for
+mid-battle saves. 13 tests: cohesion of a tight line versus a split one and
+an empty squad; the half speed; the shield overlap present from the front
+with a right-mate but gone when the blow comes from a flank, when the
+mate is down, or when the line has broken; a loose squad taking visibly
+less from a longbow shot than an open one; the one-time break shock not
+firing twice; and the formation state round-tripping. No regression across
+the 41 existing battle tests; every battle file under the line
+(battle_formation 114). Suite 1613, green. REMAINDER (P17.16b): explicit
+slot assignment — cohesion uses facing-unity + clustering as the slot
+proxy for now.

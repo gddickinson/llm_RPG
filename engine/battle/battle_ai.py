@@ -148,11 +148,17 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     dc = 10 + defence
     if ranged:
         dc += round(field.cover_at(target.x, target.y) * 10)
+    if tgt_squad is not None:      # P17.16 LINE shield-overlap
+        from engine.battle import battle_formation as form
+        dc += form.defense_bonus(field, tgt_squad, target, atk_soldier)
     to_hit, dmg_mult = _position_mods(field, atk_soldier, target)
     roll = rng.randint(1, 20) + power + to_hit
     if roll < dc:
         return False
     dmg = max(1, int(power // 3 * dmg_mult) + rng.randint(0, 2))
+    if ranged and tgt_squad is not None:   # P17.16 LOOSE spreads the volley
+        from engine.battle import battle_formation as form
+        dmg = max(1, int(dmg * form.incoming_ranged_mult(tgt_squad)))
     target.hurt(dmg)
     # P17.15: a blow from the flank or rear shakes the whole squad's
     # nerve, not just the body it lands on — flanking pays in MORALE.
@@ -288,6 +294,11 @@ def update_morale(field, squad) -> None:
             squad.adjust_morale(-4)
         else:
             squad.adjust_morale(-1)
+    # P17.16: a held formation steadies the line; a broken one takes a
+    # one-time shock as it comes apart.
+    from engine.battle import battle_formation as form
+    squad.adjust_morale(form.steady(field, squad))
+    form.check_break(field, squad)
     if squad.morale < 40:      # slow rally when not pressed
         squad.adjust_morale(1)
 
