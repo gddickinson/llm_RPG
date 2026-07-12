@@ -57,11 +57,32 @@ class QuestManager:
                 "bond_earned", {}).get(giver.id, 0)
             if max(points(engine, giver), earned) < need_bond:
                 return False
+        # Branching gates (P21.1): a choice-flag opens or shuts a path, and
+        # a mutually-exclusive sibling already taken locks this one out.
+        flags = self._flags()
+        need_flag = quest.metadata.get("prereq_flag")
+        if need_flag and not flags.get(need_flag):
+            return False
+        block_flag = quest.metadata.get("blocked_by_flag")
+        if block_flag and flags.get(block_flag):
+            return False
+        for sib_id in quest.metadata.get("excluded_by", []):
+            sib = self.quests.get(sib_id)
+            if sib is not None and sib.status in (
+                    QuestStatus.ACTIVE, QuestStatus.COMPLETED,
+                    QuestStatus.TURNED_IN):
+                return False
         prereq = quest.metadata.get("prereq_quest")
         if not prereq:
             return True
         done = self.quests.get(prereq)
         return done is not None and done.status == QuestStatus.TURNED_IN
+
+    def _flags(self) -> dict:
+        eng = getattr(self, "engine", None)
+        if eng is None or getattr(eng, "player", None) is None:
+            return {}
+        return eng.player.metadata.setdefault("quest_flags", {})
 
     def accept_quest(self, quest_id: str) -> bool:
         quest = self.quests.get(quest_id)
@@ -70,6 +91,29 @@ class QuestManager:
             return False
         quest.status = QuestStatus.ACTIVE
         self._log(f"Quest accepted: {quest.title}")
+        # Choosing this path shuts the door on its rivals (P21.1)
+        for ex_id in quest.metadata.get("excludes", []):
+            self.fail_quest(ex_id, reason=f"you sided with \"{quest.title}\"")
+        return True
+
+    def fail_quest(self, quest_id: str, reason: str = "") -> bool:
+        """Mark a quest FAILED — a rival path taken, a deadline missed, a
+        wrong turn. Long-dormant status, finally wired (P21.1)."""
+        q = self.quests.get(quest_id)
+        if q is None or q.status in (QuestStatus.TURNED_IN,
+                                     QuestStatus.FAILED):
+            return False
+        q.status = QuestStatus.FAILED
+        self._log(f"Quest failed: {q.title}"
+                  + (f" — {reason}" if reason else ""))
+        return True
+
+    def choose_reward(self, quest_id: str, index: int) -> bool:
+        """Pick one of a quest's reward options before turning it in."""
+        q = self.quests.get(quest_id)
+        if q is None or not q.metadata.get("reward_choices"):
+            return False
+        q.metadata["reward_choice"] = int(index)
         return True
 
     def turn_in(self, quest_id: str, player) -> bool:
@@ -84,6 +128,15 @@ class QuestManager:
         quest.update_status()
         if quest.status != QuestStatus.COMPLETED:
             return False
+
+        # Reward-choice (P21.1): fold the picked option into the payout
+        choices = quest.metadata.get("reward_choices")
+        if choices:
+            idx = quest.metadata.get("reward_choice", 0)
+            pick = choices[idx if 0 <= idx < len(choices) else 0]
+            quest.reward_gold = pick.get("gold", quest.reward_gold)
+            quest.reward_items = pick.get("items", quest.reward_items)
+            quest.reward_xp = pick.get("xp", quest.reward_xp)
 
         # Apply rewards
         player.gold = getattr(player, "gold", 0) + quest.reward_gold
@@ -108,6 +161,11 @@ class QuestManager:
         # Capability unlocks: "teleport:<key>" / "topic:<id>" / "spell:<id>"
         for unlock in quest.metadata.get("reward_unlocks", []):
             self._apply_unlock(player, unlock)
+
+        # A choice that sticks: set the world flag this quest decides (P21.1)
+        flag = quest.metadata.get("sets_flag")
+        if flag:
+            self._flags()[flag] = True
 
         quest.status = QuestStatus.TURNED_IN
         self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")

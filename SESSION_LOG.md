@@ -5528,3 +5528,38 @@ jealousy cools the first partner and strains a marriage; a soured NPC turns
 rival and a rival won't be wooed, while a partner never sours to rivalry; a
 spouse provides; a wedding is chronicled). Phase 20 — the Living Society &
 the Gods — is complete.
+
+## Branching quests — a fork in the road (P21.1)
+
+The quest system could chain but never fork. Quests unlocked one another in
+a straight line; there were no choices, no roads not taken, and the FAILED
+status sat in the enum, defined and never once used. The castle intrigue
+was the sharpest example: you could expose Duke Voss to the King, and that
+was the only thing you could do with what you'd learned.
+
+This round gives quests a fork, all of it driven through the flexible
+`metadata` a quest already carried, so no dataclass changed. A quest with
+`excludes` fails its rivals the moment you accept it — and failing a quest,
+at last, means something: `QuestStatus.FAILED` is finally wired, through a
+`fail_quest` the manager now owns. `excluded_by` is the other side of that
+coin, keeping a quest off the board once its rival has been taken. Choices
+that should echo forward set a flag on turn-in (`sets_flag`), kept on the
+player, and later quests gate on it — `prereq_flag` opens a path only to
+someone who made a certain choice, `blocked_by_flag` shuts one. And a quest
+can offer a CHOICE of reward — coin now, or training, or a piece of gear —
+picked before you turn it in.
+
+It's shown where the survey found it missing. A new quest, "The Duke's
+Offer", forks from the same point as "The Duke's Gambit": with the cipher
+in hand you can carry it to the King and expose Voss, or carry it to Voss
+himself, betray Prince Cedric, and take his gold and a place at his side.
+Accept one and the other fails; each sets its own flag —
+`exposed_voss` or `sided_with_voss` — for the world to remember which way
+you went.
+
+10 branching tests (a rival path fails on accept and is locked out; FAILED
+is idempotent; a turn-in sets its flag; prereq- and blocked-by-flags gate
+paths; a reward choice pays the option you picked and defaults to the
+first; the castle fork exists and is mutually exclusive) plus the castle
+suite still green. Remainder P21.1b: NPCs and factions that react to the
+choice flags, and a dialog choice-menu to make the pick in-fiction.

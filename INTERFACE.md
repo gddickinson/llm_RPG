@@ -218,7 +218,7 @@ llm_RPG/
 ### quests/ — Quest system
 
 - **`quest.py`** — `Quest`, `QuestObjective`, `QuestStatus`, `ObjectiveType`.
-- **`quest_manager.py`** — Tracks quests, event hooks for progress.
+- **`quest_manager.py`** — Tracks quests, event hooks for progress. P21.1 branching (all via `quest.metadata`): `excludes` fails rivals on accept (`fail_quest` wires the dormant `FAILED`), `excluded_by` locks a quest once its rival is taken, `prereq_flag`/`blocked_by_flag` gate on choice-flags (set by `sets_flag` on turn-in, stored in `player.metadata["quest_flags"]`), and `reward_choices`+`choose_reward` pick one payout. Demonstrated by the castle fork (side with Duke Voss vs expose him).
 - **`quest_templates.py`** — Quests loaded from `data/quests.json`; `create_quest(id)`.
 - **`quest_board.py`** — `QuestBoardManager`; tavern bulletin board. P0.1b: `to_dict`/`from_dict` persist each board's live `posted_quest_ids` (radiant/DM notices) through save/load.
 - **`radiant.py`** — `RadiantQuestGenerator`; morning task quests from shortages/sightings, level-scaled, board-posted.

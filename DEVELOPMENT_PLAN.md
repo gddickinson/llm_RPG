@@ -3876,9 +3876,26 @@ This phase gives NPCs agency, a social web, and gods that act.
 
 ## Phase 21 — Adventures, Choice & Consequence  (Ultraplan, 2026-07-12)
 
-- [ ] **P21.1 Branching quests.** Choices, mutually-exclusive outcomes,
+- [x] **P21.1 Branching quests.** Choices, mutually-exclusive outcomes,
   reward-choice, and the long-dormant `FAILED` state wired in — side with
   Duke Voss or expose him; consequences that stick.
+  *(Round: branching driven entirely through `quest.metadata` (no dataclass
+  churn) in `quests/quest_manager.py`. `excludes` — accepting a quest FAILS
+  its rivals (`fail_quest`, wiring the long-dormant `QuestStatus.FAILED`);
+  `excluded_by` — a quest is locked out once its rival is taken;
+  `prereq_flag`/`blocked_by_flag` — choice-flags (in
+  `player.metadata["quest_flags"]`, set by a quest's `sets_flag` on
+  turn-in) open and shut later paths; `reward_choices` + `choose_reward` —
+  pick one of several payouts, folded in at turn-in. All gates fold into
+  `is_unlocked`; `quest_templates` now carries the new fields through.
+  Demonstrated in CONTENT: a new `castle_voss_gambit` ("The Duke's Offer")
+  forks from `castle_the_spy` opposite `castle_gambit` — side with Voss
+  (betray the Prince, take his gold) or expose him, and accepting one fails
+  the other, each setting its own flag (`sided_with_voss`/`exposed_voss`)
+  for the world to react to. Validator clean. 10 branching tests + the
+  castle suite still green. Remainder P21.1b: NPCs/factions that REACT to
+  the choice flags (Voss's faction favors a player who sided with him),
+  and a dialog choice-menu to make the pick in-fiction.)*
 - [ ] **P21.2 The main arc.** An overarching questline with a spine, a
   climax, and an ending — a world-goal the campaign builds toward.
 - [ ] **P21.3 Puzzles II.** Levers & gates, pressure plates,

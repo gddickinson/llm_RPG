@@ -393,7 +393,11 @@
     "reward_items": [
       "longsword"
     ],
-    "prereq_quest": "castle_the_spy"
+    "prereq_quest": "castle_the_spy",
+    "excluded_by": [
+      "castle_voss_gambit"
+    ],
+    "sets_flag": "exposed_voss"
   },
   "castle_crypt": {
     "title": "What Stirs Below",
@@ -414,5 +418,48 @@
       "amulet_warding"
     ],
     "prereq_quest": "castle_audience"
+  },
+  "castle_voss_gambit": {
+    "title": "The Duke's Offer",
+    "description": "Duke Voss knows you hold his cipher. He offers you gold and a place at his side \u2014 betray Prince Cedric, and the throne may yet change hands.",
+    "giver_id": "duke_voss",
+    "prereq_quest": "castle_the_spy",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "duke_voss",
+        "required": 1,
+        "description": "Take Duke Voss's offer"
+      },
+      {
+        "type": "talk",
+        "target": "heir_bloodstone",
+        "required": 1,
+        "description": "Betray Prince Cedric to the Duke"
+      }
+    ],
+    "excludes": [
+      "castle_gambit"
+    ],
+    "sets_flag": "sided_with_voss",
+    "reward_gold": 400,
+    "reward_xp": 500,
+    "reward_choices": [
+      {
+        "gold": 500,
+        "xp": 400,
+        "label": "The Duke's gold"
+      },
+      {
+        "gold": 150,
+        "items": [
+          "ring_protection",
+          "longsword"
+        ],
+        "xp": 500,
+        "label": "A commission in his guard"
+      }
+    ],
+    "quest_points": 5
   }
 }
