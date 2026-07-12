@@ -6399,3 +6399,17 @@ The library now sits inside the wall; the player still can't be trapped (BFS).
 12 tests. Next: P31.1c (tower guards spot an attacker, sound the alarm, and fire
 arrows down), P31.1d (gates that close & lock via doors.py), P31.1e (a richer
 2.5D renderer — multi-level massing + a guard visible on the tower roof).
+
+## 2026-07-12 (cont.) — P31.1c: the tower guards defend
+
+The corner guard towers now bite. `engine/tower_defense.py` runs each turn
+beside the P7.1 conflict pass: a `tower_guard` posted at a corner spots the
+nearest hostile within `TOWER_RANGE` (8 — the rooftop height sees over the
+wall), cries a one-shot `[Alarm]` to the town the first time raiders appear,
+and looses an arrow down at the attacker (6 damage on a d20 ≥ 8, a rooftop
+archer rarely missing a target below, with a `[Guard]` tracer and a fall line
+if it drops). When the coast clears the alarm resets. So a warband approaching
+the walled start town is met by arrows from the towers before it reaches the
+gate. 6 tests. Next: P31.1d (gates that close & lock via doors.py) and P31.1e
+(the richer 2.5D renderer — a guard visible on the tower roof, multi-level
+building massing à la Autonomous World).

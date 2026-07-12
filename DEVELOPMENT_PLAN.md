@@ -3942,10 +3942,16 @@ The work is to UNIFY these into one standalone generator and enrich the output.
   `world_generator._fortify_start_town` + `demo_setup`. The wall now encloses
   the whole town (21×19 vs the old 14×9); player still not trapped (BFS).
   `tests/test_fortify.py` (12).
-- [ ] **P31.1c Tower guards defend.** A guard stationed at a corner tower SPOTS
+- [x] **P31.1c Tower guards defend.** A guard stationed at a corner tower SPOTS
   an approaching hostile, raises an ALARM to the town, and fires ARROWS down at
   the attacker from the wall (ranged, from the height of the tower). Composes
-  with `ranged`/`npc_conflict`/`retaliation`.
+  with `ranged`/`npc_conflict`/`retaliation`. *Done:* `engine/tower_defense.py`
+  `TowerDefense.update` (run each turn beside `npc_conflict`): each manned tower
+  finds the nearest hostile within `TOWER_RANGE`=8 (the height sees over the
+  wall), cries a one-shot `[Alarm]` the first time, and looses an arrow
+  (`ARROW_DAMAGE`=6 on a d20 ≥ 8 — a rooftop archer rarely misses a target
+  below), a `[Guard]` tracer; the alarm clears when the coast is. Registered in
+  `engine_setup`. `tests/test_tower_defense.py` (6).
 - [ ] **P31.1d Gates that close and lock.** Each town entrance gate can be
   CLOSED and LOCKED (shut at night / under threat), composing with the
   `doors.py` lock/key/force system — a closed gate turns back what a guard

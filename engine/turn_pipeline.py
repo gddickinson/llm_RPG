@@ -302,6 +302,12 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"NPC conflict error: {e}")
 
+    # Tower guards loose arrows at attackers at the walls (P31.1c)
+    try:
+        self.tower_defense.update()
+    except Exception as e:
+        logger.debug(f"Tower defense error: {e}")
+
     # Reveal what the player can see; fog the rest (P15.11)
     try:
         from engine.discovery import update as _discovery_update
