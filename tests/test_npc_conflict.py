@@ -41,8 +41,21 @@ class TestNPCConflict(unittest.TestCase):
         self.engine.player.position = (self.wmap.width - 2,
                                        self.wmap.height - 2)
 
+    def _clear_other_hostiles(self):
+        # seeded lair/wilderness beasts (P19.2) would steal the guard's eye —
+        # remove them so the test bandit is the only visible foe (hermetic)
+        from engine.agent_controller import _is_hostile
+        for nid in list(self.engine.npc_manager.npcs):
+            if _is_hostile(self.engine.npc_manager.npcs[nid]):
+                self.wmap.remove_character(self.engine.npc_manager.npcs[nid])
+                self.engine.npc_manager.remove_npc(nid)
+
     def test_guard_closes_on_and_fights_visible_hostile(self):
+        from world.world_map import TerrainType
         self._park_player_far()
+        self._clear_other_hostiles()
+        for x in range(3, 12):          # an open lane the guard can walk
+            self.wmap.terrain[5][x] = TerrainType.GRASS
         guard = self._put(self._guard(), 5, 5)
         bandit = self._spawn("bandit", 9, 5)
         hp_before = bandit.hp

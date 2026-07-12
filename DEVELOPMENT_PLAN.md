@@ -3530,9 +3530,18 @@ a coherent, testable slice; ordered roughly by impact.
   table), which is INDOORS — and the away-hero skirts buildings — so active
   crafting waits on a "duck into a workshop" navigation step (with M.8b's
   indoor-merchant reach).
-- [ ] **M.8e Worship, consumables & buffs.** Pray at a shrine for a boon;
-  eat for the well-fed bonus; use scrolls/tomes it's carrying rather than
-  letting them rot in the pack.
+- [x] **M.8e Worship, consumables & buffs (2026-07-12e).** Two safe,
+  always-worthwhile wins in `decide` (step 3d): the hero STUDIES a teaching
+  tome / training manual it carries (`agent_sense._learn_item` → the `study`
+  verb → `use_item`) — a `teach_spell` it doesn't know or a `permanent_stat`,
+  a forever-benefit that used to rot in the pack — and PRAYS at a shrine/temple
+  (`_can_pray` → the `pray` verb → `engine.pray`) for a god's boon, once a day,
+  away-hero only (an adventurer's favour is meaningless). 6 tests; the take-turn
+  action dispatch split to `engine/agent_exec.py` to hold the line. Remainder:
+  TIMING-sensitive consumables — a buff/attack scroll or eating for the
+  well-fed bonus is only worth it at the right moment (before/in a fight,
+  when hungry with food to spare beyond the M.8a camp ration), so those wait
+  on a little more context-awareness.
 - [ ] **M.8f Homesteading.** Claim and improve a derelict home; stash loot in
   its chest; rest there free. A base of operations for a long-lived hero.
 

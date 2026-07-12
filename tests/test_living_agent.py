@@ -95,6 +95,60 @@ class TestSocial(_Base):
         self.assertTrue(self.ac.greeted)
 
 
+class TestWorship(_Base):
+    """Worship & self-betterment (M.8e) — study a teaching tome you carry,
+    pray at a shrine; not twice a day, and adventurers don't pray."""
+
+    class _Tome:
+        id = "tome_x"
+        name = "Tome of Frost"
+        use_effect = {"teach_spell": "frost_ray"}
+
+        def is_consumable(self):
+            return False
+
+    def _shrine_here(self):
+        from world.location import Location
+        x, y = self.p.position
+        self.engine.world.add_location(Location("Wayside Shrine", "",
+                                                x, y, 1, 1))
+
+    def test_studies_a_teaching_tome(self):
+        self.p.metadata["spells_known"] = []
+        self.p.inventory = [self._Tome()]
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "study")
+
+    def test_study_learns_the_spell(self):
+        self.p.metadata["spells_known"] = []
+        self.p.inventory = [self._Tome()]
+        self.ac.take_turn(self.engine, self.p)
+        self.assertIn("frost_ray",
+                      self.p.metadata.get("spells_known", []))
+
+    def test_no_study_of_an_already_known_spell(self):
+        self.p.metadata["spells_known"] = ["frost_ray"]
+        self.p.inventory = [self._Tome()]
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "study")
+
+    def test_prays_at_a_shrine(self):
+        self.p.inventory = []
+        self._shrine_here()
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "pray")
+
+    def test_no_praying_twice_in_a_day(self):
+        self.p.inventory = []
+        self._shrine_here()
+        self.p.metadata["last_pray_day"] = \
+            self.engine.world.time // (24 * 60)
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "pray")
+
+    def test_an_adventurer_does_not_pray(self):
+        self.ac.social = False
+        self.p.inventory = []
+        self._shrine_here()
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "pray")
+
+
 class TestGather(_Base):
     """The hero gathers from the land (M.8d) — forages a rich forest/swamp
     or works a node it's standing on, but not everywhere."""

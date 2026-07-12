@@ -25,7 +25,8 @@ from engine import agent_trade as agtrade
 from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
                                 _knows_heal, _can_shoot, _provisioned,
-                                _attack_spell, _gatherable)
+                                _attack_spell, _gatherable, _learn_item,
+                                _can_pray)
 
 logger = logging.getLogger("llm_rpg.agent")
 
@@ -286,11 +287,19 @@ class AgentController:
                     and _provisioned(char):
                 return ("rest",)
 
-        # 3c. gather from the land (M.8d) — work a node or forage a rich
-        # forest/swamp we're standing on: raws, and from a forest FOOD for
-        # the M.8a camp. Self-sufficiency instead of pure scavenging.
+        # 3c. gather from the land (M.8d) — a node or a rich forest/swamp we
+        # stand on: raws, and from a forest FOOD for the M.8a camp
         if not foes and _gatherable(engine, char):
             return ("forage",)
+
+        # 3d. worship & self-betterment (M.8e) — study a tome/manual we carry
+        # (learn a spell / gain a stat), or pray at a shrine for a boon
+        if not foes:
+            tome = _learn_item(char)
+            if tome is not None:
+                return ("study", tome)
+            if self.social and _can_pray(engine, char):
+                return ("pray",)
 
         # inside a building/dungeon: leave or prowl, never freeze on an
         # unreachable overworld goal
@@ -401,67 +410,8 @@ class AgentController:
         # keep the hero's current aim visible to the player (reviewable)
         char.metadata["agent_goal"] = self.goal_name or (
             "heading somewhere" if plan[0] == "move" else plan[0])
-        with acting_as(engine, char):
-            k = plan[0]
-            if k == "attack":
-                engine.attack_character(plan[1].name)
-            elif k == "shoot":
-                engine.shoot_ranged(plan[1].name)
-            elif k == "heal_potion":
-                engine.use_item(plan[1].name)
-            elif k == "heal_spell":
-                engine.cast_spell("heal")
-            elif k == "cast":                     # attack spell (M.8c)
-                engine.cast_spell(plan[1], plan[2].name)
-            elif k == "loot":
-                engine.pickup_item()
-            elif k == "forage":                   # gather raws/food (M.8d)
-                engine.forage()
-            elif k == "rest":
-                try:                          # camp/inn to mend (M.8a)
-                    from engine.rest import sleep
-                    sleep(engine)
-                    self._deed(engine, char, "made camp to mend its wounds.")
-                except Exception:
-                    pass
-            elif k == "talk":
-                npc = plan[1]
-                self.greeted.add(npc.id)
-                try:
-                    engine.dialog_system.player_to_npc(npc.id)
-                    self._deed(engine, char, f"fell to talking with {npc.name}.")
-                except Exception:
-                    pass
-            elif k == "accept_quest":
-                quest, npc = plan[1], plan[2]
-                if engine.quest_manager.accept_quest(quest.id):
-                    self._deed(engine, char,
-                               f"took up \"{quest.title}\" from {npc.name}.")
-            elif k == "trade":
-                agtrade.do_trade(engine, char, plan[1],
-                                 lambda t: self._deed(engine, char, t))
-            elif k == "recruit":
-                npc = plan[1]
-                try:
-                    engine.recruit(npc.id)
-                    if npc.id in engine.companion_manager.party:
-                        self._deed(engine, char,
-                                   f"recruited {npc.name} to the party.")
-                except Exception:
-                    pass
-            elif k == "exit_building":
-                try:
-                    engine.exit_building()
-                    if self.goal_name:            # don't head straight back
-                        self.visited.add(self.goal_name)
-                    self.goal = self.goal_name = None
-                    self._deed(engine, char, "stepped back outside.")
-                except Exception:
-                    pass
-            elif k in ("move", "flee"):
-                dx, dy = plan[1]
-                if dx or dy:
-                    engine.move_player(dx, dy)
+        from engine.agent_exec import execute
+        execute(self, engine, char, plan)
         return plan[0]
 
 

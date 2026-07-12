@@ -91,6 +91,35 @@ def _attack_spell(char, dist):
     return scored[0][2]
 
 
+def _learn_item(char):
+    """A tome/manual worth STUDYING now (M.8e) — one that teaches a spell we
+    don't yet know, or grants a permanent stat. (Not buff/attack scrolls,
+    whose worth is timing-sensitive.) Returns the item, or None — so a
+    learn-it-forever item doesn't just rot in the pack."""
+    known = set((getattr(char, "metadata", {}) or {}).get("spells_known", []))
+    for it in getattr(char, "inventory", []):
+        eff = getattr(it, "use_effect", None) or {}
+        if "permanent_stat" in eff:
+            return it
+        ts = eff.get("teach_spell")
+        if ts and ts not in known:
+            return it
+    return None
+
+
+def _can_pray(engine, char) -> bool:
+    """Standing at a shrine/temple and haven't prayed today (M.8e)."""
+    try:
+        meta = getattr(char, "metadata", {}) or {}
+        if meta.get("last_pray_day") == engine.world.time // (24 * 60):
+            return False
+        loc = engine.player_location()
+        name = (getattr(loc, "name", "") or "").lower()
+        return "shrine" in name or "temple" in name
+    except Exception:
+        return False
+
+
 def _gatherable(engine, char) -> bool:
     """Is the hero's OWN tile worth stopping to gather (M.8d)? A workable
     mine/wood/fish node, or a rich FOREST/SWAMP forage (herbs — and from a

@@ -6076,3 +6076,23 @@ building tile — teleport dropped him onto solid stone. Fix: `_safe_landing`
 spirals out from the target to the nearest walkable, non-building tile before
 placing the player. Riverside/Stonepine (road centres) are unaffected. 2
 tests.
+
+## 2026-07-12 (cont.) — M.8e: worship & self-betterment
+
+The last of the "use the whole game" recovery/economy cluster. Two safe,
+always-worthwhile additions to `decide`: the hero STUDIES a teaching tome or
+training manual it's carrying (`agent_sense._learn_item` → the new `study`
+verb) — a spell it doesn't know or a permanent stat, a forever-benefit that
+used to just rot in the pack — and PRAYS at a shrine/temple (`_can_pray` →
+the `pray` verb → `engine.pray`) for a god's boon, once a day. Praying is
+away-hero only (an adventurer's favour means nothing). Both gated on being
+SAFE. Only these two, because they're unambiguously good the moment you can;
+a buff/attack scroll or eating for the well-fed bonus is timing-sensitive
+(before a fight, when hungry with food to spare beyond the camp ration) —
+noted as remainder.
+
+`agent_controller` had crept back over 500 with each M.8x verb, so the
+take-turn action dispatch — the big if/elif that turns a plan into real
+player actions — moved wholesale to a new `engine/agent_exec.py`
+(`execute(ctrl, engine, char, plan)`), dropping the controller from 506 to
+443. 6 tests.
