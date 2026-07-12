@@ -130,6 +130,14 @@ def reach_of(squad) -> int:
         else MELEE_REACH
 
 
+def can_parthian(squad) -> bool:
+    """A horse-archer that looses over its shoulder as it rides away —
+    the Parthian shot (P17.20): it shoots WHILE fleeing, with no penalty
+    for the direction it faces (the target's arc governs, not ours)."""
+    return bool(squad.stats.get("parthian")) and \
+        squad.stats.get("ranged", 0) > 0
+
+
 def pick_target(field, soldier, squad):
     """Focus-fire: the squad's ordered target squad first, else any
     enemy — lowest HP, then nearest. Returns an enemy Soldier."""

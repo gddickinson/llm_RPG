@@ -65,11 +65,14 @@ class BattleSession:
             ai.update_morale(field, sq)
             doctrine.apply(field, sq)      # P17.19 commander instincts
 
-        # deterministic soldier order: by squad id then soldier id
+        # deterministic soldier order: by squad id then soldier id.
+        # Routed-but-alive squads stay in the list so they keep FLEEING
+        # every tick (and horse-archers loose the Parthian shot), not
+        # just the one tick they break.
         soldiers = []
         for sq in sorted(field.squads.values(),
                          key=lambda s: s.squad_id):
-            if not sq.active:
+            if sq.strength == 0:
                 continue
             for sol in sorted(sq.alive_soldiers, key=lambda s: s.sid):
                 soldiers.append((sol, sq))
@@ -258,6 +261,12 @@ class BattleSession:
         target = ai.pick_target(field, sol, sq)
         if target is None:
             return
+        # the Parthian shot (P17.20): a fleeing horse-archer looses over
+        # its shoulder at the pursuer before spurring on
+        if ai.can_parthian(sq) and \
+                ai._dist(sol.pos, target.pos) <= ai.RANGED_REACH:
+            self.tracers.append((sol.x, sol.y, target.x, target.y))
+            ai.attack(field, sol, sq, target, self.rng)
         for _ in range(self._steps(sol, sq)):
             dx = (sol.x > target.x) - (sol.x < target.x)
             dy = (sol.y > target.y) - (sol.y < target.y)

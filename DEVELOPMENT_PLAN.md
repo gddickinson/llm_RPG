@@ -2780,13 +2780,33 @@ build on P17.11 (facing) first.
   tests. Suite 1638, green. *(Remainder P17.19b: deployment templates,
   anchoring flanks on terrain, and refusing a flank — the setup-phase
   doctrine that needs a deploy step.)*)*
-- [ ] **P17.20 Envelopment & feigned retreat (capstone).** Scripted
-  feigned rout → wheel → sprung flank (with the **don't-over-pursue
-  discipline check** that counters it), Cannae elastic-centre double
-  envelopment, tulughma encirclement on open maps, and horse-archer
-  kiting + the **Parthian shot** (fire while fleeing, no rear-facing
-  penalty). Depends on facing+morale+formations+flow being solid;
+- [x] **P17.20 Envelopment & feigned retreat (Parthian-shot core).**
+  Scripted feigned rout → wheel → sprung flank (with the **don't-over-
+  pursue discipline check** that counters it), Cannae elastic-centre
+  double envelopment, tulughma encirclement on open maps, and horse-
+  archer kiting + the **Parthian shot** (fire while fleeing, no rear-
+  facing penalty). Depends on facing+morale+formations+flow being solid;
   delivers the "wow" battles.
+  *(Round 172: the iconic self-contained piece, the PARTHIAN SHOT. A
+  data flag `parthian: true` on `cavalry_mounted_archer` + `ai.
+  can_parthian`; in the session's `_flee`, a fleeing horse-archer looses
+  at its pursuer within ranged reach BEFORE spurring on — no facing
+  penalty because our model reads the TARGET's arc, not the shooter's,
+  so a man firing over his shoulder is unhindered. This needed a real
+  fix first: the tick built its soldier list from ACTIVE squads only, so
+  a routed squad only fled the ONE tick it broke and then stood frozen;
+  now routed-but-alive squads stay in the list and keep RUNNING (and
+  Parthian-shooting) every tick. A probe: a broken horse-archer rode
+  from (12,6) to (4,6) over three ticks while chipping its pursuer 20 →
+  8. 5 tests (only the horse-archer can; it shoots the pursuer while
+  fleeing and keeps moving; a routed FOOT archer only runs; a broken
+  squad flees every tick, not once). No battle-session regressions. Suite
+  1643, green. *(Remainder P17.20b: the scripted feigned-retreat maneuver
+  + the over-pursue discipline check that counters it — which needs a
+  FEIGN state distinct from a real rout to lure a chaser, since the AI's
+  `pick_target` always finds a live foe and so never over-pursues the
+  broken today — plus Cannae elastic-centre and tulughma encirclement,
+  the deployment-driven envelopments.)*)*
 
 ### Battlefield environment (user: hills, ditches, LOS, fire)
 Parallel track — the terrain itself as a combatant. Each is data-

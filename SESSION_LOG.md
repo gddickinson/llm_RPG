@@ -4010,3 +4010,32 @@ line braces inside a live `tick`. No regression across the 85 battle tests.
 Suite 1638, green. REMAINDER (P17.19b): deployment templates, anchoring
 flanks on terrain, and refusing a flank — the setup-phase doctrine that
 needs a deploy step.
+
+**Round 172 — P17.20 Envelopment & feigned retreat (Parthian-shot core).**
+The capstone of the tactics arc, taken by its most iconic self-contained
+piece: the PARTHIAN SHOT — the horse-archer who looses over his shoulder
+as he rides away, the shot that broke Crassus at Carrhae. A data flag,
+`parthian: true`, marks `cavalry_mounted_archer`; `ai.can_parthian` reads
+it; and in the session's `_flee` a fleeing horse-archer now looses at its
+pursuer (any live enemy within ranged reach) before spurring on. The
+"no rear-facing penalty" the plan asks for falls out for free: our combat
+reads the TARGET's arc for defence, never the shooter's facing, so a man
+firing backward is unpenalised by construction. Making it real, though,
+turned up a genuine bug to fix first — the tick built its acting-soldier
+list from ACTIVE squads only, and a routed squad is by definition not
+active, so a broken squad fled the SINGLE tick it routed and then stood
+frozen on the field forever. Now routed-but-alive squads stay in the list
+and keep RUNNING every tick (and horse-archers keep shooting): a probe
+watched a broken horse-archer ride from (12,6) out to (4,6) across three
+ticks while whittling its pursuer from 20 HP to 8. 5 tests: only the
+mounted archer can Parthian-shoot (not foot, not a foot longbow); it hits
+the pursuer while fleeing and keeps moving the same tick; a routed FOOT
+archer only runs; and a broken squad flees every tick rather than once. No
+regression across the battle sessions (the routed-flee fix leaves the win
+condition — a team with no ACTIVE squads loses — untouched). Suite 1643,
+green. REMAINDER (P17.20b): the scripted feigned-retreat maneuver and the
+over-pursue discipline check that counters it — which needs a FEIGN state
+distinct from a real rout to lure a chaser, because the AI's `pick_target`
+always finds a live foe somewhere on the field and so never over-pursues
+the broken as things stand — plus the deployment-driven envelopments
+(Cannae elastic centre, tulughma encirclement).

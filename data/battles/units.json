@@ -83,7 +83,8 @@
     "speed": 2.2,
     "morale_threshold": 18,
     "recruit_cost": 15,
-    "category": "cavalry"
+    "category": "cavalry",
+    "parthian": true
   },
   "siege_ram": {
     "melee": 2,
