@@ -74,18 +74,24 @@ class TestGathering(unittest.TestCase):
         self.assertIn("picked clean", second.lower())
 
     def test_fishing_adjacent_to_water(self):
+        # a shoreline tile that genuinely resolves to a FISHING node — a
+        # water-adjacent tile touching a mountain/forest resolves to
+        # mining/woodcutting first (node_at checks in that order), which
+        # a fishing rod can't work, so pin the fishing node directly.
+        gm = self.engine.gathering_manager
         wmap = self.engine.world.map
         spot = None
         for y in range(1, wmap.height - 1):
             for x in range(1, wmap.width - 1):
+                node = gm.node_at(x, y)
                 if wmap.get_terrain_at(x, y) != TerrainType.WATER and \
-                        wmap.get_terrain_at(x + 1, y) == TerrainType.WATER:
+                        node is not None and node[0] == "fishing":
                     spot = (x, y)
                     break
             if spot:
                 break
         if spot is None:
-            self.skipTest("no shoreline found")
+            self.skipTest("no fishing shoreline found")
         self.player.position = spot
         self.player.inventory.append(create_item("fishing_rod"))
         msg = self.engine.forage()

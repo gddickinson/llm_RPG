@@ -28,9 +28,11 @@ class WorldGenerator:
 
     def __init__(self, world, seed: int = 42):
         self.world = world
+        self.seed = seed
         self.rng = random.Random(seed)
         self.w = world.map.width
         self.h = world.map.height
+        self.elevation = None
 
     # ----- public -----------------------------------------------------
 
@@ -87,13 +89,12 @@ class WorldGenerator:
             self._blob(cx, cy, 3, TerrainType.FOREST)
 
     def _add_river(self) -> None:
-        # A meandering horizontal river
-        y = self.h // 2
-        for x in range(self.w):
+        # An elevation-driven river: water follows the valley floor
+        # downhill across the map (P16.6), seed-reproducible.
+        from world.river_gen import elevation_field, trace_river
+        self.elevation = elevation_field(self.w, self.h, self.seed)
+        for x, y in trace_river(self.elevation, self.w, self.h):
             self.world.map.terrain[y][x] = TerrainType.WATER
-            if self.rng.random() < 0.3 and 1 <= y < self.h - 1:
-                y += self.rng.choice([-1, 0, 0, 1])
-                y = max(2, min(self.h - 3, y))
 
     def _add_road(self) -> None:
         # Road runs along y = h//2 - 3 (above the river)

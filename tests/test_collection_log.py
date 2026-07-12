@@ -35,9 +35,12 @@ class TestCollectionLog(unittest.TestCase):
 
     def test_place_discovery_recorded_and_announced(self):
         loc = self.engine.world.locations[0]
-        self.player.position = (loc.x + 1, loc.y + 1)
+        self.player.position = loc.center()
+        # a corner may fall inside a nested location; record whatever the
+        # innermost location at the player's tile actually is
+        expected = self.engine.world.get_location_at(*self.player.position)
         self.engine.advance_turn()
-        self.assertIn(loc.name, self.log.obtained("places"))
+        self.assertIn(expected.name, self.log.obtained("places"))
         history = " ".join(str(e) for e in
                            self.engine.memory_manager.game_history[-6:])
         self.assertIn("Discovered", history)

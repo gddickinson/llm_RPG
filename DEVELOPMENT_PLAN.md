@@ -2263,12 +2263,30 @@ grid).
   smoke render over a real building tile. Suite 1582, green. *(Remainder
   P16.5b: per-kind roof COLOURS/tiles — one roof palette for all right
   now.)*)*
-- [ ] **P16.6 Worldgen leap.** AW `river_gen._trace_river_path`
-  (elevation → downhill rivers) + settlement-site scoring
-  (`world_plan._score_city_location`: near water, varied
-  neighbors, off-edge) + shore autotiling. Bridges already landed
-  (P14.3b). Replaces "two settlements + a straight road" with a
-  seed-reproducible watered map. ADAPT (not full chunk streaming).
+- [x] **P16.6 Worldgen leap (elevation rivers core).** AW
+  `river_gen._trace_river_path` (elevation → downhill rivers) +
+  settlement-site scoring (`world_plan._score_city_location`: near
+  water, varied neighbors, off-edge) + shore autotiling. Bridges
+  already landed (P14.3b). Replaces "two settlements + a straight road"
+  with a seed-reproducible watered map. ADAPT (not full chunk streaming).
+  *(Round 166: `world/river_gen.py`, all pure + seed-reproducible.
+  `elevation_field` carves a meandering low VALLEY across the map;
+  `trace_river` follows its floor downhill from the left edge to the
+  right, one water tile per column, its course bending toward the lowest
+  of the three tiles ahead — steepest descent, so the water hugs the
+  valley. Wired into `WorldGenerator._add_river`, REPLACING the old
+  random-walk with a genuine elevation-driven meander (seed stored so
+  it's reproducible). Also `score_site` (near-water + terrain-variety +
+  off-edge, AW's city scoring) and `is_shore` (land touching water) —
+  the ready helpers for settlement placement + shore autotiling. 11
+  tests (field shape/determinism/valley, river one-per-column +
+  connected + off-edge + follows-the-valley, shore + site scoring, and a
+  generated world has a river). The river shift tripped two
+  worldgen-position-fragile tests (a fishing shoreline that now touches
+  a forest, a place-discovery corner now inside a nested location) —
+  both hardened to resolve by property, not position. Suite 1593, green
+  x2. *(Remainder P16.6b: ADOPT `score_site` for settlement placement
+  and `is_shore` for render-side shore autotiling.)*)*
 
 *Survey SKIPs (recorded, not building): Voronoi/BSP city districts
 (overkill for small towns), banking/loans/bonds, and copying AW's

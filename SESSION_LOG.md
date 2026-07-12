@@ -3821,3 +3821,37 @@ shadow and the wall darker than the roof, every colour a valid RGB, and a
 crash-free draw over a real building tile. Suite 1582, green. REMAINDER
 (P16.5b): per-kind roof COLOURS/tiles — one roof palette dresses every
 building for now.
+
+**Round 166 — P16.6 Worldgen leap (elevation rivers).**
+The last Phase 16 import, and the one that changes the map itself. AW's
+rivers follow the land downhill; ours had been a random walk — a horizontal
+line that jittered up or down by a coin flip. Replaced with something that
+actually reads like water finding its level. `world/river_gen.py` is pure
+and seed-reproducible: `elevation_field` lays a height map whose low VALLEY
+meanders horizontally across the map (a handful of control points define
+where the valley floor sits per region, interpolated and wobbled), and
+`trace_river` walks that field from the lowest tile on the left edge to the
+right, each column bending toward the lowest of the three tiles ahead —
+steepest descent — so the water hugs the valley and the course bends where
+the ground is low, not where a die said so. It's wired straight into
+`WorldGenerator._add_river` (the seed is now stored so the whole thing is
+reproducible), and a probe drew a river snaking 43 → 33 → 46 → 49 → 34
+across a 120-wide map, the settlements still in place. The module also
+carries the other two AW pieces as tested, ready helpers: `score_site`
+(a settlement site scores for nearby water, varied surrounding ground, and
+distance from the edge — AW's city-location scoring) and `is_shore` (a land
+tile touching water, for shore autotiling), both to be ADOPTED in P16.6b.
+The one real cost of changing worldgen: the new river shifts the RNG
+sequence, so two position-fragile tests broke — a fishing test that grabbed
+the first water-adjacent tile (now one touching a forest, which resolves to
+woodcutting before fishing) and a place-discovery test whose corner tile
+now lands inside a nested location — both hardened to resolve by PROPERTY
+(a genuine fishing node; whatever location is actually underfoot) rather
+than by a fixed position, the same lesson P15.12 taught. 11 new tests: the
+field's shape, determinism and valley; the river being one-tile-per-column,
+connected (never jumping more than a row), off the edges, and sitting on
+the low ground; shore detection and site scoring preferring water + variety
++ off-edge; and a generated world genuinely carrying a river. Validator
+clean, suite 1593, green across two runs. Phase 16 — the living-world
+imports — is complete. REMAINDER (P16.6b): adopt `score_site` to place
+settlements and `is_shore` to autotile the coasts.
