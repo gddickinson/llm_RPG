@@ -3953,9 +3953,24 @@ This phase gives NPCs agency, a social web, and gods that act.
   leaves untimed quests alone; the content). Remainder P21.4b: escort /
   protect (an NPC that must reach a place alive), stealth / heist, and a
   player-JOINABLE P17 battle rather than an off-screen one.)*
-- [ ] **P21.5 Landmarks off-origin.** Streamed regions seed named
+- [x] **P21.5 Landmarks off-origin.** Streamed regions seed named
   locations, dungeons, and mini-quests instead of procedural noise;
   richer, real biomes.
+  *(Round: `world/chunked_world._seed_landmarks`, called from `_generate`
+  for every non-home region, over `data/landmarks.json` — the Old Ruins,
+  a Wayside Shrine, a Dark Hollow, a Hermit's Rest, the Standing Stones, a
+  Sunken Barrow. It places one or two on terrain that SUITS each
+  (`terrain` list matched against the tile's value), as named `Location`s
+  flagged `landmark`, and a `tile: "cave"` landmark stamps a real CAVE
+  entrance — so a Dark Hollow off-origin actually leads into a procedural
+  dungeon. Deterministic per region (seeded from the region's own seed via
+  the chunk store), so the wider map is stable, and the landmarks ride the
+  region cache (`cached_locations`) when you leave and return. The home
+  region is untouched (it keeps its authored places). 4 tests (home has
+  none; a streamed region gets named landmarks; they're deterministic per
+  region; a cave-mouth landmark is a real dungeon entrance). Remainder
+  P21.5b: mini-quests and small NPC casts at the landmarks, and the
+  biome enum made real rather than aspirational.)*
 - [ ] **P21.6 Treasure & legend.** Legendary hoards and unique named
   artifacts tied to discoverable lore and the legendarium; a treasure-map
   loop that pays exploration.

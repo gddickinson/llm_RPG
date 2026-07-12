@@ -1,0 +1,34 @@
+{
+  "old_ruins": {
+    "name": "Old Ruins",
+    "terrain": ["grass", "forest"],
+    "description": "Tumbled stones half-swallowed by the wild — someone built here, once."
+  },
+  "wayside_shrine": {
+    "name": "Wayside Shrine",
+    "terrain": ["grass", "forest", "mountain"],
+    "description": "A weathered roadside shrine to some half-forgotten god."
+  },
+  "dark_hollow": {
+    "name": "Dark Hollow",
+    "terrain": ["forest", "mountain"],
+    "tile": "cave",
+    "description": "A cave mouth breathing cold, still air."
+  },
+  "hermits_rest": {
+    "name": "Hermit's Rest",
+    "terrain": ["forest", "grass"],
+    "description": "A lonely camp at the world's edge — someone lives all the way out here."
+  },
+  "standing_stones": {
+    "name": "The Standing Stones",
+    "terrain": ["grass", "mountain"],
+    "description": "Grey stones set in a ring, humming faintly under the sky."
+  },
+  "sunken_barrow": {
+    "name": "Sunken Barrow",
+    "terrain": ["grass", "water"],
+    "tile": "cave",
+    "description": "A grave-mound sunk into the earth, a dark opening at its heart."
+  }
+}

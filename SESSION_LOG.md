@@ -5705,3 +5705,31 @@ melee — it moves, and it's watchable again.
 completion, and leaves untimed quests alone; the authored bounty) and 3
 agent tests (no ammo can't shoot, ammo can, an empty quiver closes to melee
 instead of firing).
+
+## Landmarks off-origin — the wider world has places now (P21.5)
+
+The map was effectively endless — walk off any edge and a new region
+streams in — but everything past the home valley was noise: terrain and a
+few scattered wilderness features, no names, no reasons to go there. The
+survey called it "infinite but empty." This round gives the off-origin
+world places.
+
+`chunked_world` now seeds LANDMARKS into every region past home as it's
+generated: the Old Ruins, a Wayside Shrine, a Dark Hollow, a Hermit's Rest
+out at the world's edge, the Standing Stones, a Sunken Barrow. Each is
+drawn from `data/landmarks.json`, placed on terrain that actually suits it
+(a shrine on open ground or in the hills, a hollow in forest or mountain),
+and named on the map. A landmark tagged as a cave mouth stamps a real CAVE
+tile, so a Dark Hollow you stumble on three regions from home isn't a
+picture — it's an entrance you can descend into a procedural dungeon.
+
+It's stable, too. The seeding is deterministic from each region's own seed,
+so the Standing Stones you found to the east are in the same field when you
+come back, and they ride the region cache the streamer already keeps — walk
+away and back and your landmarks are where you left them. The home region
+is left alone; it keeps its authored Oakvale.
+
+4 tests (home has no seeded landmarks; a streamed region gets named ones;
+they're deterministic per region; a cave-mouth landmark is a genuine
+dungeon entrance). Remainder P21.5b: little mini-quests and small casts at
+the landmarks, and making the biome enum real instead of aspirational.

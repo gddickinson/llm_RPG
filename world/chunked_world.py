@@ -238,8 +238,47 @@ class WorldStreamer:
             gen._add_wilderness_features()
         else:
             gen.generate()
+        if plan.flavor != "home":
+            self._seed_landmarks(rx, ry, plan.seed)   # named places (P21.5)
         self._reset_map_characters()
         self._rebuild_interiors()
+
+    def _seed_landmarks(self, rx: int, ry: int, seed: int) -> None:
+        """Off-origin regions get named LANDMARKS instead of empty noise
+        (P21.5): a ruin, a shrine, a dark hollow that leads underground —
+        deterministic per region so the map is stable, drawn from
+        `data/landmarks.json` and placed on terrain that suits them."""
+        import random
+        from items.data_loader import load_data_file
+        from world.location import Location
+        from world.world_map import TerrainType
+        try:
+            defs = load_data_file("landmarks.json")
+        except Exception:
+            defs = {}
+        if not defs:
+            return
+        rng = random.Random((seed or 0) ^ 0x1A4D)
+        wmap = self.engine.world.map
+        keys = list(defs.keys())
+        placed, tries = 0, 0
+        want_count = rng.randint(1, 2)
+        while placed < want_count and tries < 240:
+            tries += 1
+            spec = defs[rng.choice(keys)]
+            x = rng.randint(3, wmap.width - 4)
+            y = rng.randint(3, wmap.height - 4)
+            if wmap.terrain[y][x].value not in spec.get("terrain", []):
+                continue
+            if self.engine.world.get_location_at(x, y) is not None:
+                continue
+            if spec.get("tile") == "cave":
+                wmap.terrain[y][x] = TerrainType.CAVE
+            loc = Location(spec["name"], spec.get("description", ""),
+                           x, y, 1, 1)
+            loc.add_property("landmark", True)
+            self.engine.world.add_location(loc)
+            placed += 1
 
     def _reset_map_characters(self) -> None:
         wmap = self.engine.world.map
