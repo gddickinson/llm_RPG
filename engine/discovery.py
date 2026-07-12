@@ -30,11 +30,36 @@ logger = logging.getLogger("llm_rpg.discovery")
 SIGHT_BONUS = 2          # you see a hair past where you can act
 
 
+def _region_key(engine) -> str:
+    """The current region's id. The chunked-world streamer reuses ONE
+    coordinate space across regions, so each region must keep its OWN
+    explored mask — otherwise a new map inherits the old one's reveals
+    (the minimap/fog bug). No streamer (single-map play) → one bucket."""
+    try:
+        rx, ry = engine.world_streamer.cw.current_region
+        return f"{rx},{ry}"
+    except Exception:
+        return "0,0"
+
+
 def _explored(engine) -> set:
-    raw = engine.player.metadata.setdefault("explored", [])
-    if isinstance(raw, list):
+    """The explored-tile set FOR THE CURRENT REGION (live, mutable). Kept
+    per-region on player.metadata so backtracking restores a map's own
+    fog and a freshly entered region starts dark."""
+    meta = engine.player.metadata
+    buckets = meta.setdefault("explored_by_region", {})
+    key = _region_key(engine)
+    raw = buckets.get(key)
+    # one-time migration of a legacy flat `explored` mask (old saves) into
+    # whatever region is current when it's first read
+    legacy = meta.pop("explored", None)
+    if raw is None:
+        raw = list(legacy) if legacy else []
+    elif legacy:
+        raw = list(raw) + list(legacy)
+    if not isinstance(raw, set):
         raw = set(tuple(t) for t in raw)
-        engine.player.metadata["explored"] = raw
+    buckets[key] = raw
     return raw
 
 

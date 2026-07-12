@@ -91,13 +91,18 @@ class TestMinimapFog(unittest.TestCase):
     def test_fog_none_when_nothing_seen(self):
         from ui.hud import _minimap_fog
         self.engine._visible_tiles = set()
-        self.engine.player.metadata["explored"] = []
+        self.engine.player.metadata["explored_by_region"] = {}
+        self.engine.player.metadata.pop("explored", None)
         self.assertIsNone(_minimap_fog(self.engine))
 
     def test_fog_reports_seen_sets(self):
         from ui.hud import _minimap_fog
+        from engine import discovery
+        key = discovery._region_key(self.engine)
         self.engine._visible_tiles = {(1, 1), (2, 1)}
-        self.engine.player.metadata["explored"] = [(1, 1), (2, 1), (3, 1)]
+        self.engine.player.metadata["explored_by_region"] = {
+            key: [(1, 1), (2, 1), (3, 1)]}
+        self.engine.player.metadata.pop("explored", None)
         fog = _minimap_fog(self.engine)
         self.assertIsNotNone(fog)
         vis, exp = fog

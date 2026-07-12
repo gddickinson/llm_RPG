@@ -139,12 +139,42 @@ class TestDiscovery(unittest.TestCase):
         try:
             sm = SaveManager(save_dir=tmp)
             sm.save(self.engine, name="fog")
-            self.player.metadata["explored"] = set()
+            self.player.metadata["explored_by_region"] = {}
             self.assertTrue(sm.load(self.engine, name="fog"))
             self.assertTrue(is_explored(self.engine, 5, 5),
                             "the charted land persists")
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_each_region_keeps_its_own_fog(self):
+        streamer = getattr(self.engine, "world_streamer", None)
+        if streamer is None:
+            self.skipTest("no chunked-world streamer")
+        # reveal a patch in the home region
+        reveal_around(self.engine, 5, 5, radius=2)
+        self.assertTrue(is_explored(self.engine, 5, 5))
+        # walk into a new region — the minimap must start dark here, not
+        # inherit the home region's reveals (the reported bug)
+        streamer.cw.current_region = (1, 0)
+        self.assertFalse(is_explored(self.engine, 5, 5),
+                         "a fresh region does not inherit old fog")
+        reveal_around(self.engine, 8, 8, radius=2)
+        self.assertTrue(is_explored(self.engine, 8, 8))
+        # back home: the home fog is remembered; the other region's isn't
+        streamer.cw.current_region = (0, 0)
+        self.assertTrue(is_explored(self.engine, 5, 5),
+                        "home fog is remembered on return")
+        self.assertFalse(is_explored(self.engine, 8, 8),
+                         "the other region's reveal doesn't bleed back")
+
+    def test_legacy_flat_mask_migrates_once(self):
+        # an old save carried a single flat `explored` list — it should
+        # fold into the current region and the flat key disappear
+        self.player.metadata.pop("explored_by_region", None)
+        self.player.metadata["explored"] = [[7, 7], [8, 8]]
+        self.assertTrue(is_explored(self.engine, 7, 7))
+        self.assertNotIn("explored", self.player.metadata,
+                         "the legacy flat key is migrated away")
 
 
 if __name__ == "__main__":
