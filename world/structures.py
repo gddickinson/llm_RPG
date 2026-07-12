@@ -203,6 +203,7 @@ class StructureBuilder:
         inter.dark = bool(spec.get("dark", False))
         inter.structure_id = sid
         inter.spawns = list(spec.get("monsters", []))
+        inter.occupants = list(spec.get("occupants", []))   # P18.2 residents
         inter.puzzle = spec.get("puzzle")
         return inter
 
@@ -259,7 +260,9 @@ class StructureBuilder:
     # -------------------------------------------------------- populate
 
     def on_enter_level(self, zone) -> int:
-        """First visit wakes the level's monsters (zone natives)."""
+        """First visit wakes the level's monsters AND seats its friendly
+        residents (P18.2) — both as zone natives that stay put at their
+        posts. Returns the count of monsters roused."""
         sid = getattr(zone, "structure_id", None)
         if sid is None:
             return 0
@@ -275,10 +278,29 @@ class StructureBuilder:
             npc.metadata["zone"] = zone.name
             self.engine.npc_manager.add_npc(npc)
             spawned += 1
+        self._seat_occupants(zone)
         if spawned:
             self.engine.memory_manager.add_event(
                 "Something stirs in the dark ahead...")
         return spawned
+
+    def _seat_occupants(self, zone) -> int:
+        """P18.2: place a level's named residents (royal family, staff,
+        garrison) as friendly zone natives at their posts — the same
+        entities the dialog/memory systems already understand."""
+        from characters.npc_presets import make_npc, NPC_SPECS
+        seated = 0
+        for occ in getattr(zone, "occupants", []):
+            nid = occ.get("npc")
+            if nid not in NPC_SPECS or \
+                    self.engine.npc_manager.get_npc(nid) is not None:
+                continue
+            npc = make_npc(nid, position=tuple(occ.get("at", (2, 2))))
+            npc.metadata["zone"] = zone.name
+            npc.metadata["resident"] = True
+            self.engine.npc_manager.add_npc(npc)
+            seated += 1
+        return seated
 
     # ------------------------------------------------------ persistence
 

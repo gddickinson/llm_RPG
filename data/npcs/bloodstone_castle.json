@@ -1,0 +1,631 @@
+{
+  "king_bloodstone": {
+    "name": "King Aldric III",
+    "class": "noble",
+    "race": "human",
+    "level": 8,
+    "stats": {
+      "strength": 13,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 13,
+      "charisma": 16
+    },
+    "hp": 45,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 500,
+    "symbol": "K",
+    "inventory": [],
+    "description": "The greying King of Bloodstone, crown heavy on his brow, eyes still sharp.",
+    "personality": {
+      "traits": [
+        "proud",
+        "just",
+        "weary"
+      ],
+      "likes": [
+        "loyalty",
+        "order",
+        "his son"
+      ],
+      "dislikes": [
+        "treason",
+        "flattery"
+      ]
+    },
+    "goals": [
+      "Hold the realm together",
+      "See Cedric ready to rule"
+    ],
+    "relationships": {
+      "queen_bloodstone": 80,
+      "heir_bloodstone": 70,
+      "duke_voss": -20,
+      "captain_bloodstone": 60
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "queen_bloodstone": {
+    "name": "Queen Maera",
+    "class": "noble",
+    "race": "human",
+    "level": 6,
+    "stats": {
+      "strength": 10,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 14,
+      "wisdom": 14,
+      "charisma": 17
+    },
+    "hp": 32,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 300,
+    "symbol": "Q",
+    "inventory": [],
+    "description": "The Queen, gracious and watchful; little at court escapes her.",
+    "personality": {
+      "traits": [
+        "shrewd",
+        "gracious",
+        "protective"
+      ],
+      "likes": [
+        "her family",
+        "music"
+      ],
+      "dislikes": [
+        "Duke Voss",
+        "gossip that harms the crown"
+      ]
+    },
+    "goals": [
+      "Protect the succession",
+      "Read the court's true hearts"
+    ],
+    "relationships": {
+      "king_bloodstone": 80,
+      "heir_bloodstone": 85,
+      "duke_voss": -40
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "heir_bloodstone": {
+    "name": "Prince Cedric",
+    "class": "noble",
+    "race": "human",
+    "level": 4,
+    "stats": {
+      "strength": 12,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 14
+    },
+    "hp": 28,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 120,
+    "symbol": "P",
+    "inventory": [],
+    "description": "The young heir, eager and untested, chafing under his father's shadow.",
+    "personality": {
+      "traits": [
+        "ambitious",
+        "idealistic",
+        "impatient"
+      ],
+      "likes": [
+        "glory",
+        "the guard"
+      ],
+      "dislikes": [
+        "waiting",
+        "Duke Voss's smiles"
+      ]
+    },
+    "goals": [
+      "Prove himself worthy of the throne",
+      "Win the garrison's love"
+    ],
+    "relationships": {
+      "king_bloodstone": 70,
+      "queen_bloodstone": 85,
+      "duke_voss": -50,
+      "captain_bloodstone": 40
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "duke_voss": {
+    "name": "Duke Voss",
+    "class": "noble",
+    "race": "human",
+    "level": 6,
+    "stats": {
+      "strength": 10,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 15,
+      "wisdom": 10,
+      "charisma": 15
+    },
+    "hp": 34,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 400,
+    "symbol": "D",
+    "inventory": [],
+    "description": "A silken, ambitious lord who stands too near the throne and smiles too much.",
+    "personality": {
+      "traits": [
+        "ambitious",
+        "cunning",
+        "charming"
+      ],
+      "likes": [
+        "power",
+        "secrets"
+      ],
+      "dislikes": [
+        "Prince Cedric",
+        "being overlooked"
+      ]
+    },
+    "goals": [
+      "Advance his claim to the throne",
+      "Turn the court to his side"
+    ],
+    "relationships": {
+      "heir_bloodstone": -50,
+      "king_bloodstone": -20,
+      "queen_bloodstone": -40
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "steward_bloodstone": {
+    "name": "Steward Harwin",
+    "class": "merchant",
+    "race": "human",
+    "level": 3,
+    "stats": {
+      "strength": 10,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 13,
+      "wisdom": 12,
+      "charisma": 12
+    },
+    "hp": 20,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 80,
+    "symbol": "H",
+    "inventory": [],
+    "description": "The castle's steward, ledgers under one arm, keys at his belt.",
+    "personality": {
+      "traits": [
+        "meticulous",
+        "loyal",
+        "harried"
+      ],
+      "likes": [
+        "order",
+        "full larders"
+      ],
+      "dislikes": [
+        "waste",
+        "the cook's temper"
+      ]
+    },
+    "goals": [
+      "Keep the household running",
+      "Balance the castle's books"
+    ],
+    "relationships": {
+      "king_bloodstone": 50,
+      "cook_bloodstone": 20
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "cook_bloodstone": {
+    "name": "Cook Bess",
+    "class": "villager",
+    "race": "human",
+    "level": 2,
+    "stats": {
+      "strength": 12,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "hp": 16,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 0,
+    "symbol": "B",
+    "inventory": [],
+    "description": "The castle cook, red-faced and formidable, ruler of the undercroft.",
+    "personality": {
+      "traits": [
+        "gruff",
+        "warm-hearted",
+        "proud of her kitchen"
+      ],
+      "likes": [
+        "a clean kitchen",
+        "praise for her pies"
+      ],
+      "dislikes": [
+        "idlers",
+        "rats"
+      ]
+    },
+    "goals": [
+      "Feed the whole castle",
+      "Keep the larder stocked"
+    ],
+    "relationships": {
+      "steward_bloodstone": 20,
+      "maid_bloodstone": 30
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "maid_bloodstone": {
+    "name": "Maid Rowena",
+    "class": "villager",
+    "race": "human",
+    "level": 1,
+    "stats": {
+      "strength": 10,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 11,
+      "charisma": 12
+    },
+    "hp": 12,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 0,
+    "symbol": "M",
+    "inventory": [],
+    "description": "A quick, quiet chambermaid who sees everything and says little.",
+    "personality": {
+      "traits": [
+        "observant",
+        "discreet",
+        "kind"
+      ],
+      "likes": [
+        "quiet",
+        "kind words"
+      ],
+      "dislikes": [
+        "cruelty",
+        "being scolded"
+      ]
+    },
+    "goals": [
+      "Keep her post",
+      "Stay unnoticed"
+    ],
+    "relationships": {
+      "queen_bloodstone": 25,
+      "cook_bloodstone": 30
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "stablehand_bloodstone": {
+    "name": "Stablehand Tom",
+    "class": "villager",
+    "race": "human",
+    "level": 1,
+    "stats": {
+      "strength": 13,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "hp": 14,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 0,
+    "symbol": "T",
+    "inventory": [],
+    "description": "A gangly stablehand who loves the horses more than people.",
+    "personality": {
+      "traits": [
+        "earnest",
+        "shy",
+        "horse-mad"
+      ],
+      "likes": [
+        "horses",
+        "open sky"
+      ],
+      "dislikes": [
+        "crowds",
+        "the deep cellars"
+      ]
+    },
+    "goals": [
+      "Tend the stables well"
+    ],
+    "relationships": {
+      "heir_bloodstone": 15
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "bard_bloodstone": {
+    "name": "Lyle the Lute",
+    "class": "bard",
+    "race": "human",
+    "level": 3,
+    "stats": {
+      "strength": 10,
+      "dexterity": 13,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 15
+    },
+    "hp": 18,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 0,
+    "symbol": "L",
+    "inventory": [],
+    "description": "The court bard, all wit and rumor, who hears what the walls hear.",
+    "personality": {
+      "traits": [
+        "witty",
+        "nosy",
+        "charming"
+      ],
+      "likes": [
+        "a good story",
+        "coin"
+      ],
+      "dislikes": [
+        "silence",
+        "being ignored"
+      ]
+    },
+    "goals": [
+      "Sing the court's secrets"
+    ],
+    "relationships": {
+      "queen_bloodstone": 20,
+      "duke_voss": 10
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "chaplain_bloodstone": {
+    "name": "Mother Aldith",
+    "class": "cleric",
+    "race": "human",
+    "level": 4,
+    "stats": {
+      "strength": 10,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 15,
+      "charisma": 13
+    },
+    "hp": 22,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 0,
+    "symbol": "C",
+    "inventory": [],
+    "description": "The castle chaplain, calm and grave, keeper of the crypt below.",
+    "personality": {
+      "traits": [
+        "devout",
+        "calm",
+        "secretive"
+      ],
+      "likes": [
+        "prayer",
+        "the old rites"
+      ],
+      "dislikes": [
+        "blasphemy",
+        "what stirs in the crypt"
+      ]
+    },
+    "goals": [
+      "Tend the royal crypt",
+      "Keep the dead at rest"
+    ],
+    "relationships": {
+      "king_bloodstone": 40
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "captain_bloodstone": {
+    "name": "Ser Brannock",
+    "class": "guard",
+    "race": "human",
+    "level": 6,
+    "stats": {
+      "strength": 16,
+      "dexterity": 10,
+      "constitution": 15,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 12
+    },
+    "hp": 40,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 60,
+    "symbol": "!",
+    "inventory": [
+      "longsword",
+      "chainmail"
+    ],
+    "description": "The scarred captain of the Bloodstone Guard, blunt and unbreakable.",
+    "personality": {
+      "traits": [
+        "loyal",
+        "blunt",
+        "fearless"
+      ],
+      "likes": [
+        "discipline",
+        "the King"
+      ],
+      "dislikes": [
+        "cowardice",
+        "court games"
+      ]
+    },
+    "goals": [
+      "Hold the walls",
+      "Guard the royal family"
+    ],
+    "relationships": {
+      "king_bloodstone": 60,
+      "heir_bloodstone": 40,
+      "duke_voss": -30
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "guard_bloodstone_1": {
+    "name": "Guardsman Otho",
+    "class": "guard",
+    "race": "human",
+    "level": 3,
+    "stats": {
+      "strength": 14,
+      "dexterity": 10,
+      "constitution": 13,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "hp": 26,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 0,
+    "symbol": "g",
+    "inventory": [
+      "bronze_sword"
+    ],
+    "description": "A steady man-at-arms of the castle garrison.",
+    "personality": {
+      "traits": [
+        "dutiful",
+        "stolid"
+      ],
+      "likes": [
+        "a warm post",
+        "ale off-duty"
+      ],
+      "dislikes": [
+        "night watch",
+        "the dungeons"
+      ]
+    },
+    "goals": [
+      "Keep his watch"
+    ],
+    "relationships": {
+      "captain_bloodstone": 30
+    },
+    "faction": "crown",
+    "zone_bound": true
+  },
+  "guard_bloodstone_2": {
+    "name": "Guardswoman Pell",
+    "class": "guard",
+    "race": "human",
+    "level": 3,
+    "stats": {
+      "strength": 13,
+      "dexterity": 14,
+      "constitution": 13,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "hp": 26,
+    "position": [
+      0,
+      0
+    ],
+    "gold": 0,
+    "symbol": "g",
+    "inventory": [
+      "bronze_sword"
+    ],
+    "description": "A sharp-eyed young guard with a quick spear.",
+    "personality": {
+      "traits": [
+        "alert",
+        "eager"
+      ],
+      "likes": [
+        "training",
+        "the Prince"
+      ],
+      "dislikes": [
+        "slackers"
+      ]
+    },
+    "goals": [
+      "Earn a place in the household guard"
+    ],
+    "relationships": {
+      "captain_bloodstone": 30,
+      "heir_bloodstone": 20
+    },
+    "faction": "crown",
+    "zone_bound": true
+  }
+}

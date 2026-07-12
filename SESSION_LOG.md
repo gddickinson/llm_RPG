@@ -4558,3 +4558,40 @@ careful disengage). Documented in the F1 controls reference. Now you
 approach, flank, and fight on the diagonals like any grid RPG. 3 tests
 (diagonals step true, orthogonal numpad also moves, KP5 waits while time
 passes). Suite 1774, green.
+
+---
+
+## P18.2 The living cast — the Bloodstone court takes its seats
+
+The castle had stone (P18.1) but no life. P18.2 gives it a household.
+
+`data/npcs/bloodstone_castle.json` is the cast — 13 residents with the
+usual preset depth (stats, personality, goals, relationships): King
+Aldric III and Queen Maera on the Bloodstone Throne, the eager heir
+Prince Cedric, the silken and ambitious Duke Voss (who stands too near
+the throne), Steward Harwin and the household below stairs (Cook Bess,
+Maid Rowena, Stablehand Tom), the nosy court bard Lyle, the grave
+chaplain Mother Aldith who keeps the crypt, and the garrison under
+scarred Captain Ser Brannock with two guards. Their relationships seed
+the court's intrigue — the Duke and the heir are already at odds.
+
+The mechanism: every castle resident is flagged `zone_bound`, and
+`all_presets()` now keeps those OUT of the open-world roster (they'd
+otherwise pile up at the origin like every other preset). The structure
+spec gains an `occupants` list per level, and `StructureBuilder`'s new
+`_seat_occupants` — run from `on_enter_level` beside the monster
+populator — makes each one via `make_npc`, tags it a zone native at its
+post, and adds it to the manager. So walking into the Great Hall seats
+the royal court; the Undercroft, its servants; the Barracks, its guard —
+each a real, talkable NPC the dialog and memory systems already
+understand, reached through the presence layer's zone-native path. The
+crypt still rouses its restless dead the same way, now sharing the
+populator with the living. The content validator gained an occupants
+referential check.
+
+7 tests (the cast authored + zone-bound, the intrigue seeded in
+relationships, residents absent from the open world, the hall seats a
+full court, the King talkable at his post, no duplicate court on
+re-entry, and the crypt still holds its dead). Suite 1781, green.
+Schedules that move residents about within the castle are a noted later
+refinement — for now they hold their places.

@@ -3354,12 +3354,27 @@ Sequenced into tested rounds:
   grids, build/link the 5-level chain, throne inscription + loot, the
   dark guarded crypt, the crown in the deepest chest. Validator clean;
   suite 1771, green.)*
-- [ ] **P18.2 The living cast.** The royal family (king/queen/heir/
+- [x] **P18.2 The living cast.** The royal family (king/queen/heir/
   rivals), the steward + household staff (cook, maids, stablehands),
   courtiers, and the garrison (captain + guards) as `data/npcs/*` presets
   placed into the castle zones as friendly INDOOR occupants (extend the
   structure populator to seat NPCs, not just monsters), each with a
   schedule and a place. Court relationships + a few secrets/topics.
+  *(Round: `data/npcs/bloodstone_castle.json` — 13 residents (King Aldric
+  III, Queen Maera, Prince Cedric, the ambitious Duke Voss, steward,
+  cook, maid, stablehand, court bard, chaplain, Captain Ser Brannock + 2
+  guards), each `zone_bound` so `all_presets()` keeps them OUT of the
+  open-world roster. The structure spec gains an `occupants` list per
+  level; `StructureBuilder._seat_occupants` (called from `on_enter_level`)
+  seats them via `make_npc` as friendly zone natives at their posts
+  (royals in the Great Hall, staff in the Undercroft, garrison in the
+  Barracks) — the same entities the dialog/memory systems already know,
+  talkable through the presence layer. Court intrigue is seeded in the
+  relationships (Duke Voss vs the heir). Validator gained an occupants
+  check. 7 tests (cast authored + zone-bound, intrigue seeded, residents
+  absent from the world, the hall seats the court, the King is talkable,
+  no dup on re-entry, the crypt still holds its dead). Suite 1781, green.
+  Schedules within the zone are a later refinement.)*
 - [ ] **P18.3 Battlements, towers & the gatehouse footprint.** The
   upward extension (royal apartments → wall-walk → tower tops with
   archer positions) as levels ABOVE the great hall, plus the overworld

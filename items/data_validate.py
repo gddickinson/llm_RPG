@@ -107,6 +107,11 @@ def _check_structures() -> List[str]:
                 if spawn.get("template") not in MONSTER_TEMPLATES:
                     out.append(f"structure {sid} level {i}: unknown "
                                f"monster '{spawn.get('template')}'")
+            from characters.npc_presets import NPC_SPECS
+            for occ in lv.get("occupants", []):   # P18.2 residents
+                if occ.get("npc") not in NPC_SPECS:
+                    out.append(f"structure {sid} level {i}: unknown "
+                               f"occupant '{occ.get('npc')}'")
             puzzle = lv.get("puzzle")
             if puzzle:
                 sigils = sum(r.count("G") for r in rows)

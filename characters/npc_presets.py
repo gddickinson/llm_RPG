@@ -60,10 +60,14 @@ def make_npc(npc_id: str,
 
 
 def all_presets() -> List[Character]:
-    """Return all preset NPCs (peaceful first, then hostiles)."""
-    peaceful = [nid for nid, s in NPC_SPECS.items()
+    """The world roster (peaceful first, then hostiles). Zone-bound
+    residents (P18.2: castle staff etc.) are EXCLUDED — the structure
+    populator seats them in their zone, not the open world."""
+    open_world = {nid: s for nid, s in NPC_SPECS.items()
+                  if not s.get("zone_bound")}
+    peaceful = [nid for nid, s in open_world.items()
                 if s.get("class") not in ("brigand", "troll", "monster")]
-    hostile = [nid for nid in NPC_SPECS if nid not in peaceful]
+    hostile = [nid for nid in open_world if nid not in peaceful]
     return [make_npc(nid) for nid in peaceful + hostile]
 
 

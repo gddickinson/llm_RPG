@@ -228,6 +228,64 @@
         "chest_loot": [
           "ring_health",
           "royal_seal"
+        ],
+        "occupants": [
+          {
+            "npc": "king_bloodstone",
+            "at": [
+              5,
+              2
+            ]
+          },
+          {
+            "npc": "queen_bloodstone",
+            "at": [
+              7,
+              3
+            ]
+          },
+          {
+            "npc": "heir_bloodstone",
+            "at": [
+              3,
+              4
+            ]
+          },
+          {
+            "npc": "duke_voss",
+            "at": [
+              21,
+              4
+            ]
+          },
+          {
+            "npc": "bard_bloodstone",
+            "at": [
+              21,
+              5
+            ]
+          },
+          {
+            "npc": "chaplain_bloodstone",
+            "at": [
+              15,
+              6
+            ]
+          },
+          {
+            "npc": "captain_bloodstone",
+            "at": [
+              20,
+              7
+            ]
+          },
+          {
+            "npc": "steward_bloodstone",
+            "at": [
+              20,
+              8
+            ]
+          }
         ]
       },
       {
@@ -250,6 +308,29 @@
         "chest_loot": [
           "greater_potion",
           "potion"
+        ],
+        "occupants": [
+          {
+            "npc": "cook_bloodstone",
+            "at": [
+              14,
+              2
+            ]
+          },
+          {
+            "npc": "maid_bloodstone",
+            "at": [
+              19,
+              3
+            ]
+          },
+          {
+            "npc": "stablehand_bloodstone",
+            "at": [
+              11,
+              5
+            ]
+          }
         ]
       },
       {
@@ -271,6 +352,22 @@
         "chest_loot": [
           "longsword",
           "chainmail"
+        ],
+        "occupants": [
+          {
+            "npc": "guard_bloodstone_1",
+            "at": [
+              17,
+              2
+            ]
+          },
+          {
+            "npc": "guard_bloodstone_2",
+            "at": [
+              19,
+              3
+            ]
+          }
         ]
       },
       {

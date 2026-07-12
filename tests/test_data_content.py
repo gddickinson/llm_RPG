@@ -166,7 +166,11 @@ class TestQuestAndNpcData(unittest.TestCase):
         from characters.npc_presets import NPC_SPECS, all_presets, make_npc
         self.assertGreaterEqual(len(NPC_SPECS), 11)
         presets = all_presets()
-        self.assertEqual(len(presets), len(NPC_SPECS))
+        # the open-world roster is every preset EXCEPT the zone-bound
+        # residents (P18.2: castle staff seat in their zone, not the world)
+        open_world = [nid for nid, s in NPC_SPECS.items()
+                      if not s.get("zone_bound")]
+        self.assertEqual(len(presets), len(open_world))
         goren = make_npc("tavernkeeper_01")
         self.assertEqual(goren.name, "Goren")
         self.assertEqual(goren.charisma, 16)

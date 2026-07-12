@@ -150,7 +150,7 @@ llm_RPG/
 - **`character.py`** — `Character` dataclass (player + NPC).
 - **`character_types.py`** — Class/race/alignment/trait/status enums.
 - **`npc_manager.py`** — NPC creation + lifecycle.
-- **`npc_presets.py`** — Preset NPCs loaded from `data/npcs/*.json`; `make_npc(id)`, `all_presets()`.
+- **`npc_presets.py`** — Preset NPCs loaded from `data/npcs/*.json`; `make_npc(id)`, `all_presets()` (excludes `zone_bound` residents — P18.2 castle staff seat in their zone, not the open world).
 - **`factions.py`** — `Faction` enum, reputation tracking, on-defeat hooks.
 - **`schedules.py`** — Daily routines per NPC class.
 - **`needs.py`** — Hunger, thirst, and fatigue simulation; P12.3 exhaustion ladder: `exhaustion_level` 0–6 from tired/starving/parched/sleep-debt with rung penalties (checks → speed → attacks → HP cap → collapse), two-track sleep (naps clear fatigue, only real beds clear debt), `player_needs_turn`/`run_player_night` engine hooks, `drink()`.
@@ -186,7 +186,7 @@ llm_RPG/
 - **`event_filter.py`** — display-side event-log filter: categorize by prefix/content, per-player verbosity (quiet/normal/verbose, SHIFT+L), hide ambient overworld noise while indoors; `filtered_recent` feeds the HUD (memory keeps everything).
 - **`discovery.py`** — P15.11 fog of war: per-turn VISIBLE set (shadowcaster) folded into a persistent EXPLORED mask (player.metadata, save-safe); `actor_hidden` (renderer), `can_witness` (event-log gate, fresh LOS); reveal by walking / map items (use_effect.reveal) / Farsight spell.
 - **`fov.py`** — P8.6 recursive shadowcasting: `compute_fov`, `has_line_of_sight`, `zone_fov` (dungeon fog-of-war), `overworld_los` (ranged-shot gating; buildings/mountains block).
-- **`structures.py`** — `StructureBuilder` (P9.1): themed multi-level structures from `data/structures.json` (grid-string levels, twinned stairs, dark levels, inscriptions, populate-on-first-visit natives); ships the Ruined Keep; populated-set persists.
+- **`structures.py`** — `StructureBuilder` (P9.1): themed multi-level structures from `data/structures.json` (grid-string levels, twinned stairs, dark levels, inscriptions, populate-on-first-visit natives); ships the Ruined Keep + P18 Bloodstone Castle; populated-set persists. P18.2 `_seat_occupants`: a level's `occupants` (named NPC presets) seat as friendly zone-native residents on first visit (the royal court), alongside `monsters`.
 - **`history_sim.py`** — Pre-game history: faction shifts, ruined keep, lore lines, themed relics per event.
 - **`tutorial_island.py`** — The starter isle grid + instructor cast (P4.4c).
 
