@@ -6054,3 +6054,25 @@ reach it. Adventurer casters (Sable) fight the same way. 4 tests.
 Remainder: utility spells on the road (light / farsight / water-walk,
 self-buffs before a fight) and resting to recover mana specifically — folds
 into P26.2's magic overhaul.
+
+## 2026-07-12 (cont.) — M.8d: the hero gathers from the land (+ a teleport trap fixed)
+
+M.8d closes the self-sufficiency loop. `agent_sense._gatherable` + the new
+`forage` verb (→ `engine.forage`) make a SAFE hero with carry room stop to
+gather when it's standing on something worth it — a workable mine/wood/fish
+node, or a rich FOREST/SWAMP tile. Plain grass is skipped (it's everywhere;
+foraging every step would bury the hero in herb bundles). The quiet win is
+FOOD: a forest yields BREAD (`use_effect.food`, heal 4), so the forager finally
+stocks the provisions M.8a's camp needs — two loaves and it can mend in the
+wilds. Verified a ranger forages forests it crosses and banks bread. 4 tests.
+Remainder (CRAFT): potions/gear/ammo need an indoor workstation, and the
+away-hero skirts buildings, so active crafting waits on a "duck into a
+workshop" navigation step.
+
+Mid-round, George hit a teleport bug: travelling to Oakvale stranded him on a
+BUILDING tile in the overworld. Root cause: `travel._find_destination_pos`
+returned a location's raw CENTRE, and Oakvale Village's centre (45,37) IS a
+building tile — teleport dropped him onto solid stone. Fix: `_safe_landing`
+spirals out from the target to the nearest walkable, non-building tile before
+placing the player. Riverside/Stonepine (road centres) are unaffected. 2
+tests.

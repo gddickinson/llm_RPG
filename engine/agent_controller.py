@@ -25,7 +25,7 @@ from engine import agent_trade as agtrade
 from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
                                 _knows_heal, _can_shoot, _provisioned,
-                                _attack_spell)
+                                _attack_spell, _gatherable)
 
 logger = logging.getLogger("llm_rpg.agent")
 
@@ -286,6 +286,12 @@ class AgentController:
                     and _provisioned(char):
                 return ("rest",)
 
+        # 3c. gather from the land (M.8d) — work a node or forage a rich
+        # forest/swamp we're standing on: raws, and from a forest FOOD for
+        # the M.8a camp. Self-sufficiency instead of pure scavenging.
+        if not foes and _gatherable(engine, char):
+            return ("forage",)
+
         # inside a building/dungeon: leave or prowl, never freeze on an
         # unreachable overworld goal
         zone = nav.active_zone(engine)
@@ -409,6 +415,8 @@ class AgentController:
                 engine.cast_spell(plan[1], plan[2].name)
             elif k == "loot":
                 engine.pickup_item()
+            elif k == "forage":                   # gather raws/food (M.8d)
+                engine.forage()
             elif k == "rest":
                 try:                          # camp/inn to mend (M.8a)
                     from engine.rest import sleep

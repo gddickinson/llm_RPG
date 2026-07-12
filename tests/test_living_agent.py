@@ -95,6 +95,40 @@ class TestSocial(_Base):
         self.assertTrue(self.ac.greeted)
 
 
+class TestGather(_Base):
+    """The hero gathers from the land (M.8d) — forages a rich forest/swamp
+    or works a node it's standing on, but not everywhere."""
+
+    def _forest_here(self):
+        x, y = self.p.position
+        self.engine.world.map.terrain[y][x] = TerrainType.FOREST
+
+    def test_forages_a_rich_tile(self):
+        self._forest_here()
+        self.p.inventory = []
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "forage")
+
+    def test_skips_plain_grass(self):
+        # the _Base arena is all grass — too common to stop for
+        self.p.inventory = []
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "forage")
+
+    def test_no_forage_with_a_foe_near(self):
+        self._forest_here()
+        foe = build_monster("wolf", (13, 10))
+        self.engine.npc_manager.add_npc(foe)
+        self.engine.world.map.place_character(foe, 13, 10)
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "forage")
+
+    def test_no_forage_when_the_pack_is_full(self):
+        self._forest_here()
+        from engine.carry import can_carry
+        from items.item_registry import create_item
+        while can_carry(self.p):
+            self.p.inventory.append(create_item("arrow"))
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "forage")
+
+
 class TestMagic(_Base):
     """A caster away-hero fights with magic (M.8c) — the best affordable,
     reaching damage spell before blade or bow; falls back when out of mana."""

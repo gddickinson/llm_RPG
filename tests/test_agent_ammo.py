@@ -51,6 +51,9 @@ class TestAgentAmmo(unittest.TestCase):
         self.assertTrue(_can_shoot(self.p))
 
     def test_empty_quiver_agent_closes_instead_of_firing(self):
+        # a plain archer, not a caster — so no M.8c spell intercepts the
+        # ammo-behaviour under test (the default class varies by RNG order)
+        self.p.metadata["spells_known"] = []
         wmap = self.engine.world.map
         for yy in range(8, 16):
             for xx in range(8, 16):

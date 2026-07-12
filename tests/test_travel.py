@@ -116,6 +116,23 @@ class TestTeleports(unittest.TestCase):
         msg2 = self.travel.teleport(0)
         self.assertIn("recover", msg2)
 
+    def test_teleport_never_lands_on_a_building(self):
+        # Oakvale's centre IS a building tile — the player must not be
+        # stranded on it (2026-07-12e trap bug)
+        from world.world_map import TerrainType
+        self.travel.teleport(0)
+        x, y = self.player.position
+        self.assertNotEqual(self.engine.world.map.terrain[y][x],
+                            TerrainType.BUILDING)
+
+    def test_safe_landing_avoids_a_forced_building(self):
+        from world.world_map import TerrainType
+        wmap = self.engine.world.map
+        wmap.terrain[10][10] = TerrainType.BUILDING
+        land = self.travel._safe_landing((10, 10))
+        self.assertNotEqual(wmap.terrain[land[1]][land[0]],
+                            TerrainType.BUILDING)
+
     def test_diary_unlocks_destination_with_toll(self):
         self.player.metadata.setdefault("diaries", {})["riverside"] = \
             ["easy"]

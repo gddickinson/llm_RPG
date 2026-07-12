@@ -91,6 +91,32 @@ def _attack_spell(char, dist):
     return scored[0][2]
 
 
+def _gatherable(engine, char) -> bool:
+    """Is the hero's OWN tile worth stopping to gather (M.8d)? A workable
+    mine/wood/fish node, or a rich FOREST/SWAMP forage (herbs — and from a
+    forest, FOOD, which feeds the M.8a camp). Plain grass is skipped: it's
+    everywhere and barely worth the stop. Needs room to carry."""
+    try:
+        from engine.carry import can_carry
+        if not can_carry(char):
+            return False
+        x, y = char.position
+        gm = getattr(engine, "gathering_manager", None)
+        if gm is not None:
+            node = gm.node_at(x, y)
+            if node is not None and gm.has_tool_for(node):
+                return True
+        from world.world_map import TerrainType
+        t = engine.world.map.get_terrain_at(x, y)
+        if t in (TerrainType.FOREST, TerrainType.SWAMP):
+            fm = getattr(engine, "forage_manager", None)
+            if fm is not None and fm.can_forage(x, y):
+                return True
+    except Exception:
+        return False
+    return False
+
+
 def _provisioned(char, need: int = 8) -> bool:
     """Enough food in the pack for a REAL camp (a proper half-heal, not a
     hungry doze). Gating rest on this is what keeps a wounded hero from

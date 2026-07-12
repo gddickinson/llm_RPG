@@ -53,6 +53,27 @@ class TravelSystem:
                 return (loc.x + loc.width // 2, loc.y + loc.height // 2)
         return None
 
+    def _safe_landing(self, pos: Tuple[int, int]) -> Tuple[int, int]:
+        """A walkable overworld tile at or near `pos` — never a BUILDING /
+        water / mountain the teleport would strand the player ON (a
+        settlement's centre often overlaps a building). Bug-fix 2026-07-12e
+        (George: teleporting to Oakvale trapped me on a building tile)."""
+        from world.world_map import TerrainType
+        wmap = self.engine.world.map
+        solid = (TerrainType.BUILDING, TerrainType.WATER, TerrainType.MOUNTAIN)
+        for r in range(0, 8):
+            for dy in range(-r, r + 1):
+                for dx in range(-r, r + 1):
+                    if max(abs(dx), abs(dy)) != r:
+                        continue
+                    x, y = pos[0] + dx, pos[1] + dy
+                    if not (0 <= x < wmap.width and 0 <= y < wmap.height):
+                        continue
+                    if wmap.terrain[y][x] in solid or (x, y) in wmap.characters:
+                        continue
+                    return (x, y)
+        return pos
+
     def destinations(self) -> List[dict]:
         out = []
         quest_unlocks = self.engine.player.metadata.get(
@@ -94,9 +115,10 @@ class TravelSystem:
             player.gold -= dest["toll"]
 
         wmap = self.engine.world.map
+        landing = self._safe_landing(dest["pos"])
         wmap.remove_character(player)
-        player.position = dest["pos"]
-        wmap.place_character(player, *dest["pos"])
+        player.position = landing
+        wmap.place_character(player, *landing)
         cooldown = TELEPORT_COOLDOWN_MIN
         try:
             cooldown = int(cooldown *

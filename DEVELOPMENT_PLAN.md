@@ -3489,11 +3489,11 @@ a coherent, testable slice; ordered roughly by impact.
   rest-loop) to **mean 0.72 HP / 112-turns-wounded, zero rest-loops**, and
   fleeing nearly halved. Adventurer NPCs (`social=False`) never rest (they'd
   advance the world clock). 5 tests; the goal/disposition helpers split to
-  `engine/agent_goals.py` to hold the line. Remainder: the camp path stays
-  dormant until the hero HAS provisions (no base food item sets
-  `use_effect.food` — that arrives with M.8d gather/cook), and inn-rest wants
-  the hero to seek an inn (M.8b navigation). Fully ending attrition also
-  needs P27.1 (combat density) + M.8b (buy potions/food).
+  `engine/agent_goals.py` to hold the line. Update (M.8d done): the camp path
+  is fed by foraging BREAD (`use_effect.food`, heal 4) from forests — two
+  loaves provision a real camp — so a forager can now mend in the wilds.
+  Remainder: inn-rest wants the hero to seek an inn (M.8b navigation); fully
+  ending attrition also needs P27.1 (combat density).
 - [x] **M.8b Economy loop (2026-07-12d).** The hero SPENDS instead of
   hoarding: standing by a merchant (its social rounds already walk it up to
   folk) it strikes a deal — `engine/agent_trade.py` (`wants_to_trade` /
@@ -3519,9 +3519,17 @@ a coherent, testable slice; ordered roughly by impact.
   it takes no damage. 4 tests. Remainder: UTILITY spells on the road
   (light/farsight/water-walk, self-buffs before a fight) and resting
   specifically to recover mana; ties into P26.2's magic overhaul.
-- [ ] **M.8d Gather & craft.** With a workstation and a known recipe (or a
-  gathering node in reach), the hero gathers raws and crafts potions/gear/
-  ammo — a self-sufficiency loop instead of pure scavenging.
+- [x] **M.8d Gather & craft (2026-07-12e).** The hero GATHERS from the land
+  (`agent_sense._gatherable` + the `forage` verb → `engine.forage`): standing
+  on a workable mine/wood/fish node or a rich FOREST/SWAMP tile (and with room
+  to carry) it stops to gather — herbs, ore, and from a forest BREAD, which
+  is real food (`use_effect.food`, heal 4). That closes the loop with M.8a:
+  two loaves provision a real camp, so the forager can now mend in the wilds.
+  Plain grass is skipped (everywhere, barely worth it). 4 tests. Remainder
+  (CRAFT): crafting potions/gear/ammo needs a workstation (a forge/alchemy
+  table), which is INDOORS — and the away-hero skirts buildings — so active
+  crafting waits on a "duck into a workshop" navigation step (with M.8b's
+  indoor-merchant reach).
 - [ ] **M.8e Worship, consumables & buffs.** Pray at a shrine for a boon;
   eat for the well-fed bonus; use scrolls/tomes it's carrying rather than
   letting them rot in the pack.
@@ -3560,6 +3568,50 @@ a coherent, testable slice; ordered roughly by impact.
 *(Existing planned items that autoplay reconfirms as high-value: P21.6
 Treasure & legend, P22.6 non-blocking spellcasting, P22.7 readable buildings,
 P26.1 advancement rebalance, P26.2 magic overhaul.)*
+
+## Phase 28 — Transport & travel (ultraplan, George, 2026-07-12e)
+
+The teleport-trap fix (`travel._safe_landing`) opened onto a bigger idea:
+travel as a real, item-gated, place-based network — and mounts of every
+kind. Builds on `engine/travel.py` (teleports) and `engine/mount.py` (the
+P15.8b pack mule).
+
+### P28.1 — Teleport platforms as PLACES (a public magical transit network)
+- [ ] **P28.1a Platforms & rings.** A teleport PLATFORM (a rune circle /
+  waystone) is a physical `Location` seeded in each city/town/village —
+  where folk safely teleport to and from. Using the network needs a
+  teleport ITEM (a ring / bracelet / amulet), COMMON and provided by a
+  powerful magical guild (the Wayfarers' / Arcane Conclave); **the player
+  starts with one**. To travel you stand ON a platform, pick a destination
+  platform (that you have an item for), and go — recasting the U-key teleport
+  as place-to-place instead of anywhere-to-a-town-centre. Data:
+  `data/teleport_network.json` (platforms + which settlements have them);
+  the ring is a normal `data/items` entry with a `teleport_access` flag.
+- [ ] **P28.1b Arrival collision → safe space.** If a platform is occupied
+  (several arriving at once, or an NPC standing on it), the arrival is
+  diverted to a CLOSE, SAFE tile beside it — reuse `_safe_landing`, extended
+  to also avoid occupied tiles and fan out. So two travellers never stack.
+- [ ] **P28.1c The network grows.** Later, platforms gate access to NEW
+  REGIONS: an unlocked (quest / guild-rank / paid) far platform is how you
+  reach a new area — the network as progression, run by the guild. Ties into
+  P21.5 landmarks / chunked_world regions.
+
+### P28.2 — Mounts of every kind (basically anything rideable)
+- [ ] **P28.2a Data-driven mounts.** Generalise `engine/mount.py` (today just
+  the pack mule) to a `data/mounts.json` roster: HORSE (fast road pace),
+  MULE / PACK DONKEY (carry), ELEPHANT (big carry, slow, tramples),
+  WAR-HORSE (a combat mount), MAGIC CARPET (flies)… each with speed, carry
+  bonus, cost, where it's sold (stable / market / bazaar), and a trail-behind
+  follower. "Basically anything can serve as a mount" — the data decides.
+- [ ] **P28.2b Terrain abilities.** A mount's `traverses` list lets it cross
+  what a walker can't — a magic carpet / griffon FLIES over water & mountains
+  (compose with `world_map._is_flier`), a horse fords shallows, a camel
+  shrugs off desert. Mounted travel reads the mount's abilities in
+  `traversal`/`hazards`.
+- [ ] **P28.2c Mount lifecycle & care.** Buy/stable/release at a stable;
+  ride/dismount (a key); the mount can be spooked, tire, or (war-mounts) fight;
+  loyalty/feed like the P12.14 pet. See `autonomous_world` for the breadth of
+  rideable creatures.
 
 ## What NOT to build (explicitly deferred)
 
