@@ -4298,3 +4298,48 @@ seeds rather than a coin-flip. 12 new tests in `tests/test_battle_armour.py`
 (resist table, shield front-arc & anti-ranged, weight, and in-battle:
 plate rides out arrows, a shield catches a frontal shaft a rear shot
 lands). Suite 1710, green.
+
+---
+
+## Round 143 — P17.12 Area effects & battle magic
+
+A strike hit one man; nothing on the grid hit a CLUSTER. P17.12 adds the
+blast geometry the battle was missing and hangs battle-magic off it,
+reusing the P17.E4 surface layer so an explosion doesn't just flash — it
+leaves the ground burning.
+
+`engine/battle/battle_aoe.py` (pure over the field) is the core:
+`tiles_in_radius` walks the Chebyshev cluster (clamped in-bounds);
+`blast` damages everything in the burst, fiercest at the point of impact
+and fading one ring outward, with soldiers taking armour-typed damage
+(P17.10 still applies) and structures cracking unless you switch them
+off; `fireball` is a blast that also IGNITES every tile of the cluster,
+so the flame lingers and spreads through the E4 `battle_fire.tick` (and
+fire ignores armour — plate burns like cloth); and `cast(spell, …)`
+routes a mage's fireball / oil-slick / plain concussive blast.
+
+Two wires into the session. Siege artillery given a `blast_radius` now
+SPLASHES the packed ranks around the wall it crumps — the wall still
+takes the direct `damage_struct`, and the splash (a quarter of the
+structural damage, blunt) catches the men beside it, soldiers-only so it
+doesn't double-hit the stone. And a new `battle_mage` archetype (a
+support caster: reaches like an archer, reload 2, `spell: fireball`)
+routes through a new `_cast_spell` — an AREA burst at its target's tile
+instead of one strike, reload-gated like any heavy shooter, so it lobs a
+fireball every third tick into whatever the enemy has packed together.
+
+Data: the `battle_mage` unit, `blast_radius: 1` on catapult & trebuchet,
+and a `the_war_mage` testbed scenario — three mages behind a spear guard
+fireballing a 20-strong sword block. It resolves in ~25-30 ticks and
+leaves 17-42 tiles of scorched earth in its wake; the winner genuinely
+swings on whether blue's charge reaches the mages before the fire thins
+it (blue and red each take half the seeds). Concentration is death
+against area magic — the scenario teaches it.
+
+11 tests in `tests/test_battle_aoe.py`: cluster geometry & in-bounds
+clamp; the blast fades outward but the edge still stings; it cracks a
+gate but `hit_structs=False` spares it; the kill count; a fireball paints
+fire on the cluster and burns plate and cloth alike; an oil cast slicks
+the ground; and in a real battle a war-mage scorches a cluster (leaving
+the ground ablaze) while a catapult crumps the man pressed to the wall.
+Suite 1721, green.

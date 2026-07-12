@@ -106,6 +106,15 @@ class BattleSession:
                             sol.reload_left = sq.stats["reload"] + 1
                     field.damage_struct(wall[0], wall[1],
                                         sq.structural_dmg)
+                    # P17.12: a payload with a blast radius also crumps the
+                    # ranks packed around the impact (the wall took the
+                    # direct hit above; this splashes the men beside it)
+                    br = int(sq.stats.get("blast_radius", 0))
+                    if br > 0:
+                        from engine.battle import battle_aoe as aoe
+                        aoe.blast(field, wall[0], wall[1], br,
+                                  sq.structural_dmg // 4,
+                                  damage_type="blunt", hit_structs=False)
                     continue
             d = ai._dist(sol.pos, target.pos)
             reach = ai.reach_of(sq)
@@ -120,12 +129,15 @@ class BattleSession:
                 # this front takes the flank/rear bonus (P17.11)
                 sol.facing = facing.face_toward(sol.x, sol.y,
                                                 target.x, target.y)
+                is_ranged = d > ai.MELEE_REACH and \
+                    sq.stats.get("ranged", 0) > 0
                 if sq.charge_bonus > 1 and d <= ai.MELEE_REACH:
                     self._charge_melee(sol, sq, target)
+                elif is_ranged and sq.stats.get("spell") and \
+                        sol.reload_left <= 0:
+                    self._cast_spell(sol, sq, target)   # P17.12 battle-mage
                 else:
-                    if d > ai.MELEE_REACH and \
-                            sq.stats.get("ranged", 0) > 0 and \
-                            sol.reload_left <= 0:
+                    if is_ranged and sol.reload_left <= 0:
                         self.tracers.append((sol.x, sol.y,
                                              target.x, target.y))
                     ai.attack(field, sol, sq, target, self.rng)
@@ -145,6 +157,19 @@ class BattleSession:
         from engine.battle import battle_fire     # P17.E4 fire spreads/burns
         battle_fire.tick(field, self.rng)
         self._update_objectives()            # capture points last
+
+    def _cast_spell(self, sol, sq, target) -> None:
+        """P17.12: a battle-mage looses its spell at the target's tile —
+        an AREA effect (fireball blasts + ignites, oil slicks) rather than
+        one strike. Spends its reload like any heavy shooter."""
+        from engine.battle import battle_aoe as aoe
+        self.tracers.append((sol.x, sol.y, target.x, target.y))
+        if sq.stats.get("reload", 0) > 0:
+            sol.reload_left = sq.stats["reload"] + 1
+        radius = int(sq.stats.get("blast_radius", 1))
+        power = int(sq.stats.get("ranged", 8))
+        aoe.cast(self.field, sq.stats.get("spell"),
+                 target.x, target.y, radius, power)
 
     def _charge_melee(self, sol, sq, target) -> None:
         """A charge-capable soldier (horse, huge beast) hits home: it

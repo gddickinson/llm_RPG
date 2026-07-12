@@ -2665,11 +2665,33 @@ elevation, terrain/obstacles, LOS, fire) is a parallel track.
   rear-is-deadlier, facing-updates-on-move, round-trip); suite 1321,
   green. The morale side of flanking (rout acceleration, cascade) is
   P17.15.)*
-- [ ] **P17.12 Area effects & battle magic.** Catapult/trebuchet and
+- [x] **P17.12 Area effects & battle magic.** Catapult/trebuchet and
   fireball blast RADII hit a tile cluster and paint `surfaces`
   (fire/oil/electrify already exist); battle-mage units cast the
   existing spell effects. Explosions, boiling oil, and magic land
   here.
+  *(Round 143: `engine/battle/battle_aoe.py` (pure over the field) —
+  `tiles_in_radius` (the Chebyshev cluster, clamped in-bounds),
+  `blast` (damage everything in the burst, fiercest at the point of
+  impact fading one ring outward via `_falloff`; soldiers take
+  armour-typed damage per P17.10, structures crack unless `hit_structs`
+  is off; returns hit/killed), `fireball` (a blast that also IGNITES the
+  cluster so the flame lingers & spreads via the E4 `battle_fire.tick`
+  — fire ignores armour), and `cast(spell,…)` routing fireball / oil /
+  plain blast. Wired into the session two ways: siege artillery with a
+  `blast_radius` now SPLASHES the ranks packed around the wall it hits
+  (the wall still takes the direct `damage_struct`; the splash is
+  soldiers-only), and a new `battle_mage` archetype (spell `fireball`,
+  reload 2) casts an AREA burst at its target's tile through
+  `_cast_spell` instead of a single strike, reload-gated like any heavy
+  shooter. Data: `battle_mage` support unit, `blast_radius: 1` on
+  catapult/trebuchet, and a `the_war_mage` testbed scenario (mages
+  behind a spear guard fireball a packed sword block — converges in
+  ~25-30 ticks, leaving 17-42 tiles of scorched earth). 11 tests
+  (geometry, falloff, struct cracking & spare, kill count, fireball
+  paints fire & ignores armour, oil slick, in-battle: a war-mage
+  scorches a cluster and a catapult splashes the man by the wall).
+  Suite 1721, green.)*
 - [x] **P17.13 Charge & overrun.** Charging cavalry (and huge beasts)
   RUN OVER loose infantry — trampling through — and only stop when
   killed, blocked, or braced against by spears.
