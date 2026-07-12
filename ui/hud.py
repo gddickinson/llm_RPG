@@ -56,6 +56,27 @@ class HUD:
         if "map" in layout and settings.enabled(engine.player, "hints"):
             self.draw_hint_bar(target, engine, layout["map"])
 
+    def draw_autoplay_banner(self, target, engine, screen_rect) -> None:
+        """A can't-miss top-of-screen banner while the hero is agent-
+        driven (M.3 autoplay) — so the player knows it's on and that a
+        keypress resumes control."""
+        if not self.big_font:
+            return
+        from ui.away_mode import banner_text
+        text = banner_text(engine)
+        if not text:
+            return
+        surf = self.big_font.render(text, True, (20, 20, 30))
+        bar_h = surf.get_height() + 12
+        bar = pygame.Surface((screen_rect.width, bar_h), pygame.SRCALPHA)
+        bar.fill((255, 210, 90, 235))              # warm, attention-grabbing
+        target.blit(bar, (screen_rect.x, screen_rect.y))
+        pygame.draw.line(target, (200, 150, 40),
+                         (screen_rect.x, screen_rect.y + bar_h),
+                         (screen_rect.right, screen_rect.y + bar_h), 2)
+        target.blit(surf, (screen_rect.centerx - surf.get_width() // 2,
+                           screen_rect.y + 6))
+
     def draw_hint_bar(self, target, engine, map_rect) -> None:
         """Contextual key hints along the bottom edge of the map view."""
         if not self.font:

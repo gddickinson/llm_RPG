@@ -7,6 +7,9 @@ the world, alive until the human returns. Any keypress hands back.
 
 HEARTBEAT_FRAMES = 15        # ~0.5s at 30fps between auto-ticks
 
+BANNER = ("◆ AUTOPLAY — the agent has your hero  "
+          "·  press any key to take control")
+
 
 def heartbeat(gui) -> None:
     try:
@@ -19,3 +22,17 @@ def heartbeat(gui) -> None:
             gui.engine.advance_turn()
     except Exception:
         pass
+
+
+def banner_text(engine_or_gui):
+    """The on-screen AUTOPLAY indicator, or None when the human is at the
+    controls. Shown every frame the hero is agent-driven so the player
+    always knows autoplay is live and one keypress hands it back — the
+    fix for 'autoplay doesn't seem to do anything' (you couldn't tell)."""
+    engine = getattr(engine_or_gui, "engine", engine_or_gui)
+    try:
+        if engine.roster.is_away(engine.player):
+            return BANNER
+    except Exception:
+        pass
+    return None

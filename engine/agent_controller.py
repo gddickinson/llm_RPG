@@ -135,14 +135,18 @@ class AgentController:
             return None
         return best
 
+    ROAM = 10                 # how far an idle away hero strikes out
+
     def _pick_goal(self, engine, char):
-        # an away hero potters back toward home (M.3); otherwise roam
+        # an away hero potters back toward home (M.3); otherwise strike
+        # out on a wider foray so it visibly explores rather than jitter
         if self.home is not None and tuple(char.position) != tuple(self.home):
             return tuple(self.home)
         w = engine.world.map
         x, y = char.position
-        return (max(0, min(w.width - 1, x + self.rng.randint(-6, 6))),
-                max(0, min(w.height - 1, y + self.rng.randint(-6, 6))))
+        r = self.ROAM
+        return (max(0, min(w.width - 1, x + self.rng.randint(-r, r))),
+                max(0, min(w.height - 1, y + self.rng.randint(-r, r))))
 
     # ---- policy (decide, no side effects) -----------------------
 

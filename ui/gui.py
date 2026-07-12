@@ -156,6 +156,8 @@ class GameGUI:
                     self.toggle_fullscreen()
                     continue
                 # M.3: any keypress in play hands control back to the human
+                # (set_away also flips the autoplay setting so the overlay
+                # stays honest)
                 if event.type == pygame.KEYDOWN and self.mode == "play" \
                         and self.engine.roster.is_away(self.engine.player):
                     self.engine.roster.set_away(self.engine.player, False)
@@ -251,6 +253,11 @@ class GameGUI:
 
         if self.mode == "death":
             self._draw_death_popup()
+
+        # Top-most: the AUTOPLAY banner rides over everything in play
+        if self.mode == "play":
+            self.hud.draw_autoplay_banner(
+                self.screen, self.engine, self.screen.get_rect())
 
         pygame.display.flip()
 

@@ -33,6 +33,35 @@ class TestEventFilter(unittest.TestCase):
         self.assertEqual(
             categorize("Wolf attacks Player for 4 damage!"), "combat")
 
+    def test_npc_idle_barks_are_ambient(self):
+        # the exact background-life lines George saw leaking through
+        self.assertEqual(
+            categorize("Grimjaw sleeps peacefully."), "ambient")
+        self.assertEqual(
+            categorize("Mire Stalker waits in the reeds."), "ambient")
+        self.assertEqual(
+            categorize("Bram sleeps and recovers 3 HP."), "ambient")
+        self.assertEqual(
+            categorize("Elda works on the loom."), "ambient")
+        self.assertEqual(
+            categorize("A guard moves north."), "ambient")
+        # a real event with a similar word is NOT swallowed
+        self.assertEqual(
+            categorize("Bandit attacks Grimjaw for 5 damage!"), "combat")
+
+    def test_normal_hides_npc_idle_barks(self):
+        self.engine.player.metadata["log_verbosity"] = "normal"
+        for line in ("Grimjaw sleeps peacefully.",
+                     "Mire Stalker waits in the reeds.",
+                     "A merchant tends the stall."):
+            self.assertFalse(
+                should_display(self.engine, line),
+                f"idle bark should be hidden on normal: {line!r}")
+        # verbose players who want the full sim still get them
+        self.engine.player.metadata["log_verbosity"] = "verbose"
+        self.assertTrue(should_display(
+            self.engine, "Grimjaw sleeps peacefully."))
+
     def test_normal_hides_footsteps_keeps_the_rest(self):
         self.engine.player.metadata["log_verbosity"] = "normal"
         self.assertFalse(should_display(

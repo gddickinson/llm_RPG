@@ -4158,3 +4158,42 @@ Suite 1683, green. With E4 in, the battlefield-environment track (E1
 elevation, E2 obstacles & anchored flanks, E3 line-of-sight, E4 fire) is
 complete — and so, bar the noted remainders, is Phase 17's whole combat
 build.
+---
+
+## Bug fixes — event-log ambient noise + autoplay visibility (George's playtest reports)
+
+Two gameplay bugs George hit while playing, fixed together.
+
+**"The event log still tells me about NPCs sleeping and Mire Stalker
+waiting."** The display filter (`engine/event_filter.py`) already thins
+the HUD stream — footsteps and NPC barks are `ambient`, hidden on the
+default `normal` verbosity — but its ambient pattern list only knew
+`wanders/strolls/mutters/hums`. Every other third-person idle bark an
+NPC (or a lurking monster) emits — "Grimjaw sleeps peacefully.", "Mire
+Stalker waits in the reeds.", "Elda works on the loom.", "A guard moves
+north." — fell through to the keep-everything `player` default and
+crowded the log. Fix: a `_AMBIENT_VERBS` list (each with a leading space
+so it matches the verb after the actor's name, never a noun mid-word)
+covering the schedule/idle vocabulary — waits, sleeps, rests, dozes,
+naps, idles, works on, tends, greets, moves, patrols, prays, … — folded
+into `categorize`. Those barks are now `ambient`: hidden on normal,
+shown on verbose for players who want the full simulation, and a real
+event with a similar word ("Bandit attacks Grimjaw") is still `combat`,
+not swallowed. Tested with the exact lines George saw.
+
+**"Autoplay doesn't seem to do anything."** The M.3 away-mode chain was
+in fact intact — toggling it drives the hero through the real
+player-action API every heartbeat, and it moves — but nothing on screen
+said so. The away hero potters quietly near where you left it, and there
+was zero indication autoplay was even on, so from the seat it looked
+dead. Three fixes: (1) a can't-miss top-of-screen **AUTOPLAY banner**
+(`ui/away_mode.banner_text` + `HUD.draw_autoplay_banner`, drawn over
+everything in play) — "◆ AUTOPLAY — the agent has your hero · press any
+key to take control"; (2) `set_away` now keeps the `autoplay` setting in
+sync, so a keypress that hands control back also clears the toggle and
+the settings overlay never lies about its state; (3) the idle away hero
+strikes out on a wider foray (`ROAM = 10`) instead of jittering in a
+six-tile box, so it visibly explores. The tested potter-toward-home
+branch is untouched. 5 new tests (idle barks are ambient and hidden on
+normal; the banner shows only while away; set_away keeps the setting
+honest; the idle hero roams within ROAM). Suite 1688, green.

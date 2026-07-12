@@ -196,6 +196,15 @@ class PlayerRoster:
                                    or (0, 0))
         elif not away:
             ctrl.away_home = None
+        # the `autoplay` setting is the persisted mirror of away-state:
+        # keep it honest so the settings overlay never lies (e.g. a
+        # keypress that hands control back also clears the toggle)
+        try:
+            from engine import settings
+            settings.set_setting(character, "autoplay",
+                                 "on" if away else "off")
+        except Exception:
+            pass
         return ctrl
 
     def is_away(self, character) -> bool:

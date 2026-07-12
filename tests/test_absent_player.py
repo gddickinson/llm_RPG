@@ -75,6 +75,34 @@ class TestAwayFlag(unittest.TestCase):
         ctrl.home = (self.p.position[0] + 4, self.p.position[1])
         self.assertEqual(ctrl._pick_goal(self.engine, self.p), ctrl.home)
 
+    def test_idle_away_hero_strikes_out_to_explore(self):
+        # with no home to hug (or standing on it), it roams within ROAM
+        ctrl = AgentController(seed=3)
+        ctrl.home = None
+        x, y = self.p.position
+        for _ in range(20):
+            gx, gy = ctrl._pick_goal(self.engine, self.p)
+            self.assertLessEqual(abs(gx - x), ctrl.ROAM)
+            self.assertLessEqual(abs(gy - y), ctrl.ROAM)
+
+    def test_set_away_keeps_the_autoplay_setting_honest(self):
+        from engine import settings
+        r = self.engine.roster
+        r.set_away(self.p, True)
+        self.assertEqual(settings.get_setting(self.p, "autoplay"), "on")
+        # a keypress hands control back -> the toggle must read off too
+        r.set_away(self.p, False)
+        self.assertEqual(settings.get_setting(self.p, "autoplay"), "off")
+
+    def test_autoplay_banner_only_while_away(self):
+        from ui.away_mode import banner_text, BANNER
+        r = self.engine.roster
+        self.assertIsNone(banner_text(self.engine))    # human at controls
+        r.set_away(self.p, True)
+        self.assertEqual(banner_text(self.engine), BANNER)
+        r.set_away(self.p, False)
+        self.assertIsNone(banner_text(self.engine))
+
 
 class TestHeartbeat(unittest.TestCase):
     def test_world_ticks_only_while_away(self):

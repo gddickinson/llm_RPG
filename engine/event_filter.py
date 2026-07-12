@@ -43,6 +43,19 @@ _NEWS_PREFIXES = ("[Realm]", "[Board]", "[DM]", "[Legend]",
                   "[Collection]", "[Topic]", "[Lesson]", "[Overnight]")
 _LAW_PREFIXES = ("[Law]", "[Clash]")
 
+# Third-person NPC idle / schedule barks — the mundane background life
+# (an NPC sleeping in its bed, a monster waiting off in the mire) that
+# the player only cares about up close. Ambient: hidden on the default
+# `normal` verbosity, shown on `verbose`. Each carries a leading space so
+# it only matches the verb after the actor's name, never a noun mid-word.
+_AMBIENT_VERBS = (
+    " wanders", " strolls", " mutters", " hums", " waits",
+    " sleeps", " slumbers", " snores", " dozes", " naps",
+    " rests", " idles", " loiters", " lingers", " paces",
+    " moves ", " works on", " tends", " greets", " sweeps",
+    " browses", " tidies", " prays", " patrols",
+)
+
 
 def categorize(text: str) -> str:
     t = text.strip()
@@ -58,10 +71,10 @@ def categorize(text: str) -> str:
     if t.startswith(("[Bond]", "[Secret]", "[Lesson]")):
         return "social"
     low = t.lower()
-    if low.startswith("you move to") or "wanders" in low or \
-            "strolls" in low or "mutters" in low or \
-            "hums" in low or low.startswith("the ") and \
-            ("weather" in low or "wind" in low):
+    if low.startswith("you move to") or \
+            any(v in low for v in _AMBIENT_VERBS) or \
+            (low.startswith("the ") and
+             ("weather" in low or "wind" in low)):
         return "ambient"
     if low.startswith(("you ", "your ")):
         return "player"
