@@ -159,13 +159,15 @@ def pick_target(field, soldier, squad):
 def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     """Resolve one strike. Returns True if the target fell."""
     from engine.battle import battle_formation as form
+    from engine.battle import battle_terrain as terrain
     st = atk_squad.stats
     d = _dist(atk_soldier.pos, target.pos)
     ranged = False
     if d <= MELEE_REACH:
         power = st.get("melee", 0)
-    elif d <= RANGED_REACH and st.get("ranged", 0) > 0:
-        power = st.get("ranged", 0)
+    elif d <= RANGED_REACH + terrain.height_reach(field, atk_soldier.pos) \
+            and st.get("ranged", 0) > 0:
+        power = st.get("ranged", 0)          # high ground shoots farther
         ranged = True
     else:
         return False
@@ -182,6 +184,7 @@ def attack(field, atk_soldier, atk_squad, target, rng) -> bool:
     to_hit, dmg_mult = _position_mods(field, atk_soldier, target)
     roll = rng.randint(1, 20) + power + to_hit
     roll += form.attack_penalty(atk_squad)     # P17.17 RING fights weaker
+    roll += terrain.height_to_hit(field, atk_soldier.pos, target.pos)  # E1
     if roll < dc:
         return False
     dmg = max(1, int(power // 3 * dmg_mult) + rng.randint(0, 2))
@@ -263,11 +266,13 @@ def charge_attack(field, atk_sol, atk_sq, tgt_sol, tgt_sq, rng) -> str:
             return "repelled"
         return "stopped"                  # the wall holds; charge blunted
     # a charge into a flank or rear is even more devastating (P17.11);
-    # a WEDGE concentrates its impact to breach the line (P17.18)
+    # a WEDGE concentrates to breach (P17.18); DOWNHILL adds momentum (E1)
     from engine.battle import battle_formation as form
+    from engine.battle import battle_terrain as terrain
     ar = facing.arc(tgt_sol.facing, atk_sol.pos, tgt_sol.pos)
+    momentum = terrain.charge_dmg_mult(field, atk_sol.pos, tgt_sol.pos)
     r = _strike(rng, a.get("melee", 0),
-                a.get("charge_bonus", 1.0) * facing.ARC_DMG[ar],
+                a.get("charge_bonus", 1.0) * facing.ARC_DMG[ar] * momentum,
                 tgt_sol, t.get("defense", 0),
                 to_hit=facing.ARC_TO_HIT[ar] + form.wedge_charge_bonus(atk_sq))
     if r == "kill":

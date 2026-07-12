@@ -2812,10 +2812,27 @@ build on P17.11 (facing) first.
 Parallel track — the terrain itself as a combatant. Each is data-
 driven and folds into the battle grid (its own terrain strings +
 `cover_at` + `struct_hp` already exist).
-- [ ] **P17.E1 Elevation & high ground.** Per-tile elevation (hills,
+- [x] **P17.E1 Elevation & high ground.** Per-tile elevation (hills,
   depressions, ramparts); attacking DOWNHILL gives +to-hit and adds
   charge momentum, UPHILL costs it; height extends ranged range and
   sight. Anchors the "advantage from being above an enemy" ask.
+  *(Round 173: the battlefield-environment track opens. `BattleField`
+  gains a sparse ELEVATION layer (`set_elevation`/`elevation_at`, 0 =
+  flat, round-trips in the field dict), and `engine/battle/battle_terrain.py`
+  turns a height difference into the classic edge, all pure: DOWNHILL
+  you strike easier (+1 to-hit per level above, capped ±3) and your
+  CHARGE gathers momentum (up to +30% dmg), UPHILL both cost you; and a
+  bow on a HILL reaches farther (+1 tile of range per level, capped +2).
+  Wired into `attack` (the ranged-range gate + the to-hit roll), into
+  `charge_attack` (the momentum multiplier), and into the session tick's
+  in-reach test. Zero-cost on flat ground, so every existing battle is
+  untouched. 7 tests (the layer + its round-trip; up/down/flat/capped
+  to-hit, charge momentum, reach; a downhill blow landing where the same
+  roll glances off on the flat; a hill-top archer reaching a target a
+  tile beyond ordinary range). No battle regressions. Suite 1650, green.
+  *(Remainder P17.E1b: authoring elevation into scenario grids (the field
+  API is ready; only the loader hook is missing), and the SIGHT half —
+  moot until the battle sim has fog to see through.)*)*
 - [ ] **P17.E2 Terrain & obstacles.** Ditches/moats/streams/rivers as
   movement-cost or blocking tiles (wade slow, deep = impassable/anchor);
   a flank resting on impassable terrain (river/cliff/wall) **cannot be

@@ -37,6 +37,9 @@ class BattleField:
                         for _ in range(height)]
         self.struct_hp: Dict[Tuple[int, int], int] = {}
         self.struct_kind: Dict[Tuple[int, int], str] = {}
+        # per-tile ELEVATION (P17.E1): 0 = flat, + = a hill/rampart,
+        # − = a depression. Sparse; the high ground is the advantage.
+        self.elevation: Dict[Tuple[int, int], int] = {}
         self.squads: Dict[str, Squad] = {}
         self._occupied: Dict[Tuple[int, int], str] = {}   # pos->sid
         # capture points (P17.6c): each is a dict with id/tile/radius/
@@ -84,6 +87,17 @@ class BattleField:
         if not self.in_bounds(x, y):
             return 0.0
         return terrain_cover(self.terrain[y][x])
+
+    def set_elevation(self, x: int, y: int, level: int) -> None:
+        if self.in_bounds(x, y):
+            if level:
+                self.elevation[(x, y)] = int(level)
+            else:
+                self.elevation.pop((x, y), None)
+
+    def elevation_at(self, x: int, y: int) -> int:
+        """Height of a tile (P17.E1); 0 for flat ground / off-map."""
+        return self.elevation.get((x, y), 0)
 
     # ---- occupancy -----------------------------------------------
 
@@ -170,6 +184,8 @@ class BattleField:
                           self.struct_hp.items()],
             "struct_kind": [[x, y, k] for (x, y), k in
                             self.struct_kind.items()],
+            "elevation": [[x, y, lv] for (x, y), lv in
+                          self.elevation.items()],
             "squads": [sq.to_dict() for sq in self.squads.values()],
             "objectives": self.objectives,
         }
@@ -182,6 +198,8 @@ class BattleField:
                         d.get("struct_hp", [])}
         bf.struct_kind = {(x, y): k for x, y, k in
                           d.get("struct_kind", [])}
+        bf.elevation = {(x, y): lv for x, y, lv in
+                        d.get("elevation", [])}
         for sd in d.get("squads", []):
             bf.add_squad(Squad.from_dict(sd))
         bf.objectives = d.get("objectives", [])

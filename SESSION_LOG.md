@@ -4039,3 +4039,33 @@ distinct from a real rout to lure a chaser, because the AI's `pick_target`
 always finds a live foe somewhere on the field and so never over-pursues
 the broken as things stand — plus the deployment-driven envelopments
 (Cannae elastic centre, tulughma encirclement).
+
+**Round 173 — P17.E1 Elevation & high ground.**
+With the tactics arc (P17.11–P17.20) complete, the parallel battlefield-
+ENVIRONMENT track opens — the terrain itself as a combatant — and the
+first and most classic piece is the high ground. `BattleField` gains a
+sparse ELEVATION layer (0 flat, positive a hill or rampart, negative a
+depression), set and read like its cover and structure layers and rolled
+into the field's save dict. `engine/battle/battle_terrain.py` reads the
+height difference between two tiles and turns it into the edge every
+commander since Sun Tzu has wanted: DOWNHILL you strike easier, +1 to-hit
+for each level you stand above your foe (capped at three, so a rampart is
+decisive but not absurd), and your CHARGE gathers momentum for up to +30%
+damage as it comes down the slope; UPHILL both of those cost you, a charge
+into a hill stalling to as little as 60%; and a bow on a hill reaches
+farther, +1 tile of range per level (capped +2), the archers-on-the-ridge
+advantage. All three fold into the existing combat with no new branches of
+substance — the to-hit swing adds to `attack`'s roll, the momentum
+multiplies `charge_attack`'s damage, and the extra range widens both the
+tick's in-reach test and `attack`'s own range gate — and every one is
+zero on flat ground, so the hundreds of existing battle assertions, all
+fought on the level, are untouched. 7 tests: the layer and its round-trip;
+the to-hit up, down, flat and capped; the charge momentum and the reach
+extension; and two in-battle proofs — a downhill blow landing on a
+marginal roll that glances harmlessly off on the flat, and a hill-top
+archer striking a target one tile beyond ordinary bowshot that it can't
+touch from level ground. No battle regressions. Suite 1650, green.
+REMAINDER (P17.E1b): authoring elevation into the scenario grids (the
+field API is ready — only a loader hook is missing) and the SIGHT half of
+"extends sight", which stays moot until the battle sim grows fog to see
+through.
