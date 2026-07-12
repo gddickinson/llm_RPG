@@ -4049,6 +4049,20 @@ they bite every session).
   `_generate` starts a fresh region empty. So dropped treasure and bodies
   now travel with their region — gone when you cross the border, waiting
   where you left them when you return. 4 tests. Suite green.)*
+- [x] **P25.0b (BUG) Multi-level building ground items.** Items dropped
+  inside a building appeared on EVERY floor: `world.ground_items` was one
+  flat (x,y) dict and building levels reuse coordinates, so the renderer's
+  zone pass drew all of them on whatever floor you stood on. *(Round: the
+  same swap that fixed regions, applied to zones — each zone (interior /
+  dungeon floor) owns its `ground_items`, and `engine._sync_ground_items`
+  points `world.ground_items` at the active grid on every transition
+  (enter/exit building, stairs, enter/exit dungeon), parking the overworld
+  store on `world._overworld_ground_items` while you're inside. Every
+  ground-item caller (drops, bodies, loot) keeps using `world.ground_items`
+  and now hits the current floor's store; the renderer's zone pass draws
+  only that floor. Save writes the parked overworld store, so saving in a
+  dungeon can't clobber the overworld's loot. 5 tests. Suite green.
+  Remainder: persisting ZONE-dropped items across a save.)*
 - [ ] **P25.1 (BUG) Stackable items don't group.** Arrows and other
   stackables take one inventory slot EACH instead of stacking, filling the
   pack. `Item` already carries `stackable`/`quantity` and renders "name

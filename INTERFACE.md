@@ -154,7 +154,7 @@ llm_RPG/
 - **`banking.py`** — Deposit/withdraw gold at temples/shops.
 - **`npc_process.py`** / **`npc_process_manager.py`** — Multiprocess NPC AI (optional).
 - **`player_actions.py`** — Player-driven actions (pickup/drop/use/attack/move); weather travel penalty.
-- **`game_api_mixin.py`** — `GameAPIMixin`; thin engine wrappers: party, interiors, dungeons, spells, banking, crafting, `effective_visibility()`.
+- **`game_api_mixin.py`** — `GameAPIMixin`; thin engine wrappers: party, interiors, dungeons, spells, banking, crafting, `effective_visibility()`. P25.0b `_sync_ground_items`: points `world.ground_items` at the ACTIVE grid's own item store on every zone transition (parking the overworld's on `world._overworld_ground_items`), so dropped items stay on the floor they were dropped in instead of bleeding onto every level.
 - **`trade_info.py`** — PUX.2 pure helpers behind a merchant deal: `item_report`, `compare_to_equipped`, `price_factors`/`factors_line` (why a price is what it is), `is_junk`/`junk_items`, `affordable_qty`; the shop panel renders these.
 - **`shop.py`** — `ShopManager`; per-merchant catalogs, faction-aware prices, persistence; P12.10: stock-elastic pricing (5%/unit deviation, daily restock heals), regional category factors from `data/settlement_economy.json` (arbitrage), H-key haggle minigame (patience 3/day, graded Persuasion, crit fails cost reputation).
 - **`effects.py`** — Effective AC / stat / damage bonuses from worn equipment (broken gear contributes 0).

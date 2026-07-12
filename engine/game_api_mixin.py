@@ -23,6 +23,26 @@ class GameAPIMixin:
 
     # ---- interiors --------------------------------------------------
 
+    def _sync_ground_items(self) -> None:
+        """Point `world.ground_items` at the ACTIVE grid's own item store,
+        so items dropped in a zone stay on THAT floor and don't bleed onto
+        every level (bug-fix 2026-07-12). The overworld's items are parked
+        on `world._overworld_ground_items` while you are inside. Idempotent
+        — safe to call after any zone transition."""
+        world = self.world
+        zone = self.current_interior or self.current_dungeon
+        if zone is None:
+            parked = getattr(world, "_overworld_ground_items", None)
+            if parked is not None:
+                world.ground_items = parked
+                world._overworld_ground_items = None
+            return
+        if getattr(world, "_overworld_ground_items", None) is None:
+            world._overworld_ground_items = getattr(world, "ground_items", {}) or {}
+        if getattr(zone, "ground_items", None) is None:
+            zone.ground_items = {}
+        world.ground_items = zone.ground_items
+
     def enter_building(self, loc=None, via_breach: bool = False) -> str:
         if self.current_interior:
             return "You are already inside."
@@ -43,6 +63,7 @@ class GameAPIMixin:
             return note
         self.exterior_return_pos = self.player.position
         self.current_interior = inter
+        self._sync_ground_items()
         self.player.position = inter.door
         # Everyone inside appears inside (P9A.7)
         try:
@@ -112,12 +133,14 @@ class GameAPIMixin:
                     (zone.level_above and level.stairs_down) or \
                     level.door
                 self.current_interior = level
+                self._sync_ground_items()
                 self.player.position = landing
                 msg = "You make your way back to the ground floor."
                 self.memory_manager.add_event(msg)
                 return msg
         name = self.current_interior.name
         self.current_interior = None
+        self._sync_ground_items()
         if self.exterior_return_pos:
             self.player.position = self.exterior_return_pos
             self.world.map.place_character(self.player, *self.player.position)
@@ -339,6 +362,7 @@ class GameAPIMixin:
                 seed=hash(name) & 0xFFFFFFFF, engine=self)
             self.dungeons[name] = dungeon
         self.current_dungeon = self.dungeons[name]
+        self._sync_ground_items()
         self.dungeon_return_pos = self.player.position
         self.player.position = self.current_dungeon.exit_pos
         msg = (f"You descend into {self.current_dungeon.name}. "
@@ -354,12 +378,14 @@ class GameAPIMixin:
         if above is not None:
             landing = above.stairs_down or above.exit_pos
             self.current_dungeon = above
+            self._sync_ground_items()
             self.player.position = landing
             msg = "You climb back toward the light."
             self.memory_manager.add_event(msg)
             return msg
         name = self.current_dungeon.name
         self.current_dungeon = None
+        self._sync_ground_items()
         if self.dungeon_return_pos:
             self.player.position = self.dungeon_return_pos
             self.world.map.place_character(self.player, *self.player.position)

@@ -395,6 +395,7 @@ class PlayerActions:
                 getattr(level, "exit_pos", (1, 1))
         if hasattr(level, "rooms"):
             engine.current_dungeon = level      # dungeon floor (P9.5)
+            engine._sync_ground_items()          # items stay on their floor
             if not up:
                 depth = getattr(level, "depth", 1)
                 best = engine.player.metadata.get(
@@ -406,6 +407,7 @@ class PlayerActions:
                         f"{depth}.")
         else:
             engine.current_interior = level
+        engine._sync_ground_items()              # items stay on their floor
         engine.player.position = landing
         verb = "climb" if up else "descend"
         engine.memory_manager.add_event(

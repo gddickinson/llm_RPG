@@ -5605,3 +5605,33 @@ and the arc bending to the choices you made along the way.
 Also captured two of George's play notes into Phase 22 — a non-blocking
 spellcasting system (the X-menu hides the fight) and buildings you can read
 at a glance (signs, styles, a better 2.5D for multi-storey builds).
+
+## Ground items stay on their floor (P25.0b bug-fix)
+
+George caught the multi-level cousin of the region bug: drop something in a
+building and it was there again on every other floor. Same root cause —
+`world.ground_items` is one flat (x,y) dict, and a building's levels reuse
+the same little coordinate grid, so the renderer's zone pass drew the whole
+dict on whatever floor you happened to be standing on. The potion you left
+in the cellar was waiting for you in the attic.
+
+The fix is the same swap that fixed the regions, turned inward: each zone —
+every interior and every dungeon floor — owns its own ground-item store,
+and a single `_sync_ground_items` points `world.ground_items` at the active
+grid on every transition into or out of a zone, parking the overworld's
+items aside while you're indoors. The dozen callers that drop things onto
+the ground — the player's drop, a slain body, a monster's loot — never
+changed; they still write to `world.ground_items`, but now it's the current
+floor's store they write to, and the renderer draws only that floor. Climb
+the tavern stairs and the loft is empty; come back down and your potion is
+where you left it.
+
+Saving got a small safety with it: when you save inside a zone the game now
+writes the parked OVERWORLD store, not the floor you're standing on, so a
+save in a dungeon can't overwrite the realm's loot with an empty cellar.
+
+5 tests (entering a zone parks the overworld items; two floors don't share
+a drop; leaving restores the overworld and the zone drop doesn't bleed; a
+real building isolates a drop end-to-end; a zone save keeps overworld items
+separate). Remainder: persisting zone-dropped items across a save (the
+overworld's already persist).

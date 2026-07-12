@@ -102,11 +102,15 @@ class SaveManager:
         # Terrain — terrain[y][x] = TerrainType
         terrain = [[cell.value for cell in row] for row in world.map.terrain]
 
-        # Ground items — keys must be strings for JSON
+        # Ground items — keys must be strings for JSON. Save the OVERWORLD
+        # store even when saving inside a zone (its items are parked while
+        # world.ground_items points at the current floor — 2026-07-12).
         ground = {}
-        if hasattr(world, "ground_items"):
-            for (x, y), items in world.ground_items.items():
-                ground[f"{x},{y}"] = [self._serialize_item(it) for it in items]
+        overworld_items = getattr(world, "_overworld_ground_items", None)
+        if overworld_items is None:
+            overworld_items = getattr(world, "ground_items", {})
+        for (x, y), items in (overworld_items or {}).items():
+            ground[f"{x},{y}"] = [self._serialize_item(it) for it in items]
 
         # Locations
         locations = [loc.to_dict() for loc in world.locations]
