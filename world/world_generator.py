@@ -63,16 +63,18 @@ class WorldGenerator:
                     f"with {len(self.world.locations)} locations")
 
     def _fortify_start_town(self) -> None:
-        """P31.1 — ring Oakvale with a curtain wall, gates where the roads
-        cross, so the start town is defensible and monster-free (guards are
-        posted at the gates in demo_setup, where the NPC manager lives)."""
-        from world.fortify import fortify
+        """P31.1/P31.1b — ring the WHOLE Oakvale town (village + its nearby
+        buildings: the library, forge, market…) with a curtain wall, gates
+        where the roads cross, and a GUARD TOWER at each corner. Guards for the
+        gates and towers are posted in demo_setup (where the NPC manager lives)."""
+        from world.fortify import fortify_town
         oak = next((l for l in self.world.locations
                     if l.name == "Oakvale Village"), None)
         if oak is None:
             return
-        gates = fortify(self.world.map, oak, margin=2)
-        oak.add_property("gates", [list(g) for g in gates])
+        res = fortify_town(self.world, oak, margin=2, radius=12)
+        oak.add_property("gates", [list(g) for g in res["gates"]])
+        oak.add_property("towers", [list(c) for c in res["corners"]])
 
     # ----- terrain ----------------------------------------------------
 

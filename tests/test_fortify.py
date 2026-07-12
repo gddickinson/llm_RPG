@@ -69,6 +69,14 @@ class TestFortifyGeometry(unittest.TestCase):
         fortify.fortify(m, loc, margin=2)
         self.assertEqual(m.terrain[y0][x0 + 1], TerrainType.WATER)
 
+    def test_extent_bounds_several_locations(self):
+        # P31.1b: the box grows to enclose every member + a margin
+        a = Location("A", "", 8, 8, 2, 2)
+        b = Location("B", "", 14, 12, 3, 2)      # off to the SE
+        x0, y0, x1, y1 = fortify.extent([a, b], margin=2)
+        self.assertEqual((x0, y0), (6, 6))       # min corner - margin
+        self.assertEqual((x1, y1), (18, 15))     # max corner + margin
+
 
 class TestWalledStartTown(unittest.TestCase):
     def setUp(self):
@@ -86,17 +94,44 @@ class TestWalledStartTown(unittest.TestCase):
         return next(l for l in self.engine.world.locations
                     if l.name == "Oakvale Village")
 
+    def _box(self):
+        """The actual wall box, from the stored corner towers (P31.1b)."""
+        corners = self._oak().get_property("towers")
+        xs = [c[0] for c in corners]
+        ys = [c[1] for c in corners]
+        return min(xs), min(ys), max(xs), max(ys)
+
     def test_oakvale_is_walled_with_gates(self):
         oak = self._oak()
-        gates = oak.get_property("gates")
-        self.assertTrue(gates, "the start town should record its gates")
+        self.assertTrue(oak.get_property("gates"), "records its gates")
         wmap = self.engine.world.map
-        x0, y0, x1, y1 = fortify.town_bounds(oak, 2)
+        x0, y0, x1, y1 = self._box()
         walls = sum(
             1 for x in range(x0, x1 + 1) for y in (y0, y1)
             if 0 <= x < wmap.width and 0 <= y < wmap.height
             and wmap.terrain[y][x] == TerrainType.BUILDING)
-        self.assertGreater(walls, 4, "a real wall rings the town")
+        self.assertGreater(walls, 8, "a real wall rings the whole town")
+
+    def test_the_wall_encompasses_the_library(self):
+        # P31.1b: the wall reaches out to include the library + civic buildings
+        oak = self._oak()
+        x0, y0, x1, y1 = self._box()
+        lib = next((l for l in self.engine.world.locations
+                    if "library" in l.name.lower()), None)
+        if lib is None:
+            self.skipTest("no library in this world")
+        self.assertTrue(x0 <= lib.x <= x1 and y0 <= lib.y <= y1,
+                        "the library sits inside the town wall")
+
+    def test_corner_towers_are_manned(self):
+        oak = self._oak()
+        self.assertEqual(len(oak.get_property("towers")), 4)
+        towers = [l for l in self.engine.world.locations
+                  if (l.properties or {}).get("wall_tower")]
+        self.assertEqual(len(towers), 4, "a tower at each corner")
+        guards = [n for n in self.engine.npc_manager.npcs.values()
+                  if (getattr(n, "metadata", {}) or {}).get("tower_guard")]
+        self.assertGreaterEqual(len(guards), 1, "a guard mans a tower")
 
     def test_gates_are_passable(self):
         wmap = self.engine.world.map
@@ -111,8 +146,7 @@ class TestWalledStartTown(unittest.TestCase):
 
     def test_the_player_is_not_trapped(self):
         wmap = self.engine.world.map
-        oak = self._oak()
-        x0, y0, x1, y1 = fortify.town_bounds(oak, 2)
+        x0, y0, x1, y1 = self._box()
 
         def walkable(x, y):
             return (0 <= x < wmap.width and 0 <= y < wmap.height

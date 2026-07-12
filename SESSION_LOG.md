@@ -6384,3 +6384,18 @@ the nightly stack) slips an unfed mount's loyalty a point and, at 0, it BOLTS by
 morning — the same neglect arc as a pet. A fresh mount starts loyal and ridden.
 +7 tests (legacy mule still green). Remainder: a spooked/tiring mount, a
 war-mount that fights, and the ride/feed KEY bindings.
+
+## 2026-07-12 (cont.) — P31.1b: the town wall reaches out (+ corner towers)
+
+George: the Oakvale wall was too tight — push it out to take in the library and
+the other town buildings, with guard towers at each corner. `world/fortify.py`
+now walls the WHOLE town, not just the 10×5 village box: `town_members` gathers
+the village + every nearby location sitting on a BUILDING tile (tavern, forge,
+store, temple, watchtower, well, market, LIBRARY), `extent` takes their bounding
+box, and `fortify_town` rings that (21×19 now, vs the old 14×9), cutting gates
+where the roads cross and planting a corner TOWER tile at each of the four
+corners. `post_towers` plants a `wall_tower` Location + a `tower_guard` at each.
+The library now sits inside the wall; the player still can't be trapped (BFS).
+12 tests. Next: P31.1c (tower guards spot an attacker, sound the alarm, and fire
+arrows down), P31.1d (gates that close & lock via doors.py), P31.1e (a richer
+2.5D renderer — multi-level massing + a guard visible on the tower roof).

@@ -3928,6 +3928,33 @@ The work is to UNIFY these into one standalone generator and enrich the output.
   into `world_generator._fortify_start_town` (walls Oakvale, records gates on
   the Location) + `demo_setup` (posts the guards after spawn). Player-not-trapped
   verified by BFS. `tests/test_fortify.py` (9).
+- [x] **P31.1b Bigger wall + corner guard towers (George, 2026-07-12).** The
+  Oakvale wall is too tight — push it FURTHER OUT so it encompasses the library
+  and the other nearby buildings that are part of the town (compute the ring
+  from the bounding box over the village + its neighbouring BUILDING locations,
+  not just the 10×5 village footprint), and plant a GUARD TOWER at each corner
+  with a guard posted there. *Done:* `fortify.town_members` (the village + every
+  nearby location on a BUILDING tile — tavern/forge/store/temple/watchtower/
+  well/market/LIBRARY), `fortify.extent` (bounding box over them), and
+  `fortify.fortify_town` (walls that box, GATES on road crossings, a corner
+  TOWER tile at each of the 4 corners → returns gates+corners). `post_towers`
+  plants a `wall_tower` `Location` + a `tower_guard` at each corner. Wired via
+  `world_generator._fortify_start_town` + `demo_setup`. The wall now encloses
+  the whole town (21×19 vs the old 14×9); player still not trapped (BFS).
+  `tests/test_fortify.py` (12).
+- [ ] **P31.1c Tower guards defend.** A guard stationed at a corner tower SPOTS
+  an approaching hostile, raises an ALARM to the town, and fires ARROWS down at
+  the attacker from the wall (ranged, from the height of the tower). Composes
+  with `ranged`/`npc_conflict`/`retaliation`.
+- [ ] **P31.1d Gates that close and lock.** Each town entrance gate can be
+  CLOSED and LOCKED (shut at night / under threat), composing with the
+  `doors.py` lock/key/force system — a closed gate turns back what a guard
+  can't, and forcing it is a noisy crime.
+- [ ] **P31.1e Richer 2.5D rendering (George, 2026-07-12).** A better 2.5D
+  building renderer that shows INTERMEDIATE LEVELS (multi-storey massing) and
+  FIGURES on the tower roofs (a guard visibly atop a guard tower), in the style
+  of `autonomous_world`. Extends `ui/renderer_buildings.py`'s lifted-block pass.
+  (Rendering — hard to unit-test, plan carefully; the structure b–d comes first.)
 - [ ] **P31.2 A standalone world-generation entrypoint.** A `worldgen` CLI/script
   (separate from play) that generates a full world to a SEED — terrain, rivers,
   tiered settlements, roads, history, landmarks — and writes it to a durable
