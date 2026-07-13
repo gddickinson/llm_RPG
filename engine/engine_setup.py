@@ -158,6 +158,8 @@ def build_subsystems(engine, llm_model=None,
     self.npc_conflict = NPCConflictSystem(self)
     from engine.tower_defense import TowerDefense
     self.tower_defense = TowerDefense(self)
+    from engine.town_gates import TownGateSystem
+    self.town_gates = TownGateSystem(self)
     from engine.retaliation import RetaliationSystem
     self.retaliation = RetaliationSystem(self)
     from engine.disease import DiseaseSystem

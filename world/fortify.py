@@ -182,8 +182,9 @@ def post_towers(engine, corners) -> int:
 
 
 def _guard_spot(wmap, gx, gy):
-    """A walkable, unoccupied tile at or beside the gate for the guard."""
-    for dx, dy in ((0, 0), (0, -1), (0, 1), (-1, 0), (1, 0)):
+    """A walkable, unoccupied tile BESIDE the gate/tower for the guard — never
+    ON the gate tile itself, so the gate stays free to close (P31.1d)."""
+    for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (1, -1)):
         x, y = gx + dx, gy + dy
         if not (0 <= x < wmap.width and 0 <= y < wmap.height):
             continue

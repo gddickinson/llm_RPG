@@ -3952,10 +3952,18 @@ The work is to UNIFY these into one standalone generator and enrich the output.
   (`ARROW_DAMAGE`=6 on a d20 ≥ 8 — a rooftop archer rarely misses a target
   below), a `[Guard]` tracer; the alarm clears when the coast is. Registered in
   `engine_setup`. `tests/test_tower_defense.py` (6).
-- [ ] **P31.1d Gates that close and lock.** Each town entrance gate can be
+- [x] **P31.1d Gates that close and lock.** Each town entrance gate can be
   CLOSED and LOCKED (shut at night / under threat), composing with the
   `doors.py` lock/key/force system — a closed gate turns back what a guard
-  can't, and forcing it is a noisy crime.
+  can't, and forcing it is a noisy crime. *Done:* `engine/town_gates.py`
+  `TownGateSystem` — a gate closes by reverting its tile to WALL (so the
+  existing movement wall-guard turns everyone back), opens by restoring the
+  ROAD; `sync` (each turn from the pipeline) opens by day, closes at night, and
+  LOCKS down while an alarm rings (a `tower_guard` is `alarmed`, P31.1c). Never
+  shuts on an occupied tile. `force_gate` bangs a shut gate open with a `[Law]`
+  crime beat. State persists (`to_dict`/`from_dict`, registered in `save_load`).
+  Gate guards now stand BESIDE the gate (not on it) so it's free to close.
+  `tests/test_town_gates.py` (11).
 - [ ] **P31.1e Richer 2.5D rendering (George, 2026-07-12).** A better 2.5D
   building renderer that shows INTERMEDIATE LEVELS (multi-storey massing) and
   FIGURES on the tower roofs (a guard visibly atop a guard tower), in the style

@@ -6413,3 +6413,17 @@ the walled start town is met by arrows from the towers before it reaches the
 gate. 6 tests. Next: P31.1d (gates that close & lock via doors.py) and P31.1e
 (the richer 2.5D renderer — a guard visible on the tower roof, multi-level
 building massing à la Autonomous World).
+
+## 2026-07-12 (cont.) — P31.1d: gates that close and lock
+
+The town gates are no longer always-open holes. `engine/town_gates.py`
+`TownGateSystem` closes a gate by reverting its tile to WALL — so the existing
+movement wall-guard turns everyone back — and opens it by restoring the ROAD.
+`sync` runs each turn from the pipeline: open by day, closed by night, and
+LOCKED DOWN while an alarm rings (a P31.1c tower guard has spotted raiders).
+It never shuts a gate on someone standing in it. `force_gate` bangs a shut gate
+open with a `[Law]` crime beat (the noisy, remembered forcing). State persists.
+One fix rippled out: gate guards used to stand ON the gate tile (blocking it
+from closing) — `fortify._guard_spot` now seats them BESIDE it. 11 tests.
+Remainder of the walled-town thread: P31.1e (the richer 2.5D renderer — a guard
+visible on the tower roof, multi-level building massing à la Autonomous World).

@@ -308,6 +308,12 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Tower defense error: {e}")
 
+    # Town gates close by night, lock under alarm, open by day (P31.1d)
+    try:
+        self.town_gates.sync()
+    except Exception as e:
+        logger.debug(f"Town gates error: {e}")
+
     # Reveal what the player can see; fog the rest (P15.11)
     try:
         from engine.discovery import update as _discovery_update
