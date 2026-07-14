@@ -116,6 +116,8 @@ def use_item(engine, item_name: str) -> str:
                 msg = eat_food(engine, it)
                 if msg is None:
                     return "You're already at full health."
+                from engine import anim
+                anim.emote(player, "eat")          # bring it to the mouth (P34.10)
                 _remove_one(player, it)
                 engine.advance_turn()
                 return msg
@@ -125,6 +127,8 @@ def use_item(engine, item_name: str) -> str:
         if "thirst" in use_eff:            # P12.3 drinks
             from characters.needs import drink
             drink(player, int(use_eff["thirst"]))
+            from engine import anim
+            anim.emote(player, "drink")            # tilt back and sip (P34.10)
             if getattr(it, "heal_amount", 0):
                 player.heal(it.heal_amount)
             _remove_one(player, it)

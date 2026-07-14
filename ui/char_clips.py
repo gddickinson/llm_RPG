@@ -8,9 +8,8 @@ read a continuous phase. Pure joint math — headless-testable; `body_renderer`
 picks the action in `update_anim` and blits the result.
 """
 
-import math
-
-from ui.char_pose import scale_pose
+from ui.char_clips_util import (math, scale_pose, _JOINTS, _UPPER, _arc, _ease,
+                                _fdir, _move, _feet_pivot)
 
 # action -> (one_shot?, duration_seconds | None for a held loop)
 ACTIONS = {
@@ -28,12 +27,6 @@ ACTIONS = {
     "knockdown": (True, 1.6),
 }
 
-_JOINTS = ["l_hip", "r_hip", "chest", "l_knee", "r_knee", "l_foot", "r_foot",
-           "l_sh", "r_sh", "neck", "head", "l_elbow", "l_hand",
-           "r_elbow", "r_hand"]
-_UPPER = ["chest", "l_sh", "r_sh", "neck", "head",
-          "l_elbow", "l_hand", "r_elbow", "r_hand"]
-
 
 def is_one_shot(action):
     return ACTIONS.get(action, (False, None))[0]
@@ -43,36 +36,12 @@ def duration(action):
     return ACTIONS.get(action, (False, None))[1]
 
 
-def _arc(t):                      # 0 → 1 → 0 over t in [0, 1]
-    return math.sin(max(0.0, min(1.0, t)) * math.pi)
-
-
-def _ease(t):                     # smoothstep 0 → 1 (monotonic)
-    t = max(0.0, min(1.0, t))
-    return t * t * (3.0 - 2.0 * t)
-
-
-def _fdir(facing):
-    return facing[0] if facing[0] else 0
-
-
-def _move(pose, keys, dx, dy):
-    for k in keys:
-        if k in pose:
-            pose[k] = (pose[k][0] + dx, pose[k][1] + dy)
-
-
 def apply(action, pose, phase, H, facing):
     fn = _CLIPS.get(action)
     return fn(dict(pose), phase, H, facing) if fn else pose
 
 
 # ---- the clips ----------------------------------------------------------
-
-def _feet_pivot(pose):
-    return ((pose["l_foot"][0] + pose["r_foot"][0]) / 2,
-            max(pose["l_foot"][1], pose["r_foot"][1]))
-
 
 def _jump(pose, t, H, facing):
     up = _arc((t - 0.12) / 0.88) * H * 0.30
@@ -329,3 +298,10 @@ _CLIPS = {
     "handshake": _handshake, "hug": _hug, "kiss": _kiss, "wrestle": _wrestle,
     "throw": _throw, "tumble": _tumble, "knockdown": _knockdown,
 }
+
+# P34.10 — fold in the expanded acrobatics / daily-life library (kept in its own
+# module so no file crosses 500 lines). Merged after the core so both dispatch
+# through the same apply()/ACTIONS/duration.
+from ui.char_clips_more import ACTIONS_MORE, CLIPS_MORE   # noqa: E402
+ACTIONS.update(ACTIONS_MORE)
+_CLIPS.update(CLIPS_MORE)

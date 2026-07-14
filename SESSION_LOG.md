@@ -6855,3 +6855,33 @@ Remainder of Phase 34: P34.4 individuality (idle desync/fidgets/reactions), P34.
 hair/cloak springs + weapon trail, P34.6 depth-sort + line-of-action, P34.7 the SSAA
 beauty pass. (NPCs already run/jump via the same `_running`/`_emote` substrate; an
 auto-run-when-fleeing hook for the away-agents is a possible follow-up.)
+
+## 2026-07-14 (cont.) — P34.10: expanded clip library (acrobatics & daily life)
+
+George: "keep adding more. Acrobatics, lunges, rolls, flips, twirls, crawling,
+sleeping, eating/drinking, resting, crouching, kneeling… as many different options
+as possible… so they really seem alive with fluid motions." Added **21** new
+procedural clips, roughly doubling the library to 48:
+- **Acrobatics:** flip, somersault, cartwheel, roll, twirl — powered by a new
+  `_rotate`/`_centroid` primitive that spins the whole 2D puppet about a point, so
+  it can genuinely flip (rise + full backward turn + tuck, lands upright), roll
+  (tuck low + forward turn), cartwheel (sideways star) and twirl (a vertical-axis
+  spin illusion via horizontal scale).
+- **Combat / movement:** lunge (deep fencing drive + thrust), crawl (hands-and-knees
+  loop), crouch (held ready stance).
+- **Daily life:** eat, drink, rest, lie (sleep rough — the body tipped horizontal),
+  stretch, yawn, clap, laugh, shrug, ponder, salute, beckon, facepalm.
+
+To hold every file under 500 lines, the shared clip primitives were extracted to
+`ui/char_clips_util.py` (`_arc/_ease/_fdir/_move/_feet_pivot/_centroid/_rotate/
+_swing`) and the new batch lives in `ui/char_clips_more.py`, whose `ACTIONS_MORE`/
+`CLIPS_MORE` merge into `char_clips`'s registry at import — so `apply()`/`ACTIONS`/
+`duration` transparently cover all 48. All reachable via the existing
+`anim.emote`/`anim.stance` API; eating food now plays `eat` and drinking plays
+`drink` in-game (item_use). A 21-row contact sheet confirmed each clip reads as its
+action. `tests/test_char_clips_more.py` (11). Files: char_clips 307, char_clips_more
+291, char_clips_util 70 — all under 500.
+
+Remainder of Phase 34: P34.4 individuality & idle life (seed idle desync, ambient
+fidgets drawn from this library, event reactions), P34.5 hair/cloak springs, P34.6
+depth-sort + line-of-action, P34.7 the SSAA beauty pass.

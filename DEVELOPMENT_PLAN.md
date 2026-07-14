@@ -4429,6 +4429,21 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   a face-plant — jump/leap now fall through to the clean hand-authored squash→launch→
   land clip (the flip bake is kept for a deliberate `flip` action). Screenshots
   confirm a clean run stride + a clean upright hop. `tests/test_run_jump.py` (8).
+- [x] **P34.10 Expanded clip library — acrobatics & daily life.** George: "keep
+  adding more. Acrobatics, lunges, rolls, flips, twirls, crawling, sleeping,
+  eating/drinking, resting, crouching, kneeling… as many different options as
+  possible… so they really seem alive with fluid motions." *Done:* +21 new
+  procedural clips — acrobatics **flip / somersault / cartwheel / roll / twirl**
+  (a new `_rotate`/`_centroid` whole-body-spin primitive lets the 2D puppet flip
+  and roll), combat/movement **lunge / crawl / crouch**, and daily life **eat /
+  drink / rest / lie / stretch / yawn / clap / laugh / shrug / ponder / salute /
+  beckon / facepalm**. To keep every file < 500 the shared primitives moved to
+  `ui/char_clips_util.py` and the batch lives in `ui/char_clips_more.py`, merged
+  into `char_clips`'s registry at import (so `apply()`/`ACTIONS`/`duration` cover
+  all 48 clips). Reachable through the existing `anim.emote`/`anim.stance` API;
+  eating food now plays `eat` and drinking plays `drink` in-game. A 21-row contact
+  sheet confirms each reads (flip inverts then lands upright, lie goes horizontal,
+  lunge drives forward, twirl spins). `tests/test_char_clips_more.py` (11).
 - [ ] **P34.7 Beauty pass: SSAA + resolution.** Draw each character onto a 2–4×
   oversampled scratch surface and `smoothscale` down (anti-aliased, curvy limbs —
   proven); DECOUPLE character render density from tile-art density (finer characters
