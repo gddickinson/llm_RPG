@@ -7183,3 +7183,17 @@ suite green.
 
 QUEUE remaining: NPC everyday-life actions, more creature plans (birds/spiders/
 dragons), creature attack/hurt anims.
+
+## 2026-07-14 (cont.) — P34.22: NPCs going about everyday life (at work)
+
+George: "we want all the NPCs to look like they are going about everyday life." On top
+of P34.4's idle fidgets + threat startles, an idle tradesperson now mostly BUSIES
+ITSELF WITH ITS CRAFT. New periodic work clips `hammer` / `sweep` / `stir`, and
+`engine/anim._role_action` maps a class → its trade so `update_idle_life` plays it:
+a blacksmith hammers, a farmer/servant sweeps, an innkeeper/cook stirs, a merchant
+hawks (beckons), a cleric/monk kneels in prayer, a wizard/scholar ponders; plain
+villagers keep the generic fidget pool (70% trade / 30% fidget for variety).
+Screenshot shows each trade's distinct motion. Combined with the startle reactions
+and the mutual look-at, a town now reads as alive and at work. `tests/test_idle_life.py`.
+Full suite green. QUEUE remaining: more creature plans (birds/spiders/dragons),
+creature attack/hurt animations.

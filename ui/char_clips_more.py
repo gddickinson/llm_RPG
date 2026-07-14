@@ -30,7 +30,44 @@ ACTIONS_MORE = {
     "launched": (True, 0.7), "flail": (False, None),
     # P34.20 run-conditioned special moves
     "slide": (True, 0.6),
+    # P34.22 everyday-work bouts (NPCs going about their trade — periodic one-shots)
+    "hammer": (True, 1.8), "sweep": (True, 1.8), "stir": (True, 1.8),
 }
+
+
+def _hammer(pose, t, H, facing):
+    """A smith at the anvil — the arm swings a hammer down, again and again."""
+    f = _fdir(facing) or 1
+    swing = (math.sin(t * math.pi * 3) + 1) / 2         # 0 up → 1 struck
+    s = pose["r_sh"]
+    pose["r_hand"] = (s[0] + f * H * 0.14,
+                      s[1] - H * 0.22 * (1 - swing) + H * 0.12 * swing)
+    pose["r_elbow"] = (s[0] + f * H * 0.09, s[1] - H * 0.02)
+    _move(pose, ("chest", "neck", "head"), f * H * 0.03, H * 0.02 * swing)
+    return pose
+
+
+def _sweep(pose, t, H, facing):
+    """Sweeping — both hands on a broom that arcs side to side, back bent."""
+    f = _fdir(facing) or 1
+    arc = math.sin(t * math.pi * 2)
+    _move(pose, ("chest", "neck", "head", "l_sh", "r_sh"), f * H * 0.06, H * 0.06)
+    for hand, sh in (("l_hand", "l_sh"), ("r_hand", "r_sh")):
+        s = pose[sh]
+        pose[hand] = (s[0] + f * H * (0.10 + 0.10 * arc), s[1] + H * 0.20)
+    return pose
+
+
+def _stir(pose, t, H, facing):
+    """Stirring a pot / kneading — one hand circles low in front."""
+    f = _fdir(facing) or 1
+    a = t * math.pi * 3
+    s = pose["r_sh"]
+    pose["r_hand"] = (s[0] + f * H * (0.12 + 0.05 * math.cos(a)),
+                      s[1] + H * (0.16 + 0.04 * math.sin(a)))
+    pose["r_elbow"] = (s[0] + f * H * 0.08, s[1] + H * 0.10)
+    _move(pose, ("chest", "neck", "head"), f * H * 0.02, H * 0.02)
+    return pose
 
 
 def _slide(pose, t, H, facing):
@@ -374,4 +411,5 @@ CLIPS_MORE = {
     "shrug": _shrug, "ponder": _ponder, "salute": _salute, "beckon": _beckon,
     "facepalm": _facepalm, "cast_point": _cast_point, "cast_staff": _cast_staff,
     "winded": _winded, "launched": _launched, "flail": _flail, "slide": _slide,
+    "hammer": _hammer, "sweep": _sweep, "stir": _stir,
 }

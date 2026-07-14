@@ -4612,8 +4612,14 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   FRESH = 0, so existing balance is untouched); a jump and a shove cost stamina too
   (a shove by a tired hero is weaker). Magic (`tireless`) still exempts. `tests/
   test_stamina.py`.
-  QUEUE (remaining): NPC everyday-life actions, more creature plans (birds/spiders/
-  dragons), creature attack/hurt anims.
+- [x] **P34.22 NPC everyday-life at work.** George: "all the NPCs should look
+  like they are going about everyday life." *Done:* new work clips (`hammer`/`sweep`/
+  `stir` — periodic bouts) + `engine/anim._role_action` maps a class to its trade, and
+  `update_idle_life` now mostly has an idle tradesperson BUSY ITSELF with its craft (a
+  smith hammers, a farmer sweeps, an innkeeper stirs, a merchant hawks/beckons, a
+  cleric kneels in prayer, a caster ponders) instead of only generic fidgets — so the
+  town reads as at work. Screenshot shows each trade's motion. `tests/test_idle_life.py`.
+  QUEUE (remaining): more creature plans (birds/spiders/dragons), creature attack/hurt.
 
 ## What NOT to build (explicitly deferred)
 

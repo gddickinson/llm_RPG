@@ -117,6 +117,23 @@ def update_look(engine, radius=8):
 # P34.4 ambient idle life — a pool of small fidgets an idle body plays now and then
 _FIDGETS = ("stretch", "yawn", "shrug", "ponder", "wave")
 
+# P34.22 everyday work — an idle tradesperson settles into a role STANCE so the town
+# looks busy going about its day (held loops from the clip library)
+_ROLE_STANCE = {
+    "blacksmith": "hammer", "smith": "hammer", "guard": "guard",
+    "merchant": "beckon", "innkeeper": "stir", "cook": "stir", "baker": "stir",
+    "farmer": "sweep", "servant": "sweep", "peasant": "sweep",
+    "cleric": "kneel", "priest": "kneel", "monk": "kneel", "druid": "kneel",
+    "wizard": "ponder", "sorcerer": "ponder", "scholar": "ponder",
+    "sage": "ponder", "warlock": "ponder",
+}
+
+
+def _role_action(char):
+    """The trade a character would busy itself with (a work bout), or None."""
+    role = getattr(getattr(char, "character_class", None), "value", "")
+    return _ROLE_STANCE.get(role)
+
 
 def _idle_fidget(char, rng):
     """A fidget flavoured by the character's needs / role, else the generic pool."""
@@ -179,7 +196,10 @@ def update_idle_life(engine, rng=None, chance=0.025):
                     bubble(c, "alert")
                 continue
             if rng.random() < chance:
-                fid = _idle_fidget(c, rng)
+                # a tradesperson mostly busies itself with its craft (P34.22),
+                # else a generic fidget — so the town looks like it's at work
+                fid = _role_action(c) if rng.random() < 0.7 else None
+                fid = fid or _idle_fidget(c, rng)
                 if fid:
                     emote(c, fid)
     except Exception:

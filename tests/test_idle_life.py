@@ -111,6 +111,19 @@ class TestIdleFidgets(unittest.TestCase):
         anim.update_idle_life(eng, rng=_RNG(0.99))             # roll above chance
         self.assertIsNone(v.metadata.get("_emote"))
 
+    def test_tradesfolk_busy_themselves_with_their_craft(self):
+        # a smith hammers, a farmer sweeps, a cleric kneels (P34.22)
+        for role, action in (("blacksmith", "hammer"), ("farmer", "sweep"),
+                             ("cleric", "kneel")):
+            self.assertEqual(anim._role_action(_Char("w", role)), action)
+        self.assertIsNone(anim._role_action(_Char("v", "villager")))
+
+    def test_idle_smith_hammers(self):
+        smith = _Char("smith1", role="blacksmith")
+        eng = _Engine([smith], _Char("hero", pos=(40, 40)))
+        anim.update_idle_life(eng, rng=_RNG(0.0))          # always fires
+        self.assertEqual(smith.metadata.get("_emote"), "hammer")
+
     def test_merchant_hawks_wares(self):
         m = _Char("merchant1", role="merchant")
         eng = _Engine([m], _Char("hero", pos=(40, 40)))
