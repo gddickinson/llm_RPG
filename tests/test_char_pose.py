@@ -63,6 +63,21 @@ class TestPose(unittest.TestCase):
         self.assertEqual(cp.weapon_dir((0, 1)), 1)            # facing camera
 
 
+class TestJuice(unittest.TestCase):
+    def test_scale_pose_squashes_about_the_feet(self):
+        pose = cp.build_pose(100, 200, 60)
+        h0, w0 = pose["head"][1], pose["r_sh"][0] - pose["l_sh"][0]
+        cp.scale_pose(pose, 1.3, 0.7, (100, 200))          # squash
+        self.assertAlmostEqual(pose["l_foot"][1], 200, delta=1)   # feet pinned
+        self.assertGreater(pose["head"][1], h0)            # head drops (shorter)
+        self.assertGreater(pose["r_sh"][0] - pose["l_sh"][0], w0)  # wider
+        self.assertEqual(pose["facing"], (0, 1))           # non-joint untouched
+
+    def test_attack_angle_anticipates_then_strikes(self):
+        self.assertLess(cp._attack_angle(0.15), cp._attack_angle(0.0))   # winds back
+        self.assertGreater(cp._attack_angle(0.5), cp._attack_angle(0.15))  # strikes
+
+
 class TestSideProfile(unittest.TestCase):
     def _pose(self, facing):
         return cp.build_pose(100, 200, 60, facing=facing)

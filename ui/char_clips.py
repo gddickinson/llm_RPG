@@ -10,6 +10,8 @@ picks the action in `update_anim` and blits the result.
 
 import math
 
+from ui.char_pose import scale_pose
+
 # action -> (one_shot?, duration_seconds | None for a held loop)
 ACTIONS = {
     "idle": (False, None), "walk": (False, None), "run": (False, None),
@@ -67,10 +69,25 @@ def apply(action, pose, phase, H, facing):
 
 # ---- the clips ----------------------------------------------------------
 
+def _feet_pivot(pose):
+    return ((pose["l_foot"][0] + pose["r_foot"][0]) / 2,
+            max(pose["l_foot"][1], pose["r_foot"][1]))
+
+
 def _jump(pose, t, H, facing):
     up = _arc((t - 0.12) / 0.88) * H * 0.30
     _move(pose, _JOINTS, 0, -up)
     _move(pose, ("l_foot", "r_foot", "l_knee", "r_knee"), 0, -up * 0.4)
+    # squash & stretch (P34.1): crouch, stretch airborne, squash on landing
+    if t < 0.12:
+        s = t / 0.12
+        sx, sy = 1 + 0.14 * s, 1 - 0.14 * s
+    elif t > 0.88:
+        s = (t - 0.88) / 0.12
+        sx, sy = 1 + 0.20 * s, 1 - 0.20 * s
+    else:
+        sx, sy = 0.92, 1.12
+    scale_pose(pose, sx, sy, _feet_pivot(pose))
     return pose
 
 
@@ -135,6 +152,7 @@ def _hurt(pose, t, H, facing):
     _move(pose, _UPPER, -f * H * 0.10 * j, -H * 0.02 * j)
     pose["l_hand"] = (pose["l_hand"][0] - H * 0.06 * j,
                       pose["l_hand"][1] - H * 0.05 * j)
+    scale_pose(pose, 1 + 0.10 * j, 1 - 0.10 * j, _feet_pivot(pose))  # flinch squash
     return pose
 
 

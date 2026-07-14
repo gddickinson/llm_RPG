@@ -4335,6 +4335,64 @@ root-motion split are the portable ideas; our clips are PROCEDURAL 2D pose funct
   Paired screenshot confirms the coordination. `tests/test_char_clips.py` (+3) +
   `tests/test_anim_triggers.py` (+2). 27 total anim clips.
 
+## Phase 34 — Characters truly alive: animation quality, beauty & expression (George, 2026-07-14)
+
+George: make character animation THE priority — "funny, well-rendered animations
+make this game much better." Vastly expand the QUALITY, DETAIL and NUMBER so the
+cast feels alive and entertaining; a higher render resolution is on the table
+(environment at 2×2/finer detail, characters still 1 logical tile but drawn finer).
+Grounded in a research pass (12 principles applied procedurally; Rain World / Gang
+Beasts / Celeste / Overcooked / Untitled Goose; verlet/spring secondary motion;
+tiny-face expression; movieMaker `gesture.py` desync) + a proven in-repo test:
+**3× supersample + smoothscale turns our jagged procedural puppets crisp** (the
+single biggest beauty win, screenshot-verified).
+
+*Enabler:* the rig is stateless per frame — springs / follow-through / look-at /
+hair / fidgets all need PERSISTENT inter-frame state. Build a small
+`metadata['_anim']['_sec']` substrate + a pure `ui/char_secondary.py` (spring /
+verlet-chain / look-at math) ONCE; it unlocks half the list.
+
+- [x] **P34.1 Motion feel (juice): easing, squash & stretch, anticipation.** Ease the
+  MOVEMENT tween (it's linear today) with smoothstep + an overshoot-and-settle on
+  stop; a `scale_pose(pose, sx, sy, pivot=feet)` post-transform for SQUASH & STRETCH
+  (stretch in air, squash on land/hit, spring back); re-time attack/jump clips into
+  anticipation→action→recovery (slow wind-up, fast strike). Pure math; the biggest
+  feel upgrade for the least code.
+  *Done:* `body_renderer` eases the tween (`smoothstep`); `char_pose.scale_pose` +
+  squash/stretch in `_jump` (crouch→stretch→land-squash) and `_hurt` (flinch);
+  `char_pose._attack_angle` gives the attack a wind-up→fast-strike→recovery. Verified
+  by screenshot sequences. `tests/test_char_pose.py` (+2).
+- [ ] **P34.2 The face comes alive.** `body_parts.draw_head` gains a MOUTH + BROWS +
+  a 3-param `expression` model ({brow, eye, mouth} → neutral/happy/laughing/angry/
+  sad/scared/hurt) + BLINK (2–6 s jittered). `char_motion` maps emotes/mood/combat/
+  social events → `_expr`; a floating EMOTE BUBBLE (❗❓💤💢💕) backs it up. The #1
+  appeal gap.
+- [ ] **P34.3 Secondary-motion substrate + springs + look-at.** New pure
+  `ui/char_secondary.py`: `spring()` (critically-damped), a follow-the-leader/verlet
+  CHAIN, and `look_at` (head + pupils ease toward a point, clamped to a cone). Wire
+  FOLLOW-THROUGH on the head & weapon-tip (lag + settle) and LOOK-AT toward the
+  nearest actor / the dialog speaker / a thrown item — characters visibly NOTICE
+  things. The single biggest "alive" multiplier.
+- [ ] **P34.4 Individuality & idle life.** Seed idle PHASE + SPEED (and build /
+  default expression / handedness) from `char.id` so a crowd desyncs; keep breathing
+  + blink always on; AMBIENT FIDGETS on a jittered timer (weight-shift, look-around,
+  yawn, scratch, stretch) weighted by role/mood; MOTIVATED idle stances (angry→guard,
+  sad→slump, merchant→hawk) + dialog listeners nod/lean; REACTIONS to event-log beats
+  (startle at `[Clash]`/`[Alarm]`, cheer at level-up). Ports movieMaker `gesture.py`.
+- [ ] **P34.5 Hair, cloak & flow.** A spring/verlet hair (and optional cloak/tail)
+  CHAIN pinned to the head/shoulder, swayed by motion & wind, tinted by state
+  (Celeste); a fading weapon-swing TRAIL. Real secondary motion → movement gains flow.
+- [ ] **P34.6 Solid drawing & staging.** Bow the elbows/knees along ARCS (not straight
+  midpoints); DEPTH-SORT limbs by facing (far limb drawn behind + dimmed ~8%);
+  LINE-OF-ACTION — a gentle C-curve of the spine by mood (proud arch / sad slump).
+  Removes the "pasted-on" flatness.
+- [ ] **P34.7 Beauty pass: SSAA + resolution.** Draw each character onto a 2–4×
+  oversampled scratch surface and `smoothscale` down (anti-aliased, curvy limbs —
+  proven); DECOUPLE character render density from tile-art density (finer characters
+  over the tile world); camera PIXEL-SNAP (`round(cam)`) to stop shimmer; raise
+  display `px_per_tile`; investigate the 2×2 environment-feature idea. Logical grid &
+  movement untouched.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the

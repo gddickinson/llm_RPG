@@ -6747,3 +6747,23 @@ detail and number so the cast feels truly alive and funny; research how other ga
 do it; consider a higher render resolution (env at 2x2/4-tile detail, characters
 still 1 logical tile but drawn finer). Dispatched a research pass + investigating the
 resolution options; a Phase 34 "animation quality" ultraplan follows.
+
+## 2026-07-14 (cont.) — Phase 34 planned + P34.1: motion feel (juice)
+
+George made character animation THE priority: vastly expand quality/detail/number,
+research how the best games do it, consider a higher render resolution. Ran a
+research pass (12 principles applied procedurally; Rain World / Gang Beasts /
+Celeste / Overcooked; verlet/spring secondary motion; tiny-face expression;
+movieMaker gesture.py desync) and proved in-repo that **3x supersample + smoothscale
+turns our jagged procedural puppets crisp** (screenshot). Wrote **Phase 34** (7
+sub-steps) — the enabler being a persistent `_anim['_sec']` substrate + a pure
+`char_secondary.py` for springs/look-at.
+
+**P34.1** ships the "juice": the movement TWEEN is now EASED (smoothstep, not a
+linear crawl); a `char_pose.scale_pose(pose,sx,sy,pivot)` gives SQUASH & STRETCH
+(the jump crouches, stretches airborne, and squashes on landing; a hit flinch-
+squashes); and the attack swing gained ANTICIPATION via `_attack_angle` — a slow
+wind-up PAST neutral, a fast strike, then a settling recovery. Screenshot sequences
+confirm the jump squash/stretch and the wind-up→strike→recover. `tests/test_char_
+pose.py` (+2). Next: P34.2 the face (mouth/brows/blink/expression), then P34.3 the
+spring + look-at substrate.

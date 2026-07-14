@@ -25,6 +25,33 @@ def _ease(t):
     return t * t * (3.0 - 2.0 * t)
 
 
+_JOINT_KEYS = ("l_hip", "r_hip", "chest", "l_knee", "r_knee", "l_foot",
+               "r_foot", "l_sh", "r_sh", "neck", "head", "l_elbow", "l_hand",
+               "r_elbow", "r_hand")
+
+
+def scale_pose(pose, sx, sy, pivot):
+    """P34.1 squash & stretch — scale every joint about `pivot` (usually the
+    feet). sx>1,sy<1 squashes (wider, shorter); sx<1,sy>1 stretches. Preserves
+    volume when sx*sy≈1. Mutates + returns the pose."""
+    px, py = pivot
+    for k in _JOINT_KEYS:
+        if k in pose:
+            x, y = pose[k]
+            pose[k] = (px + (x - px) * sx, py + (y - py) * sy)
+    return pose
+
+
+def _attack_angle(p):
+    """P34.1 anticipation: a slow wind-up PAST neutral, a fast strike, then a
+    settling recovery — timing contrast sells the blow. Degrees from vertical."""
+    if p < 0.30:
+        return -45 - 40 * _ease(p / 0.30)              # pull back (slow)
+    if p < 0.58:
+        return -85 + 205 * _ease((p - 0.30) / 0.28)    # strike (fast)
+    return 120 - 30 * _ease((p - 0.58) / 0.42)         # recover (settle)
+
+
 def weapon_dir(facing):
     fx, fy = facing
     if fx:
@@ -72,7 +99,7 @@ def _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b):
     l_elbow = ((l_sh[0] + l_hand[0]) / 2 - H * 0.03, l_sh[1] + arm * 0.5)
     fdir = weapon_dir(facing)
     if attack > 0.001:
-        a = math.radians(-45 + 165 * _ease(attack))
+        a = math.radians(_attack_angle(attack))
         r_hand = (r_sh[0] + arm * math.sin(a) * (fdir or 1),
                   r_sh[1] - arm * math.cos(a))
     else:
@@ -105,7 +132,7 @@ def _side_pose(cx, foot_y, H, walk, idle, moving, attack, d, b):
     l_hand = (cx - d * (H * 0.04 + asw), l_sh[1] + arm * 0.85)
     l_elbow = ((l_sh[0] + l_hand[0]) / 2 - d * H * 0.02, l_sh[1] + arm * 0.45)
     if attack > 0.001:
-        a = math.radians(-55 + 180 * _ease(attack))
+        a = math.radians(_attack_angle(attack))
         r_hand = (r_sh[0] + d * arm * math.sin(a), r_sh[1] - arm * math.cos(a))
     else:
         r_hand = (r_sh[0] + d * (H * 0.13 + asw), r_sh[1] + arm * 0.6)

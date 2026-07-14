@@ -239,8 +239,10 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     ox = oy = 0.0
     tw = anim.get("tween_t", 0.0)
     if tw > 0:
+        from ui.animation import smoothstep
         fdx, fdy = anim.get("tween_from", (0, 0))
-        frac = tw / TWEEN_DUR
+        # ease the slide (slow-in/out) instead of a linear crawl (P34.1)
+        frac = 1.0 - smoothstep(1.0 - tw / TWEEN_DUR)
         ox, oy = fdx * tile_size * frac, fdy * tile_size * frac
     feet_x = sx + tile_size / 2 + ox
     feet_y = sy + tile_size - 2 + oy
