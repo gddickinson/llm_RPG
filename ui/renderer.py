@@ -157,7 +157,7 @@ class MapRenderer:
                              view_rect.y + (gy - cam_y) * self.tile_size))
 
         # Characters (NPCs + player) — procedural body renderer
-        from ui.body_renderer import draw_body, draw_glimpsed, update_anim, draw_projectile  # noqa: E501
+        from ui.body_renderer import draw_body_crisp, draw_glimpsed, update_anim, draw_projectile  # noqa: E501
         from engine.presence import hidden_by_walls, is_indoors
         all_chars = list(engine.npc_manager.npcs.values()) + [engine.player]
         for char in all_chars:
@@ -192,7 +192,7 @@ class MapRenderer:
                 glimpsed = not is_player and bool(is_indoors(engine, char))
             except Exception:
                 glimpsed = False
-            (draw_glimpsed if glimpsed else draw_body)(
+            (draw_glimpsed if glimpsed else draw_body_crisp)(
                 target, char, sx, sy, self.tile_size, is_player=is_player)
 
         # The ranged lock (P8.7)
@@ -327,7 +327,7 @@ class MapRenderer:
 
     def _render_zone(self, target, engine, view_rect, zone) -> None:
         """Draw a dungeon / interior grid instead of the overworld."""
-        from ui.body_renderer import draw_body, update_anim
+        from ui.body_renderer import draw_body_crisp, update_anim
         px, py = engine.player.position
         cols = view_rect.width // self.tile_size
         rows = view_rect.height // self.tile_size
@@ -441,7 +441,7 @@ class MapRenderer:
                     char.id != engine.player.id:
                 continue
             update_anim(char, 1.0 / 30.0)
-            draw_body(target, char,
+            draw_body_crisp(target, char,
                       view_rect.x + (cx - cam_x) * self.tile_size,
                       view_rect.y + (cy - cam_y) * self.tile_size,
                       self.tile_size,

@@ -86,6 +86,21 @@ class TestZoneRendering(unittest.TestCase):
         # Should render without error with monsters present
         self.renderer.render(self.surface, self.engine, self.view)
 
+    def test_overworld_renders_characters(self):
+        """Regression: the overworld path must draw hero + NPC bodies without a
+        missing-import NameError (P34.7 SSAA rewire)."""
+        self.engine.current_dungeon = None
+        self.engine.current_interior = None
+        from world.monsters import build_monster
+        px, py = self.engine.player.position
+        mon = build_monster("goblin", (px + 1, py))
+        self.engine.npc_manager.add_npc(mon)
+        try:
+            self.engine.world.map.place_character(mon, px + 1, py)
+        except Exception:
+            pass
+        self.renderer.render(self.surface, self.engine, self.view)  # must not raise
+
     def test_small_interior_camera_clamps(self):
         """8x6 interior is smaller than the view — must not crash."""
         if not self.engine.interiors:

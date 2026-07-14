@@ -7062,3 +7062,24 @@ so a baked walk drives the stride at EVERY facing:
 Screenshot shows the mocap walk reading at front/¾/side/¾-back. `tests/
 test_char_pose3d.py` (mocap-depth). Full suite green. Next: fold more baked clips
 (jump/sit/dance) into the depth model, and keep expanding the clip variety.
+
+## 2026-07-14 (cont.) — P34.7: SSAA beauty pass (crisp anti-aliased characters)
+
+The proven "beautiful game" win, now shipped. `body_renderer.draw_body_crisp` renders
+each character onto a `SSAA_SCALE`× (default 2) oversampled scratch surface and
+`smoothscale`s it down to the target — so the curvy limbs, hair and weapon read
+SMOOTH and anti-aliased instead of jagged pixel steps. The tween slide, secondary-
+motion springs and facing all scale by the same factor and back, so the motion is
+byte-identical, just crisper. Both `renderer.py` character draw sites (overworld +
+zone/interior) route through it; the P14.2 glimpsed-through-window path stays on the
+direct draw. A zoomed before/after screenshot shows the jagged→smooth difference
+clearly. `SSAA_SCALE` is a single-line tunable if a low-end machine needs it back at
+1. `tests/test_body_renderer.py`. Full suite green.
+
+Phase 34 (characters truly alive) is now essentially complete: P34.1–P34.15 done —
+per-joint rig, faces/blink, secondary springs, individuality/idle life, mocap clips,
+run/jump + held-move + paces, the big acrobatics/comedy library, per-character motion
+style + per-swing variety, hair/cloak/trail flow, CONTINUOUS 360° facing with
+depth-sort + line-of-action, the mocap stride ported into the depth model, and the
+SSAA beauty pass. Optional follow-ups: fold more baked clips into the depth model,
+camera pixel-snap, and ever more clip variety.

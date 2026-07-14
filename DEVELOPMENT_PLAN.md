@@ -4539,12 +4539,18 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   spine), everything else through the procedural `pose3d` + its clip. Screenshot: the
   mocap walk reads at front/¾/side/¾-back. `tests/test_char_pose3d.py` (mocap-depth).
   (Remaining: fold more baked clips — jump/sit/dance — into the depth model too.)
-- [ ] **P34.7 Beauty pass: SSAA + resolution.** Draw each character onto a 2–4×
+- [x] **P34.7 Beauty pass: SSAA.** Draw each character onto a 2–4×
   oversampled scratch surface and `smoothscale` down (anti-aliased, curvy limbs —
   proven); DECOUPLE character render density from tile-art density (finer characters
-  over the tile world); camera PIXEL-SNAP (`round(cam)`) to stop shimmer; raise
-  display `px_per_tile`; investigate the 2×2 environment-feature idea. Logical grid &
-  movement untouched.
+  over the tile world). *Done:* `body_renderer.draw_body_crisp` renders the character
+  to a `SSAA_SCALE`× (default 2) oversampled scratch and `smoothscale`s it down — so
+  the limbs/hair/weapon read smooth and anti-aliased instead of jagged pixel steps
+  (the tween/springs/facing all scale consistently, so motion is unchanged). Both
+  renderer draw sites (overworld + zone) route through it; the glimpsed-through-window
+  path is untouched. A zoomed before/after confirms the crisp edges. `SSAA_SCALE` is a
+  one-line tunable if a low-end machine needs it. `tests/test_body_renderer.py`.
+  (Remaining/optional: camera PIXEL-SNAP to kill shimmer, a higher display
+  px_per_tile, the 2×2 environment-feature idea — cosmetic follow-ups.)
 
 ## What NOT to build (explicitly deferred)
 

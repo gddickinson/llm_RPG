@@ -113,6 +113,19 @@ class TestBodyRenderer(unittest.TestCase):
             c.metadata["_anim"]["face_target"] = deg
             draw_body(surf, c, 20, 40, 48, is_player=False)
 
+    def test_ssaa_crisp_draw_renders_the_body(self):
+        """P34.7: the oversampled crisp draw produces the character (non-empty)
+        and doesn't crash."""
+        from ui.body_renderer import draw_body_crisp
+        c = _new_char()
+        c.metadata.setdefault("_anim", _ensure_anim(c))["face_cur"] = 45
+        surf = pygame.Surface((160, 220))
+        surf.fill((0, 0, 0))
+        draw_body_crisp(surf, c, 60, 90, 48, is_player=True)
+        # something was drawn somewhere on the surface
+        arr = pygame.surfarray.array3d(surf)
+        self.assertGreater(int(arr.sum()), 0)
+
     def test_draw_projectile_kinds(self):
         surf = pygame.Surface((64, 64))
         for kind in ("arrow", "bolt", "stone", "spell", "unknown"):

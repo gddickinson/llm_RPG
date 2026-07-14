@@ -431,6 +431,27 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
         bp.draw_bubble(surface, hx, hy - hr - 3, anim["bubble"], hr)
 
 
+SSAA_SCALE = 2                 # P34.7 oversample factor for crisp, anti-aliased art
+
+
+def draw_body_crisp(surface, char, sx: int, sy: int, tile_size: int,
+                    is_player: bool = False) -> None:
+    """P34.7 beauty pass: render the character onto a `SSAA_SCALE`× oversampled
+    scratch surface and `smoothscale` it down, so the curvy limbs read smooth and
+    anti-aliased instead of jagged pixel steps. Falls back to a direct draw when
+    oversampling is off. The logical grid + all animation are unchanged."""
+    n = SSAA_SCALE
+    if not PYGAME_OK or n <= 1:
+        return draw_body(surface, char, sx, sy, tile_size, is_player)
+    pad_x = tile_size                     # room for arms / weapon to the sides
+    pad_up = tile_size * 2                 # the body overflows ~1.5 tiles upward
+    w, h = tile_size + pad_x * 2, tile_size + pad_up
+    scratch = pygame.Surface((w * n, h * n), pygame.SRCALPHA)
+    draw_body(scratch, char, pad_x * n, pad_up * n, tile_size * n, is_player)
+    small = pygame.transform.smoothscale(scratch, (w, h))
+    surface.blit(small, (int(sx - pad_x), int(sy - pad_up)))
+
+
 def draw_glimpsed(surface, char, sx: int, sy: int, tile_size: int,
                   is_player: bool = False) -> None:
     """Draw a character SEEN THROUGH A WINDOW (P14.2) — dimmed and behind a
