@@ -7259,3 +7259,16 @@ get distinct flank tiles + the wounded one retreats. `tests/test_monster_packs.p
 (updated the living-leader assertion to accept flank-move as engagement). Full suite
 green. Follow-up P35.2: deeper attack choice (spell/charge/special by situation) +
 brace/hold vs a charge.
+
+## 2026-07-14 (cont.) — P35.2: pack-level defensive withdrawal
+
+Completing the defensive side of the combat-AI ask. A pack that is clearly LOSING —
+its members collectively hurt (average HP < 50%) AND the defenders (player + party,
+by level x hp-frac) clearly outweigh it (1.8x) — now WITHDRAWS TOGETHER to regroup:
+`monster_packs._outmatched` flips every member's role to RETREAT for a coordinated
+fighting withdrawal, rather than throwing itself in piecemeal. A still-healthy pack
+presses the attack as normal. Verified: two badly-hurt lvl-1 wolves vs a strong hero
+both retreat; at full HP they engage. `tests/test_monster_packs.py`. Full suite green.
+Note: overworld monsters carry no ranged/spell/charge ability data, so deeper
+per-monster ATTACK CHOICE (cast/charge/special by situation) awaits that data; the
+coordination, roles, kiting, focus and now pack-withdrawal cover the tactical core.

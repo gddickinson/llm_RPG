@@ -4652,8 +4652,13 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   ENGAGE) and a distinct SURROUND tile beside the focus (via `squad_tactics`), and the
   heuristic honours them — so a pack FANS OUT to flank (earning the +2), the hurt peel
   off, and archers hang back, instead of a queued crowd. `tests/test_monster_packs.py`.
-  (Follow-up P35.2: deeper attack choice — pick spell/charge/special by situation —
-  and brace/hold defensive stances vs a charge.)
+- [x] **P35.2 Pack-level defensive withdrawal.** A pack that is clearly LOSING
+  (collectively hurt — avg HP < 50% — AND the player+party clearly outweigh it, 1.8x)
+  now pulls back TOGETHER to regroup (`_outmatched` → every member's role becomes
+  RETREAT) instead of feeding itself in piecemeal; a healthy pack presses on. Verified
+  a beaten low-level pack withdraws while a full-HP one engages. `tests/
+  test_monster_packs.py`. (Overworld monsters are mostly melee in the data, so deeper
+  attack choice — spell/charge/special — awaits per-monster ability data.)
 
 ## What NOT to build (explicitly deferred)
 

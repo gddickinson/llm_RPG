@@ -106,6 +106,9 @@ class MonsterPackSystem:
         focus = self._focus(members)
         fname = None if focus is None else (
             "player" if focus is self.engine.player else focus.name)
+        # P35.2 a pack that is clearly LOSING withdraws together to regroup rather
+        # than feeding itself in piecemeal — a real defensive call
+        outmatched = self._outmatched(members)
         # P35.1 assign each member a ROLE and a distinct SURROUND tile, so the
         # pack fans out to flank the focus (earning the +2 flank), ranged types
         # keep their distance, and the wounded peel off — instead of all stacking
@@ -117,7 +120,7 @@ class MonsterPackSystem:
                 continue
             m.metadata["focus_name"] = fname
             m.metadata["focus_pos"] = tuple(focus.position)
-            role = self._role(m, focus)
+            role = "retreat" if outmatched else self._role(m, focus)
             m.metadata["pack_role"] = role
             if role == "engage":
                 tile = self._surround_tile(m, focus, taken)
@@ -125,6 +128,28 @@ class MonsterPackSystem:
                     taken.add(tile)
                     m.metadata["approach_pos"] = tile
         return True
+
+    def _outmatched(self, members) -> bool:
+        """The pack is losing badly — collectively hurt AND the defenders (player +
+        party) clearly outweigh it. Then it pulls back to regroup (P35.2)."""
+        avg = sum(m.hp / max(1, m.max_hp) for m in members) / len(members)
+        if avg > 0.5:
+            return False                       # still hale — press the attack
+        pack = sum(m.level * (m.hp / max(1, m.max_hp)) for m in members)
+        return self._defender_strength() > pack * 1.8
+
+    def _defender_strength(self) -> float:
+        engine = self.engine
+        p = engine.player
+        total = p.level * (p.hp / max(1, p.max_hp))
+        try:
+            for cid in engine.companion_manager.party:
+                c = engine.npc_manager.npcs.get(cid)
+                if c is not None and c.is_active():
+                    total += c.level * (c.hp / max(1, c.max_hp))
+        except Exception:
+            pass
+        return total
 
     def _role(self, m, focus) -> str:
         """A wounded beast RETREATS, a ranged type KITES, the rest ENGAGE."""
