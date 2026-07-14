@@ -4457,6 +4457,19 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   behind the body and the trail in front. Screenshot: a running rogue's ponytail
   streams, a wizard's cape billows, a sword-swing leaves an arc. `tests/
   test_char_flow.py` (10).
+- [~] **P34.14 Continuous / 8-way facing (the 2.5D "3D" question).** George: "is
+  full 3D movement do-able in the 2.5D game — we only have side + front/back?" Answer:
+  a true 3D mesh is the wrong tool (it'd break the hand-drawn look), but CONTINUOUS
+  facing is very doable because the puppet is procedural. *Groundwork done:* pure
+  `ui/char_pose3d.py` gives every joint BODY coordinates (u across / w fore-aft depth
+  / y up) and PROJECTS by a facing angle θ (`screen_x = cx + (u·cosθ + w·sinθ)·H`) —
+  one function renders any heading; the walk strides the legs in DEPTH so θ=0 lifts
+  (front walk) and θ=90 swings (side walk) from the SAME data, with `cam_depth` per
+  joint for near/far limb sorting. A screenshot renders a walker at 8 facings
+  (front/¾/side/¾-back/back…) with correct foreshortening + face show/hide.
+  `tests/test_char_pose3d.py` (7). REMAINING (needs George's call — it reworks the
+  core character renderer): wire facing from the movement heading, swap `body_renderer`
+  onto `pose3d`, port the clip/mocap layers to the projected pose, depth-sort limbs.
 - [ ] **P34.6 Solid drawing & staging.** Bow the elbows/knees along ARCS (not straight
   midpoints); DEPTH-SORT limbs by facing (far limb drawn behind + dimmed ~8%);
   LINE-OF-ACTION — a gentle C-curve of the spine by mood (proud arch / sad slump).
