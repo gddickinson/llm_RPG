@@ -61,6 +61,25 @@ class TestModel(unittest.TestCase):
         self.assertGreater(stamina.drain_mult(hurt), base)
 
 
+class TestExertion(unittest.TestCase):
+    def test_fresh_body_has_no_penalty(self):
+        self.assertEqual(stamina.exertion_penalty(_Char()), 0)   # existing balance
+
+    def test_gassed_body_is_penalised(self):
+        c = _Char()
+        for _ in range(60):
+            stamina.spend_action(c, 5.0)
+        self.assertGreater(stamina.exertion_penalty(c), 0)       # winded → penalty
+
+    def test_spend_action_respects_tireless(self):
+        c = _Char()
+        c.metadata["tireless"] = True
+        for _ in range(40):
+            stamina.spend_action(c, 5.0)
+        self.assertFalse(stamina.is_winded(c))
+        self.assertEqual(stamina.exertion_penalty(c), 0)
+
+
 class TestStepGate(unittest.TestCase):
     def test_winded_hero_cannot_sprint(self):
         from ui import input_actions as ia

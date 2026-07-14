@@ -179,22 +179,69 @@ def cycle_move_mode(handler) -> bool:
     return True
 
 
-def jump(handler) -> bool:
-    """P34.9 CTRL+SPACE: the hero LEAPS — a forward hop onto open ground (with the
-    jump animation), else a jump in place. A beat passes either way."""
-    from engine import anim
+def _facing(p):
+    a = (p.metadata or {}).get("_anim") or {}
+    fx, fy = a.get("facing", (0, 1))
+    return int(fx), int(fy)
+
+
+def _momentum_move(handler, clip, tiles=2) -> bool:
+    """P34.20 a running special move — play `clip` and surge `tiles` forward while
+    the way is open, spending stamina per tile (blocked = it stops there)."""
+    from engine import anim, stamina
     engine = handler.engine
     p = engine.player
+    anim.emote(p, clip)
+    dx, dy = _facing(p)
+    moved = 0
+    if dx or dy:
+        for _ in range(tiles):
+            if engine.move_player(dx, dy):
+                moved += 1
+                try:
+                    stamina.spend(p, engine)
+                except Exception:
+                    pass
+            else:
+                break
+    if not moved:
+        engine.move_player(0, 0)
+    return True
+
+
+def jump(handler) -> bool:
+    """P34.9 `` ` ``: the hero LEAPS — a forward hop, else in place. P34.20: with
+    RUNNING momentum it becomes a DIVE-ROLL (a tumbling surge forward)."""
+    engine = handler.engine
+    p = engine.player
+    if (p.metadata or {}).get("_running"):               # momentum → dive-roll
+        return _momentum_move(handler, "roll", tiles=2)
+    from engine import anim
     anim.emote(p, "jump")
     try:
-        a = (p.metadata or {}).get("_anim") or {}
-        fx, fy = a.get("facing", (0, 1))
-        if (fx or fy) and engine.move_player(int(fx), int(fy)):
-            return True                                  # leapt forward a tile
+        from engine import stamina
+        stamina.spend_action(p, engine=engine)           # a hop is exertion too
     except Exception:
         pass
+    dx, dy = _facing(p)
+    if (dx or dy) and engine.move_player(dx, dy):
+        return True                                      # leapt forward a tile
     engine.move_player(0, 0)                              # in-place hop, still a beat
     return True
+
+
+def slide(handler) -> bool:
+    """P34.20 `'`: a running SLIDE — only with momentum from a sprint (else a nudge
+    to get a running start)."""
+    p = handler.engine.player
+    if not (p.metadata or {}).get("_running"):
+        try:
+            handler.engine.memory_manager.add_event(
+                "[!] You need a running start to slide.")
+        except Exception:
+            pass
+        return True
+    return _momentum_move(handler, "slide", tiles=2)
 
 
 def open_shop(handler) -> None:

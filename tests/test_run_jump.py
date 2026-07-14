@@ -109,6 +109,38 @@ class TestJump(unittest.TestCase):
         self.assertEqual(e.calls, [(0, 1, False), (0, 0, False)])
 
 
+class TestMomentumMoves(unittest.TestCase):
+    def _engine(self):
+        e = _FakeEngine()
+        e.player.metadata["_anim"] = {"facing": (1, 0)}
+
+        class _Mem:
+            def add_event(self, m):
+                pass
+        e.memory_manager = _Mem()
+        return e
+
+    def test_jump_with_momentum_is_a_dive_roll(self):
+        e = self._engine()
+        e.player.metadata["_running"] = True
+        ia.jump(_Handler(e))
+        self.assertEqual(e.player.metadata.get("_emote"), "roll")
+        self.assertEqual(len(e.calls), 2)                 # surges two tiles
+
+    def test_slide_needs_a_running_start(self):
+        e = self._engine()
+        ia.slide(_Handler(e))                             # no momentum
+        self.assertEqual(len(e.calls), 0)                 # nudged, didn't move
+        self.assertNotEqual(e.player.metadata.get("_emote"), "slide")
+
+    def test_slide_with_momentum(self):
+        e = self._engine()
+        e.player.metadata["_running"] = True
+        ia.slide(_Handler(e))
+        self.assertEqual(e.player.metadata.get("_emote"), "slide")
+        self.assertEqual(len(e.calls), 2)
+
+
 class TestBinding(unittest.TestCase):
     def _handler(self):
         import pygame

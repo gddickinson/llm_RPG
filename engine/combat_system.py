@@ -142,8 +142,18 @@ class CombatSystem:
         roll = self.rng.randint(1, 20)
         natural_crit = (roll == 20)
         natural_fumble = (roll == 1)
+        # P34.21 exertion: a gassed fighter swings wilder (fresh = no penalty, so
+        # existing balance is untouched); a melee blow also COSTS stamina
+        exert = 0
+        try:
+            from engine import stamina
+            if action_type == "attack":
+                exert = stamina.exertion_penalty(attacker)
+                stamina.spend_action(attacker, stamina.ATTACK_COST)
+        except Exception:
+            pass
         total_to_hit = roll + atk_mod + prof + \
-            attack_penalty(attacker)
+            attack_penalty(attacker) - exert
         ac = effective_ac(defender) + ac_penalty(defender)
 
         if natural_fumble or (not natural_crit and total_to_hit < ac):

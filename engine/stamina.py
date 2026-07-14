@@ -14,6 +14,8 @@ MIN_RUN = 8.0            # need at least this much to launch a sprint
 RECOVER = 28.0          # once emptied you must recover to here (hysteresis)
 DRAIN = 7.0             # stamina per sprint stride
 REGEN = 4.0             # recovered per turn while not sprinting
+ATTACK_COST = 5.0       # a swung blow costs stamina (P34.21)
+ACTION_COST = 3.0       # a jump / shove / other exertion
 ENDURANCE_EFFECTS = ("haste", "endurance", "second_wind", "tireless")
 
 
@@ -96,6 +98,34 @@ def recover(char, amount=REGEN):
     md["run_stamina"] = min(max_stamina(char), get(char) + amount)
     if md.get("_winded") and md["run_stamina"] >= RECOVER:
         md.pop("_winded", None)
+
+
+def spend_action(char, amount=ACTION_COST, engine=None):
+    """Spend stamina for ANY physical exertion — a blow, a jump, a shove (P34.21).
+    Like `spend` but a caller-set amount and no encumbrance/injury multiplier."""
+    if tireless(char):
+        return
+    md = getattr(char, "metadata", None)
+    if not isinstance(md, dict):
+        return
+    md["run_stamina"] = max(0.0, get(char) - amount)
+    if md["run_stamina"] <= 0.0:
+        md["_winded"] = True
+
+
+def exertion_penalty(char):
+    """How much being GASSED hurts a physical action — 0 fresh, up to −3 winded.
+    A tired body swings slower & wilder (a to-hit / check penalty). (P34.21)"""
+    if tireless(char):
+        return 0
+    r = ratio(char)
+    if is_winded(char):
+        return 3
+    if r < 0.25:
+        return 2
+    if r < 0.45:
+        return 1
+    return 0
 
 
 def is_winded(char):

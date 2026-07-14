@@ -7162,3 +7162,24 @@ shows the on-fire flail + flames, the wet sheen + drips, and a thrown tumble.
 
 QUEUE remaining: run-conditioned special moves (slide/dive-roll), NPC everyday-life
 actions, more creature plans (birds/spiders/dragons), creature attack/hurt anims.
+
+## 2026-07-14 (cont.) — P34.20 run special moves + P34.21 stamina drives all exertion
+
+**P34.20 special moves:** with running momentum (`_running` set by a sprint), the
+jump key `` ` `` becomes a DIVE-ROLL (a tumbling `roll` surge two tiles forward) and
+the new `'` key SLIDES (the new low `slide` clip — only with a running start, else a
+nudge to get one). Both spend stamina per tile (`input_actions._momentum_move`).
+Documented in F1.
+
+**P34.21 stamina ↔ combat & all physical activity (George):** `stamina.spend_action`
++ `exertion_penalty`. A melee blow now COSTS stamina (`combat_system._resolve`) and a
+GASSED fighter swings WILDER — a −1…−3 to-hit penalty that scales with how spent they
+are. Crucially FRESH = 0 penalty, so existing combat balance/tests are untouched;
+only a worn-down fighter suffers. A jump and a shove also cost stamina (a tired hero's
+shove is weaker). Magic (`tireless`/haste/endurance) still exempts everything. So
+sprinting, fighting, jumping, shoving and the special moves all draw on — and are
+blunted by — the same body. `tests/test_run_jump.py` + `tests/test_stamina.py`. Full
+suite green.
+
+QUEUE remaining: NPC everyday-life actions, more creature plans (birds/spiders/
+dragons), creature attack/hurt anims.

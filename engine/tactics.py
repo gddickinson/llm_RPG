@@ -68,7 +68,13 @@ def shove(engine, rng: random.Random = None) -> str:
         return "No enemy close enough to shove."
     target = hostiles[0]
 
-    mine = rng.randint(1, 20) + player.get_stat_modifier("strength")
+    try:                                        # P34.21 a shove is exertion
+        from engine import stamina
+        mine_ex = stamina.exertion_penalty(player)
+        stamina.spend_action(player)
+    except Exception:
+        mine_ex = 0
+    mine = rng.randint(1, 20) + player.get_stat_modifier("strength") - mine_ex
     theirs = rng.randint(1, 20) + target.get_stat_modifier("strength")
     margin = mine - theirs                      # P12.1 degrees
     if margin <= 0:

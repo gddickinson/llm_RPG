@@ -4598,8 +4598,22 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   paths render the overlays. Also wired the **"Smooth sprites" setting** (`settings`)
   to toggle the P34.7 SSAA on/off live. Screenshot: on-fire flail + flames, wet sheen
   + drips, a thrown tumble. `tests/test_char_fx.py`.
-  QUEUE (remaining): run-conditioned special moves (slide/dive-roll), NPC everyday-
-  life actions, more creature plans (birds/spiders/dragons), creature attack/hurt.
+- [x] **P34.20 Run-conditioned special moves.** George: "special moves that can only
+  be done after running — sliding, rolling." *Done:* with RUNNING momentum
+  (`_running`), the jump key `` ` `` becomes a **DIVE-ROLL** (a tumbling surge two
+  tiles forward) and the new **`'`** key **SLIDES** (only with a running start, else a
+  nudge to get one); both play their clip (`roll` / new `slide`) and spend stamina per
+  tile. `input_actions._momentum_move`; documented in F1. `tests/test_run_jump.py`.
+- [x] **P34.21 Stamina drives — and is drained by — all physical action.** George:
+  "stamina should also be affected by fighting, and affect fighting performance, and
+  all physical activities similarly." *Done:* `stamina.spend_action` + `exertion_
+  penalty` — a melee blow COSTS stamina (`combat_system._resolve`) and a GASSED
+  fighter swings wilder (a −1…−3 to-hit penalty scaling with how spent they are;
+  FRESH = 0, so existing balance is untouched); a jump and a shove cost stamina too
+  (a shove by a tired hero is weaker). Magic (`tireless`) still exempts. `tests/
+  test_stamina.py`.
+  QUEUE (remaining): NPC everyday-life actions, more creature plans (birds/spiders/
+  dragons), creature attack/hurt anims.
 
 ## What NOT to build (explicitly deferred)
 

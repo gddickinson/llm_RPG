@@ -28,7 +28,25 @@ ACTIONS_MORE = {
     "cast_point": (True, 0.9), "cast_staff": (True, 0.9),
     # P34.19 physical effects
     "launched": (True, 0.7), "flail": (False, None),
+    # P34.20 run-conditioned special moves
+    "slide": (True, 0.6),
 }
+
+
+def _slide(pose, t, H, facing):
+    """A low running slide — the body drops, the lead leg shoots forward, the torso
+    leans back (only reachable with running momentum)."""
+    d, f = _arc(t), (_fdir(facing) or 1)
+    _move(pose, _JOINTS, 0, H * 0.20 * d)               # drop low
+    pose["r_foot"] = (pose["r_hip"][0] + f * H * 0.36 * d, pose["r_foot"][1])
+    pose["r_knee"] = (pose["r_hip"][0] + f * H * 0.20 * d,
+                      pose["r_hip"][1] + H * 0.06)
+    pose["l_foot"] = (pose["l_hip"][0] - f * H * 0.06, pose["l_foot"][1])
+    _move(pose, ("chest", "neck", "head", "l_sh", "r_sh"), -f * H * 0.05 * d, 0)
+    for hand, sh in (("l_hand", "l_sh"), ("r_hand", "r_sh")):   # hands trail back
+        s = pose[sh]
+        pose[hand] = (s[0] - f * H * 0.06, s[1] + H * 0.08)
+    return pose
 
 
 def _launched(pose, t, H, facing):
@@ -355,5 +373,5 @@ CLIPS_MORE = {
     "stretch": _stretch, "yawn": _yawn, "clap": _clap, "laugh": _laugh,
     "shrug": _shrug, "ponder": _ponder, "salute": _salute, "beckon": _beckon,
     "facepalm": _facepalm, "cast_point": _cast_point, "cast_staff": _cast_staff,
-    "winded": _winded, "launched": _launched, "flail": _flail,
+    "winded": _winded, "launched": _launched, "flail": _flail, "slide": _slide,
 }
