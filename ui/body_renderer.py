@@ -261,17 +261,32 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     atk_t = anim.get("atk_t", 0.0)
     attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
     facing = char_motion.facing(anim)
-    pose = char_pose.build_pose(feet_x, feet_y, H, anim.get("walk_phase", 0.0),
-                                anim.get("idle_phase", 0.0),
-                                anim.get("moving", False), attack, facing, build)
-    # apply the current ACTION clip (jump/sit/bow/wave/guard/hurt/…) (P33.6b)
-    from ui import char_clips
+    from ui import char_clips, char_mocap
     action = anim.get("cur_action", "idle")
-    if char_clips.is_one_shot(action) and anim.get("action_dur"):
-        phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
+    # MOCAP when facing sideways, not mid-attack, and a baked clip exists — real
+    # Mixamo motion for the side profile (P34.8); else the hand-authored puppet
+    mocap = char_mocap.clip_for(action) if (facing[0] and atk_t <= 0) else None
+    if mocap:
+        if not char_mocap.is_loop(mocap):
+            if char_clips.is_one_shot(action) and anim.get("action_dur"):
+                mp = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
+            else:
+                mp = 1.0                        # a held stance → the final pose
+        else:
+            mp = anim.get("clock", 0.0) * char_mocap.RATE.get(mocap, 1.0)
+        pose = char_mocap.pose_from_clip(mocap, mp, feet_x, feet_y, H, facing,
+                                         build)
     else:
-        phase = anim.get("clock", 0.0)
-    pose = char_clips.apply(action, pose, phase, H, facing)
+        pose = char_pose.build_pose(feet_x, feet_y, H,
+                                    anim.get("walk_phase", 0.0),
+                                    anim.get("idle_phase", 0.0),
+                                    anim.get("moving", False), attack, facing,
+                                    build)
+        if char_clips.is_one_shot(action) and anim.get("action_dur"):
+            phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
+        else:
+            phase = anim.get("clock", 0.0)
+        pose = char_clips.apply(action, pose, phase, H, facing)
 
     # shadow on the ground, under the feet (not the tweened body)
     shw = max(4, int(H * 0.26))

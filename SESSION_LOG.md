@@ -6783,3 +6783,21 @@ back to the held mood `_expr`, and pops a bubble (a `sleep` stance auto-💤).
 ~10px reads clearly and distinctly. `tests/test_char_face.py` (7). Meanwhile a
 background pass is baking the movieMaker MIXAMO mocap clips into 2D keyframes
 (`data/anim/*.json`) to drive mocap-quality body animation next.
+
+## 2026-07-14 (cont.) — P34.8: MOCAP-driven clips (learn from Mixamo)
+
+George: learn from the Mixamo animations, make them as detailed and complex as
+possible. A background pass baked movieMaker's real Mixamo mocap (18 clips, 24fps,
+65-bone world matrices) into compact 2D SIDE-VIEW keyframes: `tools/bake_mocap.py`
+projects each clip's world joints to (forward=+x, up=+y), maps Mixamo bones to our
+15 joints, normalizes (feet y≈0, head y≈1), downsamples to 16–24 keys, and writes
+`data/anim/*.json` (walk/run/jump/flip/sit/idle/talk/dance/hiphop/climb/nod/argue/
+stagger/catwalk/breakdance/kick/idle2/idle3; walk feet verified antiphase). New pure
+`ui/char_mocap.py` loads + interpolates + maps to screen (mirrored by facing);
+`body_renderer` now plays a MOCAP clip whenever a character faces SIDEWAYS and a
+baked clip exists (walk/run/jump/sit/dance/climb/idle/talk), falling back to the
+hand-authored puppet otherwise. A side-walking hero now strides with genuine mocap
+timing — real knee bend, a proper stride, counter-swinging arms — the run leans and
+drives, the dance grooves (screenshot-verified). `tests/test_char_mocap.py` (7).
+Remainder: front/back projections; sync the walk cadence to the step tween. Next
+down the plan: P34.3 the spring + look-at substrate.

@@ -4394,6 +4394,20 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   midpoints); DEPTH-SORT limbs by facing (far limb drawn behind + dimmed ~8%);
   LINE-OF-ACTION — a gentle C-curve of the spine by mood (proud arch / sad slump).
   Removes the "pasted-on" flatness.
+- [x] **P34.8 MOCAP-driven clips (learn from Mixamo).** Bake movieMaker's Mixamo
+  mocap (`assets/mixamo/.pose_cache/*.json`, real 24fps 65-bone motion) into compact
+  2D side-view keyframes and PLAY them on the puppet for mocap-quality detail —
+  George: "learn from the mixamo animations… as detailed and complex as possible."
+  *Done:* `tools/bake_mocap.py` projects each clip's world-space joints to a 2D
+  side view (feet y≈0, head y≈1, forward +x), maps Mixamo bones → our 15 joints, and
+  writes 18 clips to `data/anim/*.json` (walk/run/jump/flip/sit/idle/talk/dance/
+  hiphop/climb/nod/argue/stagger/catwalk/breakdance/kick/idle2/idle3; walk feet
+  verified antiphase). `ui/char_mocap.py` loads + interpolates + maps to screen
+  (mirrored by facing); `body_renderer` uses a mocap clip when the character faces
+  SIDEWAYS and one exists (walk/run/jump/sit/dance/climb/idle/talk), else the
+  hand-authored puppet — so a side-walking hero strides with real mocap timing +
+  knee bend + arm counter-swing (screenshot-verified). `tests/test_char_mocap.py` (7).
+  Remainder: front/back mocap projections; sync the walk cadence to the step tween.
 - [ ] **P34.7 Beauty pass: SSAA + resolution.** Draw each character onto a 2–4×
   oversampled scratch surface and `smoothscale` down (anti-aliased, curvy limbs —
   proven); DECOUPLE character render density from tile-art density (finer characters
