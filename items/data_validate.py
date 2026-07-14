@@ -45,9 +45,11 @@ def validate_all() -> List[str]:
     problems += check_production()
     problems += check_building_types()
     problems += check_resource_nodes()
-    from items.validate_world import check_adventurers, check_guildhalls
+    from items.validate_world import (check_adventurers, check_guildhalls,
+                                       check_wildlife)
     problems += check_adventurers()
     problems += check_guildhalls()
+    problems += check_wildlife()
     return problems
 
 

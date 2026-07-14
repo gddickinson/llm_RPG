@@ -290,6 +290,10 @@ class GameEngine(GameAPIMixin):
             meta = getattr(npc, "metadata", {}) or {}
             if meta.get("player_char") or meta.get("adventurer"):
                 continue
+            # neutral wildlife are driven by the WildlifeSystem (P32.3), never
+            # the ambient hostile/social AI
+            if meta.get("wildlife"):
+                continue
             try:
                 npc_x, npc_y = npc.position
                 if self._distance_to_player(npc_x, npc_y) > \
@@ -357,6 +361,10 @@ class GameEngine(GameAPIMixin):
             # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
             meta = getattr(npc, "metadata", {}) or {}
             if meta.get("player_char") or meta.get("adventurer"):
+                continue
+            # neutral wildlife are driven by the WildlifeSystem (P32.3), never
+            # the ambient hostile/social AI
+            if meta.get("wildlife"):
                 continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \

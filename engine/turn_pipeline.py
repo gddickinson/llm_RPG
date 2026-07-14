@@ -309,6 +309,12 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Pursuit error: {e}")
 
+    # Neutral wildlife graze, wander and flee (P32.3) — the living wild
+    try:
+        self.wildlife.update()
+    except Exception as e:
+        logger.debug(f"Wildlife error: {e}")
+
     # Tower guards loose arrows at attackers at the walls (P31.1c)
     try:
         self.tower_defense.update()

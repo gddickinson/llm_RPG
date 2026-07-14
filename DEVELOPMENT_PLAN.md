@@ -4114,12 +4114,23 @@ animal population feeds it. Each sub-step below is one tested round.
   elite extra` companions around the primary under one `pack:<id>` `lair` tag
   (the P19.3 brain bands them), the sighting message reading "A gang/pack/…".
   Solitary trolls/dragons still come alone. `tests/test_pack_spawns.py` (7).
-- [ ] **P32.3 Neutral wildlife (a bestiary of prey & predators).** A
+- [x] **P32.3 Neutral wildlife (a bestiary of prey & predators).** A
   `data/wildlife.json` roster of NEUTRAL animals (deer, rabbit, boar, fowl) +
   wild PREDATORS (wolf/fox/bear) with a `diet`. They spawn in the wilderness
   (a new `WildlifeSystem`/encounter path), wander and graze, flee the player and
   predators, and are huntable (P15.9b hunting skill → hides/meat). Non-hostile:
   they don't attack the hero.
+  *Done:* new `ANIMAL` CharacterClass (not a HOSTILE_CLASS → pursuit/conflict/
+  hostile-AI ignore it); `data/wildlife.json` (deer/rabbit/boar/pheasant/fox,
+  each `diet`/`timid`/`terrain`/`loot_table`); `world/wildlife.py`
+  `WildlifeSystem` (`maybe_spawn` a sighting 4–8 tiles off, capped at
+  `MAX_NEARBY`; `run_turn` flees the player within `timid` else grazes) +
+  `build_wildlife`; drops via `loot_tables.generate_loot` now honouring a
+  per-creature `metadata["loot_table"]` (new `raw_meat`/`game_hide`/`feathers`
+  items); Hunting trains on the fell (`_BEASTS` += rabbit/pheasant/fowl). Wired
+  in `engine_setup` + `turn_pipeline`, skipped by `process_npc_turns`; validated
+  by `check_wildlife`. `tests/test_wildlife.py` (10). *Remainder → P32.4:* prey
+  fleeing PREDATORS and the fox actually hunting.
 - [ ] **P32.4 The predator/prey loop.** Predators hunt nearby prey (a light
   version of the pursuit brain toward the softest prey); prey flee; a fed
   predator breeds, a starving one dies; populations rise and fall. A capped,

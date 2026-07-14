@@ -155,14 +155,14 @@ class TestDiagonalMovement(unittest.TestCase):
         wmap.remove_character(self.engine.player)
         self.engine.player.position = (self.ox, self.oy)
         wmap.place_character(self.engine.player, self.ox, self.oy)
-        # a movement-key test, not a combat one: no wandering spawns (P32.1/2
-        # would herd a pack onto a step-target tile), and clear any hostile
-        # already loitering near the walk area
+        # a movement-key test, not a combat one: silence every ambient
+        # spawner (P32.1/2 packs, P32.3 wildlife) and clear anything already
+        # loitering on the walk area so nothing bodyblocks a step-target tile
         self.engine.encounter_manager.maybe_spawn = lambda: None
-        from engine.pursuit import HOSTILE_CLASSES
+        self.engine.wildlife.update = lambda: None
         for n in list(self.engine.npc_manager.npcs.values()):
-            if getattr(getattr(n, "character_class", None), "value", "") \
-                    in HOSTILE_CLASSES:
+            if abs(n.position[0] - self.ox) <= 3 and \
+                    abs(n.position[1] - self.oy) <= 3:
                 wmap.remove_character(n)
 
     def _press(self, key):

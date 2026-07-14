@@ -164,5 +164,21 @@
     "value": 0,
     "rarity": "rare",
     "description": "A folded cipher in the Duke's own hand \u2014 proof, if it can be read, of a plot against the heir."
+  },
+  "game_hide": {
+    "id": "game_hide",
+    "name": "Game Hide",
+    "item_type": "misc",
+    "value": 12,
+    "stackable": true,
+    "description": "The hide of a wild beast \u2014 a tanner's raw stock."
+  },
+  "feathers": {
+    "id": "feathers",
+    "name": "Bundle of Feathers",
+    "item_type": "misc",
+    "value": 5,
+    "stackable": true,
+    "description": "Fletching for arrows, or a soft bed."
   }
 }

@@ -62,3 +62,33 @@ def check_guildhalls() -> List[str]:
         if h.get("kind") not in kinds:
             problems.append(f"guildhall {hid}: bad kind '{h.get('kind')}'")
     return problems
+
+
+def check_wildlife() -> List[str]:
+    """wildlife.json: a name, terrain, and resolvable loot drops (P32.3)."""
+    path = _DATA / "wildlife.json"
+    if not path.exists():
+        return []
+    try:
+        roster = json.loads(path.read_text())
+    except Exception as e:
+        return [f"wildlife.json unparseable: {e}"]
+    from items.item_registry import create_item
+    valid_terrain = {"grass", "forest", "swamp", "desert", "snow"}
+    problems: List[str] = []
+    for sid, spec in roster.items():
+        if not spec.get("name"):
+            problems.append(f"wildlife {sid}: needs a name")
+        for t in spec.get("terrain", []):
+            if t not in valid_terrain:
+                problems.append(f"wildlife {sid}: bad terrain '{t}'")
+        if not spec.get("terrain"):
+            problems.append(f"wildlife {sid}: needs at least one terrain")
+        for entry in spec.get("loot_table", []):
+            iid = entry[0] if isinstance(entry, (list, tuple)) else entry
+            if create_item(iid) is None:
+                problems.append(f"wildlife {sid}: unknown drop '{iid}'")
+        for prey in spec.get("preys_on", []):
+            if prey not in roster:
+                problems.append(f"wildlife {sid}: preys_on unknown '{prey}'")
+    return problems

@@ -106,8 +106,9 @@ class PlaytestCampaign5(unittest.TestCase):
         # clear any wandering hostile that could body-block the corridor —
         # P32.1 pursuit now walks foes toward the player; this test measures
         # road walkability, not a chase. Also silence fresh spawns during the
-        # walk (P32.2 packs) so nothing steps into the lane mid-stride.
+        # walk (P32.2 packs, P32.3 wildlife) so nothing steps into the lane.
         self.engine.encounter_manager.maybe_spawn = lambda: None
+        self.engine.wildlife.update = lambda: None
         for npc in list(self.engine.npc_manager.npcs.values()):
             if abs(npc.position[0] - spot[0]) <= 16 and \
                     abs(npc.position[1] - spot[1]) <= 16:

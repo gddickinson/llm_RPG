@@ -127,7 +127,8 @@ def train_skill(engine, skill_id: str, xp: float) -> List[str]:
 
 
 _BEASTS = ("wolf boar bear deer stag spider rat bat snake fox lynx hound "
-           "direwolf hare vulture scorpion crab serpent").split()
+           "direwolf hare vulture scorpion crab serpent rabbit pheasant "
+           "fowl").split()
 
 
 def train_hunting(engine, defeated) -> None:

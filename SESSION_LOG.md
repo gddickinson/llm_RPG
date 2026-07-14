@@ -6503,3 +6503,25 @@ duplicates, `elites.extra_pack`. `tests/test_pack_spawns.py` (7).
 
 Remainder of Phase 32: neutral wildlife (P32.3), the predator/prey loop (P32.4),
 and wiring it to the economy (P32.5).
+
+## 2026-07-14 — P32.3: neutral wildlife (a bestiary of prey)
+
+The wild is no longer only things that want you dead. A new `ANIMAL`
+CharacterClass (deliberately NOT a HOSTILE_CLASS, so pursuit, the conflict
+scanner and the hostile AI all ignore it) backs `world/wildlife.py`
+`WildlifeSystem` over `data/wildlife.json` — deer, rabbit, wild boar, pheasant
+and a red fox, each with a `diet`, a `timid` flee radius, spawn terrain and its
+own `loot_table`. Each turn the system spawns the odd sighting 4–8 tiles off
+(capped so the meadow never crowds) and drives the herd: an animal within its
+timid radius of the player BOLTS (opening distance, never onto your tile), else
+it grazes and ambles. They're driven only here — `process_npc_turns` skips
+anything flagged `wildlife`.
+
+They're huntable, and that came almost for free: `loot_tables.generate_loot`
+now honours a per-creature `metadata["loot_table"]` (a deer yields meat + hide,
+a pheasant feathers — new `raw_meat`/`game_hide`/`feathers` items), and felling
+a beast already trains Hunting (P15.9b; `_BEASTS` gained rabbit/pheasant/fowl).
+A `check_wildlife` validator guards the roster's terrain + drop refs.
+`tests/test_wildlife.py` (10). The predator/prey LOOP — the fox actually running
+down a rabbit, prey fleeing predators, populations rising and falling — is
+P32.4; wiring hides/meat into the P16 economy is P32.5.

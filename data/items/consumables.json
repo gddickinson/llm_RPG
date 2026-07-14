@@ -158,5 +158,18 @@
       "brew": true,
       "thirst": 30
     }
+  },
+  "raw_meat": {
+    "id": "raw_meat",
+    "name": "Raw Meat",
+    "item_type": "consumable",
+    "value": 6,
+    "heal_amount": 3,
+    "stackable": true,
+    "description": "Fresh game \u2014 better cooked at a hearth.",
+    "use_effect": {
+      "food": true,
+      "perishable": true
+    }
   }
 }

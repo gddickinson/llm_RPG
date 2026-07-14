@@ -121,8 +121,17 @@ def generate_loot(character: Any, rng: random.Random = None,
         How many items to drop. Default: 1 + level // 3.
     """
     rng = rng or random.Random()
-    klass = getattr(getattr(character, "character_class", None), "value", "villager")
-    table = LOOT_BY_CLASS.get(klass, DEFAULT_LOOT)
+    # a per-creature loot table wins (P32.3 wildlife carry their own drops —
+    # a deer yields meat + hide, not a wolf pelt); else fall back to the class
+    meta = getattr(character, "metadata", None) or {}
+    custom = meta.get("loot_table")
+    if custom:
+        table = [tuple(e) if isinstance(e, (list, tuple)) else (e, 1)
+                 for e in custom]
+    else:
+        klass = getattr(getattr(character, "character_class", None),
+                        "value", "villager")
+        table = LOOT_BY_CLASS.get(klass, DEFAULT_LOOT)
 
     if drop_count is None:
         level = getattr(character, "level", 1)
