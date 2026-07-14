@@ -18,7 +18,7 @@ def _player():
 class TestSettingsModel(unittest.TestCase):
     def test_defaults(self):
         p = _player()
-        self.assertEqual(settings.get_setting(p, "zoom"), 32)
+        self.assertEqual(settings.get_setting(p, "zoom"), 48)
         self.assertEqual(settings.get_setting(p, "hints"), "on")
         self.assertTrue(settings.enabled(p, "minimap"))
 
@@ -33,7 +33,7 @@ class TestSettingsModel(unittest.TestCase):
         seen = [settings.get_setting(p, "zoom")]
         for _ in range(3):
             seen.append(settings.cycle_setting(p, "zoom"))
-        self.assertEqual(seen, [32, 48, 24, 32])   # wraps round
+        self.assertEqual(seen, [48, 64, 24, 32])   # wraps round
 
     def test_cycle_backwards(self):
         p = _player()

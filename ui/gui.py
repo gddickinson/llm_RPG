@@ -53,7 +53,7 @@ class GameGUI:
     """Pygame GUI — wraps engine state in a windowed application."""
 
     def __init__(self, engine, width: int = 1280, height: int = 800,
-                 tile_size: int = 32, title: str = "LLM-RPG"):
+                 tile_size: int = 48, title: str = "LLM-RPG"):
         if not PYGAME_OK:
             raise RuntimeError("pygame is not installed")
         self.engine = engine

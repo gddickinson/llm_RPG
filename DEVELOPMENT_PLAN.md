@@ -4263,8 +4263,17 @@ CC0 walk-cycle sprite sheets offline into the existing PNG-tileset pipeline.
   weapon (a warrior wielding a bow finally shows a BOW), tints the torso by armour,
   and LEANS the figure toward its target on a strike; `combat_system._resolve` bumps
   `metadata['_atk_seq']` (engine stays clock-free — `update_anim` runs the real-time
-  lunge timer). `tests/test_char_motion.py` (12). *Remainder P33.4b:* the smooth
-  tile-to-tile TWEEN, cast/hurt flashes, bigger/more-detailed bodies, night mute.
+  lunge timer). `tests/test_char_motion.py` (12).
+  *Done (P33.4b, bigger jointed bodies + real animation — George: "more realistic,
+  larger, better animation… side views"):* a character is now a JOINTED skeleton
+  (`ui/char_pose.py`, pure) — thigh/shin/foot, upper-arm/forearm/hand, torso, neck,
+  haired head with a face — drawn ~1.5 tiles tall, anchored at the feet and
+  overflowing UP so it reads big without shrinking the map (`ui/body_parts.py` blits
+  the parts). FOUR facings: front, back (no face), and a SIDE PROFILE for left/right
+  (edge-on body, nose + one eye, limbs striding fore-aft). A tile step is now TWEENED
+  across (`TWEEN_DUR`) so the walk cycle is actually VISIBLE, plus an overhead attack
+  swing and idle breathing. Default map zoom bumped 32→48 (choices add 64) for the
+  detail. `tests/test_char_pose.py` (13). *Remainder:* cast/hurt flashes.
 - [ ] **P33.5 Atmosphere polish + optional baked sprite sheets.** Richer day/night
   phase tints (dawn/dusk), tree/building drop-shadows, ambient particles (fireflies,
   chimney smoke, leaves). STRETCH: an offline `tools/bake_sprites.py` over movieMaker's

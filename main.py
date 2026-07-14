@@ -56,7 +56,7 @@ def parse_args():
                    help="Window width for GUI")
     p.add_argument("--height", type=int, default=800,
                    help="Window height for GUI")
-    p.add_argument("--tile-size", type=int, default=32,
+    p.add_argument("--tile-size", type=int, default=48,
                    help="Tile size in pixels")
     p.add_argument("--load", nargs="?", const="quicksave.json",
                    default=None,

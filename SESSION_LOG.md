@@ -6660,3 +6660,27 @@ a ROW OF WINDOWS PER STOREY down the front wall (blue-grey glass in a dark frame
 with darkened floor-divider lines between them, so the floors are unmistakable at a
 glance. Screenshot-confirmed: the timber house now clearly shows two floors of
 windows and the towers stand tall. `tests/test_renderer_buildings.py` (+5 → 21).
+
+## 2026-07-14 (cont.) — P33.4b: bigger, jointed, animated characters (+ side views)
+
+George wanted the characters more realistic, larger, more detailed, better
+animated — and OK'd changing the map scale. Delivered a full body overhaul.
+
+A character is now a JOINTED SKELETON: `ui/char_pose.py` (pure) computes every
+joint — thigh/shin/foot, upper-arm/forearm/hand, torso, neck, a haired head with
+a face — for a figure drawn ~1.5 tiles tall, ANCHORED AT THE FEET and overflowing
+UP, so it reads big without shrinking the map. `ui/body_parts.py` blits the parts
+(circle-capped limbs, a filled torso + belt, the head, a forearm-aligned weapon,
+a shield). Crucially, a tile step is now TWEENED across (`TWEEN_DUR`=0.16) so the
+walk cycle is actually VISIBLE (a turn-based step used to teleport, hiding the
+animation); on top of the walk there's an overhead ATTACK SWING (the weapon arm
+arcs from wind-up to strike) and an idle BREATH.
+
+FOUR facings, per George's follow-up ask for side views: FRONT (two eyes), BACK
+(no face), and a true SIDE PROFILE for left/right — an edge-on body with the head
+leaning forward (nose + one eye) and the legs striding fore-and-aft. The default
+map zoom is bumped 32→48 (choices add 64) so the new detail and motion are clearly
+visible; the villager/hero now read as little PEOPLE amid the multi-storey town.
+`tests/test_char_pose.py` (13) + `body_renderer`/`body_parts`/`char_pose` all
+under 300 lines. Screenshots across all facings + a walking/attacking side view
+confirm it. Remainder: cast/hurt flashes; then P33.5 atmosphere.

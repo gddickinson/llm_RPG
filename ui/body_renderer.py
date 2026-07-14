@@ -1,21 +1,15 @@
-"""Procedural body renderer for characters.
+"""Procedural body renderer for characters (P33.4b — jointed & feet-anchored).
 
-Adapted from autonomous_world/game/ui/character_anim.py + character_detail.py,
-condensed for our smaller tile size.
+A character is drawn as a JOINTED figure that stands ~1.5 tiles tall, anchored at
+the feet and overflowing UPWARD so it reads big without shrinking the map. The
+skeleton (joint positions) comes from the pure `char_pose` module; the limbs /
+torso / head / weapon are blitted by `body_parts`; this file is the orchestration
+— palettes, animation state, and the draw order.
 
-Each NPC is drawn as a small jointed figure with:
-- Head (race-tinted skin color, ears for elf/orc/etc.)
-- Torso (class-tinted)
-- Two legs that swing with `walk_phase` while moving
-- Two arms (one may hold a weapon)
-- Optional weapon overlay (sword/bow/staff)
-- Optional death overlay (fades to red on the ground)
-
-Animation state lives on the character in `metadata['_anim']`:
-    {'walk_phase': float, 'idle_phase': float,
-     'prev_pos': (x, y), 'moving': bool}
-
-Frame-rate independent: callers pass `dt` and the renderer advances state.
+Animation state lives on the character in `metadata['_anim']` and is advanced by
+`update_anim(char, dt)` each frame: a walk cycle (visible because a tile step is
+TWEENED across, `tween_t`), an idle breath, 4-way facing, and a strike swing.
+Equipment (the drawn weapon/armour) is resolved by `char_motion`.
 """
 
 import logging
@@ -71,42 +65,22 @@ CLASS_TORSO_TINT = {
 }
 
 RACE_SCALE = {
-    "halfling": 0.78,
-    "gnome": 0.78,
-    "goblin": 0.78,
-    "dwarf": 0.88,
-    "human": 1.0,
-    "elf": 1.0,
-    "half-elf": 1.0,
-    "tiefling": 1.0,
-    "dragonborn": 1.10,
-    "half-orc": 1.10,
-    "orc": 1.15,
-    "troll": 1.30,
+    "halfling": 0.82, "gnome": 0.82, "goblin": 0.82, "dwarf": 0.90,
+    "human": 1.0, "elf": 1.02, "half-elf": 1.0, "tiefling": 1.0,
+    "dragonborn": 1.08, "half-orc": 1.10, "orc": 1.14, "troll": 1.28,
 }
 
-# Class -> weapon kind drawn in the hand. None means unarmed.
+# Class -> weapon kind drawn in the hand when nothing is equipped. None = unarmed.
 CLASS_WEAPON = {
-    "warrior": "sword",
-    "guard": "sword",
-    "paladin": "sword",
-    "barbarian": "axe",
-    "rogue": "dagger",
-    "ranger": "bow",
-    "wizard": "staff",
-    "sorcerer": "staff",
-    "warlock": "staff",
-    "cleric": "mace",
-    "druid": "staff",
-    "monk": "staff",
-    "noble": "dagger",
-    "brigand": "axe",
-    "troll": "axe",
-    "merchant": None,
-    "villager": None,
-    "bard": "dagger",
-    "monster": None,
+    "warrior": "sword", "guard": "sword", "paladin": "sword",
+    "barbarian": "axe", "rogue": "dagger", "ranger": "bow", "wizard": "staff",
+    "sorcerer": "staff", "warlock": "staff", "cleric": "mace", "druid": "staff",
+    "monk": "staff", "noble": "dagger", "brigand": "axe", "troll": "axe",
+    "merchant": None, "villager": None, "bard": "dagger", "monster": None,
 }
+
+HAIR_PALETTE = [(58, 40, 26), (30, 26, 24), (120, 90, 52), (150, 122, 74),
+                (162, 162, 168), (110, 62, 36), (92, 74, 58)]
 
 
 # ---------------------------------------------------------------------- helpers
@@ -127,6 +101,14 @@ def _darken(color, amount=30):
     return tuple(max(0, c - amount) for c in color)
 
 
+def _hair_color(char):
+    race = getattr(getattr(char, "race", None), "value", "human")
+    if race in ("orc", "half-orc", "goblin", "troll"):
+        return (44, 50, 34)
+    h = sum(ord(c) for c in str(getattr(char, "id", "x")))
+    return HAIR_PALETTE[h % len(HAIR_PALETTE)]
+
+
 def _ensure_anim(char) -> dict:
     meta = getattr(char, "metadata", None)
     if not isinstance(meta, dict):
@@ -135,35 +117,40 @@ def _ensure_anim(char) -> dict:
     anim = meta.get("_anim")
     if not isinstance(anim, dict):
         anim = {
-            "walk_phase": 0.0,
-            "idle_phase": 0.0,
-            "prev_pos": tuple(char.position),
-            "moving": False,
-            "facing": (0, 1),
-            "atk_t": 0.0,
-            "atk_seen": None,
+            "walk_phase": 0.0, "idle_phase": 0.0,
+            "prev_pos": tuple(char.position), "moving": False,
+            "facing": (0, 1), "atk_t": 0.0, "atk_seen": None,
+            "tween_from": (0, 0), "tween_t": 0.0,
         }
         meta["_anim"] = anim
     return anim
 
 
+TWEEN_DUR = 0.16           # seconds to slide from the old tile to the new one
+CHAR_H_FRAC = 1.5          # a character stands this many tiles tall (overflows up)
+
+
 def update_anim(char, dt: float) -> None:
-    """Advance walk/idle phases, facing, and the strike timer (P33.4)."""
+    """Advance walk/idle phases, facing, the tile-to-tile TWEEN, and the strike
+    timer (P33.4b). The tween is what makes the walk cycle VISIBLE — a turn-based
+    step teleports tiles, so we slide the sprite across and play the walk."""
     from ui import char_motion
     anim = _ensure_anim(char)
     prev = anim["prev_pos"]
     cur = tuple(char.position)
-    moving = prev != cur
-    if moving:
+    if prev != cur:                        # a step: start a slide from prev→cur
         char_motion.update_facing(anim, prev, cur)
+        anim["tween_from"] = (prev[0] - cur[0], prev[1] - cur[1])
+        anim["tween_t"] = TWEEN_DUR
     anim["prev_pos"] = cur
-    anim["moving"] = moving
-    if moving:
-        anim["walk_phase"] = (anim["walk_phase"] + dt * 8.0) % math.tau
+    tweening = anim.get("tween_t", 0.0) > 0
+    anim["moving"] = tweening
+    if tweening:
+        anim["walk_phase"] = (anim["walk_phase"] + dt * 20.0) % math.tau
+        anim["tween_t"] = max(0.0, anim["tween_t"] - dt)
     else:
-        anim["walk_phase"] *= 0.9
-        anim["idle_phase"] = (anim["idle_phase"] + dt * 1.5) % math.tau
-    # strike lunge: the engine bumps metadata['_atk_seq']; run a real-time timer
+        anim["walk_phase"] *= 0.85
+        anim["idle_phase"] = (anim["idle_phase"] + dt * 1.6) % math.tau
     seq = (getattr(char, "metadata", None) or {}).get("_atk_seq", 0)
     if seq != anim.get("atk_seen"):
         if anim.get("atk_seen") is not None:
@@ -177,198 +164,99 @@ def update_anim(char, dt: float) -> None:
 
 def draw_body(surface, char, sx: int, sy: int, tile_size: int,
               is_player: bool = False) -> None:
-    """Draw a single character at screen pixel (sx, sy)."""
+    """Draw a jointed, feet-anchored character (overflows its tile so it reads
+    big), posed and animated by `char_pose` + `body_parts` (P33.4b)."""
     if not PYGAME_OK:
         return
     anim = _ensure_anim(char)
     if not char.is_alive():
         _draw_corpse(surface, char, sx, sy, tile_size)
         return
+    from ui import char_motion, char_pose, body_parts as bp
 
-    from ui import char_motion
     race = getattr(char.race, "value", "human")
     klass = getattr(char.character_class, "value", "villager")
     skin = _race_color(race)
-    torso_color = char_motion.armor_tint(char, _class_color(klass))
-    scale = _race_scale(race) * (tile_size / 32.0)
+    torso = char_motion.armor_tint(char, _class_color(klass))
+    pants = _darken(torso, 48)
+    boots = (58, 44, 34)
+    hair = _hair_color(char)
+    belt = (74, 52, 34)
 
-    # Layout coordinates within the tile (centered)
-    cx = sx + tile_size // 2
-    cy = sy + tile_size // 2
-    # a strike leans the whole figure toward what it's hitting (P33.4)
-    lunge = char_motion.attack_lunge(anim.get("atk_t", 0.0))
-    fx, fy = char_motion.facing(anim)
-    lean_x, lean_y = int(fx * lunge * 3), int(fy * lunge * 2)
-    head_r = max(3, int(5 * scale))
-    body_w = max(6, int(10 * scale))
-    body_h = max(7, int(11 * scale))
-    leg_h = max(4, int(6 * scale))
-    arm_l = max(4, int(6 * scale))
+    H = int(tile_size * CHAR_H_FRAC * _race_scale(race))
+    # feet anchored at the tile's bottom-centre + the tween slide from the old tile
+    ox = oy = 0.0
+    tw = anim.get("tween_t", 0.0)
+    if tw > 0:
+        fdx, fdy = anim.get("tween_from", (0, 0))
+        frac = tw / TWEEN_DUR
+        ox, oy = fdx * tile_size * frac, fdy * tile_size * frac
+    feet_x = sx + tile_size / 2 + ox
+    feet_y = sy + tile_size - 2 + oy
 
-    walk = anim["walk_phase"]
-    idle = anim["idle_phase"]
-    sway = math.sin(walk) if anim["moving"] else math.sin(idle) * 0.25
+    atk_t = anim.get("atk_t", 0.0)
+    attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
+    facing = char_motion.facing(anim)
+    pose = char_pose.build_pose(feet_x, feet_y, H, anim.get("walk_phase", 0.0),
+                                anim.get("idle_phase", 0.0),
+                                anim.get("moving", False), attack, facing)
 
-    # Shadow
-    shadow = pygame.Surface((body_w + 4, leg_h // 2 + 2), pygame.SRCALPHA)
-    pygame.draw.ellipse(shadow, (0, 0, 0, 90), shadow.get_rect())
-    surface.blit(shadow, (cx - (body_w + 4) // 2,
-                          cy + body_h // 2 + 1))
-    cx += lean_x                       # the body leans; the shadow stayed put
-    cy += lean_y
+    # shadow on the ground, under the feet (not the tweened body)
+    shw = max(4, int(H * 0.26))
+    shadow = pygame.Surface((shw, max(2, shw // 2)), pygame.SRCALPHA)
+    pygame.draw.ellipse(shadow, (0, 0, 0, 95), shadow.get_rect())
+    surface.blit(shadow, (int(sx + tile_size / 2 - shw / 2),
+                          int(sy + tile_size - shw / 2 - 1)))
 
-    # Legs
-    leg_offset = int(sway * 2)
-    left_leg_x = cx - body_w // 3
-    right_leg_x = cx + body_w // 3
-    leg_y = cy + body_h // 2 - 1
-    pygame.draw.rect(surface, _darken(torso_color, 60),
-                     (left_leg_x - 1, leg_y - leg_offset, 2, leg_h))
-    pygame.draw.rect(surface, _darken(torso_color, 60),
-                     (right_leg_x - 1, leg_y + leg_offset, 2, leg_h))
+    leg_w = max(2, int(H * 0.10))
+    arm_w = max(2, int(H * 0.075))
+    neck_w = max(2, int(H * 0.06))
+    face_visible = facing[1] >= 0
 
-    # Torso
-    pygame.draw.rect(surface, torso_color,
-                     (cx - body_w // 2, cy - body_h // 2 + 1,
-                      body_w, body_h), border_radius=2)
-    pygame.draw.rect(surface, _darken(torso_color, 40),
-                     (cx - body_w // 2, cy - body_h // 2 + 1,
-                      body_w, body_h), 1, border_radius=2)
-
-    # Arms (one may carry a weapon)
-    arm_swing = int(sway * 2)
-    left_arm_x = cx - body_w // 2 - 1
-    right_arm_x = cx + body_w // 2 + 1
-    arm_top_y = cy - body_h // 4
-    pygame.draw.line(surface, torso_color,
-                     (left_arm_x, arm_top_y),
-                     (left_arm_x - 2, arm_top_y + arm_l - arm_swing), 2)
-    pygame.draw.line(surface, torso_color,
-                     (right_arm_x, arm_top_y),
-                     (right_arm_x + 2, arm_top_y + arm_l + arm_swing), 2)
-
-    # Head
-    head_x = cx
-    head_y = cy - body_h // 2 - head_r + 1
-    head_y += int(math.sin(idle * 0.7) * 1) if not anim["moving"] else 0
-    pygame.draw.circle(surface, skin, (head_x, head_y), head_r)
-    pygame.draw.circle(surface, _darken(skin, 50),
-                       (head_x, head_y), head_r, 1)
-
-    # Race-specific ears (elf / half-elf / orc / goblin / half-orc)
-    if race in ("elf", "half-elf"):
-        pygame.draw.polygon(surface, skin, [
-            (head_x - head_r, head_y),
-            (head_x - head_r - 2, head_y - 1),
-            (head_x - head_r, head_y + 1),
-        ])
-        pygame.draw.polygon(surface, skin, [
-            (head_x + head_r, head_y),
-            (head_x + head_r + 2, head_y - 1),
-            (head_x + head_r, head_y + 1),
-        ])
-    elif race in ("orc", "half-orc", "goblin"):
-        # Tusks
-        pygame.draw.line(surface, (220, 220, 200),
-                         (head_x - 1, head_y + head_r - 1),
-                         (head_x - 1, head_y + head_r + 1), 1)
-        pygame.draw.line(surface, (220, 220, 200),
-                         (head_x + 1, head_y + head_r - 1),
-                         (head_x + 1, head_y + head_r + 1), 1)
-    elif race == "troll":
-        # Larger head, greenish ridge
-        pygame.draw.circle(surface, _darken(skin, 40),
-                           (head_x, head_y - head_r // 2),
-                           max(1, head_r // 3))
-
-    # Eyes
-    eye_y = head_y - 1
-    pygame.draw.rect(surface, (30, 30, 30),
-                     (head_x - 2, eye_y, 1, 1))
-    pygame.draw.rect(surface, (30, 30, 30),
-                     (head_x + 1, eye_y, 1, 1))
-
-    # Weapon — what the character ACTUALLY wields (P33.4), not just its class
+    bp.draw_legs(surface, pose, pants, boots, leg_w)
+    if char_motion.has_shield(char):
+        bp.draw_shield(surface, pose, (120, 110, 95), (88, 76, 60),
+                       max(2, int(H * 0.13)))
+    bp.draw_torso(surface, pose, torso, belt)
+    bp.draw_arms(surface, pose, torso, skin, arm_w)
+    bp.draw_head(surface, pose, skin, hair, race, face_visible, neck_w,
+                 pose.get("profile", 0))
     weapon = char_motion.weapon_kind(char)
     if weapon:
-        _draw_weapon(surface, weapon, right_arm_x + 2,
-                     arm_top_y + arm_l + arm_swing, scale)
+        bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)
 
-    # Player crown
+    hx, hy = int(pose["head"][0]), int(pose["head"][1])
+    hr = pose["head_r"]
     if is_player:
         pygame.draw.polygon(surface, (255, 220, 80), [
-            (head_x - head_r + 1, head_y - head_r - 1),
-            (head_x - head_r // 2, head_y - head_r - 3),
-            (head_x, head_y - head_r - 1),
-            (head_x + head_r // 2, head_y - head_r - 3),
-            (head_x + head_r - 1, head_y - head_r - 1),
-        ])
-
-    # HP indicator (small bar above) for non-players
+            (hx - hr, hy - hr - 1), (hx - hr // 2, hy - hr - hr),
+            (hx, hy - hr - 1), (hx + hr // 2, hy - hr - hr),
+            (hx + hr, hy - hr - 1)])
     if not is_player and char.max_hp > 0 and char.hp < char.max_hp:
-        bw = max(4, body_w + 2)
-        bh = 2
-        bx = cx - bw // 2
-        by = head_y - head_r - 4
-        pygame.draw.rect(surface, (60, 0, 0), (bx, by, bw, bh))
-        ratio = max(0.0, char.hp / char.max_hp)
+        bw = max(6, int(H * 0.30))
+        bx, by = hx - bw // 2, hy - hr - 4
+        pygame.draw.rect(surface, (60, 0, 0), (bx, by, bw, 2))
         pygame.draw.rect(surface, (200, 50, 50),
-                         (bx, by, int(bw * ratio), bh))
+                         (bx, by, int(bw * max(0.0, char.hp / char.max_hp)), 2))
 
 
 def draw_glimpsed(surface, char, sx: int, sy: int, tile_size: int,
                   is_player: bool = False) -> None:
     """Draw a character SEEN THROUGH A WINDOW (P14.2) — dimmed and behind a
-    faint pane — so an NPC glimpsed inside a building reads as indoors
-    rather than standing on top of the wall. Reuses `draw_body` on a
-    scratch tile, then knocks its alpha down and glazes it."""
+    faint pane — so an NPC glimpsed inside a building reads as indoors rather
+    than standing on top of the wall. Reuses `draw_body` on a taller scratch
+    surface (the body overflows the tile), then glazes it."""
     if not PYGAME_OK:
         return
-    glass = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
-    draw_body(glass, char, 0, 0, tile_size)
+    pad = tile_size                          # room for the overflowing body
+    glass = pygame.Surface((tile_size, tile_size + pad), pygame.SRCALPHA)
+    draw_body(glass, char, 0, pad, tile_size)
     glass.fill((255, 255, 255, 135), special_flags=pygame.BLEND_RGBA_MULT)
-    surface.blit(glass, (sx, sy))
+    surface.blit(glass, (sx, sy - pad))
     pane = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
     pygame.draw.rect(pane, (140, 170, 205, 70), pane.get_rect(),
                      max(1, tile_size // 16))
     surface.blit(pane, (sx, sy))
-
-
-def _draw_weapon(surface, weapon: str, x: int, y: int, scale: float) -> None:
-    s = max(1.0, scale)
-    if weapon == "sword":
-        pygame.draw.line(surface, (220, 220, 230),
-                         (x, y), (x + 2, y - int(8 * s)), 2)
-        pygame.draw.line(surface, (160, 110, 60),
-                         (x - 1, y - 1), (x + 2, y - 1), 2)
-    elif weapon == "axe":
-        pygame.draw.line(surface, (140, 100, 70),
-                         (x, y), (x + 2, y - int(8 * s)), 2)
-        pygame.draw.polygon(surface, (200, 200, 210), [
-            (x + 2, y - int(8 * s)),
-            (x + int(5 * s), y - int(7 * s)),
-            (x + 2, y - int(5 * s)),
-        ])
-    elif weapon == "dagger":
-        pygame.draw.line(surface, (220, 220, 230),
-                         (x, y), (x + 1, y - int(4 * s)), 2)
-    elif weapon == "bow":
-        pygame.draw.arc(surface, (140, 90, 50),
-                        (x, y - int(8 * s), int(6 * s), int(10 * s)),
-                        -math.pi / 2, math.pi / 2, 2)
-        pygame.draw.line(surface, (220, 220, 200),
-                         (x + 1, y - int(6 * s)),
-                         (x + 1, y - 1), 1)
-    elif weapon == "staff":
-        pygame.draw.line(surface, (110, 80, 50),
-                         (x, y), (x + 1, y - int(10 * s)), 2)
-        pygame.draw.circle(surface, (120, 180, 255),
-                           (x + 1, y - int(10 * s)), 2)
-    elif weapon == "mace":
-        pygame.draw.line(surface, (140, 90, 50),
-                         (x, y), (x + 1, y - int(7 * s)), 2)
-        pygame.draw.circle(surface, (180, 180, 200),
-                           (x + 1, y - int(8 * s)), 2)
 
 
 def _draw_corpse(surface, char, sx: int, sy: int, tile_size: int) -> None:
@@ -377,8 +265,7 @@ def _draw_corpse(surface, char, sx: int, sy: int, tile_size: int) -> None:
     w = tile_size // 2
     h = max(2, tile_size // 5)
     pygame.draw.ellipse(surface, (90, 30, 30), (cx - w // 2, cy, w, h))
-    pygame.draw.ellipse(surface, (50, 10, 10),
-                        (cx - w // 2, cy, w, h), 1)
+    pygame.draw.ellipse(surface, (50, 10, 10), (cx - w // 2, cy, w, h), 1)
 
 
 # ---------------------------------------------------------------------- projectile sprite
