@@ -7292,3 +7292,28 @@ cover, and melee never fans out onto water (only walkable land). A hint-bar tele
 tells the player when they fight from cover / on treacherous footing. `tests/
 test_terrain_combat.py`. Full suite green. Overworld has no elevation layer, so true
 graded high ground uses a mountain-edge proxy — a real elevation layer is a follow-up.
+
+## 2026-07-14 (cont.) — P36.1: realistic world generation (heightmap + biomes)
+
+George's PRIORITY: revive the advanced worldgen — a new start-menu option that builds
+a realistic world with deep history (adapting autonomous_world's worldgen +
+building-gen's buildings). Added Phase 36 to the plan + a project memory. This is the
+FOUNDATION round:
+- new pure `world/realistic_gen.py` (numpy): a multi-octave value-noise ELEVATION
+  heightmap (`fbm`, bilinear+smoothstep upsample, seed-reproducible) + a MOISTURE
+  field, mapped through a Whittaker-lite table (`terrain_for`) to the terrain palette —
+  deep water → coast → grass → forest → highland → mountain, wet lowland → MARSH — with
+  a soft radial island mask so edges tend to sea. `assign_terrain(wmap, seed)` paints
+  the whole map;
+- `WorldGenerator` gained a `mode`; `_generate_realistic` lays the heightmap base then
+  founds the settlements + roads + caves + fortifies, and `_carve_town_clearings`
+  flattens water/mountain/marsh inside each town footprint to grass so a town founded
+  on the heightmap sits in a walkable clearing (roads/bridges/walls kept);
+- a **"Realistic World"** option in the New Game menu → `world_kind="realistic"` →
+  `WorldGenerator(mode="realistic")` (threaded through `demo_setup`).
+A side-by-side minimap shows the leap: the classic flat grass + one river becomes
+organic mountain ranges, lakes, coastlines and forests following the land (seed 7:
+44% grass, 24% forest, 21% water, 5% mountain, 3% marsh). Playable — the town clearing
+is walkable, roads connect the settlements. `tests/test_realistic_gen.py` (5).
+NEXT (Phase 36): P36.2 rivers/lakes from the heightmap, P36.3 the deep history sim
+(settlements/ruins/roads + chronicle), P36.4 building-gen interiors.

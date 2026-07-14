@@ -26,9 +26,10 @@ logger = logging.getLogger("llm_rpg.worldgen")
 class WorldGenerator:
     """Procedurally fills a World with terrain + named locations."""
 
-    def __init__(self, world, seed: int = 42):
+    def __init__(self, world, seed: int = 42, mode: str = "classic"):
         self.world = world
         self.seed = seed
+        self.mode = mode                       # "classic" | "realistic" (P36.1)
         self.rng = random.Random(seed)
         self.w = world.map.width
         self.h = world.map.height
@@ -37,6 +38,8 @@ class WorldGenerator:
     # ----- public -----------------------------------------------------
 
     def generate(self) -> None:
+        if self.mode == "realistic":
+            return self._generate_realistic()
         self._fill_base()
         self._add_forest_borders()
         self._add_river()
@@ -61,6 +64,50 @@ class WorldGenerator:
         self._fortify_start_town()
         logger.info(f"Procedural world generated ({self.w}x{self.h}) "
                     f"with {len(self.world.locations)} locations")
+
+    def _generate_realistic(self) -> None:
+        """P36.1 a heightmap LANDSCAPE (mountains, forests, lakes, coasts, marsh)
+        instead of flat grass; the settlements clear playable land within it."""
+        from world import realistic_gen
+        self.elevation = realistic_gen.assign_terrain(self.world.map, self.seed)
+        self._add_village()
+        if self.w >= 50 and self.h >= 30:
+            self._add_second_settlement()
+            self._add_connecting_road()
+        if self.w >= 100 and self.h >= 60:
+            self._add_third_settlement()
+            self._add_third_road()
+        self._carve_town_clearings()           # towns clear the land they sit on
+        self._fortify_start_town()
+        self._add_cave()
+        if self.w >= 100:
+            self._add_second_cave()
+        if self.w >= 100 and self.h >= 60:
+            self._add_extra_civic_buildings()
+            self._add_wilderness_buildings()
+        self._add_wilderness_features()
+        logger.info(f"Realistic world generated ({self.w}x{self.h}) with "
+                    f"{len(self.world.locations)} locations")
+
+    def _carve_town_clearings(self) -> None:
+        """Flatten the untamed terrain (water / mountain / marsh) inside a
+        settlement's footprint + a margin to walkable grass, so a town founded on
+        the heightmap sits in a proper clearing (roads / bridges / walls kept)."""
+        keep = (TerrainType.BUILDING, TerrainType.ROAD, TerrainType.BRIDGE,
+                TerrainType.CAVE)
+        wild = (TerrainType.WATER, TerrainType.MOUNTAIN, TerrainType.SWAMP)
+        for loc in list(self.world.locations):
+            if not any(k in loc.name.lower()
+                       for k in ("village", "hamlet", "town", "outpost")):
+                continue
+            m = 3
+            for y in range(max(0, loc.y - m),
+                           min(self.h, loc.y + loc.height + m)):
+                for x in range(max(0, loc.x - m),
+                               min(self.w, loc.x + loc.width + m)):
+                    t = self.world.map.terrain[y][x]
+                    if t in wild and t not in keep:
+                        self.world.map.terrain[y][x] = TerrainType.GRASS
 
     def _fortify_start_town(self) -> None:
         """P31.1/P31.1b — ring the WHOLE Oakvale town (village + its nearby

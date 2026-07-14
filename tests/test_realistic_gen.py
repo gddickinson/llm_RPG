@@ -1,0 +1,74 @@
+"""P36.1 — realistic heightmap terrain + biomes + the realistic worldgen mode."""
+
+import os as _os
+import tempfile as _tempfile
+_os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
+_os.environ.setdefault("LLM_RPG_DM_LIBRARY",
+                       _tempfile.mkdtemp(prefix="llmrpg_rg_"))
+
+import unittest
+from collections import Counter
+
+import numpy as np
+
+from world import realistic_gen as rg
+from world.world_map import TerrainType as T
+
+
+class TestHeightmap(unittest.TestCase):
+    def test_fbm_normalised_and_shaped(self):
+        f = rg.fbm(40, 30, seed=5)
+        self.assertEqual(f.shape, (30, 40))
+        self.assertGreaterEqual(float(f.min()), 0.0)
+        self.assertLessEqual(float(f.max()), 1.0 + 1e-6)
+
+    def test_seed_reproducible(self):
+        a = rg.fbm(32, 32, seed=9)
+        b = rg.fbm(32, 32, seed=9)
+        c = rg.fbm(32, 32, seed=10)
+        self.assertTrue(np.allclose(a, b))
+        self.assertFalse(np.allclose(a, c))
+
+    def test_terrain_for_bands(self):
+        self.assertEqual(rg.terrain_for(0.10, 0.5), T.WATER)     # basin → sea
+        self.assertEqual(rg.terrain_for(0.90, 0.5), T.MOUNTAIN)  # peak
+        self.assertEqual(rg.terrain_for(0.50, 0.9), T.FOREST)    # wet mid → forest
+        self.assertEqual(rg.terrain_for(0.35, 0.9), T.SWAMP)     # wet lowland → marsh
+        self.assertEqual(rg.terrain_for(0.50, 0.2), T.GRASS)     # dry mid → plain
+
+
+class TestAssign(unittest.TestCase):
+    def _grid(self, w, h):
+        import world.world_map as wm
+        m = wm.WorldMap(w, h)
+        return m
+
+    def test_produces_a_varied_landscape(self):
+        m = self._grid(80, 50)
+        rg.assign_terrain(m, seed=3)
+        c = Counter(m.terrain[y][x] for y in range(50) for x in range(80))
+        for t in (T.WATER, T.GRASS, T.FOREST, T.MOUNTAIN):
+            self.assertGreater(c[t], 0, f"expected some {t.value}")
+        # water present but not the whole map
+        self.assertLess(c[T.WATER], 50 * 80 * 0.7)
+
+
+class TestRealisticMode(unittest.TestCase):
+    def test_generates_playable_world(self):
+        from world.world import World
+        import world.world_map as wm
+        from world.world_generator import WorldGenerator
+        w = World()
+        w.map = wm.WorldMap(100, 60)
+        WorldGenerator(w, seed=7, mode="realistic").generate()
+        self.assertGreater(len(w.locations), 3)
+        oak = next((l for l in w.locations if "Oakvale" in l.name), None)
+        self.assertIsNotNone(oak)
+        # the town clearing is walkable — no deep water inside its footprint
+        for y in range(oak.y, oak.y + oak.height):
+            for x in range(oak.x, oak.x + oak.width):
+                self.assertNotEqual(w.map.terrain[y][x], T.WATER)
+
+
+if __name__ == "__main__":
+    unittest.main()

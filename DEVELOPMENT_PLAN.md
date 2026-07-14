@@ -5456,3 +5456,36 @@ investigate the current curves first, then deepen.
   spells (study, tomes, a teacher, prerequisites) instead of simply knowing
   them. Research how CRPGs pace casters (Vancian slots, cooldowns, spell
   points with slow regen).
+
+## Phase 36 — Realistic World Generation with deep history (George, 2026-07-14) — PRIORITY
+
+George: revive the advanced world-generation we planned — a NEW start-menu option
+that generates a much more REALISTIC world with a DEEP HISTORY, adapting the worldgen
+in `/Users/george/Documents/GitHub/autonomous_world` (heightmaps, Whittaker biomes,
+flow-accumulation rivers, a ~500-year history sim that founds settlements / fights
+wars / leaves ruins / lays roads) and BUILDINGS from `/Users/george/Documents/GitHub/
+building-gen` (room-subdivision floorplans). AW's worldgen is ~5000 LOC (numpy) + a
+2200-line history sim; building-gen ~12.6k LOC — so ADAPT the ideas incrementally, do
+not port wholesale. Status: P16.6 landed the river CORE (`world/river_gen`); the fuller
+vision was never built. `world_kind` already plumbs start-menu → GameEngine →
+demo_setup; add a `"realistic"` kind + a `WorldGenerator(mode="realistic")`.
+
+- [ ] **P36.1 Heightmap terrain + biomes.** New pure `world/realistic_gen.py`: a
+  multi-octave value-noise ELEVATION heightmap + a MOISTURE field (numpy, seed-repro),
+  mapped to terrain by a Whittaker-lite table (deep water → coast → grass → forest →
+  highland → mountain; wet lowland → marsh) — mountain ranges, forests, lakes,
+  coastlines, swamps, plains instead of flat grass + one river. `WorldGenerator` gains
+  a `mode`; realistic uses the heightmap base then keeps settlements/roads/caves/fortify
+  (town plots flattened to grass — towns clear the land). Start-menu "Realistic World"
+  option → `world_kind="realistic"`. Playable.
+- [ ] **P36.2 Rivers & lakes from the heightmap.** Flow-accumulation (D8-lite): rivers
+  run downhill from the highlands to the sea/lakes; shore autotiling (`river_gen.is_shore`).
+- [ ] **P36.3 Deep history sim → settlements, ruins, roads.** Expand `history_sim` to a
+  multi-century sim: tribes found settlements at suitable sites (`river_gen.score_site`),
+  wars destroy some (→ ruins), survivors lay roads / form realms — producing the real
+  settlement network + a CHRONICLE the Y-journal shows. NPCs/quests/factions seed into
+  the historical towns.
+- [ ] **P36.4 Richer buildings (building-gen).** Adapt building-gen's room-subdivision
+  for varied interior floorplans (not the fixed blueprints).
+- [ ] **P36.5 Integration & polish.** The realistic world is fully playable end-to-end
+  (economy, factions, wildlife, encounters seeded correctly), and beautiful.

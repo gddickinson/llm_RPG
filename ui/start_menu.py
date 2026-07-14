@@ -34,6 +34,7 @@ TITLE_OPTIONS = [
 NEW_GAME_OPTIONS = [
     ("Quick Start", "quick"),
     ("Customize Character", "customize"),
+    ("Realistic World", "realistic"),          # P36.1 heightmap landscape
     ("Begin at the Castle", "castle"),
     ("Back", "back"),
 ]
@@ -130,6 +131,9 @@ class StartMenu:
             if code == "quick":
                 return {"action": "new", "spec": default_quick_start_spec(),
                         "start": "default"}
+            if code == "realistic":            # P36.1 a heightmap-generated world
+                return {"action": "new", "spec": default_quick_start_spec(),
+                        "start": "realistic"}
             if code in ("customize", "castle"):
                 # both make a hero; the castle option starts them at the gate
                 self.pending_start = "castle" if code == "castle" \

@@ -197,7 +197,8 @@ def initialize_demo_world(engine, player_spec=None,
     else:
         try:
             from world.world_generator import WorldGenerator
-            WorldGenerator(engine.world).generate()
+            mode = "realistic" if world_kind == "realistic" else "classic"
+            WorldGenerator(engine.world, mode=mode).generate()
         except Exception as e:
             logger.warning(f"Procedural worldgen failed ({e}); using legacy.")
             engine.world.create_simple_world()
