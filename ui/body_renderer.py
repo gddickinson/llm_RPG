@@ -318,11 +318,15 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
                  "arm": gait["arm"] * 1.3, "cadence": gait["cadence"]}
     # P34.14 CONTINUOUS FACING: project the body skeleton at the eased heading angle
     # (front → ¾ → side → back, any direction the character moves), then apply the
-    # action clip on top. Replaces the 4-view build_pose/mocap split.
+    # action clip on top. Replaces the 4-view build_pose/mocap split. P34.6 adds a
+    # mood-driven line-of-action spine curve (proud arch / sad slump).
+    from ui import char_face
+    mood = char_face.EMOTE_EXPR.get(action) or char_face.expr_for(char)
     face_deg = anim.get("face_cur", 0.0)
     pose = char_pose3d.pose3d(feet_x, feet_y, H, anim.get("walk_phase", 0.0),
                               face_deg, build, anim.get("moving", False),
-                              attack, astyle, pgait, anim.get("idle_phase", 0.0))
+                              attack, astyle, pgait, anim.get("idle_phase", 0.0),
+                              char_pose3d.spine_for(mood))
     facing = pose["facing"]
     if char_clips.is_one_shot(action) and anim.get("action_dur"):
         phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
@@ -391,9 +395,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
                        max(2, int(H * 0.13)))
     bp.draw_torso(surface, pose, torso, belt)
     bp.draw_arm(surface, pose, near, torso, skin, arm_w)
-    from ui import char_face
-    # a fleeting expression from the current action, else the held mood
-    expr = char_face.EMOTE_EXPR.get(action) or char_face.expr_for(char)
+    expr = mood                    # resolved above (fleeting action face / mood)
     bp.draw_head(surface, pose, skin, hair, race, face_visible, neck_w,
                  pose.get("profile", 0), expr, anim.get("blinking", False),
                  sec.get("look", (0.0, 0.0)))

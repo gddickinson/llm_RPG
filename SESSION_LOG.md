@@ -7025,3 +7025,22 @@ kept for their own tests). A live-pipeline screenshot shows the hero walking in 
 8 directions with correct foreshortening, face show/hide and weapon depth.
 `tests/test_char_pose3d.py` (7) + facing-eases + every-angle integration tests in
 `test_body_renderer.py`. Full suite 2520 green.
+
+## 2026-07-14 (cont.) — P34.6: solid drawing & staging (limb arcs + line-of-action)
+
+Removing the "pasted-on" flatness now that the depth-sort (P34.14) is in.
+- **Limb arcs:** `body_parts._bow` pushes the elbow/knee out from the straight
+  shoulder→hand / hip→foot line, so limbs BEND along an arc instead of reading as two
+  sticks (`draw_arm` + `draw_legs`).
+- **Line-of-action:** `char_pose3d.spine_for` maps mood → a fore-aft SPINE CURVE
+  applied along the chest→shoulders→neck→head (a slump forward when sad/hurt/scared,
+  a proud arch back when happy/angry, straight when neutral). Because it's in the
+  depth axis it projects with the facing — a sad hero visibly droops in profile,
+  stands tall when proud. Feet are untouched.
+A screenshot compares happy/neutral/sad at ¾ and profile. Tests added to
+`test_char_pose3d.py`. Full suite green.
+
+Told George: yes, the mocap stride (and the other baked motions) will be ported INTO
+the depth model next — the mocap's forward axis IS the new depth (w) axis, so a baked
+walk will drive the stride at every facing angle (mocap quality, 360°). More action
+variety to follow.

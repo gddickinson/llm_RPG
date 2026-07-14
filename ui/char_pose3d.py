@@ -52,15 +52,30 @@ def _body_coords(walk, moving, g):
     }
 
 
+# P34.6 line-of-action: a mood → spine-curve (fore-aft, + = slump, − = proud arch)
+_SPINE = {"sad": 0.10, "hurt": 0.11, "scared": 0.07, "happy": -0.05,
+          "laughing": -0.06, "angry": -0.04, "surprised": -0.03}
+
+
+def spine_for(mood):
+    return _SPINE.get(mood, 0.0)
+
+
 def pose3d(cx, foot_y, H, walk=0.0, facing_deg=0.0, build=None, moving=True,
-           attack=0.0, attack_style="overhead", gait=None, idle=0.0):
+           attack=0.0, attack_style="overhead", gait=None, idle=0.0, spine=0.0):
     """Project the body skeleton at facing angle `facing_deg` to a screen pose —
-    a full drop-in for `char_pose.build_pose` (walk stride, gait, bob, attack)."""
+    a full drop-in for `char_pose.build_pose` (walk stride, gait, bob, attack, and a
+    mood spine curve)."""
     b = build or {"shoulder": 1.0, "hip": 1.0, "head": 1.0, "girth": 1.0}
     g = gait or _NEUTRAL_GAIT
     th = math.radians(facing_deg)
     c, s = math.cos(th), math.sin(th)
     j = _body_coords(walk, moving, g)
+    if spine:                          # bend the upper body along a C-curve (depth)
+        for k, f in (("chest", 0.3), ("l_sh", 0.45), ("r_sh", 0.45),
+                     ("neck", 0.6), ("head", 0.9)):
+            u, w, y = j[k]
+            j[k] = (u, w + spine * f, y)
     # a vertical bob while striding, a gentle breath while still (feet stay down)
     bob = (-abs(math.sin(walk)) * H * 0.045 * g["bob"] if moving
            else math.sin(idle) * H * 0.012)

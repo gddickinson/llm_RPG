@@ -4473,10 +4473,16 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   Live-pipeline screenshot: the hero walks in all 8 directions with correct
   foreshortening, face show/hide and weapon depth. `tests/test_char_pose3d.py` (7) +
   facing/every-angle integration tests in `test_body_renderer.py`. Full suite 2520.
-- [ ] **P34.6 Solid drawing & staging.** Bow the elbows/knees along ARCS (not straight
+- [x] **P34.6 Solid drawing & staging.** Bow the elbows/knees along ARCS (not straight
   midpoints); DEPTH-SORT limbs by facing (far limb drawn behind + dimmed ~8%);
   LINE-OF-ACTION — a gentle C-curve of the spine by mood (proud arch / sad slump).
-  Removes the "pasted-on" flatness.
+  Removes the "pasted-on" flatness. *Done:* depth-sort shipped with P34.14;
+  `body_parts._bow` arcs the elbow/knee out from the straight limb line (`draw_arm`/
+  `draw_legs`) so limbs bend instead of reading as sticks; `char_pose3d.spine_for`
+  maps mood → a fore-aft spine curve applied to the chest/shoulders/neck/head
+  (a slump forward when sad/hurt/scared, a proud arch back when happy/angry) — it
+  projects with the facing, so a sad hero visibly droops in profile. Screenshot
+  compares happy/neutral/sad at ¾ + profile. Tests in `test_char_pose3d.py`.
 - [x] **P34.8 MOCAP-driven clips (learn from Mixamo).** Bake movieMaker's Mixamo
   mocap (`assets/mixamo/.pose_cache/*.json`, real 24fps 65-bone motion) into compact
   2D side-view keyframes and PLAY them on the puppet for mocap-quality detail —

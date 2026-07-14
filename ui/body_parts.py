@@ -24,12 +24,20 @@ def _limb(surface, p0, p1, color, w):
     pygame.draw.circle(surface, color, b, max(1, w // 2))
 
 
+def _bow(p0, pj, p1, amt):
+    """P34.6: push the joint out from the straight p0→p1 line so the limb ARCS
+    (an elbow/knee bends, not a stick). Amplifies its existing deviation."""
+    mx, my = (p0[0] + p1[0]) / 2.0, (p0[1] + p1[1]) / 2.0
+    return (pj[0] + (pj[0] - mx) * amt, pj[1] + (pj[1] - my) * amt)
+
+
 def draw_legs(surface, pose, pants, boots, w):
     import pygame
     for hip, knee, foot in (("l_hip", "l_knee", "l_foot"),
                             ("r_hip", "r_knee", "r_foot")):
-        _limb(surface, pose[hip], pose[knee], pants, w)
-        _limb(surface, pose[knee], pose[foot], pants, w)
+        kn = _bow(pose[hip], pose[knee], pose[foot], 0.30)      # knee bows forward
+        _limb(surface, pose[hip], kn, pants, w)
+        _limb(surface, kn, pose[foot], pants, w)
         fx, fy = _pt(pose[foot])
         pygame.draw.ellipse(surface, boots,
                             (fx - w, fy - max(1, w // 2), w * 2, w))
@@ -57,10 +65,12 @@ def draw_arms(surface, pose, sleeve, skin, w):
 
 
 def draw_arm(surface, pose, side, sleeve, skin, w):
-    """One arm (P34.14 depth-sort: the far arm is drawn behind the torso)."""
+    """One arm (P34.14 depth-sort: the far arm is drawn behind the torso;
+    P34.6: the elbow bows so the arm arcs)."""
     sh, el, ha = side + "_sh", side + "_elbow", side + "_hand"
-    _limb(surface, pose[sh], pose[el], sleeve, w)
-    _limb(surface, pose[el], pose[ha], skin, max(1, w - 1))
+    eb = _bow(pose[sh], pose[el], pose[ha], 0.30)
+    _limb(surface, pose[sh], eb, sleeve, w)
+    _limb(surface, eb, pose[ha], skin, max(1, w - 1))
 
 
 def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,

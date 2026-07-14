@@ -59,6 +59,21 @@ class TestWalkProjection(unittest.TestCase):
                            _sep(still, "l_foot", "r_foot") + 5)
 
 
+class TestSpine(unittest.TestCase):
+    def test_mood_curve_signs(self):
+        self.assertGreater(p3.spine_for("sad"), 0)      # slump forward
+        self.assertLess(p3.spine_for("happy"), 0)       # proud arch back
+        self.assertEqual(p3.spine_for("neutral"), 0.0)
+
+    def test_spine_bends_the_upper_body(self):
+        # at a side view the fore-aft spine curve shows as a head x-shift
+        straight = p3.pose3d(60, 120, 80, 0, 90, spine=0.0)
+        slump = p3.pose3d(60, 120, 80, 0, 90, spine=0.10)
+        self.assertGreater(abs(slump["head"][0] - straight["head"][0]), 1.0)
+        # feet are unaffected by the spine
+        self.assertEqual(slump["l_foot"], straight["l_foot"])
+
+
 class TestFacingFromDelta(unittest.TestCase):
     def test_headings(self):
         self.assertAlmostEqual(p3.facing_from_delta(0, 1), 0.0)      # south/front
