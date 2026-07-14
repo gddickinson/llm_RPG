@@ -152,9 +152,20 @@ class CombatSystem:
                 stamina.spend_action(attacker, stamina.ATTACK_COST)
         except Exception:
             pass
+        # P35.3 terrain: high ground helps an archer, bad footing hurts a melee
+        # swing, and a defender in cover / against a wall is harder to hit
+        terr = 0
+        cover = 0
+        try:
+            from engine import terrain_combat as tc
+            ranged = action_type in ("shoot", "cast")
+            terr = tc.to_hit_mod(self.engine, attacker, defender, action_type)
+            cover = tc.cover_ac(self.engine, defender, ranged)
+        except Exception:
+            pass
         total_to_hit = roll + atk_mod + prof + \
-            attack_penalty(attacker) - exert
-        ac = effective_ac(defender) + ac_penalty(defender)
+            attack_penalty(attacker) - exert + terr
+        ac = effective_ac(defender) + ac_penalty(defender) + cover
 
         if natural_fumble or (not natural_crit and total_to_hit < ac):
             kind = "fumbles" if natural_fumble else "misses"

@@ -113,6 +113,16 @@ def context_hints(engine) -> List[str]:
 
     if enemies:
         hints.append(f"[F] attack {enemies[0].name}")
+        try:   # P35.3 terrain telegraph — cover / bad footing shape the fight
+            from engine import terrain_combat as tc
+            from world.world_map import TerrainType as _T
+            p = engine.player
+            if tc.cover_score(engine, p.position) > 0:
+                hints.insert(0, "[~] you fight from cover — harder to hit")
+            elif tc.terrain_at(engine, p.position) in (_T.WATER, _T.SWAMP):
+                hints.insert(0, "[!] treacherous footing — your blows go wild")
+        except Exception:
+            pass
         try:
             from engine.combat_depth import action_name
             move = action_name(engine)

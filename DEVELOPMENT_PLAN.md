@@ -4660,6 +4660,19 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   test_monster_packs.py`. (Overworld monsters are mostly melee in the data, so deeper
   attack choice — spell/charge/special — awaits per-monster ability data.)
 
+- [x] **P35.3 Terrain & cover in combat.** George: monsters/NPCs should use terrain
+  & cover; terrain gives combat advantages — trees/buildings/walls = cover, water/marsh
+  hampers melee, archers gain from high ground; make the rules good, applied, and
+  AI-aware. *Done:* new pure `engine/terrain_combat.py` — `cover_ac` (a defender in
+  FOREST/RUBBLE or hugging a BUILDING/wall is harder to hit, worth MORE vs a shot than
+  a blade), `footing_penalty` (a hand-to-hand swing in WATER/MARSH goes off-balance,
+  −2), `high_ground` (an archer up on the rocks looses down with a +2 edge). Applied
+  in `combat_system._resolve` (to-hit + a cover AC). The pack AI now FIGHTS FROM COVER:
+  `monster_packs._surround_tile` favours cover flank tiles, and melee never picks a
+  water tile. A hint-bar telegraph tells the player when they fight from cover / on bad
+  footing. `tests/test_terrain_combat.py`. (Follow-up: a real overworld ELEVATION layer
+  for graded high ground; NPCs actively repositioning to seek cover mid-fight.)
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the

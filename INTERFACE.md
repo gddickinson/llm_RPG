@@ -68,6 +68,7 @@ llm_RPG/
 - **`demo_setup.py`** — `initialize_demo_world(engine, spec, world_kind)`, `create_default_player(spec)`. P18.5 `world_kind="castle"` plants the `castle_region` realm and spawns the player at the gatehouse instead of the default Oakvale world.
 - **`action_router.py`** — Routes NPC actions to specialized handlers.
 - **`combat_system.py`** — Player vs NPC vs NPC combat, damage, defeat, loot, faction rep on kill.
+- **`terrain_combat.py`** — P35.3 terrain & cover combat rules (pure): `cover_ac` (FOREST/RUBBLE you stand in or a BUILDING/wall you hug = harder to hit, more vs ranged), `footing_penalty` (WATER/MARSH hampers a melee swing), `high_ground` (an archer beside a MOUNTAIN gets a +2 edge), `cover_score` (for the AI). Applied in `combat_system._resolve`; the pack AI's `_surround_tile` favours cover tiles.
 - **`combat_math.py`** — pure combat math split out of `combat_system` to hold the 500-line line: `damage_type_modifier` (silver vs troll/monster, holy vs the wicked, fire denies a troll its regen).
 - **`economy_system.py`** — Buy/sell/trade/give between characters.
 - **`dialog_system.py`** — Player↔NPC dialog flow (routes through dialog_protocol for LLM providers).

@@ -7272,3 +7272,23 @@ both retreat; at full HP they engage. `tests/test_monster_packs.py`. Full suite 
 Note: overworld monsters carry no ranged/spell/charge ability data, so deeper
 per-monster ATTACK CHOICE (cast/charge/special by situation) awaits that data; the
 coordination, roles, kiting, focus and now pack-withdrawal cover the tactical core.
+
+## 2026-07-14 (cont.) — P35.3: terrain & cover in combat
+
+George: monsters/NPCs should use terrain & cover; terrain should give combat
+advantages (trees/buildings/walls = cover, water/marsh hampers hand-to-hand, archers
+gain from high ground) — with good rules, applied, and AI-aware. New pure
+`engine/terrain_combat.py`:
+- `cover_ac` — a defender standing in FOREST/RUBBLE or hugging a BUILDING/wall is
+  harder to hit; cover shields MORE against a shot (+1) than a blade at arm's length
+  (halved);
+- `footing_penalty` — a hand-to-hand attacker standing in WATER/MARSH swings
+  off-balance (−2; ranged unaffected);
+- `high_ground` — an archer up on the rocks (beside a mountain) firing at a target on
+  the flat gets the +2 high-ground edge.
+Applied in `combat_system._resolve` (net to-hit mod + a cover AC on the defender). The
+pack AI now FIGHTS FROM COVER: `monster_packs._surround_tile` biases flank tiles toward
+cover, and melee never fans out onto water (only walkable land). A hint-bar telegraph
+tells the player when they fight from cover / on treacherous footing. `tests/
+test_terrain_combat.py`. Full suite green. Overworld has no elevation layer, so true
+graded high ground uses a mountain-edge proxy — a real elevation layer is a follow-up.

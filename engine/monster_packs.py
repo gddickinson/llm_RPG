@@ -161,22 +161,24 @@ class MonsterPackSystem:
         return "engage"
 
     def _surround_tile(self, m, focus, taken):
-        """The nearest FREE, un-taken tile beside the focus — members spread
-        around it rather than queueing behind one another."""
+        """A FREE, un-taken tile beside the focus — near, and favouring COVER so the
+        pack fights from the treeline / against a wall (P35.3), not queued in the
+        open."""
         from engine.squad_tactics import _NEIGHBORS, _free
+        from engine import terrain_combat as tc
         wmap = self.engine.world.map
         fx, fy = focus.position
         ax, ay = m.position
         if abs(ax - fx) <= 1 and abs(ay - fy) <= 1:
             return (ax, ay)                    # already in a flanking spot — hold
-        best, bd = None, 10 ** 9
+        best, bscore = None, 10 ** 9
         for dx, dy in _NEIGHBORS:
             x, y = fx + dx, fy + dy
             if (x, y) in taken or not _free(wmap, x, y):
                 continue
-            d = abs(x - ax) + abs(y - ay)
-            if d < bd:
-                bd, best = d, (x, y)
+            score = (abs(x - ax) + abs(y - ay)) - tc.cover_score(self.engine, (x, y)) * 1.5
+            if score < bscore:
+                bscore, best = score, (x, y)
         return best
 
     def _focus(self, members):
