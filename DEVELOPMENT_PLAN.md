@@ -4619,6 +4619,15 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   smith hammers, a farmer sweeps, an innkeeper stirs, a merchant hawks/beckons, a
   cleric kneels in prayer, a caster ponders) instead of only generic fidgets — so the
   town reads as at work. Screenshot shows each trade's motion. `tests/test_idle_life.py`.
+- [x] **P34.23 Realistic monster spawning (no popping in).** George: monsters
+  appear out of nowhere as the hero roams — they should roam in, appear offscreen, or
+  emerge from caves/lairs/camps. *Done:* the spawn ring moved from a fixed dist-4
+  (INSIDE the dist-5 sight) to just BEYOND the hero's `effective_visibility`, so a
+  wandering monster spawns OFFSCREEN and roams into view (the P32.1 pursuit brings
+  hostiles in) instead of popping up in front of you; a monster near a CAVE mouth
+  EMERGES from it (`_cave_mouth`), and the encounter line now names the origin +
+  compass direction ("slinks out of a cave to the north" / "appears to the east").
+  `tests/test_encounters.py` (offscreen + cave-emergence).
   QUEUE (remaining): more creature plans (birds/spiders/dragons), creature attack/hurt.
 
 ## What NOT to build (explicitly deferred)

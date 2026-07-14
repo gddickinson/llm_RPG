@@ -92,7 +92,7 @@ class EncounterManager:
         if self.rng.random() > self.spawn_chance():
             return None
 
-        spawn_pos = self._find_spawn_position()
+        spawn_pos, origin = self._find_spawn_position()
         if spawn_pos is None:
             return None
 
@@ -132,12 +132,15 @@ class EncounterManager:
                 self.engine.world.map.place_character(em, *epos)
                 placed_extra += 1
         self._cooldown_until = self.engine.turn_counter + ENCOUNTER_COOLDOWN_TURNS
+        # P34.23 the monster spawned OFFSCREEN and roams in — the message names
+        # where it came from (a cave / the treeline) and which way, so nothing
+        # "pops" into existence in front of the hero
+        where = self._origin_phrase(origin, spawn_pos)
         if placed_extra:
-            return (f"A {word} of {monster.name}s "
-                    f"appears in the distance!")
+            return f"A {word} of {monster.name}s {where}!"
         if promoted:
-            return f"A fearsome {monster.name} appears in the distance!"
-        return f"A {monster.name} appears in the distance!"
+            return f"A fearsome {monster.name} {where}!"
+        return f"A {monster.name} {where}."
 
     def _group_extra(self, template: str) -> Tuple[int, str]:
         """How many EXTRA companions this template's `group` brings (size − 1)
@@ -232,25 +235,82 @@ class EncounterManager:
             pass
         return mult
 
-    def _find_spawn_position(self) -> Optional[Tuple[int, int]]:
+    _BLOCKED = (TerrainType.WATER, TerrainType.MOUNTAIN,
+                TerrainType.BUILDING, TerrainType.CAVE)
+
+    def _visibility(self) -> int:
+        try:
+            return int(self.engine.effective_visibility())
+        except Exception:
+            return 5
+
+    def _ring(self, lo: float, hi: float):
+        """Walkable, unoccupied tiles in the annulus [lo, hi] from the player."""
         wmap = self.engine.world.map
         px, py = self.engine.player.position
-        candidates = []
-        for dy in range(-SPAWN_DISTANCE, SPAWN_DISTANCE + 1):
-            for dx in range(-SPAWN_DISTANCE, SPAWN_DISTANCE + 1):
+        out, hi_i = [], int(hi) + 1
+        for dy in range(-hi_i, hi_i + 1):
+            for dx in range(-hi_i, hi_i + 1):
                 d = (dx * dx + dy * dy) ** 0.5
-                if not (SPAWN_DISTANCE - 1 <= d <= SPAWN_DISTANCE + 0.5):
+                if not (lo <= d <= hi):
                     continue
                 x, y = px + dx, py + dy
                 if not (0 <= x < wmap.width and 0 <= y < wmap.height):
                     continue
-                terrain = wmap.terrain[y][x]
-                if terrain in (TerrainType.WATER, TerrainType.MOUNTAIN,
-                               TerrainType.BUILDING, TerrainType.CAVE):
+                if wmap.terrain[y][x] in self._BLOCKED or (x, y) in wmap.characters:
                     continue
-                if (x, y) in wmap.characters:
+                out.append((x, y))
+        return out
+
+    def _cave_mouth(self, lo: float, hi: float):
+        """A walkable tile beside a CAVE within the offscreen band (a monster
+        emerging from underground) — or None."""
+        wmap = self.engine.world.map
+        px, py = self.engine.player.position
+        hi_i = int(hi) + 1
+        caves = []
+        for dy in range(-hi_i, hi_i + 1):
+            for dx in range(-hi_i, hi_i + 1):
+                d = (dx * dx + dy * dy) ** 0.5
+                if not (lo <= d <= hi):
                     continue
-                candidates.append((x, y))
-        if not candidates:
-            return None
-        return self.rng.choice(candidates)
+                x, y = px + dx, py + dy
+                if 0 <= x < wmap.width and 0 <= y < wmap.height and \
+                        wmap.terrain[y][x] == TerrainType.CAVE:
+                    caves.append((x, y))
+        self.rng.shuffle(caves)
+        for cx, cy in caves:
+            for ax, ay in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
+                if 0 <= ax < wmap.width and 0 <= ay < wmap.height and \
+                        wmap.terrain[ay][ax] not in self._BLOCKED and \
+                        (ax, ay) not in wmap.characters:
+                    return (ax, ay)
+        return None
+
+    def _find_spawn_position(self):
+        """(pos, origin): monsters spawn OFFSCREEN — just beyond the hero's sight —
+        so they roam INTO view instead of popping in. When a cave mouth is close
+        they emerge from it; otherwise from the wilds just out of sight."""
+        vis = self._visibility()
+        mouth = self._cave_mouth(3, vis + 4)
+        if mouth is not None:
+            return mouth, "cave"
+        ring = self._ring(vis + 1, vis + 3)     # the band just past the fog edge
+        if not ring:
+            ring = self._ring(max(3, vis - 1), vis + 4)   # constrained maps fall back
+        if ring:
+            return self.rng.choice(ring), "wild"
+        return None, None
+
+    def _compass(self, pos) -> str:
+        px, py = self.engine.player.position
+        dx, dy = pos[0] - px, pos[1] - py
+        ns = "north" if dy < 0 else "south" if dy > 0 else ""
+        ew = "west" if dx < 0 else "east" if dx > 0 else ""
+        return (ns + ew) if (ns and ew) else (ns or ew or "distance")
+
+    def _origin_phrase(self, origin, pos) -> str:
+        d = self._compass(pos)
+        if origin == "cave":
+            return f"slinks out of a cave to the {d}"
+        return f"appears to the {d}" if d != "distance" else "appears in the distance"

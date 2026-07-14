@@ -7197,3 +7197,21 @@ Screenshot shows each trade's distinct motion. Combined with the startle reactio
 and the mutual look-at, a town now reads as alive and at work. `tests/test_idle_life.py`.
 Full suite green. QUEUE remaining: more creature plans (birds/spiders/dragons),
 creature attack/hurt animations.
+
+## 2026-07-14 (cont.) — P34.23: realistic monster spawning (no more popping in)
+
+George: monsters appear out of nowhere as the hero roams the wilderness — they should
+roam in / appear offscreen / emerge from caves/lairs/burrows. Root cause: the spawn
+ring was a fixed distance 4, INSIDE the visibility of 5 — so monsters materialised in
+plain view. Fix (`world/encounters._find_spawn_position`):
+- monsters now spawn on the band JUST BEYOND `effective_visibility` (vis+1..vis+3), i.e.
+  OFFSCREEN, then roam into view (P32.1 pursuit closes hostiles in) — nothing pops up
+  in front of the hero;
+- when a CAVE mouth sits in that offscreen band the monster EMERGES from it
+  (`_cave_mouth` → an adjacent walkable tile);
+- the encounter message names the ORIGIN + compass direction ("A wolf slinks out of a
+  cave to the north!" / "A bandit appears to the east.").
+Returns `(pos, origin)`; verified spawn distances 6-8 vs sight 5. `tests/
+test_encounters.py` (offscreen + cave-emergence). Full suite green. (Follow-ups:
+emerge from lair markers + camps/burrows too, a faint "rustling to the north" pre-
+telegraph.)

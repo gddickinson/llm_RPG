@@ -153,3 +153,54 @@ class TestDangerTiers(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestOffscreenSpawning(unittest.TestCase):
+    """P34.23: monsters spawn OFFSCREEN (beyond sight) and roam in, or emerge
+    from a cave — nothing pops into existence in front of the hero."""
+
+    def setUp(self):
+        self.engine = GameEngine(
+            llm_provider="heuristic", enable_npc_processes=False)
+        self.engine.start_game()
+        self.engine.encounter_manager.rng = random.Random(3)
+        # a clear grassy spot away from the walls
+        from world.world_map import TerrainType
+        wmap = self.engine.world.map
+        self.engine.player.position = (wmap.width // 2, wmap.height // 2)
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def test_spawns_beyond_the_hero_sight(self):
+        em = self.engine.encounter_manager
+        vis = self.engine.effective_visibility()
+        px, py = self.engine.player.position
+        got = 0
+        for _ in range(20):
+            pos, origin = em._find_spawn_position()
+            if pos is None:
+                continue
+            got += 1
+            d = ((pos[0] - px) ** 2 + (pos[1] - py) ** 2) ** 0.5
+            self.assertGreater(d, vis)              # offscreen — past the fog
+            self.assertIn(origin, ("wild", "cave"))
+        self.assertGreater(got, 0)
+
+    def test_emerges_from_a_nearby_cave(self):
+        from world.world_map import TerrainType
+        em = self.engine.encounter_manager
+        wmap = self.engine.world.map
+        px, py = self.engine.player.position
+        wmap.terrain[py][px + 7] = TerrainType.CAVE   # a cave just out of sight
+        pos, origin = em._find_spawn_position()
+        self.assertEqual(origin, "cave")
+        # spawned adjacent to the cave mouth, not on it
+        self.assertLessEqual(abs(pos[0] - (px + 7)) + abs(pos[1] - py), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()
