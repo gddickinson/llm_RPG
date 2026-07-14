@@ -4165,6 +4165,80 @@ animal population feeds it. Each sub-step below is one tested round.
   harvest). Closes the wildlife↔production↔prices↔quests loop.
   `tests/test_wildlife.py` (22).
 
+## Phase 33 — Graphics overhaul: a world worth looking at (George, 2026-07-14)
+
+George: "The graphics are still very basic — I wanted superior 2.5D graphics with
+better buildings, characters and environmental tiles, more interesting and
+realistic." Reviewed the live game (rendered screenshots) + three reference
+codebases: **autonomous_world** (`game/ui/`), **building-gen**
+(`/Users/george/Documents/GitHub/building-gen`), **movieMaker**
+(`/Users/george/claude_test/movieMaker`).
+
+**Diagnosis (verified by screenshot + code):** we render at a single 32px top-down
+grid on **procedural sprites** (`TILESET_NAME=None`). The look is "graph paper":
+`SpriteLoader.tile()` bakes ONE surface per terrain name (`ui/sprite_loader.py:113`),
+so every grass/tree/wall tile is byte-identical and repeats across the grid; no
+autotiling → hard 32px seams (grass abuts water with a knife edge); no texture
+(flat fills + 1px dither); buildings draw as INDEPENDENT per-tile ridged blocks
+(`ui/renderer_buildings.py:128`) — a big house is a grid of separate cubes, one
+gable shape for everything, no windows on the block, no drop shadow, no character
+occlusion; characters are primitives whose weapon is chosen by CLASS ONLY
+(ignores real equipment, `ui/body_renderer.py:271`) with a walk cycle but no
+attack/cast anim and no tween (snap tile-to-tile). Two bugs: `BRIDGE` renders as
+grass (missing from `_TERRAIN_TO_SPRITE`), and `entities/<class>.png` overrides
+never reach the character path. **Constraint:** `ui/renderer.py` is at the 500-line
+ceiling → the overhaul lands as NEW modules in the proven
+pure-geometry→thin-draw + headless-test pattern (`renderer_buildings`/`animation`).
+
+**Sources.** autonomous_world is the same pygame surface-blit 2.5D tech scaled up —
+its techniques port almost directly (per-tile variant hash `sprite_loader.py:145`,
+dithered terrain `terrain_sprites.py:33`, edge-blend `renderer_buildings.py:635`,
+water depth/foam `water_render.py`, 2.5D wall faces `renderer_buildings.py:118`,
+per-material roofs `:386`, drop shadows). building-gen contributes DESCRIPTORS
+(roof type/pitch/covering/storeys/chimneys/dormers per kind — `RoofSpec`/`select_roof`
+`engineering/roof_types.py`, `StyleParams` `style/models.py`), not its 3D meshes.
+movieMaker is a 3D film pipeline (not drop-in) but its animation LOGIC ports
+(seeded/motivated clip pick `mm/cast/gesture.py`, procedural secondary motion,
+palette-mute), and its numpy rasterizer (`mm/studio/raster3d.py`) could later BAKE
+CC0 walk-cycle sprite sheets offline into the existing PNG-tileset pipeline.
+
+- [x] **P33.1 Per-tile variety + texture (kill the graph-paper grid).** The single
+  biggest, asset-free win. New pure `ui/tile_variants.py`: `variant_index(wx,wy,type,n)`
+  (the AW hash) + `dither_grid`/`scatter_points` (headless-testable) + a thin
+  `build_tile()` that bakes N≈4 richer variants per terrain (weighted 3-shade dither
+  + scattered blades/pebbles/canopy). `SpriteLoader.tile_variant(name,wx,wy)` caches
+  by (name,variant) and the renderer's tile loop picks by world position, so
+  neighbours differ. Keep the PNG-tileset path untouched. Fix the BRIDGE mapping.
+  *Done:* `ui/tile_variants.py` (177 lines — `variant_index`/`type_id`/`dither_grid`/
+  `scatter_points`/`RECIPES`/`build_tile`, 9 textured terrains); `SpriteLoader.
+  tile_variant` + `_variant_cache`; renderer tile loop calls it by (wx,wy); BRIDGE
+  added to `_TERRAIN_TO_SPRITE`. Grass/water/forest/road etc. now mottled and
+  varied per tile (verified by before/after screenshots) instead of one repeated
+  stamp. `tests/test_tile_variants.py` (17).
+- [ ] **P33.2 Terrain edges + water & coastline.** Neighbour-aware edge blend (a
+  dithered fade of the neighbour's colour over the tile seam), water depth classes
+  (shallow/normal/deep by water-neighbour count) + shore foam + a 3-frame shimmer.
+  New `ui/terrain_edges.py` / `ui/water_render.py` (pure classify + overlay math).
+  Ends the hard seams; the coast reads as a coast.
+- [ ] **P33.3 Richer 2.5D buildings (descriptors + roofs + merging + shadows).** A
+  `data/building_styles.json` per KIND (roof shape gable/hip/flat+parapet, pitch,
+  storeys, covering colour, wall pattern, chimneys, dormers, footprint aspect) —
+  authored from building-gen's `select_roof`/`StyleParams`. Extend
+  `renderer_buildings.py` (+ a pure `ui/roof_shapes.py` for the hip/flat polygon
+  math) to draw the descriptor's roof, per-material colour, chimneys/dormers as
+  roof-top stamps, a drop shadow, and MERGE adjacent same-building tiles into one
+  roofed mass instead of a grid of cubes.
+- [ ] **P33.4 Living characters (equipment + animation).** Make the drawn weapon/
+  armour read ACTUAL equipped items (not class), add an attack-lunge + cast flash +
+  hurt recoil and a smooth tile-to-tile TWEEN (wire `animation.lerp`/`smoothstep`,
+  today unused), 4-way facing, and night palette-muting. New pure `ui/char_motion.py`;
+  extend `body_renderer`. (movieMaker's runtime-portable animation logic.)
+- [ ] **P33.5 Atmosphere polish + optional baked sprite sheets.** Richer day/night
+  phase tints (dawn/dusk), tree/building drop-shadows, ambient particles (fireflies,
+  chimney smoke, leaves). STRETCH: an offline `tools/bake_sprites.py` over movieMaker's
+  numpy rasterizer to bake CC0 character walk-cycle sheets consumable via the P15.1
+  PNG-tileset pipeline (a real-art ceiling without a runtime dependency).
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the

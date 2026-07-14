@@ -27,7 +27,7 @@ _TERRAIN_TO_SPRITE = {
     TerrainType.SWAMP: "swamp",
     TerrainType.FARMLAND: "farmland",
     TerrainType.RUBBLE: "rubble",
-    TerrainType.SCORCHED: "scorched",
+    TerrainType.SCORCHED: "scorched", TerrainType.BRIDGE: "bridge",
 }
 
 # Door glyph colors by lock state (P9A.3b)
@@ -103,7 +103,7 @@ class MapRenderer:
                     dim = False
                 terrain = wmap.terrain[wy][wx]
                 sprite_name = _TERRAIN_TO_SPRITE.get(terrain, "grass")
-                surf = self.sprites.tile(sprite_name)
+                surf = self.sprites.tile_variant(sprite_name, wx, wy)
                 target.blit(surf, dest)
                 if dim:
                     shade = pygame.Surface(

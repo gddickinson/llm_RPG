@@ -6568,3 +6568,30 @@ living-ecosystem ultraplan (speed & pursuit, packs & gangs, neutral wildlife,
 the predator/prey loop, and the economy it feeds). `tests/test_wildlife.py`
 (22). `world/wildlife.py` at 429 lines — a split is the next structural chore if
 it grows further.
+
+## 2026-07-14 — Phase 33 planned + P33.1: per-tile variety (the graph-paper grid dies)
+
+George: the graphics are still too basic — wanted the promised superior 2.5D with
+better buildings, characters and environmental tiles. Reviewed the LIVE game
+(rendered screenshots) and three reference codebases — autonomous_world (`game/ui/`),
+building-gen, movieMaker — and wrote **Phase 33** (5 sub-steps). Diagnosis: we draw
+a single 32px top-down grid on PROCEDURAL sprites where `SpriteLoader.tile()` bakes
+ONE surface per terrain, so every grass/tree/water/wall tile is byte-identical and
+the world reads as graph paper; no autotiling (hard seams); flat fills; buildings
+are independent per-tile ridged cubes; characters are primitives whose weapon is
+class-only with no attack anim or tween. autonomous_world is the same pygame
+surface-blit 2.5D tech scaled up, so its techniques port almost directly;
+building-gen gives roof/style DESCRIPTORS; movieMaker gives animation LOGIC (+ an
+optional offline sprite-sheet baker).
+
+**P33.1** lands the biggest asset-free win, ported from AW's variant hash. New pure
+`ui/tile_variants.py` bakes N=4 textured variants per terrain (a weighted 3-shade
+dither + scattered blades/canopy/ripples/rocks/reeds/pebbles/furrows/chunks/ash)
+and picks which a tile shows from `variant_index = (wx*7 + wy*13 + type*3) % N` —
+deterministic per tile (rides frames + saves) but every neighbour differs, so the
+repetition dissolves. `SpriteLoader.tile_variant(name,wx,wy)` caches by
+(name,variant); the renderer tile loop calls it by world position; the PNG-tileset
+path is untouched. Also fixed the BRIDGE-renders-as-grass bug. Before/after
+screenshots confirm grass/water/forest are now mottled and organic instead of one
+stamp. `ui/tile_variants.py` pure + headless-testable, `tests/test_tile_variants.py`
+(17). Next: P33.2 edge-blending + water/coastline, then P33.3 richer buildings.

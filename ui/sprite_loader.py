@@ -67,8 +67,28 @@ class SpriteLoader:
         self.tile_size = tile_size
         self._tile_cache: Dict[str, pygame.Surface] = {}
         self._char_cache: Dict[str, pygame.Surface] = {}
+        self._variant_cache: Dict[tuple, pygame.Surface] = {}
         self._rng = random.Random(1)
         self.tileset_dir = self._resolve_tileset()
+
+    def tile_variant(self, terrain_name: str, wx: int, wy: int):
+        """P33.1: a per-WORLD-POSITION terrain tile — one of N textured variants
+        picked by a hash of (wx, wy), so neighbours differ and the grid stops
+        reading as one repeated stamp. A PNG tileset or a recipe-less terrain
+        falls straight back to the classic single `tile()` surface."""
+        from ui import tile_variants
+        if self.tileset_dir is not None or \
+                terrain_name not in tile_variants.RECIPES:
+            return self.tile(terrain_name)
+        v = tile_variants.variant_index(wx, wy, terrain_name)
+        key = (terrain_name, v)
+        surf = self._variant_cache.get(key)
+        if surf is None:
+            surf = tile_variants.build_tile(terrain_name, v, self.tile_size)
+            if surf is None:
+                surf = self.tile(terrain_name)
+            self._variant_cache[key] = surf
+        return surf
 
     # -------------------------------------------- tileset (P15.1)
 
