@@ -37,11 +37,18 @@ def draw_legs(surface, pose, pants, boots, w):
 
 def draw_torso(surface, pose, color, belt):
     import pygame
-    pts = [_pt(pose["l_hip"]), _pt(pose["r_hip"]),
-           _pt(pose["r_sh"]), _pt(pose["l_sh"])]
+    lh, rh = pose["l_hip"], pose["r_hip"]
+    ls, rs = pose["l_sh"], pose["r_sh"]
+    # a rounded BARREL (P33.6a) — the sides bulge by the character's girth
+    girth = pose.get("girth", 1.0)
+    my = (ls[1] + lh[1]) / 2
+    bulge = (max(rh[0], rs[0]) - min(lh[0], ls[0])) * 0.16 * girth
+    left = (min(lh[0], ls[0]) - bulge, my)
+    right = (max(rh[0], rs[0]) + bulge, my)
+    pts = [_pt(lh), _pt(left), _pt(ls), _pt(rs), _pt(right), _pt(rh)]
     pygame.draw.polygon(surface, color, pts)
     pygame.draw.polygon(surface, _dark(color, 55), pts, 1)
-    pygame.draw.line(surface, belt, _pt(pose["l_hip"]), _pt(pose["r_hip"]), 2)
+    pygame.draw.line(surface, belt, _pt(lh), _pt(rh), max(2, int(bulge)))
 
 
 def draw_arms(surface, pose, sleeve, skin, w):

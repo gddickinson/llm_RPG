@@ -6684,3 +6684,16 @@ visible; the villager/hero now read as little PEOPLE amid the multi-storey town.
 `tests/test_char_pose.py` (13) + `body_renderer`/`body_parts`/`char_pose` all
 under 300 lines. Screenshots across all facings + a walking/attacking side view
 confirm it. Remainder: cast/hurt flashes; then P33.5 atmosphere.
+
+## 2026-07-14 (cont.) — P33.6a: cartoon bodies + diversity (Phase 33.6 begins)
+
+George asked for a more diverse, rounder, slightly cartoonish cast with bigger
+heads (and, next, a big animation library). Started with the bodies: `HEAD_R`
+0.11→0.145 (a bigger, cuter head), `char_pose.build_pose` now takes a per-character
+BUILD that scales shoulder/hip width, head size and girth, and `body_renderer.
+_body_build` assigns one of six builds (average/broad/slim/round/tall/short) by a
+stable id hash so the cast is visibly diverse; `body_parts.draw_torso` draws a
+rounded BARREL that bulges with girth. A lineup screenshot shows stout, tall,
+broad and slim townsfolk with cartoonish heads. `tests/test_char_pose.py` (14).
+Next (P33.6b): the animation CLIP system + a big batch of actions (jump/sit/bow/
+run/dance/guard/hurt/pickup/wave/cast…) and turn-to-face, then interactions.

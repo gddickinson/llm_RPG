@@ -45,6 +45,17 @@ class TestPose(unittest.TestCase):
         mid = self._pose(attack=0.5)
         self.assertLess(mid["r_hand"][1], rest["r_hand"][1])   # hand swings up
 
+    def test_build_scales_head_and_shoulders(self):
+        big = self._pose(build={"shoulder": 1.4, "hip": 1.0, "head": 1.5,
+                                "girth": 1.5})
+        small = self._pose(build={"shoulder": 0.8, "hip": 1.0, "head": 0.8,
+                                  "girth": 0.8})
+        self.assertGreater(big["head_r"], small["head_r"])
+        big_shw = big["r_sh"][0] - big["l_sh"][0]
+        small_shw = small["r_sh"][0] - small["l_sh"][0]
+        self.assertGreater(big_shw, small_shw)
+        self.assertEqual(big["girth"], 1.5)
+
     def test_weapon_dir_by_facing(self):
         self.assertEqual(cp.weapon_dir((1, 0)), 1)
         self.assertEqual(cp.weapon_dir((-1, 0)), -1)

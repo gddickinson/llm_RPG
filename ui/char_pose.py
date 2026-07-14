@@ -1,11 +1,11 @@
-"""P33.4b character pose — the pure skeleton math behind the detailed body.
+"""P33.4b/6a character pose — the pure skeleton math behind the detailed body.
 
 Given the animation state (walk / idle phase, attack progress, facing) and a
 foot anchor + pixel height, compute the screen position of every joint so
-`body_renderer` just draws limbs between the points. FOUR facings: a FRONT view
-(facing the camera), a BACK view (facing away — same body, no face), and a SIDE
-PROFILE for left/right (an edge-on figure with the limbs swinging fore-aft along
-the facing and the head in profile). All headless-testable.
+`body_renderer` just draws limbs between the points. FOUR facings: FRONT, BACK
+(no face), and a SIDE PROFILE for left/right (edge-on, limbs striding fore-aft).
+A per-character BUILD (P33.6a) scales shoulder/hip width, head size and girth so
+the cast is diverse and a touch cartoonish. All headless-testable.
 
 Coordinates are screen pixels, y DOWN; the character is anchored at the feet
 (`foot_y`) and rises `H` pixels — taller than one tile, so it reads big.
@@ -13,9 +13,11 @@ Coordinates are screen pixels, y DOWN; the character is anchored at the feet
 
 import math
 
-KNEE, HIP, CHEST, SHOULDER, NECK, HEAD_C = 0.27, 0.50, 0.68, 0.76, 0.79, 0.89
-HEAD_R = 0.11
-SHOULDER_W, HIP_W = 0.34, 0.22
+KNEE, HIP, CHEST, SHOULDER, NECK, HEAD_C = 0.26, 0.49, 0.66, 0.74, 0.77, 0.88
+HEAD_R = 0.145                 # P33.6a: a bigger, rounder, cartoonish head
+SHOULDER_W, HIP_W = 0.34, 0.24
+
+_DEFAULT_BUILD = {"shoulder": 1.0, "hip": 1.0, "head": 1.0, "girth": 1.0}
 
 
 def _ease(t):
@@ -24,8 +26,6 @@ def _ease(t):
 
 
 def weapon_dir(facing):
-    """Which way (x sign) the weapon arm swings: toward the facing side, right
-    for a camera-facing figure, straight (0) when facing away."""
     fx, fy = facing
     if fx:
         return 1 if fx > 0 else -1
@@ -33,13 +33,13 @@ def weapon_dir(facing):
 
 
 def build_pose(cx, foot_y, H, walk=0.0, idle=0.0, moving=False,
-               attack=0.0, facing=(0, 1)):
-    """Dispatch to the front/back or the side profile pose."""
+               attack=0.0, facing=(0, 1), build=None):
+    b = build or _DEFAULT_BUILD
     fx, _fy = facing
     if fx:
         return _side_pose(cx, foot_y, H, walk, idle, moving, attack,
-                          1 if fx > 0 else -1)
-    return _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing)
+                          1 if fx > 0 else -1, b)
+    return _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b)
 
 
 def _bob_breath(H, walk, idle, moving):
@@ -47,14 +47,14 @@ def _bob_breath(H, walk, idle, moving):
             0.0 if moving else math.sin(idle) * H * 0.012)
 
 
-def _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing):
+def _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b):
     sw = math.sin(walk)
     bob, breath = _bob_breath(H, walk, idle, moving)
 
     def yy(f):
         return foot_y - f * H + bob
 
-    hipw, shw = H * HIP_W, H * SHOULDER_W
+    hipw, shw = H * HIP_W * b["hip"], H * SHOULDER_W * b["shoulder"]
     stride = H * 0.12 if moving else 0.0
     lift = H * 0.055
     l_hip = (cx - hipw / 2, yy(HIP))
@@ -80,12 +80,10 @@ def _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing):
     r_elbow = ((r_sh[0] + r_hand[0]) / 2 + H * 0.03, (r_sh[1] + r_hand[1]) / 2)
     return _pack(cx, yy, breath, l_hip, r_hip, l_knee, r_knee, l_foot, r_foot,
                  l_sh, r_sh, l_elbow, l_hand, r_elbow, r_hand, H, facing, fdir,
-                 0, 0.0)
+                 0, 0.0, b)
 
 
-def _side_pose(cx, foot_y, H, walk, idle, moving, attack, d):
-    """Edge-on profile: limbs swing fore-aft along `d` (+1 right, -1 left);
-    l_* are the FAR limbs (drawn behind), r_* the NEAR limbs (drawn on top)."""
+def _side_pose(cx, foot_y, H, walk, idle, moving, attack, d, b):
     sw = math.sin(walk)
     bob, breath = _bob_breath(H, walk, idle, moving)
 
@@ -94,14 +92,14 @@ def _side_pose(cx, foot_y, H, walk, idle, moving, attack, d):
 
     stride = H * 0.18 if moving else H * 0.05
     lift = H * 0.06
-    l_hip = (cx - d * H * 0.02, yy(HIP))          # far leg
-    r_hip = (cx + d * H * 0.02, yy(HIP))          # near leg
+    l_hip = (cx - d * H * 0.02, yy(HIP))
+    r_hip = (cx + d * H * 0.02, yy(HIP))
     l_foot = (cx - d * sw * stride, foot_y - max(0.0, -sw) * lift)
     r_foot = (cx + d * sw * stride, foot_y - max(0.0, sw) * lift)
     l_knee = (cx - d * sw * stride * 0.5, yy(KNEE))
     r_knee = (cx + d * sw * stride * 0.5 + d * H * 0.02, yy(KNEE))
-    l_sh = (cx - d * H * 0.03, yy(SHOULDER) - breath)   # far shoulder
-    r_sh = (cx + d * H * 0.03, yy(SHOULDER) - breath)   # near shoulder
+    l_sh = (cx - d * H * 0.03, yy(SHOULDER) - breath)
+    r_sh = (cx + d * H * 0.03, yy(SHOULDER) - breath)
     arm = H * 0.30
     asw = sw * H * 0.10
     l_hand = (cx - d * (H * 0.04 + asw), l_sh[1] + arm * 0.85)
@@ -115,12 +113,12 @@ def _side_pose(cx, foot_y, H, walk, idle, moving, attack, d):
                (r_sh[1] + r_hand[1]) / 2)
     return _pack(cx, yy, breath, l_hip, r_hip, l_knee, r_knee, l_foot, r_foot,
                  l_sh, r_sh, l_elbow, l_hand, r_elbow, r_hand, H, (d, 0), d, d,
-                 d * H * 0.045)
+                 d * H * 0.045, b)
 
 
 def _pack(cx, yy, breath, l_hip, r_hip, l_knee, r_knee, l_foot, r_foot,
           l_sh, r_sh, l_elbow, l_hand, r_elbow, r_hand, H, facing, fdir,
-          profile, head_dx):
+          profile, head_dx, b):
     return {
         "l_hip": l_hip, "r_hip": r_hip,
         "chest": (cx, yy(CHEST) - breath),
@@ -128,8 +126,9 @@ def _pack(cx, yy, breath, l_hip, r_hip, l_knee, r_knee, l_foot, r_foot,
         "l_sh": l_sh, "r_sh": r_sh,
         "neck": (cx, yy(NECK) - breath),
         "head": (cx + head_dx, yy(HEAD_C) - breath),
-        "head_r": max(2, int(H * HEAD_R)),
+        "head_r": max(2, int(H * HEAD_R * b["head"])),
         "l_elbow": l_elbow, "l_hand": l_hand,
         "r_elbow": r_elbow, "r_hand": r_hand,
         "facing": facing, "fdir": fdir, "profile": profile,
+        "girth": b["girth"], "H": H,
     }

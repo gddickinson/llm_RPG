@@ -109,6 +109,23 @@ def _hair_color(char):
     return HAIR_PALETTE[h % len(HAIR_PALETTE)]
 
 
+# P33.6a per-character BUILD — diverse, slightly cartoonish silhouettes
+_BUILDS = [
+    {"shoulder": 1.0, "hip": 1.0, "head": 1.0, "girth": 1.0, "h": 1.0},    # average
+    {"shoulder": 1.3, "hip": 1.05, "head": 0.95, "girth": 1.25, "h": 1.02},  # broad
+    {"shoulder": 0.85, "hip": 0.85, "head": 1.05, "girth": 0.8, "h": 1.05},  # slim
+    {"shoulder": 1.05, "hip": 1.25, "head": 1.0, "girth": 1.4, "h": 0.92},  # round
+    {"shoulder": 0.95, "hip": 0.9, "head": 0.92, "girth": 0.9, "h": 1.12},  # tall
+    {"shoulder": 1.1, "hip": 1.1, "head": 1.15, "girth": 1.15, "h": 0.84},  # short
+]
+
+
+def _body_build(char):
+    """A stable per-character build (average/broad/slim/round/tall/short)."""
+    h = sum(ord(c) for c in str(getattr(char, "id", "x"))) + 3
+    return _BUILDS[h % len(_BUILDS)]
+
+
 def _ensure_anim(char) -> dict:
     meta = getattr(char, "metadata", None)
     if not isinstance(meta, dict):
@@ -183,7 +200,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     hair = _hair_color(char)
     belt = (74, 52, 34)
 
-    H = int(tile_size * CHAR_H_FRAC * _race_scale(race))
+    build = _body_build(char)
+    H = int(tile_size * CHAR_H_FRAC * _race_scale(race) * build["h"])
     # feet anchored at the tile's bottom-centre + the tween slide from the old tile
     ox = oy = 0.0
     tw = anim.get("tween_t", 0.0)
@@ -199,7 +217,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     facing = char_motion.facing(anim)
     pose = char_pose.build_pose(feet_x, feet_y, H, anim.get("walk_phase", 0.0),
                                 anim.get("idle_phase", 0.0),
-                                anim.get("moving", False), attack, facing)
+                                anim.get("moving", False), attack, facing, build)
 
     # shadow on the ground, under the feet (not the tweened body)
     shw = max(4, int(H * 0.26))

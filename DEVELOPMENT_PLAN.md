@@ -4280,6 +4280,38 @@ CC0 walk-cycle sprite sheets offline into the existing PNG-tileset pipeline.
   numpy rasterizer to bake CC0 character walk-cycle sheets consumable via the P15.1
   PNG-tileset pipeline (a real-art ceiling without a runtime dependency).
 
+## Phase 33.6 — A living cast: cartoon bodies + a big animation library (George, 2026-07-14)
+
+George: characters should be more DIVERSE and a bit rounded/cartoonish with slightly
+bigger heads; and they want a MUCH larger range of animations — jump, climb, idle,
+wait, talk, sit, investigate, fighting stances & attacks, defensive moves, swim,
+pick-up, open-door, dance, jiggle, stoop, bow, leap, run, TURN to face what they
+interact with — plus two-character INTERACTIONS (hug, throw, wrestle, knock-down &
+stand-up, handshake, kiss, guard), "as many as possible in fun, amusing ways". The
+movieMaker `mm/cast/gesture.py` (seeded, motivated clip pick) + the hips-Y-bob /
+root-motion split are the portable ideas; our clips are PROCEDURAL 2D pose functions.
+
+- [x] **P33.6a Cartoon bodies + diversity.** Bigger heads (`HEAD_R`↑), rounder torso
+  (a bulged barrel) & stubbier limbs, and a per-character BUILD (average/broad/slim/
+  round/tall/short — a hash of race+id) that varies shoulder/hip width, girth and
+  height. Threaded through `char_pose.build_pose(build=…)`.
+  *Done:* `HEAD_R` 0.11→0.145; `char_pose.build_pose(build=…)` scales shoulder/hip/
+  head/girth; `body_renderer._body_build` picks 1 of 6 builds per character (stable
+  id hash); `body_parts.draw_torso` bulges into a rounded barrel by girth. Lineup
+  screenshot shows a diverse, cartoonish cast. `tests/test_char_pose.py` (+1 → 14).
+- [ ] **P33.6b The animation CLIP system + core clips.** A new `ui/char_clips.py`: an
+  ACTION state machine on the anim state + a `pose_for(action, base, phase, …)` that
+  transforms the rest skeleton per action, and an `emote(char, name)` the engine calls.
+  First batch: idle-variants, walk, RUN, jump/leap, sit, bow, wave/talk, guard, hurt,
+  cast, stoop/pick-up, cheer, dance/jiggle — plus TURN-to-face a target. Engine hooks
+  (rest→sit, pray→bow, forage/pickup→stoop, door→reach, damage→hurt).
+- [ ] **P33.6c More clips + water/climb.** swim (in water), climb (on cliffs/ladders),
+  investigate/stoop, leap, defensive dodge, sleeping — driven by the real game state
+  (`traversal`, terrain, needs).
+- [ ] **P33.6d Two-character INTERACTIONS.** Poses coordinated between two nearby
+  characters facing each other: handshake, hug, kiss, wrestle, throw, knock-down &
+  stand-up, guard-an-ally — triggered by relationships / combat / social events.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
