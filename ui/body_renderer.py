@@ -145,8 +145,13 @@ def _ensure_anim(char) -> dict:
         char.metadata = meta
     anim = meta.get("_anim")
     if not isinstance(anim, dict):
+        # P34.4 individuality: seed the idle breath PHASE + SPEED from the id so a
+        # crowd never breathes in lockstep (each body has its own rhythm).
+        seed = sum(ord(c) for c in str(getattr(char, "id", "x")))
         anim = {
-            "walk_phase": 0.0, "idle_phase": 0.0,
+            "walk_phase": 0.0,
+            "idle_phase": (seed % 100) / 100.0 * math.tau,
+            "idle_rate": 0.80 + (seed % 11) / 11.0 * 0.5,     # 0.80–1.30×
             "prev_pos": tuple(char.position), "moving": False,
             "facing": (0, 1), "atk_t": 0.0, "atk_seen": None,
             "tween_from": (0, 0), "tween_t": 0.0,
@@ -179,7 +184,8 @@ def update_anim(char, dt: float) -> None:
         anim["tween_t"] = max(0.0, anim["tween_t"] - dt)
     else:
         anim["walk_phase"] *= 0.85
-        anim["idle_phase"] = (anim["idle_phase"] + dt * 1.6) % math.tau
+        anim["idle_phase"] = (anim["idle_phase"]
+                              + dt * 1.6 * anim.get("idle_rate", 1.0)) % math.tau
     seq = (getattr(char, "metadata", None) or {}).get("_atk_seq", 0)
     if seq != anim.get("atk_seen"):
         if anim.get("atk_seen") is not None:

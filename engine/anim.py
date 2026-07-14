@@ -114,6 +114,78 @@ def update_look(engine, radius=8):
         pass
 
 
+# P34.4 ambient idle life — a pool of small fidgets an idle body plays now and then
+_FIDGETS = ("stretch", "yawn", "shrug", "ponder", "wave")
+
+
+def _idle_fidget(char, rng):
+    """A fidget flavoured by the character's needs / role, else the generic pool."""
+    try:
+        from characters.needs import get_fatigue
+        if get_fatigue(char) >= 60 and rng.random() < 0.6:
+            return "yawn" if rng.random() < 0.5 else "stretch"
+    except Exception:
+        pass
+    role = getattr(getattr(char, "character_class", None), "value", "")
+    if role == "merchant" and rng.random() < 0.6:
+        return "beckon" if rng.random() < 0.5 else "wave"
+    if role in ("wizard", "sorcerer", "warlock", "cleric", "druid") \
+            and rng.random() < 0.5:
+        return "ponder"
+    if role in ("guard", "warrior", "paladin") and rng.random() < 0.4:
+        return "salute"
+    return rng.choice(_FIDGETS)
+
+
+def _nearest(pool, c, radius):
+    cx, cy = c.position
+    best, bd = None, radius * radius + 1
+    for o in pool:
+        if o is c:
+            continue
+        d = (o.position[0] - cx) ** 2 + (o.position[1] - cy) ** 2
+        if d < bd:
+            bd, best = d, o
+    return best
+
+
+def update_idle_life(engine, rng=None, chance=0.025):
+    """Per-turn ambient life (P34.4): an idle, non-hostile character occasionally
+    plays a small fidget (weighted by role/needs); a townsfolk near a hostile
+    startles instead — an alert bubble + turns to face the threat. Cheap and purely
+    cosmetic (sets only the UI `metadata` the renderer reads). `rng` is injectable
+    for tests."""
+    import random as _r
+    from engine.agent_sense import _is_hostile
+    rng = rng or _r
+    try:
+        cast = [n for n in engine.npc_manager.npcs.values() if n.is_active()]
+        cast.append(engine.player)
+        hostiles = [h for h in cast if _is_hostile(h)]
+        for c in cast:
+            meta = getattr(c, "metadata", None)
+            if not isinstance(meta, dict):
+                continue
+            if meta.get("_emote") or meta.get("_stance"):
+                continue                        # already busy
+            if (meta.get("_anim") or {}).get("moving"):
+                continue                        # mid-stride — don't cut a step
+            if _is_hostile(c):
+                continue                        # monsters don't yawn
+            near = _nearest(hostiles, c, 5)
+            if near is not None:
+                if rng.random() < chance * 2:
+                    face(c, near.position)
+                    bubble(c, "alert")
+                continue
+            if rng.random() < chance:
+                fid = _idle_fidget(c, rng)
+                if fid:
+                    emote(c, fid)
+    except Exception:
+        pass
+
+
 def update_swim(engine):
     """Per-turn: the hero shows a SWIM stance while standing on deep water, and
     drops it again on dry land (P33.6c)."""

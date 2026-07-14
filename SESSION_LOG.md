@@ -6885,3 +6885,23 @@ action. `tests/test_char_clips_more.py` (11). Files: char_clips 307, char_clips_
 Remainder of Phase 34: P34.4 individuality & idle life (seed idle desync, ambient
 fidgets drawn from this library, event reactions), P34.5 hair/cloak springs, P34.6
 depth-sort + line-of-action, P34.7 the SSAA beauty pass.
+
+## 2026-07-14 (cont.) — P34.4: individuality & idle life
+
+Making the cast feel ALIVE between actions. Two parts:
+1. **Idle desync** — `body_renderer._ensure_anim` now seeds each character's
+   idle-breath PHASE and a 0.80–1.30× breathing SPEED from its `id`. A crowd no
+   longer inhales in perfect lockstep; combined with the already-jittered blink,
+   every body has its own quiet rhythm.
+2. **Ambient life** — `engine/anim.update_idle_life` (per-turn, cheap, cosmetic,
+   injectable rng) has an idle, non-hostile character occasionally play a fidget
+   drawn from the P34.10 library, weighted by role/needs: a tired body yawns or
+   stretches, a merchant beckons/waves its wares, a caster ponders, a guard
+   salutes, else a generic stretch/yawn/shrug/ponder/wave. A townsperson near a
+   hostile STARTLES instead — an `alert` bubble and a turn to face the threat.
+   Monsters and mid-stride bodies are skipped. Wired into the turn pipeline beside
+   `update_look`/`update_swim`. `tests/test_idle_life.py` (8). Full suite green.
+
+Remainder of Phase 34: P34.5 hair/cloak springs + weapon trail, P34.6 depth-sort +
+line-of-action, P34.7 the SSAA beauty pass. (A full event-log reaction observer —
+cheer at level-up, gasp at a death — folds into a later pass.)

@@ -4389,12 +4389,22 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   within 8 tiles (+ `look()` for dialog). Screenshot: the hero's eyes/head track a
   target in every direction. `tests/test_char_secondary.py` (6). (Hair/cloak chain is
   P34.5.)
-- [ ] **P34.4 Individuality & idle life.** Seed idle PHASE + SPEED (and build /
+- [x] **P34.4 Individuality & idle life.** Seed idle PHASE + SPEED (and build /
   default expression / handedness) from `char.id` so a crowd desyncs; keep breathing
   + blink always on; AMBIENT FIDGETS on a jittered timer (weight-shift, look-around,
   yawn, scratch, stretch) weighted by role/mood; MOTIVATED idle stances (angry→guard,
   sad→slump, merchant→hawk) + dialog listeners nod/lean; REACTIONS to event-log beats
   (startle at `[Clash]`/`[Alarm]`, cheer at level-up). Ports movieMaker `gesture.py`.
+  *Done:* `body_renderer._ensure_anim` seeds each character's idle-breath PHASE and
+  a 0.80–1.30× SPEED from its `id`, so a crowd never breathes in lockstep (blink was
+  already jittered). `engine/anim.update_idle_life` (per-turn, cheap, purely
+  cosmetic, injectable rng) has an idle non-hostile character occasionally play a
+  role/needs-weighted fidget from the P34.10 library — a tired body yawns/stretches,
+  a merchant beckons/waves its wares, a caster ponders, a guard salutes, else the
+  generic stretch/yawn/shrug/ponder/wave pool — while a townsperson near a hostile
+  STARTLES instead (an `alert` bubble + turns to face the threat). Monsters and
+  busy/moving bodies are skipped. `tests/test_idle_life.py` (8). (Remainder — a full
+  event-log reaction observer, e.g. cheer at level-up — folds into P34.6/later.)
 - [ ] **P34.5 Hair, cloak & flow.** A spring/verlet hair (and optional cloak/tail)
   CHAIN pinned to the head/shoulder, swayed by motion & wind, tinted by state
   (Celeste); a fading weapon-swing TRAIL. Real secondary motion → movement gains flow.
