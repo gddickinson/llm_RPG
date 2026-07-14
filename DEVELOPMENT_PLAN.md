@@ -4146,12 +4146,19 @@ animal population feeds it. Each sub-step below is one tested round.
   hungry one dies (`STARVE_CHANCE`); prey with company breed; all gated by a hard
   `MAX_POPULATION`=24 so the herd rises and falls, never explodes or dies out.
   `tests/test_wildlife.py` (17 total).
-- [ ] **P32.5 The ecosystem feeds the economy.** Hunters (a producer
+- [~] **P32.5 The ecosystem feeds the economy.** Hunters (a producer
   profession) turn nearby prey into hides/meat for the P16 store; a predator
   overpopulation or a monster raid thins herds → a meat shortage → prices move
   (`market.py`) and radiant HUNT quests appear; pests (rabbits/boar) nibble
   FARMLAND (P8.3) cutting harvests. Closes the loop: wildlife ↔ production ↔
   prices ↔ quests, per George's Autonomous-World note.
+  *Done (P32.5a, the hunt feeds the town):* `wildlife._stock_larders` (nightly,
+  from `run_day`) — game standing within `HUNT_RANGE`=22 of a settlement becomes
+  `raw_meat` (+ a `game_hide`) in that settlement's P16 production store, capped
+  at `STORE_CAP`. So a healthy herd by a town literally fills its larder.
+  `tests/test_wildlife.py` (+1 → 18). *Remainder P32.5b:* herd-thinning →
+  meat SHORTAGE → `market.py` prices + radiant HUNT quests, and pests nibbling
+  FARMLAND (P8.3).
 
 ## What NOT to build (explicitly deferred)
 

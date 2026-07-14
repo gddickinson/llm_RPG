@@ -213,6 +213,24 @@ class TestPopulation(_Base):
         self.wl.run_day()
         self.assertEqual(self._count("deer"), 1)    # needs company
 
+    def test_game_near_a_town_stocks_its_larder(self):
+        prod = self.engine.production
+        settlements = prod._settlements()
+        if not settlements:
+            self.skipTest("world has no settlements")
+        s = settlements[0]
+        try:
+            cx, cy = s.center()
+        except Exception:
+            cx, cy = s.x, s.y
+        # drop a few deer right by the town
+        for dx in (-1, 0, 1):
+            self._place("deer", (cx + dx, cy + 2))
+        store = prod.store_of(s.name)
+        before = store.get("raw_meat", 0)
+        self.wl.run_day()
+        self.assertGreater(prod.store_of(s.name).get("raw_meat", 0), before)
+
     def test_breeding_stops_at_the_cap(self):
         # seed a herd just under the cap, then let it breed every night — it
         # rises TO the cap and holds there, never past it

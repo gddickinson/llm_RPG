@@ -35,6 +35,7 @@ SPAWN_MAX = 8             # …and at most this far (out where you can watch it)
 MAX_POPULATION = 24       # a hard cap so the herd never runs away (P32.4b)
 BREED_CHANCE = 0.5        # a fed predator / a pair of prey may bear young
 STARVE_CHANCE = 0.4       # a predator that went hungry may not see morning
+HUNT_RANGE = 22           # game this near a town feeds its larder (P32.5)
 
 
 def _load_roster() -> dict:
@@ -325,6 +326,40 @@ class WildlifeSystem:
                     self.rng.random() < BREED_CHANCE:
                 if self._breed(herd[0]):
                     pop += 1
+        self._stock_larders(animals)                      # P32.5 the hunt feeds
+
+    def _stock_larders(self, animals) -> None:
+        """P32.5a hunters work the wild near a town — game standing close to a
+        settlement becomes meat & hides in its P16 store overnight."""
+        prod = getattr(self.engine, "production", None)
+        if prod is None or not animals:
+            return
+        try:
+            settlements = prod._settlements()
+        except Exception:
+            return
+        cap = 99
+        try:
+            from engine.production_loop import STORE_CAP
+            cap = STORE_CAP
+        except Exception:
+            pass
+        for s in settlements:
+            try:
+                sx, sy = s.center()
+            except Exception:
+                sx, sy = getattr(s, "x", 0), getattr(s, "y", 0)
+            game = [a for a in animals
+                    if self._cheb(a.position, (sx, sy)) <= HUNT_RANGE]
+            if not game:
+                continue
+            store = prod.store_of(s.name)
+            meat = min(len(game), 3)                       # a night's take
+            store["raw_meat"] = min(cap, store.get("raw_meat", 0) + meat)
+            if any(a.metadata.get("loot_table") and
+                   any("hide" in str(e).lower() for e in a.metadata["loot_table"])
+                   for a in game):
+                store["game_hide"] = min(cap, store.get("game_hide", 0) + 1)
 
     def _breed(self, parent) -> bool:
         """Spawn one offspring of the parent's species on a free tile beside

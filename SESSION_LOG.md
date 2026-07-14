@@ -6542,5 +6542,15 @@ predator that ATE (`fed`) breeds a kit beside it and clears the flag; a predator
 that went hungry may not see morning (`STARVE_CHANCE`); prey with company breed;
 everything gated by a hard `MAX_POPULATION`=24 so the living herd rises and
 falls instead of exploding or dying out. `tests/test_wildlife.py` (17 total).
-Next, P32.5 wires hides/meat into the P16 economy (hunters, a meat market,
-pests on the farms).
+
+## 2026-07-14 (cont.) — P32.5a: the hunt feeds the town
+
+The ecosystem starts paying its way. `wildlife._stock_larders` (nightly, off
+`run_day`) checks each settlement and turns the game standing within
+`HUNT_RANGE` (22) of it into `raw_meat` (and a `game_hide`) in that town's P16
+production store — the hunters worked the wild. So a healthy herd by a town
+literally fills its larder overnight, and the P16.2c stall-stocking + P16.2b
+caravans then carry that meat into the shops. `tests/test_wildlife.py` (+1 →
+18). The richer half — a THINNED herd → meat SHORTAGE → `market.py` prices +
+radiant HUNT quests, plus rabbits/boar nibbling FARMLAND (P8.3) — is P32.5b,
+which closes George's wildlife↔production↔prices↔quests loop.
