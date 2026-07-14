@@ -68,6 +68,8 @@ class PantheonSystem:
     def pray(self, at_altar: bool = False) -> str:
         engine = self.engine
         player = engine.player
+        from engine import anim
+        anim.emote(player, "kneel")           # kneel in prayer (P33.6c)
         if not GODS:
             return "The heavens are empty."
         if not at_altar and not self._at_holy_place():

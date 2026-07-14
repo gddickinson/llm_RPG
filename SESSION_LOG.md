@@ -6715,3 +6715,17 @@ action reading clearly (jump lifts off the ground, sit folds the legs, bow bends
 over, stoop reaches down, wave/guard/cast/dance/cheer all distinct).
 `tests/test_char_clips.py` (16); every UI file under 500. Remainder: more triggers
 (rest→sit, pray→bow, forage/door→stoop) + water/climb + two-character interactions.
+
+## 2026-07-14 (cont.) — P33.6c: more clips + real-action triggers (swim/climb/stoop/kneel/reach)
+
+Seven more clips (`swim`, `climb`, `sneak`, `dodge`, `kneel`, `reach`, `point` —
+20 in the library now) and, more importantly, the animations now fire during
+ORDINARY PLAY. A new pygame-free `engine/anim.py` (`emote`/`stance`/`face`/
+`update_swim`) lets game code trigger a clip by setting the metadata the renderer
+reads. Wired: `player_actions.pickup` / `foraging.forage` / `gathering.gather` →
+the hero STOOPS to work, `pantheon.pray` → KNEELS, `doors.force` → REACHES for the
+door, and the turn pipeline puts the hero into a SWIM stance whenever it's standing
+on deep water (dropped again on dry land). `tests/test_char_clips.py` (+5) +
+`tests/test_anim_triggers.py` (5) cover the clips + the wirings. Next (P33.6d): the
+two-character INTERACTIONS — handshake, hug, kiss, wrestle, throw, knock-down &
+stand-up, guard-an-ally.

@@ -4314,9 +4314,16 @@ root-motion split are the portable ideas; our clips are PROCEDURAL 2D pose funct
   (`hurt`). Screenshot strip shows all 13 actions reading clearly. `tests/
   test_char_clips.py` (16). *Remainder:* more engine hooks (rest→sit, pray→bow,
   forage/door→stoop) and richer idle/run.
-- [ ] **P33.6c More clips + water/climb.** swim (in water), climb (on cliffs/ladders),
+- [x] **P33.6c More clips + water/climb.** swim (in water), climb (on cliffs/ladders),
   investigate/stoop, leap, defensive dodge, sleeping — driven by the real game state
   (`traversal`, terrain, needs).
+  *Done:* +7 clips (`swim`/`climb`/`sneak`/`dodge`/`kneel`/`reach`/`point`, now 20
+  total); a pygame-free `engine/anim.py` (`emote`/`stance`/`face`/`update_swim`) so
+  game code triggers animations; WIRED — `player_actions.pickup`, `foraging.forage`
+  and `gathering.gather` → STOOP, `pantheon.pray` → KNEEL, `doors.force` → REACH, and
+  the turn pipeline sets a SWIM stance while the hero is on deep water. `tests/
+  test_char_clips.py` (+5) + `tests/test_anim_triggers.py` (5). *Remainder:* more
+  emotes in dialog / on rest.
 - [ ] **P33.6d Two-character INTERACTIONS.** Poses coordinated between two nearby
   characters facing each other: handshake, hug, kiss, wrestle, throw, knock-down &
   stand-up, guard-an-ally — triggered by relationships / combat / social events.

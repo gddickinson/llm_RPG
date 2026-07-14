@@ -15,9 +15,11 @@ ACTIONS = {
     "idle": (False, None), "walk": (False, None), "run": (False, None),
     "attack": (False, None), "guard": (False, None), "sit": (False, None),
     "sleep": (False, None), "dance": (False, None),
+    "swim": (False, None), "climb": (False, None), "sneak": (False, None),
     "jump": (True, 0.7), "leap": (True, 0.7), "bow": (True, 1.1),
     "wave": (True, 1.0), "hurt": (True, 0.45), "cast": (True, 0.9),
-    "stoop": (True, 1.0), "cheer": (True, 1.0),
+    "stoop": (True, 1.0), "cheer": (True, 1.0), "dodge": (True, 0.4),
+    "kneel": (True, 1.6), "reach": (True, 0.7), "point": (True, 1.0),
 }
 
 _JOINTS = ["l_hip", "r_hip", "chest", "l_knee", "r_knee", "l_foot", "r_foot",
@@ -161,8 +163,70 @@ def _run(pose, t, H, facing):
     return pose
 
 
+def _swim(pose, t, H, facing):
+    _move(pose, _JOINTS, 0, H * 0.14)                  # submerge to the chest
+    stroke = math.sin(t * math.pi * 3)
+    pose["l_hand"] = (pose["l_sh"][0] - H * 0.10,
+                      pose["l_sh"][1] + H * 0.04 - stroke * H * 0.06)
+    pose["r_hand"] = (pose["r_sh"][0] + H * 0.10,
+                      pose["r_sh"][1] + H * 0.04 + stroke * H * 0.06)
+    return pose
+
+
+def _climb(pose, t, H, facing):
+    r = math.sin(t * math.pi * 2)
+    pose["l_hand"] = (pose["l_sh"][0] - H * 0.03,
+                      pose["l_sh"][1] - H * 0.22 * (0.5 + 0.5 * r))
+    pose["r_hand"] = (pose["r_sh"][0] + H * 0.03,
+                      pose["r_sh"][1] - H * 0.22 * (0.5 - 0.5 * r))
+    pose["l_foot"] = (pose["l_hip"][0], pose["l_foot"][1] - H * 0.05 * (0.5 - 0.5 * r))
+    pose["r_foot"] = (pose["r_hip"][0], pose["r_foot"][1] - H * 0.05 * (0.5 + 0.5 * r))
+    return pose
+
+
+def _sneak(pose, t, H, facing):
+    _move(pose, _JOINTS, 0, H * 0.06)                  # crouch low
+    return pose
+
+
+def _dodge(pose, t, H, facing):
+    d = _arc(t)
+    _move(pose, _JOINTS, H * 0.12 * d, -H * 0.03 * d)  # hop aside
+    return pose
+
+
+def _kneel(pose, t, H, facing):
+    drop = H * 0.16
+    _move(pose, ("l_hip", "r_hip", "chest") + tuple(_UPPER), 0, drop)
+    pose["l_knee"] = (pose["l_hip"][0] - H * 0.05, pose["l_foot"][1] - H * 0.02)
+    pose["r_knee"] = (pose["r_hip"][0] + H * 0.06, pose["r_hip"][1] + H * 0.06)
+    pose["r_foot"] = (pose["r_hip"][0] + H * 0.14, pose["r_hip"][1] + drop)
+    _move(pose, ("head", "neck"), 0, H * 0.04)
+    return pose
+
+
+def _reach(pose, t, H, facing):
+    d, f = _arc(t), (_fdir(facing) or 1)
+    s = pose["r_sh"]
+    pose["r_hand"] = (s[0] + f * H * 0.22 * d, s[1] + H * 0.02)
+    pose["r_elbow"] = (s[0] + f * H * 0.12 * d, s[1] + H * 0.06)
+    _move(pose, ("chest", "l_sh", "r_sh", "neck", "head"), f * H * 0.05 * d, 0)
+    return pose
+
+
+def _point(pose, t, H, facing):
+    d, f = _arc(t), (_fdir(facing) or 1)
+    s = pose["r_sh"]
+    pose["r_hand"] = (s[0] + f * H * 0.26 * d, s[1] - H * 0.08 * d)
+    pose["r_elbow"] = (s[0] + f * H * 0.14 * d, s[1] - H * 0.04 * d)
+    _move(pose, ("head", "neck"), f * H * 0.04 * d, 0)
+    return pose
+
+
 _CLIPS = {
     "jump": _jump, "leap": _leap, "sit": _sit, "sleep": _sleep, "bow": _bow,
     "stoop": _stoop, "wave": _wave, "guard": _guard, "hurt": _hurt,
     "cast": _cast, "dance": _dance, "cheer": _cheer, "run": _run,
+    "swim": _swim, "climb": _climb, "sneak": _sneak, "dodge": _dodge,
+    "kneel": _kneel, "reach": _reach, "point": _point,
 }

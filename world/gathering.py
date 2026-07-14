@@ -107,6 +107,8 @@ class GatheringManager:
         """Gather at the player's tile (assumes tool checked by caller).
         None = no node here."""
         player = self.engine.player
+        from engine import anim
+        anim.emote(player, "stoop")          # work the node (P33.6c)
         x, y = player.position
         found = self.node_at(x, y)
         if found is None:

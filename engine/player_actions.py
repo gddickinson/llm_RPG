@@ -39,6 +39,8 @@ class PlayerActions:
 
     def pickup(self, item_name: str = None) -> str:
         player = self.engine.player
+        from engine import anim
+        anim.emote(player, "stoop")          # bend down to take it (P33.6c)
         x, y = player.position
         ground = self.engine.world.get_items_at(x, y)
         if not ground:

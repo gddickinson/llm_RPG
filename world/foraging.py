@@ -58,6 +58,8 @@ class ForageManager:
     def forage(self, x: int = None, y: int = None) -> str:
         if x is None or y is None:
             x, y = self.engine.player.position
+        from engine import anim
+        anim.emote(self.engine.player, "stoop")      # stoop to forage (P33.6c)
         if not self.can_forage(x, y):
             terrain = self.engine.world.map.get_terrain_at(x, y)
             if terrain not in TERRAIN_FORAGE_TABLE:

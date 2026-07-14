@@ -68,6 +68,27 @@ class TestClips(unittest.TestCase):
         cc.apply("jump", base, 0.5, 60, (0, 1))
         self.assertEqual(base["head"], snapshot["head"])       # worked on a copy
 
+    def test_swim_submerges(self):
+        rest = _base()
+        s = self._apply("swim", 0.3)
+        self.assertGreater(s["chest"][1], rest["chest"][1])    # body sinks
+
+    def test_climb_raises_both_hands(self):
+        rest = _base()
+        c = self._apply("climb", 0.4)
+        self.assertLess(c["l_hand"][1], rest["l_hand"][1])
+        self.assertLess(c["r_hand"][1], rest["r_hand"][1])
+
+    def test_kneel_lowers_and_bows(self):
+        rest = _base()
+        k = self._apply("kneel")
+        self.assertGreater(k["head"][1], rest["head"][1])      # lower + bowed
+
+    def test_reach_extends_the_hand_forward(self):
+        rest = _base()                             # front: hand rests at the side
+        r = cc.apply("reach", _base(), 0.9, 60, (0, 1))
+        self.assertGreater(r["r_hand"][0], rest["r_hand"][0])  # hand reaches out
+
 
 class _Char:
     def __init__(self):

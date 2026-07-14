@@ -152,6 +152,8 @@ class DoorManager:
         if self._effective_state(door) in ("open", "broken"):
             return True, "The door already stands open."
         player = self.engine.player
+        from engine import anim
+        anim.emote(player, "reach")           # shoulder / reach for the door (P33.6c)
         from engine.skills import Degree, Skill, check
         result = check(player, Skill.ATHLETICS,
                        dc=door["lock_level"] + FORCE_BONUS_DC,
