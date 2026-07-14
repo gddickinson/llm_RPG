@@ -311,8 +311,9 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
 
-    # A standing reminder that the full controls list is one key away
-    # (onboarding, PUX.3) — only when nothing more urgent needs the slot.
+    # Movement flourishes (P34.9) + a standing reminder that the full controls
+    # list is one key away (PUX.3) — only when nothing more urgent needs the slot.
+    hints.append("[SHIFT+move] run  ·  [`] jump")
     hints.append("[?] all controls")
 
     # Dedup preserving order, cap

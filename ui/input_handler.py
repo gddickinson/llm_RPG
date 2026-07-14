@@ -169,27 +169,26 @@ class InputHandler:
 
     def _handle_play_input(self, event) -> bool:
         k = event.key
-        # SHIFT = tactical modifier: disengage / shove / aimed shot.
-        # CTRL = run (CTRL+move sprints, CTRL+Space leaps — P34.9)
+        # SHIFT = move deliberately: RUN in the clear, careful DISENGAGE by a foe
+        # (P34.9 — macOS-safe: Ctrl is grabbed by the OS for Spaces/input switch).
         mod = getattr(event, "mod", 0)
         shift = bool(mod & pygame.KMOD_SHIFT)
-        run = bool(mod & pygame.KMOD_CTRL)
 
-        if k == pygame.K_SPACE and run:          # CTRL+Space = jump
+        if k == pygame.K_BACKQUOTE:              # ` = jump / leap forward
             return input_actions.jump(self)
 
-        # Movement (SHIFT+move = careful disengage; CTRL+move = run/sprint)
+        # Movement (SHIFT+move = run when safe, careful disengage next to a foe)
         if k in (pygame.K_w, pygame.K_UP):
-            return input_actions.step(self, 0, -1, shift, run)
+            return input_actions.step(self, 0, -1, shift)
         if k in (pygame.K_s, pygame.K_DOWN):
-            return input_actions.step(self, 0, 1, shift, run)
+            return input_actions.step(self, 0, 1, shift)
         if k in (pygame.K_a, pygame.K_LEFT):
-            return input_actions.step(self, -1, 0, shift, run)
+            return input_actions.step(self, -1, 0, shift)
         if k in (pygame.K_d, pygame.K_RIGHT):
-            return input_actions.step(self, 1, 0, shift, run)
+            return input_actions.step(self, 1, 0, shift)
         if k in _NUMPAD_MOVE:                    # 8-way: diagonals included
             dx, dy = _NUMPAD_MOVE[k]
-            return input_actions.step(self, dx, dy, shift, run)
+            return input_actions.step(self, dx, dy, shift)
         if k == pygame.K_KP5:                    # wait a beat in place
             self.engine.move_player(0, 0, careful=shift)
             return True

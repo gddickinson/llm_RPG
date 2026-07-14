@@ -4439,6 +4439,10 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   a face-plant — jump/leap now fall through to the clean hand-authored squash→launch→
   land clip (the flip bake is kept for a deliberate `flip` action). Screenshots
   confirm a clean run stride + a clean upright hop. `tests/test_run_jump.py` (8).
+  *Rebind (2026-07-14, George couldn't run/jump):* CTRL is grabbed by macOS (Spaces
+  / input-source switch), so RUN moved to **SHIFT+move** (runs in the clear, stays
+  the careful disengage next to a foe) and JUMP to the **`` ` `` (backtick)** key;
+  both added to the F1 help + the hint bar.
 - [x] **P34.10 Expanded clip library — acrobatics & daily life.** George: "keep
   adding more. Acrobatics, lunges, rolls, flips, twirls, crawling, sleeping,
   eating/drinking, resting, crouching, kneeling… as many different options as

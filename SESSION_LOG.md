@@ -6905,3 +6905,17 @@ Making the cast feel ALIVE between actions. Two parts:
 Remainder of Phase 34: P34.5 hair/cloak springs + weapon trail, P34.6 depth-sort +
 line-of-action, P34.7 the SSAA beauty pass. (A full event-log reaction observer —
 cheer at level-up, gasp at a death — folds into a later pass.)
+
+## 2026-07-14 (cont.) — Fix: hero couldn't run or jump (macOS key grab)
+
+George: "I'm not able to get the hero to run or jump." Root cause: P34.9 bound run
+and jump to CTRL (CTRL+move / CTRL+Space), but on macOS the OS grabs Ctrl+arrows for
+Mission Control Spaces and Ctrl+Space for the input-source switcher — the game never
+received the events. Rebound to macOS-safe keys:
+- **RUN = SHIFT + move**, resolved by context: in the clear it RUNS (run animation +
+  a bonus sprint stride); next to a foe it stays the careful DISENGAGE (no
+  opportunity strike) — so the tactical meaning is preserved exactly where it
+  matters and "hold Shift to run" works everywhere else.
+- **JUMP = `` ` `` (backtick)** — a single, unmodified, free key.
+Both documented in the F1 controls reference AND advertised on the hint bar
+("[SHIFT+move] run · [`] jump"). `tests/test_run_jump.py` rewritten (8).

@@ -36,13 +36,25 @@ def toggle_party(handler) -> None:
         pass
 
 
-def step(handler, dx: int, dy: int, careful: bool, run: bool) -> bool:
-    """P34.9 one player stride. A normal walk, a SHIFT careful disengage, or —
-    holding CTRL — a RUN: the running animation plus a sprint that covers a bonus
-    tile when the way stays clear (`move_player` is a no-op if the second stride is
-    blocked, so a wall simply stops the sprint)."""
+def _adjacent_foe(engine) -> bool:
+    try:
+        from engine.tactics import adjacent_hostiles
+        return bool(adjacent_hostiles(engine, engine.player.position))
+    except Exception:
+        return False
+
+
+def step(handler, dx: int, dy: int, shift: bool) -> bool:
+    """P34.9 one player stride (macOS-safe rebind). Holding SHIFT means MOVE
+    DELIBERATELY, resolved by context: next to a foe it's the careful DISENGAGE
+    (no opportunity strike); in the clear it's a RUN — the running animation plus a
+    sprint that covers a bonus tile when the way stays open (`move_player` no-ops if
+    that second stride is blocked, so a wall just stops the sprint)."""
     engine = handler.engine
     p = engine.player
+    near_foe = _adjacent_foe(engine)
+    careful = bool(shift and near_foe)
+    run = bool(shift and not near_foe)
     try:
         if run:
             p.metadata["_running"] = True

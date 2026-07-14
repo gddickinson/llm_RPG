@@ -15,9 +15,8 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
     ("MOVE & EXPLORE", [
         ("WASD / Arrows", "walk (edge = new region)"),
         ("Numpad 1-9", "walk 8 ways (diagonals; 5 waits)"),
-        ("SHIFT + move", "disengage (no free enemy hit)"),
-        ("CTRL + move", "run — sprint an extra tile"),
-        ("CTRL + SPACE", "jump / leap forward"),
+        ("SHIFT + move", "RUN (near a foe: careful disengage)"),
+        ("`  (backtick)", "JUMP / leap forward"),
         ("TAB", "enter / leave building or cave"),
         ("SHIFT + TAB", "force a locked door (loud)"),
         ("L", "look around"),
