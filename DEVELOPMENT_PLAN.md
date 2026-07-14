@@ -4146,7 +4146,7 @@ animal population feeds it. Each sub-step below is one tested round.
   hungry one dies (`STARVE_CHANCE`); prey with company breed; all gated by a hard
   `MAX_POPULATION`=24 so the herd rises and falls, never explodes or dies out.
   `tests/test_wildlife.py` (17 total).
-- [~] **P32.5 The ecosystem feeds the economy.** Hunters (a producer
+- [x] **P32.5 The ecosystem feeds the economy.** Hunters (a producer
   profession) turn nearby prey into hides/meat for the P16 store; a predator
   overpopulation or a monster raid thins herds → a meat shortage → prices move
   (`market.py`) and radiant HUNT quests appear; pests (rabbits/boar) nibble
@@ -4156,9 +4156,14 @@ animal population feeds it. Each sub-step below is one tested round.
   from `run_day`) — game standing within `HUNT_RANGE`=22 of a settlement becomes
   `raw_meat` (+ a `game_hide`) in that settlement's P16 production store, capped
   at `STORE_CAP`. So a healthy herd by a town literally fills its larder.
-  `tests/test_wildlife.py` (+1 → 18). *Remainder P32.5b:* herd-thinning →
-  meat SHORTAGE → `market.py` prices + radiant HUNT quests, and pests nibbling
-  FARMLAND (P8.3).
+  *Done (P32.5b, scarcity & pests):* `_check_meat_shortage` — a predator that's
+  hunted out the local prey (predators present, no prey left) declares a
+  `raw_meat` shortage on `world_director.shortages`, so `radiant._from_shortage`
+  posts a hunt-for-meat quest next morning and the director's "prices are up"
+  beat fires; `_pests_raid_fields` — a grazing/rooting pest beside a
+  growing/mature `farm_manager` plot nibbles it back a stage (fewer sheaves at
+  harvest). Closes the wildlife↔production↔prices↔quests loop.
+  `tests/test_wildlife.py` (22).
 
 ## What NOT to build (explicitly deferred)
 

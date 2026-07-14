@@ -231,6 +231,44 @@ class TestPopulation(_Base):
         self.wl.run_day()
         self.assertGreater(prod.store_of(s.name).get("raw_meat", 0), before)
 
+    def test_a_hunted_out_herd_drives_a_meat_shortage(self):
+        # a fox and NO prey left near the settlements — game is scarce
+        self._place("fox", (self.px, self.py))
+        self.wl.rng.random = lambda: 1.0        # suppress breeding/starving
+        self.wl.run_day()
+        self.assertIn("raw_meat",
+                      self.engine.world_director.shortages)
+
+    def test_a_healthy_herd_is_no_shortage(self):
+        self._place("fox", (self.px, self.py))
+        self._place("deer", (self.px + 3, self.py))
+        self._place("deer", (self.px + 4, self.py))
+        self.wl.rng.random = lambda: 1.0
+        self.wl.run_day()
+        self.assertNotIn("raw_meat",
+                         self.engine.world_director.shortages)
+
+    def test_the_shortage_becomes_a_hunt_quest(self):
+        # the loop end-to-end: a meat shortage → radiant posts a fetch-meat job
+        self._place("fox", (self.px, self.py))
+        self.wl.rng.random = lambda: 1.0
+        self.wl.run_day()
+        spec = self.engine.radiant_quests._from_shortage()
+        self.assertIsNotNone(spec)
+        self.assertEqual(spec[2], "raw_meat")     # target item
+
+    def test_a_pest_nibbles_a_ripening_field(self):
+        # plant a ripe field and a rabbit right beside it
+        fx, fy = self.px + 5, self.py
+        self.wmap.terrain[fy][fx] = TerrainType.FARMLAND
+        self.engine.farm_manager.plots[(fx, fy)] = {"state": "mature",
+                                                    "since": 0}
+        self._place("rabbit", (fx - 1, fy))
+        self.wl.rng.random = lambda: 1.0        # no breeding noise
+        self.wl.run_day()
+        self.assertEqual(
+            self.engine.farm_manager.plots[(fx, fy)]["state"], "growing")
+
     def test_breeding_stops_at_the_cap(self):
         # seed a herd just under the cap, then let it breed every night — it
         # rises TO the cap and holds there, never past it

@@ -326,7 +326,9 @@ class WildlifeSystem:
                     self.rng.random() < BREED_CHANCE:
                 if self._breed(herd[0]):
                     pop += 1
-        self._stock_larders(animals)                      # P32.5 the hunt feeds
+        self._stock_larders(animals)                      # P32.5a the hunt feeds
+        self._check_meat_shortage(animals)                # P32.5b thin herd → dear meat
+        self._pests_raid_fields(animals)                  # P32.5b pests nibble crops
 
     def _stock_larders(self, animals) -> None:
         """P32.5a hunters work the wild near a town — game standing close to a
@@ -378,3 +380,50 @@ class WildlifeSystem:
                     self.engine.world.map.place_character(calf, px + dx, py + dy)
                     return True
         return False
+
+    def _check_meat_shortage(self, animals) -> None:
+        """P32.5b: predators that have hunted out the local prey drive a
+        `raw_meat` SHORTAGE — the director beat says prices rose, and radiant
+        posts a hunt-for-meat quest next morning (`radiant._from_shortage`)."""
+        director = getattr(self.engine, "world_director", None)
+        if director is None or getattr(director, "shortages", None) is None:
+            return
+        predators = [a for a in animals if (a.metadata or {}).get("preys_on")]
+        prey = [a for a in animals if not (a.metadata or {}).get("preys_on")]
+        if not predators or prey:
+            return                          # a healthy herd, or nothing hunting
+        try:
+            from engine.director import SHORTAGE_MINUTES
+            dur = SHORTAGE_MINUTES
+        except Exception:
+            dur = 24 * 60
+        director.shortages["raw_meat"] = self.engine.world.time + dur
+        try:
+            self.engine.memory_manager.add_event(
+                "[Realm] Game has grown scarce — meat is dear at market.")
+        except Exception:
+            pass
+
+    def _pests_raid_fields(self, animals) -> None:
+        """P32.5b: a grazing/rooting pest beside a ripening field nibbles the
+        crop, setting it back a stage — fewer sheaves come the harvest."""
+        farm = getattr(self.engine, "farm_manager", None)
+        if farm is None or not getattr(farm, "plots", None):
+            return
+        setback = {"mature": "growing", "growing": "planted"}
+        for a in animals:
+            if (a.metadata or {}).get("diet") not in ("graze", "root"):
+                continue
+            ax, ay = a.position
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    plot = farm.plots.get((ax + dx, ay + dy))
+                    if plot and plot.get("state") in setback:
+                        plot["state"] = setback[plot["state"]]
+                        try:
+                            self.engine.memory_manager.add_event(
+                                f"A {a.name} has been at the crops.")
+                        except Exception:
+                            pass
+                        return              # one raided field a night is plenty
+

@@ -6551,6 +6551,20 @@ The ecosystem starts paying its way. `wildlife._stock_larders` (nightly, off
 production store — the hunters worked the wild. So a healthy herd by a town
 literally fills its larder overnight, and the P16.2c stall-stocking + P16.2b
 caravans then carry that meat into the shops. `tests/test_wildlife.py` (+1 →
-18). The richer half — a THINNED herd → meat SHORTAGE → `market.py` prices +
-radiant HUNT quests, plus rabbits/boar nibbling FARMLAND (P8.3) — is P32.5b,
-which closes George's wildlife↔production↔prices↔quests loop.
+18).
+
+## 2026-07-14 (cont.) — P32.5b: scarcity & pests — the loop closes
+
+The wild now pushes back on the economy both ways. `_check_meat_shortage`: when
+a predator has hunted out the local prey (a fox and no deer left), game is
+declared SCARCE — a `raw_meat` shortage lands on `world_director.shortages`, so
+the director's "meat is dear at market" beat fires and `radiant._from_shortage`
+posts a hunt-for-meat quest the next morning (verified end-to-end in the tests).
+`_pests_raid_fields`: a grazing/rooting pest (deer/rabbit/boar) standing beside
+a growing or mature `farm_manager` plot nibbles it back a stage — fewer sheaves
+at harvest. Both run in the nightly `run_day`. That closes George's
+wildlife↔production↔prices↔quests loop and completes **Phase 32** — the whole
+living-ecosystem ultraplan (speed & pursuit, packs & gangs, neutral wildlife,
+the predator/prey loop, and the economy it feeds). `tests/test_wildlife.py`
+(22). `world/wildlife.py` at 429 lines — a split is the next structural chore if
+it grows further.
