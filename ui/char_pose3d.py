@@ -26,12 +26,16 @@ _JOINTS = ("l_hip", "r_hip", "chest", "l_knee", "r_knee", "l_foot", "r_foot",
            "r_hand")
 
 
-def _body_coords(walk, moving):
+_NEUTRAL_GAIT = {"stride": 1.0, "bob": 1.0, "arm": 1.0, "cadence": 1.0}
+_FEET = ("l_foot", "r_foot")
+
+
+def _body_coords(walk, moving, g):
     """Rest skeleton in (u, w, y) with a fore-aft (DEPTH) walk stride."""
     sw = math.sin(walk)
-    stride = 0.17 if moving else 0.0
+    stride = 0.17 * g["stride"] if moving else 0.0
     lift = 0.06
-    asw = -sw * 0.15                                    # arms counter-swing
+    asw = -sw * 0.15 * g["arm"]                         # arms counter-swing
     return {
         "l_hip": (-HIPW, 0.0, HIP), "r_hip": (HIPW, 0.0, HIP),
         "chest": (0.0, 0.0, CHEST), "neck": (0.0, 0.0, NECK),
@@ -48,19 +52,33 @@ def _body_coords(walk, moving):
     }
 
 
-def pose3d(cx, foot_y, H, walk=0.0, facing_deg=0.0, build=None, moving=True):
-    """Project the body skeleton at facing angle `facing_deg` to a screen pose."""
+def pose3d(cx, foot_y, H, walk=0.0, facing_deg=0.0, build=None, moving=True,
+           attack=0.0, attack_style="overhead", gait=None, idle=0.0):
+    """Project the body skeleton at facing angle `facing_deg` to a screen pose —
+    a full drop-in for `char_pose.build_pose` (walk stride, gait, bob, attack)."""
     b = build or {"shoulder": 1.0, "hip": 1.0, "head": 1.0, "girth": 1.0}
+    g = gait or _NEUTRAL_GAIT
     th = math.radians(facing_deg)
     c, s = math.cos(th), math.sin(th)
-    j = _body_coords(walk, moving)
+    j = _body_coords(walk, moving, g)
+    # a vertical bob while striding, a gentle breath while still (feet stay down)
+    bob = (-abs(math.sin(walk)) * H * 0.045 * g["bob"] if moving
+           else math.sin(idle) * H * 0.012)
     pose, depth = {}, {}
     for k, (u, w, y) in j.items():
         wide = b["shoulder"] if ("sh" in k or "hand" in k or "elbow" in k) \
             else b["hip"] if ("hip" in k or "knee" in k or "foot" in k) else 1.0
         u *= wide
-        pose[k] = (cx + (u * c + w * s) * H, foot_y - y * H)
+        yb = 0.0 if k in _FEET else bob
+        pose[k] = (cx + (u * c + w * s) * H, foot_y - y * H + yb)
         depth[k] = -u * s + w * c                       # + = nearer the camera
+    if attack > 0.001:                                  # a strike, projected
+        from ui.char_pose import _attack_hand
+        sign = 1 if s >= 0 else -1
+        pose["r_hand"] = _attack_hand(attack_style, attack, pose["r_sh"],
+                                      H * 0.30, sign, H)
+        pose["r_elbow"] = ((pose["r_sh"][0] + pose["r_hand"][0]) / 2,
+                           (pose["r_sh"][1] + pose["r_hand"][1]) / 2)
     pose["head_r"] = max(2, int(H * HEAD_R * b["head"]))
     pose["profile"] = 1 if s > 0.35 else -1 if s < -0.35 else 0
     pose["fdir"] = pose["profile"]

@@ -4457,19 +4457,22 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   behind the body and the trail in front. Screenshot: a running rogue's ponytail
   streams, a wizard's cape billows, a sword-swing leaves an arc. `tests/
   test_char_flow.py` (10).
-- [~] **P34.14 Continuous / 8-way facing (the 2.5D "3D" question).** George: "is
-  full 3D movement do-able in the 2.5D game — we only have side + front/back?" Answer:
-  a true 3D mesh is the wrong tool (it'd break the hand-drawn look), but CONTINUOUS
-  facing is very doable because the puppet is procedural. *Groundwork done:* pure
-  `ui/char_pose3d.py` gives every joint BODY coordinates (u across / w fore-aft depth
-  / y up) and PROJECTS by a facing angle θ (`screen_x = cx + (u·cosθ + w·sinθ)·H`) —
-  one function renders any heading; the walk strides the legs in DEPTH so θ=0 lifts
-  (front walk) and θ=90 swings (side walk) from the SAME data, with `cam_depth` per
-  joint for near/far limb sorting. A screenshot renders a walker at 8 facings
-  (front/¾/side/¾-back/back…) with correct foreshortening + face show/hide.
-  `tests/test_char_pose3d.py` (7). REMAINING (needs George's call — it reworks the
-  core character renderer): wire facing from the movement heading, swap `body_renderer`
-  onto `pose3d`, port the clip/mocap layers to the projected pose, depth-sort limbs.
+- [x] **P34.14 Continuous / 8-way facing (the 2.5D "3D" answer).** George asked if
+  full 3D movement is do-able (we only had side + front/back). A true 3D mesh is the
+  wrong tool, but CONTINUOUS facing is easy because the puppet is procedural — and
+  George chose to wire it in fully. *Done:* pure `ui/char_pose3d.py` gives every joint
+  BODY coordinates (u across / w fore-aft DEPTH / y up) and PROJECTS by a facing angle
+  θ (`screen_x = cx + (u·cosθ + w·sinθ)·H`); the walk strides the legs in DEPTH so
+  θ=0 lifts (front walk) and θ=90 swings (side walk) from the SAME data — plus gait,
+  bob and a projected attack (drop-in for `build_pose`). `body_renderer` now eases a
+  continuous `face_cur` angle toward the MOVEMENT HEADING each frame (`facing_from_
+  delta`) and renders through `pose3d`, so a character TURNS to face any of 360°
+  instead of snapping to 4 views; limbs are DEPTH-SORTED (the far arm behind the
+  torso + dimmed, near arm in front — `body_parts.draw_arm` + `cam_depth`). The old
+  4-view `build_pose`/mocap split is retired from the live path (kept for its tests).
+  Live-pipeline screenshot: the hero walks in all 8 directions with correct
+  foreshortening, face show/hide and weapon depth. `tests/test_char_pose3d.py` (7) +
+  facing/every-angle integration tests in `test_body_renderer.py`. Full suite 2520.
 - [ ] **P34.6 Solid drawing & staging.** Bow the elbows/knees along ARCS (not straight
   midpoints); DEPTH-SORT limbs by facing (far limb drawn behind + dimmed ~8%);
   LINE-OF-ACTION — a gentle C-curve of the spine by mood (proud arch / sad slump).

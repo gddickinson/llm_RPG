@@ -86,6 +86,33 @@ class TestBodyRenderer(unittest.TestCase):
         self.assertLess(abs(far), H)            # STILL local after the jump
         self.assertLess(abs(near - far), ts)    # barely moved despite the jump
 
+    def test_facing_eases_toward_the_movement_heading(self):
+        """P34.14: walking a direction turns the continuous facing angle toward
+        that heading (east ~90°, north ~180°) — the cast faces where it moves."""
+        c = _new_char()
+        _ensure_anim(c)
+        x, y = c.position
+        for _ in range(10):                      # walk east
+            x += 1
+            c.position = (x, y)
+            update_anim(c, 1 / 30.0)
+        self.assertAlmostEqual(c.metadata["_anim"]["face_cur"], 90.0, delta=12)
+        for _ in range(12):                      # then turn north
+            y -= 1
+            c.position = (x, y)
+            update_anim(c, 1 / 30.0)
+        self.assertAlmostEqual(c.metadata["_anim"]["face_cur"], 180.0, delta=12)
+
+    def test_draw_at_every_facing_does_not_crash(self):
+        import math
+        from ui.body_renderer import draw_body
+        c = _new_char()
+        surf = pygame.Surface((96, 160))
+        for deg in range(0, 360, 30):
+            c.metadata.setdefault("_anim", _ensure_anim(c))["face_cur"] = deg
+            c.metadata["_anim"]["face_target"] = deg
+            draw_body(surf, c, 20, 40, 48, is_player=False)
+
     def test_draw_projectile_kinds(self):
         surf = pygame.Surface((64, 64))
         for kind in ("arrow", "bolt", "stone", "spell", "unknown"):

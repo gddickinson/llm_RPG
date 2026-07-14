@@ -174,9 +174,19 @@ def update_anim(char, dt: float) -> None:
     cur = tuple(char.position)
     if prev != cur:                        # a step: start a slide from prev→cur
         char_motion.update_facing(anim, prev, cur)
+        from ui.char_pose3d import facing_from_delta
+        anim["face_target"] = facing_from_delta(cur[0] - prev[0],
+                                                cur[1] - prev[1])
         anim["tween_from"] = (prev[0] - cur[0], prev[1] - cur[1])
         anim["tween_t"] = TWEEN_DUR
     anim["prev_pos"] = cur
+    # ease the continuous facing angle toward the heading (P34.14) — the cast
+    # TURNS to face any of 360° instead of snapping to 4 views
+    tgt = anim.get("face_target")
+    if tgt is not None:
+        cur_a = anim.get("face_cur", tgt)
+        d = ((tgt - cur_a + 180) % 360) - 180
+        anim["face_cur"] = (cur_a + d * min(1.0, dt * 9.0)) % 360.0
     tweening = anim.get("tween_t", 0.0) > 0
     anim["moving"] = tweening
     if tweening:
@@ -219,6 +229,8 @@ def _update_action(char, anim, dt):
     face = meta.pop("_face", None)
     if face:
         anim["facing"] = tuple(face)
+        from ui.char_pose3d import facing_from_delta
+        anim["face_target"] = facing_from_delta(face[0], face[1])
     bq = meta.pop("_bubble", None)                 # emote-bubble request (P34.2)
     if not bq and meta.get("_stance") == "sleep":
         bq = "sleep"
@@ -266,7 +278,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     if not char.is_alive():
         _draw_corpse(surface, char, sx, sy, tile_size)
         return
-    from ui import char_motion, char_pose, body_parts as bp
+    from ui import char_motion, body_parts as bp
 
     race = getattr(char.race, "value", "human")
     klass = getattr(char.character_class, "value", "villager")
@@ -293,8 +305,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
 
     atk_t = anim.get("atk_t", 0.0)
     attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
-    facing = char_motion.facing(anim)
-    from ui import char_clips, char_mocap, char_style
+    from ui import char_clips, char_style, char_pose3d
     action = anim.get("cur_action", "idle")
     weapon = char_motion.weapon_kind(char)
     # P34.11 per-character motion style: a gait (walk/run varies), a melee attack
@@ -305,34 +316,21 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     if action == "run":                          # a run has a longer, springier gait
         pgait = {"stride": gait["stride"] * 1.4, "bob": gait["bob"] * 1.25,
                  "arm": gait["arm"] * 1.3, "cadence": gait["cadence"]}
-    # MOCAP when facing sideways, not mid-attack, and a baked clip exists — real
-    # Mixamo motion for the side profile (P34.8); else the hand-authored puppet
-    mocap = char_mocap.clip_for(action) if (facing[0] and atk_t <= 0) else None
-    if mocap:
-        if not char_mocap.is_loop(mocap):
-            if char_clips.is_one_shot(action) and anim.get("action_dur"):
-                mp = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
-            else:
-                mp = 1.0                        # a held stance → the final pose
-        else:
-            mp = (anim.get("clock", 0.0) * char_mocap.RATE.get(mocap, 1.0)
-                  * gait["cadence"])            # per-character walk/run rhythm
-        pose = char_mocap.pose_from_clip(mocap, mp, feet_x, feet_y, H, facing,
-                                         build)
+    # P34.14 CONTINUOUS FACING: project the body skeleton at the eased heading angle
+    # (front → ¾ → side → back, any direction the character moves), then apply the
+    # action clip on top. Replaces the 4-view build_pose/mocap split.
+    face_deg = anim.get("face_cur", 0.0)
+    pose = char_pose3d.pose3d(feet_x, feet_y, H, anim.get("walk_phase", 0.0),
+                              face_deg, build, anim.get("moving", False),
+                              attack, astyle, pgait, anim.get("idle_phase", 0.0))
+    facing = pose["facing"]
+    if char_clips.is_one_shot(action) and anim.get("action_dur"):
+        phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
     else:
-        pose = char_pose.build_pose(feet_x, feet_y, H,
-                                    anim.get("walk_phase", 0.0),
-                                    anim.get("idle_phase", 0.0),
-                                    anim.get("moving", False), attack, facing,
-                                    build, pgait, astyle)
-        if char_clips.is_one_shot(action) and anim.get("action_dur"):
-            phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
-        else:
-            phase = anim.get("clock", 0.0)
-        # cast → a per-caster gesture variant (staff-slam / point / two-hand)
-        clip_action = (char_style.cast_style(char, weapon)
-                       if action == "cast" else action)
-        pose = char_clips.apply(clip_action, pose, phase, H, facing)
+        phase = anim.get("clock", 0.0)
+    clip_action = (char_style.cast_style(char, weapon)
+                   if action == "cast" else action)
+    pose = char_clips.apply(clip_action, pose, phase, H, facing)
 
     # shadow on the ground, under the feet (not the tweened body)
     shw = max(4, int(H * 0.26))
@@ -372,7 +370,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     leg_w = max(2, int(H * 0.10))
     arm_w = max(2, int(H * 0.075))
     neck_w = max(2, int(H * 0.06))
-    face_visible = facing[1] >= 0
+    face_visible = pose.get("face_visible", facing[1] >= 0)
 
     # P34.5 flow: a billowing cloak + swaying hair BEHIND the body
     from ui import char_flow
@@ -381,12 +379,18 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     char_flow.draw_back(surface, char, anim, pose, sx, sy, tile_size, H, hair,
                         cloak_color)
 
+    # P34.14 depth-sort: the arm farther from the camera is drawn BEHIND the
+    # torso (and dimmed for depth); the near arm in front — so a ¾/back view reads
+    depth = pose.get("cam_depth", {})
+    far = "l" if depth.get("l_sh", 0.0) <= depth.get("r_sh", 0.0) else "r"
+    near = "r" if far == "l" else "l"
     bp.draw_legs(surface, pose, pants, boots, leg_w)
+    bp.draw_arm(surface, pose, far, _darken(torso, 26), _darken(skin, 26), arm_w)
     if char_motion.has_shield(char):
         bp.draw_shield(surface, pose, (120, 110, 95), (88, 76, 60),
                        max(2, int(H * 0.13)))
     bp.draw_torso(surface, pose, torso, belt)
-    bp.draw_arms(surface, pose, torso, skin, arm_w)
+    bp.draw_arm(surface, pose, near, torso, skin, arm_w)
     from ui import char_face
     # a fleeting expression from the current action, else the held mood
     expr = char_face.EMOTE_EXPR.get(action) or char_face.expr_for(char)

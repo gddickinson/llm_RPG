@@ -52,10 +52,15 @@ def draw_torso(surface, pose, color, belt):
 
 
 def draw_arms(surface, pose, sleeve, skin, w):
-    _limb(surface, pose["l_sh"], pose["l_elbow"], sleeve, w)
-    _limb(surface, pose["l_elbow"], pose["l_hand"], skin, max(1, w - 1))
-    _limb(surface, pose["r_sh"], pose["r_elbow"], sleeve, w)
-    _limb(surface, pose["r_elbow"], pose["r_hand"], skin, max(1, w - 1))
+    draw_arm(surface, pose, "l", sleeve, skin, w)
+    draw_arm(surface, pose, "r", sleeve, skin, w)
+
+
+def draw_arm(surface, pose, side, sleeve, skin, w):
+    """One arm (P34.14 depth-sort: the far arm is drawn behind the torso)."""
+    sh, el, ha = side + "_sh", side + "_elbow", side + "_hand"
+    _limb(surface, pose[sh], pose[el], sleeve, w)
+    _limb(surface, pose[el], pose[ha], skin, max(1, w - 1))
 
 
 def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,

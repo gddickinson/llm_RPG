@@ -7003,3 +7003,25 @@ a jump between locations never smears it):
 George asked whether full 3D/more view angles are possible in the 2.5D game — see
 the reply; the realistic path is 8-directional facing with procedural ¾ views
 (next candidate round), not a true 3D mesh.
+
+## 2026-07-14 (cont.) — P34.14: continuous 8-way/360° facing (the "3D" answer)
+
+George asked whether full 3D character movement is possible in the 2.5D game (we
+only had side + front/back), and chose to wire it in fully. A true 3D mesh is the
+wrong tool, but the PROCEDURAL puppet makes continuous facing easy:
+- `ui/char_pose3d.py` gives every joint BODY coordinates (u = across the shoulders,
+  w = fore-aft DEPTH, y = height) and PROJECTS to screen by a facing angle θ:
+  `screen_x = cx + (u·cosθ + w·sinθ)·H`. One function renders ANY heading; the walk
+  strides the legs in DEPTH, so θ=0 lifts (a front walk) and θ=90 swings (a side
+  walk) from the SAME data. It's a full drop-in for `build_pose` (gait, bob, a
+  projected attack), and exposes `cam_depth` per joint.
+- `body_renderer` now eases a continuous `face_cur` angle toward the MOVEMENT
+  HEADING each frame (`facing_from_delta`) and renders through `pose3d` — a
+  character TURNS to face any of 360° instead of snapping to 4 views. Limbs are
+  DEPTH-SORTED (the far arm drawn behind the torso and dimmed, the near arm in
+  front, via `body_parts.draw_arm` + `cam_depth`), so ¾ and back views read right.
+The old 4-view `build_pose`/mocap split is retired from the live render path (both
+kept for their own tests). A live-pipeline screenshot shows the hero walking in all
+8 directions with correct foreshortening, face show/hide and weapon depth.
+`tests/test_char_pose3d.py` (7) + facing-eases + every-angle integration tests in
+`test_body_renderer.py`. Full suite 2520 green.
