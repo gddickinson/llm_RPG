@@ -4445,9 +4445,18 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   bust a RANDOM dance/jig/taunt each press. Documented in the F1 help. Contact sheet
   confirms each comedy clip reads. `tests/test_char_clips_fun.py` (5) +
   attack-variant tests in `test_char_style.py`.
-- [ ] **P34.5 Hair, cloak & flow.** A spring/verlet hair (and optional cloak/tail)
+- [x] **P34.5 Hair, cloak & flow.** A spring/verlet hair (and optional cloak/tail)
   CHAIN pinned to the head/shoulder, swayed by motion & wind, tinted by state
   (Celeste); a fading weapon-swing TRAIL. Real secondary motion → movement gains flow.
+  *Done:* new pure `ui/char_flow.py` runs a VERLET CHAIN (`init_chain`/`step_chain`)
+  in body-LOCAL space (camera-stable, like the P34.3 springs): a ponytail off the
+  back of the head (all characters) that trails behind under a light gravity + a
+  backward bias, and a billowing CLOAK from the shoulders for robed callings
+  (`CLOAK_CLASSES`), plus a fading weapon-swing TRAIL (`push_trail`) — a light arc
+  that smears behind a strike and decays after. `body_renderer` draws the cloak+hair
+  behind the body and the trail in front. Screenshot: a running rogue's ponytail
+  streams, a wizard's cape billows, a sword-swing leaves an arc. `tests/
+  test_char_flow.py` (10).
 - [ ] **P34.6 Solid drawing & staging.** Bow the elbows/knees along ARCS (not straight
   midpoints); DEPTH-SORT limbs by facing (far limb drawn behind + dimmed ~8%);
   LINE-OF-ACTION — a gentle C-curve of the spine by mood (proud arch / sad slump).

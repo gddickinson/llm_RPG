@@ -6984,3 +6984,22 @@ A contact sheet confirms each comedy clip reads as intended. `tests/
 test_char_clips_fun.py` (5) + attack-variant tests in `test_char_style.py`. Full
 suite green. Both parts of George's "more variety + comedy + movement options"
 message are now delivered (movement in P34.12, variety+comedy here).
+
+## 2026-07-14 (cont.) — P34.5: hair, cloak & weapon-trail flow
+
+Real secondary motion so movement gains flow. New pure `ui/char_flow.py` runs a
+VERLET CHAIN in body-LOCAL space (camera-stable, like the P34.3 springs so a pan or
+a jump between locations never smears it):
+- a **ponytail** off the back of every character's head — low gravity + a backward
+  bias so it trails and flows as they move (clearly visible streaming behind a
+  running rogue);
+- a billowing **cloak** from the shoulders for robed callings (`CLOAK_CLASSES` —
+  wizard/rogue/cleric/…), drawn as a swaying cape polygon behind the body;
+- a fading **weapon-swing trail** (`push_trail`) — a light arc that smears behind a
+  strike and decays once the swing ends.
+`body_renderer` draws cloak+hair behind the limbs and the trail in front.
+`tests/test_char_flow.py` (10). Full suite green.
+
+George asked whether full 3D/more view angles are possible in the 2.5D game — see
+the reply; the realistic path is 8-directional facing with procedural ¾ views
+(next candidate round), not a true 3D mesh.

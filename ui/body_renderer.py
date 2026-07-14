@@ -374,6 +374,13 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     neck_w = max(2, int(H * 0.06))
     face_visible = facing[1] >= 0
 
+    # P34.5 flow: a billowing cloak + swaying hair BEHIND the body
+    from ui import char_flow
+    cloak_color = (_darken(torso, 55) if klass.lower() in char_flow.CLOAK_CLASSES
+                   else None)
+    char_flow.draw_back(surface, char, anim, pose, sx, sy, tile_size, H, hair,
+                        cloak_color)
+
     bp.draw_legs(surface, pose, pants, boots, leg_w)
     if char_motion.has_shield(char):
         bp.draw_shield(surface, pose, (120, 110, 95), (88, 76, 60),
@@ -388,6 +395,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
                  sec.get("look", (0.0, 0.0)))
     if weapon:                                   # resolved above (P34.11)
         bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)
+    char_flow.draw_front(surface, anim, pose, sx, sy, tile_size, atk_t, weapon)
 
     hx, hy = int(pose["head"][0]), int(pose["head"][1])
     hr = pose["head_r"]
