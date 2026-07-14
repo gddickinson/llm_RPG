@@ -139,17 +139,23 @@ def _ensure_anim(char) -> dict:
             "idle_phase": 0.0,
             "prev_pos": tuple(char.position),
             "moving": False,
+            "facing": (0, 1),
+            "atk_t": 0.0,
+            "atk_seen": None,
         }
         meta["_anim"] = anim
     return anim
 
 
 def update_anim(char, dt: float) -> None:
-    """Advance walk/idle phases. Detects movement from position delta."""
+    """Advance walk/idle phases, facing, and the strike timer (P33.4)."""
+    from ui import char_motion
     anim = _ensure_anim(char)
     prev = anim["prev_pos"]
     cur = tuple(char.position)
     moving = prev != cur
+    if moving:
+        char_motion.update_facing(anim, prev, cur)
     anim["prev_pos"] = cur
     anim["moving"] = moving
     if moving:
@@ -157,6 +163,14 @@ def update_anim(char, dt: float) -> None:
     else:
         anim["walk_phase"] *= 0.9
         anim["idle_phase"] = (anim["idle_phase"] + dt * 1.5) % math.tau
+    # strike lunge: the engine bumps metadata['_atk_seq']; run a real-time timer
+    seq = (getattr(char, "metadata", None) or {}).get("_atk_seq", 0)
+    if seq != anim.get("atk_seen"):
+        if anim.get("atk_seen") is not None:
+            anim["atk_t"] = char_motion.ATTACK_DUR
+        anim["atk_seen"] = seq
+    elif anim.get("atk_t", 0) > 0:
+        anim["atk_t"] = max(0.0, anim["atk_t"] - dt)
 
 
 # ---------------------------------------------------------------------- main draw
@@ -171,15 +185,20 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
         _draw_corpse(surface, char, sx, sy, tile_size)
         return
 
+    from ui import char_motion
     race = getattr(char.race, "value", "human")
     klass = getattr(char.character_class, "value", "villager")
     skin = _race_color(race)
-    torso_color = _class_color(klass)
+    torso_color = char_motion.armor_tint(char, _class_color(klass))
     scale = _race_scale(race) * (tile_size / 32.0)
 
     # Layout coordinates within the tile (centered)
     cx = sx + tile_size // 2
     cy = sy + tile_size // 2
+    # a strike leans the whole figure toward what it's hitting (P33.4)
+    lunge = char_motion.attack_lunge(anim.get("atk_t", 0.0))
+    fx, fy = char_motion.facing(anim)
+    lean_x, lean_y = int(fx * lunge * 3), int(fy * lunge * 2)
     head_r = max(3, int(5 * scale))
     body_w = max(6, int(10 * scale))
     body_h = max(7, int(11 * scale))
@@ -195,6 +214,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     pygame.draw.ellipse(shadow, (0, 0, 0, 90), shadow.get_rect())
     surface.blit(shadow, (cx - (body_w + 4) // 2,
                           cy + body_h // 2 + 1))
+    cx += lean_x                       # the body leans; the shadow stayed put
+    cy += lean_y
 
     # Legs
     leg_offset = int(sway * 2)
@@ -267,8 +288,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     pygame.draw.rect(surface, (30, 30, 30),
                      (head_x + 1, eye_y, 1, 1))
 
-    # Weapon
-    weapon = CLASS_WEAPON.get(klass)
+    # Weapon — what the character ACTUALLY wields (P33.4), not just its class
+    weapon = char_motion.weapon_kind(char)
     if weapon:
         _draw_weapon(surface, weapon, right_arm_x + 2,
                      arm_top_y + arm_l + arm_swing, scale)

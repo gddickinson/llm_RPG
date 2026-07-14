@@ -6631,3 +6631,19 @@ styles` validator guards the descriptors. `tests/test_roof_shapes.py` (12).
 Remainder P33.3b: MERGE adjacent same-building tiles into one roofed mass (AW
 edge-aware faces) so a big house isn't a grid of cubes, + east faces + dormers.
 Then P33.4 living characters.
+
+## 2026-07-14 (cont.) — P33.4a: living characters (equipment + a strike lunge)
+
+The hero and NPCs stop lying about what they carry. New pure `ui/char_motion.py`:
+`weapon_kind` reads the WORN weapon and classifies it (a warrior actually wielding
+a Hunting Bow now draws a BOW, not a class-default sword — screenshot-confirmed),
+`armor_tint` metals/leathers the torso from the worn armour, `attack_lunge` is a
+mid-thrust ease curve, and `update_facing`/`facing` track heading. `body_renderer`
+draws the equipped weapon + armour tint and LEANS the whole figure toward its
+target on a strike. To keep the engine clock-free the animation is counter-driven:
+`combat_system._resolve` bumps `metadata['_atk_seq']`, and `update_anim` (which has
+a real-time dt) notices and runs the lunge timer. `tests/test_char_motion.py` (12).
+Remainder P33.4b: the smooth tile-to-tile TWEEN (wire the unused `animation.lerp`/
+`smoothstep`), cast/hurt flashes, larger/more-detailed bodies, night palette-mute.
+Next up per George's mid-round note: multi-story buildings that actually READ as
+multi-story (storey-driven height + per-floor windows).

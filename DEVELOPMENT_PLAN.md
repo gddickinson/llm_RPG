@@ -4246,11 +4246,20 @@ CC0 walk-cycle sprite sheets offline into the existing PNG-tileset pipeline.
   civic halls vs timber-and-clay gabled houses vs a grey stone wall. *Remainder
   P33.3b:* MERGE adjacent same-building tiles into one roofed mass (AW edge-aware
   faces) + east wall faces + dormers.
-- [ ] **P33.4 Living characters (equipment + animation).** Make the drawn weapon/
+- [~] **P33.4 Living characters (equipment + animation).** Make the drawn weapon/
   armour read ACTUAL equipped items (not class), add an attack-lunge + cast flash +
   hurt recoil and a smooth tile-to-tile TWEEN (wire `animation.lerp`/`smoothstep`,
   today unused), 4-way facing, and night palette-muting. New pure `ui/char_motion.py`;
   extend `body_renderer`. (movieMaker's runtime-portable animation logic.)
+  *Done (P33.4a):* pure `ui/char_motion.py` — `weapon_kind` (reads the WORN weapon,
+  classifies it by name/`weapon_kind`, falls back to the class default), `armor_tint`
+  (metal/leather torso from worn armour), `has_shield`, `attack_lunge` (a mid-thrust
+  ease curve), `update_facing`/`facing`. `body_renderer` now draws the equipped
+  weapon (a warrior wielding a bow finally shows a BOW), tints the torso by armour,
+  and LEANS the figure toward its target on a strike; `combat_system._resolve` bumps
+  `metadata['_atk_seq']` (engine stays clock-free — `update_anim` runs the real-time
+  lunge timer). `tests/test_char_motion.py` (12). *Remainder P33.4b:* the smooth
+  tile-to-tile TWEEN, cast/hurt flashes, bigger/more-detailed bodies, night mute.
 - [ ] **P33.5 Atmosphere polish + optional baked sprite sheets.** Richer day/night
   phase tints (dawn/dusk), tree/building drop-shadows, ambient particles (fireflies,
   chimney smoke, leaves). STRETCH: an offline `tools/bake_sprites.py` over movieMaker's

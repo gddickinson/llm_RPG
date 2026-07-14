@@ -82,6 +82,14 @@ class CombatSystem:
             effective_weapon_damage_bonus,
         )
 
+        # a strike animates the attacker's sprite (P33.4): the renderer watches
+        # this counter and runs a lunge — engine stays clock-free
+        try:
+            m = attacker.metadata
+            m["_atk_seq"] = m.get("_atk_seq", 0) + 1
+        except Exception:
+            pass
+
         # Assault has consequences: a peaceful NPC the player attacks
         # turns hostile (fight back or flee — heuristic provider) and
         # word of it costs villager goodwill (P7 follow-up, George)
