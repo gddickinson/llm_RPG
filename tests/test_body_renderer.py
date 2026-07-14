@@ -65,6 +65,27 @@ class TestBodyRenderer(unittest.TestCase):
         c.status = "defeated"
         draw_body(surf, c, 0, 0, 32, is_player=False)
 
+    def test_head_does_not_smear_across_camera_jumps(self):
+        """Regression (P34.3): the head/weapon springs run in body-LOCAL space,
+        so a camera pan or a move BETWEEN LOCATIONS (a big jump in the on-screen
+        sx) never drags the head away from the body. The stored spring offset
+        must stay local (~0), not go absolute and chase sx."""
+        c = _new_char()
+        ts = 48
+        surf = pygame.Surface((64, 64 * 4))
+        for _ in range(6):                      # settle at the origin
+            update_anim(c, 1 / 30.0)
+            draw_body(surf, c, 0, 0, ts, is_player=False)
+        near = c.metadata["_anim"]["_sec"]["head"][0]
+        for _ in range(6):                      # camera jumps 2000px away
+            update_anim(c, 1 / 30.0)
+            draw_body(surf, c, 2000, 0, ts, is_player=False)
+        far = c.metadata["_anim"]["_sec"]["head"][0]
+        H = int(ts * 1.5)
+        self.assertLess(abs(near), H)           # a local offset (~0), not sx
+        self.assertLess(abs(far), H)            # STILL local after the jump
+        self.assertLess(abs(near - far), ts)    # barely moved despite the jump
+
     def test_draw_projectile_kinds(self):
         surf = pygame.Surface((64, 64))
         for kind in ("arrow", "bolt", "stone", "spell", "unknown"):

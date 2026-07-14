@@ -338,12 +338,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Discovery error: {e}")
 
-    # The hero swims across deep water (P33.6c)
+    # The hero swims across deep water (P33.6c); the cast glances about (P34.3)
     try:
         from engine import anim
         anim.update_swim(self)
+        anim.update_look(self)
     except Exception as e:
-        logger.debug(f"Swim stance error: {e}")
+        logger.debug(f"Anim state error: {e}")
 
     # Keep the ranged lock honest (P8.7 UX)
     try:

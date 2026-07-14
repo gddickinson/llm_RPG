@@ -59,7 +59,7 @@ def draw_arms(surface, pose, sleeve, skin, w):
 
 
 def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
-              expr="neutral", blink=False):
+              expr="neutral", blink=False, look=(0.0, 0.0)):
     import pygame
     hx, hy = _pt(pose["head"])
     r = pose["head_r"]
@@ -90,10 +90,11 @@ def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
             (nx, hy + r // 3)])
     else:
         pygame.draw.circle(surface, skin, (hx, hy + r // 3), max(1, r * 2 // 3))
-    draw_face(surface, hx, hy, r, expr, profile, blink)
+    draw_face(surface, hx, hy, r, expr, profile, blink, look)
 
 
-def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False):
+def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False,
+              look=(0.0, 0.0)):
     """P34.2 the expressive face — brows + eyes + mouth from a 3-param spec."""
     import pygame
     from ui import char_face
@@ -103,13 +104,16 @@ def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False):
     ey = hy + r // 5                                # eye row
     sides = (profile,) if profile else (-1, 1)     # one eye in profile
     mode = sp["eyes"]
+    lx = int(round(look[0] * r * 0.4))             # pupils lead the look (P34.3)
+    ly = int(round(look[1] * r * 0.3))
     for s in sides:
         ex = hx + (s * (r // 3) if not profile else profile * (r // 3))
+        px, py = ex + lx, ey + ly                  # pupil position
         if blink or mode == "squint":
             pygame.draw.line(surface, ink, (ex - e, ey), (ex + e, ey), 1)
         elif mode == "wide":
             pygame.draw.circle(surface, (245, 245, 245), (ex, ey), e + 1)
-            pygame.draw.circle(surface, ink, (ex, ey), max(1, e - 1))
+            pygame.draw.circle(surface, ink, (px, py), max(1, e - 1))
         elif mode == "arch":                       # ‿ happy squint
             pygame.draw.arc(surface, ink, (ex - e, ey - e, e * 2, e * 2 + 1),
                             3.4, 6.0, 1)
@@ -117,7 +121,7 @@ def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False):
             pygame.draw.line(surface, ink, (ex - e, ey - e), (ex + e, ey + e), 1)
             pygame.draw.line(surface, ink, (ex - e, ey + e), (ex + e, ey - e), 1)
         else:                                      # dot
-            pygame.draw.circle(surface, ink, (ex, ey), e)
+            pygame.draw.circle(surface, ink, (px, py), e)
         # brow — inner end nudged by the expression's brow tilt
         bx = ex
         by = ey - max(2, r // 2)

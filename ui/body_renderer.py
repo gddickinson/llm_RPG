@@ -101,6 +101,18 @@ def _darken(color, amount=30):
     return tuple(max(0, c - amount) for c in color)
 
 
+def _cap(x, y, tx, ty, cap):
+    """Clamp a sprung point to within `cap` px of its target: a follow-through lag
+    may settle but can NEVER detach a limb — the guard that stops any large
+    screen-space jump (a camera pan / a move between locations) from smearing."""
+    dx, dy = x - tx, y - ty
+    d = math.hypot(dx, dy)
+    if d > cap > 0:
+        s = cap / d
+        return tx + dx * s, ty + dy * s
+    return x, y
+
+
 def _hair_color(char):
     race = getattr(getattr(char, "race", None), "value", "human")
     if race in ("orc", "half-orc", "goblin", "troll"):
@@ -178,6 +190,12 @@ def update_anim(char, dt: float) -> None:
     from ui import char_face
     seed = sum(ord(c) for c in str(getattr(char, "id", "x")))
     char_face.blink_step(anim, dt, seed)
+    # look-at: ease a head/eye offset toward a point of interest (P34.3)
+    from ui import char_secondary as cs
+    sec = anim.setdefault("_sec", {})
+    tgt = (getattr(char, "metadata", None) or {}).get("_look")
+    want = cs.look_dir(char.position, tgt) if tgt else (0.0, 0.0)
+    sec["look"] = cs.ease2(sec.get("look", (0.0, 0.0)), want, 0.12)
     _update_action(char, anim, dt)
 
 
@@ -295,6 +313,34 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     surface.blit(shadow, (int(sx + tile_size / 2 - shw / 2),
                           int(sy + tile_size - shw / 2 - 1)))
 
+    # P34.3 secondary motion in BODY-LOCAL space: the head lags the body and the
+    # weapon tip whips behind a swing (follow-through / settle). The spring works
+    # on OFFSETS from a STATIC tile anchor (no camera scroll, no tween slide), so a
+    # camera pan or a jump BETWEEN LOCATIONS shifts the anchor and the pose in
+    # lock-step and never reaches the spring — only the body's own motion does.
+    # Offsets are capped, so a lag can settle but never detach a limb.
+    from ui import char_secondary as cs
+    sec = anim.setdefault("_sec", {})
+    ax = sx + tile_size / 2.0
+    ay = sy + tile_size - 2.0
+    lx, ly = sec.get("look", (0.0, 0.0))
+    htx = pose["head"][0] - ax + lx * H * 0.05
+    hty = pose["head"][1] - ay + ly * H * 0.05
+    hx, hy, hvx, hvy = sec.get("head", (htx, hty, 0.0, 0.0))
+    hx, hy, hvx, hvy = cs.spring2(hx, hy, hvx, hvy, htx, hty, 1 / 30.0,
+                                  cs.HEAD_STIFF)
+    hx, hy = _cap(hx, hy, htx, hty, H * 0.10)
+    sec["head"] = (hx, hy, hvx, hvy)
+    pose["head"] = (ax + hx, ay + hy)
+    wtx = pose["r_hand"][0] - ax
+    wty = pose["r_hand"][1] - ay
+    wx, wy, wvx, wvy = sec.get("weap", (wtx, wty, 0.0, 0.0))
+    wx, wy, wvx, wvy = cs.spring2(wx, wy, wvx, wvy, wtx, wty, 1 / 30.0,
+                                  cs.WEAP_STIFF)
+    wx, wy = _cap(wx, wy, wtx, wty, H * 0.16)
+    sec["weap"] = (wx, wy, wvx, wvy)
+    pose["r_hand"] = (ax + wx, ay + wy)
+
     leg_w = max(2, int(H * 0.10))
     arm_w = max(2, int(H * 0.075))
     neck_w = max(2, int(H * 0.06))
@@ -310,7 +356,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     # a fleeting expression from the current action, else the held mood
     expr = char_face.EMOTE_EXPR.get(action) or char_face.expr_for(char)
     bp.draw_head(surface, pose, skin, hair, race, face_visible, neck_w,
-                 pose.get("profile", 0), expr, anim.get("blinking", False))
+                 pose.get("profile", 0), expr, anim.get("blinking", False),
+                 sec.get("look", (0.0, 0.0)))
     weapon = char_motion.weapon_kind(char)
     if weapon:
         bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)

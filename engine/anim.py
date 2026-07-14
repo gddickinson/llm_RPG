@@ -79,6 +79,41 @@ def interact(a, b, kind):
         emote(a, ca)
 
 
+def look(char, target_pos):
+    """Make a character's head/eyes glance toward a tile (None to clear)."""
+    try:
+        if target_pos is None:
+            char.metadata.pop("_look", None)
+        else:
+            char.metadata["_look"] = tuple(target_pos)
+    except Exception:
+        pass
+
+
+def update_look(engine, radius=8):
+    """Per-turn: each visible character GLANCES at the nearest other actor within
+    `radius` tiles (the player at least), so the cast watches each other and you
+    (P34.3). Cheap O(n²) over the small open-world cast."""
+    try:
+        cast = [n for n in engine.npc_manager.npcs.values() if n.is_active()]
+        cast.append(engine.player)
+        r2 = radius * radius
+        for c in cast:
+            if (c.metadata or {}).get("_stance") == "sit":
+                continue
+            best, bd = None, r2 + 1
+            cx, cy = c.position
+            for o in cast:
+                if o is c:
+                    continue
+                d = (o.position[0] - cx) ** 2 + (o.position[1] - cy) ** 2
+                if d < bd:
+                    bd, best = d, o
+            c.metadata["_look"] = best.position if best else None
+    except Exception:
+        pass
+
+
 def update_swim(engine):
     """Per-turn: the hero shows a SWIM stance while standing on deep water, and
     drops it again on dry land (P33.6c)."""

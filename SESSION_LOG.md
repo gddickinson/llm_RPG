@@ -6801,3 +6801,32 @@ timing — real knee bend, a proper stride, counter-swinging arms — the run le
 drives, the dance grooves (screenshot-verified). `tests/test_char_mocap.py` (7).
 Remainder: front/back projections; sync the walk cadence to the step tween. Next
 down the plan: P34.3 the spring + look-at substrate.
+
+## 2026-07-14 (cont.) — P34.3: secondary motion — springs, follow-through & look-at
+
+The biggest remaining "alive" multiplier. New pure `ui/char_secondary.py` adds the
+persistent inter-frame layer the stateless rig lacked: `spring2` (a critically-damped
+2D spring), `look_dir` (a cone-clamped look direction) and `ease2`, over a
+`_anim['_sec']` substrate. `body_renderer` now springs the HEAD toward its target
+(a subtle lag-and-settle — the head bobs a touch behind the body and eases after a
+turn) and the WEAPON-TIP (which whips behind a fast swing), and eases a LOOK offset
+that nudges the head and LEADS THE PUPILS toward a point of interest. `engine/anim.
+update_look` runs each turn and makes every character GLANCE at the nearest actor
+within 8 tiles — the cast watches each other and you; `anim.look()` points a gaze
+(e.g. at a dialog partner). A screenshot confirms the eyes/head track a target in
+every direction. `tests/test_char_secondary.py` (6). Remainder of Phase 34: P34.4
+individuality (desync/fidgets/reactions), P34.5 hair/cloak springs, P34.6 depth-sort,
+P34.7 the SSAA beauty pass. George also asked for player RUN/JUMP controls — next.
+
+**Bug-fix (P34.3, before commit):** George saw character bodies "distorting as
+they move between locations." Root cause: the new head/weapon springs ran in
+ABSOLUTE screen coordinates. Every player step recenters the camera, so every
+body's on-screen `sx` jumps a full tile in one frame (and a location change jumps
+it much further) — the spring lagged across that jump and smeared the head/weapon
+off the body. Fix: the springs now work in BODY-LOCAL offset space (relative to a
+static tile anchor), so a camera pan or a jump between locations shifts the anchor
+and the pose in lock-step and never reaches the spring — only the body's own
+motion drives the follow-through — with a hard `_cap` so a lag can settle but never
+detach a limb. Regression test `test_head_does_not_smear_across_camera_jumps`
+asserts the stored offset stays local after a 2000px jump. Filmstrips confirm the
+head stays attached across an 8-frame camera pan and a full walk cycle.

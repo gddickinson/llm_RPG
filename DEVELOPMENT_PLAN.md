@@ -4375,12 +4375,20 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   action (hurt→hurt, cheer→happy) else the held mood, and pops a bubble; a `sleep`
   stance auto-bubbles 💤. `engine/anim.express`/`bubble` are the triggers.
   Screenshot: 8 distinct legible faces at ~10px. `tests/test_char_face.py` (7).
-- [ ] **P34.3 Secondary-motion substrate + springs + look-at.** New pure
+- [x] **P34.3 Secondary-motion substrate + springs + look-at.** New pure
   `ui/char_secondary.py`: `spring()` (critically-damped), a follow-the-leader/verlet
   CHAIN, and `look_at` (head + pupils ease toward a point, clamped to a cone). Wire
   FOLLOW-THROUGH on the head & weapon-tip (lag + settle) and LOOK-AT toward the
   nearest actor / the dialog speaker / a thrown item — characters visibly NOTICE
   things. The single biggest "alive" multiplier.
+  *Done:* pure `ui/char_secondary.py` (`spring2` critically-damped, `look_dir`
+  cone-clamped, `ease2`) over a persistent `_anim['_sec']` substrate; `body_renderer`
+  springs the HEAD (subtle lag/settle) and the WEAPON-TIP (a whippy swing), and eases
+  a LOOK offset that shifts the head + leads the PUPILS toward the point of interest;
+  `engine/anim.update_look` (per-turn) glances each character at the nearest actor
+  within 8 tiles (+ `look()` for dialog). Screenshot: the hero's eyes/head track a
+  target in every direction. `tests/test_char_secondary.py` (6). (Hair/cloak chain is
+  P34.5.)
 - [ ] **P34.4 Individuality & idle life.** Seed idle PHASE + SPEED (and build /
   default expression / handedness) from `char.id` so a crowd desyncs; keep breathing
   + blink always on; AMBIENT FIDGETS on a jittered timer (weight-shift, look-around,
