@@ -129,5 +129,52 @@ class TestHuntable(_Base):
         self.assertGreater(get_skill_xp(self.engine.player, "hunting"), before)
 
 
+class TestPredatorPrey(_Base):
+    """P32.4 — the fox hunts, the prey flees the fox (player kept far away)."""
+
+    def _place(self, species, pos):
+        a = wildlife.build_wildlife(species, pos)
+        self.engine.npc_manager.add_npc(a)
+        self.wmap.place_character(a, *pos)
+        return a
+
+    def setUp(self):
+        super().setUp()
+        # the wildlife brain only manages animals within SIGHT_RADIUS of the
+        # player, so keep it CLOSE enough to manage the pair but far enough
+        # (> each animal's timid radius) not to spook them itself
+        near = (self.px, self.py + 9)
+        self.wmap.remove_character(self.engine.player)
+        self.engine.player.position = near
+        self.wmap.place_character(self.engine.player, *near)
+        self.wl.rng = random.Random(5)
+
+    def test_a_fox_closes_on_a_rabbit(self):
+        fox = self._place("fox", (self.px, self.py))
+        rabbit = self._place("rabbit", (self.px + 6, self.py))
+        d0 = self.wl._cheb(fox.position, rabbit.position)
+        # rabbit held still so we measure the fox's approach
+        self.wl._flee = lambda a, p: None
+        for _ in range(3):
+            self.wl.run_turn()
+        # either it closed the gap or already made the kill (rabbit gone)
+        gone = rabbit.id not in self.engine.npc_manager.npcs
+        self.assertTrue(gone or
+                        self.wl._cheb(fox.position, rabbit.position) < d0)
+
+    def test_the_fox_makes_the_kill(self):
+        fox = self._place("fox", (self.px, self.py))
+        rabbit = self._place("rabbit", (self.px + 1, self.py))
+        self.wl._make_kill(fox, rabbit)
+        self.assertNotIn(rabbit.id, self.engine.npc_manager.npcs)
+        self.assertTrue(fox.metadata.get("fed"))
+
+    def test_prey_flees_a_predator(self):
+        fox = self._place("fox", (self.px, self.py))
+        rabbit = self._place("rabbit", (self.px + 2, self.py))
+        threat = self.wl._nearest_predator(rabbit)
+        self.assertIs(threat, fox)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -195,10 +195,83 @@ class WildlifeSystem:
     def _act(self, animal, ppos) -> None:
         meta = animal.metadata
         timid = meta.get("timid", 5)
+        # the hero always spooks a wild thing first — bolt from a person
         if ppos and self._cheb(animal.position, ppos) <= timid:
-            self._flee(animal, ppos)            # a person is too close — bolt
-        elif self.rng.random() < 0.5:
+            self._flee(animal, ppos)
+            return
+        # P32.4: prey flees a nearby PREDATOR too; a predator hunts its prey
+        threat = self._nearest_predator(animal)
+        if threat is not None:
+            self._flee(animal, threat.position)
+            return
+        if meta.get("preys_on"):
+            if self._hunt(animal):
+                return                          # closed on / caught a meal
+        if self.rng.random() < 0.5:
             self._wander(animal)                # otherwise graze/amble
+
+    def _nearest_predator(self, prey):
+        """The closest live predator that eats this prey's species, within the
+        prey's timid radius (P32.4)."""
+        species = (prey.metadata or {}).get("species")
+        timid = (prey.metadata or {}).get("timid", 5)
+        best, bestd = None, timid + 1
+        for other in self._animals():
+            if other is prey:
+                continue
+            if species not in (other.metadata or {}).get("preys_on", []):
+                continue
+            d = self._cheb(prey.position, other.position)
+            if d <= timid and d < bestd:
+                best, bestd = other, d
+        return best
+
+    def _hunt(self, predator) -> bool:
+        """A predator steps toward the nearest prey it eats; adjacent, it makes
+        the kill (P32.4). Returns True if it acted on a hunt."""
+        preys = predator.metadata.get("preys_on", [])
+        hunt_r = SIGHT_RADIUS
+        target, td = None, hunt_r + 1
+        for other in self._animals():
+            if other is predator:
+                continue
+            if (other.metadata or {}).get("species") not in preys:
+                continue
+            d = self._cheb(predator.position, other.position)
+            if d < td:
+                target, td = other, d
+        if target is None:
+            return False
+        if td <= 1:
+            self._make_kill(predator, target)
+            return True
+        self._step_toward(predator, target.position)
+        return True
+
+    def _make_kill(self, predator, prey) -> None:
+        predator.metadata["fed"] = True         # fed today (feeds P32.4b breeding)
+        self.engine.world.map.remove_character(prey)
+        self.engine.npc_manager.remove_npc(prey.id)
+        try:                                    # only report a kill you could see
+            if self._cheb(predator.position, self.engine.player.position) <= 8:
+                self.engine.memory_manager.add_event(
+                    f"A {predator.name} runs down a {prey.name}.")
+        except Exception:
+            pass
+
+    def _step_toward(self, animal, target) -> None:
+        x, y = animal.position
+        sx = (target[0] > x) - (target[0] < x)
+        sy = (target[1] > y) - (target[1] < y)
+        for mvx, mvy in ((sx, sy), (sx, 0), (0, sy)):
+            if mvx == 0 and mvy == 0:
+                continue
+            nx, ny = x + mvx, y + mvy
+            if (nx, ny) == tuple(target):
+                continue                        # its own move lands the kill
+            if self._walkable(nx, ny):
+                self.engine.world.map.move_character(animal, nx, ny)
+                return
 
     def _flee(self, animal, ppos) -> None:
         x, y = animal.position

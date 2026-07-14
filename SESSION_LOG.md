@@ -6525,3 +6525,16 @@ A `check_wildlife` validator guards the roster's terrain + drop refs.
 `tests/test_wildlife.py` (10). The predator/prey LOOP — the fox actually running
 down a rabbit, prey fleeing predators, populations rising and falling — is
 P32.4; wiring hides/meat into the P16 economy is P32.5.
+
+## 2026-07-14 (cont.) — P32.4a: the live predator/prey loop
+
+The fox earns its `preys_on`. In `wildlife._act` a predator that isn't spooked
+by the hero now HUNTS: `_hunt` homes on the nearest prey of a species it eats
+and `_make_kill` takes it when adjacent — the prey vanishes, the fox is marked
+`fed` (the hook P32.4b's breeding will read), and a "runs down a" beat prints
+if the player is close enough to see it. And prey flee more than the hero:
+`_nearest_predator` makes a rabbit bolt from a fox within its timid radius. The
+whole loop only runs for animals near the player (cheap); off-screen herds idle
+until the nightly population pass. `tests/test_wildlife.py` (+3 → 13). Remainder
+P32.4b: the nightly `run_day` — a fed predator breeds, a starving one dies, prey
+breed, all capped per region — then P32.5 wires hides/meat into the economy.
