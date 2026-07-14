@@ -7044,3 +7044,21 @@ Told George: yes, the mocap stride (and the other baked motions) will be ported 
 the depth model next — the mocap's forward axis IS the new depth (w) axis, so a baked
 walk will drive the stride at every facing angle (mocap quality, 360°). More action
 variety to follow.
+
+## 2026-07-14 (cont.) — P34.15: mocap stride ported into the depth model
+
+Delivering on the promise to George. The baked Mixamo clips are 2D side-view
+keyframes (fore-aft x, height y) — and the fore-aft axis IS the new depth (w) axis,
+so a baked walk drives the stride at EVERY facing:
+- `char_mocap.sample_norm(clip, phase)` returns the raw interpolated normalized
+  {joint:(nx,ny)}.
+- `char_pose3d.pose3d_mocap` maps nx→depth `w`, ny→height `y`, and the lateral `u`
+  from the rest skeleton, then projects by the facing angle (+ gait cadence/stride +
+  the mood spine). Real Mixamo timing at any of 360°: a front walk lifts the legs, a
+  side walk strides with arm-swing, ¾ blends.
+- `body_renderer` routes LOCOMOTION (walk/run/idle) through `pose3d_mocap`; every
+  other action stays on the procedural `pose3d` + its hand-authored clip (the big
+  variety library).
+Screenshot shows the mocap walk reading at front/¾/side/¾-back. `tests/
+test_char_pose3d.py` (mocap-depth). Full suite green. Next: fold more baked clips
+(jump/sit/dance) into the depth model, and keep expanding the clip variety.

@@ -28,6 +28,54 @@ _JOINTS = ("l_hip", "r_hip", "chest", "l_knee", "r_knee", "l_foot", "r_foot",
 
 _NEUTRAL_GAIT = {"stride": 1.0, "bob": 1.0, "arm": 1.0, "cadence": 1.0}
 _FEET = ("l_foot", "r_foot")
+_SPINE_F = {"chest": 0.3, "l_sh": 0.45, "r_sh": 0.45, "neck": 0.6, "head": 0.9}
+# lateral (u) rest position of each joint — supplied to the side-view mocap, which
+# has no left/right info, so a projected mocap walk strides in DEPTH at any facing
+_REST_U = {"l_hip": -HIPW, "r_hip": HIPW, "l_knee": -HIPW, "r_knee": HIPW,
+           "l_foot": -HIPW, "r_foot": HIPW, "l_sh": -SHW, "r_sh": SHW,
+           "chest": 0.0, "neck": 0.0, "head": 0.0,
+           "l_elbow": -SHW - ARM, "r_elbow": SHW + ARM,
+           "l_hand": -SHW - ARM, "r_hand": SHW + ARM}
+
+
+def _wide(k, b):
+    if "sh" in k or "hand" in k or "elbow" in k:
+        return b["shoulder"]
+    if "hip" in k or "knee" in k or "foot" in k:
+        return b["hip"]
+    return 1.0
+
+
+def pose3d_mocap(cx, foot_y, H, clip, phase, facing_deg, build=None, gait=None,
+                 spine=0.0):
+    """Project a baked MOCAP clip through the depth model (P34.15): the mocap's
+    side-view fore-aft (nx) becomes the DEPTH `w`, its height (ny) the y, and the
+    lateral `u` comes from the rest skeleton — so real Mixamo stride/timing plays at
+    ANY facing angle. Returns None if the clip is missing."""
+    from ui import char_mocap
+    norm = char_mocap.sample_norm(clip, phase)
+    if norm is None:
+        return None
+    b = build or {"shoulder": 1.0, "hip": 1.0, "head": 1.0, "girth": 1.0}
+    g = gait or _NEUTRAL_GAIT
+    th = math.radians(facing_deg)
+    c, s = math.cos(th), math.sin(th)
+    root = (norm["l_hip"][0] + norm["r_hip"][0]) / 2.0    # centre the fore-aft
+    pose, depth = {}, {}
+    for k, (nx, ny) in norm.items():
+        u = _REST_U.get(k, 0.0) * _wide(k, b)
+        w = (nx - root) * g["stride"] + spine * _SPINE_F.get(k, 0.0)
+        pose[k] = (cx + (u * c + w * s) * H, foot_y - ny * H)
+        depth[k] = -u * s + w * c
+    pose["head_r"] = max(2, int(H * HEAD_R * b["head"]))
+    pose["profile"] = 1 if s > 0.35 else -1 if s < -0.35 else 0
+    pose["fdir"] = pose["profile"]
+    pose["facing"] = (pose["fdir"], 0)
+    pose["girth"] = b.get("girth", 1.0)
+    pose["H"] = H
+    pose["cam_depth"] = depth
+    pose["face_visible"] = c > -0.2
+    return pose
 
 
 def _body_coords(walk, moving, g):
@@ -72,8 +120,7 @@ def pose3d(cx, foot_y, H, walk=0.0, facing_deg=0.0, build=None, moving=True,
     c, s = math.cos(th), math.sin(th)
     j = _body_coords(walk, moving, g)
     if spine:                          # bend the upper body along a C-curve (depth)
-        for k, f in (("chest", 0.3), ("l_sh", 0.45), ("r_sh", 0.45),
-                     ("neck", 0.6), ("head", 0.9)):
+        for k, f in _SPINE_F.items():
             u, w, y = j[k]
             j[k] = (u, w + spine * f, y)
     # a vertical bob while striding, a gentle breath while still (feet stay down)

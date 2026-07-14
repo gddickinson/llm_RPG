@@ -305,7 +305,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
 
     atk_t = anim.get("atk_t", 0.0)
     attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
-    from ui import char_clips, char_style, char_pose3d
+    from ui import char_clips, char_style, char_pose3d, char_mocap
     action = anim.get("cur_action", "idle")
     weapon = char_motion.weapon_kind(char)
     # P34.11 per-character motion style: a gait (walk/run varies), a melee attack
@@ -322,19 +322,30 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     # mood-driven line-of-action spine curve (proud arch / sad slump).
     from ui import char_face
     mood = char_face.EMOTE_EXPR.get(action) or char_face.expr_for(char)
+    spine = char_pose3d.spine_for(mood)
     face_deg = anim.get("face_cur", 0.0)
-    pose = char_pose3d.pose3d(feet_x, feet_y, H, anim.get("walk_phase", 0.0),
-                              face_deg, build, anim.get("moving", False),
-                              attack, astyle, pgait, anim.get("idle_phase", 0.0),
-                              char_pose3d.spine_for(mood))
-    facing = pose["facing"]
-    if char_clips.is_one_shot(action) and anim.get("action_dur"):
-        phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
+    # P34.15 LOCOMOTION plays baked MOCAP through the depth model (real stride/timing
+    # at any facing); everything else is the procedural pose + its action clip.
+    loco = char_mocap.clip_for(action) if action in ("walk", "run", "idle") else None
+    if loco:
+        mp = (anim.get("clock", 0.0) * char_mocap.RATE.get(loco, 1.0)
+              * gait["cadence"])
+        pose = char_pose3d.pose3d_mocap(feet_x, feet_y, H, loco, mp, face_deg,
+                                        build, pgait, spine)
+        facing = pose["facing"]
     else:
-        phase = anim.get("clock", 0.0)
-    clip_action = (char_style.cast_style(char, weapon)
-                   if action == "cast" else action)
-    pose = char_clips.apply(clip_action, pose, phase, H, facing)
+        pose = char_pose3d.pose3d(feet_x, feet_y, H, anim.get("walk_phase", 0.0),
+                                  face_deg, build, anim.get("moving", False),
+                                  attack, astyle, pgait,
+                                  anim.get("idle_phase", 0.0), spine)
+        facing = pose["facing"]
+        if char_clips.is_one_shot(action) and anim.get("action_dur"):
+            phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
+        else:
+            phase = anim.get("clock", 0.0)
+        clip_action = (char_style.cast_style(char, weapon)
+                       if action == "cast" else action)
+        pose = char_clips.apply(clip_action, pose, phase, H, facing)
 
     # shadow on the ground, under the feet (not the tweened body)
     shw = max(4, int(H * 0.26))

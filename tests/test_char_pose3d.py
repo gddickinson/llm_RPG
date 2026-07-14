@@ -74,6 +74,33 @@ class TestSpine(unittest.TestCase):
         self.assertEqual(slump["l_foot"], straight["l_foot"])
 
 
+class TestMocapDepth(unittest.TestCase):
+    def test_sample_norm_present_and_missing(self):
+        from ui import char_mocap
+        n = char_mocap.sample_norm("walk", 0.3)
+        self.assertIsNotNone(n)
+        self.assertIn("l_foot", n)
+        self.assertIsNone(char_mocap.sample_norm("no_such_clip", 0.0))
+
+    def test_projects_all_joints_at_any_facing(self):
+        for deg in (0, 45, 90, 180):
+            pose = p3.pose3d_mocap(60, 120, 80, "walk", 0.25, deg)
+            self.assertIsNotNone(pose)
+            for k in JOINTS:
+                x, y = pose[k]
+                self.assertTrue(math.isfinite(x) and math.isfinite(y))
+
+    def test_side_walk_strides_over_the_cycle(self):
+        seps = []
+        for ph in (0.0, 0.25, 0.5, 0.75):
+            pose = p3.pose3d_mocap(60, 120, 80, "walk", ph, 90)
+            seps.append(abs(pose["l_foot"][0] - pose["r_foot"][0]))
+        self.assertGreater(max(seps) - min(seps), 3.0)   # feet open & close
+
+    def test_missing_clip_returns_none(self):
+        self.assertIsNone(p3.pose3d_mocap(60, 120, 80, "nope", 0.0, 0))
+
+
 class TestFacingFromDelta(unittest.TestCase):
     def test_headings(self):
         self.assertAlmostEqual(p3.facing_from_delta(0, 1), 0.0)      # south/front

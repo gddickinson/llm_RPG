@@ -56,6 +56,30 @@ def is_loop(name):
     return bool(c and c.get("loop", True))
 
 
+def sample_norm(name, phase):
+    """Interpolate a clip at `phase` and return the raw normalized side-view
+    {joint: (nx, ny)} (fore-aft, height) — the input to the P34.15 DEPTH model
+    (nx becomes the fore-aft depth `w`, ny the height). None if the clip is absent."""
+    clip = _load(name)
+    if clip is None:
+        return None
+    keys, J = clip["keys"], clip["joints"]
+    if clip.get("loop", True):
+        fi = (phase % 1.0) * keys
+        i0 = int(fi) % keys
+        i1 = (i0 + 1) % keys
+    else:
+        fi = max(0.0, min(0.9999, phase)) * (keys - 1)
+        i0 = int(fi)
+        i1 = min(keys - 1, i0 + 1)
+    f = fi - int(fi)
+    out = {}
+    for j in _JOINTS:
+        a, b = J[j][i0], J[j][i1]
+        out[j] = (a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f)
+    return out
+
+
 def pose_from_clip(name, phase, cx, foot_y, H, facing, build=None):
     """Interpolate the clip at `phase` and map to a screen pose dict. `phase`
     is 0..1 within the clip (loops wrap). Mirrors x by the facing sign."""

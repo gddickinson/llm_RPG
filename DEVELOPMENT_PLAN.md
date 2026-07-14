@@ -4529,6 +4529,16 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   eating food now plays `eat` and drinking plays `drink` in-game. A 21-row contact
   sheet confirms each reads (flip inverts then lands upright, lie goes horizontal,
   lunge drives forward, twirl spins). `tests/test_char_clips_more.py` (11).
+- [x] **P34.15 Port the MOCAP stride into the depth model.** George: "will you port
+  the mocap stride and all other motions?" *Done:* `char_mocap.sample_norm` exposes a
+  baked clip's raw normalized side-view {joint:(nx,ny)}; `char_pose3d.pose3d_mocap`
+  feeds the mocap's fore-aft (nx) into the DEPTH axis `w`, its height (ny) into y, and
+  the lateral `u` from the rest skeleton — so real Mixamo stride/timing plays at ANY
+  facing (a front walk lifts the legs, a side walk strides, ¾ blends). `body_renderer`
+  now routes LOCOMOTION (walk/run/idle) through `pose3d_mocap` (with gait cadence +
+  spine), everything else through the procedural `pose3d` + its clip. Screenshot: the
+  mocap walk reads at front/¾/side/¾-back. `tests/test_char_pose3d.py` (mocap-depth).
+  (Remaining: fold more baked clips — jump/sit/dance — into the depth model too.)
 - [ ] **P34.7 Beauty pass: SSAA + resolution.** Draw each character onto a 2–4×
   oversampled scratch surface and `smoothscale` down (anti-aliased, curvy limbs —
   proven); DECOUPLE character render density from tile-art density (finer characters
