@@ -6944,3 +6944,23 @@ casting differently. `tests/test_char_style.py` (10). Full suite green.
 
 Remainder of Phase 34: P34.5 hair/cloak springs + weapon trail, P34.6 depth-sort +
 line-of-action, P34.7 the SSAA beauty pass.
+
+## 2026-07-14 (cont.) — P34.12: held-to-move + walk/jog/crawl paces
+
+George: "if the movement keys are held down the character should keep walking or
+running" + "more movement options — crawling, running, jogging, with key commands."
+- **Held-to-move:** `input_actions.auto_walk` is polled once per frame from the gui
+  loop (play mode, not away). A tap is still one step (from the KEYDOWN), but HOLDING
+  a direction keeps the hero stepping after a ~200ms repeat-delay, at a pace set by
+  the mode; hold two keys for a diagonal; Shift still sprints. State (`_auto_dir`,
+  `_auto_next`) rides the input handler.
+- **Paces:** the **`` . ``** key cycles walk → jog → crawl (`cycle_move_mode`).
+  Jogging shows a light-run lean (new `jog` clip); crawling goes PRONE (the P34.10
+  crawl clip) — no sprint, a slower repeat. `body_renderer._update_action` resolves
+  run/jog/walk/crawl from `_running` + `_move_mode`.
+Documented in the F1 controls + hint bar ("[SHIFT+move] run · [`] jump · [.] pace").
+A screenshot shows four clearly distinct paces (upright walk → leaning jog → hard-
+leaning run → prone crawl). `tests/test_movement_modes.py` (7). Full suite green.
+
+Still queued from George's message: per-character animation VARIETY within each
+action, and more COMEDY (dances, jigs, taunts) with a key — the next round.

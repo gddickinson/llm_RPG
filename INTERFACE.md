@@ -276,7 +276,7 @@ llm_RPG/
 - **`dialog_input.py`** — dialog-typing key handler (split from input_handler to hold the line).
 - **`dialog_menu.py`** — PUX.6 conversation-menu dispatch (a numbered pick accepts/turns-in a quest, opens the shop, speaks a topic, or reveals a secret).
 - **`input_handler.py`** — Keyboard input routing (movement, dialog, quest hotkeys, death popup).
-- **`input_actions.py`** — Play-mode action helpers split out of `input_handler` to hold the 500-line line: `look_around`, `toggle_party`, `open_shop`; P34.9 `step` (CTRL+move RUN — sets `_running` + sprints a bonus tile when clear) and `jump` (CTRL+SPACE — the jump clip + a forward hop onto open ground, else in place).
+- **`input_actions.py`** — Play-mode action helpers split out of `input_handler` to hold the 500-line line: `look_around`, `toggle_party`, `open_shop`; P34.9 `step` (SHIFT+move RUN/careful-disengage; crawl = prone) and `jump` (backtick — the jump clip + a forward hop onto open ground, else in place); P34.12 `auto_walk` (held direction keeps stepping — key-repeat, once/frame from the gui loop) and `cycle_move_mode` (`.` cycles walk/jog/crawl on `_move_mode`).
 - **`terminal_ui.py`** — Text-based UI.
 - **`inventory_panel.py`** — I-key equipment + bag overlay (equip/use/drop).
 - **`shop_panel.py`** — B-key two-column buy/sell overlay; PUX.2 Trading II: an inspect/compare + price-breakdown pane, Shift+Enter bulk ×5, and `J` sell-all-junk (via `engine/trade_info.py`).

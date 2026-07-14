@@ -17,6 +17,7 @@ ACTIONS = {
     "attack": (False, None), "guard": (False, None), "sit": (False, None),
     "sleep": (False, None), "dance": (False, None),
     "swim": (False, None), "climb": (False, None), "sneak": (False, None),
+    "jog": (False, None),
     "jump": (True, 0.7), "leap": (True, 0.7), "bow": (True, 1.1),
     "wave": (True, 1.0), "hurt": (True, 0.45), "cast": (True, 0.9),
     "stoop": (True, 1.0), "cheer": (True, 1.0), "dodge": (True, 0.4),
@@ -159,6 +160,11 @@ def _run(pose, t, H, facing):
     return pose
 
 
+def _jog(pose, t, H, facing):
+    _move(pose, _UPPER, _fdir(facing) * H * 0.03, 0)   # a light lean — easy pace
+    return pose
+
+
 def _swim(pose, t, H, facing):
     _move(pose, _JOINTS, 0, H * 0.14)                  # submerge to the chest
     stroke = math.sin(t * math.pi * 3)
@@ -292,7 +298,7 @@ def _knockdown(pose, t, H, facing):
 _CLIPS = {
     "jump": _jump, "leap": _leap, "sit": _sit, "sleep": _sleep, "bow": _bow,
     "stoop": _stoop, "wave": _wave, "guard": _guard, "hurt": _hurt,
-    "cast": _cast, "dance": _dance, "cheer": _cheer, "run": _run,
+    "cast": _cast, "dance": _dance, "cheer": _cheer, "run": _run, "jog": _jog,
     "swim": _swim, "climb": _climb, "sneak": _sneak, "dodge": _dodge,
     "kneel": _kneel, "reach": _reach, "point": _point,
     "handshake": _handshake, "hug": _hug, "kiss": _kiss, "wrestle": _wrestle,

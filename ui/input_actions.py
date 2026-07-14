@@ -49,9 +49,14 @@ def step(handler, dx: int, dy: int, shift: bool) -> bool:
     DELIBERATELY, resolved by context: next to a foe it's the careful DISENGAGE
     (no opportunity strike); in the clear it's a RUN — the running animation plus a
     sprint that covers a bonus tile when the way stays open (`move_player` no-ops if
-    that second stride is blocked, so a wall just stops the sprint)."""
+    that second stride is blocked, so a wall just stops the sprint). P34.12: while
+    CRAWLING you go prone — no sprint, no careful, just a slow stride."""
     engine = handler.engine
     p = engine.player
+    if (p.metadata or {}).get("_move_mode") == "crawl":
+        p.metadata.pop("_running", None)
+        engine.move_player(dx, dy)
+        return True
     near_foe = _adjacent_foe(engine)
     careful = bool(shift and near_foe)
     run = bool(shift and not near_foe)
@@ -65,6 +70,79 @@ def step(handler, dx: int, dy: int, shift: bool) -> bool:
     moved = engine.move_player(dx, dy, careful=careful)
     if run and moved and (dx or dy):
         engine.move_player(dx, dy, careful=careful)      # bonus running stride
+    return True
+
+
+# P34.12 held-to-move (key repeat) + movement-pace modes ------------------
+REPEAT_DELAY = 200        # ms a key must be held before it auto-repeats
+_PACE_MS = {"crawl": 250, "jog": 120, "run": 115, "walk": 160}
+_MOVE_MODES = (None, "jog", "crawl")
+
+
+def _held_dir(keys):
+    """Sum the currently-held movement keys into a single (dx, dy) step."""
+    import pygame
+    dx = dy = 0
+    if keys[pygame.K_w] or keys[pygame.K_UP]:
+        dy -= 1
+    if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+        dy += 1
+    if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+        dx -= 1
+    if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+        dx += 1
+    for k, (kx, ky) in ((pygame.K_KP8, (0, -1)), (pygame.K_KP2, (0, 1)),
+                        (pygame.K_KP4, (-1, 0)), (pygame.K_KP6, (1, 0)),
+                        (pygame.K_KP7, (-1, -1)), (pygame.K_KP9, (1, -1)),
+                        (pygame.K_KP1, (-1, 1)), (pygame.K_KP3, (1, 1))):
+        if keys[k]:
+            dx += kx
+            dy += ky
+    return max(-1, min(1, dx)), max(-1, min(1, dy))
+
+
+def auto_walk(handler) -> bool:
+    """Held movement keys keep the hero stepping (George): a tap is one step, but
+    HOLDING a direction walks / runs continuously. The first step comes from the
+    KEYDOWN; after `REPEAT_DELAY` this repeats at the pace of the current mode.
+    Returns True if it issued an auto-step this frame. Call once per frame in play
+    mode."""
+    import pygame
+    keys = pygame.key.get_pressed()
+    dx, dy = _held_dir(keys)
+    now = pygame.time.get_ticks()
+    if dx == 0 and dy == 0:
+        handler._auto_dir = None
+        return False
+    shift = bool(keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT])
+    if getattr(handler, "_auto_dir", None) != (dx, dy):
+        handler._auto_dir = (dx, dy)                 # the KEYDOWN already stepped;
+        handler._auto_next = now + REPEAT_DELAY      # wait before repeating
+        return False
+    if now < getattr(handler, "_auto_next", 0):
+        return False
+    step(handler, dx, dy, shift)
+    mode = (handler.engine.player.metadata or {}).get("_move_mode")
+    pace = ("crawl" if mode == "crawl" else "run" if shift
+            else "jog" if mode == "jog" else "walk")
+    handler._auto_next = now + _PACE_MS[pace]
+    return True
+
+
+def cycle_move_mode(handler) -> bool:
+    """`.` cycles the walking PACE: walk → jog → crawl → walk (P34.12)."""
+    p = handler.engine.player
+    cur = (p.metadata or {}).get("_move_mode")
+    nxt = _MOVE_MODES[(_MOVE_MODES.index(cur) + 1) % len(_MOVE_MODES)] \
+        if cur in _MOVE_MODES else "jog"
+    if nxt is None:
+        p.metadata.pop("_move_mode", None)
+    else:
+        p.metadata["_move_mode"] = nxt
+    try:
+        handler.engine.memory_manager.add_event(f"[Move] {nxt or 'walk'} pace.")
+    except Exception:
+        pass
     return True
 
 

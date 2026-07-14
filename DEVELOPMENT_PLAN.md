@@ -4420,6 +4420,18 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   plays a casting gesture instead of the melee swing (`combat_system`). Contact sheet
   shows a crowd walking, fighting and casting as individuals. `tests/
   test_char_style.py` (10).
+- [x] **P34.12 Held-to-move + movement paces (walk / jog / crawl).** George: "if
+  the movement keys are held down the character should keep walking or running" and
+  "more movement options — crawling, running, jogging, with key commands." *Done:*
+  `input_actions.auto_walk` (polled once/frame from the gui loop in play mode) makes
+  a HELD direction keep the hero stepping — a tap is still one step, but holding
+  walks/runs continuously after a short repeat-delay, at a pace set by the mode
+  (diagonals by holding two keys; Shift still sprints). The **`` . ``** key cycles
+  the pace **walk → jog → crawl** (`cycle_move_mode`): jogging shows a light-run
+  lean (new `jog` clip), crawling goes PRONE (the P34.10 crawl clip, no sprint, a
+  slower repeat). `body_renderer._update_action` picks run/jog/walk/crawl from
+  `_running` + `_move_mode`. Documented in the F1 help + hint bar. Screenshot shows
+  four distinct paces. `tests/test_movement_modes.py` (7).
 - [ ] **P34.5 Hair, cloak & flow.** A spring/verlet hair (and optional cloak/tail)
   CHAIN pinned to the head/shoulder, swayed by motion & wind, tinted by state
   (Celeste); a fading weapon-swing TRAIL. Real secondary motion → movement gains flow.

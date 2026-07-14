@@ -233,14 +233,18 @@ def _update_action(char, anim, dt):
             anim["action"] = name
             anim["action_dur"] = char_clips.duration(name) or 0.6
             anim["action_t"] = anim["action_dur"]
+    mode = meta.get("_move_mode")                  # P34.12 walk / jog / crawl
     if anim.get("action_t", 0) > 0:
         anim["cur_action"] = anim.get("action", "idle")
     elif anim.get("atk_t", 0) > 0:
         anim["cur_action"] = "attack"
     elif meta.get("_stance"):
         anim["cur_action"] = meta["_stance"]
+    elif mode == "crawl":                          # prone, whether moving or not
+        anim["cur_action"] = "crawl"
     elif anim.get("moving"):
-        anim["cur_action"] = "run" if meta.get("_running") else "walk"
+        anim["cur_action"] = ("run" if meta.get("_running")
+                              else "jog" if mode == "jog" else "walk")
     else:
         anim["cur_action"] = "idle"
 

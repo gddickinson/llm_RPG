@@ -182,6 +182,14 @@ class GameGUI:
                     except Exception:
                         pass
                 self.input_handler.handle_event(event)
+            # P34.12: holding a direction keeps the hero stepping (key-repeat)
+            if self.mode == "play" and \
+                    not self.engine.roster.is_away(self.engine.player):
+                try:
+                    from ui import input_actions
+                    input_actions.auto_walk(self.input_handler)
+                except Exception as e:
+                    logger.debug(f"auto-walk error: {e}")
             from ui.away_mode import heartbeat
             heartbeat(self)               # M.3 tick the world while away
             # Drive NPC processes only while alive
