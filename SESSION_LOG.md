@@ -6647,3 +6647,16 @@ Remainder P33.4b: the smooth tile-to-tile TWEEN (wire the unused `animation.lerp
 `smoothstep`), cast/hurt flashes, larger/more-detailed bodies, night palette-mute.
 Next up per George's mid-round note: multi-story buildings that actually READ as
 multi-story (storey-driven height + per-floor windows).
+
+## 2026-07-14 (cont.) — P33.3b: multi-story buildings that READ (George's note)
+
+George flagged that multi-story buildings still looked single-story. Root cause:
+the block lift came from a per-KIND fraction, not the storey count, so a 3-storey
+tower was no taller than a 1-storey cottage and the lone divider line was too faint
+to notice. Fixed two ways: `block_height` is now STOREY-DRIVEN
+(`storeys_for(kind) × floor_px`, `FLOOR_FRAC`=0.42 → a 1-storey stands ~13px, a
+3-storey ~40px), so height alone now signals the storeys; and `wall_windows` stamps
+a ROW OF WINDOWS PER STOREY down the front wall (blue-grey glass in a dark frame)
+with darkened floor-divider lines between them, so the floors are unmistakable at a
+glance. Screenshot-confirmed: the timber house now clearly shows two floors of
+windows and the towers stand tall. `tests/test_renderer_buildings.py` (+5 → 21).

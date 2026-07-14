@@ -100,6 +100,33 @@ class TestLevels(unittest.TestCase):
         self.assertLess(fy, sy)                          # up on the roof
         self.assertGreaterEqual(fy, sy - h)              # not above the apex
 
+    def test_block_height_is_storey_driven(self):
+        # a 3-storey tower stands taller than a 1-storey building (P33.3b)
+        self.assertGreater(rb.block_height("tower", 32),
+                           rb.block_height("cottage", 32))
+        self.assertGreater(rb.block_height("tower", 48),
+                           rb.block_height("tower", 32))     # scales with tile
+        self.assertEqual(rb.block_height("tower", 32),
+                         3 * rb.block_height("cottage", 32))  # 3 storeys vs 1
+
+    def test_windows_are_one_row_per_storey(self):
+        # ts>=24 → two columns; 2 storeys → 4 windows, 1 storey → 2
+        two = rb.wall_windows(0, 0, 32, rb.block_height("tavern", 32), 2)
+        one = rb.wall_windows(0, 0, 32, rb.block_height("cottage", 32), 1)
+        self.assertEqual(len(two), 4)
+        self.assertEqual(len(one), 2)
+
+    def test_windows_sit_on_the_front_wall(self):
+        ts, storeys = 32, 2
+        h = rb.block_height("tavern", ts)
+        eave, ground = ts - h, ts
+        for (wx, wy, ww, wh) in rb.wall_windows(0, 0, ts, h, storeys):
+            self.assertTrue(eave <= wy <= ground)
+            self.assertTrue(0 <= wx and wx + ww <= ts)
+
+    def test_no_windows_on_a_tiny_tile(self):
+        self.assertEqual(rb.wall_windows(0, 0, 8, 6, 2), [])
+
 
 class TestRenderSmoke(unittest.TestCase):
     def test_draw_buildings_does_not_crash(self):

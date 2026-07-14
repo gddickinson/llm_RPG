@@ -67,11 +67,41 @@ _STOREYS = {
 }
 DEFAULT_STOREYS = 1
 GUARD_FIGURE = (60, 70, 95)      # a slate-blue watchman atop a tower roof
+FLOOR_FRAC = 0.42                # front-wall pixels PER STOREY, as a tile fraction
+WINDOW = (54, 46, 40)            # a dark window frame set into the wall
+WINDOW_GLASS = (120, 150, 170)   # cool daytime glass (lighting warms it at night)
 
 
 def storeys_for(kind: str) -> int:
     """How many storeys (front-wall floor bands) a building kind shows."""
     return _STOREYS.get(kind, DEFAULT_STOREYS)
+
+
+def block_height(kind: str, tile_size: int) -> int:
+    """P33.3b storey-DRIVEN lift: a building stands `storeys × floor_px` tall, so
+    a 3-storey tower genuinely towers over a 1-storey cottage (the old per-kind
+    fraction made every building read as a single storey)."""
+    floor_px = max(4, int(tile_size * FLOOR_FRAC))
+    return storeys_for(kind) * floor_px
+
+
+def wall_windows(sx: int, sy: int, ts: int, h: int, storeys: int):
+    """Window (x, y, w, h) rects on the front wall — a row per STOREY, so the
+    floors read. Empty on a tiny tile. Pure geometry (P33.3b)."""
+    if ts < 12 or h < 6 or storeys < 1:
+        return []
+    eave = sy + ts - h
+    band = h / storeys                 # front-wall pixels per storey
+    ww = max(2, ts // 6)
+    wh = max(2, int(band * 0.42))
+    cols = 2 if ts >= 24 else 1
+    out = []
+    for i in range(storeys):
+        wy = int(eave + band * i + band * 0.28)
+        for c in range(cols):
+            wx = sx + ts * (c + 1) // (cols + 1) - ww // 2
+            out.append((int(wx), wy, ww, wh))
+    return out
 
 
 def storey_lines(sx: int, sy: int, ts: int, h: int, storeys: int):
@@ -190,7 +220,7 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
             except Exception:
                 pass
             kind = _kind_at(engine, wx, wy)
-            h = height_for(kind, tile_size)
+            h = block_height(kind, tile_size)      # storey-driven (P33.3b)
             px = view_rect.x + sx * tile_size
             py = view_rect.y + sy * tile_size
             _draw_block(target, kind, px, py, tile_size, h)
@@ -217,8 +247,13 @@ def _draw_block(target, kind, px, py, ts, h) -> None:
                          rp["ridge"][0], rp["ridge"][1], 1)
     if rp["parapet"]:
         pygame.draw.lines(target, shades["ridge"], True, rp["parapet"], 1)
-    for (a, b) in storey_lines(px, py, ts, h, storeys_for(kind)):
-        pygame.draw.line(target, front, a, b, 1)
+    storeys = storeys_for(kind)
+    for (a, b) in storey_lines(px, py, ts, h, storeys):
+        pygame.draw.line(target, _scale(front, 0.7), a, b, 1)
+    # per-floor windows make the storeys READ (P33.3b)
+    for (wx, wy, ww, wh) in wall_windows(px, py, ts, h, storeys):
+        pygame.draw.rect(target, WINDOW, (wx, wy, ww, wh))
+        pygame.draw.rect(target, WINDOW_GLASS, (wx, wy, ww, max(1, wh - 1)))
     for (cx, cy, cw, ch) in rs.chimney_rects(px, py, ts, h, style["chimneys"]):
         pygame.draw.rect(target, rs.CHIMNEY, (cx, cy, cw, ch))
         pygame.draw.rect(target, rs.CHIMNEY_CAP, (cx, cy, cw, max(1, ch // 4)))

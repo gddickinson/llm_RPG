@@ -4243,9 +4243,14 @@ CC0 walk-cycle sprite sheets offline into the existing PNG-tileset pipeline.
   (thatch gold / clay / slate grey / shingle / stone), chimneys, and the fallback
   (a WALL segment) as a flat stone rampart. `check_building_styles` validator.
   `tests/test_roof_shapes.py` (12). Verified by screenshot — slate hip-roofed
-  civic halls vs timber-and-clay gabled houses vs a grey stone wall. *Remainder
-  P33.3b:* MERGE adjacent same-building tiles into one roofed mass (AW edge-aware
-  faces) + east wall faces + dormers.
+  civic halls vs timber-and-clay gabled houses vs a grey stone wall.
+  *Done (P33.3b, storeys that READ — George flagged "multi-story shown as single"):*
+  `block_height` is now STOREY-DRIVEN (`storeys × floor_px`, `FLOOR_FRAC`=0.42) so a
+  3-storey tower genuinely towers over a 1-storey cottage, and `wall_windows` stamps
+  a row of windows PER STOREY on the front wall (with darker divider lines) so the
+  floors are unmistakable. `tests/test_renderer_buildings.py` (+5 → 21). *Remainder:*
+  MERGE adjacent same-building tiles into one roofed mass (AW edge-aware faces) +
+  east wall faces + dormers.
 - [~] **P33.4 Living characters (equipment + animation).** Make the drawn weapon/
   armour read ACTUAL equipped items (not class), add an attack-lunge + cast flash +
   hurt recoil and a smooth tile-to-tile TWEEN (wire `animation.lerp`/`smoothstep`,
