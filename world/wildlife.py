@@ -32,6 +32,9 @@ MAX_NEARBY = 6            # don't crowd the meadow around the player
 SIGHT_RADIUS = 10         # only manage animals this near the player
 SPAWN_MIN = 4             # a fresh animal appears at least this far off
 SPAWN_MAX = 8             # …and at most this far (out where you can watch it)
+MAX_POPULATION = 24       # a hard cap so the herd never runs away (P32.4b)
+BREED_CHANCE = 0.5        # a fed predator / a pair of prey may bear young
+STARVE_CHANCE = 0.4       # a predator that went hungry may not see morning
 
 
 def _load_roster() -> dict:
@@ -292,3 +295,51 @@ class WildlifeSystem:
         mvy = self.rng.randint(-1, 1)
         if (mvx or mvy) and self._walkable(x + mvx, y + mvy):
             self.engine.world.map.move_character(animal, x + mvx, y + mvy)
+
+    # ------------------------------------------------------- nightly pass
+
+    def run_day(self) -> None:
+        """P32.4b population dynamics (nightly, cheap): a predator that ATE
+        breeds and a starving one dies; prey with company breed. Capped so the
+        living herd rises and falls instead of exploding or dying out."""
+        animals = self._animals()
+        by_species = {}
+        for a in animals:
+            by_species.setdefault((a.metadata or {}).get("species"), []).append(a)
+        pop = len(animals)
+        for a in list(animals):
+            meta = a.metadata or {}
+            if meta.get("preys_on"):                     # a PREDATOR
+                if meta.pop("fed", False):
+                    if pop < MAX_POPULATION and self.rng.random() < BREED_CHANCE:
+                        if self._breed(a):
+                            pop += 1
+                elif self.rng.random() < STARVE_CHANCE:  # went hungry — it dies
+                    self.engine.world.map.remove_character(a)
+                    self.engine.npc_manager.remove_npc(a.id)
+                    pop -= 1
+        for species, herd in by_species.items():         # PREY breed with company
+            if not species or ROSTER.get(species, {}).get("preys_on"):
+                continue
+            if len(herd) >= 2 and pop < MAX_POPULATION and \
+                    self.rng.random() < BREED_CHANCE:
+                if self._breed(herd[0]):
+                    pop += 1
+
+    def _breed(self, parent) -> bool:
+        """Spawn one offspring of the parent's species on a free tile beside
+        it. Returns True if a calf/kit was born."""
+        species = (parent.metadata or {}).get("species")
+        if species not in ROSTER:
+            return False
+        px, py = parent.position
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                if self._walkable(px + dx, py + dy):
+                    calf = build_wildlife(species, (px + dx, py + dy))
+                    self.engine.npc_manager.add_npc(calf)
+                    self.engine.world.map.place_character(calf, px + dx, py + dy)
+                    return True
+        return False

@@ -215,6 +215,10 @@ def run_turn(engine) -> None:
                 self.monster_tribes.run_day()
             except Exception as e:
                 logger.debug(f"Monster tribes error: {e}")
+            try:   # wildlife herds breed and starve overnight (P32.4b)
+                self.wildlife.run_day()
+            except Exception as e:
+                logger.debug(f"Wildlife day error: {e}")
             try:   # a nemesis may return to hunt the player (P19.6)
                 self.nemesis.run_day()
             except Exception as e:

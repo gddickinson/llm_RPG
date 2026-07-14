@@ -176,5 +176,59 @@ class TestPredatorPrey(_Base):
         self.assertIs(threat, fox)
 
 
+class TestPopulation(_Base):
+    """P32.4b — the nightly herd rises and falls."""
+
+    def _place(self, species, pos):
+        a = wildlife.build_wildlife(species, pos)
+        self.engine.npc_manager.add_npc(a)
+        self.wmap.place_character(a, *pos)
+        return a
+
+    def _count(self, species=None):
+        return len([a for a in self._animals()
+                    if species is None or
+                    (a.metadata or {}).get("species") == species])
+
+    def test_a_fed_predator_breeds(self):
+        fox = self._place("fox", (self.px, self.py))
+        fox.metadata["fed"] = True
+        self.wl.rng = random.Random(1)
+        self.wl.rng.random = lambda: 0.0            # force the breed roll
+        before = self._count("fox")
+        self.wl.run_day()
+        self.assertGreater(self._count("fox"), before)
+        self.assertNotIn("fed", fox.metadata)       # the flag is consumed
+
+    def test_a_starving_predator_dies(self):
+        fox = self._place("fox", (self.px, self.py))   # no `fed` flag → hungry
+        self.wl.rng = random.Random(1)
+        self.wl.rng.random = lambda: 0.0            # force the starve roll
+        self.wl.run_day()
+        self.assertEqual(self._count("fox"), 0)
+
+    def test_a_lone_prey_does_not_breed(self):
+        self._place("deer", (self.px, self.py))
+        self.wl.rng.random = lambda: 0.0
+        self.wl.run_day()
+        self.assertEqual(self._count("deer"), 1)    # needs company
+
+    def test_breeding_stops_at_the_cap(self):
+        # seed a herd just under the cap, then let it breed every night — it
+        # rises TO the cap and holds there, never past it
+        placed = 0
+        for i in range(wildlife.MAX_POPULATION - 2):
+            x = self.px - 5 + (i % 6)
+            y = self.py - 4 + (i // 6)
+            if self.wl._walkable(x, y):
+                self._place("deer", (x, y))
+                placed += 1
+        self.wl.rng.random = lambda: 0.0        # force every breed roll
+        for _ in range(6):
+            self.wl.run_day()
+        self.assertLessEqual(self._count(), wildlife.MAX_POPULATION)
+        self.assertGreater(self._count(), placed)   # it did grow toward the cap
+
+
 if __name__ == "__main__":
     unittest.main()

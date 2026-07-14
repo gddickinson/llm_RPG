@@ -4131,18 +4131,21 @@ animal population feeds it. Each sub-step below is one tested round.
   in `engine_setup` + `turn_pipeline`, skipped by `process_npc_turns`; validated
   by `check_wildlife`. `tests/test_wildlife.py` (10). *Remainder → P32.4:* prey
   fleeing PREDATORS and the fox actually hunting.
-- [~] **P32.4 The predator/prey loop.** Predators hunt nearby prey (a light
+- [x] **P32.4 The predator/prey loop.** Predators hunt nearby prey (a light
   version of the pursuit brain toward the softest prey); prey flee; a fed
   predator breeds, a starving one dies; populations rise and fall. A capped,
   deterministic nightly `run_day` over small per-region populations (no per-tile
   sim), tuned to stay cheap.
   *Done (P32.4a, the LIVE loop):* in `wildlife.run_turn`/`_act` a predator
   (`preys_on`) hunts — `_hunt` homes on the nearest prey species and `_make_kill`
-  takes it adjacent (removing the prey, marking the fox `fed`, a `[wildlife]`
-  beat within earshot); prey now flee a nearby PREDATOR too (`_nearest_predator`
-  within their `timid` radius), not just the player. `tests/test_wildlife.py`
-  (+3). *Remainder P32.4b:* the nightly `run_day` population dynamics — a `fed`
-  predator breeds, a starving one dies, prey breed — capped per region.
+  takes it adjacent (removing the prey, marking the fox `fed`, a beat within
+  earshot); prey now flee a nearby PREDATOR too (`_nearest_predator` within their
+  `timid` radius), not just the player.
+  *Done (P32.4b, the nightly pass):* `wildlife.run_day` (in the nightly stack) —
+  a `fed` predator breeds (`_breed` a kit beside it) and clears the flag, a
+  hungry one dies (`STARVE_CHANCE`); prey with company breed; all gated by a hard
+  `MAX_POPULATION`=24 so the herd rises and falls, never explodes or dies out.
+  `tests/test_wildlife.py` (17 total).
 - [ ] **P32.5 The ecosystem feeds the economy.** Hunters (a producer
   profession) turn nearby prey into hides/meat for the P16 store; a predator
   overpopulation or a monster raid thins herds → a meat shortage → prices move

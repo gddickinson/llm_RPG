@@ -6535,6 +6535,12 @@ and `_make_kill` takes it when adjacent — the prey vanishes, the fox is marked
 if the player is close enough to see it. And prey flee more than the hero:
 `_nearest_predator` makes a rabbit bolt from a fox within its timid radius. The
 whole loop only runs for animals near the player (cheap); off-screen herds idle
-until the nightly population pass. `tests/test_wildlife.py` (+3 → 13). Remainder
-P32.4b: the nightly `run_day` — a fed predator breeds, a starving one dies, prey
-breed, all capped per region — then P32.5 wires hides/meat into the economy.
+until the nightly population pass. `tests/test_wildlife.py` (+3 → 13).
+
+**P32.4b** closes the loop with `wildlife.run_day` in the nightly stack: a
+predator that ATE (`fed`) breeds a kit beside it and clears the flag; a predator
+that went hungry may not see morning (`STARVE_CHANCE`); prey with company breed;
+everything gated by a hard `MAX_POPULATION`=24 so the living herd rises and
+falls instead of exploding or dying out. `tests/test_wildlife.py` (17 total).
+Next, P32.5 wires hides/meat into the P16 economy (hunters, a meat market,
+pests on the farms).
