@@ -144,6 +144,16 @@ class HUD:
                        p.hp / max(1, p.max_hp), (200, 50, 50),
                        label=f"HP {p.hp}/{p.max_hp}")
         bar_y += 16
+        try:                                        # P34.16 sprint stamina
+            from engine import stamina
+            winded = stamina.is_winded(p)
+            self._draw_bar(target, rect.x + 8, bar_y, rect.width - 16, 8,
+                           stamina.ratio(p),
+                           (200, 80, 40) if winded else (210, 170, 60),
+                           label="Winded" if winded else "Stamina")
+            bar_y += 16
+        except Exception:
+            pass
         ratio = (cur / need) if need > 0 else 1.0
         self._draw_bar(target, rect.x + 8, bar_y,
                        rect.width - 16, 10,

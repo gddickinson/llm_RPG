@@ -59,10 +59,20 @@ def step(handler, dx: int, dy: int, shift: bool) -> bool:
         return True
     near_foe = _adjacent_foe(engine)
     careful = bool(shift and near_foe)
-    run = bool(shift and not near_foe)
+    # P34.16 a sprint costs STAMINA; winded → the SHIFT just walks (no sprint)
+    from engine import stamina
+    want_run = bool(shift and not near_foe)
+    run = want_run and stamina.can_run(p)
     try:
         if run:
+            was_winded = stamina.is_winded(p)
             p.metadata["_running"] = True
+            stamina.spend(p, engine)
+            if stamina.is_winded(p) and not was_winded:
+                from engine import anim
+                anim.emote(p, "winded")
+                engine.memory_manager.add_event(
+                    "[!] You're out of breath — ease off the sprint.")
         else:
             p.metadata.pop("_running", None)
     except Exception:
@@ -70,6 +80,10 @@ def step(handler, dx: int, dy: int, shift: bool) -> bool:
     moved = engine.move_player(dx, dy, careful=careful)
     if run and moved and (dx or dy):
         engine.move_player(dx, dy, careful=careful)      # bonus running stride
+        try:
+            stamina.spend(p, engine)
+        except Exception:
+            pass
     return True
 
 

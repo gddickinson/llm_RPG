@@ -4552,6 +4552,18 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   (Remaining/optional: camera PIXEL-SNAP to kill shimmer, a higher display
   px_per_tile, the 2×2 environment-feature idea — cosmetic follow-ups.)
 
+- [x] **P34.16 Run stamina & tiring.** George: "a limit to how much a character can
+  run before tiring — based on attributes, encumbrance, injuries — unless they have
+  magic enhancements." *Done:* new `engine/stamina.py` — a sprint (SHIFT-run) spends
+  STAMINA whose pool is set by CONSTITUTION and whose drain is worsened by a heavy
+  pack (`carry`) and leg injuries (`wounds`); empty it and you're WINDED (a `winded`
+  hunch-and-pant clip plays, a `[!]` beat + hint bar telegraph it) and SHIFT just
+  walks until you recover past a hysteresis threshold; a magic bypass (`haste`/
+  `endurance`/`second_wind`/a `tireless` flag) runs tireless. `input_actions.step`
+  gates + drains the sprint, `turn_pipeline` recovers each non-sprint turn, the HUD
+  shows a stamina bar (red when winded); state rides `player.metadata` (saves).
+  `tests/test_stamina.py` (7).
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the

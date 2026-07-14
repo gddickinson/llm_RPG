@@ -348,6 +348,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Anim state error: {e}")
 
+    # Catch your breath — sprint stamina recovers each turn you're not sprinting
+    try:
+        from engine import stamina
+        stamina.recover(self.player)
+    except Exception as e:
+        logger.debug(f"Stamina regen error: {e}")
+
     # Keep the ranged lock honest (P8.7 UX)
     try:
         self.targeting.refresh()

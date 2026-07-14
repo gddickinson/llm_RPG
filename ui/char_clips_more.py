@@ -23,10 +23,21 @@ ACTIONS_MORE = {
     "lie": (False, None), "stretch": (True, 1.2), "yawn": (True, 1.4),
     "clap": (True, 1.2), "laugh": (True, 1.4), "shrug": (True, 0.8),
     "ponder": (True, 1.6), "salute": (True, 1.2), "beckon": (True, 1.0),
-    "facepalm": (True, 1.4),
+    "facepalm": (True, 1.4), "winded": (True, 1.8),
     # P34.11 cast-gesture variants (chosen per caster by char_style)
     "cast_point": (True, 0.9), "cast_staff": (True, 0.9),
 }
+
+
+def _winded(pose, t, H, facing):
+    """Out of breath — hunch forward, hands to the knees, chest heaving."""
+    d, f = _arc(t), (_fdir(facing) or 1)
+    _move(pose, _UPPER, f * H * 0.10 * d, H * 0.11 * d)     # lean forward + down
+    for hand, hip in (("l_hand", "l_hip"), ("r_hand", "r_hip")):
+        pose[hand] = (pose[hip][0] + f * H * 0.02, pose[hip][1] - H * 0.02)
+    _move(pose, ("chest", "neck", "head"), 0,
+          math.sin(t * math.pi * 7) * H * 0.012 * d)        # heavy breathing
+    return pose
 
 
 # ---- spell-cast variants (P34.11) --------------------------------------
@@ -320,4 +331,5 @@ CLIPS_MORE = {
     "stretch": _stretch, "yawn": _yawn, "clap": _clap, "laugh": _laugh,
     "shrug": _shrug, "ponder": _ponder, "salute": _salute, "beckon": _beckon,
     "facepalm": _facepalm, "cast_point": _cast_point, "cast_staff": _cast_staff,
+    "winded": _winded,
 }

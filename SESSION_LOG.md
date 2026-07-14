@@ -7083,3 +7083,20 @@ style + per-swing variety, hair/cloak/trail flow, CONTINUOUS 360° facing with
 depth-sort + line-of-action, the mocap stride ported into the depth model, and the
 SSAA beauty pass. Optional follow-ups: fold more baked clips into the depth model,
 camera pixel-snap, and ever more clip variety.
+
+## 2026-07-14 (cont.) — P34.16: run stamina & tiring
+
+George: a character should tire from running — by attributes / encumbrance / injuries
+— unless magically enhanced. New `engine/stamina.py`: a sprint (SHIFT-run) spends
+STAMINA whose POOL is set by CONSTITUTION and whose DRAIN is worsened by a heavy pack
+(`carry.used_slots`/`capacity`) and leg injuries (`wounds.severity(legs)`). Empty it
+and you're WINDED — a new `winded` hunch-and-pant clip plays once, a `[!]` beat +
+hint-bar line telegraph it, and SHIFT+move just WALKS until you recover past a
+hysteresis threshold. Magic bypasses it (`haste`/`endurance`/`second_wind` status or a
+`tireless` flag → run forever). `input_actions.step` gates + drains the sprint,
+`turn_pipeline` recovers a little each non-sprint turn, and the HUD status panel shows
+a stamina bar (amber, red when winded). State lives on `player.metadata`
+(`run_stamina` + `_winded`) so it rides the save. `tests/test_stamina.py` (7).
+
+Next: run-conditioned special moves (slide / dive-roll after a sprint) + more clips,
+NPC everyday-life actions, and wiring SSAA to the settings menu.

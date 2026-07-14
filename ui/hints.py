@@ -311,6 +311,13 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
 
+    try:   # winded from sprinting (P34.16)
+        from engine import stamina
+        if stamina.is_winded(engine.player):
+            hints.insert(0, "[!] winded — walk a while to catch your breath")
+    except Exception:
+        pass
+
     # Movement flourishes (P34.9) + a standing reminder that the full controls
     # list is one key away (PUX.3) — only when nothing more urgent needs the slot.
     hints.append("[SHIFT+move] run  ·  [`] jump  ·  [.] pace")
