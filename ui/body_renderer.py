@@ -175,6 +175,9 @@ def update_anim(char, dt: float) -> None:
         anim["atk_seen"] = seq
     elif anim.get("atk_t", 0) > 0:
         anim["atk_t"] = max(0.0, anim["atk_t"] - dt)
+    from ui import char_face
+    seed = sum(ord(c) for c in str(getattr(char, "id", "x")))
+    char_face.blink_step(anim, dt, seed)
     _update_action(char, anim, dt)
 
 
@@ -187,6 +190,14 @@ def _update_action(char, anim, dt):
     face = meta.pop("_face", None)
     if face:
         anim["facing"] = tuple(face)
+    bq = meta.pop("_bubble", None)                 # emote-bubble request (P34.2)
+    if not bq and meta.get("_stance") == "sleep":
+        bq = "sleep"
+    if bq:
+        anim["bubble"] = bq
+        anim["bubble_t"] = 1.6
+    elif anim.get("bubble_t", 0) > 0:
+        anim["bubble_t"] = max(0.0, anim["bubble_t"] - dt)
     if anim.get("action_t", 0) > 0:
         anim["action_t"] = max(0.0, anim["action_t"] - dt)
     req = meta.pop("_emote", None)
@@ -280,8 +291,11 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
                        max(2, int(H * 0.13)))
     bp.draw_torso(surface, pose, torso, belt)
     bp.draw_arms(surface, pose, torso, skin, arm_w)
+    from ui import char_face
+    # a fleeting expression from the current action, else the held mood
+    expr = char_face.EMOTE_EXPR.get(action) or char_face.expr_for(char)
     bp.draw_head(surface, pose, skin, hair, race, face_visible, neck_w,
-                 pose.get("profile", 0))
+                 pose.get("profile", 0), expr, anim.get("blinking", False))
     weapon = char_motion.weapon_kind(char)
     if weapon:
         bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)
@@ -299,6 +313,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
         pygame.draw.rect(surface, (60, 0, 0), (bx, by, bw, 2))
         pygame.draw.rect(surface, (200, 50, 50),
                          (bx, by, int(bw * max(0.0, char.hp / char.max_hp)), 2))
+    if anim.get("bubble_t", 0) > 0 and anim.get("bubble"):   # emote bubble (P34.2)
+        bp.draw_bubble(surface, hx, hy - hr - 3, anim["bubble"], hr)
 
 
 def draw_glimpsed(surface, char, sx: int, sy: int, tile_size: int,

@@ -4362,11 +4362,19 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   squash/stretch in `_jump` (crouch→stretch→land-squash) and `_hurt` (flinch);
   `char_pose._attack_angle` gives the attack a wind-up→fast-strike→recovery. Verified
   by screenshot sequences. `tests/test_char_pose.py` (+2).
-- [ ] **P34.2 The face comes alive.** `body_parts.draw_head` gains a MOUTH + BROWS +
+- [x] **P34.2 The face comes alive.** `body_parts.draw_head` gains a MOUTH + BROWS +
   a 3-param `expression` model ({brow, eye, mouth} → neutral/happy/laughing/angry/
   sad/scared/hurt) + BLINK (2–6 s jittered). `char_motion` maps emotes/mood/combat/
   social events → `_expr`; a floating EMOTE BUBBLE (❗❓💤💢💕) backs it up. The #1
   appeal gap.
+  *Done:* pure `ui/char_face.py` (8 `EXPRESSIONS`, `EMOTE_EXPR` map, `expr_for`,
+  a jittered `blink_step` state machine); `body_parts.draw_face` (brows + mode-based
+  eyes dot/wide/squint/arch/x + a curved mouth, front & profile) + `draw_bubble`
+  (alert/question/sleep/love/anger/note, drawn with primitives — no emoji font);
+  `body_renderer` blinks per character, shows a fleeting expression from the current
+  action (hurt→hurt, cheer→happy) else the held mood, and pops a bubble; a `sleep`
+  stance auto-bubbles 💤. `engine/anim.express`/`bubble` are the triggers.
+  Screenshot: 8 distinct legible faces at ~10px. `tests/test_char_face.py` (7).
 - [ ] **P34.3 Secondary-motion substrate + springs + look-at.** New pure
   `ui/char_secondary.py`: `spring()` (critically-damped), a follow-the-leader/verlet
   CHAIN, and `look_at` (head + pupils ease toward a point, clamped to a cone). Wire

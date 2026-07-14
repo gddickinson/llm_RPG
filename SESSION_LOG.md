@@ -6767,3 +6767,19 @@ wind-up PAST neutral, a fast strike, then a settling recovery. Screenshot sequen
 confirm the jump squash/stretch and the wind-up→strike→recover. `tests/test_char_
 pose.py` (+2). Next: P34.2 the face (mouth/brows/blink/expression), then P34.3 the
 spring + look-at substrate.
+
+## 2026-07-14 (cont.) — P34.2: the face comes alive (brows/eyes/mouth/blink/bubbles)
+
+The #1 appeal gap closed. New pure `ui/char_face.py` — 8 EXPRESSIONS as a 3-param
+model (brow tilt, mouth curve, eye mode), an EMOTE→expression map, and a jittered
+per-character BLINK state machine. `body_parts.draw_face` renders brows + mode-based
+eyes (dot/wide/squint/arch/x) + a curved mouth (smile/frown/open) for both front and
+profile heads; `draw_bubble` pops a symbol (alert !/question ?/sleep zzz/love heart/
+anger spark/note) drawn from primitives (no emoji font needed). `body_renderer` now
+blinks every character on its own clock, shows a FLEETING expression from the current
+action (hurt→hurt face, cheer/dance/wave→happy, guard→angry, tumble→scared) falling
+back to the held mood `_expr`, and pops a bubble (a `sleep` stance auto-💤).
+`engine/anim.express`/`bubble` expose the triggers. A screenshot of all 8 faces at
+~10px reads clearly and distinctly. `tests/test_char_face.py` (7). Meanwhile a
+background pass is baking the movieMaker MIXAMO mocap clips into 2D keyframes
+(`data/anim/*.json`) to drive mocap-quality body animation next.

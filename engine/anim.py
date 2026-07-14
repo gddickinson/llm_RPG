@@ -25,6 +25,22 @@ def stance(char, name):
         pass
 
 
+def express(char, name):
+    """Set the held facial expression (happy/angry/sad/scared/hurt/…) (P34.2)."""
+    try:
+        char.metadata["_expr"] = name
+    except Exception:
+        pass
+
+
+def bubble(char, kind):
+    """Pop a symbol bubble above the head (alert/question/sleep/love/angry/note)."""
+    try:
+        char.metadata["_bubble"] = kind
+    except Exception:
+        pass
+
+
 def face(char, target_pos):
     """Turn a character to face a tile it acts on."""
     try:

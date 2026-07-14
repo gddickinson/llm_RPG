@@ -58,7 +58,8 @@ def draw_arms(surface, pose, sleeve, skin, w):
     _limb(surface, pose["r_elbow"], pose["r_hand"], skin, max(1, w - 1))
 
 
-def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0):
+def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
+              expr="neutral", blink=False):
     import pygame
     hx, hy = _pt(pose["head"])
     r = pose["head_r"]
@@ -79,21 +80,114 @@ def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0):
         return
     # hair cap on top; the lower face stays skin
     pygame.draw.circle(surface, hair, (hx, hy - max(1, r // 2)), r)
-    e = max(1, r // 5)
-    if profile:                                             # side: nose + 1 eye
+    if profile:
         pygame.draw.circle(surface, skin,
-                           (hx + profile * (r // 3), hy + r // 3), max(1, r * 2 // 3))
+                           (hx + profile * (r // 3), hy + r // 3),
+                           max(1, r * 2 // 3))
         nx = hx + profile * r
         pygame.draw.polygon(surface, skin, [
             (nx, hy - 1), (nx + profile * max(1, r // 3), hy + r // 4),
             (nx, hy + r // 3)])
-        pygame.draw.circle(surface, (35, 30, 28),
-                           (hx + profile * (r // 3), hy + r // 6), e)
-    else:                                                   # front: two eyes
+    else:
         pygame.draw.circle(surface, skin, (hx, hy + r // 3), max(1, r * 2 // 3))
-        for s in (-1, 1):
-            pygame.draw.circle(surface, (35, 30, 28),
-                               (hx + s * (r // 3), hy + r // 5), e)
+    draw_face(surface, hx, hy, r, expr, profile, blink)
+
+
+def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False):
+    """P34.2 the expressive face — brows + eyes + mouth from a 3-param spec."""
+    import pygame
+    from ui import char_face
+    sp = char_face.spec(expr_name)
+    ink = (34, 28, 26)
+    e = max(1, r // 4)
+    ey = hy + r // 5                                # eye row
+    sides = (profile,) if profile else (-1, 1)     # one eye in profile
+    mode = sp["eyes"]
+    for s in sides:
+        ex = hx + (s * (r // 3) if not profile else profile * (r // 3))
+        if blink or mode == "squint":
+            pygame.draw.line(surface, ink, (ex - e, ey), (ex + e, ey), 1)
+        elif mode == "wide":
+            pygame.draw.circle(surface, (245, 245, 245), (ex, ey), e + 1)
+            pygame.draw.circle(surface, ink, (ex, ey), max(1, e - 1))
+        elif mode == "arch":                       # ‿ happy squint
+            pygame.draw.arc(surface, ink, (ex - e, ey - e, e * 2, e * 2 + 1),
+                            3.4, 6.0, 1)
+        elif mode == "x":
+            pygame.draw.line(surface, ink, (ex - e, ey - e), (ex + e, ey + e), 1)
+            pygame.draw.line(surface, ink, (ex - e, ey + e), (ex + e, ey - e), 1)
+        else:                                      # dot
+            pygame.draw.circle(surface, ink, (ex, ey), e)
+        # brow — inner end nudged by the expression's brow tilt
+        bx = ex
+        by = ey - max(2, r // 2)
+        inner = -s if not profile else -1          # inner = toward centre
+        pygame.draw.line(surface, ink,
+                         (bx - e, by + inner * sp["brow"] * -1),
+                         (bx + e, by - inner * sp["brow"] * -1), 1)
+    # mouth — an arc curved by the expression (>0 up = smile)
+    mc = sp["mouth"]
+    my = hy + r // 2
+    mw = max(2, r // 2)
+    if abs(mc) < 0.15:
+        pygame.draw.line(surface, ink, (hx - mw // 2, my), (hx + mw // 2, my), 1)
+    elif mc >= 1.0:                                # open, laughing
+        pygame.draw.ellipse(surface, ink, (hx - mw // 2, my - 1, mw, mw // 2 + 2))
+    else:
+        rect = (hx - mw // 2, my - mw // 2, mw, mw)
+        if mc > 0:
+            pygame.draw.arc(surface, ink, rect, 3.34, 6.08, 1)   # smile
+        else:
+            pygame.draw.arc(surface, ink, (hx - mw // 2, my, mw, mw),
+                            0.20, 2.94, 1)                        # frown
+
+
+_BUBBLE_BG = (250, 250, 245)
+_BUBBLE_LINE = (60, 55, 50)
+
+
+def draw_bubble(surface, cx, top_y, kind, r):
+    """A small floating symbol bubble above the head (P34.2)."""
+    import pygame
+    w = max(8, int(r * 2.2))
+    bx, by = cx - w // 2, top_y - w - 2
+    pygame.draw.circle(surface, _BUBBLE_BG, (cx, by + w // 2), w // 2)
+    pygame.draw.circle(surface, _BUBBLE_LINE, (cx, by + w // 2), w // 2, 1)
+    pygame.draw.polygon(surface, _BUBBLE_BG,
+                        [(cx - 2, by + w - 1), (cx + 2, by + w - 1),
+                         (cx, by + w + 3)])
+    m, mid = w // 4, by + w // 2
+    if kind == "alert":
+        pygame.draw.line(surface, (200, 40, 40), (cx, by + m), (cx, mid + 1), 2)
+        pygame.draw.circle(surface, (200, 40, 40), (cx, mid + m), 1)
+    elif kind == "question":
+        pygame.draw.arc(surface, (60, 90, 180),
+                        (cx - m, by + m, m * 2, m * 2), 0.4, 3.6, 2)
+        pygame.draw.circle(surface, (60, 90, 180), (cx, mid + m), 1)
+    elif kind == "sleep":
+        for i, s in enumerate((m, m - 1)):
+            zx, zy = cx - m + i * 2, by + m + i * 3
+            pygame.draw.line(surface, (90, 120, 170), (zx, zy), (zx + s, zy), 1)
+            pygame.draw.line(surface, (90, 120, 170),
+                             (zx + s, zy), (zx, zy + s), 1)
+            pygame.draw.line(surface, (90, 120, 170),
+                             (zx, zy + s), (zx + s, zy + s), 1)
+    elif kind == "love":
+        cr = max(2, w // 6)
+        pygame.draw.circle(surface, (210, 60, 90), (cx - cr, mid - 1), cr)
+        pygame.draw.circle(surface, (210, 60, 90), (cx + cr, mid - 1), cr)
+        pygame.draw.polygon(surface, (210, 60, 90),
+                            [(cx - cr * 2, mid), (cx + cr * 2, mid),
+                             (cx, mid + cr * 2 + 1)])
+    elif kind == "angry":
+        for a in (0.6, 2.0, 3.5, 5.0):
+            import math
+            pygame.draw.line(surface, (200, 60, 40), (cx, mid),
+                             (cx + int(m * math.cos(a)), mid + int(m * math.sin(a))), 1)
+    elif kind == "note":
+        pygame.draw.circle(surface, (70, 60, 120), (cx - 1, mid + m), max(1, m // 2))
+        pygame.draw.line(surface, (70, 60, 120),
+                         (cx - 1 + m // 2, mid + m), (cx - 1 + m // 2, by + m), 1)
 
 
 def draw_shield(surface, pose, face, rim, r):
