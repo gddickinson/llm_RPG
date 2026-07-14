@@ -6729,3 +6729,21 @@ on deep water (dropped again on dry land). `tests/test_char_clips.py` (+5) +
 `tests/test_anim_triggers.py` (5) cover the clips + the wirings. Next (P33.6d): the
 two-character INTERACTIONS — handshake, hug, kiss, wrestle, throw, knock-down &
 stand-up, guard-an-ally.
+
+## 2026-07-14 (cont.) — P33.6d: two-character interactions (handshake/hug/wrestle/knockdown)
+
+The cast interacts. Seven coordinated interaction clips — `handshake`, `hug`,
+`kiss`, `wrestle`, `throw`/`tumble`, and `knockdown` (which falls, lies, and RISES
+in a single clip) — plus `engine/anim.interact(a, b, kind)` which turns the pair to
+FACE each other and gives each its half (symmetric, or asymmetric like throw→tumble
+and attack→knockdown). They read as one motion because the two stand adjacent and
+face in. Wired into the game: a CRIT SHOVE knocks the target down and back up,
+RECRUITING a companion is sealed with a HANDSHAKE, and GREETING an NPC makes it turn
+and WAVE. A paired screenshot confirms the coordination. `tests/test_char_clips.py`
+(+3) + `tests/test_anim_triggers.py` (+2); 27 animation clips total.
+
+George's new steer: make character animation THE priority — vastly expand quality,
+detail and number so the cast feels truly alive and funny; research how other games
+do it; consider a higher render resolution (env at 2x2/4-tile detail, characters
+still 1 logical tile but drawn finer). Dispatched a research pass + investigating the
+resolution options; a Phase 34 "animation quality" ultraplan follows.

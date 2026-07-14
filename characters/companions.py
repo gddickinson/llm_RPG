@@ -92,6 +92,11 @@ class CompanionManager:
             return reason
         self.party.append(npc_id)
         npc.metadata["seeking_party"] = False   # found a band (P-M.6)
+        try:                                    # a handshake seals the deal
+            from engine import anim
+            anim.interact(self.engine.player, npc, "handshake")
+        except Exception:
+            pass
         msg = f"{npc.name} joins your party!"
         self.engine.memory_manager.add_event(msg)
         npc.add_memory(f"I joined {self.engine.player.name}'s party.", 3)

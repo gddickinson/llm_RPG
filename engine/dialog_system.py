@@ -24,6 +24,15 @@ class DialogSystem:
         if not self._adjacent_to_player(npc):
             return f"{npc.name} is too far away to talk to."
 
+        try:                                  # a nod & wave on being greeted
+            from engine import anim
+            anim.face(npc, self.engine.player.position)
+            anim.face(self.engine.player, npc.position)
+            if not message:
+                anim.emote(npc, "wave")
+        except Exception:
+            pass
+
         if not message:
             return self._greet(npc)
 

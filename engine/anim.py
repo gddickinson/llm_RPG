@@ -37,6 +37,32 @@ def face(char, target_pos):
         pass
 
 
+# P33.6d — a two-character interaction assigns each side its half + faces them
+_INTERACTIONS = {
+    "handshake": ("handshake", "handshake"),
+    "hug": ("hug", "hug"),
+    "kiss": ("kiss", "kiss"),
+    "wrestle": ("wrestle", "wrestle"),
+    "throw": ("throw", "tumble"),          # a throws, b flies
+    "knockdown": ("attack", "knockdown"),  # a strikes, b falls & rises
+    "guard": ("guard", None),              # a shields b (b unposed)
+}
+
+
+def interact(a, b, kind):
+    """Play a coordinated two-character interaction (handshake / hug / kiss /
+    wrestle / throw / knockdown / guard): each turns to face the other and plays
+    its half. Reads as one motion because the two stand adjacent (P33.6d)."""
+    ca, cb = _INTERACTIONS.get(kind, (kind, kind))
+    if b is not None:
+        face(a, b.position)
+        face(b, a.position)
+        if cb:
+            emote(b, cb)
+    if ca:
+        emote(a, ca)
+
+
 def update_swim(engine):
     """Per-turn: the hero shows a SWIM stance while standing on deep water, and
     drops it again on dry land (P33.6c)."""

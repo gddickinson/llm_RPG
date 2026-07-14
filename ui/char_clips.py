@@ -20,6 +20,10 @@ ACTIONS = {
     "wave": (True, 1.0), "hurt": (True, 0.45), "cast": (True, 0.9),
     "stoop": (True, 1.0), "cheer": (True, 1.0), "dodge": (True, 0.4),
     "kneel": (True, 1.6), "reach": (True, 0.7), "point": (True, 1.0),
+    # two-character interactions (P33.6d)
+    "handshake": (True, 1.2), "hug": (True, 1.4), "kiss": (True, 1.3),
+    "wrestle": (True, 1.6), "throw": (True, 0.7), "tumble": (True, 0.9),
+    "knockdown": (True, 1.6),
 }
 
 _JOINTS = ["l_hip", "r_hip", "chest", "l_knee", "r_knee", "l_foot", "r_foot",
@@ -39,6 +43,11 @@ def duration(action):
 
 def _arc(t):                      # 0 → 1 → 0 over t in [0, 1]
     return math.sin(max(0.0, min(1.0, t)) * math.pi)
+
+
+def _ease(t):                     # smoothstep 0 → 1 (monotonic)
+    t = max(0.0, min(1.0, t))
+    return t * t * (3.0 - 2.0 * t)
 
 
 def _fdir(facing):
@@ -223,10 +232,82 @@ def _point(pose, t, H, facing):
     return pose
 
 
+# ---- two-character interaction clips (P33.6d) --------------------------
+# each poses ONE character; the pair reads as coordinated because both face each
+# other and stand adjacent (see engine/anim.interact).
+
+def _handshake(pose, t, H, facing):
+    f = _fdir(facing) or 1
+    shake = math.sin(t * math.pi * 5) * H * 0.02
+    s = pose["r_sh"]
+    pose["r_hand"] = (s[0] + f * H * 0.22, s[1] + H * 0.10 + shake)
+    pose["r_elbow"] = (s[0] + f * H * 0.11, s[1] + H * 0.11)
+    return pose
+
+
+def _hug(pose, t, H, facing):
+    d, f = _arc(t), (_fdir(facing) or 1)
+    for hand, sh in (("l_hand", "l_sh"), ("r_hand", "r_sh")):
+        s = pose[sh]
+        pose[hand] = (s[0] + f * H * 0.17 * d, s[1] + H * 0.05)
+    _move(pose, _UPPER, f * H * 0.05 * d, 0)
+    return pose
+
+
+def _kiss(pose, t, H, facing):
+    d, f = _arc(t), (_fdir(facing) or 1)
+    _move(pose, ("head", "neck", "chest", "l_sh", "r_sh"), f * H * 0.12 * d, 0)
+    return pose
+
+
+def _wrestle(pose, t, H, facing):
+    f = _fdir(facing) or 1
+    jostle = math.sin(t * math.pi * 4) * H * 0.03
+    _move(pose, _JOINTS, f * H * 0.06 + jostle, H * 0.04)   # lean in, crouch
+    for hand, sh in (("l_hand", "l_sh"), ("r_hand", "r_sh")):
+        s = pose[sh]
+        pose[hand] = (s[0] + f * H * 0.17, s[1])
+    return pose
+
+
+def _throw(pose, t, H, facing):
+    f = _fdir(facing) or 1
+    a = math.radians(-60 + 160 * _ease(t))
+    s, arm = pose["r_sh"], H * 0.30
+    pose["r_hand"] = (s[0] + f * arm * math.sin(a), s[1] - arm * math.cos(a))
+    pose["r_elbow"] = ((s[0] + pose["r_hand"][0]) / 2,
+                       (s[1] + pose["r_hand"][1]) / 2)
+    return pose
+
+
+def _tumble(pose, t, H, facing):
+    d, f = _arc(t), _fdir(facing)
+    _move(pose, _JOINTS, -f * H * 0.16 * d, -H * 0.05 * d)   # fly back + up
+    pose["l_hand"] = (pose["l_hand"][0] - H * 0.08 * d, pose["l_hand"][1] - H * 0.06 * d)
+    pose["r_hand"] = (pose["r_hand"][0] + H * 0.08 * d, pose["r_hand"][1] - H * 0.06 * d)
+    return pose
+
+
+def _knockdown(pose, t, H, facing):
+    groundy, f = pose["l_foot"][1], _fdir(facing)
+    if t < 0.3:
+        d = _ease(t / 0.3)                     # fall
+    elif t < 0.7:
+        d = 1.0                                # lie there
+    else:
+        d = 1.0 - _ease((t - 0.7) / 0.3)       # get back up
+    for k in _JOINTS:
+        x, y = pose[k]
+        pose[k] = (x - f * H * 0.12 * d, y + (groundy - y) * 0.7 * d)
+    return pose
+
+
 _CLIPS = {
     "jump": _jump, "leap": _leap, "sit": _sit, "sleep": _sleep, "bow": _bow,
     "stoop": _stoop, "wave": _wave, "guard": _guard, "hurt": _hurt,
     "cast": _cast, "dance": _dance, "cheer": _cheer, "run": _run,
     "swim": _swim, "climb": _climb, "sneak": _sneak, "dodge": _dodge,
     "kneel": _kneel, "reach": _reach, "point": _point,
+    "handshake": _handshake, "hug": _hug, "kiss": _kiss, "wrestle": _wrestle,
+    "throw": _throw, "tumble": _tumble, "knockdown": _knockdown,
 }

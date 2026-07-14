@@ -121,6 +121,8 @@ def shove(engine, rng: random.Random = None) -> str:
                        f"tumble two full paces back!")
                 from characters.status_effects import apply_effect
                 apply_effect(target, "prone", duration=3)
+                from engine import anim         # they go down and get back up
+                anim.interact(player, target, "knockdown")
     else:
         msg = (f"You shove {target.name} against the "
                f"obstruction — they stumble but hold.")

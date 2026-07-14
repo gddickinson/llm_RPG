@@ -4324,9 +4324,16 @@ root-motion split are the portable ideas; our clips are PROCEDURAL 2D pose funct
   the turn pipeline sets a SWIM stance while the hero is on deep water. `tests/
   test_char_clips.py` (+5) + `tests/test_anim_triggers.py` (5). *Remainder:* more
   emotes in dialog / on rest.
-- [ ] **P33.6d Two-character INTERACTIONS.** Poses coordinated between two nearby
+- [x] **P33.6d Two-character INTERACTIONS.** Poses coordinated between two nearby
   characters facing each other: handshake, hug, kiss, wrestle, throw, knock-down &
   stand-up, guard-an-ally — triggered by relationships / combat / social events.
+  *Done:* 7 interaction clips (`handshake`/`hug`/`kiss`/`wrestle`/`throw`/`tumble`/
+  `knockdown` — the last falls, lies, and RISES in one clip); `engine/anim.interact
+  (a,b,kind)` faces the pair and assigns each its half (symmetric, or throw→tumble /
+  attack→knockdown). WIRED: a crit shove KNOCKS the target down & up, recruiting a
+  companion is sealed with a HANDSHAKE, and greeting an NPC makes it turn & WAVE.
+  Paired screenshot confirms the coordination. `tests/test_char_clips.py` (+3) +
+  `tests/test_anim_triggers.py` (+2). 27 total anim clips.
 
 ## What NOT to build (explicitly deferred)
 

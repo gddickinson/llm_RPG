@@ -89,6 +89,24 @@ class TestClips(unittest.TestCase):
         r = cc.apply("reach", _base(), 0.9, 60, (0, 1))
         self.assertGreater(r["r_hand"][0], rest["r_hand"][0])  # hand reaches out
 
+    def test_handshake_extends_the_hand(self):
+        rest = _base()
+        h = self._apply("handshake", 0.5)
+        self.assertGreater(h["r_hand"][0], rest["r_hand"][0])
+
+    def test_hug_brings_both_hands_forward(self):
+        rest = _base()
+        hg = self._apply("hug", 0.6)
+        self.assertGreater(hg["l_hand"][0], rest["l_hand"][0])
+        self.assertGreater(hg["r_hand"][0], rest["r_hand"][0])
+
+    def test_knockdown_falls_then_rises(self):
+        rest = _base()
+        down = self._apply("knockdown", 0.5)       # lying
+        up = self._apply("knockdown", 0.98)        # back on the feet
+        self.assertGreater(down["head"][1], rest["head"][1])   # head near ground
+        self.assertLess(up["head"][1], down["head"][1])        # risen again
+
 
 class _Char:
     def __init__(self):

@@ -33,6 +33,24 @@ class TestAnimHelpers(unittest.TestCase):
         self.assertEqual(c.metadata["_face"], (0, -1))
 
 
+class TestInteractions(unittest.TestCase):
+    def test_interact_assigns_both_halves_and_faces(self):
+        a, b = _Char((5, 5)), _Char((6, 5))
+        anim.interact(a, b, "handshake")
+        self.assertEqual(a.metadata["_emote"], "handshake")
+        self.assertEqual(b.metadata["_emote"], "handshake")
+        self.assertEqual(a.metadata["_face"], (1, 0))     # a faces east toward b
+        self.assertEqual(b.metadata["_face"], (-1, 0))    # b faces west toward a
+
+    def test_throw_and_knockdown_are_asymmetric(self):
+        a, b = _Char((5, 5)), _Char((6, 5))
+        anim.interact(a, b, "throw")
+        self.assertEqual(a.metadata["_emote"], "throw")
+        self.assertEqual(b.metadata["_emote"], "tumble")
+        anim.interact(a, b, "knockdown")
+        self.assertEqual(b.metadata["_emote"], "knockdown")
+
+
 class TestWiredTriggers(unittest.TestCase):
     def setUp(self):
         self.e = GameEngine(llm_provider="heuristic", enable_npc_processes=False)
