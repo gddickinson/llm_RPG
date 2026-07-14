@@ -4633,8 +4633,14 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   `combat_system`) and LUNGES the beast forward along its nose axis on a strike (a
   pounce/bite) and RECOILS it back when hit; the slime rears up tall & narrow to
   pounce and squashes wide when hurt (`creature_render`). `tests/test_creatures.py`.
-  QUEUE (remaining): more creature plans — birds (winged), spiders (many-legged),
-  winged dragons.
+- [x] **P34.25 More creature body plans — avian & arachnid.** *Done:* two more
+  plans — **avian** (bird/bat/raven/hawk/owl/harpy/imp/wyvern: a hovering body with
+  two FLAPPING wings, a beak + eye, a tail) and **arachnid** (spider/scorpion: a round
+  abdomen, a head with red eyes, EIGHT bent skittering legs) — plus dragons/drakes/
+  wyrms/lizards now render as LARGE quadrupeds (not humanoids). Attack lunge / hurt
+  recoil apply. `creature_pose`/`creature_render`; `tests/test_creatures.py`. So the
+  bestiary now covers humanoid / quadruped / slime / wisp / avian / arachnid.
+  (Follow-up: a bespoke WINGED-dragon plan; a serpent/snake plan.)
 
 ## What NOT to build (explicitly deferred)
 

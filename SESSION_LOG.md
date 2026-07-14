@@ -7226,3 +7226,16 @@ hit. The slime rears up tall & narrow to pounce and squashes wide & low when hur
 Screenshot shows a wolf pouncing forward / recoiling and a slime rearing to strike.
 `tests/test_creatures.py`. Full suite green. Last remaining creature gap: bird
 (winged), spider (many-legged) and winged-dragon body plans.
+
+## 2026-07-14 (cont.) — P34.25: more creature plans (avian & arachnid)
+
+Closing the last creature gap. Two more body plans:
+- **avian** (bird/bat/raven/crow/hawk/owl/eagle/harpy/pheasant/imp/wyvern) — a small
+  body that HOVERS/bobs with two FLAPPING wings, a head with a beak + eye, and a tail;
+- **arachnid** (spider/scorpion) — a round abdomen, a head with red eyes, and EIGHT
+  bent legs that SKITTER;
+and dragons/drakes/wyrms/lizards/crocs now render as LARGE quadrupeds instead of
+humanoids. The P34.24 attack-lunge / hurt-recoil applies (a spider lunges its head on
+a bite). `creature_pose` classification + `creature_render` draws; `tests/
+test_creatures.py`. The bestiary now spans humanoid / quadruped / slime / wisp / avian
+/ arachnid. Follow-up: a bespoke WINGED-dragon and a serpent plan.

@@ -71,6 +71,10 @@ def draw_creature(surface, char, sx, sy, tile_size, plan, is_player=False):
         _draw_slime(surface, char, sx, sy, tile_size)
     elif plan == "wisp":
         _draw_wisp(surface, char, sx, sy, tile_size)
+    elif plan == "avian":
+        _draw_avian(surface, char, sx, sy, tile_size)
+    elif plan == "arachnid":
+        _draw_arachnid(surface, char, sx, sy, tile_size)
     _health_bar(surface, char, sx, sy, tile_size)
     from ui import char_fx                          # P34.19 fire / wet on beasts too
     char_fx.draw_effects(surface, char, sx, sy, tile_size,
@@ -181,6 +185,80 @@ def _draw_wisp(surface, char, sx, sy, tile_size):
         px = cx - math.sin(t + k) * tile_size * 0.1
         py = cy + k * tile_size * 0.12
         pygame.draw.circle(surface, color, (int(px), int(py)), max(1, tile_size // 16))
+
+
+_AVIAN_COLOR = {"raven": (54, 54, 66), "crow": (48, 48, 58), "bat": (70, 60, 66),
+                "owl": (150, 130, 100), "hawk": (140, 110, 80),
+                "pheasant": (170, 120, 70), "eagle": (110, 92, 74),
+                "imp": (150, 70, 70), "wyvern": (90, 110, 90)}
+
+
+def _draw_avian(surface, char, sx, sy, tile_size):
+    """A flyer — a small body that hovers/bobs with two flapping wings + a beak."""
+    a = _anim(char)
+    t = a.get("idle_phase", 0.0) + a.get("walk_phase", 0.0)
+    attack, hurt = _atk_hurt(a)
+    color = _pick(char, _AVIAN_COLOR, (90, 90, 104))
+    cx = sx + tile_size / 2.0
+    cy = sy + tile_size * 0.45 - math.sin(t * 2) * tile_size * 0.06     # hovers
+    flap = math.sin(t * 8)                                              # wing-beat
+    span = tile_size * (0.42 + attack * 0.1)
+    for side in (-1, 1):                                                # two wings
+        tip = (cx + side * span, cy - flap * tile_size * 0.22)
+        mid = (cx + side * span * 0.5, cy + tile_size * 0.02 - flap * tile_size * 0.1)
+        pygame.draw.polygon(surface, color, [
+            (int(cx), int(cy)), (int(mid[0]), int(mid[1])),
+            (int(tip[0]), int(tip[1]))])
+        pygame.draw.polygon(surface, _dark(color, 30), [
+            (int(cx), int(cy)), (int(mid[0]), int(mid[1])),
+            (int(tip[0]), int(tip[1]))], 1)
+    br = int(tile_size * 0.16)
+    pygame.draw.circle(surface, color, (int(cx), int(cy)), br)         # body
+    hr = int(tile_size * 0.10)
+    hy = int(cy - br * 0.6)
+    pygame.draw.circle(surface, color, (int(cx), hy), hr)              # head
+    pygame.draw.polygon(surface, (230, 190, 80), [                     # beak
+        (int(cx + hr), hy), (int(cx + hr + tile_size * 0.08), hy + 1),
+        (int(cx + hr), hy + hr // 2)])
+    pygame.draw.circle(surface, (20, 20, 24), (int(cx + hr // 2), hy - 1),
+                       max(1, hr // 3))
+    # tail
+    pygame.draw.polygon(surface, _dark(color, 12), [
+        (int(cx), int(cy + br)), (int(cx - tile_size * 0.1), int(cy + br * 1.6)),
+        (int(cx + tile_size * 0.04), int(cy + br * 1.3))])
+
+
+def _draw_arachnid(surface, char, sx, sy, tile_size):
+    """A spider — a round abdomen + eight bent, skittering legs."""
+    a = _anim(char)
+    t = a.get("idle_phase", 0.0) + a.get("walk_phase", 0.0)
+    attack, hurt = _atk_hurt(a)
+    color = (60, 52, 60) if "spider" in _species(char) else (90, 76, 54)
+    cx = sx + tile_size / 2.0
+    cy = sy + tile_size * 0.62 - hurt * tile_size * 0.08
+    abd = int(tile_size * 0.22)
+    lw = max(2, int(tile_size * 0.05))
+    for i in range(8):                                                 # 8 legs
+        side = -1 if i < 4 else 1
+        row = i % 4
+        skit = math.sin(t * 6 + i) * tile_size * 0.05
+        base = (cx + side * abd * 0.5, cy)
+        knee = (base[0] + side * tile_size * (0.22 + 0.03 * (row - 1.5)),
+                cy - tile_size * 0.12 + skit)
+        foot = (knee[0] + side * tile_size * 0.14,
+                cy + tile_size * 0.16 + (row - 1.5) * tile_size * 0.06)
+        pygame.draw.line(surface, _dark(color, 20), base, knee, lw)
+        pygame.draw.line(surface, _dark(color, 20), knee, foot, lw)
+    lunge = attack * tile_size * 0.12
+    pygame.draw.ellipse(surface, color,                                # abdomen
+                        (int(cx - abd), int(cy - abd * 0.7),
+                         int(abd * 2), int(abd * 1.5)))
+    hr = int(tile_size * 0.11)
+    hx = int(cx + abd * 0.7 + lunge)
+    pygame.draw.circle(surface, _dark(color, 12), (hx, int(cy)), hr)   # head
+    for ex in (-1, 1):                                                 # eyes
+        pygame.draw.circle(surface, (200, 60, 60),
+                           (hx + hr // 2, int(cy) + ex * hr // 2), max(1, hr // 4))
 
 
 def _health_bar(surface, char, sx, sy, tile_size):

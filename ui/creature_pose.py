@@ -12,9 +12,13 @@ import math
 
 _QUAD = ("wolf", "fox", "boar", "bear", "cat", "hound", "dog", "deer", "stag",
          "rabbit", "hare", "lion", "wildcat", "direwolf", "warg", "hog", "ram",
-         "goat", "wolfhound", "panther", "lynx", "mare", "pony", "mule", "horse")
+         "goat", "wolfhound", "panther", "lynx", "mare", "pony", "mule", "horse",
+         "dragon", "drake", "wyrm", "lizard", "croc", "basilisk")   # big beasts too
 _SLIME = ("slime", "ooze", "jelly", "blob", "pudding", "gel")
 _WISP = ("wisp", "spirit", "will-o", "ghost", "wraith", "flame", "ember", "spark")
+_AVIAN = ("bird", "bat", "raven", "crow", "hawk", "eagle", "owl", "harpy",
+          "pheasant", "vulture", "wyvern", "imp")
+_ARACHNID = ("spider", "scorpion", "arachnid")
 # only re-body genuine beasts — NPCs, the player and humanoid monsters stay puppets
 _BEAST_CLASSES = ("monster", "animal", "beast")
 
@@ -31,7 +35,8 @@ def body_plan(char):
         return "humanoid"
     name = ((getattr(char, "name", "") or "") + " " +
             str(getattr(char, "id", ""))).lower()
-    for kws, plan in ((_QUAD, "quadruped"), (_SLIME, "slime"), (_WISP, "wisp")):
+    for kws, plan in ((_AVIAN, "avian"), (_ARACHNID, "arachnid"),
+                      (_QUAD, "quadruped"), (_SLIME, "slime"), (_WISP, "wisp")):
         if any(k in name for k in kws):
             return plan
     return "humanoid"

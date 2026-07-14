@@ -39,6 +39,10 @@ class TestClassification(unittest.TestCase):
         self.assertEqual(cp.body_plan(_Char("Wild Boar")), "quadruped")
         self.assertEqual(cp.body_plan(_Char("Green Slime")), "slime")
         self.assertEqual(cp.body_plan(_Char("Marsh Wisp")), "wisp")
+        self.assertEqual(cp.body_plan(_Char("Raven")), "avian")
+        self.assertEqual(cp.body_plan(_Char("Giant Bat")), "avian")
+        self.assertEqual(cp.body_plan(_Char("Cave Spider")), "arachnid")
+        self.assertEqual(cp.body_plan(_Char("Scorpion")), "arachnid")
 
     def test_wildlife_is_animal_class(self):
         self.assertEqual(cp.body_plan(_Char("Deer", klass="animal")), "quadruped")
@@ -90,7 +94,8 @@ class TestDraw(unittest.TestCase):
         from ui import body_renderer
         surf = pygame.Surface((96, 128))
         for name, klass in (("Wolf", "monster"), ("Slime", "monster"),
-                            ("Wisp", "monster"), ("Deer", "animal")):
+                            ("Wisp", "monster"), ("Deer", "animal"),
+                            ("Raven", "monster"), ("Cave Spider", "monster")):
             c = _Char(name, klass)
             body_renderer.draw_body(surf, c, 20, 40, 48, is_player=False)
 
