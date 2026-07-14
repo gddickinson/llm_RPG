@@ -4299,12 +4299,21 @@ root-motion split are the portable ideas; our clips are PROCEDURAL 2D pose funct
   head/girth; `body_renderer._body_build` picks 1 of 6 builds per character (stable
   id hash); `body_parts.draw_torso` bulges into a rounded barrel by girth. Lineup
   screenshot shows a diverse, cartoonish cast. `tests/test_char_pose.py` (+1 → 14).
-- [ ] **P33.6b The animation CLIP system + core clips.** A new `ui/char_clips.py`: an
+- [~] **P33.6b The animation CLIP system + core clips.** A new `ui/char_clips.py`: an
   ACTION state machine on the anim state + a `pose_for(action, base, phase, …)` that
   transforms the rest skeleton per action, and an `emote(char, name)` the engine calls.
   First batch: idle-variants, walk, RUN, jump/leap, sit, bow, wave/talk, guard, hurt,
   cast, stoop/pick-up, cheer, dance/jiggle — plus TURN-to-face a target. Engine hooks
   (rest→sit, pray→bow, forage/pickup→stoop, door→reach, damage→hurt).
+  *Done:* `ui/char_clips.py` (pure) — an `ACTIONS` registry + 13 clip transforms
+  (jump/leap/sit/sleep/bow/stoop/wave/guard/hurt/cast/dance/cheer/run) dispatched by
+  `apply`; `body_renderer._update_action` is the state machine (a one-shot emote, an
+  attack, a held `_stance`, walk/run, or idle) applied in `draw_body`; `char_motion.
+  emote`/`set_stance`/`face_toward` are the engine-facing (pygame-free) API. Wired:
+  `combat_system` faces the attacker at its target and makes the STRUCK body recoil
+  (`hurt`). Screenshot strip shows all 13 actions reading clearly. `tests/
+  test_char_clips.py` (16). *Remainder:* more engine hooks (rest→sit, pray→bow,
+  forage/door→stoop) and richer idle/run.
 - [ ] **P33.6c More clips + water/climb.** swim (in water), climb (on cliffs/ladders),
   investigate/stoop, leap, defensive dodge, sleeping — driven by the real game state
   (`traversal`, terrain, needs).

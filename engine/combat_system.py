@@ -87,6 +87,8 @@ class CombatSystem:
         try:
             m = attacker.metadata
             m["_atk_seq"] = m.get("_atk_seq", 0) + 1
+            from ui import char_motion              # pure, pygame-free
+            char_motion.face_toward(attacker, defender.position)
         except Exception:
             pass
 
@@ -179,6 +181,11 @@ class CombatSystem:
         damage = damage_type_modifier(attacker, defender, damage)
 
         defender.take_damage(damage)
+        try:   # the struck body recoils (P33.6b)
+            from ui import char_motion
+            char_motion.emote(defender, "hurt")
+        except Exception:
+            pass
         try:   # damage forces the keep-it check (P12.7)
             from engine.combat_depth import concentration_check
             concentration_check(self.engine, defender, damage)

@@ -175,6 +175,39 @@ def update_anim(char, dt: float) -> None:
         anim["atk_seen"] = seq
     elif anim.get("atk_t", 0) > 0:
         anim["atk_t"] = max(0.0, anim["atk_t"] - dt)
+    _update_action(char, anim, dt)
+
+
+def _update_action(char, anim, dt):
+    """P33.6b action state machine: pick the current clip (a one-shot emote, an
+    attack, a held stance, walk/run, or idle) and advance its clock."""
+    from ui import char_clips
+    meta = getattr(char, "metadata", None) or {}
+    anim["clock"] = anim.get("clock", 0.0) + dt
+    face = meta.pop("_face", None)
+    if face:
+        anim["facing"] = tuple(face)
+    if anim.get("action_t", 0) > 0:
+        anim["action_t"] = max(0.0, anim["action_t"] - dt)
+    req = meta.pop("_emote", None)
+    if req:
+        name = req if isinstance(req, str) else req[0]
+        # a one-shot may start when nothing is playing; a HURT always cuts in
+        if char_clips.is_one_shot(name) and (anim.get("action_t", 0) <= 0
+                                             or name == "hurt"):
+            anim["action"] = name
+            anim["action_dur"] = char_clips.duration(name) or 0.6
+            anim["action_t"] = anim["action_dur"]
+    if anim.get("action_t", 0) > 0:
+        anim["cur_action"] = anim.get("action", "idle")
+    elif anim.get("atk_t", 0) > 0:
+        anim["cur_action"] = "attack"
+    elif meta.get("_stance"):
+        anim["cur_action"] = meta["_stance"]
+    elif anim.get("moving"):
+        anim["cur_action"] = "run" if meta.get("_running") else "walk"
+    else:
+        anim["cur_action"] = "idle"
 
 
 # ---------------------------------------------------------------------- main draw
@@ -218,6 +251,14 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     pose = char_pose.build_pose(feet_x, feet_y, H, anim.get("walk_phase", 0.0),
                                 anim.get("idle_phase", 0.0),
                                 anim.get("moving", False), attack, facing, build)
+    # apply the current ACTION clip (jump/sit/bow/wave/guard/hurt/…) (P33.6b)
+    from ui import char_clips
+    action = anim.get("cur_action", "idle")
+    if char_clips.is_one_shot(action) and anim.get("action_dur"):
+        phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
+    else:
+        phase = anim.get("clock", 0.0)
+    pose = char_clips.apply(action, pose, phase, H, facing)
 
     # shadow on the ground, under the feet (not the tweened body)
     shw = max(4, int(H * 0.26))

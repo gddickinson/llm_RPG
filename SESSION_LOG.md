@@ -6697,3 +6697,21 @@ rounded BARREL that bulges with girth. A lineup screenshot shows stout, tall,
 broad and slim townsfolk with cartoonish heads. `tests/test_char_pose.py` (14).
 Next (P33.6b): the animation CLIP system + a big batch of actions (jump/sit/bow/
 run/dance/guard/hurt/pickup/wave/cast…) and turn-to-face, then interactions.
+
+## 2026-07-14 (cont.) — P33.6b: the animation clip library (13 actions + a state machine)
+
+The characters come alive. New pure `ui/char_clips.py` holds an `ACTIONS` registry
+and 13 procedural pose transforms — jump, leap, sit, sleep, bow, stoop (pick-up),
+wave (talk), guard, hurt, cast, dance/jiggle, cheer, run — each taking the
+`char_pose` rest skeleton + a phase and returning the posed limbs (`apply`
+dispatches; one-shots run over a duration, loops read a continuous clock).
+`body_renderer._update_action` is the state machine: it resolves the current
+action each frame (a one-shot EMOTE, an ATTACK, a held `_stance` like sit/guard,
+walk/run, or idle) and `draw_body` applies the clip. The engine-facing (pygame-
+free) API — `char_motion.emote` / `set_stance` / `face_toward` — lets game code
+trigger animations; `combat_system` already TURNS the attacker to face its target
+and makes the STRUCK body RECOIL (`hurt`). A 13-frame screenshot strip shows each
+action reading clearly (jump lifts off the ground, sit folds the legs, bow bends
+over, stoop reaches down, wave/guard/cast/dance/cheer all distinct).
+`tests/test_char_clips.py` (16); every UI file under 500. Remainder: more triggers
+(rest→sit, pray→bow, forage/door→stoop) + water/climb + two-character interactions.

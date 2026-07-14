@@ -109,3 +109,39 @@ def update_facing(anim, prev, cur):
 
 def facing(anim):
     return anim.get("facing", (0, 1))       # default: facing the camera (south)
+
+
+# ---- P33.6b action / emote API (engine-facing, pygame-free) ------------
+
+def emote(char, name):
+    """Request a one-shot animation clip (bow / wave / jump / cheer / hurt /
+    cast / stoop / leap …). The renderer plays it next frame."""
+    try:
+        char.metadata["_emote"] = name
+    except Exception:
+        pass
+
+
+def set_stance(char, stance):
+    """Hold a looping stance (sit / guard / sleep / dance), or None to clear."""
+    try:
+        if stance:
+            char.metadata["_stance"] = stance
+        else:
+            char.metadata.pop("_stance", None)
+    except Exception:
+        pass
+
+
+def face_toward(char, target_pos):
+    """Turn the character to face a tile it's interacting with / fighting."""
+    try:
+        px, py = char.position
+        dx, dy = target_pos[0] - px, target_pos[1] - py
+        if dx or dy:
+            if abs(dx) >= abs(dy):
+                char.metadata["_face"] = (1 if dx > 0 else -1, 0)
+            else:
+                char.metadata["_face"] = (0, 1 if dy > 0 else -1)
+    except Exception:
+        pass
