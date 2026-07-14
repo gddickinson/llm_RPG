@@ -4574,10 +4574,22 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   looks unconscious). `body_renderer` computes `injury_state` and applies it after the
   clip. Screenshot compares healthy / limp / limp-arm / unconscious. `tests/
   test_char_injury.py` (7).
+- [x] **P34.18 Creature body plans (monsters aren't all bipeds).** George: "all the
+  different monsters and characters should be well animated" (cf. autonomous_world's
+  diverse creatures). *Done:* new pure `ui/creature_pose.py` (`body_plan` classifies a
+  BEAST-class creature by species → quadruped / slime / wisp, gated so NPCs & the
+  player & humanoid monsters stay puppets) + `quadruped_points` (four legs on a
+  diagonal gait, a snout head, ears, a wagging tail — projected through the SAME depth
+  model so a beast turns to face its heading and its legs stride). `ui/creature_render.
+  py` draws them: a four-legged animal (depth-sorted legs, species fur colours —
+  wolf grey, fox orange, boar, deer, rabbit…), a wobbling two-eyed slime, and a
+  glowing trailing wisp. `body_renderer.draw_body` dispatches non-humanoids here.
+  Screenshot shows wolf/fox/boar/deer/rabbit as real quadrupeds + a slime + a wisp.
+  `tests/test_creatures.py`. (Follow-ups: avian/arachnid/serpent/winged-dragon plans,
+  a proper creature ATTACK/hurt, per-species horns/antlers.)
   QUEUE (George, animation push): physical effects (thrown-through-air / on-fire /
   wet), run-conditioned special moves (slide/dive-roll), NPC everyday-life actions,
-  DIVERSE CREATURE BODY PLANS (monsters currently render as humanoids — port ideas
-  from autonomous_world), and an SSAA settings toggle.
+  more creature plans (birds/spiders/dragons), and an SSAA settings toggle.
 
 ## What NOT to build (explicitly deferred)
 

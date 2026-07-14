@@ -278,6 +278,15 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     if not char.is_alive():
         _draw_corpse(surface, char, sx, sy, tile_size)
         return
+    # P34.18 non-humanoids (wolves, boars, slimes, wisps…) get their own body plan;
+    # goblins/trolls/orcs/skeletons/bandits stay on the jointed puppet below
+    from ui import creature_pose
+    plan = creature_pose.body_plan(char)
+    if plan != "humanoid":
+        from ui import creature_render
+        creature_render.draw_creature(surface, char, sx, sy, tile_size, plan,
+                                      is_player)
+        return
     from ui import char_motion, body_parts as bp
 
     race = getattr(char.race, "value", "human")

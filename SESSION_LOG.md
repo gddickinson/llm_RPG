@@ -7121,3 +7121,23 @@ Standing animation QUEUE from George (working through it): physical effects
 (thrown-through-air / on-fire / wet), run-conditioned special moves (slide/dive-roll),
 NPC everyday-life actions, DIVERSE CREATURE BODY PLANS (monsters render as humanoids
 today — will port ideas from autonomous_world), + the SSAA settings toggle.
+
+## 2026-07-14 (cont.) — P34.18: creature body plans (monsters aren't all bipeds)
+
+George: all the different monsters/creatures should be well animated (cf.
+autonomous_world's diverse creatures). Until now EVERY character — wolf, boar, slime
+— rendered as the humanoid puppet. New:
+- `ui/creature_pose.py`: `body_plan(char)` classifies a BEAST-class creature
+  (class ∈ monster/animal) by species keyword into quadruped / slime / wisp — GATED
+  so NPCs, the player and humanoid monsters (goblin/troll/orc/skeleton/bandit) stay on
+  the jointed puppet (a villager named 'Will' can't become a wisp). `quadruped_points`
+  builds a four-legged beast (legs on a diagonal gait, a snout head, ears, a wagging
+  tail) projected through the SAME depth model — so a beast turns to face its heading
+  and its legs stride front/¾/side.
+- `ui/creature_render.py`: draws them — a four-legged animal (depth-sorted legs so the
+  far pair sits behind the body; species fur colours: wolf grey, fox orange, boar,
+  deer, rabbit…), a wobbling two-eyed slime, and a glowing trailing wisp.
+- `body_renderer.draw_body` dispatches non-humanoids to the creature renderer.
+Screenshot: wolf/fox/boar/deer/rabbit as real quadrupeds + a slime + a wisp.
+`tests/test_creatures.py`. Full suite green. Follow-ups: avian/arachnid/serpent/
+winged-dragon plans, creature attack/hurt anims, per-species horns/antlers.
