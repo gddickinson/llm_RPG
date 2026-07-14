@@ -24,7 +24,39 @@ ACTIONS_MORE = {
     "clap": (True, 1.2), "laugh": (True, 1.4), "shrug": (True, 0.8),
     "ponder": (True, 1.6), "salute": (True, 1.2), "beckon": (True, 1.0),
     "facepalm": (True, 1.4),
+    # P34.11 cast-gesture variants (chosen per caster by char_style)
+    "cast_point": (True, 0.9), "cast_staff": (True, 0.9),
 }
+
+
+# ---- spell-cast variants (P34.11) --------------------------------------
+
+def _cast_point(pose, t, H, facing):
+    """A directed cast — the near hand thrusts a bolt forward, the other drawn
+    back to gather power."""
+    d, f = _arc(t), (_fdir(facing) or 1)
+    s = pose["r_sh"]
+    pose["r_hand"] = (s[0] + f * H * 0.28 * d, s[1] - H * 0.04 * d)
+    pose["r_elbow"] = (s[0] + f * H * 0.14 * d, s[1] - H * 0.02 * d)
+    ls = pose["l_sh"]
+    pose["l_hand"] = (ls[0] - f * H * 0.10 * d, ls[1] + H * 0.06)
+    return pose
+
+
+def _cast_staff(pose, t, H, facing):
+    """A staff cast — raise the staff high, then sweep it down and forward."""
+    f, s = (_fdir(facing) or 1), pose["r_sh"]
+    if t < 0.5:
+        u = _ease(t / 0.5)
+        pose["r_hand"] = (s[0] + f * H * 0.04, s[1] - H * 0.30 * u)
+        pose["r_elbow"] = (s[0] + f * H * 0.02, s[1] - H * 0.12 * u)
+    else:
+        u = _ease((t - 0.5) / 0.5)
+        pose["r_hand"] = (s[0] + f * H * (0.04 + 0.24 * u),
+                          s[1] - H * 0.30 + H * 0.30 * u)
+        pose["r_elbow"] = (s[0] + f * H * (0.02 + 0.12 * u),
+                           s[1] - H * 0.12 + H * 0.14 * u)
+    return pose
 
 
 # ---- acrobatics --------------------------------------------------------
@@ -287,5 +319,5 @@ CLIPS_MORE = {
     "crouch": _crouch, "eat": _eat, "drink": _drink, "rest": _rest, "lie": _lie,
     "stretch": _stretch, "yawn": _yawn, "clap": _clap, "laugh": _laugh,
     "shrug": _shrug, "ponder": _ponder, "salute": _salute, "beckon": _beckon,
-    "facepalm": _facepalm,
+    "facepalm": _facepalm, "cast_point": _cast_point, "cast_staff": _cast_staff,
 }

@@ -6919,3 +6919,28 @@ received the events. Rebound to macOS-safe keys:
 - **JUMP = `` ` `` (backtick)** — a single, unmodified, free key.
 Both documented in the F1 controls reference AND advertised on the hint bar
 ("[SHIFT+move] run · [`] jump"). `tests/test_run_jump.py` rewritten (8).
+
+## 2026-07-14 (cont.) — P34.11: motion variety (walk / run / fight / cast)
+
+George: "add more variety to the various common actions, walking, running, fighting,
+spell casting." The core loops looked identical on everyone; now each character
+moves as an individual. New pure `ui/char_style.py` seeds from `char.id`:
+- a **gait** (one of 6 presets: even / long-loping / short-quick / springy /
+  big-arm-swing / brisk) — multipliers on stride, vertical bob, arm swing and the
+  mocap cadence;
+- a **melee attack style** — overhead chop, straight thrust or flat slash, forced by
+  the weapon (axe/mace → overhead, dagger/spear/staff → thrust) then by id for the
+  rest;
+- a **cast gesture** — a staff-wielder SLAMS (`cast_staff`), others point
+  (`cast_point`) or two-hand (`cast`).
+`char_pose.build_pose` gained `gait` + `attack_style` params (neutral defaults
+reproduce the old pose byte-for-byte, tested) with a new `_attack_hand` that shapes
+the three strikes. `body_renderer` applies the gait (a RUN gets a longer, springier
+version), feeds the side-profile mocap a per-character cadence, chooses the attack
+style, and remaps a cast to the per-caster clip. `combat_system` now sets the cast
+EMOTE so a spell plays a casting gesture instead of the melee swing. Two new cast
+clips added to `char_clips_more`. A contact sheet shows a crowd walking, fighting and
+casting differently. `tests/test_char_style.py` (10). Full suite green.
+
+Remainder of Phase 34: P34.5 hair/cloak springs + weapon trail, P34.6 depth-sort +
+line-of-action, P34.7 the SSAA beauty pass.

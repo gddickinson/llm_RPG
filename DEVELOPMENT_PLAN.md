@@ -4405,6 +4405,21 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   STARTLES instead (an `alert` bubble + turns to face the threat). Monsters and
   busy/moving bodies are skipped. `tests/test_idle_life.py` (8). (Remainder — a full
   event-log reaction observer, e.g. cheer at level-up — folds into P34.6/later.)
+- [x] **P34.11 Motion variety for the common actions.** George: "add more variety
+  to the various common actions — walking, running, fighting, spell casting." *Done:*
+  new pure `ui/char_style.py` gives every character a stable, id-seeded **gait**
+  (stride / bob / arm-swing / cadence multipliers — 6 presets), a melee **attack
+  style** (overhead / thrust / slash, forced by weapon then decided by id) and a
+  **cast gesture** style. `char_pose.build_pose` now takes `gait` + `attack_style`
+  (neutral defaults reproduce the old pose EXACTLY, verified) so front/back walk &
+  run vary in stride/bob/arm and a strike is an overhead chop, a straight thrust or a
+  flat slash (new `_attack_hand`); `body_renderer` applies the gait (a run gets a
+  longer, springier version), feeds the mocap side-walk a per-character **cadence**,
+  picks the attack style, and remaps a cast to a per-caster clip — a staff-wielder
+  SLAMS (`cast_staff`), others point (`cast_point`) or two-hand. Casting now actually
+  plays a casting gesture instead of the melee swing (`combat_system`). Contact sheet
+  shows a crowd walking, fighting and casting as individuals. `tests/
+  test_char_style.py` (10).
 - [ ] **P34.5 Hair, cloak & flow.** A spring/verlet hair (and optional cloak/tail)
   CHAIN pinned to the head/shoulder, swayed by motion & wind, tinted by state
   (Celeste); a fading weapon-swing TRAIL. Real secondary motion → movement gains flow.

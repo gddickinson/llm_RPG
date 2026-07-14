@@ -116,6 +116,10 @@ class CombatSystem:
         if action_type == "cast":
             atk_ability = "intelligence"
             verb = "casts a spell at"
+            try:   # a spell casts a CASTING gesture, not a melee swing (P34.11)
+                attacker.metadata["_emote"] = "cast"
+            except Exception:
+                pass
         elif action_type in ("shoot",):
             atk_ability = "dexterity"
             verb = "shoots at"

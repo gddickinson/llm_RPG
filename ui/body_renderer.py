@@ -285,8 +285,17 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     atk_t = anim.get("atk_t", 0.0)
     attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
     facing = char_motion.facing(anim)
-    from ui import char_clips, char_mocap
+    from ui import char_clips, char_mocap, char_style
     action = anim.get("cur_action", "idle")
+    weapon = char_motion.weapon_kind(char)
+    # P34.11 per-character motion style: a gait (walk/run varies), a melee attack
+    # style (by weapon then id) and a cast gesture — so the cast reads as individuals
+    gait = char_style.gait_of(char)
+    astyle = char_style.attack_style(char, weapon)
+    pgait = gait
+    if action == "run":                          # a run has a longer, springier gait
+        pgait = {"stride": gait["stride"] * 1.4, "bob": gait["bob"] * 1.25,
+                 "arm": gait["arm"] * 1.3, "cadence": gait["cadence"]}
     # MOCAP when facing sideways, not mid-attack, and a baked clip exists — real
     # Mixamo motion for the side profile (P34.8); else the hand-authored puppet
     mocap = char_mocap.clip_for(action) if (facing[0] and atk_t <= 0) else None
@@ -297,7 +306,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
             else:
                 mp = 1.0                        # a held stance → the final pose
         else:
-            mp = anim.get("clock", 0.0) * char_mocap.RATE.get(mocap, 1.0)
+            mp = (anim.get("clock", 0.0) * char_mocap.RATE.get(mocap, 1.0)
+                  * gait["cadence"])            # per-character walk/run rhythm
         pose = char_mocap.pose_from_clip(mocap, mp, feet_x, feet_y, H, facing,
                                          build)
     else:
@@ -305,12 +315,15 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
                                     anim.get("walk_phase", 0.0),
                                     anim.get("idle_phase", 0.0),
                                     anim.get("moving", False), attack, facing,
-                                    build)
+                                    build, pgait, astyle)
         if char_clips.is_one_shot(action) and anim.get("action_dur"):
             phase = 1.0 - anim.get("action_t", 0.0) / anim["action_dur"]
         else:
             phase = anim.get("clock", 0.0)
-        pose = char_clips.apply(action, pose, phase, H, facing)
+        # cast → a per-caster gesture variant (staff-slam / point / two-hand)
+        clip_action = (char_style.cast_style(char, weapon)
+                       if action == "cast" else action)
+        pose = char_clips.apply(clip_action, pose, phase, H, facing)
 
     # shadow on the ground, under the feet (not the tweened body)
     shw = max(4, int(H * 0.26))
@@ -364,8 +377,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     bp.draw_head(surface, pose, skin, hair, race, face_visible, neck_w,
                  pose.get("profile", 0), expr, anim.get("blinking", False),
                  sec.get("look", (0.0, 0.0)))
-    weapon = char_motion.weapon_kind(char)
-    if weapon:
+    if weapon:                                   # resolved above (P34.11)
         bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)
 
     hx, hy = int(pose["head"][0]), int(pose["head"][1])

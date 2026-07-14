@@ -18,11 +18,35 @@ HEAD_R = 0.145                 # P33.6a: a bigger, rounder, cartoonish head
 SHOULDER_W, HIP_W = 0.34, 0.24
 
 _DEFAULT_BUILD = {"shoulder": 1.0, "hip": 1.0, "head": 1.0, "girth": 1.0}
+_NEUTRAL_GAIT = {"stride": 1.0, "bob": 1.0, "arm": 1.0, "cadence": 1.0}
 
 
 def _ease(t):
     t = max(0.0, min(1.0, t))
     return t * t * (3.0 - 2.0 * t)
+
+
+def _attack_hand(style, p, rsh, arm, sign, H):
+    """The weapon-hand position for a strike, by STYLE (P34.11). `sign` is the
+    facing direction. `overhead` reproduces the original chop exactly."""
+    if style == "thrust":                              # a straight jab forward
+        if p < 0.30:
+            r = -0.20 - 0.35 * _ease(p / 0.30)         # wind back
+        elif p < 0.58:
+            r = -0.55 + 1.65 * _ease((p - 0.30) / 0.28)  # drive forward
+        else:
+            r = 1.10 - 0.55 * _ease((p - 0.58) / 0.42)   # recover
+        return (rsh[0] + sign * arm * r, rsh[1] + H * 0.03)
+    if style == "slash":                               # a flat horizontal sweep
+        if p < 0.30:
+            x = -0.75 * _ease(p / 0.30)
+        elif p < 0.62:
+            x = -0.75 + 1.75 * _ease((p - 0.30) / 0.32)
+        else:
+            x = 1.00 - 0.40 * _ease((p - 0.62) / 0.38)
+        return (rsh[0] + sign * arm * x, rsh[1] + arm * 0.12)
+    a = math.radians(_attack_angle(p))                 # overhead (default)
+    return (rsh[0] + arm * math.sin(a) * sign, rsh[1] - arm * math.cos(a))
 
 
 _JOINT_KEYS = ("l_hip", "r_hip", "chest", "l_knee", "r_knee", "l_foot",
@@ -60,29 +84,33 @@ def weapon_dir(facing):
 
 
 def build_pose(cx, foot_y, H, walk=0.0, idle=0.0, moving=False,
-               attack=0.0, facing=(0, 1), build=None):
+               attack=0.0, facing=(0, 1), build=None, gait=None,
+               attack_style="overhead"):
     b = build or _DEFAULT_BUILD
+    g = gait or _NEUTRAL_GAIT
     fx, _fy = facing
     if fx:
         return _side_pose(cx, foot_y, H, walk, idle, moving, attack,
-                          1 if fx > 0 else -1, b)
-    return _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b)
+                          1 if fx > 0 else -1, b, g, attack_style)
+    return _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b, g,
+                       attack_style)
 
 
-def _bob_breath(H, walk, idle, moving):
-    return (-abs(math.sin(walk)) * H * 0.045 if moving else 0.0,
+def _bob_breath(H, walk, idle, moving, bobf=1.0):
+    return (-abs(math.sin(walk)) * H * 0.045 * bobf if moving else 0.0,
             0.0 if moving else math.sin(idle) * H * 0.012)
 
 
-def _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b):
+def _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b,
+                g=_NEUTRAL_GAIT, attack_style="overhead"):
     sw = math.sin(walk)
-    bob, breath = _bob_breath(H, walk, idle, moving)
+    bob, breath = _bob_breath(H, walk, idle, moving, g["bob"])
 
     def yy(f):
         return foot_y - f * H + bob
 
     hipw, shw = H * HIP_W * b["hip"], H * SHOULDER_W * b["shoulder"]
-    stride = H * 0.12 if moving else 0.0
+    stride = H * 0.12 * g["stride"] if moving else 0.0
     lift = H * 0.055
     l_hip = (cx - hipw / 2, yy(HIP))
     r_hip = (cx + hipw / 2, yy(HIP))
@@ -94,14 +122,12 @@ def _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b):
     l_sh = (cx - shw / 2, yy(SHOULDER) - breath)
     r_sh = (cx + shw / 2, yy(SHOULDER) - breath)
     arm = H * 0.30
-    asw = -sw * H * 0.09
+    asw = -sw * H * 0.09 * g["arm"]
     l_hand = (l_sh[0] - H * 0.02 + asw, l_sh[1] + arm)
     l_elbow = ((l_sh[0] + l_hand[0]) / 2 - H * 0.03, l_sh[1] + arm * 0.5)
     fdir = weapon_dir(facing)
     if attack > 0.001:
-        a = math.radians(_attack_angle(attack))
-        r_hand = (r_sh[0] + arm * math.sin(a) * (fdir or 1),
-                  r_sh[1] - arm * math.cos(a))
+        r_hand = _attack_hand(attack_style, attack, r_sh, arm, fdir or 1, H)
     else:
         r_hand = (r_sh[0] + H * 0.02 - asw, r_sh[1] + arm)
     r_elbow = ((r_sh[0] + r_hand[0]) / 2 + H * 0.03, (r_sh[1] + r_hand[1]) / 2)
@@ -110,14 +136,15 @@ def _front_pose(cx, foot_y, H, walk, idle, moving, attack, facing, b):
                  0, 0.0, b)
 
 
-def _side_pose(cx, foot_y, H, walk, idle, moving, attack, d, b):
+def _side_pose(cx, foot_y, H, walk, idle, moving, attack, d, b,
+               g=_NEUTRAL_GAIT, attack_style="overhead"):
     sw = math.sin(walk)
-    bob, breath = _bob_breath(H, walk, idle, moving)
+    bob, breath = _bob_breath(H, walk, idle, moving, g["bob"])
 
     def yy(f):
         return foot_y - f * H + bob
 
-    stride = H * 0.18 if moving else H * 0.05
+    stride = H * 0.18 * g["stride"] if moving else H * 0.05
     lift = H * 0.06
     l_hip = (cx - d * H * 0.02, yy(HIP))
     r_hip = (cx + d * H * 0.02, yy(HIP))
@@ -128,12 +155,11 @@ def _side_pose(cx, foot_y, H, walk, idle, moving, attack, d, b):
     l_sh = (cx - d * H * 0.03, yy(SHOULDER) - breath)
     r_sh = (cx + d * H * 0.03, yy(SHOULDER) - breath)
     arm = H * 0.30
-    asw = sw * H * 0.10
+    asw = sw * H * 0.10 * g["arm"]
     l_hand = (cx - d * (H * 0.04 + asw), l_sh[1] + arm * 0.85)
     l_elbow = ((l_sh[0] + l_hand[0]) / 2 - d * H * 0.02, l_sh[1] + arm * 0.45)
     if attack > 0.001:
-        a = math.radians(_attack_angle(attack))
-        r_hand = (r_sh[0] + d * arm * math.sin(a), r_sh[1] - arm * math.cos(a))
+        r_hand = _attack_hand(attack_style, attack, r_sh, arm, d, H)
     else:
         r_hand = (r_sh[0] + d * (H * 0.13 + asw), r_sh[1] + arm * 0.6)
     r_elbow = ((r_sh[0] + r_hand[0]) / 2 + d * H * 0.02,
