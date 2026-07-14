@@ -6427,3 +6427,18 @@ One fix rippled out: gate guards used to stand ON the gate tile (blocking it
 from closing) — `fortify._guard_spot` now seats them BESIDE it. 11 tests.
 Remainder of the walled-town thread: P31.1e (the richer 2.5D renderer — a guard
 visible on the tower roof, multi-level building massing à la Autonomous World).
+
+## 2026-07-12 (cont.) — P31.1e: richer 2.5D roofs (levels + a guard atop the tower)
+
+The visual capstone of the walled town. `ui/renderer_buildings.py` gains, in
+the same pure-geometry-then-thin-draw style as the P16.5 block pass: INTERMEDIATE
+LEVELS (`storeys_for` — a tower rises in 3 tiers, a cottage is one; `storey_lines`
+draws floor-divider lines across the front wall between the roof eave and the
+ground) and a FIGURE on the roof (`roof_figure_pos` — the point atop the block;
+`draw_buildings` paints a slate-blue GUARD circle on every `wall_tower` roof, so
+the tower watchmen are visibly up on the walls). The geometry is headless
+unit-tested (6 new); a wall-tower render smoke guards the draw path. This closes
+the whole walled-town thread George asked for — P31.1b (bigger wall + towers),
+c (tower guards spot/alarm/shoot), d (gates close/lock/force), e (the 2.5D
+roofs). The deeper multi-storey building INTERIORS and a full Autonomous-World
+massing pass remain future polish.

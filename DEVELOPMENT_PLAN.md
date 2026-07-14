@@ -3964,11 +3964,17 @@ The work is to UNIFY these into one standalone generator and enrich the output.
   crime beat. State persists (`to_dict`/`from_dict`, registered in `save_load`).
   Gate guards now stand BESIDE the gate (not on it) so it's free to close.
   `tests/test_town_gates.py` (11).
-- [ ] **P31.1e Richer 2.5D rendering (George, 2026-07-12).** A better 2.5D
+- [x] **P31.1e Richer 2.5D rendering (George, 2026-07-12).** A better 2.5D
   building renderer that shows INTERMEDIATE LEVELS (multi-storey massing) and
   FIGURES on the tower roofs (a guard visibly atop a guard tower), in the style
   of `autonomous_world`. Extends `ui/renderer_buildings.py`'s lifted-block pass.
-  (Rendering — hard to unit-test, plan carefully; the structure b–d comes first.)
+  *Done:* the pure geometry — `storeys_for(kind)` (a tower rises in 3 tiers, a
+  cottage is 1), `storey_lines` (the floor-divider lines drawn across the front
+  wall between the eave and the ground), `roof_figure_pos` (the point atop the
+  block where a roof figure stands) — is headless unit-tested; `draw_buildings`
+  now draws the storey lines and, on a `wall_tower` tile, a GUARD figure on the
+  roof. `tests/test_renderer_buildings.py` (+6, incl. a wall-tower render smoke).
+  This closes the whole walled-town thread (P31.1b–e).
 - [ ] **P31.2 A standalone world-generation entrypoint.** A `worldgen` CLI/script
   (separate from play) that generates a full world to a SEED — terrain, rivers,
   tiered settlements, roads, history, landmarks — and writes it to a durable

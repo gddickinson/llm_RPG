@@ -66,6 +66,41 @@ class TestColours(unittest.TestCase):
             self.assertTrue(all(0 <= v <= 255 for v in col))
 
 
+class TestLevels(unittest.TestCase):
+    """P31.1e — intermediate levels + the roof figure geometry."""
+
+    def test_taller_kinds_show_more_storeys(self):
+        self.assertGreater(rb.storeys_for("tower"), rb.storeys_for("farmhouse"))
+        self.assertEqual(rb.storeys_for("farmhouse"), rb.DEFAULT_STOREYS)
+        self.assertGreaterEqual(rb.storeys_for("wall_tower"), 2)
+
+    def test_a_single_storey_has_no_divider_lines(self):
+        self.assertEqual(rb.storey_lines(0, 0, 16, 8, 1), [])
+
+    def test_storey_lines_divide_the_front_wall(self):
+        # 3 storeys -> 2 divider lines between the eave and the ground
+        lines = rb.storey_lines(10, 20, 16, 8, 3)
+        self.assertEqual(len(lines), 2)
+        eave = 20 + 16 - 8          # top of the front wall
+        ground = 20 + 16
+        for (a, b) in lines:
+            self.assertEqual(a[1], b[1])                 # horizontal
+            self.assertTrue(eave < a[1] < ground)        # between eave & ground
+            self.assertEqual(a[0], 10)
+            self.assertEqual(b[0], 26)                   # sx + ts
+
+    def test_storey_lines_are_ordered_top_to_bottom(self):
+        lines = rb.storey_lines(0, 0, 30, 10, 3)
+        self.assertLess(lines[0][0][1], lines[1][0][1])
+
+    def test_roof_figure_sits_above_the_block(self):
+        sx, sy, ts, h = 10, 20, 16, 12
+        fx, fy = rb.roof_figure_pos(sx, sy, ts, h)
+        self.assertEqual(fx, sx + ts // 2)               # centred
+        self.assertLess(fy, sy)                          # up on the roof
+        self.assertGreaterEqual(fy, sy - h)              # not above the apex
+
+
 class TestRenderSmoke(unittest.TestCase):
     def test_draw_buildings_does_not_crash(self):
         import pygame
@@ -96,6 +131,31 @@ class TestRenderSmoke(unittest.TestCase):
         view = pygame.Rect(0, 0, 320, 240)
         rb.draw_buildings(surf, e, view, max(0, spot[0] - 5),
                           max(0, spot[1] - 5), 16)     # must not raise
+        e.end_game()
+
+    def test_draw_over_a_wall_tower_figure(self):
+        import pygame
+        pygame.init()
+        pygame.display.set_mode((320, 240))
+        from engine.game_engine import GameEngine
+        from engine.discovery import _explored
+        e = GameEngine(llm_provider="heuristic", enable_npc_processes=False)
+        e.start_game()
+        tower = next((l for l in e.world.locations
+                      if (l.properties or {}).get("wall_tower")), None)
+        if tower is None:
+            e.end_game()
+            self.skipTest("no wall tower in this world")
+        tx, ty = tower.x, tower.y
+        e.player.position = (tx, ty)
+        ex = _explored(e)
+        for dy in range(-4, 5):
+            for dx in range(-4, 5):
+                ex.add((tx + dx, ty + dy))
+        surf = pygame.Surface((320, 240))
+        view = pygame.Rect(0, 0, 320, 240)
+        # tile_size >= 12 so the roof-figure branch runs
+        rb.draw_buildings(surf, e, view, max(0, tx - 5), max(0, ty - 5), 16)
         e.end_game()
 
 

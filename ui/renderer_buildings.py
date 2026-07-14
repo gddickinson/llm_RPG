@@ -59,6 +59,42 @@ def roof_faces(sx: int, sy: int, ts: int, h: int) -> dict:
     }
 
 
+# P31.1e — intermediate LEVELS: how many storeys a building shows on its
+# front wall (a tower rises in tiers; a cottage is a single storey)
+_STOREYS = {
+    "tower": 3, "keep": 3, "watchtower": 2, "temple": 2, "hall": 2,
+    "inn": 2, "tavern": 2, "library": 2, "mill": 2, "wall_tower": 3,
+}
+DEFAULT_STOREYS = 1
+GUARD_FIGURE = (60, 70, 95)      # a slate-blue watchman atop a tower roof
+
+
+def storeys_for(kind: str) -> int:
+    """How many storeys (front-wall floor bands) a building kind shows."""
+    return _STOREYS.get(kind, DEFAULT_STOREYS)
+
+
+def storey_lines(sx: int, sy: int, ts: int, h: int, storeys: int):
+    """The horizontal FLOOR-DIVIDER lines across the front wall of a
+    multi-storey block — intermediate levels between the roof eave and the
+    ground. Empty for a single-storey building. Pure geometry (P31.1e)."""
+    if storeys <= 1:
+        return []
+    eave = sy + ts - h            # top of the front wall (under the roof)
+    ground = sy + ts
+    out = []
+    for i in range(1, storeys):
+        y = eave + (ground - eave) * i // storeys
+        out.append(((sx, y), (sx + ts, y)))
+    return out
+
+
+def roof_figure_pos(sx: int, sy: int, ts: int, h: int):
+    """The screen point ATOP the block where a roof figure stands — a guard
+    on the tower roof (P31.1e). Centred on the lifted roof, a touch north."""
+    return (sx + ts // 2, sy - h + ts // 3)
+
+
 def _scale(color, f: float) -> tuple:
     return tuple(int(clamp(v * f, 0, 255)) for v in color[:3])
 
@@ -77,6 +113,10 @@ def _kind_at(engine, x: int, y: int):
     loc = engine.world.get_location_at(x, y)
     if loc is None:
         return ""
+    # P31.1e: a wall tower reads as a tall, manned tower regardless of its
+    # blueprint (it has no interior blueprint, just the marker)
+    if (loc.properties or {}).get("wall_tower"):
+        return "wall_tower"
     try:
         from world.blueprints import blueprint_for_location
         bp = blueprint_for_location(loc.name)
@@ -107,7 +147,8 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
                     continue
             except Exception:
                 pass
-            h = height_for(_kind_at(engine, wx, wy), tile_size)
+            kind = _kind_at(engine, wx, wy)
+            h = height_for(kind, tile_size)
             px = view_rect.x + sx * tile_size
             py = view_rect.y + sy * tile_size
             faces = cube_faces(px, py, tile_size, h)
@@ -117,3 +158,12 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
             pygame.draw.polygon(target, colors["roof_shadow"], roof["shadow"])
             pygame.draw.line(target, colors["ridge"],
                              roof["ridge"][0], roof["ridge"][1], 1)
+            # P31.1e intermediate LEVELS: floor-divider lines on the wall
+            for (a, b) in storey_lines(px, py, tile_size, h,
+                                       storeys_for(kind)):
+                pygame.draw.line(target, colors["front"], a, b, 1)
+            # P31.1e a GUARD stands on the wall-tower roof
+            if kind == "wall_tower" and tile_size >= 12:
+                fx, fy = roof_figure_pos(px, py, tile_size, h)
+                r = max(1, tile_size // 8)
+                pygame.draw.circle(target, GUARD_FIGURE, (fx, fy), r)
