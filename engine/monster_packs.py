@@ -27,7 +27,13 @@ logger = logging.getLogger("llm_rpg.monster_packs")
 
 NEAR_PLAYER = 16         # only coordinate packs near the action
 HOSTILE_CLASSES = ("monster", "troll", "brigand")
-_TAGS = ("pack_id", "pack_leader_id", "focus_name", "pack_broken")
+_TAGS = ("pack_id", "pack_leader_id", "focus_name", "pack_broken",
+         "focus_pos", "approach_pos", "pack_role")
+# P35.1 soft, high-value targets the pack prioritises — a caster/archer hurts most
+_SQUISHY = ("wizard", "sorcerer", "warlock", "cleric", "druid", "ranger",
+            "bard", "archer", "mage")
+FINISH_HP = 7            # a target this low is worth ganging up to FINISH
+WOUNDED_FRAC = 0.28      # below this a pack member breaks off to save itself
 
 
 class MonsterPackSystem:
@@ -100,16 +106,57 @@ class MonsterPackSystem:
         focus = self._focus(members)
         fname = None if focus is None else (
             "player" if focus is self.engine.player else focus.name)
+        # P35.1 assign each member a ROLE and a distinct SURROUND tile, so the
+        # pack fans out to flank the focus (earning the +2 flank), ranged types
+        # keep their distance, and the wounded peel off — instead of all stacking
+        taken = set()
         for m in members:
             m.metadata["pack_id"] = leader.id
             m.metadata["pack_leader_id"] = leader.id
-            if fname is not None:
-                m.metadata["focus_name"] = fname
+            if fname is None:
+                continue
+            m.metadata["focus_name"] = fname
+            m.metadata["focus_pos"] = tuple(focus.position)
+            role = self._role(m, focus)
+            m.metadata["pack_role"] = role
+            if role == "engage":
+                tile = self._surround_tile(m, focus, taken)
+                if tile is not None:
+                    taken.add(tile)
+                    m.metadata["approach_pos"] = tile
         return True
 
+    def _role(self, m, focus) -> str:
+        """A wounded beast RETREATS, a ranged type KITES, the rest ENGAGE."""
+        if m.hp / max(1, m.max_hp) <= WOUNDED_FRAC and m is not focus:
+            return "retreat"
+        beh = (getattr(m, "metadata", {}) or {}).get("behavior", {}) or {}
+        if beh.get("ranged") or "archer" in (m.name or "").lower():
+            return "kite"
+        return "engage"
+
+    def _surround_tile(self, m, focus, taken):
+        """The nearest FREE, un-taken tile beside the focus — members spread
+        around it rather than queueing behind one another."""
+        from engine.squad_tactics import _NEIGHBORS, _free
+        wmap = self.engine.world.map
+        fx, fy = focus.position
+        ax, ay = m.position
+        if abs(ax - fx) <= 1 and abs(ay - fy) <= 1:
+            return (ax, ay)                    # already in a flanking spot — hold
+        best, bd = None, 10 ** 9
+        for dx, dy in _NEIGHBORS:
+            x, y = fx + dx, fy + dy
+            if (x, y) in taken or not _free(wmap, x, y):
+                continue
+            d = abs(x - ax) + abs(y - ay)
+            if d < bd:
+                bd, best = d, (x, y)
+        return best
+
     def _focus(self, members):
-        """The softest target the pack can reach — the player, or a weaker
-        companion exposed nearby."""
+        """The best target for the whole pack to gang: one it can FINISH, a
+        dangerous-but-soft caster/archer, else simply the weakest reachable."""
         engine = self.engine
         cands = [engine.player]
         try:
@@ -128,4 +175,13 @@ class MonsterPackSystem:
                 <= NEAR_PLAYER]
         if not near:
             return engine.player
-        return min(near, key=lambda t: t.hp / max(1, t.max_hp))
+
+        def score(t):
+            s = t.hp / max(1, t.max_hp)             # softest first (the player on a tie)
+            if t.hp <= FINISH_HP:
+                s -= 0.6                            # gang up to FINISH the near-dead
+            elif getattr(getattr(t, "character_class", None), "value", "") \
+                    in _SQUISHY and s < 0.75:
+                s -= 0.15                           # press a WEAKENED caster/archer
+            return s
+        return min(near, key=score)

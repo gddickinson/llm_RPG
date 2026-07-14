@@ -4642,6 +4642,19 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   bestiary now covers humanoid / quadruped / slime / wisp / avian / arachnid.
   (Follow-up: a bespoke WINGED-dragon plan; a serpent/snake plan.)
 
+- [x] **P35.1 Coordinated pack combat AI.** George: better combat AI with better
+  group coordination (cf. the battle-tactics tests), attack choice & defensive
+  strategy. *Done:* the live-overworld pack brain (`engine/monster_packs`) — which
+  only set a shared focus (so members STACKED onto one tile) — now runs real tactics:
+  it picks a smarter FOCUS (gang up to FINISH a near-dead target, press a WEAKENED
+  caster/archer, else the softest reachable), assigns each member a ROLE (a wounded
+  beast RETREATS to save itself, a ranged type KITES to keep its distance, the rest
+  ENGAGE) and a distinct SURROUND tile beside the focus (via `squad_tactics`), and the
+  heuristic honours them — so a pack FANS OUT to flank (earning the +2), the hurt peel
+  off, and archers hang back, instead of a queued crowd. `tests/test_monster_packs.py`.
+  (Follow-up P35.2: deeper attack choice — pick spell/charge/special by situation —
+  and brace/hold defensive stances vs a charge.)
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the

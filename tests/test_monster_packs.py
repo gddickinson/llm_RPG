@@ -164,7 +164,10 @@ class TestPackMorale(_Base):
         mates[0].metadata["howled"] = True     # past the first-sighting howl
         act = HeuristicProvider()._hostile_action(
             mates[0], {"player_position": self.p.position}, True)
-        self.assertEqual(act["action"], "attack")
+        # P35.1: a steady pack member ENGAGES — it either strikes or circles to a
+        # flanking tile (it's 3 tiles off here); the point is it does NOT rout
+        self.assertIn(act["action"], ("attack", "move"))
+        self.assertNotIn("breaks", act["dialog"])
 
 
 if __name__ == "__main__":

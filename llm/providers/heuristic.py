@@ -281,6 +281,31 @@ class HeuristicProvider(LLMProvider):
                 return self._wrap(character, "move", toward,
                                   "", "hunting")
 
+        # P35.1 coordinated pack tactics: the wounded peel off, ranged types kite,
+        # and the rest circle to a FLANKING tile before they strike — instead of
+        # all stacking onto one target.
+        role = meta.get("pack_role")
+        fpos = meta.get("focus_pos")
+        if player_in_view and fpos:
+            fpos = tuple(fpos)
+            adj = abs(mypos[0] - fpos[0]) <= 1 and abs(mypos[1] - fpos[1]) <= 1
+            if role == "retreat":
+                away = self._dir_between(fpos, mypos)
+                return self._wrap(character, "move", away,
+                                  "(hurt — it breaks off)", "wary")
+            if role == "kite":
+                dist = abs(mypos[0] - fpos[0]) + abs(mypos[1] - fpos[1])
+                if dist <= 2:                       # too close to loose an arrow
+                    away = self._dir_between(fpos, mypos)
+                    return self._wrap(character, "move", away,
+                                      "(keeps its distance)", "cunning")
+            elif not adj:
+                approach = meta.get("approach_pos")
+                if approach:
+                    toward = self._dir_between(mypos, tuple(approach))
+                    return self._wrap(character, "move", toward,
+                                      "(circles to flank)", "hunting")
+
         # Default hostility — a pack piles onto its shared focus (P19.3),
         # the softest reachable target; a loner just takes the player
         if player_in_view:

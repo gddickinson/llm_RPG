@@ -7239,3 +7239,23 @@ humanoids. The P34.24 attack-lunge / hurt-recoil applies (a spider lunges its he
 a bite). `creature_pose` classification + `creature_render` draws; `tests/
 test_creatures.py`. The bestiary now spans humanoid / quadruped / slime / wisp / avian
 / arachnid. Follow-up: a bespoke WINGED-dragon and a serpent plan.
+
+## 2026-07-14 (cont.) — P35.1: coordinated pack combat AI
+
+George: better combat AI — group coordination (cf. the battle-tactics layer), attack
+choice, defensive strategy. The live-overworld pack brain only set a shared `focus_name`
+before, so members all `attack <focus>` and `npc_attack` stepped each STRAIGHT at the
+same tile — a queued stack, no flanking, no roles, no retreat. Now `monster_packs`:
+- picks a smarter FOCUS — gang up to FINISH a near-dead target (hp <= 7), press a
+  WEAKENED (<75%) caster/archer, else the softest reachable (the player on a tie);
+- assigns each member a ROLE — a wounded beast (<28% hp) RETREATS to save itself, a
+  ranged type KITES to keep its distance, the rest ENGAGE — and a DISTINCT surround
+  tile beside the focus (via `squad_tactics`, collision-free);
+- the heuristic (`_hostile_action`) honours them: engagers circle to their flank tile
+  before striking (earning the +2 flank), the wounded break off, archers back away
+  when crowded.
+So a pack FANS OUT and coordinates instead of piling onto one spot. Verified 4 wolves
+get distinct flank tiles + the wounded one retreats. `tests/test_monster_packs.py`
+(updated the living-leader assertion to accept flank-move as engagement). Full suite
+green. Follow-up P35.2: deeper attack choice (spell/charge/special by situation) +
+brace/hold vs a charge.
