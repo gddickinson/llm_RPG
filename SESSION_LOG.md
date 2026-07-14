@@ -6595,3 +6595,20 @@ path is untouched. Also fixed the BRIDGE-renders-as-grass bug. Before/after
 screenshots confirm grass/water/forest are now mottled and organic instead of one
 stamp. `ui/tile_variants.py` pure + headless-testable, `tests/test_tile_variants.py`
 (17). Next: P33.2 edge-blending + water/coastline, then P33.3 richer buildings.
+
+## 2026-07-14 (cont.) — P33.2: terrain edges + water coastline (the seams die)
+
+New `ui/terrain_edges.py` softens the hard 32px seams and gives water a coast.
+Pure, headless-testable classification — `blend_edges` (a tile's right/down
+neighbours that are a DIFFERENT blendable LAND terrain, each seam counted once),
+`shore_sides` (which sides of a water tile face land), `water_depth` (deep vs
+shallow by land-neighbour count), `shimmer_frame` (position-desynced) — feeds one
+thin `draw_terrain_edges` pass that fades each differing land seam with the
+neighbour's colour, tints water deep-darker / shallow-lighter, cycles a 3-frame
+shimmer and stamps per-side shore FOAM. Wired into `renderer.render` right before
+the 2.5D building pass; it respects fog. To fit the call under renderer.py's
+500-line ceiling I cached the fog-dim overlay in `__init__` (it was rebuilt for
+every dim tile) — a small perf win that paid for the new pass. `ui/renderer.py`
+holds at 499. `tests/test_terrain_edges.py` (10). Grass/forest/road transitions
+now blend and water reads as water with a foamy shore. Next: P33.3 richer
+buildings (descriptors + hip/flat roofs + materials + merging + shadows).

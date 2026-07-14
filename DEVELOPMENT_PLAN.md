@@ -4215,11 +4215,18 @@ CC0 walk-cycle sprite sheets offline into the existing PNG-tileset pipeline.
   added to `_TERRAIN_TO_SPRITE`. Grass/water/forest/road etc. now mottled and
   varied per tile (verified by before/after screenshots) instead of one repeated
   stamp. `tests/test_tile_variants.py` (17).
-- [ ] **P33.2 Terrain edges + water & coastline.** Neighbour-aware edge blend (a
+- [x] **P33.2 Terrain edges + water & coastline.** Neighbour-aware edge blend (a
   dithered fade of the neighbour's colour over the tile seam), water depth classes
   (shallow/normal/deep by water-neighbour count) + shore foam + a 3-frame shimmer.
   New `ui/terrain_edges.py` / `ui/water_render.py` (pure classify + overlay math).
   Ends the hard seams; the coast reads as a coast.
+  *Done:* `ui/terrain_edges.py` — pure `blend_edges` (right/down differing LAND
+  seams), `shore_sides`/`water_depth` (coast + deep/shallow), `shimmer_frame`
+  (position-desynced), + a thin cached-overlay `draw_terrain_edges` pass (edge
+  colour fades, a deep/shallow tint, a 3-frame shimmer, per-side foam). Wired into
+  `renderer.render` before the building pass (reclaimed the line budget by caching
+  the fog-dim overlay in `__init__`). `tests/test_terrain_edges.py` (10). (Folded
+  the water treatment into `terrain_edges` rather than a separate `water_render`.)
 - [ ] **P33.3 Richer 2.5D buildings (descriptors + roofs + merging + shadows).** A
   `data/building_styles.json` per KIND (roof shape gable/hip/flat+parapet, pitch,
   storeys, covering colour, wall pattern, chimneys, dormers, footprint aspect) —

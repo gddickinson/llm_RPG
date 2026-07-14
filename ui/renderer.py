@@ -53,6 +53,8 @@ class MapRenderer:
         # Lighting + weather overlays (lazy)
         self._lighting = None
         self._weather_overlay = None
+        self._dim_shade = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
+        self._dim_shade.fill((10, 10, 20, 130))   # cached fog-dim (P33.2)
 
     @staticmethod
     def active_zone(engine):
@@ -106,16 +108,14 @@ class MapRenderer:
                 surf = self.sprites.tile_variant(sprite_name, wx, wy)
                 target.blit(surf, dest)
                 if dim:
-                    shade = pygame.Surface(
-                        (self.tile_size, self.tile_size),
-                        pygame.SRCALPHA)
-                    shade.fill((10, 10, 20, 130))
-                    target.blit(shade, dest)
+                    target.blit(self._dim_shade, dest)
 
-        try:   # 2.5D building blocks over the flat tiles (P16.5)
+        ts = self.tile_size
+        try:   # edge-blend seams + water coast (P33.2) then 2.5D blocks (P16.5)
+            from ui.terrain_edges import draw_terrain_edges
             from ui.renderer_buildings import draw_buildings
-            draw_buildings(target, engine, view_rect, cam_x, cam_y,
-                           self.tile_size)
+            draw_terrain_edges(target, engine, view_rect, cam_x, cam_y, ts)
+            draw_buildings(target, engine, view_rect, cam_x, cam_y, ts)
         except Exception:
             pass
 
