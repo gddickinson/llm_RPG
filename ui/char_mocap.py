@@ -17,9 +17,14 @@ _JOINTS = ("l_hip", "r_hip", "chest", "l_knee", "r_knee", "l_foot", "r_foot",
            "l_sh", "r_sh", "neck", "head", "l_elbow", "l_hand", "r_elbow",
            "r_hand")
 
-# our action -> baked clip name (only where a good mocap exists)
+# our action -> baked clip name (only where a good mocap exists).
+# NOTE: jump/leap deliberately fall through to the hand-authored char_clips._jump
+# — the baked "jump" bake is an acrobatic FLIP (hips-over-head, head to the floor)
+# that reads as a face-plant for a plain hop; the clean squash→launch→land clip is
+# the right default for the player's jump key (P34.9). The flip bake stays available
+# for a deliberate "flip" action.
 ACTION_CLIP = {
-    "walk": "walk", "run": "run", "jump": "jump", "leap": "jump",
+    "walk": "walk", "run": "run", "flip": "jump",
     "sit": "sit", "sleep": "sit", "dance": "dance", "climb": "climb",
     "idle": "idle", "talk": "talk", "wave": "talk", "stagger": "stagger",
 }

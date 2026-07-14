@@ -6830,3 +6830,28 @@ motion drives the follow-through — with a hard `_cap` so a lag can settle but 
 detach a limb. Regression test `test_head_does_not_smear_across_camera_jumps`
 asserts the stored offset stays local after a 2000px jump. Filmstrips confirm the
 head stays attached across an 8-frame camera pan and a full walk cycle.
+
+## 2026-07-14 (cont.) — P34.9: player RUN & JUMP controls
+
+George: "Characters and the hero should have options for running and jumping — with
+keys to control this for the player." CTRL is now the run/leap modifier (SHIFT stays
+the tactical/careful modifier). **CTRL + move** RUNS: it sets `_running` so the run
+clip (mocap side-profile / hand-authored front-back) plays, and sprints a bonus tile
+when the way is clear — `move_player` no-ops if the second stride is blocked, so a
+wall just ends the sprint. **CTRL + SPACE** JUMPS: the jump animation plus a hop
+forward onto open ground (else a jump in place); a beat passes either way. The logic
+lives in `ui/input_actions.step`/`jump` (input_handler stays under 500), wired at the
+single movement chokepoint and documented in the F1 controls reference.
+
+While verifying with a filmstrip I caught that the baked "jump" mocap clip is an
+acrobatic FLIP — hips rise over the head and the head drops to the floor — which read
+as the hero FACE-PLANTING every time it jumped. Fixed: jump/leap now fall through to
+the clean hand-authored squash→launch→air→land clip (the flip bake stays mapped to a
+deliberate `flip` action for later). Screenshots confirm a clean run stride and a
+clean upright hop, head attached (no distortion). `tests/test_run_jump.py` (8). Full
+suite green.
+
+Remainder of Phase 34: P34.4 individuality (idle desync/fidgets/reactions), P34.5
+hair/cloak springs + weapon trail, P34.6 depth-sort + line-of-action, P34.7 the SSAA
+beauty pass. (NPCs already run/jump via the same `_running`/`_emote` substrate; an
+auto-run-when-fleeing hook for the away-agents is a possible follow-up.)

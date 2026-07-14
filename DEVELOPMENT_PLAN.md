@@ -4416,6 +4416,19 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   hand-authored puppet — so a side-walking hero strides with real mocap timing +
   knee bend + arm counter-swing (screenshot-verified). `tests/test_char_mocap.py` (7).
   Remainder: front/back mocap projections; sync the walk cadence to the step tween.
+- [x] **P34.9 Player RUN & JUMP controls.** George: "Characters and the hero should
+  have options for running and jumping — with keys to control this for the player."
+  *Done:* CTRL is now the run/leap modifier (SHIFT stays tactical). **CTRL + move**
+  runs — sets `_running` (so the run clip/mocap plays) and sprints a bonus tile when
+  the way stays clear (`move_player` no-ops if the second stride is blocked, so a wall
+  simply stops the sprint). **CTRL + SPACE** jumps — the jump animation plus a hop
+  forward onto open ground, else a jump in place; a beat passes either way. Logic in
+  `ui/input_actions.step`/`jump` (keeping `input_handler` under 500), wired at the
+  movement chokepoint, documented in the F1 controls. Fixed alongside: the baked
+  "jump" mocap was an acrobatic FLIP (hips-over-head, head to the floor) that read as
+  a face-plant — jump/leap now fall through to the clean hand-authored squash→launch→
+  land clip (the flip bake is kept for a deliberate `flip` action). Screenshots
+  confirm a clean run stride + a clean upright hop. `tests/test_run_jump.py` (8).
 - [ ] **P34.7 Beauty pass: SSAA + resolution.** Draw each character onto a 2–4×
   oversampled scratch surface and `smoothscale` down (anti-aliased, curvy limbs —
   proven); DECOUPLE character render density from tile-art density (finer characters

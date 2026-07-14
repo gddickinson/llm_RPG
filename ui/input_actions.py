@@ -36,6 +36,44 @@ def toggle_party(handler) -> None:
         pass
 
 
+def step(handler, dx: int, dy: int, careful: bool, run: bool) -> bool:
+    """P34.9 one player stride. A normal walk, a SHIFT careful disengage, or —
+    holding CTRL — a RUN: the running animation plus a sprint that covers a bonus
+    tile when the way stays clear (`move_player` is a no-op if the second stride is
+    blocked, so a wall simply stops the sprint)."""
+    engine = handler.engine
+    p = engine.player
+    try:
+        if run:
+            p.metadata["_running"] = True
+        else:
+            p.metadata.pop("_running", None)
+    except Exception:
+        pass
+    moved = engine.move_player(dx, dy, careful=careful)
+    if run and moved and (dx or dy):
+        engine.move_player(dx, dy, careful=careful)      # bonus running stride
+    return True
+
+
+def jump(handler) -> bool:
+    """P34.9 CTRL+SPACE: the hero LEAPS — a forward hop onto open ground (with the
+    jump animation), else a jump in place. A beat passes either way."""
+    from engine import anim
+    engine = handler.engine
+    p = engine.player
+    anim.emote(p, "jump")
+    try:
+        a = (p.metadata or {}).get("_anim") or {}
+        fx, fy = a.get("facing", (0, 1))
+        if (fx or fy) and engine.move_player(int(fx), int(fy)):
+            return True                                  # leapt forward a tile
+    except Exception:
+        pass
+    engine.move_player(0, 0)                              # in-place hop, still a beat
+    return True
+
+
 def open_shop(handler) -> None:
     engine, gui = handler.engine, handler.gui
     try:
