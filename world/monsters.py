@@ -11,7 +11,7 @@ override the hostile defaults below.
 
 import logging
 import uuid
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from items.data_loader import load_data_file
 
@@ -57,6 +57,18 @@ def dungeon_pool() -> List[str]:
     """Template ids eligible for dungeon rooms."""
     return [tid for tid, t in MONSTER_TEMPLATES.items()
             if t.get("dungeon", False)]
+
+
+def group_spec(template_id: str) -> Optional[dict]:
+    """The pack/gang size a wilderness sighting of this template brings
+    (P32.2): a `{"min": n, "max": m, "word": "pack"}` block, or None for a
+    solitary creature. Wolves run in packs, brigands ride in gangs; a troll
+    or a dragon comes alone."""
+    spec = MONSTER_TEMPLATES.get(template_id)
+    if not spec:
+        return None
+    g = spec.get("group")
+    return g if isinstance(g, dict) else None
 
 
 def apex_pool(depth: int) -> List[str]:

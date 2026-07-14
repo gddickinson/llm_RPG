@@ -4102,12 +4102,18 @@ animal population feeds it. Each sub-step below is one tested round.
   leaving the last adjacent step + bite to the ambient AI so a pursuer never
   parks on the player's move-target tile; `tactics.shove` stamps a `shoved` flag
   so a knockback isn't undone. `tests/test_pursuit.py` (13).
-- [ ] **P32.2 Wolves hunt in packs, brigands ride in gangs.** At spawn time,
+- [x] **P32.2 Wolves hunt in packs, brigands ride in gangs.** At spawn time,
   `encounters.maybe_spawn` rolls a `group` block from the template (min/max size
   + spread) so a wolf sighting brings 2–5 wolves and a bandit brings a gang, all
   tagged a shared `lair`/`warband` id so the P19.3 pack brain coordinates them
   under a leader from turn one. Data-driven per template; solo creatures keep a
   group of 1. Compose with (don't duplicate) `elites.extra_pack`.
+  *Done:* `group` blocks on wolf/goblin/bandit/restless_bones in
+  `data/monsters.json` (each `{min,max,word}`); `world.monsters.group_spec`;
+  `encounters._group_extra` rolls the size and `maybe_spawn` places `(group−1) +
+  elite extra` companions around the primary under one `pack:<id>` `lair` tag
+  (the P19.3 brain bands them), the sighting message reading "A gang/pack/…".
+  Solitary trolls/dragons still come alone. `tests/test_pack_spawns.py` (7).
 - [ ] **P32.3 Neutral wildlife (a bestiary of prey & predators).** A
   `data/wildlife.json` roster of NEUTRAL animals (deer, rabbit, boar, fowl) +
   wild PREDATORS (wolf/fox/bear) with a `diet`. They spawn in the wilderness

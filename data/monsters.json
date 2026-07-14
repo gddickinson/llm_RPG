@@ -12,7 +12,12 @@
     "behavior": {
       "pack_howl": true
     },
-    "speed": 1.5
+    "speed": 1.5,
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "pack"
+    }
   },
   "bandit": {
     "name": "Bandit",
@@ -26,6 +31,11 @@
     "dungeon": true,
     "behavior": {
       "flee_below": 0.35
+    },
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "gang"
     }
   },
   "goblin": {
@@ -41,7 +51,12 @@
     "behavior": {
       "flee_below": 0.25
     },
-    "speed": 1.1
+    "speed": 1.1,
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "warband"
+    }
   },
   "wandering_troll": {
     "name": "Wandering Troll",
@@ -131,7 +146,12 @@
     "behavior": {
       "ambush": 2
     },
-    "speed": 0.6
+    "speed": 0.6,
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "shamble"
+    }
   },
   "hill_giant": {
     "name": "Hill Giant",

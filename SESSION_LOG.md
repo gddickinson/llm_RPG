@@ -6489,5 +6489,17 @@ raised the flag leaked and stayed leaked, spawning adventurer companies whose
 `[Realm]` lines crowded log-window assertions elsewhere. All four now
 `addCleanup` an unconditional restore that runs even if setUp raises.
 
-Remainder of Phase 32: packs & gangs at spawn (P32.2), neutral wildlife
-(P32.3), the predator/prey loop (P32.4), and wiring it to the economy (P32.5).
+## 2026-07-13 (cont.) — P32.2: wolves in packs, brigands in gangs
+
+A wilderness sighting is no longer one lonely creature. A `group` block
+(`{min,max,word}`) on wolf/goblin/bandit/restless_bones in `data/monsters.json`
+(read by `monsters.group_spec`) makes `encounters.maybe_spawn` place `(group−1)`
+base companions — plus any P19.5 elite warband — around the primary, all under
+one `pack:<id>` `lair` tag so the P19.3 pack brain coordinates them under a
+leader from turn one. So a wolf comes as a pack of 2–4, a bandit as a gang of
+2–3, and the sighting reads "A gang of Bandits appears in the distance!" — while
+a troll or a dragon still walks alone (no group block). Composes with, not
+duplicates, `elites.extra_pack`. `tests/test_pack_spawns.py` (7).
+
+Remainder of Phase 32: neutral wildlife (P32.3), the predator/prey loop (P32.4),
+and wiring it to the economy (P32.5).

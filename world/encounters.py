@@ -114,13 +114,18 @@ class EncounterManager:
         base_level = monster.level
         promoted = elites.maybe_promote(self.engine, monster, self.rng)
         extra = elites.extra_pack(self.engine, base_level, self.rng)
+        # P32.2: a wolf sighting is a PACK, a bandit a GANG — the template's
+        # `group` block brings companions from turn one, on top of any elite
+        # warband, all under one tag so the P19.3 pack brain coordinates them.
+        group, word = self._group_extra(template)
+        companions = group + extra
         self.engine.npc_manager.add_npc(monster)
         self.engine.world.map.place_character(monster, *spawn_pos)
         placed_extra = 0
-        if extra:
-            tag = f"warband:{monster.id}"       # the P19.3 pack brain bands them
+        if companions:
+            tag = f"pack:{monster.id}"           # the P19.3 pack brain bands them
             monster.metadata["lair"] = tag
-            for epos in self._nearby_spawns(spawn_pos, extra):
+            for epos in self._nearby_spawns(spawn_pos, companions):
                 em = _build_monster(template, epos)
                 em.metadata["lair"] = tag
                 self.engine.npc_manager.add_npc(em)
@@ -128,11 +133,24 @@ class EncounterManager:
                 placed_extra += 1
         self._cooldown_until = self.engine.turn_counter + ENCOUNTER_COOLDOWN_TURNS
         if placed_extra:
-            return (f"A pack of {monster.name}s "
+            return (f"A {word} of {monster.name}s "
                     f"appears in the distance!")
         if promoted:
             return f"A fearsome {monster.name} appears in the distance!"
         return f"A {monster.name} appears in the distance!"
+
+    def _group_extra(self, template: str) -> Tuple[int, str]:
+        """How many EXTRA companions this template's `group` brings (size − 1)
+        and the collective NOUN for the sighting message (P32.2). Solitary
+        templates return (0, 'pack')."""
+        from world.monsters import group_spec
+        g = group_spec(template)
+        if not g:
+            return 0, "pack"
+        lo = int(g.get("min", 1))
+        hi = max(lo, int(g.get("max", lo)))
+        size = self.rng.randint(lo, hi)
+        return max(0, size - 1), g.get("word", "pack")
 
     def _nearby_spawns(self, pos, n) -> List[Tuple[int, int]]:
         """Up to n free walkable tiles adjacent-ish to a spawn point."""
