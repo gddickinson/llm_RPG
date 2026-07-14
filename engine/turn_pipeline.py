@@ -345,6 +345,7 @@ def run_turn(engine) -> None:
         anim.update_swim(self)
         anim.update_look(self)
         anim.update_idle_life(self)
+        anim.update_fx(self)
     except Exception as e:
         logger.debug(f"Anim state error: {e}")
 

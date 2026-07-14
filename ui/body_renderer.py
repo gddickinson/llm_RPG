@@ -320,6 +320,9 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     inj = char_injury.injury_state(char)          # P34.17 injuries show
     if inj["down"]:                               # unconscious / dying → lie downed
         action = "lie"
+    elif (char.metadata or {}).get("_fx_fire", 0) > 0 and \
+            action in ("idle", "walk", "run", "jog"):
+        action = "flail"                          # P34.19 on fire → panic flail
     # P34.11 per-character motion style: a gait (walk/run varies), a melee attack
     # style (by weapon then id) and a cast gesture — so the cast reads as individuals
     gait = char_style.gait_of(char)
@@ -448,6 +451,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
                          (bx, by, int(bw * max(0.0, char.hp / char.max_hp)), 2))
     if anim.get("bubble_t", 0) > 0 and anim.get("bubble"):   # emote bubble (P34.2)
         bp.draw_bubble(surface, hx, hy - hr - 3, anim["bubble"], hr)
+    from ui import char_fx                        # P34.19 fire / wet overlays
+    char_fx.draw_effects(surface, char, sx, sy, tile_size, anim.get("clock", 0.0))
 
 
 SSAA_SCALE = 2                 # P34.7 oversample factor for crisp, anti-aliased art

@@ -66,6 +66,12 @@ class MapRenderer:
     def render(self, target: "pygame.Surface", engine, view_rect: "pygame.Rect"
                ) -> None:
         """Render the map into `target` within `view_rect`."""
+        try:   # P34.7 the "Smooth sprites" (SSAA) setting toggles oversampling
+            from engine import settings
+            from ui import body_renderer as _br
+            _br.SSAA_SCALE = 2 if settings.enabled(engine.player, "smooth") else 1
+        except Exception:
+            pass
         zone = self.active_zone(engine)
         if zone is not None:
             self._render_zone(target, engine, view_rect, zone)

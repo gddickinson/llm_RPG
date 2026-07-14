@@ -7141,3 +7141,24 @@ autonomous_world's diverse creatures). Until now EVERY character — wolf, boar,
 Screenshot: wolf/fox/boar/deer/rabbit as real quadrupeds + a slime + a wisp.
 `tests/test_creatures.py`. Full suite green. Follow-ups: avian/arachnid/serpent/
 winged-dragon plans, creature attack/hurt anims, per-species horns/antlers.
+
+## 2026-07-14 (cont.) — P34.19: physical effects (fire / wet / thrown) + SSAA toggle
+
+George: attacks/actions that throw a character through the air, set them on fire, or
+leave them wet. New `ui/char_fx.py` draws DETERMINISTIC overlays (anim-clock driven,
+so they render headless): rising FLAMES while `_fx_fire`, and a cool sheen + running
+DRIPS while `_fx_wet`. Two pose CLIPS join the library: `launched` (a body TUMBLES
+through an arcing full spin — thrown by an explosion/powerful blow) and `flail` (the
+on-fire panic, arms beating at the flames). Engine wiring:
+- the fire surface sets `_fx_fire` on whoever stands in it (`surfaces`);
+- `anim.update_swim` sets `_fx_wet` on wading/swimming;
+- `tactics.shove` calls `anim.launch(target)` → the knocked-back tumble;
+- `anim.update_fx` decays the timers each turn (wired into `turn_pipeline`).
+Both the humanoid puppet and the creature renderer draw the overlays, and the on-fire
+character switches to the `flail` action. Also wired the **"Smooth sprites" setting**
+so the P34.7 SSAA can be toggled on/off live (`settings` + `renderer`). Screenshot
+shows the on-fire flail + flames, the wet sheen + drips, and a thrown tumble.
+`tests/test_char_fx.py`. Full suite green.
+
+QUEUE remaining: run-conditioned special moves (slide/dive-roll), NPC everyday-life
+actions, more creature plans (birds/spiders/dragons), creature attack/hurt anims.

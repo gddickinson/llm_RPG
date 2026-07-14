@@ -188,7 +188,7 @@ def update_idle_life(engine, rng=None, chance=0.025):
 
 def update_swim(engine):
     """Per-turn: the hero shows a SWIM stance while standing on deep water, and
-    drops it again on dry land (P33.6c)."""
+    drops it again on dry land (P33.6c); wading/swimming leaves you WET (P34.19)."""
     try:
         from world.world_map import TerrainType
         p = engine.player
@@ -196,7 +196,38 @@ def update_swim(engine):
         cur = (p.metadata or {}).get("_stance")
         if terrain == TerrainType.WATER:
             p.metadata["_stance"] = "swim"
+            p.metadata["_fx_wet"] = 8              # dripping for a while after
         elif cur == "swim":
             p.metadata.pop("_stance", None)
+    except Exception:
+        pass
+
+
+def launch(char, facing=None):
+    """P34.19: hurl a character through the air (an explosion / powerful blow) — a
+    tumbling arc. The knockback MOVEMENT is the caller's; this is the animation."""
+    try:
+        if facing:
+            face(char, facing)
+        char.metadata["_emote"] = "launched"
+    except Exception:
+        pass
+
+
+def update_fx(engine):
+    """Per-turn: decay the fire/wet effect timers on the cast (P34.19)."""
+    try:
+        cast = [n for n in engine.npc_manager.npcs.values() if n.is_active()]
+        cast.append(engine.player)
+        for c in cast:
+            md = getattr(c, "metadata", None)
+            if not isinstance(md, dict):
+                continue
+            for key in ("_fx_fire", "_fx_wet"):
+                v = md.get(key, 0)
+                if v > 0:
+                    md[key] = v - 1
+                    if md[key] <= 0:
+                        md.pop(key, None)
     except Exception:
         pass

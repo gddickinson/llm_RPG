@@ -136,6 +136,10 @@ class SurfaceLayer:
         # scorch whoever stands in it (overworld space only)
         for victim in self._standing_at(x, y):
             victim.take_damage(FIRE_DAMAGE)
+            try:
+                victim.metadata["_fx_fire"] = 3      # P34.19 burning overlay
+            except Exception:
+                pass
             if victim.id == engine.player.id:
                 engine.memory_manager.add_event(
                     f"You are BURNING! (-{FIRE_DAMAGE} HP — move!)")

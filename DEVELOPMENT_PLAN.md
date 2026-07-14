@@ -4587,9 +4587,19 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   Screenshot shows wolf/fox/boar/deer/rabbit as real quadrupeds + a slime + a wisp.
   `tests/test_creatures.py`. (Follow-ups: avian/arachnid/serpent/winged-dragon plans,
   a proper creature ATTACK/hurt, per-species horns/antlers.)
-  QUEUE (George, animation push): physical effects (thrown-through-air / on-fire /
-  wet), run-conditioned special moves (slide/dive-roll), NPC everyday-life actions,
-  more creature plans (birds/spiders/dragons), and an SSAA settings toggle.
+- [x] **P34.19 Physical effects + SSAA toggle.** George: "attacks/actions that throw
+  a character through the air (explosions, powerful blows), set on fire, wet." *Done:*
+  new `ui/char_fx.py` draws deterministic overlays — rising FLAMES (+ a `flail` panic
+  clip) while `_fx_fire`, a bluish sheen + running DRIPS while `_fx_wet`; a `launched`
+  clip TUMBLES a body through an arcing spin. Engine wiring: the fire surface sets
+  `_fx_fire` on whoever burns, `update_swim` sets `_fx_wet` on wading/swimming,
+  `tactics.shove` fires `anim.launch` (thrown-back tumble), and `anim.update_fx`
+  decays the timers each turn (in the pipeline). Both the humanoid and creature draw
+  paths render the overlays. Also wired the **"Smooth sprites" setting** (`settings`)
+  to toggle the P34.7 SSAA on/off live. Screenshot: on-fire flail + flames, wet sheen
+  + drips, a thrown tumble. `tests/test_char_fx.py`.
+  QUEUE (remaining): run-conditioned special moves (slide/dive-roll), NPC everyday-
+  life actions, more creature plans (birds/spiders/dragons), creature attack/hurt.
 
 ## What NOT to build (explicitly deferred)
 

@@ -105,6 +105,11 @@ def shove(engine, rng: random.Random = None) -> str:
         # staggered: it doesn't get to step back at you this same turn
         # (P32.1 pursuit skips a freshly-shoved creature once)
         target.metadata["shoved"] = True
+        try:                                        # P34.19 knocked-back tumble
+            from engine import anim
+            anim.launch(target, player.position)
+        except Exception:
+            pass
         msg = f"You slam into {target.name} and send them staggering back!"
         if margin >= 10:                        # critical: a second tile
             fx, fy = nx + step[0], ny + step[1]

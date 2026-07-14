@@ -62,6 +62,9 @@ def draw_creature(surface, char, sx, sy, tile_size, plan, is_player=False):
     elif plan == "wisp":
         _draw_wisp(surface, char, sx, sy, tile_size)
     _health_bar(surface, char, sx, sy, tile_size)
+    from ui import char_fx                          # P34.19 fire / wet on beasts too
+    char_fx.draw_effects(surface, char, sx, sy, tile_size,
+                         _anim(char).get("clock", 0.0))
 
 
 def _dark(c, a=28):

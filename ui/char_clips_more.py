@@ -26,7 +26,31 @@ ACTIONS_MORE = {
     "facepalm": (True, 1.4), "winded": (True, 1.8),
     # P34.11 cast-gesture variants (chosen per caster by char_style)
     "cast_point": (True, 0.9), "cast_staff": (True, 0.9),
+    # P34.19 physical effects
+    "launched": (True, 0.7), "flail": (False, None),
 }
+
+
+def _launched(pose, t, H, facing):
+    """Thrown through the air — the body arcs UP and TUMBLES (a full spin), landing
+    where the knockback tween slid it (explosions / powerful blows)."""
+    f = _fdir(facing) or 1
+    _move(pose, _JOINTS, 0, -_arc(t) * H * 0.55)
+    cx, cy = _centroid(pose)
+    _rotate(pose, _JOINTS, cx, cy, -f * 2 * math.pi * _ease(t))
+    return pose
+
+
+def _flail(pose, t, H, facing):
+    """On FIRE — frantic, jittering panic, arms beating at the flames."""
+    jit = math.sin(t * math.pi * 12) * H * 0.02
+    _move(pose, _JOINTS, jit, 0)
+    for hand, sh, ph, sgn in (("l_hand", "l_sh", 0.0, -1),
+                              ("r_hand", "r_sh", math.pi, 1)):
+        s = pose[sh]
+        pose[hand] = (s[0] + sgn * H * 0.10,
+                      s[1] - H * 0.18 - math.sin(t * math.pi * 10 + ph) * H * 0.09)
+    return pose
 
 
 def _winded(pose, t, H, facing):
@@ -331,5 +355,5 @@ CLIPS_MORE = {
     "stretch": _stretch, "yawn": _yawn, "clap": _clap, "laugh": _laugh,
     "shrug": _shrug, "ponder": _ponder, "salute": _salute, "beckon": _beckon,
     "facepalm": _facepalm, "cast_point": _cast_point, "cast_staff": _cast_staff,
-    "winded": _winded,
+    "winded": _winded, "launched": _launched, "flail": _flail,
 }
