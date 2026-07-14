@@ -5478,8 +5478,14 @@ demo_setup; add a `"realistic"` kind + a `WorldGenerator(mode="realistic")`.
   a `mode`; realistic uses the heightmap base then keeps settlements/roads/caves/fortify
   (town plots flattened to grass — towns clear the land). Start-menu "Realistic World"
   option → `world_kind="realistic"`. Playable.
-- [ ] **P36.2 Rivers & lakes from the heightmap.** Flow-accumulation (D8-lite): rivers
-  run downhill from the highlands to the sea/lakes; shore autotiling (`river_gen.is_shore`).
+- [x] **P36.2 Rivers & lakes from the heightmap.** *Done:* `realistic_gen.flow_
+  accumulation` (D8 — every land cell drains to its steepest-downhill neighbour,
+  processed high→low so drainage totals resolve in one pass) + `carve_rivers` (WATER
+  where drainage concentrates on land, top ~1.5%) — thin rivers thread downhill from
+  the highlands to the sea/lakes (the heightmap's sub-sea basins are the lakes). Wired
+  into `_generate_realistic` after the biome pass. Minimap shows rivers draining the
+  mountains. `tests/test_realistic_gen.py`. (Shore FOAM already rendered by the P33.2
+  terrain-edges pass; `river_gen.is_shore` stays for future autotiling.)
 - [ ] **P36.3 Deep history sim → settlements, ruins, roads.** Expand `history_sim` to a
   multi-century sim: tribes found settlements at suitable sites (`river_gen.score_site`),
   wars destroy some (→ ruins), survivors lay roads / form realms — producing the real

@@ -93,3 +93,46 @@ def assign_terrain(wmap, seed):
         for x in range(w):
             row[x] = terrain_for(float(ey[x]), float(my[x]))
     return elev
+
+
+_D8 = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
+
+
+def flow_accumulation(elev):
+    """P36.2 D8 flow accumulation: every land cell drains to its steepest-downhill
+    neighbour; return the accumulated upstream drainage per cell. Processing cells
+    from HIGH to LOW means each cell's total is known before its outlet's."""
+    h, w = elev.shape
+    acc = np.ones((h, w), dtype=np.float32)
+    order = np.argsort(elev, axis=None)[::-1]           # high → low
+    ef = elev
+    for flat in order:
+        y, x = divmod(int(flat), w)
+        e = ef[y, x]
+        by, bx, be = -1, -1, e
+        for dy, dx in _D8:
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < h and 0 <= nx < w and ef[ny, nx] < be:
+                be, by, bx = ef[ny, nx], ny, nx
+        if by >= 0:
+            acc[by, bx] += acc[y, x]
+    return acc
+
+
+def carve_rivers(wmap, elev, percentile=98.5):
+    """Carve WATER where drainage concentrates on LAND — rivers running downhill
+    from the highlands to the sea/lakes. Returns the number of river tiles."""
+    acc = flow_accumulation(elev)
+    h, w = elev.shape
+    land = elev >= SEA_LEVEL
+    if not land.any():
+        return 0
+    thresh = float(np.percentile(acc[land], percentile))
+    carved = 0
+    for y in range(h):
+        row = wmap.terrain[y]
+        for x in range(w):
+            if land[y, x] and acc[y, x] >= thresh and row[x] != T.WATER:
+                row[x] = T.WATER
+                carved += 1
+    return carved

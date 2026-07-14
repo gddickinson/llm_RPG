@@ -7317,3 +7317,15 @@ organic mountain ranges, lakes, coastlines and forests following the land (seed 
 is walkable, roads connect the settlements. `tests/test_realistic_gen.py` (5).
 NEXT (Phase 36): P36.2 rivers/lakes from the heightmap, P36.3 the deep history sim
 (settlements/ruins/roads + chronicle), P36.4 building-gen interiors.
+
+## 2026-07-14 (cont.) — P36.2: rivers & lakes from the heightmap
+
+Rivers now run downhill from the highlands to the sea. `realistic_gen.flow_accumulation`
+is a D8 pass — every LAND cell drains to its steepest-downhill neighbour, processed
+high→low so each cell's total drainage is known before its outlet's — and `carve_rivers`
+turns the top ~1.5% drainage tiles on land into WATER, threading thin rivers down the
+slopes into the sea/lakes (the heightmap's sub-sea basins already ARE the lakes). Wired
+into `_generate_realistic` right after the biome pass (before settlements, so the
+town-clearing carve + road bridges handle any town on a river). A minimap confirms
+rivers draining the mountain ranges and feeding the coastal water. `tests/
+test_realistic_gen.py` (+2). Full suite next. Next: P36.3 the deep-history sim.

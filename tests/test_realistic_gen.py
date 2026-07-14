@@ -53,6 +53,22 @@ class TestAssign(unittest.TestCase):
         self.assertLess(c[T.WATER], 50 * 80 * 0.7)
 
 
+class TestRivers(unittest.TestCase):
+    def test_flow_accumulates_downhill(self):
+        # a slope decreasing left→right: drainage piles up at the low end
+        elev = np.tile(np.linspace(1.0, 0.0, 12), (6, 1)).astype(np.float32)
+        acc = rg.flow_accumulation(elev)
+        self.assertGreater(float(acc[:, -1].sum()), float(acc[:, 0].sum()))
+
+    def test_carve_rivers_threads_water_on_land(self):
+        import world.world_map as wm
+        m = wm.WorldMap(80, 50)
+        elev = rg.assign_terrain(m, 7)
+        n = rg.carve_rivers(m, elev)
+        self.assertGreater(n, 0)
+        self.assertLess(n, 80 * 50 * 0.10)          # thin rivers, not a flood
+
+
 class TestRealisticMode(unittest.TestCase):
     def test_generates_playable_world(self):
         from world.world import World

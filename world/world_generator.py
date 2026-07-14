@@ -70,6 +70,7 @@ class WorldGenerator:
         instead of flat grass; the settlements clear playable land within it."""
         from world import realistic_gen
         self.elevation = realistic_gen.assign_terrain(self.world.map, self.seed)
+        realistic_gen.carve_rivers(self.world.map, self.elevation)   # P36.2
         self._add_village()
         if self.w >= 50 and self.h >= 30:
             self._add_second_settlement()
