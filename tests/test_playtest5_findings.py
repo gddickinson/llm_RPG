@@ -103,6 +103,13 @@ class PlaytestCampaign5(unittest.TestCase):
         wmap.remove_character(self.p)
         self.p.position = spot
         wmap.place_character(self.p, *spot)
+        # clear any wandering hostile that could body-block the corridor —
+        # P32.1 pursuit now walks foes toward the player; this test measures
+        # road walkability, not a chase
+        for npc in list(self.engine.npc_manager.npcs.values()):
+            if abs(npc.position[0] - spot[0]) <= 16 and \
+                    abs(npc.position[1] - spot[1]) <= 16:
+                wmap.remove_character(npc)
         for i in range(1, 8):
             wmap.terrain[spot[1]][spot[0] + i] = TerrainType.ROAD
         self.p.metadata["road_steps"] = 0

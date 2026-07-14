@@ -156,6 +156,8 @@ def build_subsystems(engine, llm_model=None,
     # NPC-vs-NPC conflict (P7.1) + retaliation (P7.2)
     from engine.npc_conflict import NPCConflictSystem
     self.npc_conflict = NPCConflictSystem(self)
+    from engine.pursuit import PursuitSystem
+    self.pursuit = PursuitSystem(self)
     from engine.tower_defense import TowerDefense
     self.tower_defense = TowerDefense(self)
     from engine.town_gates import TownGateSystem

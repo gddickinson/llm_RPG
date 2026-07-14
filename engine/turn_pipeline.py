@@ -302,6 +302,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"NPC conflict error: {e}")
 
+    # Faster creatures run the hero down — every turn, not the AI cadence
+    # (P32.1). A wolf closes; a shambler falls behind; a mount outruns both.
+    try:
+        self.pursuit.update()
+    except Exception as e:
+        logger.debug(f"Pursuit error: {e}")
+
     # Tower guards loose arrows at attackers at the walls (P31.1c)
     try:
         self.tower_defense.update()

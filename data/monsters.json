@@ -11,7 +11,8 @@
     "dungeon": true,
     "behavior": {
       "pack_howl": true
-    }
+    },
+    "speed": 1.5
   },
   "bandit": {
     "name": "Bandit",
@@ -39,7 +40,8 @@
     "dungeon": true,
     "behavior": {
       "flee_below": 0.25
-    }
+    },
+    "speed": 1.1
   },
   "wandering_troll": {
     "name": "Wandering Troll",
@@ -53,7 +55,8 @@
     "dungeon": false,
     "behavior": {
       "territorial": 8
-    }
+    },
+    "speed": 0.8
   },
   "bog_lurker": {
     "name": "Bog Lurker",
@@ -74,7 +77,8 @@
     },
     "behavior": {
       "ambush": 3
-    }
+    },
+    "speed": 0.7
   },
   "marsh_wisp": {
     "name": "Marsh Wisp",
@@ -92,7 +96,8 @@
     "behavior": {
       "flee_below": 0.5,
       "flying": true
-    }
+    },
+    "speed": 1.3
   },
   "bounty_hunter": {
     "name": "Bounty Hunter",
@@ -110,7 +115,8 @@
     },
     "behavior": {
       "flee_below": 0.15
-    }
+    },
+    "speed": 1.2
   },
   "restless_bones": {
     "name": "Restless Bones",
@@ -124,7 +130,8 @@
     "dungeon": true,
     "behavior": {
       "ambush": 2
-    }
+    },
+    "speed": 0.6
   },
   "hill_giant": {
     "name": "Hill Giant",
@@ -143,7 +150,8 @@
     "behavior": {
       "giant": true,
       "flee_below": 0.1
-    }
+    },
+    "speed": 0.8
   },
   "giant_warlord": {
     "name": "Giant Warlord",
@@ -180,7 +188,8 @@
         ]
       }
     },
-    "boss_depth": 3
+    "boss_depth": 3,
+    "speed": 0.8
   },
   "tyrant_depths": {
     "name": "Tyrant of the Depths",
@@ -217,7 +226,8 @@
         ]
       }
     },
-    "boss_depth": 2
+    "boss_depth": 2,
+    "speed": 0.9
   },
   "wisp_queen": {
     "name": "Wisp Queen",
@@ -256,7 +266,8 @@
         ]
       }
     },
-    "boss_depth": 2
+    "boss_depth": 2,
+    "speed": 1.2
   },
   "dragon_whelp": {
     "name": "Dragon Whelp",
@@ -279,7 +290,8 @@
     "behavior": {
       "flying": true,
       "flee_below": 0.15
-    }
+    },
+    "speed": 1.4
   },
   "young_dragon": {
     "name": "Young Dragon",
@@ -327,7 +339,8 @@
           }
         ]
       }
-    }
+    },
+    "speed": 1.5
   },
   "elder_dragon": {
     "name": "Elder Dragon",
@@ -383,6 +396,7 @@
           }
         ]
       }
-    }
+    },
+    "speed": 1.3
   }
 }

@@ -92,10 +92,13 @@ class TestHeartbeatDrives(unittest.TestCase):
         gui.engine = self.engine
         pos0 = tuple(self.engine.player.position)
         turn0 = self.engine.turn_counter
+        moved = False
         for _ in range(HEARTBEAT_FRAMES * 12):
             heartbeat(gui)
+            if tuple(self.engine.player.position) != pos0:
+                moved = True                 # a wanderer can loop back to start,
         self.assertGreater(self.engine.turn_counter, turn0)   # world ticked
-        self.assertNotEqual(tuple(self.engine.player.position), pos0)
+        self.assertTrue(moved, "the away hero moved at some point")   # so track it
 
     def test_heartbeat_idle_when_not_away(self):
         self.engine.roster.set_away(self.engine.player, False)

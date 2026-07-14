@@ -101,6 +101,7 @@ def build_monster(template_id: str, position: Tuple[int, int]):
         goals=["Attack the player"],
         inventory=[],
         metadata={"behavior": behavior,
-                  "home_pos": list(position)},
+                  "home_pos": list(position),
+                  "speed": spec.get("speed", 1.0)},
         **stats,
     )

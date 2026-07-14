@@ -6442,3 +6442,52 @@ the whole walled-town thread George asked for — P31.1b (bigger wall + towers),
 c (tower guards spot/alarm/shoot), d (gates close/lock/force), e (the 2.5D
 roofs). The deeper multi-storey building INTERIORS and a full Autonomous-World
 massing pass remain future polish.
+
+## 2026-07-13 — Phase 32 planned + P32.1: pursuit speed (you can't outrun a wolf)
+
+George's newest ultraplan: (1) the hero outruns ANYTHING by mashing move keys —
+faster creatures should run it down; (2) wolves in packs, brigands in gangs;
+(3) neutral wildlife + a predator/prey ecosystem feeding NPC economies. Mapped
+the movement model and wrote **Phase 32** (5 sub-steps) into the plan, grounded
+in the code: the overworld moves everyone one tile/turn and the ambient AI is
+throttled to `NPC_ACTION_INTERVAL=5`, so a monster stepped toward the hero once
+every FIVE of its strides — hence "outrun everything."
+
+**P32.1** fixes it. A `speed` (tiles/turn, default 1.0) on 14 monster templates
+(wolf/young-dragon 1.5, dragons/wisps 1.2–1.4, giants/undead 0.6–0.9) rides onto
+the creature's `metadata["speed"]` in `build_monster`. New `engine/pursuit.py`
+`PursuitSystem.update` runs EVERY real turn from the pipeline (after
+`npc_conflict`, NOT gated by the AI throttle) and advances each nearby HOSTILE
+toward the player by its speed via a fractional `chase_accum` (the P17
+`move_accum` trick): a wolf banks +0.5/turn and closes; a shambler at 0.6 is
+left behind; a plain 1.0 foe keeps pace but never gains; a mounted hero on a
+road still escapes because road-pace strides don't tick the turn. It's movement
+only (attacks stay on the AI cadence), holds adjacent so combat can bite, skips
+fleeing/broken/dead/zone-native creatures, and respects walls via
+`world_map.move_character`. `chase_accum` lives on metadata → rides the save, no
+new registration. `tests/test_pursuit.py` (13).
+
+Tuning that mattered: pursuit closes to a STANDOFF (`HOLD_DIST`=2), not onto the
+hero's heels — the final adjacent step and the bite stay the ambient AI's job.
+Pressing to adjacency every turn parked a chaser on whatever tile the player was
+about to step into, which broke single-step movement tests whenever an ambient
+spawn wandered near; holding two tiles back keeps the "you can't walk away from
+a wolf" feel while reverting that regression. Also `tactics.shove` now stamps a
+`shoved` flag that pursuit honours (one-turn skip) so a knockback isn't instantly
+undone.
+
+A busier world near the player flushed out a cluster of latent order-dependent
+test flakes, now hardened: the shove-knockback tests (pursuit was pulling the foe
+back — fixed by the `shoved` flag), a road-walkability + a crit-shove-prone test
+(clear the lane / pin the clock off the NPC-AI boundary), a "no adjacent enemy"
+shove and the numpad-diagonal walk (clear the world-seeded lair occupant / the
+standoff keeps pursuers off your move-target tile), the away-heartbeat mover
+(track movement across the loop, not just the final tile — a wanderer can loop
+back), and — the sticky one — the shared `LLM_RPG_NO_ADVENTURERS` flag: four
+suites popped it in `setUp` and only restored it if non-None, so once a setUp
+raised the flag leaked and stayed leaked, spawning adventurer companies whose
+`[Realm]` lines crowded log-window assertions elsewhere. All four now
+`addCleanup` an unconditional restore that runs even if setUp raises.
+
+Remainder of Phase 32: packs & gangs at spawn (P32.2), neutral wildlife
+(P32.3), the predator/prey loop (P32.4), and wiring it to the economy (P32.5).

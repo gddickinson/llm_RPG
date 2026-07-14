@@ -102,6 +102,9 @@ def shove(engine, rng: random.Random = None) -> str:
         wmap.remove_character(target)
         target.position = (nx, ny)
         wmap.place_character(target, nx, ny)
+        # staggered: it doesn't get to step back at you this same turn
+        # (P32.1 pursuit skips a freshly-shoved creature once)
+        target.metadata["shoved"] = True
         msg = f"You slam into {target.name} and send them staggering back!"
         if margin >= 10:                        # critical: a second tile
             fx, fy = nx + step[0], ny + step[1]

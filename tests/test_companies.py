@@ -20,6 +20,10 @@ from engine import companies
 class _Base(unittest.TestCase):
     def setUp(self):
         self._flag = _os.environ.pop("LLM_RPG_NO_ADVENTURERS", None)
+        # bulletproof restore: runs even if setUp raises, and always re-asserts
+        # the suite default so a leaked flag can't enable adventurers elsewhere
+        self.addCleanup(_os.environ.__setitem__,
+                        "LLM_RPG_NO_ADVENTURERS", self._flag or "1")
         self.engine = GameEngine(llm_provider="heuristic",
                                  enable_npc_processes=False)
         self.engine.start_game()

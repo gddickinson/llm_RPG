@@ -159,6 +159,14 @@ class TestConditionsInPlay(unittest.TestCase):
                 return self.vals.pop(0)
 
         foe = self._stage_fight()
+        # a clear lane to tumble down, and pin the clock off the NPC-AI
+        # boundary so the shove's incidental world tick doesn't let the
+        # foe scramble straight back to its feet (P12.2) before we look
+        for i in range(1, 4):
+            ch = self.wmap.get_character_at(self.ox + 1 + i, self.oy)
+            if ch is not None:
+                self.wmap.remove_character(ch)
+        self.engine.turn_counter = 1
         shove(self.engine, rng=_Seq([20, 1]))
         self.assertTrue(has_effect(foe, "prone"),
                         "hurled sprawling means PRONE")

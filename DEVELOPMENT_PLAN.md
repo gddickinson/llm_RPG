@@ -4060,6 +4060,72 @@ D8 rivers, seed+deltas), keep our content-as-data + save-v3 conventions, and
 reuse what we already have (`faction_battle` Lanchester, `river_gen`,
 `chunked_world`, `history_sim`, `dm_library` for persisted named entities).
 
+## Phase 32 — A living ecosystem: speed, packs & predator/prey (ultraplan, George, 2026-07-13)
+
+George: "1) The hero can outrun ANYTHING just by pressing the move keys —
+faster animals/characters/monsters should be able to outrun the hero.
+2) Wolves should hunt in larger PACKS (as many animals/monsters do); brigands
+should roam in GANGS rather than alone. 3) There should be more NEUTRAL animals
+around, forming a predator/prey ECOSYSTEM — see Autonomous World for how it
+affects NPC economies (hunters, hides, meat, pests eating crops)."
+
+**Grounding — the movement & spawn model today (mapped 2026-07-13):**
+The overworld moves everyone ONE tile per turn and the ambient NPC AI is
+throttled to `config.NPC_ACTION_INTERVAL = 5` turns (`_npc_turns_due`), so a
+hostile only steps toward the player every 5th turn while the player moves
+every turn — the hero outruns literally everything on foot. There is no `speed`
+concept for overworld creatures (the `move_accum` speed budget exists only in
+the P17 battle layer, `battle_unit.Soldier`). Spawns are single creatures:
+`world/encounters.maybe_spawn` picks ONE template (P19.5 `elites.extra_pack`
+already bolts a warband onto a STRONG party, and P19.3 `monster_packs.update`
+BANDS already-present hostiles, but nothing spawns a wolf *pack* or a bandit
+*gang* to begin with). No neutral wildlife exists — every `data/monsters.json`
+entry is hostile. `faction_ticker`/`production_loop` drive the economy but no
+animal population feeds it. Each sub-step below is one tested round.
+
+- [x] **P32.1 Creature speed & pursuit (the hero can be run down).** Add an
+  optional `speed` (tiles/turn, default 1.0) to `data/monsters.json`; carry it
+  onto the creature in `world/monsters.build_monster`. A new per-turn
+  `engine/pursuit.py:PursuitSystem` (run every real turn from `turn_pipeline`,
+  NOT gated by the 5-turn AI throttle) advances each nearby HOSTILE toward the
+  player by its speed via a fractional accumulator (the battle layer's
+  `move_accum` pattern): a wolf (1.5) closes, a shambler (0.6) falls behind, a
+  plain foe (1.0) keeps pace but can't gain. A mounted hero on a road still
+  escapes (road-pace strides don't tick the turn, so the pursuit clock doesn't
+  run for them). Movement only; respects walls (`world_map.move_character`),
+  holds when adjacent, and won't chase a fleeing/broken creature.
+  *Done:* `speed` on 14 templates (wolf/dragons 1.3–1.5, giants/undead 0.6–0.9)
+  → `metadata["speed"]`; `engine/pursuit.py` (`creature_speed`, `PursuitSystem`,
+  `CHASE_RADIUS`=12, `MAX_STEPS`=3, `HOLD_DIST`=2, `chase_accum` on the NPC's
+  metadata — rides the save, no new registration); wired after `npc_conflict` in
+  `turn_pipeline`, constructed in `engine_setup`. Closes to a STANDOFF (2 tiles),
+  leaving the last adjacent step + bite to the ambient AI so a pursuer never
+  parks on the player's move-target tile; `tactics.shove` stamps a `shoved` flag
+  so a knockback isn't undone. `tests/test_pursuit.py` (13).
+- [ ] **P32.2 Wolves hunt in packs, brigands ride in gangs.** At spawn time,
+  `encounters.maybe_spawn` rolls a `group` block from the template (min/max size
+  + spread) so a wolf sighting brings 2–5 wolves and a bandit brings a gang, all
+  tagged a shared `lair`/`warband` id so the P19.3 pack brain coordinates them
+  under a leader from turn one. Data-driven per template; solo creatures keep a
+  group of 1. Compose with (don't duplicate) `elites.extra_pack`.
+- [ ] **P32.3 Neutral wildlife (a bestiary of prey & predators).** A
+  `data/wildlife.json` roster of NEUTRAL animals (deer, rabbit, boar, fowl) +
+  wild PREDATORS (wolf/fox/bear) with a `diet`. They spawn in the wilderness
+  (a new `WildlifeSystem`/encounter path), wander and graze, flee the player and
+  predators, and are huntable (P15.9b hunting skill → hides/meat). Non-hostile:
+  they don't attack the hero.
+- [ ] **P32.4 The predator/prey loop.** Predators hunt nearby prey (a light
+  version of the pursuit brain toward the softest prey); prey flee; a fed
+  predator breeds, a starving one dies; populations rise and fall. A capped,
+  deterministic nightly `run_day` over small per-region populations (no per-tile
+  sim), tuned to stay cheap.
+- [ ] **P32.5 The ecosystem feeds the economy.** Hunters (a producer
+  profession) turn nearby prey into hides/meat for the P16 store; a predator
+  overpopulation or a monster raid thins herds → a meat shortage → prices move
+  (`market.py`) and radiant HUNT quests appear; pests (rabbits/boar) nibble
+  FARMLAND (P8.3) cutting harvests. Closes the loop: wildlife ↔ production ↔
+  prices ↔ quests, per George's Autonomous-World note.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the

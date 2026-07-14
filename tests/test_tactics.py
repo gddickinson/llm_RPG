@@ -94,6 +94,12 @@ class TestTactics(unittest.TestCase):
     def test_shove_without_adjacent_enemy(self):
         from engine.tactics import shove
         self.wolf.position = (self.spot[0] + 20, self.spot[1])
+        # clear any OTHER creature the world seeded near this spot (a lair
+        # occupant / bones ghost), so "no adjacent enemy" really holds
+        for n in list(self.engine.npc_manager.npcs.values()):
+            if abs(n.position[0] - self.spot[0]) <= 2 and \
+                    abs(n.position[1] - self.spot[1]) <= 2:
+                self.engine.world.map.remove_character(n)
         msg = shove(self.engine)
         self.assertIn("No enemy", msg)
 
