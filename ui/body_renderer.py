@@ -190,6 +190,11 @@ def update_anim(char, dt: float) -> None:
     if seq != anim.get("atk_seen"):
         if anim.get("atk_seen") is not None:
             anim["atk_t"] = char_motion.ATTACK_DUR
+            # P34.11b rotate through the character's strike repertoire so a fight
+            # varies swing-to-swing (a combo), not the same blow every time
+            from ui import char_style
+            vs = char_style.attack_variants(char, char_motion.weapon_kind(char))
+            anim["atk_style"] = vs[seq % len(vs)]
         anim["atk_seen"] = seq
     elif anim.get("atk_t", 0) > 0:
         anim["atk_t"] = max(0.0, anim["atk_t"] - dt)
@@ -295,7 +300,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     # P34.11 per-character motion style: a gait (walk/run varies), a melee attack
     # style (by weapon then id) and a cast gesture — so the cast reads as individuals
     gait = char_style.gait_of(char)
-    astyle = char_style.attack_style(char, weapon)
+    astyle = anim.get("atk_style") or char_style.attack_style(char, weapon)
     pgait = gait
     if action == "run":                          # a run has a longer, springier gait
         pgait = {"stride": gait["stride"] * 1.4, "bob": gait["bob"] * 1.25,

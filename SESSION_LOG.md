@@ -6964,3 +6964,23 @@ leaning run → prone crawl). `tests/test_movement_modes.py` (7). Full suite gre
 
 Still queued from George's message: per-character animation VARIETY within each
 action, and more COMEDY (dances, jigs, taunts) with a key — the next round.
+
+## 2026-07-14 (cont.) — P34.13: per-action variety + comedy clips
+
+George: "add more variety to each character's animations — a variety of options for
+every action. Also more comedy — dances, jigs, taunts."
+- **Combat variety:** `char_style.attack_variants` gives each character a strike
+  REPERTOIRE — a sword/unarmed fighter rotates a 3-hit overhead→slash→thrust combo
+  (start rotated by id), an axe alternates overhead/slash, a spear thrusts.
+  `body_renderer` picks the next variant on every swing (keyed on `_atk_seq`), so
+  repeated attacks vary swing-to-swing instead of the identical blow.
+- **Comedy:** new `ui/char_clips_fun.py` adds 10 clips — jig, can-can kick, moonwalk,
+  robot, flex, taunt, wiggle, disco point, air-guitar, two-hand facepalm — merged
+  into the registry (71 clips total). The **`` ; ``** key (`perform_emote`) makes the
+  hero perform a RANDOM dance/jig/taunt each press (pool includes the earlier
+  dance/twirl/cheer/wave/bow/laugh/clap too). Documented in the F1 controls.
+
+A contact sheet confirms each comedy clip reads as intended. `tests/
+test_char_clips_fun.py` (5) + attack-variant tests in `test_char_style.py`. Full
+suite green. Both parts of George's "more variety + comedy + movement options"
+message are now delivered (movement in P34.12, variety+comedy here).

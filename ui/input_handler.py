@@ -178,6 +178,8 @@ class InputHandler:
             return input_actions.jump(self)
         if k == pygame.K_PERIOD:                 # . = cycle pace (walk/jog/crawl)
             return input_actions.cycle_move_mode(self)
+        if k == pygame.K_SEMICOLON:              # ; = a random dance / jig / taunt
+            return input_actions.perform_emote(self)
 
         # Movement (SHIFT+move = run when safe, careful disengage next to a foe)
         if k in (pygame.K_w, pygame.K_UP):

@@ -129,6 +129,25 @@ def auto_walk(handler) -> bool:
     return True
 
 
+# P34.13 the emote/dance key — a random comedy move each press
+_EMOTES = ("dance", "jig", "kick", "moonwalk", "robot", "flex", "taunt",
+           "wiggle", "disco", "airguitar", "cheer", "wave", "bow", "laugh",
+           "twirl", "clap")
+
+
+def perform_emote(handler) -> bool:
+    """`;` performs a random dance / jig / taunt — the hero shows off (P34.13)."""
+    import random
+    from engine import anim
+    move = random.choice(_EMOTES)
+    anim.emote(handler.engine.player, move)
+    try:
+        handler.engine.memory_manager.add_event(f"[Emote] you {move}.")
+    except Exception:
+        pass
+    return True
+
+
 def cycle_move_mode(handler) -> bool:
     """`.` cycles the walking PACE: walk → jog → crawl → walk (P34.12)."""
     p = handler.engine.player

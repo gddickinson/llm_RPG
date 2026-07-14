@@ -44,6 +44,25 @@ def attack_style(char, weapon):
     return _MELEE_POOL[_seed(char) % len(_MELEE_POOL)]
 
 
+# the repertoire a character ROTATES through, so repeated strikes vary (a combo)
+_VARIANTS = {
+    "axe": ("overhead", "slash"), "mace": ("overhead", "slash"),
+    "hammer": ("overhead",), "dagger": ("thrust", "slash"),
+    "spear": ("thrust",), "staff": ("thrust", "overhead"),
+}
+
+
+def attack_variants(char, weapon):
+    """The set of strikes a character cycles through on successive swings — so a
+    fight has rhythm and variety instead of the same blow over and over."""
+    v = _VARIANTS.get((weapon or "").lower())
+    if v:
+        return v
+    base = ["slash", "overhead", "thrust"]           # a full sword/unarmed combo,
+    r = _seed(char) % 3                              # rotated to start per-character
+    return tuple(base[r:] + base[:r])
+
+
 def cast_style(char, weapon):
     """Which casting gesture: a staff-wielder slams, others point or two-hand."""
     if (weapon or "").lower() == "staff":

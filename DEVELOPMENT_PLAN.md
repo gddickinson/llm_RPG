@@ -4432,6 +4432,19 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   slower repeat). `body_renderer._update_action` picks run/jog/walk/crawl from
   `_running` + `_move_mode`. Documented in the F1 help + hint bar. Screenshot shows
   four distinct paces. `tests/test_movement_modes.py` (7).
+- [x] **P34.13 Per-action variety + comedy clips.** George: "add more variety to
+  each character's animations — a variety of options for every action. Also more
+  comedy — dances, jigs, taunts." *Done:* (1) **combat variety** — `char_style.
+  attack_variants` gives each character a strike REPERTOIRE (a sword/unarmed fighter
+  a rotating 3-hit overhead/slash/thrust combo, an axe overhead/slash, a spear
+  thrust…); `body_renderer` picks the next variant on each swing (`_atk_seq`), so a
+  fight has rhythm instead of the same blow repeated. (2) **comedy** — new
+  `ui/char_clips_fun.py` (+10 clips): jig, can-can kick, moonwalk, robot, flex,
+  taunt, wiggle, disco point, air-guitar, two-hand facepalm — merged into the
+  registry (71 clips total). The **`` ; ``** key (`perform_emote`) makes the hero
+  bust a RANDOM dance/jig/taunt each press. Documented in the F1 help. Contact sheet
+  confirms each comedy clip reads. `tests/test_char_clips_fun.py` (5) +
+  attack-variant tests in `test_char_style.py`.
 - [ ] **P34.5 Hair, cloak & flow.** A spring/verlet hair (and optional cloak/tail)
   CHAIN pinned to the head/shoulder, swayed by motion & wind, tinted by state
   (Celeste); a fading weapon-swing TRAIL. Real secondary motion → movement gains flow.

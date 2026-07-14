@@ -18,6 +18,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
         ("SHIFT + move", "RUN (near a foe: careful disengage)"),
         (".  (period)", "pace: walk / jog / crawl"),
         ("`  (backtick)", "JUMP / leap forward"),
+        (";  (semicolon)", "dance / jig / taunt (random)"),
         ("TAB", "enter / leave building or cave"),
         ("SHIFT + TAB", "force a locked door (loud)"),
         ("L", "look around"),

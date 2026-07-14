@@ -49,6 +49,23 @@ class TestAttackStyle(unittest.TestCase):
             self.assertEqual(s, st.attack_style(_C(cid), "sword"))
 
 
+class TestAttackVariants(unittest.TestCase):
+    def test_weapon_repertoires(self):
+        self.assertEqual(st.attack_variants(_C("x"), "axe"), ("overhead", "slash"))
+        self.assertEqual(st.attack_variants(_C("x"), "spear"), ("thrust",))
+
+    def test_sword_is_a_rotating_three_hit_combo(self):
+        v = st.attack_variants(_C("warrior"), "sword")
+        self.assertEqual(set(v), {"overhead", "slash", "thrust"})
+        self.assertEqual(len(v), 3)
+
+    def test_successive_swings_cycle(self):
+        v = st.attack_variants(_C("knight"), "sword")
+        picks = [v[seq % len(v)] for seq in range(1, 5)]
+        self.assertEqual(picks[0], picks[3])          # wraps after 3
+        self.assertNotEqual(picks[0], picks[1])       # consecutive differ
+
+
 class TestCastStyle(unittest.TestCase):
     def test_staff_slams(self):
         self.assertEqual(st.cast_style(_C("x"), "staff"), "cast_staff")

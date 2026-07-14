@@ -311,3 +311,8 @@ _CLIPS = {
 from ui.char_clips_more import ACTIONS_MORE, CLIPS_MORE   # noqa: E402
 ACTIONS.update(ACTIONS_MORE)
 _CLIPS.update(CLIPS_MORE)
+
+# P34.13 comedy & dance clips
+from ui.char_clips_fun import ACTIONS_FUN, CLIPS_FUN       # noqa: E402
+ACTIONS.update(ACTIONS_FUN)
+_CLIPS.update(CLIPS_FUN)
