@@ -4227,7 +4227,7 @@ CC0 walk-cycle sprite sheets offline into the existing PNG-tileset pipeline.
   `renderer.render` before the building pass (reclaimed the line budget by caching
   the fog-dim overlay in `__init__`). `tests/test_terrain_edges.py` (10). (Folded
   the water treatment into `terrain_edges` rather than a separate `water_render`.)
-- [ ] **P33.3 Richer 2.5D buildings (descriptors + roofs + merging + shadows).** A
+- [~] **P33.3 Richer 2.5D buildings (descriptors + roofs + merging + shadows).** A
   `data/building_styles.json` per KIND (roof shape gable/hip/flat+parapet, pitch,
   storeys, covering colour, wall pattern, chimneys, dormers, footprint aspect) —
   authored from building-gen's `select_roof`/`StyleParams`. Extend
@@ -4235,6 +4235,17 @@ CC0 walk-cycle sprite sheets offline into the existing PNG-tileset pipeline.
   math) to draw the descriptor's roof, per-material colour, chimneys/dormers as
   roof-top stamps, a drop shadow, and MERGE adjacent same-building tiles into one
   roofed mass instead of a grid of cubes.
+  *Done (P33.3a, materials + roofs + chimneys + shadows):* `data/building_styles.json`
+  (per-kind roof/covering/wall/chimneys, from building-gen); pure `ui/roof_shapes.py`
+  (`covering_color`/`wall_color`/`roof_shades`, `gable`/`hip`/`flat` roof polygons,
+  `chimney_rects`); `renderer_buildings._draw_block` draws a drop shadow, a wall
+  front in the wall material, the descriptor's roof SHAPE in its COVERING colour
+  (thatch gold / clay / slate grey / shingle / stone), chimneys, and the fallback
+  (a WALL segment) as a flat stone rampart. `check_building_styles` validator.
+  `tests/test_roof_shapes.py` (12). Verified by screenshot — slate hip-roofed
+  civic halls vs timber-and-clay gabled houses vs a grey stone wall. *Remainder
+  P33.3b:* MERGE adjacent same-building tiles into one roofed mass (AW edge-aware
+  faces) + east wall faces + dormers.
 - [ ] **P33.4 Living characters (equipment + animation).** Make the drawn weapon/
   armour read ACTUAL equipped items (not class), add an attack-lunge + cast flash +
   hurt recoil and a smooth tile-to-tile TWEEN (wire `animation.lerp`/`smoothstep`,

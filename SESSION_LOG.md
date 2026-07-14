@@ -6612,3 +6612,22 @@ every dim tile) — a small perf win that paid for the new pass. `ui/renderer.py
 holds at 499. `tests/test_terrain_edges.py` (10). Grass/forest/road transitions
 now blend and water reads as water with a foamy shore. Next: P33.3 richer
 buildings (descriptors + hip/flat roofs + materials + merging + shadows).
+
+## 2026-07-14 (cont.) — P33.3a: buildings with materials, roofs, chimneys & shadows
+
+The red-block town gets variety and craft. `data/building_styles.json` gives every
+building KIND a descriptor (roof shape gable/hip/flat, a COVERING that fixes the
+roof colour, a WALL material, chimney count) authored from building-gen's roof/
+style model. New pure `ui/roof_shapes.py` holds the colour tables + the roof
+polygon math (a gable ridge, a pyramidal hip, a flat top with an optional parapet)
++ `chimney_rects`. `renderer_buildings._draw_block` now draws, per tile: a cached
+drop shadow (grounds the block), a wall front in the wall material, the roof in
+its covering colour, and chimneys on top — and the fallback (a town WALL segment
+or an unmapped building) reads as a flat STONE rampart instead of a little gabled
+roof. Screenshots confirm the payoff: slate-grey HIP-roofed civic halls (library/
+temple/hall), timber houses with clay GABLE roofs + chimneys, and a proper grey
+stone town wall, where before everything was one red block. A `check_building_
+styles` validator guards the descriptors. `tests/test_roof_shapes.py` (12).
+Remainder P33.3b: MERGE adjacent same-building tiles into one roofed mass (AW
+edge-aware faces) so a big house isn't a grid of cubes, + east faces + dormers.
+Then P33.4 living characters.

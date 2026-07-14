@@ -109,6 +109,50 @@ def face_colors(wall=WALL, roof=ROOF) -> dict:
     }
 
 
+_STYLES = None
+_SHADOW_CACHE = {}
+
+
+def load_styles() -> dict:
+    """P33.3 per-kind building descriptors (roof shape, covering, wall,
+    chimneys) from `data/building_styles.json`, cached."""
+    global _STYLES
+    if _STYLES is None:
+        import json
+        import os
+        path = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))), "data", "building_styles.json")
+        try:
+            with open(path) as fh:
+                _STYLES = json.load(fh)
+        except Exception:
+            _STYLES = {}
+    return _STYLES
+
+
+# the fallback (a town WALL segment / an unmapped building) reads as a flat
+# stone rampart rather than a little gabled roof
+_DEFAULT_STYLE = {"roof": "flat", "covering": "stone", "wall": "stone",
+                  "chimneys": 0, "parapet": True}
+
+
+def style_for(kind: str) -> dict:
+    d = dict(_DEFAULT_STYLE)
+    d.update(load_styles().get(kind, {}))
+    return d
+
+
+def _shadow(tile_size: int):
+    """A cached soft drop-shadow tile (grounds the block)."""
+    s = _SHADOW_CACHE.get(tile_size)
+    if s is None:
+        import pygame
+        s = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
+        s.fill((0, 0, 0, 70))
+        _SHADOW_CACHE[tile_size] = s
+    return s
+
+
 def _kind_at(engine, x: int, y: int):
     loc = engine.world.get_location_at(x, y)
     if loc is None:
@@ -128,12 +172,10 @@ def _kind_at(engine, x: int, y: int):
 def draw_buildings(target, engine, view_rect, cam_x, cam_y,
                    tile_size) -> None:
     """Draw a raised block over every explored BUILDING tile in view."""
-    import pygame
     from world.world_map import TerrainType
     wmap = engine.world.map
     cols = view_rect.width // tile_size
     rows = view_rect.height // tile_size
-    colors = face_colors()
     for sy in range(rows):
         for sx in range(cols):
             wx, wy = cam_x + sx, cam_y + sy
@@ -151,19 +193,35 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
             h = height_for(kind, tile_size)
             px = view_rect.x + sx * tile_size
             py = view_rect.y + sy * tile_size
-            faces = cube_faces(px, py, tile_size, h)
-            roof = roof_faces(px, py, tile_size, h)
-            pygame.draw.polygon(target, colors["front"], faces["front"])
-            pygame.draw.polygon(target, colors["roof_lit"], roof["lit"])
-            pygame.draw.polygon(target, colors["roof_shadow"], roof["shadow"])
-            pygame.draw.line(target, colors["ridge"],
-                             roof["ridge"][0], roof["ridge"][1], 1)
-            # P31.1e intermediate LEVELS: floor-divider lines on the wall
-            for (a, b) in storey_lines(px, py, tile_size, h,
-                                       storeys_for(kind)):
-                pygame.draw.line(target, colors["front"], a, b, 1)
-            # P31.1e a GUARD stands on the wall-tower roof
-            if kind == "wall_tower" and tile_size >= 12:
-                fx, fy = roof_figure_pos(px, py, tile_size, h)
-                r = max(1, tile_size // 8)
-                pygame.draw.circle(target, GUARD_FIGURE, (fx, fy), r)
+            _draw_block(target, kind, px, py, tile_size, h)
+
+
+def _draw_block(target, kind, px, py, ts, h) -> None:
+    """One building tile as a material-styled 2.5D block (P33.3): a drop
+    shadow, a wall front in the wall material, a roof of the descriptor's
+    SHAPE and COVERING colour, chimneys, storey lines, and (a wall tower) a
+    roof guard."""
+    import pygame
+    from ui import roof_shapes as rs
+    style = style_for(kind)
+    off = max(1, ts // 7)
+    target.blit(_shadow(ts), (px + off, py + off))     # grounds the block
+    front = rs.front_color(style["wall"])
+    pygame.draw.polygon(target, front, cube_faces(px, py, ts, h)["front"])
+    shades = rs.roof_shades(style["covering"])
+    rp = rs.roof_polys(style["roof"], px, py, ts, h, style.get("parapet", False))
+    for pts, key in rp["polys"]:
+        pygame.draw.polygon(target, shades[key], pts)
+    if rp["ridge"]:
+        pygame.draw.line(target, shades["ridge"],
+                         rp["ridge"][0], rp["ridge"][1], 1)
+    if rp["parapet"]:
+        pygame.draw.lines(target, shades["ridge"], True, rp["parapet"], 1)
+    for (a, b) in storey_lines(px, py, ts, h, storeys_for(kind)):
+        pygame.draw.line(target, front, a, b, 1)
+    for (cx, cy, cw, ch) in rs.chimney_rects(px, py, ts, h, style["chimneys"]):
+        pygame.draw.rect(target, rs.CHIMNEY, (cx, cy, cw, ch))
+        pygame.draw.rect(target, rs.CHIMNEY_CAP, (cx, cy, cw, max(1, ch // 4)))
+    if kind == "wall_tower" and ts >= 12:
+        fx, fy = roof_figure_pos(px, py, ts, h)
+        pygame.draw.circle(target, GUARD_FIGURE, (fx, fy), max(1, ts // 8))

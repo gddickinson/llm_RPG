@@ -92,3 +92,27 @@ def check_wildlife() -> List[str]:
             if prey not in roster:
                 problems.append(f"wildlife {sid}: preys_on unknown '{prey}'")
     return problems
+
+
+def check_building_styles() -> List[str]:
+    """building_styles.json: a known roof shape + covering + wall (P33.3)."""
+    path = _DATA / "building_styles.json"
+    if not path.exists():
+        return []
+    try:
+        styles = json.loads(path.read_text())
+    except Exception as e:
+        return [f"building_styles.json unparseable: {e}"]
+    try:                       # material tables live with the pure renderer
+        from ui.roof_shapes import COVERINGS, WALLS
+    except Exception:          # headless env without pygame — skip material check
+        COVERINGS, WALLS = None, None
+    problems: List[str] = []
+    for kind, s in styles.items():
+        if s.get("roof") not in ("gable", "hip", "flat"):
+            problems.append(f"building {kind}: bad roof '{s.get('roof')}'")
+        if COVERINGS is not None and s.get("covering") not in COVERINGS:
+            problems.append(f"building {kind}: bad covering '{s.get('covering')}'")
+        if WALLS is not None and s.get("wall") not in WALLS:
+            problems.append(f"building {kind}: bad wall '{s.get('wall')}'")
+    return problems
