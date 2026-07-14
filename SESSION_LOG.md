@@ -7100,3 +7100,24 @@ a stamina bar (amber, red when winded). State lives on `player.metadata`
 
 Next: run-conditioned special moves (slide / dive-roll after a sprint) + more clips,
 NPC everyday-life actions, and wiring SSAA to the settings menu.
+
+## 2026-07-14 (cont.) — P34.17: injury & state animations
+
+George: characters should SHOW injuries — limps, injured arm, unconscious. New pure
+`ui/char_injury.py` reads the condition off `metadata` (what `wounds.py`/`dying.py`
+already write) and bends the finished screen pose:
+- a **leg wound → a LIMP**: the body hitches down onto the good leg each step and the
+  stiff leg drags (scaled by `wounds.severity(legs)`);
+- an **arm wound → that arm hangs LIMP** with no swing (worse of left/right);
+- **dying / unconscious / KO'd → DOWNED**: forced to the `lie` pose instead of
+  standing, so a KO'd-but-alive body finally reads as unconscious rather than
+  standing there.
+`body_renderer` computes `injury_state` once and applies limp/arm after the clip (the
+downed case overrides the action to `lie` before the pose is built). Screenshot
+compares healthy / limp / limp-arm / unconscious. `tests/test_char_injury.py` (7).
+Full suite green.
+
+Standing animation QUEUE from George (working through it): physical effects
+(thrown-through-air / on-fire / wet), run-conditioned special moves (slide/dive-roll),
+NPC everyday-life actions, DIVERSE CREATURE BODY PLANS (monsters render as humanoids
+today — will port ideas from autonomous_world), + the SSAA settings toggle.

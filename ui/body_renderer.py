@@ -305,9 +305,12 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
 
     atk_t = anim.get("atk_t", 0.0)
     attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
-    from ui import char_clips, char_style, char_pose3d, char_mocap
+    from ui import char_clips, char_style, char_pose3d, char_mocap, char_injury
     action = anim.get("cur_action", "idle")
     weapon = char_motion.weapon_kind(char)
+    inj = char_injury.injury_state(char)          # P34.17 injuries show
+    if inj["down"]:                               # unconscious / dying → lie downed
+        action = "lie"
     # P34.11 per-character motion style: a gait (walk/run varies), a melee attack
     # style (by weapon then id) and a cast gesture — so the cast reads as individuals
     gait = char_style.gait_of(char)
@@ -346,6 +349,13 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
         clip_action = (char_style.cast_style(char, weapon)
                        if action == "cast" else action)
         pose = char_clips.apply(clip_action, pose, phase, H, facing)
+
+    if not inj["down"]:                           # P34.17 limp + a limp arm
+        if inj["limp"] and action in ("walk", "run", "jog"):
+            char_injury.apply_limp(pose, anim.get("walk_phase", 0.0), H,
+                                   inj["limp"])
+        if inj["arm"]:
+            char_injury.apply_arm(pose, inj["arm"], H)
 
     # shadow on the ground, under the feet (not the tweened body)
     shw = max(4, int(H * 0.26))

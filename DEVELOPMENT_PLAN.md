@@ -4564,6 +4564,21 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   shows a stamina bar (red when winded); state rides `player.metadata` (saves).
   `tests/test_stamina.py` (7).
 
+- [x] **P34.17 Injury & state animations.** George: "animations for injuries and
+  injury-related changes — limps, injured arm, unconscious." *Done:* new pure
+  `ui/char_injury.py` reads the condition off `metadata` (what `wounds.py`/`dying.py`
+  write) and bends the finished screen pose: a **leg wound → a LIMP** (the body
+  hitches down onto the good leg each step, the stiff leg drags), an **arm wound →
+  that arm hangs LIMP** (no swing), and **dying / unconscious / KO'd → DOWNED**
+  (forced to the `lie` pose instead of standing — so a KO'd-but-alive body finally
+  looks unconscious). `body_renderer` computes `injury_state` and applies it after the
+  clip. Screenshot compares healthy / limp / limp-arm / unconscious. `tests/
+  test_char_injury.py` (7).
+  QUEUE (George, animation push): physical effects (thrown-through-air / on-fire /
+  wet), run-conditioned special moves (slide/dive-roll), NPC everyday-life actions,
+  DIVERSE CREATURE BODY PLANS (monsters currently render as humanoids — port ideas
+  from autonomous_world), and an SSAA settings toggle.
+
 ## What NOT to build (explicitly deferred)
 
 - Continuous LLM agent simulation (Generative Agents-style) — cost-prohibitive; the
