@@ -4628,7 +4628,13 @@ verlet-chain / look-at math) ONCE; it unlocks half the list.
   EMERGES from it (`_cave_mouth`), and the encounter line now names the origin +
   compass direction ("slinks out of a cave to the north" / "appears to the east").
   `tests/test_encounters.py` (offscreen + cave-emergence).
-  QUEUE (remaining): more creature plans (birds/spiders/dragons), creature attack/hurt.
+- [x] **P34.24 Creature attack & hurt motion.** *Done:* beasts now ANIMATE combat —
+  `quadruped_points` reads the shared `atk_t`/`hurt` anim signals (already set by
+  `combat_system`) and LUNGES the beast forward along its nose axis on a strike (a
+  pounce/bite) and RECOILS it back when hit; the slime rears up tall & narrow to
+  pounce and squashes wide when hurt (`creature_render`). `tests/test_creatures.py`.
+  QUEUE (remaining): more creature plans — birds (winged), spiders (many-legged),
+  winged dragons.
 
 ## What NOT to build (explicitly deferred)
 

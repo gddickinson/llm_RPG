@@ -7215,3 +7215,14 @@ Returns `(pos, origin)`; verified spawn distances 6-8 vs sight 5. `tests/
 test_encounters.py` (offscreen + cave-emergence). Full suite green. (Follow-ups:
 emerge from lair markers + camps/burrows too, a faint "rustling to the north" pre-
 telegraph.)
+
+## 2026-07-14 (cont.) — P34.24: creature attack & hurt motion
+
+Beasts now ANIMATE combat instead of standing still. `creature_render._atk_hurt`
+reads the shared `atk_t` / `hurt` anim signals (already emitted by `combat_system` on
+the striker + struck body) and feeds them to `quadruped_points`, which LUNGES the
+beast forward along its nose axis on a strike (a pounce/bite) and RECOILS it back when
+hit. The slime rears up tall & narrow to pounce and squashes wide & low when hurt.
+Screenshot shows a wolf pouncing forward / recoiling and a slime rearing to strike.
+`tests/test_creatures.py`. Full suite green. Last remaining creature gap: bird
+(winged), spider (many-legged) and winged-dragon body plans.

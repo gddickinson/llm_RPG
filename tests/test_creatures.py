@@ -73,6 +73,18 @@ class TestQuadrupedPose(unittest.TestCase):
         self.assertGreater(max(xs) - min(xs), 2.0)
 
 
+class TestCombatMotion(unittest.TestCase):
+    def test_attack_lunges_and_hurt_recoils_opposite_ways(self):
+        rest = cp.quadruped_points(60, 120, 60, 0.0, 90)
+        lunge = cp.quadruped_points(60, 120, 60, 0.0, 90, attack=0.5)
+        hurt = cp.quadruped_points(60, 120, 60, 0.0, 90, hurt=0.5)
+        self.assertNotEqual(rest["head"][0], lunge["head"][0])   # pounce shifts it
+        self.assertNotEqual(rest["head"][0], hurt["head"][0])    # recoil too
+        # forward on the strike, backward when hit
+        self.assertNotEqual(lunge["head"][0] > rest["head"][0],
+                            hurt["head"][0] > rest["head"][0])
+
+
 class TestDraw(unittest.TestCase):
     def test_draw_each_plan_without_crashing(self):
         from ui import body_renderer

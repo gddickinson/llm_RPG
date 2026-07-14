@@ -42,16 +42,21 @@ _LEGS = {"fl": (-0.16, 0.26, 0.0), "fr": (0.16, 0.26, math.pi),
          "bl": (-0.16, -0.26, math.pi), "br": (0.16, -0.26, 0.0)}
 
 
-def quadruped_points(cx, foot_y, size, walk, facing_deg, moving=True, cfg=None):
+def quadruped_points(cx, foot_y, size, walk, facing_deg, moving=True, cfg=None,
+                     attack=0.0, hurt=0.0):
     """Screen points for a four-legged beast at facing `facing_deg`. Body coords
     are (u across the width, w nose↔tail DEPTH, y height); the fore-aft stride
-    projects to a leg-lift head-on and a full stride in profile."""
+    projects to a leg-lift head-on and a full stride in profile. `attack` lunges
+    the beast forward (a pounce/bite), `hurt` recoils it back (P34.24)."""
     cfg = cfg or {}
     th = math.radians(facing_deg)
     c, s = math.cos(th), math.sin(th)
+    # a forward LUNGE on the strike, a backward RECOIL when hit — along the nose axis
+    fore = (math.sin(min(1.0, attack) * math.pi) * 0.22
+            - math.sin(min(1.0, hurt) * math.pi) * 0.16)
 
     def proj(u, w, y):
-        return (cx + (u * c + w * s) * size, foot_y - y * size)
+        return (cx + (u * c + (w + fore) * s) * size, foot_y - y * size)
 
     sw = math.sin(walk)
     stride = 0.16 if moving else 0.0

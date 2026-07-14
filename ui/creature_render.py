@@ -52,6 +52,16 @@ def _anim(char):
     return (getattr(char, "metadata", None) or {}).get("_anim", {}) or {}
 
 
+def _atk_hurt(a):
+    """(attack, hurt) progress 0..1 from the shared anim state (P34.24)."""
+    atk_t = a.get("atk_t", 0.0)
+    attack = 1.0 - atk_t / 0.32 if atk_t > 0 else 0.0
+    hurt = 0.0
+    if a.get("cur_action") == "hurt" and a.get("action_dur"):
+        hurt = 1.0 - a.get("action_t", 0.0) / a["action_dur"]
+    return max(0.0, min(1.0, attack)), max(0.0, min(1.0, hurt))
+
+
 def draw_creature(surface, char, sx, sy, tile_size, plan, is_player=False):
     if not PYGAME_OK:
         return
@@ -81,8 +91,10 @@ def _draw_quadruped(surface, char, sx, sy, tile_size):
     body, belly = _pick(char, _FUR, ((120, 112, 104), (156, 150, 142)))
     pointy = any(k in _species(char) for k in ("wolf", "fox", "warg", "cat",
                                                "lynx", "hound", "dog"))
+    attack, hurt = _atk_hurt(a)
     p = creature_pose.quadruped_points(cx, foot_y, size, walk, face,
-                                       a.get("moving", False))
+                                       a.get("moving", False), attack=attack,
+                                       hurt=hurt)
     # shadow
     shw = int(size * 0.5)
     sh = pygame.Surface((shw, max(2, shw // 3)), pygame.SRCALPHA)
@@ -134,10 +146,12 @@ def _draw_slime(surface, char, sx, sy, tile_size):
     a = _anim(char)
     t = a.get("idle_phase", 0.0) + a.get("walk_phase", 0.0)
     color = _pick(char, _SLIME_COLOR, (120, 180, 120))
+    attack, hurt = _atk_hurt(a)
     cx = sx + tile_size / 2.0
     base_y = sy + tile_size - 2
-    w = tile_size * (0.62 + 0.06 * math.sin(t))        # wobble wide/narrow
-    h = tile_size * (0.5 - 0.05 * math.sin(t))
+    # rears up tall & narrow to POUNCE, squashes wide & low when HURT (P34.24)
+    w = tile_size * (0.62 + 0.06 * math.sin(t) - attack * 0.12 + hurt * 0.10)
+    h = tile_size * (0.5 - 0.05 * math.sin(t) + attack * 0.20 - hurt * 0.08)
     rect = pygame.Rect(0, 0, int(w), int(h * 1.6))
     rect.midbottom = (int(cx), int(base_y))
     pygame.draw.ellipse(surface, color, rect)
