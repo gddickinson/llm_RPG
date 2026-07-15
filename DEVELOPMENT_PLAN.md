@@ -5617,7 +5617,7 @@ EVERY building, many more decorative props / furniture / diases / stair & window
 - [x] **P39.3 Themed furnishing** — `data/furnishings.json` (kind→props) + a wall-preference
   placement pass (adapted from building-gen fixtures.py) so every building is furnished
   in-theme.
-- [ ] **P39.4 Interior light sources & mood** — radial glow for braziers/torches/hearths/
+- [x] **P39.4 Interior light sources & mood** — radial glow for braziers/torches/hearths/
   altars; dank vs warm made to read.
 - [ ] **P39.5 Stair / window / door variants** — spiral/stone stairs, arched/lancet/rose/
   arrow-loop windows, plank/portcullis doors, per theme.

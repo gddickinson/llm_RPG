@@ -432,6 +432,15 @@ class MapRenderer:
                       self.tile_size,
                       is_player=(char.id == engine.player.id))
 
+        # P39.4 interior light & mood: warm pools around braziers/torches + the
+        # hero, dust in dank rooms — makes a crypt feel dark, a home warm
+        try:
+            from ui import interior_light
+            interior_light.draw(target, zone, view_rect, cam_x, cam_y,
+                                self.tile_size, theme, engine.player.position)
+        except Exception:
+            pass
+
         # The ranged lock, underground too (P8.7)
         try:
             self._draw_reticle(target, engine, view_rect,

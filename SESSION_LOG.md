@@ -7582,3 +7582,17 @@ gravestone), the Temple ornate (altar + pillars + braziers + tapestries + pews),
 a working smithy (anvil + hearth + weapon racks + barrels), the Tavern cozy, homes furnished.
 tests/test_furnishings.py (8) + a screenshot of the furnished crypt. Full suite next.
 Next P39.4: interior light sources (the emits_light props glow) + dust for deserted rooms.
+
+## 2026-07-14 (cont.) — P39.4: interior LIGHT sources & mood (warm pools, dank dust)
+
+Warm-vs-dank now READS. `ui/interior_light.py` (thin draw over a zone, called at the end
+of `renderer._render_zone`): lays a per-theme DARKNESS over the room, SUBTRACTS a radial
+hole of visibility around every lit prop (prop_sprites.emits_light — brazier/torch/
+candelabra/chandelier/cauldron/hearth/forge) + the hero, ADDS a warm colour glow at the
+fire sources, and drifts pale DUST motes for dank/deserted themes. `data/interior_themes.
+json` gains a per-theme `light` block (dark alpha / warm glow colour / dust count): a tomb
+& cave are dark+dusty (dark 120-128) with warm firelight pools, a home/tavern barely dim
+(dark 34-45). Glow/hole surfaces cached by (radius,colour); dust animates off a frame
+counter. Screenshots: the Drowned Vault is now a dark dusty crypt lit by warm braziers; the
+Oakvale Tavern is warm and cozy. tests/test_interior_light.py (5). renderer.py 493. Full
+suite next. Next P39.5: stair/window/door variants.
