@@ -45,13 +45,35 @@ def _furnishings() -> dict:
     return _FURN
 
 
-def theme_of(name: str) -> str:
-    """The theme id for an interior name — the same keyword match the renderer
-    uses; a name that matches nothing gets 'home'."""
+# BLD.1: building FUNCTION → interior theme, so a building whose name doesn't
+# happen to carry a theme keyword still furnishes by what it IS (a market shop
+# no longer falls through to a bedroom-and-hearthrug "home").
+_FUNCTION_THEME = {
+    "smithy": "smithy", "tavern": "tavern", "temple": "temple",
+    "shrine": "temple", "library": "library", "market": "shop",
+    "farm": "farmhouse", "lodge": "lodge", "tower": "tower",
+    "bakery": "bakery", "watch": "watchtower", "hall": "hall",
+    "stable": "stable", "well": "well", "storage": "storage",
+    "mine": "cave", "sawmill": "storage", "mill": "storage", "dock": "storage",
+}
+
+
+def theme_of(name: str, kind: str = None) -> str:
+    """The theme id for an interior — a keyword match on its NAME first (the
+    same match the renderer uses), then, failing that, the building KIND's
+    FUNCTION (BLD.1), and finally 'home'."""
     hay = (name or "").lower()
     for tid, spec in _theme_keywords().items():
         if any(k in hay for k in spec.get("keywords", [])):
             return tid
+    if kind:
+        try:
+            from world.building_types import function_of_kind
+            t = _FUNCTION_THEME.get(function_of_kind(kind))
+            if t:
+                return t
+        except Exception:
+            pass
     return "home"
 
 
@@ -88,9 +110,11 @@ def _buckets(inter) -> dict:
             "scatter": scatter}
 
 
-def furnish(inter, name: str, seed: int = 0) -> int:
-    """Add themed decorative props to `inter`. Returns how many were placed."""
-    specs = _furnishings().get(theme_of(name), {}).get("props", [])
+def furnish(inter, name: str, seed: int = 0, kind: str = None) -> int:
+    """Add themed decorative props to `inter`. Returns how many were placed.
+    `kind` (the building kind) lets an oddly-named building still furnish by
+    function (BLD.1)."""
+    specs = _furnishings().get(theme_of(name, kind), {}).get("props", [])
     if not specs or inter.width < 3 or inter.height < 3:
         return 0
     rng = random.Random(zlib.crc32((name or "").encode("utf-8")) ^ (seed & 0xffffffff))

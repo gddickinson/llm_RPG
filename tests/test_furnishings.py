@@ -29,6 +29,45 @@ class TestThemeOf(unittest.TestCase):
         self.assertEqual(theme_of("A Plain Cottage"), "home")
 
 
+class TestBLD1Themes(unittest.TestCase):
+    """BLD.1: the missing themes so a shop stops falling through to 'home'."""
+    def test_the_new_themes_resolve_by_name(self):
+        cases = {
+            "Oakvale General Store": "shop", "Market Stall": "shop",
+            "Village Bakery": "bakery", "Merry Farmhouse": "farmhouse",
+            "Old Barn": "stable", "Hunter's Lodge": "lodge",
+            "Oakvale Guild Hall": "hall", "North Watchtower": "watchtower",
+            "Alzara's Tower": "tower", "Village Well": "well",
+            "The Granary": "storage",
+        }
+        for name, theme in cases.items():
+            self.assertEqual(theme_of(name), theme, name)
+
+    def test_a_shop_is_not_a_home(self):
+        self.assertNotEqual(theme_of("General Store"), "home")
+        from world.furnishings import _furnishings
+        shop = [p["name"] for p in _furnishings()["shop"]["props"]]
+        self.assertNotIn("Bed", shop, "a shop has no bed")
+
+    def test_kind_fallback_when_name_has_no_keyword(self):
+        # an oddly-named building still furnishes by its KIND's function
+        self.assertEqual(theme_of("Zzz Nonsense", kind="shop"), "shop")
+        self.assertEqual(theme_of("Zzz Nonsense", kind="farmhouse"),
+                         "farmhouse")
+        self.assertEqual(theme_of("Zzz Nonsense"), "home")   # no kind → home
+
+    def test_every_new_theme_has_furnishing_props(self):
+        from world.furnishings import _theme_keywords, _furnishings
+        furn = _furnishings()
+        for tid in _theme_keywords():
+            self.assertIn(tid, furn, f"theme {tid} has no furnishing props")
+            self.assertTrue(furn[tid].get("props"), tid)
+
+    def test_watchtower_beats_tower(self):
+        # 'watchtower' contains 'tower' — order must resolve it correctly
+        self.assertEqual(theme_of("The Old Watchtower"), "watchtower")
+
+
 class TestFurnish(unittest.TestCase):
     def test_a_crypt_gets_crypt_props(self):
         inter = _room("The Sunken Crypt")

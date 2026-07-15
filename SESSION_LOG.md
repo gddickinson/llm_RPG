@@ -8302,3 +8302,24 @@ runner), placement hardening (door-apron exclusion), and decoration pass (corrid
 P39.4 lighting) port nearly verbatim; building-gen gives StyleParams/grid-templates/adjacency
 rules (it already gave us roof_shapes.py). Plan added to DEVELOPMENT_PLAN.md as Phase BLD.
 Next: BLD.1 (pure-data theme/lighting quick-wins), then BLD.2 (functional room typing — the unlock).
+
+## 2026-07-15 — BLD.1: buildings data quick-wins (theme coverage + hearth lighting)
+
+First implementation round of the buildings-elaboration plan (docs/BUILDINGS.md). The research
+found ~23 building kinds collapsing to just 8 interior themes — anything without a matching theme
+keyword (shop, bakery, farmhouse, stable, lodge, hall, tower, watchtower, well, warehouse) fell
+through to the "home" theme and got a bed + hearthrug (a shop with a bed). And hearth/forge/oven
+cast no light (missing from LIT_PROPS). Fixed both, cheaply:
+- data/interior_themes.json + data/furnishings.json: +10 themes (shop/bakery/farmhouse/stable/
+  lodge/hall/watchtower/tower/well/storage) each with palette + light + a fitting prop list
+  (a shop gets crates/barrels/shelves/urns/a counter + rug, NOT a bed). Keyword order handles
+  collisions (watchtower before tower; 'general store'/'market'/'stall' for shop, no bare 'store').
+- world/furnishings.theme_of(name, kind): keyword match first, then fall back through the building
+  KIND's FUNCTION (_FUNCTION_THEME over building_types.function_of_kind) so an oddly-named building
+  still furnishes by what it IS; interiors.py threads the kind (bp.kind or the location type).
+- ui/prop_sprites.LIT_PROPS += hearth/forge/fireplace/oven/firepit → interior_light._sources now
+  finds them, so a smithy's forge / a home's hearth / a bakery's oven cast a warm light pool
+  (scratchpad/bld1_smithy.png shows the forge glow; bld1_shop.png shows the shop furnishing).
+`tests/test_furnishings.py` +5 (new themes resolve, shop≠home, kind fallback, every theme has
+props, watchtower-beats-tower); test_prop_sprites + test_interior_theme updated for the new
+behavior. Validator clean. Next: BLD.2 (functional room typing — the unlock).

@@ -33,7 +33,9 @@ class TestThemeFor(unittest.TestCase):
             "Durgan's Forge (interior)": "smithy",
             "Oakvale Tavern (interior)": "tavern",
             "The Grand Library": "library",
-            "General Store (interior)": "home",
+            "General Store (interior)": "shop",     # BLD.1: was wrongly "home"
+            "Village Bakery": "bakery",
+            "Hunter's Lodge": "lodge",
         }
         for name, want in cases.items():
             self.assertEqual(self._tid(it.theme_for(_zone(name))), want, name)

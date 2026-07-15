@@ -5844,10 +5844,15 @@ theme → shops get a bed). `autonomous_world` shares llm_RPG's tile paradigm so
 ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly verbatim.
 
 - [x] **BLD.0 Research + design doc** — `docs/BUILDINGS.md` (3-agent synthesis + phased plan).
-- [ ] **BLD.1 Data quick-wins** — close theme/furnishing coverage gaps (`data/furnishings.json`
-  + `data/interior_themes.json`: shop/farmhouse/stable/lodge/hall/tower/well/shrine), `theme_of`
-  falls back through building KIND not name, and `hearth`/`forge`/`fireplace`/`oven` → `LIT_PROPS`
-  (fire-lit rooms glow). Pure data + a one-liner.
+- [x] **BLD.1 Data quick-wins — DONE.** Added 10 missing interior themes (shop/bakery/farmhouse/
+  stable/lodge/hall/watchtower/tower/well/storage) to `data/interior_themes.json` +
+  `data/furnishings.json` — so a shop/market/barn/bakery stops falling through to the "home" theme
+  (bed + hearthrug) and furnishes as what it IS. `world/furnishings.theme_of(name, kind)` now falls
+  back through the building KIND's FUNCTION (`_FUNCTION_THEME` via `building_types.function_of_kind`)
+  when the name carries no theme keyword; `interiors.py` threads the kind. And `hearth`/`forge`/
+  `fireplace`/`oven` joined `prop_sprites.LIT_PROPS`, so a home's hearth / a smithy's forge /
+  a bakery's oven now cast a warm light pool (scratchpad/bld1_smithy.png) instead of an unlit room.
+  `tests/test_furnishings.py` +5, `test_prop_sprites.py`/`test_interior_theme.py` updated.
 - [ ] **BLD.2 Functional room plans** — `data/room_templates.json` + `data/building_room_sets.json`
   (port aw ROOM_TEMPLATES/BUILDING_ROOM_SETS); tag each BSP leaf a `room_type` by function + size;
   role→furniture kit; new `world/room_plan.py`. Retune the BSP gate so medium buildings subdivide.

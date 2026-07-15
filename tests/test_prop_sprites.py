@@ -45,7 +45,8 @@ class TestProps(unittest.TestCase):
         self.assertFalse(ps.draw_prop(s, "flibbertigibbet", 48))
 
     def test_lit_props_are_flagged(self):
-        for lit in ("brazier", "wall torch", "candelabra", "iron cauldron"):
+        for lit in ("brazier", "wall torch", "candelabra", "iron cauldron",
+                    "hearth", "forge", "fireplace", "oven"):   # BLD.1 fire pieces
             self.assertTrue(ps.emits_light(lit), lit)
         for dark in ("pillar", "sarcophagus", "rug", "statue"):
             self.assertFalse(ps.emits_light(dark), dark)

@@ -305,9 +305,11 @@ PROPS = {
     "mosaic": _mosaic,
 }
 
-# props that emit light (P39.4 will read this for interior glow)
+# props that emit light (P39.4 reads this for interior glow) — BLD.1 adds the
+# fire pieces so a home's hearth / a smithy's forge / a bakery's oven cast a
+# real warm light pool instead of leaving the room lit only by the player
 LIT_PROPS = ("brazier", "torch", "sconce", "candelabra", "chandelier",
-             "cauldron")
+             "cauldron", "hearth", "forge", "fireplace", "oven", "firepit")
 
 
 # props hung on a wall / ceiling — no ground contact shadow (P40.3)

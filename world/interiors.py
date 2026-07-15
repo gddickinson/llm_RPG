@@ -384,6 +384,7 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
         inter = None
 
         # Try blueprint first
+        bp = None
         if blueprint_for_location is not None:
             bp = blueprint_for_location(loc.name)
             if bp is not None:
@@ -409,9 +410,9 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
             fit_to_footprint(inter, loc)
         except Exception as e:
             logger.debug(f"footprint fit for {loc.name}: {e}")
-        try:   # P39.3 decorate it in-theme (braziers, pillars, rugs, …)
-            from world.furnishings import furnish
-            furnish(inter, loc.name)
+        try:   # P39.3 decorate it in-theme (braziers, pillars, rugs, …);
+            from world.furnishings import furnish   # BLD.1 kind-aware fallback
+            furnish(inter, loc.name, kind=(getattr(bp, "kind", None) or ltype))
         except Exception as e:
             logger.debug(f"furnish {loc.name}: {e}")
         interiors[loc.name] = inter
