@@ -7765,3 +7765,19 @@ tests/test_iso_render.py (+4). Full suite next. PHASE 41 (isometric 3D-look worl
 functionally COMPLETE — overworld + interiors + objects + characters render in 3D iso,
 toggle-able in-game, top-down untouched. Remaining polish (camera pan/zoom, deeper
 lighting) is optional future work. Next: balance P37.5b (tougher monsters).
+
+## 2026-07-15 — P37.5b: tougher wilderness monsters (balance arc)
+
+George's rebalance continues: after P37.5a slowed XP, the common wild foes were too
+soft (wolf/goblin hp 8–10, all-10 stats → toothless bites). Buffed data-only in
+`data/monsters.json`: **wolf** 10→14 hp (str12/dex13), **goblin** 8→11 (str11/dex12),
+**bandit** 14→20 (str13/con12), **marsh_wisp** 8→12 (dex15), **bog_lurker** 22→28
+(str15/con15), **wandering_troll** 30→44 (str18/con16). A scripted duel model verifies
+the contract — a geared L1 hero reliably wins a SOLO foe (~100% vs a lone wolf/goblin/
+bandit, 96% vs an L3 bog_lurker) but a PACK is deadly (0–1% vs 3 wolves / 4 goblins, 18%
+vs 2 bandits, 0% vs the L4 troll), while an L3 hero with str16 + a +6 weapon clears them
+(61% wolf pack, 100% troll). So level + gear + party carry the curve, not XP farming —
+exactly George's ask. New `tests/test_monster_balance.py` (+4) locks the tougher HP/stats
+and the solo-winnable floor; updated three tests that hard-coded the old HP
+(test_data_content ×2, test_elites — wolf 14×3 = 42). Validator green. Next: P37.5c
+gear/party emphasis + a before/after progression playtest.

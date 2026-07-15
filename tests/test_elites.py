@@ -101,8 +101,8 @@ class TestPromotion(unittest.TestCase):
         elites.apply_tier(w, {"title": "Ancient {name}", "hp_mult": 3.0,
                               "level_bonus": 9, "str_bonus": 6})
         self.assertEqual(w.name, "Ancient Wolf")
-        self.assertEqual(w.max_hp, 30)
-        self.assertEqual(w.hp, 30)
+        self.assertEqual(w.max_hp, 42)   # wolf base 14 × 3.0 hp_mult
+        self.assertEqual(w.hp, 42)
         self.assertTrue(w.metadata.get("elite"))
 
 

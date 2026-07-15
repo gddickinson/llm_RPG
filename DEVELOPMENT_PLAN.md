@@ -5577,9 +5577,15 @@ party members." A dedicated balance arc:
   award (`combat_system._award_xp` 20+30·lvl → 10+5·lvl) and radiant-quest XP (30+15·lvl →
   15+8·lvl). Same-level kills to reach a level: L2 2→8, L3 5→20, L5 11→51, L7 17→86 — a
   ~4–5× slower, ramping climb, so power leans on gear/party not XP farming. Tests updated.
-- [ ] **P37.5b Combat is harder.** Wilderness monsters tougher (HP / to-hit / damage via
-  `data/monsters.json` + the elite/encounter scaling) so fights are riskier and gear +
-  companions matter; keep the game winnable and the DM/away-agent balanced. Data-driven.
+- [x] **P37.5b Combat is harder.** The common wild foes toughened in `data/monsters.json`
+  (HP + real combat `stats`): wolf 10→14 (str12/dex13), goblin 8→11 (str11/dex12), bandit
+  14→20 (str13/con12), marsh_wisp 8→12 (dex15), bog_lurker 22→28 (str15/con15), wandering
+  troll 30→44 (str18/con16). A scripted duel model confirms the contract: a geared L1 hero
+  reliably wins a SOLO foe (~100% vs a lone wolf/goblin/bandit, 96% vs an L3 bog_lurker) but
+  a PACK is deadly (0–1% vs 3 wolves / 4 goblins, 18% vs 2 bandits, 0% vs the L4 troll) —
+  while an L3 hero with better gear (str16, wpn+6) clears them (61% wolf pack, 100% troll).
+  Fights are riskier and level+gear+party carry the curve. `tests/test_monster_balance.py`
+  locks the tougher stats + the solo-winnable floor. Data-driven; validator green.
 - [ ] **P37.5c Gear & party emphasis + playtest.** Verify a scripted heuristic run: the hero
   no longer rockets up levels, early fights are meaningfully harder, better weapons/armour
   and companions carry the power curve. Before/after progression check.
