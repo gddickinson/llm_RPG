@@ -20,6 +20,10 @@ import random
 
 N_VARIANTS = 4
 
+# P40.2 supersample factor for terrain (built once, cached). The renderer sets
+# this from the "Smooth sprites" setting (3 on / 1 off); `LLM_RPG_SS` overrides.
+SSAA = None                     # None → gfx.ss_factor() decides at build time
+
 
 def type_id(name: str) -> int:
     """A small stable integer per terrain name (varies the position hash)."""
@@ -110,68 +114,96 @@ RECIPES = {
 }
 
 
-def build_tile(name: str, variant: int, size: int, base_seed: int = 1):
+def build_tile(name: str, variant: int, size: int, base_seed: int = 1, ss=None):
     """Bake one variant Surface for a recipe terrain, or None if the terrain
-    has no recipe. The single thin pygame pass (lazy import)."""
+    has no recipe. P40.2: the tile is a LAYER STACK — gradient base + multi-tone
+    mottle + dense scattered detail + a directional light — built at `size·ss`
+    and smoothscaled down (via `gfx.supersample`) so it reads high-res. Cached
+    by the caller. `ss` defaults to the module `SSAA` (renderer setting)."""
     recipe = RECIPES.get(name)
     if recipe is None:
         return None
-    import pygame
+    from ui import gfx
     seed = base_seed * 1009 + variant * 37 + type_id(name)
+    factor = gfx.ss_factor(3) if (ss is None and SSAA is None) else \
+        (SSAA if ss is None else ss)
+    return gfx.supersample(lambda S: _paint_tile(recipe, S, seed), size, factor)
+
+
+def _paint_tile(recipe, S: int, seed: int):
+    """Compose one terrain tile at working size S (the supersampled canvas)."""
+    from ui import gfx
     shades = [c for c, _ in recipe["shades"]]
-    weights = [w for _, w in recipe["shades"]]
-    grid = dither_grid(size, seed, weights)
-    surf = pygame.Surface((size, size))
-    for y in range(size):
-        row = grid[y]
-        for x in range(size):
-            surf.set_at((x, y), shades[row[x]])
-    _draw_detail(surf, size, recipe.get("detail"), seed + 555)
+    dominant = shades[0]
+    by_bright = sorted(shades, key=sum)
+    dark, light = by_bright[0], by_bright[-1]
+    ramp = gfx.shade_ramp(dominant, 6)
+    # 1) gradient base — a subtle top-light → bottom-dark, not a flat fill
+    surf = gfx.vgradient(S, gfx.scale_rgb(light, 1.05), gfx.scale_rgb(dark, 0.95))
+    # 2) mottle — multi-tone soft patches (the texture the flat dither lacked)
+    tones = shades + [ramp[1], ramp[2], ramp[4]]
+    gfx.mottle(surf, tones, seed, density=recipe.get("density", 0.55),
+               blob=max(2, S // 7))
+    # 3) dense scattered detail (blades / ripples / canopy …), S-proportional
+    _draw_detail(surf, S, recipe.get("detail"), seed + 555)
+    # 4) directional light — consistent top-left highlight, bottom-right shadow
+    surf.blit(gfx.directional_light(S, recipe.get("light", 28)), (0, 0))
     return surf
 
 
-def _draw_detail(surf, size, spec, seed):
+def _draw_detail(surf, S, spec, seed):
+    """Scatter the recipe's detail features across the tile, sized relative to
+    the working canvas S (so detail scales with the oversample) and ~3× denser
+    than the flat original."""
     if not spec:
         return
     import pygame
     kind = spec["kind"]
-    pts = scatter_points(size, spec.get("count", 4), seed)
+    unit = max(1, S // 24)
+    factor = max(1, S // 40)                  # ~3 at ss=3 → denser detail
+    count = spec.get("count", 4) * factor
+    pts = scatter_points(S, count, seed)
     col = spec.get("color")
-    hi = spec.get("hi")
+    hi = spec.get("hi") or col
+    rr = random.Random(seed * 3 + 1)
+    lw = max(1, unit // 2)
     if kind == "blades":
         for (x, y) in pts:
-            pygame.draw.line(surf, col, (x, y), (x, max(0, y - 2)))
+            h = rr.randint(unit, unit * 3)
+            shade = col if rr.random() < 0.7 else hi
+            pygame.draw.line(surf, shade, (x, y), (x, max(0, y - h)), lw)
     elif kind == "canopy":
-        r = max(2, size // 5)
+        r = max(2, S // 6)
         for (x, y) in pts:
             pygame.draw.circle(surf, col, (x, y), r)
-            pygame.draw.circle(surf, hi, (x - 1, y - 1), max(1, r // 2))
+            pygame.draw.circle(surf, hi, (x - unit, y - unit), max(1, r // 2))
     elif kind == "ripples":
         for (x, y) in pts:
-            w = max(3, size // 4)
-            pygame.draw.line(surf, col, (x - w // 2, y), (x + w // 2, y))
+            w = max(3, S // 4)
+            rect = pygame.Rect(x - w // 2, y - unit, w, unit * 2)
+            pygame.draw.arc(surf, col, rect, 3.6, 5.8, lw)
     elif kind == "rocks":
         for (x, y) in pts:
-            pygame.draw.line(surf, col, (x, y), (x + 2, y + 3))
-            surf.set_at((min(size - 1, x + 1), y), hi)
+            pygame.draw.line(surf, col, (x, y), (x + unit, y + unit), lw)
+            pygame.draw.circle(surf, hi, (x, y), max(1, lw))
     elif kind == "reeds":
         for i, (x, y) in enumerate(pts):
-            if i == 0:
-                pygame.draw.circle(surf, hi, (x, y), max(2, size // 6))
+            if i % 5 == 0:
+                pygame.draw.circle(surf, hi, (x, y), max(2, S // 8))
             else:
-                pygame.draw.line(surf, col, (x, y), (x, max(0, y - 3)))
+                pygame.draw.line(surf, col, (x, y), (x, max(0, y - unit * 2)), lw)
     elif kind == "pebbles":
         for i, (x, y) in enumerate(pts):
-            surf.set_at((x, y), col if i % 2 else hi)
+            pygame.draw.circle(surf, col if i % 2 else hi, (x, y), max(1, lw))
     elif kind == "furrows":
-        n = spec.get("count", 4)
+        n = spec.get("count", 4) + 1
         for i in range(1, n):
-            fy = size * i // n
-            pygame.draw.line(surf, col, (0, fy), (size - 1, fy))
+            fy = S * i // n
+            pygame.draw.line(surf, col, (0, fy), (S - 1, fy), lw)
     elif kind == "chunks":
         for i, (x, y) in enumerate(pts):
             c = hi if i % 2 else col
-            pygame.draw.rect(surf, c, (x, y, 2, 2))
+            pygame.draw.rect(surf, c, (x, y, unit + 1, unit + 1))
     elif kind == "ash":
         for (x, y) in pts:
-            surf.set_at((x, y), col)
+            pygame.draw.circle(surf, col, (x, y), max(1, lw))

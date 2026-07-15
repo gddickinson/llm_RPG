@@ -5797,10 +5797,19 @@ gfx_poc.png) shows a night-and-day jump: flat noise → shaded grass with blades
 water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
 
 - [x] **P40.0 Plan + proof-of-concept** (docs/GRAPHICS.md + gfx_poc.png).
-- [ ] **P40.1 gfx foundation** — `ui/gfx.py` (supersample/gradient/shade_ramp/soft_shadow/
-  outline/mottle) + route the sprite builders through it.
-- [ ] **P40.2 High-detail TERRAIN** (biggest win) — rebuild tile_variants recipes with the
-  full layer stack, supersampled; compose with P33.2 edges.
+- [x] **P40.1 gfx foundation — DONE.** New `ui/gfx.py` (187 lines): `supersample(build_fn,
+  size,ss)` (build at size·ss → smoothscale down, the char-`draw_body_crisp` technique for the
+  world), `ss_factor` (LLM_RPG_SS env), `vgradient`/`rgradient`, `shade_ramp`, `mottle` (multi-
+  tone soft-blob texture), `directional_light`, `soft_shadow`, `outline`, and `apply_ssaa_
+  setting(engine)` (the "Smooth sprites" setting → char + terrain SSAA). `tests/test_gfx.py`
+  (+12, all headless).
+- [x] **P40.2 High-detail TERRAIN — DONE (biggest win).** `tile_variants.build_tile` is now a
+  LAYER STACK built at size·SSAA and smoothscaled: gradient base + multi-tone mottle + dense
+  S-proportional detail (blades/ripple-arcs/canopy/rock/reeds/…) + a directional light — the
+  flat 3-tone dither is gone. SSAA=3 when "Smooth sprites" is on, 1 off (renderer sets it; env
+  overrides); the loader cache keys on it. Before/after: scratchpad/gfx_before.png vs gfx_after
+  .png (scene) + gfx_tiles_compare.png (tile strip — night-and-day). Built once + cached (36
+  tiles in 0.02s). Composes with the P33.2 edge/coastline pass (unchanged).
 - [ ] **P40.3 High-detail OBJECTS** — richer prop/furniture sprites (shading/texture/outline).
 - [ ] **P40.4 High-detail BUILDINGS** — brick/stone coursing, roof-tile texture, framed
   windows, weathering, AO.

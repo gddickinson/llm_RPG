@@ -81,7 +81,9 @@ class SpriteLoader:
                 terrain_name not in tile_variants.RECIPES:
             return self.tile(terrain_name)
         v = tile_variants.variant_index(wx, wy, terrain_name)
-        key = (terrain_name, v)
+        # cache key carries the SSAA factor so toggling "Smooth sprites"
+        # rebuilds fresh tiles instead of serving the old-fidelity surface
+        key = (terrain_name, v, self.tile_size, tile_variants.SSAA)
         surf = self._variant_cache.get(key)
         if surf is None:
             surf = tile_variants.build_tile(terrain_name, v, self.tile_size)

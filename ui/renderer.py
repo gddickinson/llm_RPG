@@ -61,10 +61,9 @@ class MapRenderer:
     def render(self, target: "pygame.Surface", engine, view_rect: "pygame.Rect"
                ) -> None:
         """Render the map into `target` within `view_rect`."""
-        try:   # P34.7 the "Smooth sprites" (SSAA) setting toggles oversampling
-            from engine import settings
-            from ui import body_renderer as _br
-            _br.SSAA_SCALE = 2 if settings.enabled(engine.player, "smooth") else 1
+        try:   # P34.7/P40.2 "Smooth sprites" toggles character + terrain SSAA
+            from ui import gfx
+            gfx.apply_ssaa_setting(engine)
         except Exception:
             pass
         zone = self.active_zone(engine)
@@ -174,18 +173,13 @@ class MapRenderer:
         for char in all_chars:
             if hasattr(char, "is_active") and not char.is_active():
                 continue
-            # No seeing through walls (P9A.7) — unless keen_sight pierces
-            # them (P14.2 magical sight)
-            try:
-                if hidden_by_walls(engine, char):
-                    continue
-            except Exception:
-                pass
-            # Fog (P15.11): actors on unseen tiles aren't drawn
+            # No seeing through walls (P9A.7, unless keen_sight pierces them —
+            # P14.2) + fog (P15.11): actors on unseen tiles aren't drawn
             try:
                 from engine.discovery import actor_hidden
-                if char.id != engine.player.id and \
-                        actor_hidden(engine, char):
+                if hidden_by_walls(engine, char):
+                    continue
+                if char.id != engine.player.id and actor_hidden(engine, char):
                     continue
             except Exception:
                 pass
@@ -196,9 +190,8 @@ class MapRenderer:
             sx = view_rect.x + (cx - cam_x) * self.tile_size
             sy = view_rect.y + (cy - cam_y) * self.tile_size
             # heroes draw as heroes; an NPC glimpsed through a window is glazed
-            is_player = char.id == engine.player.id or \
-                (getattr(char, "metadata", {}) or {}).get("player_char",
-                                                          False)
+            is_player = char.id == engine.player.id or bool(
+                (getattr(char, "metadata", {}) or {}).get("player_char"))
             try:
                 glimpsed = not is_player and bool(is_indoors(engine, char))
             except Exception:

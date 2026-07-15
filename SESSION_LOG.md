@@ -8189,3 +8189,28 @@ cursor (`input_handler` MOUSEBUTTONDOWN → `targeting.lock_tile`) but wasn't in
 `tests/test_start_menu_tutorial.py` (+4). Screenshot: the New Game menu now lists Tutorial
 Island second. This CLOSES the codebase audit (A-items/A-trap/A-train/A-board/A-disc all done);
 next up is GRAPHICS Phase 1 (revive the shelved P40 top-down fidelity plan).
+
+## 2026-07-15 — GRAPHICS Phase 1 (P40.1/P40.2): the gfx foundation + high-detail terrain
+
+George: the top-down world "still very primitive, higher quality needed, cartoonish ok." Revived
+the shelved P40 plan (docs/GRAPHICS.md). Root cause: terrain was drawn FLAT — a 2–3 tone dither
+at NATIVE tile size, so the ground read as repeated TV static. Fix (the technique characters
+already use via draw_body_crisp): supersample + layer + shade.
+
+New `ui/gfx.py` (187 lines) — the reusable primitives: `supersample(build_fn,size,ss)` (build at
+size·ss then smoothscale down = anti-alias + sub-pixel detail), `ss_factor` (LLM_RPG_SS env),
+`vgradient`/`rgradient`, `shade_ramp`, `mottle` (multi-tone soft-blob texture), `directional_
+light`, `soft_shadow` (contact shadow for Phase 2), `outline`, and `apply_ssaa_setting(engine)`
+(the "Smooth sprites" setting drives char + terrain SSAA). All headless (tests/test_gfx.py +12).
+
+`tile_variants.build_tile` is now a LAYER STACK (`_paint_tile`) built at size·SSAA and smoothscaled:
+gradient base + multi-tone mottle + dense S-proportional detail (blades / ripple ARCS / canopy
+clumps with highlights / rock dots / reed tufts / pebbles / furrows) + a directional light. SSAA=3
+when "Smooth sprites" is on (renderer sets it; env overrides), 1 off; the loader cache keys on it.
+Built once + cached (36 tiles in 0.02s → zero per-frame cost). Composes with the P33.2 edge pass.
+
+Before/after: scratchpad/gfx_before.png vs gfx_after.png (Oakvale scene) and gfx_tiles_compare.png
+(a tile strip — the flat speckle becomes gradient depth + readable ripples/canopy/rock/blades, a
+night-and-day jump). Kept ui/renderer.py UNDER 500 (499, was a pre-existing 506) by extracting the
+SSAA block into gfx.apply_ssaa_setting + merging two hidden-actor guards. Next: P40.3 props/scatter
+(shading + contact shadows) then P40.4 building material texture.
