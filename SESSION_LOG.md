@@ -8053,3 +8053,16 @@ Validator green; full suite green.
 **This closes George's whole 2026-07-15 combat-difficulty message**: P37.6a (10x XP/level),
 P37.6b (aggressive + tougher monsters), P37.6c (camp-clearing quests). Plus the earlier P22.6
 (non-blocking quick-cast + side-rail spellbook) for his spellcasting message.
+
+## 2026-07-15 — BUGFIX: file-sync conflict copies crashed the game on launch
+
+George hit `DataError: Duplicate content id 'king_bloodstone' (again in bloodstone_castle 2
+.json)` on launch. Cause: a file-sync service (iCloud/Dropbox) had dropped 40 CONFLICT COPIES
+across data/ — "monsters 2.json", "npcs/bloodstone_castle 2.json", etc. (the classic
+"name N.ext" pattern). They carried the same content ids, so `data_loader.load_data_dir`
+globbed them in and errored on the duplicate. All 40 were UNTRACKED junk (never committed).
+Fix: (1) deleted the 40 stray copies; (2) HARDENED `items/data_loader.py` to skip any file
+whose stem ends in a sync-conflict marker (` N` / ` copy` / ` Copy N`, via `_SYNC_DUP`) with a
+warning — so a reappearing sync copy can never crash the game again; a GENUINE duplicate id in
+two real files still errors. `tests/test_data_loader.py` (+3). Validator green; a headless
+start_game loads 57 NPCs cleanly.
