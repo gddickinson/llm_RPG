@@ -252,7 +252,7 @@ llm_RPG/
 - **`quest.py`** — `Quest`, `QuestObjective`, `QuestStatus`, `ObjectiveType`.
 - **`quest_manager.py`** — Tracks quests, event hooks for progress. P21.4 timed quests: a `time_limit` starts a `turns_left` countdown on accept, `on_turn_advanced` runs it down and expiry FAILS the quest; `time_left(id)` for the HUD. P21.1 branching (all via `quest.metadata`): `excludes` fails rivals on accept (`fail_quest` wires the dormant `FAILED`), `excluded_by` locks a quest once its rival is taken, `prereq_flag`/`blocked_by_flag` gate on choice-flags (set by `sets_flag` on turn-in, stored in `player.metadata["quest_flags"]`), and `reward_choices`+`choose_reward` pick one payout. Demonstrated by the castle fork (side with Duke Voss vs expose him).
 - **`quest_templates.py`** — Quests loaded from `data/quests.json`; `create_quest(id)`.
-- **`quest_board.py`** — `QuestBoardManager`; tavern bulletin board. P0.1b: `to_dict`/`from_dict` persist each board's live `posted_quest_ids` (radiant/DM notices) through save/load.
+- **`quest_board.py`** — `QuestBoardManager`; tavern bulletin board. P0.1b: `to_dict`/`from_dict` persist each board's live `posted_quest_ids` (radiant/DM notices) through save/load. A-board: `board_at_player` is interior-aware (the board hangs INSIDE the tavern), and `overlay_lines`/`accept_index` back the player-facing [E] "Adventurers' Board" overlay (`gui.show_quest_board`, mode `board`) — so the posted radiant/starter notices are reachable, not stranded.
 - **`radiant.py`** — `RadiantQuestGenerator`; morning task quests from shortages/sightings, level-scaled, board-posted.
 
 ### llm/ — LLM integration

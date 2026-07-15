@@ -161,6 +161,16 @@ class GameAPIMixin:
                 f"Accepted quest from board: {quest_id}")
         return ok
 
+    def board_overlay_lines(self) -> list:
+        """A-board: the numbered notice list for the E-key board overlay."""
+        return self.quest_board_manager.overlay_lines()
+
+    def board_accept_index(self, index: int) -> str:
+        """A-board: accept the i-th notice the board overlay listed."""
+        msg = self.quest_board_manager.accept_index(index)
+        self.memory_manager.add_event(msg)
+        return msg
+
     # ---- spells -----------------------------------------------------
 
     def cast_spell(self, spell_id: str, target_name: str = None) -> str:

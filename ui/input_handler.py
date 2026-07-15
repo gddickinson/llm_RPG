@@ -327,6 +327,15 @@ class InputHandler:
                     return True
             except Exception:
                 pass
+            # A-board: a tavern notice board — view & take posted quests
+            try:
+                if self.engine.quest_board_at_player() is not None \
+                        and not self.engine.world.get_items_at(
+                            *self.engine.player.position):
+                    self.gui.show_quest_board()
+                    return True
+            except Exception:
+                pass
             from engine.mount import try_buy_at_stable   # P15.8b mule (legacy)
             if try_buy_at_stable(self.engine):
                 return True

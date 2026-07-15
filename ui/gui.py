@@ -19,6 +19,8 @@ from ui.input_handler import InputHandler
 
 logger = logging.getLogger("llm_rpg.gui")
 
+# numbered pop-up overlays that render through the shared menu path
+_OVERLAY_MODES = ("menu", "travel", "waystone", "stable", "board")
 # below this the side/bottom panels stop leaving a usable map
 MIN_W, MIN_H = 900, 640
 
@@ -248,7 +250,7 @@ class GameGUI:
                 menu=self.dialog_menu,
             )
 
-        if self.mode in ("menu", "travel", "waystone", "stable") and self.overlay:
+        if self.mode in _OVERLAY_MODES and self.overlay:
             title, lines = self.overlay
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
@@ -391,21 +393,22 @@ class GameGUI:
         self._open("Stable", "stable", self.engine.mount_stable_lines,
                    "The stable is quiet.")
 
+    def show_quest_board(self) -> None:   # A-board (E at a tavern notice board)
+        self._open("Adventurers' Board", "board",
+                   self.engine.board_overlay_lines, "The board is bare.")
+
     def show_diaries(self) -> None:
         self._open("Achievement Diaries", "menu",
                    self.engine.diary_manager.overlay_lines, "Diaries unavailable.")
 
     def show_collection_log(self) -> None:
         self._open("Collection Log", "menu",
-                   self.engine.collection_log.overlay_lines,
-                   "Collection log unavailable.")
+                   self.engine.collection_log.overlay_lines, "Unavailable.")
 
     def show_quests(self) -> None:
         qm = self.engine.quest_manager
-        if not qm:
-            self.overlay = ("Quests", ["Quest system disabled."])
-        else:
-            self.overlay = ("Quests", qm.summary().split("\n"))
+        lines = qm.summary().split("\n") if qm else ["Quest system disabled."]
+        self.overlay = ("Quests", lines)
         self.mode = "menu"
 
     def show_character_sheet(self) -> None:
@@ -433,9 +436,7 @@ class GameGUI:
             lines.append(f"  {'Total':<14} {total_skill_level(p):>3}")
         except Exception:
             lines.append("  (unavailable)")
-        lines += ["", "Goals:"]
-        for g in p.goals:
-            lines.append(f"  * {g}")
+        lines += ["", "Goals:"] + [f"  * {g}" for g in p.goals]
         self.overlay = ("Character Sheet", lines)
         self.mode = "menu"
 

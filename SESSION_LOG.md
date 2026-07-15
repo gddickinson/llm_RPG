@@ -8158,3 +8158,20 @@ per-pixel dither, no supersampling/gradient/AO), while CHARACTERS already use th
 supersample + layered shading via a new ui/gfx.py) for top-down, terrain first (biggest win),
 staying 100% procedural/offline/cached; a CC0 PNG tileset only as an opt-in skin (default would
 kill the animated-character system). Full report captured for George's decision.
+
+## 2026-07-15 — AUDIT-fix A-board: the tavern quest BOARD is reachable
+
+Continuing the audit sweep. The board was the last stranded find: `quest_board_manager`
+posted starter + nightly RADIANT notices, `quest_board_at_player()`/`accept_from_board()`
+existed — but nothing called them, so posted work was invisible to the player. Now the
+tavern's "Adventurers' Board" opens with [E]. The board hangs INSIDE the tavern
+(`board_at_player` is interior-aware, PT3.1), so the E-key branch (`ui/input_handler.py`,
+after the stable check) fires when `quest_board_at_player()` is set and nothing's underfoot,
+opening a numbered overlay (`gui.show_quest_board`, mode `board`). `quest_board.overlay_lines`
+lists the AVAILABLE + unlocked posted notices (title + reward + blurb) and stashes their ids;
+a 1-9 keypress routes through `input_actions.menu_mode_key` → `engine.board_accept_index` →
+`accept_index` → `accept_from_board`, starting the quest. Hint-bar cue "[E] read the
+adventurers' board" when notices are posted. `tests/test_quest_board_reach.py` (+5) enters the
+tavern, lists notices, accepts one (→ ACTIVE), and guards the out-of-range/away cases.
+Compacted gui.py back under 500 (499) with an `_OVERLAY_MODES` const + tighter show_quests/
+show_collection_log/character-sheet goals. Validator clean; full suite green.

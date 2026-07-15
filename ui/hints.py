@@ -114,6 +114,13 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    try:   # A-board a tavern notice board posts adventuring work
+        board = engine.quest_board_at_player()
+        if board is not None and engine.quest_board_manager.list_available(board):
+            hints.append("[E] read the adventurers' board")
+    except Exception:
+        pass
+
     try:   # a shut town gate nearby (P31.1d/P37) — never a prison
         tg = getattr(engine, "town_gates", None)
         if tg is not None and not getattr(engine, "current_interior", None):

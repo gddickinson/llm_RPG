@@ -5680,9 +5680,15 @@ features) found the following "built but unreachable" gaps. Verified; ranked by 
   (`guildhalls.hall_here`). Also advertised the previously-hidden `/bond` `/spend` `/order` in
   the dialog prompt (part of A-disc). `tests/test_guild_training.py` (+5). (Collapsed the thin
   gui `show_*` overlay methods into a shared `_open` helper to hold gui.py < 500.)
-- [ ] **A-board: quest BOARD unreachable.** `quest_board_at_player()`/`accept_quest_from_
-  board()` have no caller — radiant quests posted each morning are STRANDED. Fix: an E-on-board
-  overlay to view/accept.
+- [x] **A-board: quest BOARD — reachable via [E] at the tavern notice board.** The board
+  hangs INSIDE the tavern (`board_at_player` is interior-aware); standing there, [E] now opens
+  a numbered "Adventurers' Board" overlay (`gui.show_quest_board`, mode `board`) that lists the
+  posted AVAILABLE notices (`quest_board.overlay_lines`) and takes one on a 1-9 keypress
+  (`board_accept_index` → `accept_from_board`). Engine wrappers `board_overlay_lines`/
+  `board_accept_index`; `input_actions.menu_mode_key` handles the `board` mode; a hint-bar cue
+  advertises it. Radiant + starter notices are no longer stranded. `tests/test_quest_board_
+  reach.py` (+5). (Compacted `gui.py` back under 500 via an `_OVERLAY_MODES` const + tighter
+  `show_quests`/`show_collection_log`/character-sheet goals.)
 - [ ] **A-disc: discoverability** — Tutorial Island isn't in the GUI New Game menu (only
   `--tutorial` CLI); the `/bond` `/spend` `/order` dialog commands work but aren't advertised
   in the dialog prompt; left-click-to-target isn't in the controls help. Small fixes.
