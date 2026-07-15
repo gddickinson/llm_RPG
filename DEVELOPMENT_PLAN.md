@@ -5608,7 +5608,7 @@ EVERY building, many more decorative props / furniture / diases / stair & window
 (see docs/WORLD_DETAIL.md for the synthesis + design).
 
 - [x] **P39.0 Plan** — research + design in `docs/WORLD_DETAIL.md`.
-- [ ] **P39.1 Prop sprite library** — `ui/prop_sprites.py` procedural sprites for many new
+- [x] **P39.1 Prop sprite library** — `ui/prop_sprites.py` procedural sprites for many new
   props (pillar/brazier/torch/tapestry/sarcophagus/statue/fountain/dais/gravestone/urn/
   cobweb/candelabra/rug/…); `sprites.furniture()` dispatches them. Tests + a contact sheet.
 - [ ] **P39.2 Interior themes** — `data/interior_themes.json` (floor/wall palette + tint per

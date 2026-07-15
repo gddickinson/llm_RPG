@@ -7537,3 +7537,18 @@ reusable patterns; building-gen supplies the fixtures.py placement engine, windo
 variants, and temple/tomb/smithy flavor. Build order P39.1 (prop sprites) → P39.2 (themes/
 palette) → P39.3 (themed furnishing) → P39.4 (light/mood) → P39.5 (stair/window/door
 variants) → P39.6 (apply everywhere + the Drowned Vault crypt theme).
+
+## 2026-07-14 (cont.) — P39.1: the decorative prop sprite library
+
+First build round of the world-detail phase. New `ui/prop_sprites.py` (335 lines, pure
+geometry + thin pygame draw, like roof_shapes/gate_shapes): 23 distinct recognizable
+procedural props — pillar, brazier, torch, tapestry/banner, rug/carpet, sarcophagus/coffin,
+tomb_slab, gravestone, bone/skull pile, cobweb, urn/amphora, statue/idol, fountain,
+dais/throne, candelabra, chandelier, cauldron, weapon_rack, crate, lectern, bench, well,
+mosaic — over a material palette lifted from the reference projects (stone/iron/wood/gold/
+bone/marble/fire/cloth). Fire props (brazier/torch/candelabra/chandelier/cauldron) carry a
+radial GLOW + flame and are flagged `emits_light` (for P39.4). `ui/sprite_loader.py:
+furniture()` dispatches here FIRST (cached by name+size), so a furniture piece named
+"Stone Pillar"/"Iron Brazier"/etc. renders the rich prop; legacy pieces unchanged.
+tests/test_prop_sprites.py (8) + a contact-sheet screenshot of all 23. Full suite next.
+Next P39.2: interior themes/palette (dank tombs vs warm homes).

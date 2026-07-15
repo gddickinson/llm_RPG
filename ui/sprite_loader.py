@@ -305,6 +305,12 @@ class SpriteLoader:
         low = name.lower()
         wood = PALETTE["building"]
         dark = PALETTE["building2"]
+        # P39.1 the decorative-prop library takes first pick (pillars, braziers,
+        # tapestries, sarcophagi, statues, fountains, …); legacy pieces below
+        from ui import prop_sprites
+        if prop_sprites.draw_prop(surf, low, ts):
+            self._tile_cache[key] = surf
+            return surf
         if "bed" in low:
             pygame.draw.rect(surf, dark, (3, ts // 3, ts - 6,
                                           ts // 2), border_radius=3)
