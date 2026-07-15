@@ -41,12 +41,15 @@ def dispatch(renderer, target, engine, view_rect, zone) -> bool:
 
 
 def iso_enabled(engine=None) -> bool:
-    """Iso mode on? env LLM_RPG_RENDER=iso, or a player 'iso' setting."""
-    if os.environ.get("LLM_RPG_RENDER", "").lower() == "iso":
-        return True
+    """Iso mode on? env LLM_RPG_RENDER=iso overrides; else the in-game
+    'Renderer' setting (topdown/iso) in the ',' options overlay (P41.7)."""
+    env = os.environ.get("LLM_RPG_RENDER", "").lower()
+    if env in ("iso", "topdown"):
+        return env == "iso"
     try:
         from engine import settings
-        return bool(engine and settings.enabled(engine.player, "iso"))
+        return bool(engine and
+                    settings.get_setting(engine.player, "renderer") == "iso")
     except Exception:
         return False
 
@@ -121,7 +124,7 @@ def render_iso(target, engine, view_rect, tile_size) -> None:
                 continue
             items.append((iso.depth_key(wx, wy, z, 0), "tile",
                           (int(sx), int(sy), PALETTE.get(name, (90, 150, 70)),
-                           z)))
+                           z, wx, wy)))
             if name in ("forest", "forest2"):
                 items.append((iso.depth_key(wx, wy, z, 1), "obj",
                               (iso_objects.tree_sprite(int(tile_size * 1.5)),
@@ -183,20 +186,44 @@ def _draw_char(target, data, tile_size):
     target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
 
 
+def draw_diamond(target, iso, sx, sy, top, seed=0):
+    """A tile top-face diamond, P41.7 SHADED (top-lit, lower-shade) + a few
+    deterministic texture flecks so the iso ground reads less flat."""
+    dia = [(int(a), int(b)) for a, b in iso.diamond(sx, sy)]
+    t, r, b, l = dia
+    pygame.draw.polygon(target, top, dia)
+    pygame.draw.polygon(target, _scale(top, 1.07), [t, r, l])   # sky-lit top
+    pygame.draw.polygon(target, _scale(top, 0.9), [l, r, b])    # lower shade
+    h = (seed * 2654435761) & 0x7fffffff
+    hw, hh = max(1, iso.tw // 5), max(1, iso.th // 5)
+    for i in range(3):
+        h = (h * 1103515245 + 12345) & 0x7fffffff
+        dx = (h % (2 * hw + 1)) - hw
+        h = (h * 1103515245 + 12345) & 0x7fffffff
+        dy = (h % (2 * hh + 1)) - hh
+        target.fill(_scale(top, 1.2 if i % 2 else 0.78),
+                    (sx + dx, sy + dy, 2, 2))
+    pygame.draw.polygon(target, _scale(top, 0.68), dia, 1)      # edge
+
+
 def _draw_tile(target, iso, data):
-    sx, sy, top, z = data
+    sx, sy, top, z, wx, wy = data
     for i, face in enumerate(iso.cliff_faces(sx, sy, z)):       # sides first
         pygame.draw.polygon(target, _scale(top, 0.55 if i == 0 else 0.4),
                             [(int(a), int(b)) for a, b in face])
-    dia = [(int(a), int(b)) for a, b in iso.diamond(sx, sy)]
-    pygame.draw.polygon(target, top, dia)
-    pygame.draw.polygon(target, _scale(top, 0.72), dia, 1)      # tile edge
+    draw_diamond(target, iso, sx, sy, top, wx * 131 + wy)
 
 
 def _blit_object(target, data):
-    """Blit a baked 3D sprite so its ground-point sits on the tile centre."""
+    """Blit a baked 3D sprite so its ground-point sits on the tile centre, with
+    a soft contact shadow (P41.7)."""
     spr, sx, sy = data
     w, h = spr.get_size()
+    sw = int(w * 0.55)
+    shh = max(3, sw // 3)
+    sh = pygame.Surface((sw, shh), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 70), (0, 0, sw, shh))
+    target.blit(sh, (sx - sw // 2, sy - shh // 2))
     target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
 
 

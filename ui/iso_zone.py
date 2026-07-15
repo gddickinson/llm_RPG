@@ -93,7 +93,7 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
                               (int(sx), int(sy), zt)))
             else:
                 items.append((iso.depth_key(wx, wy, 0, 0), "floor",
-                              (int(sx), int(sy))))
+                              (int(sx), int(sy), wx * 131 + wy)))
 
     for f in getattr(zone, "furniture", []):
         fx, fy = f.get("x", -1), f.get("y", -1)
@@ -123,10 +123,9 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
 
 
 def _floor(target, iso, data, col):
-    sx, sy = data
-    dia = [(int(a), int(b)) for a, b in iso.diamond(sx, sy)]
-    pygame.draw.polygon(target, col, dia)
-    pygame.draw.polygon(target, _scale(col, 0.72), dia, 1)
+    from ui.iso_render import draw_diamond
+    sx, sy, seed = data
+    draw_diamond(target, iso, sx, sy, col, seed)
 
 
 def _wall(target, iso, data, col):

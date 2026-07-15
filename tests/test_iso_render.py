@@ -74,6 +74,36 @@ class TestRenderIso(unittest.TestCase):
         self.assertGreater(iso_render._HEIGHT["mountain"], 0)
         self.assertLess(iso_render._HEIGHT["water"], 0)
 
+    def test_renderer_setting_toggles_iso(self):        # P41.7 in-game toggle
+        from engine import settings
+        _os.environ.pop("LLM_RPG_RENDER", None)
+        settings.set_setting(self.engine.player, "renderer", "topdown")
+        self.assertFalse(iso_render.iso_enabled(self.engine))
+        settings.set_setting(self.engine.player, "renderer", "iso")
+        self.assertTrue(iso_render.iso_enabled(self.engine))
+        settings.set_setting(self.engine.player, "renderer", "topdown")
+
+    def test_env_overrides_the_setting(self):
+        from engine import settings
+        settings.set_setting(self.engine.player, "renderer", "iso")
+        _os.environ["LLM_RPG_RENDER"] = "topdown"
+        try:
+            self.assertFalse(iso_render.iso_enabled(self.engine))
+        finally:
+            _os.environ.pop("LLM_RPG_RENDER", None)
+            settings.set_setting(self.engine.player, "renderer", "topdown")
+
+    def test_draw_diamond_is_shaded_not_flat(self):        # P41.7 fidelity
+        import pygame
+        from ui.iso import IsoProjection
+        surf = pygame.Surface((128, 128))
+        surf.fill((0, 0, 0))
+        iso_render.draw_diamond(surf, IsoProjection(64, 32, 16),
+                                64, 64, (90, 150, 70), seed=7)
+        shades = {surf.get_at((x, y))[:3]
+                  for x in range(50, 78, 3) for y in range(54, 74, 3)}
+        self.assertGreaterEqual(len(shades), 2, "the tile should be shaded")
+
 
 if __name__ == "__main__":
     unittest.main()

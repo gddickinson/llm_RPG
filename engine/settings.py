@@ -26,6 +26,8 @@ OPTIONS: List[dict] = [
      "choices": [24, 32, 48, 64], "default": 48},
     {"key": "smooth", "label": "Smooth sprites",   # P34.7 SSAA on/off
      "choices": ["on", "off"], "default": "on"},
+    {"key": "renderer", "label": "Renderer",       # P41.7 view: 3D iso or flat
+     "choices": ["topdown", "iso"], "default": "topdown"},
     {"key": "autoplay", "label": "Auto-play (away)",
      "choices": ["off", "on"], "default": "off"},
     {"key": "disposition", "label": "Away disposition",

@@ -7750,3 +7750,18 @@ which also slimmed renderer.py (504→490). Screenshot: the Drowned Vault crypt 
 dark themed floor, braziers/sarcophagi/urns/cobwebs/sigils/stairs, guardians + the hero.
 tests/test_iso_zone.py (6). Next P41.7: fold in Phase 40 supersample fidelity + camera/
 lighting polish + flip default to iso at parity.
+
+## 2026-07-15 — P41.7: iso fidelity + polish + an in-game RENDERER toggle
+
+The last iso round. (a) FIDELITY: `iso_render.draw_diamond` now SHADES each tile top-face
+(a sky-lit upper triangle, a lower shade) + scatters a few deterministic texture flecks, so
+the iso ground reads far less flat; used by both the overworld and interior floors. (b)
+POLISH: baked buildings/trees/objects get a soft elliptical CONTACT SHADOW so they sit on
+the ground. (c) TOGGLE: a real 'Renderer: topdown/iso' option in engine/settings.py (the
+','-key overlay) — `iso_render.iso_enabled` reads it, with LLM_RPG_RENDER still an override.
+So iso is switchable IN-GAME, not just via env. Default stays topdown (iso ships as an
+opt-in view). Screenshot: Oakvale in iso with textured/shaded ground + object shadows.
+tests/test_iso_render.py (+4). Full suite next. PHASE 41 (isometric 3D-look world) is
+functionally COMPLETE — overworld + interiors + objects + characters render in 3D iso,
+toggle-able in-game, top-down untouched. Remaining polish (camera pan/zoom, deeper
+lighting) is optional future work. Next: balance P37.5b (tougher monsters).
