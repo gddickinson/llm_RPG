@@ -7795,3 +7795,20 @@ into a ~100% clean win. So power comes from gear + party, not XP farming — exa
 ask. P37.5 (slower progression / harder combat) is now COMPLETE end to end: P37.5a XP
 economy → P37.5a-TUNE steeper curve → P37.5b tougher wild foes → P37.5c this playtest.
 Full suite green (2727 tests).
+
+## 2026-07-15 — P39.6: decoration applied EVERYWHERE (closes Phase 39)
+
+Verified + locked in that George's themed-decoration ask reaches the whole world. The
+P39.2 interior themes + P39.3 furnishing machinery already cover it: all 24 settlement
+interiors are furnished in their kind's theme (tavern→bench/hearth/table, smithy→anvil/
+weapon-rack, temple→altar/pillar/pew/tapestry, home→bed/chest/rug), and the Sunken Tome's
+Drowned Vault builds as a proper dark crypt — 14–18 props per level (sarcophagi, braziers,
+urns, cobwebs, gravestones, bones) under the dank tomb light (dark=120, warm firelight
+pools, drifting dust). New `tests/test_world_decoration.py` (+3) asserts every interior is
+furnished, each themed kind shows its signature prop, and the vault reads as a crypt.
+Rendered broad screenshots in BOTH renderers — `scratchpad/decor_temple_{topdown,iso}.png`
+(ornate: pillars, red tapestries, altar, pews, brazier glow) and `scratchpad/decor_crypt_
+{topdown,iso}.png` (dark-and-dank with warm brazier pools + dust). Overworld scatter
+TEXTURE already ships via P33.1 tile_variants (grass blades / forest canopy / mountain
+rocks / swamp reeds); sparse decorative overworld PROPS noted as optional P39.6b. Phase 39
+(world detail & decoration) COMPLETE. (Screenshots kept local — scratchpad/ gitignored.)

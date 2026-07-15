@@ -5633,8 +5633,17 @@ EVERY building, many more decorative props / furniture / diases / stair & window
   altars; dank vs warm made to read.
 - [x] **P39.5 Stair / window / door variants** — spiral/stone stairs, arched/lancet/rose/
   arrow-loop windows, plank/portcullis doors, per theme.
-- [ ] **P39.6 Apply everywhere + adventure polish** — the Drowned Vault gets the tomb/crypt
-  theme; all settlement buildings themed; overworld scatter detail; broad screenshots.
+- [x] **P39.6 Apply everywhere + adventure polish** — verified the P39.2/P39.3 theme +
+  furnishing machinery reaches EVERYWHERE: all 24 settlement interiors furnished in their
+  kind's theme (tavern→bench/hearth/table, smithy→anvil/weapon-rack, temple→altar/pillar/
+  pew), and the Sunken Tome's Drowned Vault builds as a proper dark crypt (14–18 pieces/
+  level: sarcophagi, braziers, urns, cobwebs, gravestones, bones) with the dank tomb light
+  (dark=120, warm firelight pools, dust). New `tests/test_world_decoration.py` (+3) locks it
+  in. Broad screenshots rendered in BOTH renderers (`scratchpad/decor_{temple,crypt}_
+  {topdown,iso}.png`) — the crypt reads dark-and-dank with warm brazier glow, the temple
+  ornate with pillars/tapestries/altar/pews. Overworld scatter TEXTURE (grass blades, forest
+  canopy, mountain rocks, swamp reeds) already ships via P33.1 `tile_variants`; sparse
+  decorative overworld PROPS remain an optional follow-up (P39.6b). Closes Phase 39.
 
 ## Phase 37.5a-tune — leveling made genuinely tough (George, 2026-07-14)
 

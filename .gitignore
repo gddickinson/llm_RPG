@@ -19,3 +19,6 @@ world/.DS_Store
 .claude/
 .venv/
 data/dm_library/
+
+# Local review artifacts (screenshots, PoCs) — not source
+scratchpad/
