@@ -5,10 +5,24 @@ LLM-powered NPCs.** It runs entirely offline out of the box — a heuristic AI
 keeps the whole world alive with zero API calls — and plugs into Ollama,
 Anthropic Claude, or OpenAI when you want richer NPC minds.
 
+> **This project is an *introduction* to building a role-playing game with an
+> LLM** — a working, playable reference you can read, run, and learn from. It's
+> deliberately structured so the ideas are legible: content lives in `data/*.json`,
+> every module is mapped in [`INTERFACE.md`](INTERFACE.md), the LLM is a pillar
+> that's *always* mirrored by an offline heuristic, and each source file stays
+> under 500 lines. It is still evolving in the open — see *Current state* and
+> *Future plans* below.
+
+![The isometric 3D-look world](docs/img/iso_world.png)
+*The optional isometric renderer (Phase 41): the same world drawn in a baked-3D
+2:1 view — 3D buildings, trees, characters and furniture, interior lighting,
+day-night + weather, and decorative scatter. Toggle it in Settings; the classic
+top-down view stays the default.*
+
 ![Gameplay — Oakvale Village in the rain](docs/img/gameplay.png)
-*Oakvale in the rain: procedural sprites, eased day/night lighting and weather,
-fog-of-war, a live minimap, and an event log threaded with world lore, DM beats,
-and the legends of the fallen.*
+*The default top-down view: procedural sprites, eased day/night lighting and
+weather, fog-of-war, a live minimap, and an event log threaded with world lore,
+DM beats, and the legends of the fallen.*
 
 ```bash
 pip install -r requirements.txt
@@ -85,6 +99,32 @@ drives from data.*
 
 ---
 
+## How to play
+
+1. **Install & launch** — `pip install -r requirements.txt` then `python main.py`.
+   A title screen offers **New Game** (a character creator: race, class, stats),
+   **Load**, **Begin at the Castle**, and world options (a classic or a *Realistic
+   World*). No API key or network is needed — the offline heuristic AI runs the
+   whole world.
+2. **Find your feet in Oakvale** — you start safe in/near **Oakvale Village**.
+   `WASD`/arrows to walk; `T` to talk to townsfolk; `B` to barter; `I` for your
+   inventory; `Q` for your quest log; `F1`/`?` for the full controls. The **hint
+   bar** along the bottom always tells you which keys do something right here.
+3. **Take a quest & venture out** — accept a quest from an NPC or a tavern quest
+   board, then head into the wilds. It gets **more dangerous the further you go**
+   — monsters now close in and press the attack, so fight deliberately, use
+   cover and terrain, and retreat when outmatched.
+4. **Grow through gear & allies, not grinding** — power comes from better
+   weapons/armour, crafted and looted, and from **companions** you recruit; the
+   XP climb is intentionally slow. Rest at inns or camp to heal; bank your gold;
+   train skills by *doing* (mining, fishing, crafting, hunting).
+5. **Follow the adventure** — a rumor at the start points you toward *The Sunken
+   Tome of Vael'Zhur* (below). Or just live in the world: the map streams
+   endlessly, NPCs remember you, factions war, and the seasons turn.
+
+Prefer text? `python main.py --ui terminal`. Want a 3D look? Toggle the renderer
+to **iso** in Settings (`,`). Learning by doing? `python main.py --tutorial`.
+
 ## Controls (GUI)
 
 **Move & explore** — `WASD`/arrows walk (a map edge streams a new region);
@@ -94,8 +134,9 @@ detail; `ENTER` sleep at an inn or camp outdoors.
 
 **Fight** — `SPACE`/`F` melee; `R` ranged, `SHIFT+R` aimed shot; `[` `]` cycle
 target; `SHIFT+F` shove; `SHIFT+V` weapon action; `SHIFT+T` trip; `SHIFT+I`
-demoralize; `SHIFT+B` feint; `SHIFT+H` battle medicine; `X` spellbook, `V`
-quick-Heal; `H` drink a potion.
+demoralize; `SHIFT+B` feint; `SHIFT+H` battle medicine; `X` spellbook (a compact
+side rail, `SHIFT+1-5` favourites a slot); `1-5` **quick-cast** a slotted spell
+with no overlay; `V` quick-Heal; `H` drink a potion.
 
 **People & world** — `T` talk (`/persuade` `/intimidate` `/deceive`); `B` barter;
 `G`/`E` pick up · use furniture · dig; `SHIFT+G` carry a downed body; `Z` forage
@@ -135,7 +176,7 @@ the **Tidecaller's Signet** helps you cross the flooded halls.
 
 - **Branch:** work happens on `v2-development` in small, tested rounds; every
   green round is committed **and** pushed.
-- **Tests:** `.venv/bin/python -m unittest discover tests/` — **1950+** unit
+- **Tests:** `.venv/bin/python -m unittest discover tests/` — **2800+** unit
   tests, kept green. Content is validated with
   `.venv/bin/python -m items.data_validate` after any `data/` edit.
 - **Navigation:** read **[`INTERFACE.md`](INTERFACE.md)** first — it maps every
@@ -147,20 +188,55 @@ the **Tidecaller's Signet** helps you cross the flooded halls.
 - **File-size rule:** every source file stays under 500 lines; modules are split
   before they grow past it.
 
-### Status
+### Current state
 
-Phases 0–18 are complete (repair → progression → the LLM pillar → quests & world
-→ combat depth → the Dungeon Master → conflict → autonomous-world imports →
-living buildings → destructible world → traversal → the rules of living →
-advanced graphics → the living economy → the tactical battle layer → the royal
-castle). **Phase 19 (Monsters & Menace)** — dragons, lairs, packs, tribes,
-elites, the nemesis — is complete. **Phase 20 (the Living Society & the Gods)**
-is in progress. See `DEVELOPMENT_PLAN.md` for what's next.
+The core game is complete and richly featured, and development continues in the
+open. Highlights of what's in now:
+
+- **Phases 0–20** — the foundation: repair & modularization, the 12-skill
+  progression lattice, the LLM dialog/secrets/memory pillar, quests & the living
+  world, combat depth, the Dungeon Master layer, conflict systems, living
+  buildings & destructible world, traversal, the living economy with production &
+  caravans, the tactical battle layer, the seven-floor royal castle, the
+  **Monsters & Menace** ecology (dragons, lairs, packs, tribes, elites, the
+  Shadow-of-Mordor nemesis), and the **Living Society & Gods** (ambitions, a peer
+  social graph of friendships & feuds, divine boons & wrath).
+- **Multiplayer & agents** — a transport-free client/world contract with an
+  optional TCP wire, and agent-driven heroes that play through the real player API.
+- **A built-in adventure** — *The Sunken Tome of Vael'Zhur*, a guided 5-act
+  branching questline woven into every new game (see below).
+- **World detail & graphics** — themed, prop-decorated interiors; a per-tile
+  textured overworld with terrain edges, 2.5D buildings with real roofs and
+  gates, and decorative scatter; **an optional full isometric "3D-look" renderer**
+  (baked-3D objects, characters, furniture, interior lighting, and day-night +
+  weather — a toggle, with the top-down view still the default).
+- **Recent balance & feel** — a much slower, gear-and-party-driven power curve
+  (10× steeper XP), monsters that *press the attack* every turn and hit hard,
+  quests that clear an encounter source (break a bandit camp → fewer bandits),
+  non-blocking quick-cast, carry-raising bags & a quiver, and stackable ammo.
+
+See **[`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md)** for the full phased history
+and **[`SESSION_LOG.md`](SESSION_LOG.md)** for a round-by-round narrative.
+
+### Future plans
+
+Active and upcoming work (tracked in `DEVELOPMENT_PLAN.md`):
+
+- **Mounts you can ride** — surfacing the horse / pack-mule / rider system with a
+  stable near Oakvale to buy and ride from.
+- **Platform-gated travel** — teleport only from Wayfarer platforms (not
+  anywhere), with the hero spawning on a starting platform.
+- **Isometric polish** — camera pan/zoom, deeper iso lighting; optionally making
+  iso the default once it's fully at parity.
+- **Deeper systems** — an expanded skill web, a drag-and-drop character/items
+  window, a magic overhaul (slower mana, learned spells), and richer, tiered
+  procedural worlds with woven-in history.
 
 ## Requirements
 
-Python 3.12, `pygame`, `numpy`, `pytest` (see `requirements.txt`). No network is
-required to play — LLM providers are strictly opt-in.
+Python 3.12, `pygame`, `numpy`, `pytest` (see `requirements.txt`). A virtualenv is
+recommended (`python -m venv .venv && .venv/bin/pip install -r requirements.txt`).
+No network is required to play — LLM providers are strictly opt-in.
 
 ## License
 
