@@ -86,5 +86,50 @@ class TestRealisticMode(unittest.TestCase):
                 self.assertNotEqual(w.map.terrain[y][x], T.WATER)
 
 
+class TestPlayable(unittest.TestCase):
+    def test_hero_can_walk_out_of_the_walled_start_town(self):
+        """Regression (George): a realistic world walled Oakvale with heightmap
+        water/mountains inside, trapping the hero. The fortified courtyard must be
+        walkable and a gate reachable — the hero can roam far out."""
+        from engine.game_engine import GameEngine
+        from collections import deque
+        e = GameEngine(llm_provider="heuristic", enable_npc_processes=False,
+                       world_kind="realistic")
+        e.start_game()
+        try:
+            wmap = e.world.map
+            px, py = e.player.position
+            oak = next((l for l in e.world.locations
+                        if l.name == "Oakvale Village"), None)
+            easy = (T.GRASS, T.ROAD, T.BRIDGE, T.FOREST, T.RUBBLE, T.FARMLAND)
+            seen, q = {(px, py)}, deque([(px, py)])
+            while q:
+                x, y = q.popleft()
+                for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = x + a, y + b
+                    if 0 <= nx < wmap.width and 0 <= ny < wmap.height \
+                            and (nx, ny) not in seen \
+                            and wmap.terrain[ny][nx] in easy:
+                        seen.add((nx, ny))
+                        q.append((nx, ny))
+            far = max((abs(x - oak.x) + abs(y - oak.y) for x, y in seen),
+                      default=0) if oak else 999
+            self.assertGreater(len(seen), 300)      # not boxed in
+            self.assertGreater(far, 25)             # roams well beyond the walls
+        finally:
+            e.end_game()
+
+    def test_chronicle_seeded_from_history(self):
+        from engine.game_engine import GameEngine
+        e = GameEngine(llm_provider="heuristic", enable_npc_processes=False,
+                       world_kind="realistic")
+        e.start_game()
+        try:
+            self.assertTrue(getattr(e.chronicle, "pregame", []),
+                            "the age's chronicle should show in the Y-journal")
+        finally:
+            e.end_game()
+
+
 if __name__ == "__main__":
     unittest.main()

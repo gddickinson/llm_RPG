@@ -5508,5 +5508,14 @@ demo_setup; add a `"realistic"` kind + a `WorldGenerator(mode="realistic")`.
   hut keeps its single authored room. Connected from the entrance to every room
   (verified). Screenshot: cottage / guildhall / manor floorplans. `tests/test_room_
   gen.py` (incl. 40-seed connectivity).
-- [ ] **P36.5 Integration & polish.** The realistic world is fully playable end-to-end
-  (economy, factions, wildlife, encounters seeded correctly), and beautiful.
+- [x] **P36.5 Integration & polish.** *Done:* verified a realistic world starts fully
+  end-to-end (NPCs / quests / factions / wildlife / encounters / production all seed on
+  it, the deep-history CHRONICLE shows in the Y-journal). **Bug-fix (George):** the
+  generated world walled Oakvale with heightmap WATER/MOUNTAINS inside the enclosure,
+  trapping the hero with no reachable gate — new `_clear_start_town_interior` clears the
+  whole FORTIFIED extent to walkable ground before the wall goes up, so the courtyard is
+  passable and a gate (a road crossing) is reachable. A playtest smoke flood-fills from
+  the spawn: 6200+ tiles reachable, roaming 100+ out — the hero walks free. Screenshot:
+  the walled start town with a walkable courtyard + a road-gate. `tests/test_realistic_
+  gen.py` (escape + chronicle-seeded regressions). **Phase 36 COMPLETE** — a realistic,
+  deep-history world is a selectable, playable start option.

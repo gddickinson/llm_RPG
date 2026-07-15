@@ -7363,3 +7363,22 @@ hut keeps its single open room so hand-tuned layouts (the tavern/forge) survive.
 entrance reaches every room (verified). A screenshot shows cottage / guildhall / manor
 floorplans with rooms, doorways, furniture and NPC spots. `tests/test_room_gen.py` (9).
 Full suite next. Phase 36 almost done — P36.5 polish remains.
+
+## 2026-07-14 (cont.) — P36.5: integration & polish + the "trapped in the castle" fix
+
+Verified a realistic world starts fully end-to-end: NPCs, quests, factions, wildlife,
+encounters and production all seed on it, and the deep-history chronicle shows in the
+Y-journal (a `chronicle.pregame` regression test). BUG-FIX (George: "started me inside
+a castle with no doors/gates — no way out"): the realistic worldgen walls Oakvale
+(P31.1), but the wall box's INTERIOR held heightmap WATER/MOUNTAINS, and perimeter
+water/mountain is left as an impassable "natural barrier" — so the hero was boxed in
+with no reachable gate. Fix: `WorldGenerator._clear_start_town_interior` clears the
+whole FORTIFIED extent (Oakvale + its buildings + margin, via `fortify.town_members`/
+`extent`) of water/mountain/marsh to walkable grass BEFORE the wall goes up — so the
+courtyard is passable and the gate (a road crossing, else the cut south gate) is
+reachable. A playtest flood-fill from the spawn reaches 6200+ tiles, roaming 120 out —
+the hero walks free; a screenshot shows the walled start town with a green courtyard +
+a road-gate to the west. `tests/test_realistic_gen.py` (escape + chronicle regressions).
+PHASE 36 COMPLETE: a realistic, deep-history world (heightmap biomes + rivers + a
+900-year settlement/ruins/roads chronicle + BSP multi-room interiors) is a selectable,
+playable New Game option.

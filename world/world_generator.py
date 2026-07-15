@@ -79,6 +79,7 @@ class WorldGenerator:
             self._add_third_settlement()
             self._add_third_road()
         self._carve_town_clearings()           # towns clear the land they sit on
+        self._clear_start_town_interior()      # ...esp. the whole WALLED enclosure
         self._fortify_start_town()
         self._add_cave()
         if self.w >= 100:
@@ -121,6 +122,31 @@ class WorldGenerator:
         loc.add_property("ruin", r.kind)
         loc.add_property("legend", r.legend)
         self.world.add_location(loc)
+
+    def _clear_start_town_interior(self) -> None:
+        """Bug-fix (George): a realistic world walls Oakvale, but heightmap water /
+        mountains INSIDE the wall trapped the hero with no reachable gate. Clear the
+        whole fortified enclosure to walkable ground BEFORE the wall goes up, so the
+        courtyard is passable and the gate is reachable (roads/bridges/caves kept)."""
+        oak = next((l for l in self.world.locations
+                    if l.name == "Oakvale Village"), None)
+        if oak is None:
+            return
+        from world.fortify import town_members, extent
+        try:
+            x0, y0, x1, y1 = extent(town_members(self.world, oak, radius=12),
+                                    margin=3)
+        except Exception:
+            x0, y0 = oak.x - 6, oak.y - 6
+            x1, y1 = oak.x + oak.width + 6, oak.y + oak.height + 6
+        keep = (TerrainType.BUILDING, TerrainType.ROAD, TerrainType.BRIDGE,
+                TerrainType.CAVE)
+        wild = (TerrainType.WATER, TerrainType.MOUNTAIN, TerrainType.SWAMP)
+        for y in range(max(0, y0), min(self.h, y1 + 1)):
+            for x in range(max(0, x0), min(self.w, x1 + 1)):
+                t = self.world.map.terrain[y][x]
+                if t in wild and t not in keep:
+                    self.world.map.terrain[y][x] = TerrainType.GRASS
 
     def _carve_town_clearings(self) -> None:
         """Flatten the untamed terrain (water / mountain / marsh) inside a
