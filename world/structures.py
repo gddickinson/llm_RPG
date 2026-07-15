@@ -154,7 +154,7 @@ class StructureBuilder:
         self.looted.append(key)
         names = []
         for item in items:
-            player.inventory.append(item)
+            player.add_item(item)
             names.append(getattr(item, "name", str(item)))
             try:
                 from engine.legends import on_item_picked_up

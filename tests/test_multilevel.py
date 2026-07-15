@@ -112,10 +112,12 @@ class TestMultiLevel(unittest.TestCase):
                       if f["name"] == "Barrel")
         self.player.position = (barrel["x"], barrel["y"])
         gold = self.player.gold
-        n_items = len(self.player.inventory)
+        # count UNITS not slots — a rummaged stackable may merge (P25.1)
+        units = lambda: sum(getattr(it, "quantity", 1)
+                            for it in self.player.inventory)
+        n_units = units()
         interact(self.engine)
-        self.assertTrue(self.player.gold > gold or
-                        len(self.player.inventory) > n_items)
+        self.assertTrue(self.player.gold > gold or units() > n_units)
 
 
 if __name__ == "__main__":

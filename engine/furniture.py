@@ -247,7 +247,7 @@ def _rummage(engine, interior) -> str:
         from engine.carry import can_carry
         item = create_item(rng.choice(RUMMAGE_ITEMS))
         if item is not None and can_carry(player):
-            player.inventory.append(item)
+            player.add_item(item)
             try:   # rifling a private stash is theft (P12.9b)
                 from engine.law import mark_stolen
                 from engine.player_actions import \

@@ -170,15 +170,19 @@ class TestDegreesInSystems(unittest.TestCase):
         fm.rng = _FixedRng(20)
         msg = fm.forage(self.ox, self.oy)
         self.assertIn("perfect patch", msg.lower())
-        self.assertEqual(len(self.player.inventory), 2)
+        # a perfect patch yields a bonus unit; identical raws now STACK (P25.1),
+        # so count total units rather than inventory slots
+        units = sum(getattr(it, "quantity", 1) for it in self.player.inventory)
+        self.assertEqual(units, 2)
         fm.harvested_at = {}
         fm.rng = _FixedRng(1)
         hp0 = self.player.hp
         msg = fm.forage(self.ox, self.oy)
         self.assertIn("nettles", msg.lower())  # msg still says forage
         self.assertEqual(self.player.hp, hp0 - 1)
-        self.assertEqual(len(self.player.inventory), 2,
-                         "the fumble yields nothing")
+        units_after = sum(getattr(it, "quantity", 1)
+                          for it in self.player.inventory)
+        self.assertEqual(units_after, 2, "the fumble yields nothing")
 
 
 if __name__ == "__main__":

@@ -85,12 +85,20 @@ class Character:
         else:
             return "sworn enemy"
 
-    def add_item(self, item: Any) -> None:
-        """Add an item to the character's inventory"""
-        self.inventory.append(item)
+    def add_item(self, item: Any) -> bool:
+        """Add an item to the character's inventory, MERGING identical stackable
+        items into one slot with a `quantity` (P25.1). Returns True if it merged
+        into an existing stack (no new slot), False if it took a new slot."""
+        try:
+            from items.inventory_ops import stack_add
+            merged = stack_add(self.inventory, item)
+        except Exception:
+            self.inventory.append(item)
+            merged = False
 
         item_name = item.name if hasattr(item, "name") else str(item)
         logger.debug(f"{self.name} added item to inventory: {item_name}")
+        return merged
 
     def remove_item(self, item: Any) -> bool:
         """Remove an item from the character's inventory"""

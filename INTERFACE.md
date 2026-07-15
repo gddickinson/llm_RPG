@@ -240,6 +240,7 @@ llm_RPG/
 - **`data_loader.py`** — `load_data_dir()`; merges `data/<subdir>/*.json` content files (Phase 1 data layer).
 - **`data_validate.py`** — `validate_all()` / `python -m items.data_validate`; cross-reference checks for all content. P16 economy checks (production/building_types/resource_nodes) live in **`validate_economy.py`**; battle/pack checks in `validate_battles.py`/`validate_packs.py`; living-world checks (adventurers/guildhalls, M.6/M.7b) in **`validate_world.py`**.
 - **`item_registry.py`** — thin loader over `data/items/*.json` (69 items); `create_item()`, `item_by_name()`.
+- **`inventory_ops.py`** — P25.1 stackable-item grouping: `can_stack(a,b)` (both stackable + identical in id/name/type/rarity/use_effect/metadata/equip_bonuses — so a STOLEN or enchanted or quest-tagged instance stays its own slot), `find_stack(inv,item)`, `stack_add(inv,item)` (merge into a matching stack → +quantity, else append; returns whether it merged). `Character.add_item` routes through it, and every item-ACQUISITION site (pickup, shop buy, forage/gather/farm, loot, rewards, trade, starting kit) calls `add_item`/`stack_add` so arrows/ammo/potions/raws group into ONE slot with a count instead of many slots (a merge adds no `carry` slot, so a full pack can still top up a stack). Load paths keep raw append (saved stacks already carry `quantity`).
 - **`loot_tables.py`** — Drop tables by enemy class.
 - **`crafting.py`** — `craft()` + recipes loaded from `data/recipes.json` (forge-gated, ingredients).
 

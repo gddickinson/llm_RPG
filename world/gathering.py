@@ -134,7 +134,7 @@ class GatheringManager:
         from engine.carry import can_carry, full_message
         if not can_carry(player):
             return full_message(player)
-        player.inventory.append(item)
+        player.add_item(item)
         self.harvested_at[(skill_id, pos[0], pos[1])] = \
             self.engine.world.time
 

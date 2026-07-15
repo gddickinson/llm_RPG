@@ -83,11 +83,15 @@ class PlayerActions:
             return (f"You leave {item_name_str} in peace. A shrine "
                     f"may yet restore them.")
         from engine.carry import can_carry, full_message
-        if not can_carry(player):
+        from items.inventory_ops import find_stack
+        # merging into an existing stack adds no slot, so a full pack can still
+        # top up a stack (P25.1); a NEW slot still needs room
+        merges = find_stack(player.inventory, item) is not None
+        if not merges and not can_carry(player):
             msg = full_message(player)
             self.engine.memory_manager.add_event(msg)
             return msg
-        player.inventory.append(item)
+        player.add_item(item)
         self.engine.world.remove_item_from_ground(item, x, y)
         msg = f"You pick up {item_name_str}."
         try:   # lifting from a private home is THEFT (P12.9b)

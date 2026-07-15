@@ -94,7 +94,7 @@ class HeartEventManager:
             from items.item_registry import create_item
             item = create_item(perk["item"])
             if item:
-                player.inventory.append(item)
+                player.add_item(item)
                 return note or f"You receive {item.name}."
         if "gold" in perk:
             player.gold += int(perk["gold"])

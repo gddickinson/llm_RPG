@@ -156,7 +156,7 @@ def execute_action(engine, npc, parsed: Dict[str, Any]) -> Optional[str]:
             iid = getattr(it, "id", str(it))
             if iid == item_id:
                 npc.inventory.remove(it)
-                player.inventory.append(it)
+                player.add_item(it)
                 name = getattr(it, "name", str(it))
                 return f"{npc.name} hands you {name}."
         logger.debug(f"{npc.name} tried to give '{item_id}' "

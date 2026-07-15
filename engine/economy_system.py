@@ -69,7 +69,7 @@ class EconomySystem:
         buyer.gold -= price
         seller.gold += price
         seller.inventory.remove(item)
-        buyer.inventory.append(item)
+        buyer.add_item(item)
         name = item.name if hasattr(item, "name") else str(item)
         self._log(f"{buyer.name} buys {name} from {seller.name} for {price} gold.")
         return True
@@ -93,7 +93,7 @@ class EconomySystem:
         if not item:
             return False
         giver.inventory.remove(item)
-        receiver.inventory.append(item)
+        receiver.add_item(item)
         name = item.name if hasattr(item, "name") else str(item)
         self._log(f"{giver.name} gives {name} to {receiver.name}.")
 
@@ -120,7 +120,7 @@ class EconomySystem:
         self.engine.player.gold -= price
         seller.gold += price
         seller.inventory.remove(item)
-        self.engine.player.inventory.append(item)
+        self.engine.player.add_item(item)
         msg = f"You buy {item.name} for {price}g."
         self._log(msg)
         self._train_bartering()
@@ -134,7 +134,7 @@ class EconomySystem:
         buyer.gold = max(0, buyer.gold - price)
         self.engine.player.gold += price
         self.engine.player.inventory.remove(item)
-        buyer.inventory.append(item)
+        buyer.add_item(item)
         msg = f"You sell {item.name} for {price}g."
         self._log(msg)
         self._train_bartering()

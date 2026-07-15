@@ -139,7 +139,13 @@ class TestExplorerFixes(unittest.TestCase):
         self.assertTrue(here)
         msg = self.engine.pickup_item()
         self.assertIn("pick up", msg.lower())
-        self.assertIn(item, self.player.inventory)
+        # the potion is now carried — it may MERGE into a starting potion stack
+        # (P25.1 stacking), so check by id rather than object identity
+        self.assertTrue(
+            any(getattr(it, "id", "") == "potion"
+                for it in self.player.inventory))
+        self.assertFalse(self.engine.world.get_items_at(*spot),
+                         "the ground item should be gone after pickup")
         self.engine.current_interior = None
 
 

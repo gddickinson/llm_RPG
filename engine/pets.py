@@ -190,7 +190,7 @@ class PetSystem:
                     item = items[0]
                     world.remove_item_from_ground(
                         item, fx + dx, fy + dy)
-                    self.engine.player.inventory.append(item)
+                    self.engine.player.add_item(item)
                     msg = (f"{pet['name']} darts off and drops "
                            f"{item.name} at your feet!")
                     self.engine.memory_manager.add_event(msg)

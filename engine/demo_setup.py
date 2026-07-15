@@ -73,7 +73,8 @@ def create_default_player(spec=None) -> Character:
             qty = 20
         item = create_item(item_id, quantity=qty)
         if item:
-            inventory.append(item)
+            from items.inventory_ops import stack_add
+            stack_add(inventory, item)      # merge duplicate stackables (P25.1)
 
     # HP from CON
     con = stats.get("constitution", 10)

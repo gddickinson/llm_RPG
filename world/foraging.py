@@ -112,13 +112,13 @@ class ForageManager:
         item = create_item(item_id)
         if not item:
             return "You find nothing of value."
-        self.engine.player.inventory.append(item)
+        self.engine.player.add_item(item)
         bonus = ""
         if quality.degree is Degree.CRIT_SUCCESS:
             from engine.carry import can_carry as _can_carry
             extra = create_item(item_id)
             if extra and _can_carry(self.engine.player):
-                self.engine.player.inventory.append(extra)
+                self.engine.player.add_item(extra)
                 bonus = " A perfect patch — you gather double!"
         self.harvested_at[(x, y)] = self.engine.world.time
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:

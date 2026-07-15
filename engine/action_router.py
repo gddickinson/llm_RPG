@@ -231,7 +231,7 @@ class ActionRouter:
             for item in list(ground):
                 item_name = item.name if hasattr(item, "name") else str(item)
                 if target.lower() in item_name.lower() or target.lower() == "item":
-                    npc.inventory.append(item)
+                    npc.add_item(item)
                     self.engine.world.remove_item_from_ground(item, nx, ny)
                     self.engine.memory_manager.add_event(
                         f"{npc.name} picks up {item_name}.")
@@ -317,7 +317,7 @@ class ActionRouter:
                 if keyword in target.lower():
                     item = create_item(item_id)
                     if item:
-                        npc.inventory.append(item)
+                        npc.add_item(item)
                         self.engine.memory_manager.add_event(
                             f"{npc.name} forges a {item.name}.")
                         return True

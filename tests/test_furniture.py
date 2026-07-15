@@ -85,10 +85,12 @@ class TestFurniture(unittest.TestCase):
     def test_rummage_pays_once_per_building_per_day(self):
         self._inside("tavern", "Barrel")
         gold = self.player.gold
-        items = len(self.player.inventory)
+        # count UNITS not slots — a rummaged stackable may merge (P25.1)
+        units = lambda: sum(getattr(it, "quantity", 1)
+                            for it in self.player.inventory)
+        u0 = units()
         msg1 = interact(self.engine)
-        gained = (self.player.gold > gold or
-                  len(self.player.inventory) > items)
+        gained = (self.player.gold > gold or units() > u0)
         self.assertTrue(gained, msg1)
         msg2 = interact(self.engine)
         self.assertIn("already been through", msg2)

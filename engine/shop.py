@@ -319,8 +319,11 @@ class ShopManager:
         M.8b) — mirrors the shop panel's transaction so there is one buy
         path. Returns True on success."""
         from engine.carry import can_carry
+        from items.inventory_ops import find_stack
         price = self.buy_price(player, item, merchant_npc)
-        if not can_carry(player) or getattr(player, "gold", 0) < price:
+        merges = find_stack(player.inventory, item) is not None
+        if (not merges and not can_carry(player)) \
+                or getattr(player, "gold", 0) < price:
             return False
         cat = self.catalog_for(merchant_npc)
         player.gold -= price
@@ -329,10 +332,10 @@ class ShopManager:
             from items.item_registry import create_item
             bought = create_item(item.id, quantity=1) or item
             bought.quantity = 1
-            player.inventory.append(bought)
+            player.add_item(bought)
             item.quantity -= 1
         else:
-            player.inventory.append(item)
+            player.add_item(item)
             if item in cat.items:
                 cat.items.remove(item)
         return True

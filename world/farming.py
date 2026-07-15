@@ -122,7 +122,7 @@ class FarmManager:
         for _ in range(2):
             item = create_item(CROP_ITEM)
             if item is not None:
-                player.inventory.append(item)
+                player.add_item(item)
                 got.append(item.name)
         msg = (f"You harvest the ripe wheat ({len(got)}x "
                f"{got[0]})." if got else "You harvest the field.")

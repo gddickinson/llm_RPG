@@ -127,7 +127,10 @@ class ShopPanel:
         item = items[self.cursor_left]
         price = sm.buy_price(player, item, self.merchant)
         from engine.carry import can_carry, full_message
-        if not can_carry(player):
+        from items.inventory_ops import find_stack
+        # a stacking buy adds no slot, so a full pack can still top up a stack
+        merges = find_stack(player.inventory, item) is not None
+        if not merges and not can_carry(player):
             self.engine.memory_manager.add_event(full_message(player))
             return False
         if player.gold < price:
@@ -140,13 +143,13 @@ class ShopPanel:
             from items.item_registry import create_item
             bought = create_item(item.id, quantity=1) or item.copy()
             bought.quantity = 1
-            player.inventory.append(bought)
+            player.add_item(bought)
             item.quantity -= 1
             if item.quantity <= 0:
                 items.pop(self.cursor_left)
                 self.cursor_left = max(0, self.cursor_left - 1)
         else:
-            player.inventory.append(item)
+            player.add_item(item)
             items.pop(self.cursor_left)
             self.cursor_left = max(0, self.cursor_left - 1)
         self.engine.memory_manager.add_event(

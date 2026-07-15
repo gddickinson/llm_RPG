@@ -7936,3 +7936,22 @@ PLAYABLE end-to-end.
 
 Open for George: whether to FLIP THE DEFAULT renderer to iso (his call — a UX change I'm
 leaving to him); optional iso camera pan/zoom.
+
+## 2026-07-15 — P25.1: stackable items group into one slot (gameplay bug fix)
+
+Pivoted off graphics to a real gameplay bug George flagged: arrows/ammo/potions/raws took one
+inventory slot EACH instead of stacking, filling the pack. `Item` already had stackable/
+quantity + "name xN" display — the miss was the ADD path (`inventory.append` everywhere, and
+`Character.add_item` was unused). New `items/inventory_ops.py`: `can_stack(a,b)` (both
+stackable AND identical in id/name/type/rarity/use_effect/metadata/equip_bonuses — so a STOLEN
+(use_effect["stolen"]) / enchanted / quest-tagged instance keeps its own slot), `find_stack`,
+`stack_add` (merge → +quantity, else append; returns merged-bool). `Character.add_item` now
+routes through it, and I converted every item-ACQUISITION site to `add_item`/`stack_add`:
+pickup (player_actions), BOTH shop-buy paths (shop_panel `_buy_one` + `ShopManager.buy_for`),
+forage/gather/farm, structure loot, economy trade/give, action_router NPC loot, and the
+quest/diary/heart-event/pet/furniture reward + starting-kit sites. A merge adds no `carry`
+slot, so pickup + buy bypass the capacity gate when topping up an existing stack (a full pack
+can still gather more arrows). Load paths keep raw append — saved stacks already carry
+`quantity`, so save/load round-trips exactly. New `tests/test_inventory_stacking.py` (+11) +
+updated 3 slot-counting tests (test_carry/test_degrees/test_engine) to count UNITS since
+identical raws now stack. Full suite green (2776). Validator clean.

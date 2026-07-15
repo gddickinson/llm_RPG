@@ -100,7 +100,7 @@ class DiaryManager:
         for iid in reward.get("items", []):
             item = create_item(iid)
             if item:
-                player.inventory.append(item)
+                player.add_item(item)
                 parts.append(item.name)
         if reward.get("discount"):
             pct = int(self.region_discount(region) * 100)

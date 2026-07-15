@@ -5407,12 +5407,18 @@ they bite every session).
   only that floor. Save writes the parked overworld store, so saving in a
   dungeon can't clobber the overworld's loot. 5 tests. Suite green.
   Remainder: persisting ZONE-dropped items across a save.)*
-- [ ] **P25.1 (BUG) Stackable items don't group.** Arrows and other
-  stackables take one inventory slot EACH instead of stacking, filling the
-  pack. `Item` already carries `stackable`/`quantity` and renders "name
-  xN" — the miss is on the add path (`inventory.append` everywhere). Fix:
-  a single `give_item`/`add_to_inventory` helper that merges a stackable
-  into an existing stack (by id) and is used by pickup, buy, trade, loot.
+- [x] **P25.1 (BUG) Stackable items don't group.** FIXED. New `items/inventory_ops.py`
+  (`can_stack`/`find_stack`/`stack_add`) merges an identical stackable into an existing stack
+  (+quantity) instead of a new slot, keeping per-instance items distinct (a STOLEN / enchanted
+  / metadata-tagged instance never merges). `Character.add_item` routes through it, and every
+  acquisition site now calls `add_item`/`stack_add` — pickup, both shop-buy paths (panel +
+  `buy_for`), forage/gather/farm, structure loot, trade/give, quest/diary/heart/pet/furniture
+  rewards, and the starting kit. A merge adds no `carry` slot, so a full pack can still top up
+  a stack (pickup + buy bypass the capacity gate on a merge). Saved stacks already carry
+  `quantity`, so save/load round-trips correctly (load keeps raw append). New
+  `tests/test_inventory_stacking.py` (+11: merge, stolen/metadata stay distinct, non-stackable
+  never merges, one-slot carry, pickup merges + tops up a full pack, save round-trip); updated
+  3 tests that counted slots to count UNITS (test_carry/test_degrees/test_engine).
 - [ ] **P25.2 Magical bags & rucksacks.** Containers that raise carry —
   a plain rucksack, a quiver (ammo only), a magical bottomless bag — as
   `data/items` gear that `engine/carry.py` reads for its slot budget; some
