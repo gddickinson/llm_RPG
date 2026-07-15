@@ -5673,9 +5673,13 @@ features) found the following "built but unreachable" gaps. Verified; ranked by 
   items are visible and recoverable; `homestead.withdraw` now stacks (P25.1). `tests/test_home_
   chest.py` (+4: stored items show, panel-withdraw returns them, round-trip preserves quantity,
   no chest section without a home). (Also: E on the home chest still takes the top item.)
-- [ ] **A-train: guild-hall TRAINING unreachable.** `guildhalls.train(skill_id)` (pay gold →
-  skill XP at a seeded hall) has no key/dialog/GUI trigger. Fix: `/train <skill>` dialog branch
-  or an E-at-hall menu (mirror `show_stable`).
+- [x] **A-train: guild-hall TRAINING — reachable via /train.** A `/train <skill>` dialog
+  command (in `engine/dialog_system.py`, mirroring `/hire`) now calls `guildhalls.train(skill)`
+  when you're at a hall talking to anyone; a bare `/train` lists the trainable skills + fees
+  (`guildhalls.training_summary`). Advertised in the dialog prompt + a hint-bar cue at a hall
+  (`guildhalls.hall_here`). Also advertised the previously-hidden `/bond` `/spend` `/order` in
+  the dialog prompt (part of A-disc). `tests/test_guild_training.py` (+5). (Collapsed the thin
+  gui `show_*` overlay methods into a shared `_open` helper to hold gui.py < 500.)
 - [ ] **A-board: quest BOARD unreachable.** `quest_board_at_player()`/`accept_quest_from_
   board()` have no caller — radiant quests posted each morning are STRANDED. Fix: an E-on-board
   overlay to view/accept.

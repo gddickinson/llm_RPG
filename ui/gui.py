@@ -242,8 +242,9 @@ class GameGUI:
                 self.screen, self.screen.get_rect(),
                 name,
                 self.dialog_pending_reply or "",
-                prompt=(f"> {self.dialog_input}_   (Enter send, Esc leave, "
-                        f"/persuade /intimidate /deceive /court /hire)"),
+                prompt=(f"> {self.dialog_input}_   (Enter/Esc · /persuade "
+                        f"/intimidate /deceive · /court /hire /train · "
+                        f"/bond /spend /order)"),
                 menu=self.dialog_menu,
             )
 
@@ -368,47 +369,36 @@ class GameGUI:
         self.overlay = ("Journal — Topics, Legends & Chronicle", lines)
         self.mode = "menu"
 
+    def _open(self, title: str, mode: str, fn, fallback: str) -> None:
+        """Set a titled overlay from `fn()`, falling back on error."""
+        try:
+            lines = fn()
+        except Exception:
+            lines = [fallback]
+        self.overlay = (title, lines)
+        self.mode = mode
+
     def show_travel(self) -> None:
-        try:
-            lines = self.engine.travel_system.overlay_lines()
-        except Exception:
-            lines = ["Travel unavailable."]
-        self.overlay = ("Travel", lines)
-        self.mode = "travel"
+        self._open("Travel", "travel",
+                   self.engine.travel_system.overlay_lines, "Travel unavailable.")
 
-    def show_teleport(self) -> None:
-        """P37.1 the Wayfarer's Waystone destination menu (E on a platform)."""
-        try:
-            lines = self.engine.teleport_network.overlay_lines()
-        except Exception:
-            lines = ["The waystone is dormant."]
-        self.overlay = ("Wayfarer's Waystone", lines)
-        self.mode = "waystone"
+    def show_teleport(self) -> None:   # P37.1 Wayfarer's Waystone (E on a platform)
+        self._open("Wayfarer's Waystone", "waystone",
+                   self.engine.teleport_network.overlay_lines,
+                   "The waystone is dormant.")
 
-    def show_stable(self) -> None:
-        """P28.2d the Stable menu (E at a stable) — buy and ride a mount."""
-        try:
-            lines = self.engine.mount_stable_lines()
-        except Exception:
-            lines = ["The stable is quiet."]
-        self.overlay = ("Stable", lines)
-        self.mode = "stable"
+    def show_stable(self) -> None:     # P28.2d Stable (E at a stable) — buy/ride
+        self._open("Stable", "stable", self.engine.mount_stable_lines,
+                   "The stable is quiet.")
 
     def show_diaries(self) -> None:
-        try:
-            lines = self.engine.diary_manager.overlay_lines()
-        except Exception:
-            lines = ["Diaries unavailable."]
-        self.overlay = ("Achievement Diaries", lines)
-        self.mode = "menu"
+        self._open("Achievement Diaries", "menu",
+                   self.engine.diary_manager.overlay_lines, "Diaries unavailable.")
 
     def show_collection_log(self) -> None:
-        try:
-            lines = self.engine.collection_log.overlay_lines()
-        except Exception:
-            lines = ["Collection log unavailable."]
-        self.overlay = ("Collection Log", lines)
-        self.mode = "menu"
+        self._open("Collection Log", "menu",
+                   self.engine.collection_log.overlay_lines,
+                   "Collection log unavailable.")
 
     def show_quests(self) -> None:
         qm = self.engine.quest_manager

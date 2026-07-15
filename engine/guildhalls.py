@@ -184,6 +184,24 @@ class GuildHallSystem:
             f"[Guild] You pay {fee}g to train {name} at the {hall['name']}.")
         return f"You train {name} for {fee}g."
 
+    def hall_here(self, engine=None) -> bool:
+        """The player stands at a guild hall (where training is offered)."""
+        eng = engine or self.engine
+        return self.hall_at(eng.player.position) is not None
+
+    def training_summary(self, player) -> str:
+        """The menu shown by a bare `/train` at a hall: skills + lesson fees."""
+        if self.hall_at(player.position) is None:
+            return "You must be at a guild hall to train."
+        from engine.skill_progression import SKILLS
+        gold = int(getattr(player, "gold", 0))
+        parts = [f"Trainers here teach (purse {gold}g) — /train <skill>:"]
+        for sid in sorted(SKILLS):
+            fee = self.training_fee(player, sid)
+            name = SKILLS[sid].get("name", sid)
+            parts.append(f"  {name} ({sid}) — {fee}g")
+        return "\n".join(parts)
+
     # ---- persistence -----------------------------------------------
 
     def to_dict(self) -> dict:

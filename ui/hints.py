@@ -107,6 +107,13 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    try:   # M.7c a guild hall trains skills (talk to someone → /train)
+        gh = getattr(engine, "guildhalls", None)
+        if gh is not None and gh.hall_here(engine):
+            hints.append("[T] talk · /train a skill here")
+    except Exception:
+        pass
+
     try:   # a shut town gate nearby (P31.1d/P37) — never a prison
         tg = getattr(engine, "town_gates", None)
         if tg is not None and not getattr(engine, "current_interior", None):

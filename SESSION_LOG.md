@@ -8137,3 +8137,24 @@ ALSO — while investigating I found George's file-sync service had committed **
 "* [0-9].json", …) so a sync copy is never staged again (verified it ignores "name 2.py" but not
 "name.py"). Pairs with the earlier data_loader hardening. Committed separately; the game still
 starts cleanly. Validator green; full suite next.
+
+## 2026-07-15 — AUDIT-fix A-train: guild-hall training reachable (+ graphics research)
+
+George: "continue with the guild-hall training and further rounds." The audit found
+`guildhalls.train(skill_id)` — a complete pay-gold→skill-XP service at a seeded hall — had NO
+player trigger. Surfaced via a `/train <skill>` DIALOG command (`engine/dialog_system.py`,
+mirroring `/hire`): at a hall, talking to anyone, `/train mining` pays a level-scaled fee and
+grants skill XP; a bare `/train` lists the trainable skills + fees (new `guildhalls.training_
+summary`). Hint-bar cue at a hall ("[T] talk · /train a skill here", `guildhalls.hall_here`),
+and the dialog prompt now advertises `/train` PLUS the previously-hidden `/bond /spend /order`
+(the audit's A-disc discoverability). Collapsed the five thin gui `show_*` overlay methods into
+a shared `_open(title, mode, fn, fallback)` helper to hold gui.py under 500 (498).
+`tests/test_guild_training.py` (+5). Full suite next.
+
+In parallel, commissioned a research agent on TOP-DOWN GRAPHICS (George: "still very primitive,
+higher quality needed, cartoonish ok"). Verdict: the terrain is the primitive part (flat
+per-pixel dither, no supersampling/gradient/AO), while CHARACTERS already use the good technique
+(supersampled beauty pass). Recommendation: REVIVE the shelved P40 plan (docs/GRAPHICS.md —
+supersample + layered shading via a new ui/gfx.py) for top-down, terrain first (biggest win),
+staying 100% procedural/offline/cached; a CC0 PNG tileset only as an opt-in skin (default would
+kill the animated-character system). Full report captured for George's decision.
