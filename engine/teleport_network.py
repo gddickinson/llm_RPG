@@ -57,9 +57,90 @@ class TeleportNetwork:
                 continue
             self._plant(spec, spot)
             placed += 1
+        # P37.2 — also link the notable PLACES OF INTEREST on the map
+        for spec in self._landmark_specs():
+            anchor = spec.pop("_anchor")
+            if self._too_close_to_platform((anchor.x, anchor.y)):
+                continue
+            spot = self._walkable_near(anchor.x, anchor.y,
+                                       anchor.width, anchor.height)
+            if spot is None:
+                continue
+            self._plant(spec, spot)
+            placed += 1
         if placed:
             logger.info(f"Seeded {placed} teleport platform(s).")
         return placed
+
+    def _landmark_specs(self) -> List[dict]:
+        """Places of interest beyond the towns (P37.2): every guild hall and
+        castle, plus the nearest few ruins — so the Conclave links the whole
+        map. Each spec carries an `_anchor` Location to plant beside."""
+        from items.data_loader import load_data_file
+        try:
+            cfg = load_data_file("teleport_network.json").get("landmarks", {})
+        except Exception:
+            cfg = {}
+        always = cfg.get("always", ["guildhall", "castle"])
+        limited = cfg.get("limited", {"ruin": 3})
+        kw = cfg.get("settlement_keywords",
+                     ["village", "town", "hamlet", "city"])
+        locs = getattr(self.engine.world, "locations", [])
+        try:
+            px, py = self.engine.player.position
+        except Exception:
+            px, py = 0, 0
+
+        def _far(l):
+            return abs(l.x - px) + abs(l.y - py)
+
+        def _eligible(l):
+            return (not l.get_property("waystone")
+                    and l.width <= 30 and l.height <= 30)  # a place, not a region
+
+        # settlements already covered by an authored data-spec platform
+        covered = {(p.get("settlement") or "").lower().split()[0]
+                   for p in self.platforms if p.get("settlement")}
+        ints = getattr(self.engine, "interiors", {}) or {}
+
+        def _is_settlement(l, nm):
+            # a town area, NOT a building that merely carries the word (the
+            # "Village Well", "Hamlet Chapel") — those are enterable (P16.2)
+            return (any(w in nm for w in kw) and l.name not in ints
+                    and not any(c and c in nm for c in covered))
+
+        chosen, seen = [], set()
+        for l in locs:            # always: guild halls, the castle, settlements
+            props = l.properties or {}
+            nm = l.name.lower()
+            if _eligible(l) and l.name not in seen \
+                    and (any(k in props for k in always) or _is_settlement(l, nm)):
+                chosen.append(l)
+                seen.add(l.name)
+        for kind, n in limited.items():      # limited: the nearest N of a kind
+            matches = sorted((l for l in locs
+                              if _eligible(l) and l.name not in seen
+                              and (l.properties or {}).get(kind) is not None),
+                             key=_far)[:int(n)]
+            for l in matches:
+                chosen.append(l)
+                seen.add(l.name)
+
+        specs = []
+        for l in chosen:
+            slug = "".join(c.lower() if c.isalnum() else "_" for c in l.name)
+            specs.append({"id": f"waystone_{slug}",
+                          "name": f"{l.name} Waystone",
+                          "settlement": l.name,
+                          "legend": getattr(l, "description", "") or "",
+                          "_anchor": l})
+        return specs
+
+    def _too_close_to_platform(self, pos, min_dist: int = 6) -> bool:
+        for p in self.platforms:
+            if abs(p["pos"][0] - pos[0]) + abs(p["pos"][1] - pos[1]) < min_dist:
+                return True
+        return False
 
     def _site(self, settlement: str) -> Optional[Tuple[int, int]]:
         locs = getattr(self.engine.world, "locations", [])
@@ -130,8 +211,15 @@ class TeleportNetwork:
         return None
 
     def destinations(self, from_id: str) -> List[dict]:
-        """The other waystones a traveller can step to from `from_id`."""
-        return [p for p in self.platforms if p["id"] != from_id]
+        """The other waystones a traveller can step to from `from_id`, NEAREST
+        first (so the menu and `teleport_index` agree on order)."""
+        here = next((p for p in self.platforms if p["id"] == from_id), None)
+        others = [p for p in self.platforms if p["id"] != from_id]
+        if here is not None:
+            hx, hy = here["pos"]
+            others.sort(key=lambda p: abs(p["pos"][0] - hx)
+                        + abs(p["pos"][1] - hy))
+        return others
 
     # ---- player-facing hook (P37.1) --------------------------------
 
@@ -156,8 +244,9 @@ class TeleportNetwork:
         if not dests:
             lines.append("  (no other waystone is attuned yet)")
         for i, p in enumerate(dests[:9], start=1):
-            where = p.get("settlement") or p["name"]
-            lines.append(f"  [{i}] {p['name']}  —  {where}")
+            lines.append(f"  [{i}] {p['name']}")
+        if len(dests) > 9:
+            lines.append(f"  … and {len(dests) - 9} more, farther off")
         lines += ["", "  [Esc] step back"]
         return lines
 
@@ -174,24 +263,30 @@ class TeleportNetwork:
         return self.teleport(dests[i]["id"])
 
     def teleport(self, dest_id: str) -> str:
-        """Step from the waystone you're on to `dest_id`. Player-facing line."""
-        engine = self.engine
-        player = engine.player
-        here = self.platform_at(player.position)
+        """The PLAYER steps from the waystone they're on to `dest_id`."""
+        return self.teleport_actor(self.engine.player, dest_id, announce=True)
+
+    def teleport_actor(self, actor, dest_id: str,
+                       announce: bool = False) -> str:
+        """Move ANY ring-bearing actor standing on a waystone to `dest_id` —
+        the player, an away-hero, or an NPC all travel the same rails (P37.2)."""
+        here = self.platform_at(actor.position)
         if here is None:
             return "You must stand on a waystone to travel the network."
-        if not self.has_ring(player):
+        if not self.has_ring(actor):
             return "You need a Wayfarer's Ring to use the waystones."
         dest = next((p for p in self.platforms if p["id"] == dest_id), None)
         if dest is None or dest["id"] == here["id"]:
             return "No such waystone to travel to."
+        wmap = self.engine.world.map
         land = self._safe_landing(tuple(dest["pos"]))
-        engine.world.map.remove_character(player)
-        player.position = land
-        engine.world.map.place_character(player, *land)
-        engine.memory_manager.add_event(
-            f"[Realm] You step through the {here['name']} and out of the "
-            f"{dest['name']}.")
+        wmap.remove_character(actor)
+        actor.position = land
+        wmap.place_character(actor, *land)
+        if announce:
+            self.engine.memory_manager.add_event(
+                f"[Realm] You step through the {here['name']} and out of the "
+                f"{dest['name']}.")
         return f"You arrive at the {dest['name']}."
 
     def _safe_landing(self, pos: Tuple[int, int]) -> Tuple[int, int]:

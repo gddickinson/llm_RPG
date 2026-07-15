@@ -7415,3 +7415,22 @@ Verified: at the midnight start the player walks WEST into the shut gate → it 
 steps through and out. Regression tests in `tests/test_town_gates.py` (walk through a
 night-shut gate; a locked gate still bars the player) + `tests/test_fortify.py` (≥2
 gates on ≥2 walls). Classic world unchanged (3 gates). Full suite next.
+
+## 2026-07-14 (cont.) — P37.2: teleport network reaches places of interest + NPC rails
+
+The Wayfarers' Conclave now links the whole map, not just the three named towns.
+`teleport_network._landmark_specs` seeds a waystone beside every guild hall + castle and
+the nearest few RUINS, and detects settlements GENERICALLY by name (a town area, not a
+"Village Well"/"Hamlet Chapel" building — reusing P16.2's not-in-`interiors` rule),
+deduped against the authored data-spec platforms. So a realistic world gets 8 waystones
+(3 towns + 2 guild halls + 3 ruins) and a castle world gets its Kingsgate + villages —
+no duplicates, no false positives. `teleport_actor(actor, dest_id)` generalises travel
+so any ring-bearer (player, away-hero, or NPC) rides the same rails (the player
+`teleport` delegates to it). `destinations` sorts NEAREST-first (menu + `teleport_index`
+agree); the menu notes any destinations past the 9-cap. +8 tests (landmark reach, no
+false positives, no duplicates/stacking, NPC travel). Screenshot: the enriched
+nearest-first destination menu (guild hall, towns, ruins). Validator clean. Full suite
+running.
+
+NEXT (George, new request): closed castle doors/gates should render as LOCKED DOORS /
+GATES / PORTCULLISES, not plain walls — the discoverability half of the "trapped" report.

@@ -159,6 +159,83 @@ class TestArrivalCollision(_Base):
                             "a second arrival takes a different tile")
 
 
+class TestLandmarkReach(_Base):
+    """P37.2 — the network reaches PLACES OF INTEREST, not just the towns."""
+
+    def test_a_guild_hall_gets_a_waystone(self):
+        halls = [l for l in self.engine.world.locations
+                 if (l.properties or {}).get("guildhall")]
+        if not halls:
+            self.skipTest("no guild hall in this world")
+        names = " ".join(p["name"] for p in self.tn.platforms)
+        self.assertTrue(any(h.name in names for h in halls),
+                        "a guild hall is linked to the network")
+
+    def test_no_waystone_on_a_named_building(self):
+        # the "Village Well" / "Hamlet Chapel" carry a settlement word but are
+        # buildings, not towns — they must not get a waystone
+        bad = [p for p in self.tn.platforms
+               if "well" in p["name"].lower() or "chapel" in p["name"].lower()]
+        self.assertEqual(bad, [])
+
+    def test_no_duplicate_settlement_waystones(self):
+        # an authored "Oakvale Waystone" must not be doubled by a generic
+        # "Oakvale Village Waystone" for the same town
+        names = [p["name"] for p in self.tn.platforms]
+        for n in names:
+            base = n[:-len(" Waystone")] if n.endswith(" Waystone") else n
+            twins = [m for m in names if base.split()[0] in m
+                     and m != n and "Ruins" not in m and "Guild" not in m]
+            self.assertEqual(twins, [], f"{n} is doubled by {twins}")
+
+    def test_waystones_do_not_stack(self):
+        pos = [tuple(p["pos"]) for p in self.tn.platforms]
+        self.assertEqual(len(pos), len(set(pos)), "no two share a tile")
+        for i in range(len(pos)):
+            for j in range(i + 1, len(pos)):
+                d = (abs(pos[i][0] - pos[j][0])
+                     + abs(pos[i][1] - pos[j][1]))
+                self.assertGreater(d, 2, "waystones aren't stacked")
+
+
+class TestNPCUse(_Base):
+    """P37.2 — an NPC bearing a ring travels the same rails as the player."""
+
+    def test_an_npc_with_a_ring_can_teleport(self):
+        from world.monsters import build_monster
+        src, dst = self.tn.platforms[0], self.tn.platforms[1]
+        npc = build_monster("wolf", tuple(src["pos"]))   # any Character body
+        from items.item_registry import create_item
+        try:
+            ring = create_item("teleport_ring")
+            npc.inventory = [ring]
+        except Exception:
+            npc.inventory = []
+            self.skipTest("no teleport_ring item")
+        self.engine.npc_manager.add_npc(npc)
+        self.engine.world.map.remove_character(npc)
+        npc.position = tuple(src["pos"])
+        self.engine.world.map.place_character(npc, *npc.position)
+        self.assertTrue(self.tn.has_ring(npc))
+        msg = self.tn.teleport_actor(npc, dst["id"])
+        self.assertIn("arrive", msg.lower())
+        self.assertLessEqual(
+            max(abs(npc.position[0] - dst["pos"][0]),
+                abs(npc.position[1] - dst["pos"][1])), 8)
+
+    def test_an_npc_without_a_ring_cannot(self):
+        from world.monsters import build_monster
+        src = self.tn.platforms[0]
+        npc = build_monster("wolf", tuple(src["pos"]))
+        npc.inventory = []
+        self.engine.npc_manager.add_npc(npc)
+        self.engine.world.map.remove_character(npc)
+        npc.position = tuple(src["pos"])
+        self.engine.world.map.place_character(npc, *npc.position)
+        msg = self.tn.teleport_actor(npc, self.tn.platforms[1]["id"])
+        self.assertIn("ring", msg.lower())
+
+
 class TestPlayerHook(_Base):
     """P37.1 — the player-facing hook: stand on a waystone with a ring, a menu
     lists the other waystones, a number key steps you there."""
@@ -169,15 +246,18 @@ class TestPlayerHook(_Base):
         self.assertTrue(self.tn.can_use(self.p), "on a waystone, ring in bag")
 
     def test_overlay_lists_numbered_destinations(self):
-        self._stand_on(self.tn.platforms[0])
+        here = self.tn.platforms[0]
+        self._stand_on(here)
         lines = self.tn.overlay_lines()
-        joined = "\n".join(lines)
-        self.assertIn("[1]", joined)
-        # every OTHER waystone is offered
-        for pf in self.tn.platforms[1:]:
-            self.assertIn(pf["name"], joined)
-        self.assertNotIn(self.tn.platforms[0]["name"].split()[0] + " Waystone\n"
-                         + "  [", joined)   # never lists itself as a target
+        self.assertIn("[1]", "\n".join(lines))
+        numbered = [ln for ln in lines if ln.strip().startswith("[")
+                    and "Esc" not in ln]
+        shown = " ".join(numbered)
+        # every OTHER waystone (up to the 9-cap) is offered, and never itself
+        for pf in self.tn.destinations(here["id"])[:9]:
+            self.assertIn(pf["name"], shown)
+        self.assertFalse(any(here["name"] in ln for ln in numbered),
+                         "the current waystone is never a destination")
 
     def test_overlay_asks_for_a_ring_when_missing(self):
         self.p.inventory = [it for it in self.p.inventory

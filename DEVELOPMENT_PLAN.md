@@ -5541,6 +5541,13 @@ and persistence — but there is NO player-facing hook. Finish it:
   lock bars it, which `force_gate` still opens); (b) `fortify._ensure_min_gates` guarantees
   a walled town has ≥2 gates on different walls; (c) a directional hint-bar cue points to a
   shut gate. Regression tests drive the player out through a night-shut gate.
-- [ ] **P37.2 Reach & polish.** Waystones at more places of interest (guild halls, the
-  castle, notable ruins); NPCs/away-heroes can use the network; a small toll or
-  guild-standing gate (optional), the Conclave lore.
+- [x] **P37.2 Reach & polish.** The network now links PLACES OF INTEREST, not just the
+  three named towns: `_landmark_specs` seeds a waystone beside every guild hall + castle
+  and the nearest few ruins, and generically detects settlements by name (a town area,
+  not a "Village Well" building — reusing the P16.2 not-in-interiors rule) so the realistic
+  world (towns + guild halls + ruins) AND the castle world (Kingsgate + its villages) both
+  get a full network, deduped against the authored data-spec platforms. `teleport_actor`
+  generalises travel so any ring-bearer — player, away-hero, or NPC — rides the same rails.
+  The menu sorts destinations NEAREST-first and notes any past the 9-cap. Tests + a
+  screenshot. (Remainder P37.2b: wire an away-hero's brain to actually choose the network
+  for a far goal; an optional toll / guild-standing gate.)
