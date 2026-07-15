@@ -5695,3 +5695,12 @@ Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/
 - [x] **P41.6 Iso INTERIORS** — dungeons/buildings iso (themed/furnished/lit), roof-fade.
 - [x] **P41.7 Fidelity + polish + in-game toggle** — fold Phase 40 supersample/detail in; camera/zoom; UI fit;
   flip default to iso at parity.
+- [x] **P41.8 Baked 3D furniture (iso interiors).** New `ui/iso_furniture.py`: the iso zone
+  renderer no longer billboards flat prop sprites — 20 keyword-matched furniture pieces
+  (sarcophagus, pillar, column, altar, throne, table, chest, barrel, crate, brazier, bench/
+  pew, anvil, bed, gravestone, statue, shelf, well, urn, hearth) are composed of `raster3d`
+  boxes (braziers/hearths get a glowing FIRE box), baked ONCE per (kind,size) and cached, so
+  a crypt's coffins/pillars and a temple's columns/altar read as SOLID 3D objects in the 2:1
+  view. Unmapped names (cobweb/rug/bones/tapestry) fall back to the flat billboard.
+  `tests/test_iso_furniture.py` (+6). Screenshots re-rendered — the iso crypt & temple gain
+  real depth. (Optional future iso polish: camera pan/zoom, an iso interior-light pass.)

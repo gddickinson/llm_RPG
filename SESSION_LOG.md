@@ -7812,3 +7812,18 @@ Rendered broad screenshots in BOTH renderers — `scratchpad/decor_temple_{topdo
 TEXTURE already ships via P33.1 tile_variants (grass blades / forest canopy / mountain
 rocks / swamp reeds); sparse decorative overworld PROPS noted as optional P39.6b. Phase 39
 (world detail & decoration) COMPLETE. (Screenshots kept local — scratchpad/ gitignored.)
+
+## 2026-07-15 — P41.8: baked 3D furniture for iso interiors (3D graphics upgrade)
+
+George: "continue with the 3D graphics upgrade." The iso interiors billboarded flat prop
+sprites onto the floor; now they render real 3D furniture. New `ui/iso_furniture.py`: 20
+keyword-matched pieces (sarcophagus, pillar/column, altar, throne, table, chest, barrel,
+crate, brazier, bench/pew, anvil, bed, gravestone, statue, shelf, well, urn, hearth)
+composed of `raster3d` boxes — braziers & hearths get a glowing FIRE box — baked ONCE per
+(kind,size) via `raster3d.bake` and cached (zero per-frame 3D cost). `iso_zone._furn`
+prefers a baked piece and falls back to the flat billboard for unmapped names (cobweb, rug,
+bones, tapestry — things that genuinely hang/lie flat). Re-rendered screenshots: the iso
+crypt's sarcophagi now read as solid lidded coffins, braziers as 3D stands, gravestone
+upright; the temple gains real columns (base/shaft/capital), a stepped altar and pews — a
+clear jump from flat sprites. `tests/test_iso_furniture.py` (+6); files 175/170 lines (well
+under 500). Full suite green.

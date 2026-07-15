@@ -140,6 +140,17 @@ def _wall(target, iso, data, col):
 
 def _furn(target, sprites, data, tile_size):
     name, sx, sy = data
+    # Prefer a baked 3D piece (sarcophagus / pillar / altar / brazier / …);
+    # fall back to the flat prop billboard for unmapped names (P41.8).
+    try:
+        from ui import iso_furniture
+        spr3d = iso_furniture.furniture_sprite(name, int(tile_size * 1.5))
+    except Exception:
+        spr3d = None
+    if spr3d is not None:
+        w, h = spr3d.get_size()
+        target.blit(spr3d, (sx - w // 2, sy - int(h * 0.66)))
+        return
     try:
         spr = sprites.furniture(name)
     except Exception:
