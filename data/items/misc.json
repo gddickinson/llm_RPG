@@ -180,5 +180,39 @@
     "value": 5,
     "stackable": true,
     "description": "Fletching for arrows, or a soft bed."
+  },
+  "rucksack": {
+    "id": "rucksack",
+    "name": "Rucksack",
+    "item_type": "misc",
+    "value": 45,
+    "description": "A sturdy leather pack — room for a good deal more.",
+    "metadata": {"carry_bonus": 8}
+  },
+  "explorers_pack": {
+    "id": "explorers_pack",
+    "name": "Explorer's Pack",
+    "item_type": "misc",
+    "value": 130,
+    "rarity": "uncommon",
+    "description": "A well-made pack of many pockets and straps.",
+    "metadata": {"carry_bonus": 14}
+  },
+  "bottomless_bag": {
+    "id": "bottomless_bag",
+    "name": "Bottomless Bag",
+    "item_type": "misc",
+    "value": 450,
+    "rarity": "rare",
+    "description": "Its inside is far larger than its outside — an enchanter's marvel.",
+    "metadata": {"carry_bonus": 40}
+  },
+  "quiver": {
+    "id": "quiver",
+    "name": "Quiver",
+    "item_type": "misc",
+    "value": 35,
+    "description": "A hip quiver — keeps arrows and bolts close, off your back.",
+    "metadata": {"ammo_capacity": 3}
   }
 }

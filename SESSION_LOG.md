@@ -7955,3 +7955,20 @@ can still gather more arrows). Load paths keep raw append — saved stacks alrea
 `quantity`, so save/load round-trips exactly. New `tests/test_inventory_stacking.py` (+11) +
 updated 3 slot-counting tests (test_carry/test_degrees/test_engine) to count UNITS since
 identical raws now stack. Full suite green (2776). Validator clean.
+
+## 2026-07-15 — P25.2: magical bags & rucksacks raise carry (gameplay)
+
+A natural follow-on to P25.1's inventory work: containers that expand carry capacity, all
+data-driven. Four new `data/items/misc.json` items — Rucksack (+8), Explorer's Pack (+14),
+Bottomless Bag (+40, rare/magical) each carry a `metadata["carry_bonus"]`, and a Quiver
+carries `metadata["ammo_capacity"]`=3. `engine/carry.py` gains `bag_bonus(player)` (sums the
+carry_bonus of carried containers into `capacity`) and `ammo_capacity(player)` (sums quiver
+capacity), and `used_slots` now relieves up to N AMMO stacks so an archer's arrows/bolts ride
+the quiver OFF the general pack (armour + loot keep their room). The bonus rides the save
+(item metadata round-trips) and is a clean NO-OP for a bagless character, so every existing
+capacity test is unaffected. Bags are stocked by fitting merchants — the general store
+(rucksack + explorer's pack), the ranger (quiver), the wizard (bottomless bag). Composes with
+P25.1 stacking (a quiver + a stacked arrow bundle is very compact now). `tests/test_bags.py`
+(+10: each bag's bonus, bonuses stack, quiver frees ammo + is capped + lets a full pack still
+hold ammo, save round-trip, merchants stock them). carry.py 92 lines. Validator clean; full
+suite green.

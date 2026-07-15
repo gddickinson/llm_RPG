@@ -5419,10 +5419,17 @@ they bite every session).
   `tests/test_inventory_stacking.py` (+11: merge, stolen/metadata stay distinct, non-stackable
   never merges, one-slot carry, pickup merges + tops up a full pack, save round-trip); updated
   3 tests that counted slots to count UNITS (test_carry/test_degrees/test_engine).
-- [ ] **P25.2 Magical bags & rucksacks.** Containers that raise carry —
-  a plain rucksack, a quiver (ammo only), a magical bottomless bag — as
-  `data/items` gear that `engine/carry.py` reads for its slot budget; some
-  slot-typed (a quiver holds arrows, not armour).
+- [x] **P25.2 Magical bags & rucksacks.** Carry-raising containers as
+  `data/items/misc.json` gear that `engine/carry.py` reads: a **Rucksack** (+8),
+  **Explorer's Pack** (+14) and **Bottomless Bag** (+40) carry a
+  `metadata["carry_bonus"]` that `bag_bonus` sums into `capacity`; a **Quiver**
+  carries `metadata["ammo_capacity"]` (3) that `ammo_capacity` reads so up to N
+  AMMO stacks ride the quiver OUTSIDE the general pack (relieved in `used_slots`
+  — the archer's ammo doesn't eat armour/loot room). The bonus rides the save
+  (metadata round-trips) and is a clean no-op without a bag (existing capacity
+  unchanged). Sold by the general store (rucksack/pack), ranger (quiver) and
+  wizard (bottomless bag). `tests/test_bags.py` (+10). Composes with P25.1
+  stacking. (Slot-typed drag-and-drop UI is the separate P25.3.)
 - [ ] **P25.3 The character & items window.** A dedicated drag-and-drop
   screen: the paperdoll with equipment slots, the bag grid, the quiver —
   drag an item onto the character to equip, between bags to move, with

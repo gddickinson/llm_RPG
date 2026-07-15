@@ -71,7 +71,9 @@
     "rope",
     "climbing_picks",
     "waterskin",
-    "regional_map"
+    "regional_map",
+    "rucksack",
+    "explorers_pack"
   ],
   "wheelwright": [
     "leather",
@@ -92,7 +94,8 @@
     "tome_hex",
     "tome_regrowth",
     "scroll_water_walk",
-    "scroll_swimmers_grace"
+    "scroll_swimmers_grace",
+    "bottomless_bag"
   ],
   "ranger": [
     "bow",
@@ -101,6 +104,7 @@
     "arrow",
     "bandage",
     "wolf_pelt",
-    "swift_boots"
+    "swift_boots",
+    "quiver"
   ]
 }
