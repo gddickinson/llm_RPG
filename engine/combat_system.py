@@ -403,9 +403,11 @@ class CombatSystem:
 
     def _award_xp(self, defeated) -> None:
         from engine.leveling import award_xp
-        # P37.5 rebalance: a kill is worth far less (was 20 + 30*level), so the
-        # hero climbs slowly and leans on gear + companions, not XP farming.
-        xp = 10 + 5 * getattr(defeated, "level", 1)
+        # P37.6 (George: much slower levels): the curve is 10x steeper, and a kill
+        # scales harder with the foe's level (25 + 15*level) so a TOUGH foe pays
+        # far more than a weak one — leveling rewards fighting hard things, not
+        # grinding rats. Power still leans on gear + party, not XP farming.
+        xp = 25 + 15 * getattr(defeated, "level", 1)
         actor = self.engine.player
         msgs = award_xp(actor, xp)
         # an adventurer NPC (P-M.6) driven through this path gains the XP,

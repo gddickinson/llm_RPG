@@ -7989,3 +7989,17 @@ overlays, the number-key handler (guard answer / quick-cast) and the SHIFT skill
 `ui/input_actions.py` (input_handler back to 495). `tests/test_quick_spells.py` (+11: slots,
 auto-populate order, quick heal/damage/no-target/empty, HUD paints for a caster + silent for
 a non-caster). George also asked the spellbook itself not cover the screen — the X-panel is now a compact RIGHT-SIDE RAIL (`spell_panel.draw`), leaving the whole battlefield visible while you pick a spell (screenshots: quickbar + spellbook_rail). Validator clean; full suite green.
+
+## 2026-07-15 — P37.6a: 10x more XP per level (George)
+
+George (mid-session): "level increases need much more XP — 10x more." Took the leveling curve
+literally 10x steeper: `leveling.XP_CURVE_COEFF` 150→1500, so L2 300→3000, L3 900→9000, L4
+1800→18000. To keep the grind bounded AND reward George's tougher monsters, the kill award now
+scales harder with the foe's level: `combat_system._award_xp` 10+5·lvl → 25+15·lvl (an L1 foe
+40 XP, an L5 foe 100), and radiant-quest XP 15+8·lvl → 40+20·lvl. Net: ~75 same-level L1 kills
+for the first level (was ~20) — a long, deliberate climb where fighting HARD things pays far
+more than grinding rats, and power still leans on gear + party (the P37.5 thesis). Two clean
+knobs (curve coeff + kill award) for easy future tuning if George wants it slower/faster.
+Updated the XP-assertion tests (test_leveling ×5, test_progression_playtest, class-stats).
+Full suite green. (Still open from George's message: P37.6b tougher+smarter monster AI, P37.6c
+encounter-source/camp-clearing quests — queued for the next rounds.)

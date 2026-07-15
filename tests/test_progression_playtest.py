@@ -120,14 +120,14 @@ class TestProgressionPlaytest(unittest.TestCase):
     # ---- the levers ------------------------------------------------------
 
     def test_leveling_is_a_slow_climb(self):
-        # With the P37.5a economy a hero needs many same-level kills to level.
+        # P37.6 (George: 10x XP/level) — reaching L2 takes many same-level kills.
         from engine.leveling import xp_threshold
-        need = xp_threshold(2)                 # XP for level 2
-        award = 10 + 5 * 1                      # kill award vs a level-1 foe
-        kills = -(-need // award)               # ceil
+        need = xp_threshold(2)                 # XP for level 2 (3000)
+        award = 25 + 15 * 1                     # kill award vs a level-1 foe (40)
+        kills = -(-need // award)               # ceil → ~75
         self.assertGreaterEqual(
-            kills, 15,
-            "reaching level 2 should take many kills, not a handful")
+            kills, 40,
+            "reaching level 2 should be a long, deliberate climb")
 
     def test_gear_reduces_damage_taken(self):
         _, bare_hp = self._survey((), ["wolf"])

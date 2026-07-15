@@ -5,14 +5,16 @@ so the hero climbs slowly and power comes more from gear + companions than from
 raw levels (George, twice: "advances too quickly" / "the XP for the levels is
 still far too low"):
     level 1: 0        (starting level)
-    level 2: 300
-    level 3: 900
-    level 4: 1800
-    level N: XP_CURVE_COEFF * N * (N - 1)   (XP_CURVE_COEFF = 150)
+    level 2: 3000
+    level 3: 9000
+    level 4: 18000
+    level N: XP_CURVE_COEFF * N * (N - 1)   (XP_CURVE_COEFF = 1500)
 
-With the P37.5 kill award (10 + 5*foe_level) that is ~20 same-level kills for the
-first level and 30/36/… per level after — a deliberate, gear-driven grind (was
-~2 kills for the first level, then ~8 after the first pass).
+P37.6 (George: "level increases need much more XP — 10x more") takes the curve
+10x steeper. With the bumped kill award (25 + 15*foe_level) that is ~75 kills of a
+same-level L1 foe for the first level — but a TOUGHER foe pays far more (an L5 foe
+= 100 XP), so leveling is a slow, deliberate climb that rewards fighting hard
+things over grinding weak ones. Power still leans on gear + party, not XP.
 
 Per level-up the character gains:
     +5 max_hp (and full heal)
@@ -27,7 +29,7 @@ from characters.character_types import CharacterClass
 logger = logging.getLogger("llm_rpg.leveling")
 
 MAX_LEVEL = 20
-XP_CURVE_COEFF = 150     # xp_threshold(L) = COEFF * L * (L-1); P37.5 (50→60→150)
+XP_CURVE_COEFF = 1500    # xp_threshold(L) = COEFF * L * (L-1); P37.6 (150→1500, 10x)
 
 # Stats favored by each class (gain +1 each on level-up)
 CLASS_STAT_FAVORS: Dict[CharacterClass, Tuple[str, str]] = {

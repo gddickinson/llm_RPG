@@ -5612,6 +5612,28 @@ party members." A dedicated balance arc:
   coin-flip into a ~100% clean win. Power comes from gear + party, not XP farming — George's
   ask, verified. Closes the P37.5 balance arc.
 
+## Phase 37.6 — much slower leveling + harder combat (George, 2026-07-15)
+
+George: "level increases need much more XP (10x more)"; "combat is still too easy — monsters
+need better AI so they don't just stand and get killed, and need to be tougher"; "quests to
+remove certain encounters — clearing a bandit camp reduces bandit spawns in an area".
+
+- [x] **P37.6a XP 10x.** `leveling.XP_CURVE_COEFF` 150→1500 (L2 300→3000, L3 900→9000, L4
+  1800→18000) — literally 10x the XP required per level. Kill award bumped to scale harder
+  with the foe's level (`combat_system._award_xp` 10+5·lvl → 25+15·lvl) so a TOUGH foe pays
+  far more than a rat (an L5 foe = 100 XP), and radiant XP up (`radiant` 15+8·lvl → 40+20·
+  lvl). Net: ~75 same-level L1 kills for the first level (was ~20) — a long, deliberate climb
+  that rewards fighting hard things, power still on gear + party. Tests updated
+  (test_leveling/progression_playtest/class-stats). Two knobs (curve coeff + award) for easy
+  future tuning.
+- [ ] **P37.6b Tougher + smarter monsters.** Monsters "just stand and get killed" — make the
+  hostile AI ADVANCE and press the attack (review `pursuit` HOLD_DIST standoff, the 5-turn
+  ambient-AI throttle, `monster_packs`), and raise monster HP/damage beyond P37.5b so fights
+  are a real threat. Keep winnable with gear + party.
+- [ ] **P37.6c Encounter-source quests.** Some spawns come from a SOURCE (a bandit camp, a
+  lair — `world/lairs.py`); a quest to find + clear it drops that encounter's spawn rate in
+  the area (`world/encounters.py` weighting). e.g. defeat the bandit camp → fewer bandits.
+
 ## Phase 38 — "The Sunken Tome of Vael'Zhur" — a substantial adventure module (George, 2026-07-14)
 
 George: a substantial, themed campaign — a lost wizard's tome to discover & explore, booby

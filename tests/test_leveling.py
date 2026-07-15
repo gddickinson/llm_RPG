@@ -29,22 +29,22 @@ class TestThresholds(unittest.TestCase):
             self.assertGreater(xp_threshold(n + 1), xp_threshold(n))
 
     def test_level_for_xp(self):
-        # P37.5 much steeper curve: L2=300, L3=900, L4=1800
+        # P37.6 10x-steeper curve: L2=3000, L3=9000, L4=18000
         self.assertEqual(level_for_xp(0), 1)
-        self.assertEqual(level_for_xp(299), 1)
-        self.assertEqual(level_for_xp(300), 2)
-        self.assertEqual(level_for_xp(899), 2)
-        self.assertEqual(level_for_xp(900), 3)
+        self.assertEqual(level_for_xp(2999), 1)
+        self.assertEqual(level_for_xp(3000), 2)
+        self.assertEqual(level_for_xp(8999), 2)
+        self.assertEqual(level_for_xp(9000), 3)
 
     def test_curve_is_a_slow_grind(self):
-        # a deliberately slow climb — the first level costs 300 (was 100/120)
-        self.assertEqual(xp_threshold(2), 300)
-        self.assertEqual(xp_threshold(3), 900)
-        self.assertEqual(xp_threshold(4), 1800)
+        # P37.6: George — "10x more XP per level" (L2 300→3000)
+        self.assertEqual(xp_threshold(2), 3000)
+        self.assertEqual(xp_threshold(3), 9000)
+        self.assertEqual(xp_threshold(4), 18000)
 
     def test_xp_to_next(self):
-        cur, need = xp_to_next(400)              # mid-way through level 2
-        self.assertEqual(cur + xp_threshold(2), 400)
+        cur, need = xp_to_next(4000)             # mid-way through level 2
+        self.assertEqual(cur + xp_threshold(2), 4000)
         self.assertEqual(need, xp_threshold(3) - xp_threshold(2))
 
 
@@ -58,7 +58,7 @@ class TestLevelUp(unittest.TestCase):
 
     def test_levelup_at_threshold(self):
         c = _new_char()
-        c.metadata = {"xp": 300}         # P37.5 L2 threshold
+        c.metadata = {"xp": 3000}        # P37.6 L2 threshold
         msgs = check_level_up(c)
         self.assertEqual(len(msgs), 1)
         self.assertEqual(c.level, 2)
@@ -70,7 +70,7 @@ class TestLevelUp(unittest.TestCase):
 
     def test_multi_level_skip(self):
         c = _new_char()
-        c.metadata = {"xp": 1800}  # enough for level 4 (P37.5 curve)
+        c.metadata = {"xp": 18000}  # enough for level 4 (P37.6 curve)
         msgs = check_level_up(c)
         self.assertEqual(len(msgs), 3)
         self.assertEqual(c.level, 4)
@@ -79,8 +79,8 @@ class TestLevelUp(unittest.TestCase):
     def test_award_xp(self):
         c = _new_char()
         c.metadata = {"xp": 0}
-        msgs = award_xp(c, 300)
-        self.assertEqual(c.metadata["xp"], 300)
+        msgs = award_xp(c, 3000)
+        self.assertEqual(c.metadata["xp"], 3000)
         self.assertEqual(c.level, 2)
         self.assertEqual(len(msgs), 1)
 
@@ -88,7 +88,7 @@ class TestLevelUp(unittest.TestCase):
         c = _new_char(klass=CharacterClass.WIZARD)
         c.intelligence = 10
         c.wisdom = 10
-        c.metadata = {"xp": 300}
+        c.metadata = {"xp": 3000}       # P37.6 L2 threshold
         check_level_up(c)
         # Wizard favors INT + WIS
         self.assertEqual(c.intelligence, 11)
