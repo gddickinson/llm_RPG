@@ -7682,3 +7682,15 @@ occlusion), and `visible_tiles` (the depth-ordered in-bounds tiles for a view). 
 / engine coupling yet — the renderer consumes it in P41.3. tests/test_iso.py (11): the
 transform round-trips, height lifts, the diamond is a 2:1 rhombus, cliffs drop, depth sorts.
 Next P41.2: port movieMaker's numpy software rasterizer (ui/raster3d.py) to bake objects.
+
+## 2026-07-15 — P41.2: numpy software 3D rasterizer + object BAKE
+
+Ported movieMaker's raster3d into `ui/raster3d.py` (131 lines, numpy + a thin pygame
+convert): `render(meshes, cam…) -> (rgb, mask)` z-buffers Lambert-shaded, back-face-culled
+triangles through a pinhole camera (headless, no GPU); `bake(meshes, size)` renders once at
+the fixed ISO camera (2× supersampled → smoothscaled) and returns a transparent pygame
+sprite — so a "3D-look" object is baked ONCE and blitted like any 2D image, zero per-frame
+3D cost. `box`/`roof` mesh helpers. Verified: a box paints 3 distinct Lambert face-shades;
+a baked house (walls + red gable), a pillar and a sarcophagus render as real 3D objects
+(scratchpad/raster3d_bake.png). tests/test_raster3d.py (6). Next P41.3: the iso terrain
+render path (depth-sorted diamonds + cliffs behind the LLM_RPG_RENDER=iso toggle).
