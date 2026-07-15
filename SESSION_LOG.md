@@ -7552,3 +7552,17 @@ furniture()` dispatches here FIRST (cached by name+size), so a furniture piece n
 "Stone Pillar"/"Iron Brazier"/etc. renders the rich prop; legacy pieces unchanged.
 tests/test_prop_sprites.py (8) + a contact-sheet screenshot of all 23. Full suite next.
 Next P39.2: interior themes/palette (dank tombs vs warm homes).
+
+## 2026-07-14 (cont.) — P39.2: interior THEMES (dark dank tombs vs warm homes)
+
+Every interior now reads its THEME (George: "tombs dark, deserted, dank; buildings warm").
+`data/interior_themes.json` (8 themes: tomb/temple/smithy/tavern/library/castle/cave/home,
+each a fill + floor/wall material colour + a faint mood tint) + `ui/interior_theme.py`
+(`theme_for(zone)` keyword-matches the zone name/structure_id; `tile_surface` builds cached
+opaque themed floor/wall tiles with subtle texture; `fill_color`/`mood_overlay`).
+`renderer._render_zone` now fills with the theme colour, draws BUILDING walls + the generic
+floor in the theme MATERIAL (dark cold stone for a tomb, warm wood for a home — no more
+bright-green interior grass), and washes a faint mood tint over the room. Screenshot: the
+Drowned Vault is now a proper dark dank crypt. To hold the 500-line line, split the door-
+glyph draw into `ui/door_glyphs.py` (renderer.py 522→484). tests/test_interior_theme.py (8).
+Full suite next. Next P39.3: themed FURNISHING (kind→props placement).

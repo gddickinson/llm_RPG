@@ -31,12 +31,7 @@ _TERRAIN_TO_SPRITE = {
 }
 
 # Door glyph colors by lock state (P9A.3b)
-DOOR_STATE_COLORS = {
-    "open": (110, 75, 40),
-    "closed": (130, 95, 55),
-    "locked": (95, 70, 50),
-    "broken": (60, 45, 30),
-}
+from ui.door_glyphs import DOOR_STATE_COLORS   # re-export (P9A.3b, split out)
 
 
 class MapRenderer:
@@ -294,42 +289,9 @@ class MapRenderer:
 
     def _draw_door_glyphs(self, target, engine, view_rect,
                           cam_x, cam_y, cols, rows) -> None:
-        """A visible door on every enterable building's face, colored
-        by its lock state (P9A.3b)."""
-        ts = self.tile_size
-        for loc in getattr(engine.world, "locations", []):
-            if loc.name not in getattr(engine, "interiors", {}):
-                continue
-            dx = loc.x + loc.width // 2
-            dy = loc.y + loc.height - 1
-            if not (cam_x <= dx < cam_x + cols and
-                    cam_y <= dy < cam_y + rows):
-                continue
-            try:
-                door = engine.door_manager.door(loc.name)
-                state = engine.door_manager._effective_state(door)
-            except Exception:
-                state = "open"
-            color = DOOR_STATE_COLORS.get(state, (110, 75, 40))
-            sx = view_rect.x + (dx - cam_x) * ts
-            sy = view_rect.y + (dy - cam_y) * ts
-            w, h = max(6, ts // 3), max(9, ts // 2)
-            rect = (sx + (ts - w) // 2, sy + ts - h, w, h)
-            pygame.draw.rect(target, color, rect, border_radius=2)
-            pygame.draw.rect(target, (25, 18, 10), rect, 1,
-                             border_radius=2)
-            if state == "locked":
-                pygame.draw.circle(target, (210, 200, 90),
-                                   (rect[0] + w // 2,
-                                    rect[1] + h // 2), 2)
-            elif state == "open":
-                pygame.draw.rect(target, (15, 12, 8),
-                                 (rect[0] + 2, rect[1] + 2,
-                                  w - 4, h - 2))
-            elif state == "broken":
-                pygame.draw.line(target, (15, 12, 8),
-                                 (rect[0], rect[1]),
-                                 (rect[0] + w, rect[1] + h), 2)
+        from ui.door_glyphs import draw_door_glyphs
+        draw_door_glyphs(target, engine, view_rect, cam_x, cam_y,
+                         cols, rows, self.tile_size)
 
     def _render_zone(self, target, engine, view_rect, zone) -> None:
         """Draw a dungeon / interior grid instead of the overworld."""
@@ -340,10 +302,12 @@ class MapRenderer:
         cam_x = max(0, min(zone.width - cols, px - cols // 2))
         cam_y = max(0, min(zone.height - rows, py - rows // 2))
 
-        # Dungeons feel like rock; interiors like lamplit rooms
+        # P39.2 each interior has a THEME (tomb = dark/dank, home = warm, …)
+        from ui import interior_theme as itheme
+        from world.world_map import TerrainType as _TT
+        theme = itheme.theme_for(zone)
         is_dungeon = hasattr(zone, "rooms")
-        target.fill((12, 10, 14) if is_dungeon else (24, 18, 12),
-                    view_rect)
+        target.fill(itheme.fill_color(theme), view_rect)
 
         # Dungeon fog-of-war (P8.6): shadowcast what the hero sees
         visible = None
@@ -369,16 +333,31 @@ class MapRenderer:
                     if (wx, wy) not in explored:
                         continue                      # never seen: dark
                 terrain = zone.terrain[wy][wx]
-                sprite = _TERRAIN_TO_SPRITE.get(terrain, "grass")
                 dest = (view_rect.x + sx * self.tile_size,
                         view_rect.y + sy * self.tile_size)
-                target.blit(self.sprites.tile(sprite), dest)
+                # P39.2 walls + the generic floor get the THEME material; other
+                # terrains (water/road/cave) keep their own sprite
+                themed = None
+                if terrain == _TT.BUILDING:
+                    themed = itheme.tile_surface(theme, "wall", self.tile_size)
+                elif terrain == _TT.GRASS:
+                    themed = itheme.tile_surface(theme, "floor", self.tile_size)
+                if themed is not None:
+                    target.blit(themed, dest)
+                else:
+                    sprite = _TERRAIN_TO_SPRITE.get(terrain, "grass")
+                    target.blit(self.sprites.tile(sprite), dest)
                 if visible is not None and (wx, wy) not in visible:
                     dim = pygame.Surface(
                         (self.tile_size, self.tile_size))
                     dim.set_alpha(160)
                     dim.fill((8, 6, 10))
                     target.blit(dim, dest)            # remembered, dim
+
+        # P39.2 a faint mood wash over the whole room (dank blue / warm amber)
+        mood = itheme.mood_overlay(theme, view_rect.width, view_rect.height)
+        if mood is not None:
+            target.blit(mood, (view_rect.x, view_rect.y))
 
         # Furniture (interiors)
         for furn in getattr(zone, "furniture", []):

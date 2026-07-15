@@ -5611,7 +5611,7 @@ EVERY building, many more decorative props / furniture / diases / stair & window
 - [x] **P39.1 Prop sprite library** — `ui/prop_sprites.py` procedural sprites for many new
   props (pillar/brazier/torch/tapestry/sarcophagus/statue/fountain/dais/gravestone/urn/
   cobweb/candelabra/rug/…); `sprites.furniture()` dispatches them. Tests + a contact sheet.
-- [ ] **P39.2 Interior themes** — `data/interior_themes.json` (floor/wall palette + tint per
+- [x] **P39.2 Interior themes** — `data/interior_themes.json` (floor/wall palette + tint per
   theme: tomb/temple/smithy/home/tavern/library/castle/cave); `_render_zone` applies it with
   a dank-dim + dust for deserted, a warm wash for lived-in.
 - [ ] **P39.3 Themed furnishing** — `data/furnishings.json` (kind→props) + a wall-preference
