@@ -368,9 +368,15 @@ class MapRenderer:
             dest_x = view_rect.x + (fx - cam_x) * self.tile_size
             dest_y = view_rect.y + (fy - cam_y) * self.tile_size
             try:
-                target.blit(
-                    self.sprites.furniture(furn.get("name", "?")),
-                    (dest_x, dest_y))
+                fname = furn.get("name", "?")
+                if "stair" in fname.lower():        # P39.5 themed stairs
+                    from ui.openings import draw_stairs, stair_kind_for
+                    target.blit(draw_stairs(self.tile_size,
+                                            stair_kind_for(theme)),
+                                (dest_x, dest_y))
+                else:
+                    target.blit(self.sprites.furniture(fname),
+                                (dest_x, dest_y))
             except Exception:
                 pygame.draw.rect(
                     target, (120, 90, 50),

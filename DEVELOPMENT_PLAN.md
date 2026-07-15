@@ -5619,7 +5619,7 @@ EVERY building, many more decorative props / furniture / diases / stair & window
   in-theme.
 - [x] **P39.4 Interior light sources & mood** — radial glow for braziers/torches/hearths/
   altars; dank vs warm made to read.
-- [ ] **P39.5 Stair / window / door variants** — spiral/stone stairs, arched/lancet/rose/
+- [x] **P39.5 Stair / window / door variants** — spiral/stone stairs, arched/lancet/rose/
   arrow-loop windows, plank/portcullis doors, per theme.
 - [ ] **P39.6 Apply everywhere + adventure polish** — the Drowned Vault gets the tomb/crypt
   theme; all settlement buildings themed; overworld scatter detail; broad screenshots.

@@ -332,13 +332,14 @@ def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
         by = fy + round(h * i / storeys)
         pygame.draw.line(target, _scale(front, 0.7), (px, by), (px + w, by), 1)
     ww = max(3, ts // 4)                              # a row of windows/floor
+    from ui.openings import draw_window, window_shape_for
+    shape = window_shape_for(kind)
     for i in range(storeys):
         by = fy + round(h * (i + 0.35) / storeys)
         for c in range(loc.width):
             wx0 = px + c * ts + (ts - ww) // 2
-            pygame.draw.rect(target, WINDOW, (wx0, by, ww, max(2, ww)))
-            pygame.draw.rect(target, WINDOW_GLASS,
-                             (wx0, by, ww, max(1, ww - 1)))
+            draw_window(target, (wx0, by, ww, max(2, ww)), shape,
+                        frame=WINDOW, glass=WINDOW_GLASS)
     for (cx, cy, cw, ch) in rs.span_chimneys(px, py, w, h, style["chimneys"]):
         pygame.draw.rect(target, rs.CHIMNEY, (cx, cy, cw, ch))
         pygame.draw.rect(target, rs.CHIMNEY_CAP, (cx, cy, cw, max(1, ch // 4)))
@@ -389,9 +390,11 @@ def _draw_block(target, kind, px, py, ts, h) -> None:
     for (a, b) in storey_lines(px, py, ts, h, storeys):
         pygame.draw.line(target, _scale(front, 0.7), a, b, 1)
     # per-floor windows make the storeys READ (P33.3b)
+    from ui.openings import draw_window, window_shape_for
+    shape = window_shape_for(kind)
     for (wx, wy, ww, wh) in wall_windows(px, py, ts, h, storeys):
-        pygame.draw.rect(target, WINDOW, (wx, wy, ww, wh))
-        pygame.draw.rect(target, WINDOW_GLASS, (wx, wy, ww, max(1, wh - 1)))
+        draw_window(target, (wx, wy, ww, wh), shape,
+                    frame=WINDOW, glass=WINDOW_GLASS)
     for (cx, cy, cw, ch) in rs.chimney_rects(px, py, ts, h, style["chimneys"]):
         pygame.draw.rect(target, rs.CHIMNEY, (cx, cy, cw, ch))
         pygame.draw.rect(target, rs.CHIMNEY_CAP, (cx, cy, cw, max(1, ch // 4)))

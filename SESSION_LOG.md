@@ -7596,3 +7596,16 @@ json` gains a per-theme `light` block (dark alpha / warm glow colour / dust coun
 counter. Screenshots: the Drowned Vault is now a dark dusty crypt lit by warm braziers; the
 Oakvale Tavern is warm and cozy. tests/test_interior_light.py (5). renderer.py 493. Full
 suite next. Next P39.5: stair/window/door variants.
+
+## 2026-07-14 (cont.) — P39.5: stair / window / door VARIANTS per theme
+
+`ui/openings.py` (pure geometry + thin draw): STAIRS — wooden / stone / SPIRAL (a keep's
+circular stair); WINDOWS — square / arched / lancet (gothic) / rose (cathedral) / round /
+arrow-loop (castle slit). Wired: interior stairs render the theme's stair kind
+(`renderer._render_zone` reads `theme.stair` via `openings.stair_kind_for` — tomb/temple/
+cave = stone, castle = spiral, else wood), and the 2.5D building windows pick a SHAPE by
+building kind (`renderer_buildings._draw_block`/`_draw_footprint` via `window_shape_for` —
+temple = lancet, wall_tower/keep = arrow-loop, library = arched, else square).
+`data/interior_themes.json` gains a per-theme `stair`. Screenshots: stone steps in the
+crypt, lancet windows on the temple. tests/test_openings.py (10). renderer.py 499. Full
+suite next. Next P39.6: apply detail everywhere + overworld scatter + broad polish.
