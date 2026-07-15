@@ -7724,3 +7724,15 @@ everything occludes correctly (a building hides tiles behind it). Screenshot: Oa
 — 3D houses with roofs, a forest of trees, corner wall-towers, mountains as cliffed blocks.
 tests/test_iso_objects.py (10). Next P41.5: iso characters (bake/billboard player+NPCs,
 depth-sorted, facing).
+
+## 2026-07-15 — P41.5: 3D CHARACTERS in the iso world (hero + NPCs)
+
+The iso town is populated. `ui/iso_chars.py`: a character is a stacked-box humanoid (legs/
+torso/head/hair + a facing nub), tinted by class/armour (`char_motion.armor_tint` over a
+class-colour base, so folk read apart), baked ONCE per (tint,hair,size,facing) via raster3d.
+bake at a tighter char camera so the figure fills the sprite; `facing_of` gives a 4-dir
+turn. `iso_render` gathers the visible cast (`_visible_chars` — hero + active, not
+wall-hidden NPCs, mirroring the top-down filter), and draws each with a contact shadow in
+the SAME depth-sorted pass (layer 2), so a figure stands correctly in front of / behind a
+building or tree. Screenshot: Oakvale in iso with townsfolk among the 3D houses, trees,
+towers + a river. tests/test_iso_chars.py (7). Next P41.6: iso interiors (roof-fade).

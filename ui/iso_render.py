@@ -115,9 +115,18 @@ def render_iso(target, engine, view_rect, tile_size) -> None:
                 items.append((iso.depth_key(wx, wy, 1.1, 1), "obj",
                               (iso_objects.building_sprite(kind, bs),
                                int(sx), int(sy))))
-    # the hero, in the same depth order
-    pz = _HEIGHT.get(_terrain_name(wmap.terrain[py][px]), 0.0)
-    items.append((iso.depth_key(px, py, pz, 2), "player", None))
+    # characters (hero + visible NPCs) in the same depth order (layer 2)
+    for char in _visible_chars(engine):
+        cx, cy = char.position
+        if not (x0 <= cx < x1 and y0 <= cy < y1):
+            continue
+        if is_explored is not None and char is not engine.player \
+                and not is_explored(engine, cx, cy):
+            continue
+        cz = _HEIGHT.get(_terrain_name(wmap.terrain[cy][cx]), 0.0)
+        sx, sy = iso.world_to_screen(cx, cy, cz, origin)
+        items.append((iso.depth_key(cx, cy, cz, 2), "char",
+                      (char, int(sx), int(sy))))
     items.sort(key=lambda t: t[0])
 
     for _, tag, data in items:
@@ -126,7 +135,35 @@ def render_iso(target, engine, view_rect, tile_size) -> None:
         elif tag == "obj":
             _blit_object(target, data)
         else:
-            _draw_player(target, iso, engine, origin, tile_size)
+            _draw_char(target, data, tile_size)
+
+
+def _visible_chars(engine):
+    """Hero + active NPCs the top-down view would show (not wall-hidden)."""
+    out = [engine.player]
+    try:
+        from engine.presence import hidden_by_walls
+    except Exception:
+        hidden_by_walls = None
+    for npc in engine.npc_manager.npcs.values():
+        if not (hasattr(npc, "is_active") and npc.is_active()):
+            continue
+        if hidden_by_walls is not None and hidden_by_walls(engine, npc):
+            continue
+        out.append(npc)
+    return out
+
+
+def _draw_char(target, data, tile_size):
+    from ui import iso_chars
+    char, sx, sy = data
+    th = max(6, tile_size // 3)
+    sh = pygame.Surface((tile_size, th), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 95), (0, 0, tile_size, th))
+    target.blit(sh, (sx - tile_size // 2, sy - th // 2))     # contact shadow
+    spr = iso_chars.char_sprite(char, int(tile_size * 1.5))
+    w, h = spr.get_size()
+    target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
 
 
 def _draw_tile(target, iso, data):
@@ -165,17 +202,3 @@ def _building_anchors(engine):
     return out
 
 
-def _draw_player(target, iso, engine, origin, tile_size):
-    px, py = engine.player.position
-    z = _HEIGHT.get(_terrain_name(engine.world.map.terrain[py][px]), 0.0)
-    sx, sy = iso.world_to_screen(px, py, z, origin)
-    th = max(8, tile_size // 2)
-    foot = (int(sx), int(sy))
-    sh = pygame.Surface((tile_size, th), pygame.SRCALPHA)
-    pygame.draw.ellipse(sh, (0, 0, 0, 90), (0, 0, tile_size, th))
-    target.blit(sh, (foot[0] - tile_size // 2, foot[1] - th // 2))
-    pygame.draw.rect(target, (70, 90, 160),
-                     (foot[0] - tile_size // 8, foot[1] - th,
-                      tile_size // 4, th))
-    pygame.draw.circle(target, (232, 196, 160),
-                       (foot[0], foot[1] - th), max(3, tile_size // 8))
