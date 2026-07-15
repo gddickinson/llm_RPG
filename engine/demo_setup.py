@@ -203,6 +203,16 @@ def initialize_demo_world(engine, player_spec=None,
             logger.warning(f"Procedural worldgen failed ({e}); using legacy.")
             engine.world.create_simple_world()
 
+    # A realistic world begins at MORNING, not the default midnight — you wake
+    # in a sunlit town with the gates open and folk about, not a dark, shut
+    # keep (George: "started in a castle with no way out"). The P37 gate fix
+    # handles night regardless; this is the friendlier first light of day.
+    if world_kind == "realistic":
+        try:
+            engine.world.time = 8 * 60          # 08:00
+        except Exception:
+            pass
+
     # Revival shrine + back-references
     try:
         engine.world.add_revival_shrine(2, 12, radius=2)

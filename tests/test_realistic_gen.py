@@ -119,6 +119,25 @@ class TestPlayable(unittest.TestCase):
         finally:
             e.end_game()
 
+    def test_starts_in_daylight_with_open_gates(self):
+        """George loaded into a dark, shut town. A realistic world now wakes at
+        MORNING with the walled town's gates standing open."""
+        from engine.game_engine import GameEngine
+        e = GameEngine(llm_provider="heuristic", enable_npc_processes=False,
+                       world_kind="realistic")
+        e.start_game()
+        try:
+            self.assertNotEqual(e.world.get_time_of_day(), "night")
+            oak = next((l for l in e.world.locations
+                        if l.name == "Oakvale Village"), None)
+            gates = oak.get_property("gates")
+            self.assertGreaterEqual(len(gates), 2, "at least two gates")
+            e.town_gates.sync()
+            self.assertTrue(any(e.town_gates.is_open(g) for g in gates),
+                            "the gates stand open by day")
+        finally:
+            e.end_game()
+
     def test_chronicle_seeded_from_history(self):
         from engine.game_engine import GameEngine
         e = GameEngine(llm_provider="heuristic", enable_npc_processes=False,
