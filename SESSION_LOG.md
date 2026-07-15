@@ -7639,3 +7639,19 @@ docs/ISOMETRIC.md — a TOGGLEABLE render mode (engine untouched, game stays pla
 iso projection + 3D-baked objects, folding Phase 40 fidelity into the iso textures. Build
 P41.1 iso math → P41.2 raster3d → P41.3 iso terrain → P41.4 objects → P41.5 chars → P41.6
 interiors → P41.7 fidelity+polish.
+
+## 2026-07-14 (cont.) — P38.3: the Sunken Tome is now PLAYABLE (guided quest chain)
+
+George asked "how do I play the module?" — so the adventure now has a guided, completable
+5-act quest chain. data/quests.json gains 3 quests: q_tome_whisper (Sage Ondrel gives it,
+EXPLORE the Drowned Vault), q_tome_keys (prereq; FETCH the 3 Warding-Key fragments →
+reward the assembled Warding Key), q_tome_reckoning (prereq; Warden Halric; KILL Vael'Zhur
+— matches the enc_ template — with 3 reward_choices Seal/Destroy/Claim, each firing a
+[Legend] finale on turn-in via a new quest_manager.turn_in `legend` emission). The seeder
+(adventure_tome.py) now DROPS the 3 fragments at their areas (Thornwatch / Ashen Camp /
+Ysolde's Hollow), GUARDS the fragment sites (grave-touched at Thornwatch, Cinder cultists +
+captain at the camp), and emits a STARTING RUMOR pointing a new player to the southern
+Mirefen marsh + Ondrel. data_validate learns the adventure NPCs (from data/adventure_tome.
+json) are valid givers. tests/test_adventure_tome.py drives the whole chain end to end
+(Whisper → Keys → Reckoning → Destroy finale [Legend] + tome_won flag). Validator clean.
+Full suite next. Next P38.4: a world-scale scripted playthrough + a "how to play" README note.

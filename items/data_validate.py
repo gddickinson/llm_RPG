@@ -364,16 +364,25 @@ def _check_quests() -> List[str]:
     from world.monsters import MONSTER_TEMPLATES
     from characters.character_types import CharacterClass
     class_values = {c.value for c in CharacterClass}
+    # P38.3: the Sunken Tome adventure seeds its cast from data/adventure_tome.
+    # json (kept out of data/npcs/), so they are valid givers/actors too
+    adv_npcs = set()
+    try:
+        from items.data_loader import load_data_file
+        adv_npcs = set(
+            (load_data_file("adventure_tome.json") or {}).get("npcs", {}))
+    except Exception:
+        pass
     out = []
     # KILL matches npc id OR class; TALK matches npc id
     known_actor = lambda a: (a in NPC_SPECS or a in MONSTER_TEMPLATES
-                             or a in class_values)
+                             or a in class_values or a in adv_npcs)
     for qid, factory in QUEST_TEMPLATES.items():
         quest = factory()
         if not quest.giver_id:
             out.append(f"quest {qid}: no giver — the GUI's only "
                        f"turn-in path is dialog with the giver")
-        elif quest.giver_id not in NPC_SPECS:
+        elif quest.giver_id not in NPC_SPECS and quest.giver_id not in adv_npcs:
             out.append(f"quest {qid}: unknown giver '{quest.giver_id}'")
         for iid in quest.reward_items:
             if not _known_item(iid):

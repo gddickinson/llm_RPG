@@ -23,15 +23,18 @@ class TestPlaytest2Findings(unittest.TestCase):
         """Finding: giver '' quests complete but can never be turned in
         through the GUI (dialog turn-in needs giver adjacency)."""
         from characters.npc_presets import NPC_SPECS
+        from engine.adventure_tome import adventure_npc_ids
+        adv = adventure_npc_ids()
         for qid, quest in self.engine.quest_manager.quests.items():
             if qid.startswith("radiant_"):
                 continue
             self.assertTrue(quest.giver_id,
                             f"quest {qid} has no giver")
             # reachable if in the open world, OR a preset NPC seated in a
-            # zone (P18.2 castle residents give quests inside the castle)
+            # zone (P18.2 castle residents), OR a seeded adventure NPC (P38)
             reachable = (self.engine.npc_manager.get_npc(quest.giver_id)
-                         is not None or quest.giver_id in NPC_SPECS)
+                         is not None or quest.giver_id in NPC_SPECS
+                         or quest.giver_id in adv)
             self.assertTrue(
                 reachable,
                 f"quest {qid} giver '{quest.giver_id}' not in world")

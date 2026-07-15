@@ -171,6 +171,16 @@ class QuestManager:
         if flag:
             self._flags()[flag] = True
 
+        # An adventure FINALE (P38.3): the chosen ending speaks into legend —
+        # the chronicle observes [Legend] beats, so the campaign closes in saga
+        legend = quest.metadata.get("legend")
+        if choices:
+            idx = quest.metadata.get("reward_choice", 0)
+            legend = choices[idx if 0 <= idx < len(choices)
+                             else 0].get("legend", legend)
+        if legend:
+            self._log(f"[Legend] {legend}")
+
         quest.status = QuestStatus.TURNED_IN
         self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")
         return True

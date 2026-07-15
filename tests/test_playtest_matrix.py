@@ -43,12 +43,14 @@ class PlaytestSession(unittest.TestCase):
         from world.monsters import MONSTER_TEMPLATES
         from characters.character_types import CharacterClass
         from characters.npc_presets import NPC_SPECS
+        from engine.adventure_tome import adventure_npc_ids
         present = set(self.engine.npc_manager.npcs)
         classes = {c.value for c in CharacterClass}
+        adv = adventure_npc_ids()
         # a preset NPC is reachable even if zone-bound (seated in its zone,
-        # e.g. the P18.2 castle court) rather than in the open world
+        # e.g. the P18.2 castle court); an adventure NPC (P38) is seeded too
         def reachable(actor):
-            return (actor in present or actor in NPC_SPECS
+            return (actor in present or actor in NPC_SPECS or actor in adv
                     or actor in MONSTER_TEMPLATES or actor in classes)
         for qid, factory in QUEST_TEMPLATES.items():
             q = factory()

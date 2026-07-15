@@ -189,5 +189,66 @@ class TestSeeder(_AdvBase):
         self.assertEqual(fresh.npc_ids, self.at.npc_ids)
 
 
+class TestQuestChain(_AdvBase):
+    """P38.3 — the 5-act quest chain is offered, gated, and completable end to
+    end, with the Seal/Destroy/Claim finale firing a [Legend]."""
+
+    def _qm(self):
+        return self.engine.quest_manager
+
+    def _status(self, qid):
+        q = self._qm().quests[qid]
+        q.update_status()
+        return q.status.value
+
+    def test_ondrel_offers_the_opener_others_gated(self):
+        qm = self._qm()
+        self.assertIn("q_tome_whisper",
+                      [q.id for q in qm.offered_by("sage_ondrel")])
+        self.assertFalse(qm.is_unlocked(qm.quests["q_tome_keys"]))
+        self.assertFalse(qm.is_unlocked(qm.quests["q_tome_reckoning"]))
+
+    def test_a_starting_rumor_points_to_mirefen(self):
+        log = " ".join(str(x) for x in self.engine.memory_manager.game_history)
+        self.assertIn("Mirefen", log)
+
+    def test_the_three_fragments_are_findable(self):
+        found = {i.id for items in self.engine.world.ground_items.values()
+                 for i in items if "warding_key_" in getattr(i, "id", "")}
+        self.assertEqual(found,
+                         {"warding_key_i", "warding_key_ii", "warding_key_iii"})
+
+    def test_full_chain_seal_to_destroy_finale(self):
+        qm, player = self._qm(), self.engine.player
+        # Act 1 — find the Vault
+        self.assertTrue(qm.accept_quest("q_tome_whisper"))
+        qm.on_location_entered("The Drowned Vault")
+        self.assertEqual(self._status("q_tome_whisper"), "completed")
+        self.assertTrue(qm.turn_in("q_tome_whisper", player))
+        # Act 2 — the keys now unlock
+        self.assertTrue(qm.is_unlocked(qm.quests["q_tome_keys"]))
+        self.assertTrue(qm.accept_quest("q_tome_keys"))
+        for frag in ("warding_key_i", "warding_key_ii", "warding_key_iii"):
+            qm.on_item_acquired(frag)
+        self.assertEqual(self._status("q_tome_keys"), "completed")
+        self.assertTrue(qm.turn_in("q_tome_keys", player))
+        self.assertTrue(any(getattr(i, "id", "") == "warding_key"
+                            for i in player.inventory), "got the Warding Key")
+        # Act 5 — the reckoning; kill the lich (template match on an enc_ id)
+        self.assertTrue(qm.is_unlocked(qm.quests["q_tome_reckoning"]))
+        self.assertTrue(qm.accept_quest("q_tome_reckoning"))
+        qm.on_npc_defeated("enc_vaelzhur_lich_ab12cd", "warlock")
+        self.assertEqual(self._status("q_tome_reckoning"), "completed")
+        # choose the Destroy ending → a [Legend] finale + the won flag
+        choices = qm.quests["q_tome_reckoning"].metadata["reward_choices"]
+        self.assertEqual(len(choices), 3, "Seal / Destroy / Claim")
+        qm.choose_reward("q_tome_reckoning", 1)
+        qm.turn_in("q_tome_reckoning", player)
+        log = " ".join(str(x) for x in qm.event_log)
+        self.assertTrue(any("[Legend]" in str(m) and "shattered" in str(m)
+                            for m in qm.event_log), f"finale legend: {log}")
+        self.assertTrue(player.metadata.get("quest_flags", {}).get("tome_won"))
+
+
 if __name__ == "__main__":
     unittest.main()

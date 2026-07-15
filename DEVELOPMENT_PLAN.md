@@ -5596,7 +5596,7 @@ plus deep integration tests that actually COMPLETE the main objectives. Built as
   the lich, artifacts, clues, win conditions) → `docs/ADVENTURE_TOME.md`.
 - [x] **P38.1 Content: monsters + tribes + magic items + artifacts** (`data/*.json`).
 - [x] **P38.2 Content: areas/structures (villages, camps, ruins, the sunken library) + NPCs.**
-- [ ] **P38.3 Content: the quest chain + clues + branching solve paths + the module pack.**
+- [x] **P38.3 Content: the quest chain + clues + branching solve paths + the module pack.**
 - [ ] **P38.4 Deep integration tests + a scripted playthrough that completes the objectives.**
 
 ## Phase 39 — World detail & decoration (George, 2026-07-14)

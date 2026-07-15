@@ -47,7 +47,7 @@
       "stats": {"wisdom": 16, "intelligence": 14, "dexterity": 13, "charisma": 13},
       "hp": 30, "gold": 30, "symbol": "Y", "area": "ysolde_hollow",
       "faction": "neutral",
-      "inventory": ["warding_key_iii"],
+      "inventory": [],
       "description": "The marsh-witch of the black willow hollow, neither friend nor foe — a keeper of old bargains who holds the last warding-fragment, for a price.",
       "personality": {"traits": ["shrewd", "wild", "fair"],
                        "likes": ["a fair trade", "the marsh's balance"],

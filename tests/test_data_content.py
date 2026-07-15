@@ -155,12 +155,14 @@ class TestQuestAndNpcData(unittest.TestCase):
     def test_quest_givers_exist_in_npc_specs(self):
         from quests.quest_templates import QUEST_TEMPLATES
         from characters.npc_presets import NPC_SPECS
+        from engine.adventure_tome import adventure_npc_ids
+        known = set(NPC_SPECS) | adventure_npc_ids()   # adventure NPCs count
         for qid, factory in QUEST_TEMPLATES.items():
             quest = factory()
             if quest.giver_id:
-                self.assertIn(quest.giver_id, NPC_SPECS,
+                self.assertIn(quest.giver_id, known,
                               f"quest {qid} giver '{quest.giver_id}' "
-                              f"is not a preset NPC")
+                              f"is not a known NPC")
 
     def test_npc_presets_load_from_json(self):
         from characters.npc_presets import NPC_SPECS, all_presets, make_npc

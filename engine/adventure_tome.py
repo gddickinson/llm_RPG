@@ -24,6 +24,17 @@ _BAD = (TerrainType.BUILDING, TerrainType.WATER, TerrainType.MOUNTAIN)
 MIN_DIST = 14              # tiles from the player start
 
 
+def adventure_npc_ids() -> set:
+    """Ids of the NPCs this adventure seeds (Ondrel/Ysolde/Halric/…) — kept OUT
+    of data/npcs/, so validators/tests that check quest givers know they exist
+    in the world at runtime even though they're not preset roster NPCs."""
+    from items.data_loader import load_data_file
+    try:
+        return set((load_data_file("adventure_tome.json") or {}).get("npcs", {}))
+    except Exception:
+        return set()
+
+
 class AdventureTome:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
@@ -63,10 +74,66 @@ class AdventureTome:
         except Exception as e:
             logger.debug(f"vault attach: {e}")
         self._seat_npcs(data.get("npcs", {}))
+        self._place_fragments()
+        self._place_foes()
+        self._rumor()
         if self.areas:
             logger.info(f"Seeded the Sunken Tome adventure: "
                         f"{len(self.areas)} areas, {len(self.npc_ids)} NPCs.")
         return len(self.areas)
+
+    def _place_fragments(self) -> None:
+        """Drop the three Warding-Key fragments at their areas (P38.3), so the
+        `q_tome_keys` FETCH quest is completable by exploring the marsh."""
+        from items.item_registry import create_item
+        gi = getattr(self.engine.world, "ground_items", None)
+        if gi is None:
+            return
+        plan = {"thornwatch_ruins": "warding_key_i",
+                "ashen_camp": "warding_key_ii",
+                "ysolde_hollow": "warding_key_iii"}
+        for area_id, item_id in plan.items():
+            spot = self._near_area(area_id) or self.area_pos(area_id)
+            if spot is None:
+                continue
+            it = create_item(item_id)
+            if it is not None:
+                gi.setdefault(tuple(spot), []).append(it)
+
+    def _place_foes(self) -> None:
+        """Guard the fragment sites so the keys are EARNED (P38.3): grave-touched
+        at Thornwatch, the Cinder Circle at the Ashen Camp."""
+        from world.monsters import build_monster
+        plan = [("thornwatch_ruins", "grave_touched", 2),
+                ("ashen_camp", "cinder_cultist", 2),
+                ("ashen_camp", "cinder_captain", 1)]
+        wmap = self.engine.world.map
+        for area_id, template, n in plan:
+            base = self.area_pos(area_id)
+            if base is None:
+                continue
+            for i in range(n):
+                spot = self._near_area(area_id)
+                if spot is None or spot in wmap.characters:
+                    continue
+                foe = build_monster(template, tuple(spot))
+                self.engine.npc_manager.add_npc(foe)
+                try:
+                    wmap.place_character(foe, *spot)
+                except Exception:
+                    pass
+
+    def _rumor(self) -> None:
+        """A starting pointer so a new player knows to seek Mirefen (P38.3)."""
+        if not self.areas:
+            return
+        try:
+            self.engine.memory_manager.add_event(
+                "[Realm] Fisherfolk speak of a drowned green light in the "
+                "southern Mirefen marsh — and of the scholar Ondrel there, "
+                "who alone knows its name.")
+        except Exception:
+            pass
 
     def _spot(self, near: str, used: set) -> Optional[Tuple[int, int]]:
         """An open tile of (or beside) `near` terrain, far from the player and
