@@ -8365,3 +8365,22 @@ colonnade) shine in big buildings — the default world's 8x8 temples/halls cons
 read. tests/test_furnish_features.py (+7: each composition's shape, the aisle stays clear, the apron
 covers doorways, furnish_typed never blocks one). Files: furnish_features 141, room_plan 170,
 furnishings 150 — all <500. Validator clean. Next: BLD.4/5 (facade doors + shopfronts, new ui/facade.py).
+
+## 2026-07-15 — BLD.4: facade doors (exterior track begins)
+
+Interior track (BLD.1-3) done; starting the EXTERIOR. The building door was a flat coloured rect,
+identical for every kind. New ui/facade.py (pure geometry + thin pygame draw, roof_shapes.py mould):
+a real entrance chosen by building KIND — door_style_for maps kind → PANELLED (homes/shops: a framed
+door with 4 raised panels + a knob), PLANKED (smithy/forge/barn/stable/stores: vertical plank seams
++ a diagonal brace + corner studs), ARCHED (temple/chapel/library/tower: a rounded top), or DOUBLE
+(hall/inn/keep/castle: two arched leaves with a meeting line). door_shapes(x,y,w,h,style) returns the
+frame (jambs/lintel/step) + per-style detail; draw_door renders it with the lock-state colour
+(open/closed/locked/broken from door_glyphs.DOOR_STATE_COLORS) preserved — open shows a dark opening,
+locked a lock stud, broken a crack. ui/door_glyphs.draw_door_glyphs now just iterates enterable
+buildings, reads the kind (loc type property) + lock state, and delegates to facade.draw_door
+(door_glyphs 45→35 lines; renderer_buildings untouched at 417). Before/after: scratchpad/bld4_doors_
+compare.png (identical flat rects → distinct per-kind doors: panelled/planked/arched/double) +
+bld4_street.png (an arched temple door + a panelled home door read on the Oakvale street).
+tests/test_facade.py (+8: style per kind, geometry per style, all lock states draw, the state colour
+paints the leaf, door_glyphs integration). Files under 500 (facade 126). Validator clean.
+Next: BLD.5 (shopfronts + signage: awnings, hanging signs, display windows, forge-glow, oven).

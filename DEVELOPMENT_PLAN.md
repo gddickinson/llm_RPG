@@ -5877,8 +5877,15 @@ ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly 
   so furniture never blocks a passage, wired into both `furnish_typed` and `furnishings._buckets`.
   A tavern gets a real bar counter (scratchpad/bld3_tavern.png). `tests/test_furnish_features.py`
   (+7). (Grand compositions shine in big buildings; small 8×8 rooms constrain them but they read.)
-- [ ] **BLD.4 Facade doors** — new `ui/facade.py`: real framed/panelled/planked/arched doors per
-  kind + lintel + step, on the street-facing wall.
+- [x] **BLD.4 Facade doors — DONE.** New `ui/facade.py` (pure `door_style_for`/`door_shapes` +
+  a thin `draw_door`, headless-testable): a real entrance chosen by building KIND — PANELLED (4
+  panels + knob) for homes/shops, PLANKED (plank seams + diagonal brace + studs) for smithy/barn/
+  stores, ARCHED (rounded top) for temple/library/tower, DOUBLE (two arched leaves) for hall/inn/
+  keep — each with a lintel above and a step below, preserving the lock-state colour (open/closed/
+  locked/broken). `door_glyphs.draw_door_glyphs` now delegates here per building (door_glyphs
+  45→35, `renderer_buildings` untouched at 417). Before/after: scratchpad/bld4_doors_compare.png
+  (identical flat rects → distinct per-kind doors) + bld4_street.png (an arched temple door + a
+  panelled home door in an Oakvale street). `tests/test_facade.py` (+8).
 - [ ] **BLD.5 Shopfronts & signage** — awnings, hanging signs, display windows, forge-glow/anvil,
   bakery oven; per-kind identity so a smithy ≠ a house.
 - [ ] **BLD.6 Decoration pass + occupant clutter + interior render polish** — carpet-before-hearth,

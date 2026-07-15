@@ -26,19 +26,10 @@ def draw_door_glyphs(target, engine, view_rect, cam_x, cam_y, cols, rows,
             state = engine.door_manager._effective_state(door)
         except Exception:
             state = "open"
-        color = DOOR_STATE_COLORS.get(state, (110, 75, 40))
         sx = view_rect.x + (dx - cam_x) * ts
         sy = view_rect.y + (dy - cam_y) * ts
-        w, h = max(6, ts // 3), max(9, ts // 2)
-        rect = (sx + (ts - w) // 2, sy + ts - h, w, h)
-        pygame.draw.rect(target, color, rect, border_radius=2)
-        pygame.draw.rect(target, (25, 18, 10), rect, 1, border_radius=2)
-        if state == "locked":
-            pygame.draw.circle(target, (210, 200, 90),
-                               (rect[0] + w // 2, rect[1] + h // 2), 2)
-        elif state == "open":
-            pygame.draw.rect(target, (15, 12, 8),
-                             (rect[0] + 2, rect[1] + 2, w - 4, h - 2))
-        elif state == "broken":
-            pygame.draw.line(target, (15, 12, 8), (rect[0], rect[1]),
-                             (rect[0] + w, rect[1] + h), 2)
+        # BLD.4: a real per-kind entrance door (framed/planked/arched/double)
+        kind = loc.get_property("type", "") if hasattr(loc, "get_property") \
+            else ""
+        from ui import facade
+        facade.draw_door(target, sx, sy, ts, kind, state)
