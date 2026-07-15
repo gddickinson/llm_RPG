@@ -277,3 +277,54 @@ def run_night(engine) -> None:
             pass
         return
     m["loyalty"] = loy
+
+
+# ---- P28.2d the STABLE menu (buy + ride) ------------------------------------
+
+_STABLE_ORDER = ["horse", "mule", "donkey", "war_horse"]
+
+
+def stable_kinds() -> list:
+    """The mounts a stable sells (`sold_at == "stable"`), the horse first."""
+    ms = all_mounts()
+    ranked = [k for k in _STABLE_ORDER if k in ms
+              and ms[k].get("sold_at") == "stable"]
+    extra = [k for k in ms if ms[k].get("sold_at") == "stable"
+             and k not in ranked]
+    return ranked + extra
+
+
+def stable_here(engine) -> bool:
+    """The player stands at a stable (the seeded marker, or any `stable` loc)."""
+    try:
+        st = getattr(engine, "stables", None)
+        if st is not None and st.stable_at(engine.player.position) is not None:
+            return True
+    except Exception:
+        pass
+    return _seller_nearby(engine, "stable")
+
+
+def stable_overlay_lines(engine) -> list:
+    """The numbered stable menu (buyable mounts + prices + your purse)."""
+    gold = int(getattr(engine.player, "gold", 0))
+    lines = [f"Stable   —   your purse: {gold}g", ""]
+    if active_mount(engine.player):
+        lines.append(f"You already keep {display_name(active_mount(engine.player))}.")
+        lines.append("")
+    for i, k in enumerate(stable_kinds(), 1):
+        afford = "" if gold >= cost_of(k) else "  (can't afford)"
+        lines.append(
+            f"[{i}] {display_name(k)} — {cost_of(k)}g   "
+            f"(+{carry_of(k)} carry, {speed_of(k):g}x road){afford}")
+    lines.append("")
+    lines.append("[Esc] leave the stable")
+    return lines
+
+
+def buy_index(engine, i: int) -> str:
+    """Buy (and ride) the i-th stable mount (0-based)."""
+    kinds = stable_kinds()
+    if not (0 <= i < len(kinds)):
+        return "There's no mount by that number."
+    return buy_mount(engine, kinds[i])

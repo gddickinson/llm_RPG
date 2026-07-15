@@ -225,6 +225,20 @@ class MapRenderer:
         except Exception:
             pass
 
+        # Trailing mount (P28.2d): a horse/mule that follows the rider
+        try:
+            from engine.mounts import mount_position, active_mount
+            from ui.renderer_overlays import draw_mount
+            mp = mount_position(engine)
+            if mp and cam_x <= mp[0] < cam_x + cols \
+                    and cam_y <= mp[1] < cam_y + rows:
+                mx = view_rect.x + (mp[0] - cam_x) * self.tile_size
+                my = view_rect.y + (mp[1] - cam_y) * self.tile_size
+                draw_mount(target, active_mount(engine.player) or "horse",
+                           mx, my, self.tile_size)
+        except Exception:
+            pass
+
         # In-flight projectiles
         try:
             for proj in engine.projectile_manager.active:

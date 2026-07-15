@@ -302,3 +302,38 @@ def skill_verb(engine, k) -> bool:
     {pygame.K_t: sa.trip, pygame.K_i: sa.demoralize,
      pygame.K_b: sa.feint, pygame.K_h: sa.battle_medicine}[k](engine)
     return True
+
+
+def menu_mode_key(gui, engine, event) -> bool:
+    """The numbered pop-up menus — travel (P11) / stable (P28.2d) / waystone
+    (P37.1): 1-9 picks an entry, Esc (or the opening key) leaves. Returns True
+    if handled, None if `gui.mode` isn't one of these menus."""
+    import pygame
+    mode = gui.mode
+    if mode not in ("travel", "stable", "waystone"):
+        return None
+    if event.type != pygame.KEYDOWN:
+        return True
+    exits = {"travel": (pygame.K_ESCAPE, pygame.K_u),
+             "stable": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
+             "waystone": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g)}
+    if event.key in exits[mode]:
+        gui.mode = "play"
+        gui.overlay = None
+        return True
+    if pygame.K_1 <= event.key <= pygame.K_9:
+        idx = event.key - pygame.K_1
+        try:
+            if mode == "travel":
+                engine.travel_system.teleport(idx)
+            elif mode == "stable":
+                engine.mount_stable_buy(idx)
+            else:
+                engine.memory_manager.add_event(
+                    engine.teleport_network.teleport_index(idx))
+        except Exception:
+            pass
+        gui.mode = "play"
+        gui.overlay = None
+        return True
+    return True

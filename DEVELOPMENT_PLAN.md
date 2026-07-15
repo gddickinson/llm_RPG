@@ -5650,6 +5650,27 @@ remove certain encounters — clearing a bandit camp reduces bandit spawns in an
   **This closes George's 2026-07-15 combat-difficulty message end to end** (P37.6a XP 10x +
   P37.6b aggressive/tougher monsters + P37.6c camp-clearing).
 
+## Phase 28.2d — SURFACE the mount feature (George, 2026-07-15)
+
+George: "implement horses, pack mules and rider/mount feature — we started this previously
+but it has NOT surfaced. There should be a stable near Oakvale where the rider can get a horse
+to ride." The mount CODE existed (`engine/mounts.py` roster + buy/ride/care) but was
+unreachable — no stable was seeded and the mount never drew.
+
+- [x] **A stable beside every town.** New `engine/stables.py` `StableSystem.seed()` plants a
+  `Stable` `Location` (`type:"stable"`) beside each settlement at world start (like the guild
+  halls) — a stable stands by Oakvale. Registered in `engine_setup` + the seed stack + save.
+- [x] **Buy & ride, from the stable.** The E-key at a stable opens a numbered STABLE MENU
+  (`gui.show_stable` / `mode="stable"`; `mounts.stable_overlay_lines`/`buy_index`; engine
+  `at_stable`/`mount_stable_lines`/`mount_stable_buy`) — pick a horse / mule / donkey /
+  war-horse and you buy AND ride it (road 2× + carry bonus, the existing `buy_mount`). Hint
+  bar cue. The travel/stable/waystone menu key-handlers were extracted to `input_actions`
+  (`menu_mode_key`) to hold input_handler under 500.
+- [x] **The mount RENDERS.** A trailing quadruped (`renderer_overlays.draw_mount`) now draws
+  behind the rider in BOTH the top-down and iso views (`iso_render._draw_mount_iso`), hide-
+  coloured by kind. `tests/test_stables.py` (+8). (Remainder from P28.2: per-mount road-speed
+  nuance, a war-mount fighting in combat.)
+
 ## Phase 38 — "The Sunken Tome of Vael'Zhur" — a substantial adventure module (George, 2026-07-14)
 
 George: a substantial, themed campaign — a lost wizard's tome to discover & explore, booby

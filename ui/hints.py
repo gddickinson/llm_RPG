@@ -100,10 +100,10 @@ def context_hints(engine) -> List[str]:
     elif getattr(engine, "current_dungeon", None):
         hints.append("[TAB] climb back to the surface")
 
-    try:   # a stable sells a pack mule (P15.8b)
-        from engine.mount import stable_nearby, has_mule, MULE_COST
-        if stable_nearby(engine) and not has_mule(engine.player):
-            hints.append(f"[E] buy a pack mule ({MULE_COST}g)")
+    try:   # P28.2d a stable sells horses & mules to ride
+        from engine import mounts
+        if mounts.stable_here(engine) and not mounts.active_mount(engine.player):
+            hints.append("[E] stable — buy & ride a mount")
     except Exception:
         pass
 

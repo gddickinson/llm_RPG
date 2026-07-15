@@ -247,7 +247,7 @@ class GameGUI:
                 menu=self.dialog_menu,
             )
 
-        if self.mode in ("menu", "travel", "waystone") and self.overlay:
+        if self.mode in ("menu", "travel", "waystone", "stable") and self.overlay:
             title, lines = self.overlay
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
@@ -384,6 +384,15 @@ class GameGUI:
             lines = ["The waystone is dormant."]
         self.overlay = ("Wayfarer's Waystone", lines)
         self.mode = "waystone"
+
+    def show_stable(self) -> None:
+        """P28.2d the Stable menu (E at a stable) — buy and ride a mount."""
+        try:
+            lines = self.engine.mount_stable_lines()
+        except Exception:
+            lines = ["The stable is quiet."]
+        self.overlay = ("Stable", lines)
+        self.mode = "stable"
 
     def show_diaries(self) -> None:
         try:

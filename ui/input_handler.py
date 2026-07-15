@@ -92,44 +92,12 @@ class InputHandler:
             from ui.dialog_input import handle_dialog_input
             return handle_dialog_input(self.gui, event)
 
-        # Travel menu: 1-9 teleports, Esc cancels
-        if self.gui.mode == "travel":
-            if event.type != pygame.KEYDOWN:
-                return True
-            if event.key in (pygame.K_ESCAPE, pygame.K_u):
-                self.gui.mode = "play"
-                self.gui.overlay = None
-                return True
-            if pygame.K_1 <= event.key <= pygame.K_9:
-                idx = event.key - pygame.K_1
-                try:
-                    self.engine.travel_system.teleport(idx)
-                except Exception:
-                    pass
-                self.gui.mode = "play"
-                self.gui.overlay = None
-                return True
-            return True
-
-        # Waystone menu (P37.1): 1-9 travel to a destination, Esc cancels
-        if self.gui.mode == "waystone":
-            if event.type != pygame.KEYDOWN:
-                return True
-            if event.key in (pygame.K_ESCAPE, pygame.K_e, pygame.K_g):
-                self.gui.mode = "play"
-                self.gui.overlay = None
-                return True
-            if pygame.K_1 <= event.key <= pygame.K_9:
-                idx = event.key - pygame.K_1
-                try:
-                    msg = self.engine.teleport_network.teleport_index(idx)
-                    self.engine.memory_manager.add_event(msg)
-                except Exception:
-                    pass
-                self.gui.mode = "play"
-                self.gui.overlay = None
-                return True
-            return True
+        # The numbered pop-up menus (travel / stable / waystone) live in
+        # input_actions to hold the 500-line line
+        from ui.input_actions import menu_mode_key
+        _mm = menu_mode_key(self.gui, self.engine, event)
+        if _mm is not None:
+            return _mm
 
         # Menu mode (text overlay — help / character sheet / quest log)
         if self.gui.mode == "menu":
@@ -349,7 +317,17 @@ class InputHandler:
                     msg = self.engine.use_furniture() or self.engine.home_action()
                     if msg:
                         return True
-            from engine.mount import try_buy_at_stable   # P15.8b mule
+            # P28.2d a stable: open the buy-and-ride menu (nothing underfoot)
+            try:
+                if not self.engine.current_interior \
+                        and self.engine.at_stable() \
+                        and not self.engine.world.get_items_at(
+                            *self.engine.player.position):
+                    self.gui.show_stable()
+                    return True
+            except Exception:
+                pass
+            from engine.mount import try_buy_at_stable   # P15.8b mule (legacy)
             if try_buy_at_stable(self.engine):
                 return True
             msg = self.engine.pickup_item()

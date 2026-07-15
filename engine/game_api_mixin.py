@@ -305,6 +305,22 @@ class GameAPIMixin:
         from engine.furniture import interact
         return interact(self)
 
+    # ---- Stable / mounts (P28.2d) -------------------------------------
+
+    def at_stable(self) -> bool:
+        from engine import mounts
+        return mounts.stable_here(self)
+
+    def mount_stable_lines(self) -> list:
+        from engine import mounts
+        return mounts.stable_overlay_lines(self)
+
+    def mount_stable_buy(self, index: int) -> str:
+        from engine import mounts
+        msg = mounts.buy_index(self, index)
+        self.memory_manager.add_event(msg)
+        return msg
+
     # ---- Claim a home (P15.7) -----------------------------------------
 
     def home_action(self) -> Optional[str]:

@@ -8066,3 +8066,29 @@ whose stem ends in a sync-conflict marker (` N` / ` copy` / ` Copy N`, via `_SYN
 warning — so a reappearing sync copy can never crash the game again; a GENUINE duplicate id in
 two real files still errors. `tests/test_data_loader.py` (+3). Validator green; a headless
 start_game loads 57 NPCs cleanly.
+
+## 2026-07-15 — P28.2d: SURFACE the mount feature — a stable near Oakvale (George)
+
+George: horses/mules/riding "we started this but it never surfaced — there should be a stable
+near Oakvale where the rider can get a horse to ride." The mount CODE existed (engine/mounts.py
+— roster, buy_mount, mount_follow, dismount/remount, carry/speed bonuses) but was UNREACHABLE:
+no stable Location was ever seeded (so `_seller_nearby("stable")` never found one), and the
+mount never rendered. Fixes:
+- **New `engine/stables.py`** `StableSystem.seed()` plants a `Stable` Location (type:"stable")
+  beside each settlement at world start (mirrors the guild halls) — a stable stands by Oakvale
+  (+ Riverside etc.). Registered in engine_setup + the seed stack + save_load; persists.
+- **The E-key at a stable opens a numbered STABLE MENU** (`gui.show_stable` → mode="stable";
+  `mounts.stable_overlay_lines`/`buy_index`; engine wrappers `at_stable`/`mount_stable_lines`/
+  `mount_stable_buy`) listing horse/mule/donkey/war-horse with prices + your purse — pick one
+  and you BUY AND RIDE it (the existing buy_mount gives 2× road pace + the carry bonus). Hint
+  bar cue ("[E] stable — buy & ride a mount").
+- **The mount RENDERS** — a trailing quadruped (`renderer_overlays.draw_mount`, hide-coloured
+  by kind) behind the rider, in BOTH the top-down and iso renderers (`_draw_mount_iso`).
+- Extracted the travel/stable/waystone pop-up-menu key handlers into `input_actions.
+  menu_mode_key` to hold input_handler under 500 (473).
+
+Screenshots: the horse trailing the hero (top-down + iso). `tests/test_stables.py` (+8: stable
+seeds near Oakvale, marker is a stable Location, buying a horse mounts you + lifts carry,
+can't buy away from a stable, the menu lists the mounts, save round-trip, the mount draws).
+Validator green; full suite next. Next queued (George): platform-gated travel + spawn on a
+platform.

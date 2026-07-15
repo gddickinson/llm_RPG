@@ -200,6 +200,19 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
                           (pet, int(sx), int(sy))))
     except Exception:
         pass
+    # the trailing mount (P28.2d)
+    try:
+        from engine.mounts import mount_position, active_mount
+        mp = mount_position(engine)
+        if mp and x0 <= mp[0] < x1 and y0 <= mp[1] < y1 \
+                and (is_explored is None or is_explored(engine, *mp)):
+            mz = _HEIGHT.get(_terrain_name(wmap.terrain[mp[1]][mp[0]]), 0.0)
+            sx, sy = iso.world_to_screen(mp[0], mp[1], mz, origin)
+            items.append((iso.depth_key(mp[0], mp[1], mz, 1.95), "mount",
+                          (active_mount(engine.player) or "horse",
+                           int(sx), int(sy))))
+    except Exception:
+        pass
     items.sort(key=lambda t: t[0])
 
     for _, tag, data in items:
@@ -213,6 +226,8 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
             _draw_scatter(target, data, tile_size)
         elif tag == "pet":
             _draw_pet_iso(target, data, tile_size)
+        elif tag == "mount":
+            _draw_mount_iso(target, data, tile_size)
         elif tag == "obj":
             _blit_object(target, data)
         else:
@@ -345,6 +360,13 @@ def _draw_pet_iso(target, data, tile_size):
     pet, sx, sy = data
     ts = max(8, int(tile_size * 0.8))
     draw_pet(target, pet, sx - ts // 2, sy - int(ts * 0.68), ts)
+
+
+def _draw_mount_iso(target, data, tile_size):
+    from ui.renderer_overlays import draw_mount
+    kind, sx, sy = data
+    ts = max(10, int(tile_size * 1.1))
+    draw_mount(target, kind, sx - ts // 2, sy - int(ts * 0.62), ts)
 
 
 def _iso_to_screen(iso, origin, wmap, x, y):
