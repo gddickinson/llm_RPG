@@ -1,10 +1,14 @@
 {
   "q_tome_whisper": {
     "title": "The Whisper Beneath the Marsh",
-    "description": "Sage Ondrel of Mirefen says a drowned light stirs in the southern marsh — the failing wards of Vael'Zhur's sunken tower-library. Find the Drowned Vault, that you may learn what wakes there.",
+    "description": "Sage Ondrel of Mirefen says a drowned light stirs in the southern marsh \u2014 the failing wards of Vael'Zhur's sunken tower-library. Find the Drowned Vault, that you may learn what wakes there.",
     "objectives": [
-      {"type": "explore", "target": "The Drowned Vault", "required": 1,
-       "description": "Find the Drowned Vault in the marsh"}
+      {
+        "type": "explore",
+        "target": "The Drowned Vault",
+        "required": 1,
+        "description": "Find the Drowned Vault in the marsh"
+      }
     ],
     "giver_id": "sage_ondrel",
     "reward_gold": 40,
@@ -13,28 +17,46 @@
   },
   "q_tome_keys": {
     "title": "The Scattered Keys",
-    "description": "The Vault's drowning-wards can only be safely stilled with the Warding Key — broken into three fragments, scattered to the Thornwatch Ruins, the Reedmarsh warren, and the marsh-witch Ysolde. Gather all three and bring them to Ondrel.",
+    "description": "The Vault's drowning-wards can only be safely stilled with the Warding Key \u2014 broken into three fragments, scattered to the Thornwatch Ruins, the Reedmarsh warren, and the marsh-witch Ysolde. Gather all three and bring them to Ondrel.",
     "objectives": [
-      {"type": "fetch", "target": "warding_key_i", "required": 1,
-       "description": "Recover Warding-Key Fragment I (Thornwatch Ruins)"},
-      {"type": "fetch", "target": "warding_key_ii", "required": 1,
-       "description": "Recover Warding-Key Fragment II (the Reedmarsh)"},
-      {"type": "fetch", "target": "warding_key_iii", "required": 1,
-       "description": "Recover Warding-Key Fragment III (Ysolde's Hollow)"}
+      {
+        "type": "fetch",
+        "target": "warding_key_i",
+        "required": 1,
+        "description": "Recover Warding-Key Fragment I (Thornwatch Ruins)"
+      },
+      {
+        "type": "fetch",
+        "target": "warding_key_ii",
+        "required": 1,
+        "description": "Recover Warding-Key Fragment II (the Reedmarsh)"
+      },
+      {
+        "type": "fetch",
+        "target": "warding_key_iii",
+        "required": 1,
+        "description": "Recover Warding-Key Fragment III (Ysolde's Hollow)"
+      }
     ],
     "giver_id": "sage_ondrel",
     "prereq_quest": "q_tome_whisper",
     "reward_gold": 90,
     "reward_xp": 260,
-    "reward_items": ["warding_key"],
+    "reward_items": [
+      "warding_key"
+    ],
     "sets_flag": "tome_keys_done"
   },
   "q_tome_reckoning": {
     "title": "The Drowned Sanctum",
-    "description": "Descend the Drowned Vault to its flooded sanctum, face Vael'Zhur the lich, and decide the fate of the Sunken Tome — seal it, destroy it, or claim its power. Warden Halric would see it sealed.",
+    "description": "Descend the Drowned Vault to its flooded sanctum, face Vael'Zhur the lich, and decide the fate of the Sunken Tome \u2014 seal it, destroy it, or claim its power. Warden Halric would see it sealed.",
     "objectives": [
-      {"type": "kill", "target": "vaelzhur_lich", "required": 1,
-       "description": "Defeat Vael'Zhur the Drowned"}
+      {
+        "type": "kill",
+        "target": "vaelzhur_lich",
+        "required": 1,
+        "description": "Defeat Vael'Zhur the Drowned"
+      }
     ],
     "giver_id": "warden_halric",
     "prereq_quest": "q_tome_keys",
@@ -42,14 +64,31 @@
     "reward_xp": 400,
     "sets_flag": "tome_won",
     "reward_choices": [
-      {"label": "Seal the Tome (bind Vael'Zhur)", "xp": 450, "gold": 180,
-       "items": ["warding_key"],
-       "legend": "With the Warding Key made whole, you bound Vael'Zhur back into his drowning-sleep and sealed the Vault forever — the marsh-light troubles Mirefen no more."},
-      {"label": "Destroy the Tome", "xp": 450, "gold": 120, "items": [],
-       "legend": "You shattered the Sunken Tome upon the cold altar; the lich crumbled to silt and old water. Vael'Zhur is ended, and his art lost with him."},
-      {"label": "Claim the Tome's power", "xp": 450, "gold": 90,
-       "items": ["sunken_tome"],
-       "legend": "You took the Sunken Tome for your own. Its cold whisper follows you now — Vael'Zhur's soul-draining art is yours, and perhaps one day his fate."}
+      {
+        "label": "Seal the Tome (bind Vael'Zhur)",
+        "xp": 450,
+        "gold": 180,
+        "items": [
+          "warding_key"
+        ],
+        "legend": "With the Warding Key made whole, you bound Vael'Zhur back into his drowning-sleep and sealed the Vault forever \u2014 the marsh-light troubles Mirefen no more."
+      },
+      {
+        "label": "Destroy the Tome",
+        "xp": 450,
+        "gold": 120,
+        "items": [],
+        "legend": "You shattered the Sunken Tome upon the cold altar; the lich crumbled to silt and old water. Vael'Zhur is ended, and his art lost with him."
+      },
+      {
+        "label": "Claim the Tome's power",
+        "xp": 450,
+        "gold": 90,
+        "items": [
+          "sunken_tome"
+        ],
+        "legend": "You took the Sunken Tome for your own. Its cold whisper follows you now \u2014 Vael'Zhur's soul-draining art is yours, and perhaps one day his fate."
+      }
     ]
   },
   "troll_hunt": {
@@ -624,5 +663,23 @@
     "time_limit": 60,
     "reward_gold": 120,
     "reward_xp": 200
+  },
+  "q_clear_bandit_camp": {
+    "title": "Break the Bandit Camp",
+    "description": "Outlaws raid the roads from a camp hidden in the forest. Find it and cut down their chief \u2014 scatter the band and the wilds will run far safer.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "bandit_chief",
+        "required": 1,
+        "description": "Defeat the Bandit Chief at the camp"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 120,
+    "reward_xp": 200,
+    "reward_items": [
+      "greater_potion"
+    ]
   }
 }

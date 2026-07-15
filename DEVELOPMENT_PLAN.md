@@ -5638,9 +5638,17 @@ remove certain encounters — clearing a bandit camp reduces bandit spawns in an
   bog_lurker 28→36, troll 44→60). Net: an adjacent monster attacks EVERY turn and bites for
   real — a solo geared hero still wins a wolf but bleeds, a pack/troll is a genuine threat.
   `tests/test_aggression.py` (+7); updated the HP-assertion tests. Validator green.
-- [ ] **P37.6c Encounter-source quests.** Some spawns come from a SOURCE (a bandit camp, a
-  lair — `world/lairs.py`); a quest to find + clear it drops that encounter's spawn rate in
-  the area (`world/encounters.py` weighting). e.g. defeat the bandit camp → fewer bandits.
+- [x] **P37.6c Encounter-source quests.** DONE — clearing a camp thins its spawns. A new
+  **Bandit Camp** lair (`data/lairs.json`: a `bandit_chief` leader + 3 grunts near forest)
+  carries a `suppresses:{bandit:0.2}` block; `engine/lairs.py` `check_cleared` →
+  `_apply_suppression` compounds the factor into a persisted `suppression` dict, and
+  `spawn_multiplier(template)` feeds `world/encounters.maybe_spawn` (float weights) so a broken
+  camp means ~80% fewer bandit spawns (a template thinned to 0 weight is dropped entirely). A
+  `rumor` field posts a `[Realm]` pointer at world seed; the `q_clear_bandit_camp` quest (KILL
+  `bandit_chief`, given by a town guard, auto-offered) is the player-facing hook. Suppression
+  rides the save (LairSystem `to_dict`/`from_dict`). `tests/test_camp_clearing.py` (+7).
+  **This closes George's 2026-07-15 combat-difficulty message end to end** (P37.6a XP 10x +
+  P37.6b aggressive/tougher monsters + P37.6c camp-clearing).
 
 ## Phase 38 — "The Sunken Tome of Vael'Zhur" — a substantial adventure module (George, 2026-07-14)
 

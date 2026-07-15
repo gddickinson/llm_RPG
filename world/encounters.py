@@ -106,6 +106,16 @@ class EncounterManager:
                          for tid, w in table]
         except Exception:
             pass
+        try:   # P37.6c: a cleared source (a broken bandit camp) thins its spawn
+            lairs = getattr(self.engine, "lairs", None)
+            if lairs is not None:
+                table = [(tid, w * lairs.spawn_multiplier(tid))
+                         for tid, w in table]
+                table = [(tid, w) for tid, w in table if w > 0]
+        except Exception:
+            pass
+        if not table:
+            return None
         template = _weighted_pick(table, self.rng)
         monster = _build_monster(template, spawn_pos)
         # The endgame curve (P19.5): a party that out-levels the wild draws

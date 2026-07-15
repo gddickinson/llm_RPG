@@ -644,5 +644,24 @@
       }
     },
     "speed": 0.9
+  },
+  "bandit_chief": {
+    "name": "Bandit Chief",
+    "class": "brigand",
+    "race": "human",
+    "hp": 40,
+    "level": 3,
+    "symbol": "B",
+    "description": "The scarred leader of the camp, blade already drawn.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 15,
+      "constitution": 13
+    },
+    "natural_damage": 6,
+    "behavior": {
+      "flee_below": 0.1
+    }
   }
 }

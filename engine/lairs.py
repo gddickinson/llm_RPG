@@ -25,7 +25,7 @@ from world.world_map import TerrainType
 
 logger = logging.getLogger("llm_rpg.lairs")
 
-MAX_LAIRS = 3
+MAX_LAIRS = 4
 MIN_DIST_FROM_START = 18       # a dragon is not a starting-meadow encounter
 SEARCH_RADIUS = 6              # rings scanned to seat a lair's occupants
 
@@ -44,6 +44,9 @@ class LairSystem:
         self.rng = random.Random(seed)
         self.lairs: List[dict] = []
         self._seeded = False
+        # P37.6c: {template_id: multiplier<1.0} — a cleared camp/lair thins the
+        # encounter it sourced (bandit camp broken → fewer bandit spawns)
+        self.suppression: Dict[str, float] = {}
 
     # ---- data ------------------------------------------------------
 
@@ -155,7 +158,11 @@ class LairSystem:
             "occupants": occ_ids, "hoard": list(spec.get("hoard", [])),
             "gold": spec.get("gold", 0), "legend": spec.get("legend", ""),
             "cleared": False,
+            "suppresses": dict(spec.get("suppresses", {})),   # P37.6c
         })
+        rumor = spec.get("rumor")                             # P37.6c
+        if rumor:
+            self.engine.memory_manager.add_event(f"[Realm] {rumor}")
         return True
 
     def _mark(self, spec: dict, cx: int, cy: int, key: str) -> None:
@@ -181,9 +188,33 @@ class LairSystem:
                 continue
             if self._all_dead(lair["occupants"]):
                 self._reward(lair)
+                self._apply_suppression(lair)
                 lair["cleared"] = True
                 n += 1
         return n
+
+    def _apply_suppression(self, lair: dict) -> None:
+        """A cleared source thins the encounter it fed (P37.6c)."""
+        supp = lair.get("suppresses") or {}
+        thinned = []
+        for tid, factor in supp.items():
+            try:
+                cur = self.suppression.get(tid, 1.0)
+                new = cur * float(factor)
+            except (TypeError, ValueError):
+                continue
+            if new < cur:
+                self.suppression[tid] = new
+                thinned.append(tid)
+        if thinned:
+            self.engine.memory_manager.add_event(
+                f"[Realm] With the {lair['name']} broken, the wilds are "
+                f"quieter — far fewer {', '.join(thinned)} prowl these lands.")
+
+    def spawn_multiplier(self, template_id: str) -> float:
+        """The encounter-weight multiplier for a template (1.0, or < 1.0 once a
+        source that fed it has been cleared)."""
+        return self.suppression.get(template_id, 1.0)
 
     def _all_dead(self, ids: List[str]) -> bool:
         npcs = self.engine.npc_manager.npcs
@@ -218,9 +249,11 @@ class LairSystem:
     # ---- persistence -----------------------------------------------
 
     def to_dict(self) -> dict:
-        return {"lairs": self.lairs, "seeded": self._seeded}
+        return {"lairs": self.lairs, "seeded": self._seeded,
+                "suppression": self.suppression}
 
     def from_dict(self, d: dict) -> None:
         d = d or {}
         self.lairs = d.get("lairs", []) or []
         self._seeded = d.get("seeded", bool(self.lairs))
+        self.suppression = d.get("suppression", {}) or {}

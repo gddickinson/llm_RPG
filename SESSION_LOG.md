@@ -8031,3 +8031,25 @@ still wins a wolf but bleeds for it, and a pack or a troll is a genuine threat y
 double-attack tag, natural-damage lookup); updated HP-assertion tests (data_content, elites).
 Validator green; full suite green. Still open from George's message: P37.6c encounter-source
 (camp-clearing) quests.
+
+## 2026-07-15 — P37.6c: camp-clearing quests thin area spawns (closes George's combat message)
+
+George: "in some areas there should be quests to remove certain encounters — clearing a bandit
+camp reduces bandit spawns in an area." Built on the P19.2 lair system. A new **Bandit Camp**
+lair (`data/lairs.json`) has a `bandit_chief` leader (new tough named monster, hp40/nat6) + 3
+grunts near forest, and a `suppresses:{bandit:0.2}` block. `engine/lairs.py`: `check_cleared`
+→ new `_apply_suppression` compounds the factor into a persisted `suppression` dict; new
+`spawn_multiplier(template)` is read by `world/encounters.maybe_spawn` (which now uses FLOAT
+weights and drops any template thinned to 0) — so once the camp is broken, bandit encounters
+fall ~80% (with a `[Realm]` "the wilds are quieter" beat). A `rumor` field posts a `[Realm]`
+pointer at world seed, and the `q_clear_bandit_camp` quest (KILL `bandit_chief`, given by a
+town guard, auto-offered by demo_setup) is the player-facing hook — defeating the chief
+completes it (its id encodes the template, so `on_npc_defeated` matches). MAX_LAIRS 3→4 so the
+camp seeds alongside the dragon/goblin/troll lairs. Suppression rides the save (LairSystem
+already in save_load). `tests/test_camp_clearing.py` (+7: data present, suppression thins +
+compounds, encounter weight drops, save round-trip, quest offered + completes on chief kill).
+Validator green; full suite green.
+
+**This closes George's whole 2026-07-15 combat-difficulty message**: P37.6a (10x XP/level),
+P37.6b (aggressive + tougher monsters), P37.6c (camp-clearing quests). Plus the earlier P22.6
+(non-blocking quick-cast + side-rail spellbook) for his spellcasting message.
