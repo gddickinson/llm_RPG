@@ -142,6 +142,13 @@ def context_hints(engine) -> List[str]:
 
     if enemies:
         hints.append(f"[F] attack {enemies[0].name}")
+        try:   # P22.6 quick-cast cue for a caster mid-fight
+            from engine.quick_spells import get_slots, ensure_defaults
+            ensure_defaults(engine.player)
+            if any(get_slots(engine.player)):
+                hints.append("[1-5] quick-cast")
+        except Exception:
+            pass
         try:   # P35.3 terrain telegraph — cover / bad footing shape the fight
             from engine import terrain_combat as tc
             from world.world_map import TerrainType as _T

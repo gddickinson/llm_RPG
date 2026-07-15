@@ -7972,3 +7972,20 @@ P25.1 stacking (a quiver + a stacked arrow bundle is very compact now). `tests/t
 (+10: each bag's bonus, bonuses stack, quiver frees ammo + is capped + lets a full pack still
 hold ammo, save round-trip, merchants stock them). carry.py 92 lines. Validator clean; full
 suite green.
+
+## 2026-07-15 — P22.6: non-blocking quick-cast (combat feel)
+
+George: the X-key spellbook overlay hides the whole battlefield mid-fight. Built a
+Diablo-style quick-cast hotbar. New `engine/quick_spells.py`: number keys 1-5 in PLAY mode
+cast a favourited spell straight at the current target — the P8.7 lock or the nearest hostile
+for a damage spell, self for a heal/buff — through the spell system's own resolver, with NO
+blocking overlay. Slots auto-populate from known spells (offensive → heal → buff, `ensure_
+defaults`) so a mage casts from the field with zero setup, and re-bind from the spellbook via
+SHIFT+1-5 (`set_slot`). `ui/quickbar.py` draws a compact numbered HUD bar with mana-ready
+shading over the map's top-left, shown only for a caster with favourited spells (silent for
+everyone else). Hint-bar cue ("[1-5] quick-cast" mid-fight) + controls-reference entry.
+input_handler hit 514 lines from the new key branch, so I extracted the play-mode single-key
+overlays, the number-key handler (guard answer / quick-cast) and the SHIFT skill-verbs into
+`ui/input_actions.py` (input_handler back to 495). `tests/test_quick_spells.py` (+11: slots,
+auto-populate order, quick heal/damage/no-target/empty, HUD paints for a caster + silent for
+a non-caster). George also asked the spellbook itself not cover the screen — the X-panel is now a compact RIGHT-SIDE RAIL (`spell_panel.draw`), leaving the whole battlefield visible while you pick a spell (screenshots: quickbar + spellbook_rail). Validator clean; full suite green.

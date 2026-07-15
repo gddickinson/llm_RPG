@@ -260,3 +260,45 @@ def open_shop(handler) -> None:
         gui.show_shop(merchants[0])
     except Exception:
         pass
+
+
+def one_key_overlay(gui, k) -> bool:
+    """Single-key overlays: collection / diaries / travel / topics / settings."""
+    import pygame
+    overlays = {pygame.K_o: gui.show_collection_log,
+                pygame.K_j: gui.show_diaries,
+                pygame.K_u: gui.show_travel,
+                pygame.K_y: gui.show_topics,
+                pygame.K_COMMA: gui.show_settings}
+    fn = overlays.get(k)
+    if fn is None:
+        return False
+    fn()
+    return True
+
+
+def number_key(engine, k) -> bool:
+    """Play-mode number keys 1-5: answer a guard's confrontation (P12.9) if one
+    is active, else NON-BLOCKING quick-cast the spell in that quick-slot (P22.6)."""
+    import pygame
+    if not (pygame.K_1 <= k <= pygame.K_5):
+        return False
+    n = k - pygame.K_1
+    if getattr(engine.law, "active", None):
+        engine.law.resolve(n + 1)
+        return True
+    from engine.quick_spells import quick_cast
+    quick_cast(engine, n)
+    return True
+
+
+def skill_verb(engine, k) -> bool:
+    """PF2e combat verbs (P12.8): SHIFT + T/I/B/H → trip/demoralize/feint/medicine."""
+    import pygame
+    verbs = (pygame.K_t, pygame.K_i, pygame.K_b, pygame.K_h)
+    if k not in verbs:
+        return False
+    from engine import skill_actions as sa
+    {pygame.K_t: sa.trip, pygame.K_i: sa.demoralize,
+     pygame.K_b: sa.feint, pygame.K_h: sa.battle_medicine}[k](engine)
+    return True

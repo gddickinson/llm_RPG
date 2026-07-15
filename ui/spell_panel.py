@@ -55,7 +55,15 @@ class SpellPanel:
             self._cast_selected(spells)
         elif pygame.K_1 <= k <= pygame.K_9:
             idx = k - pygame.K_1
-            if idx < len(spells):
+            if (getattr(event, "mod", 0) & pygame.KMOD_SHIFT) and idx < 5 \
+                    and self.cursor < len(spells):
+                # SHIFT+N binds the highlighted spell to quick-slot N (P22.6)
+                from engine.quick_spells import set_slot
+                sp = spells[self.cursor]
+                set_slot(self.engine.player, idx, sp.id)
+                self.engine.memory_manager.add_event(
+                    f"[Cast] {sp.name} bound to quick-slot {idx + 1}.")
+            elif idx < len(spells):
                 self.cursor = idx
                 self._cast_selected(spells)
         return True
@@ -77,58 +85,56 @@ class SpellPanel:
         if not PYGAME_OK:
             return
         self._ensure_font()
-        w = min(screen_rect.width - 60, 680)
-        h = min(screen_rect.height - 80, 440)
-        box = pygame.Rect((screen_rect.width - w) // 2,
-                          (screen_rect.height - h) // 2, w, h)
+        # George: a compact RIGHT-SIDE RAIL, not a centred box, so the
+        # battlefield stays fully visible while you pick a spell
+        w = min(340, max(240, screen_rect.width // 3))
+        h = screen_rect.height - 60
+        box = pygame.Rect(screen_rect.right - w - 12, 30, w, h)
         s = pygame.Surface(box.size, pygame.SRCALPHA)
-        s.fill((12, 10, 26, 235))
+        s.fill((12, 10, 26, 224))
         target.blit(s, box.topleft)
         pygame.draw.rect(target, (140, 120, 220), box, 2)
 
         mana, max_mana = self.engine.get_player_mana()
         title = self._big.render("Spellbook", True, (190, 170, 255))
-        target.blit(title, (box.x + 16, box.y + 10))
+        target.blit(title, (box.x + 12, box.y + 8))
         mana_txt = self._font.render(
             f"Mana: {mana}/{max_mana}", True, (150, 170, 240))
-        target.blit(mana_txt, (box.x + 16, box.y + 36))
+        target.blit(mana_txt, (box.x + 12, box.y + 34))
 
         spells = self.spells()
         if self.cursor >= len(spells):
             self.cursor = max(0, len(spells) - 1)
         if not spells:
             none = self._font.render(
-                "You know no spells. (Quests and tomes can teach you.)",
-                True, (170, 170, 190))
-            target.blit(none, (box.x + 16, box.y + 70))
+                "You know no spells.", True, (170, 170, 190))
+            target.blit(none, (box.x + 12, box.y + 64))
 
         line_h = 34
-        y = box.y + 62
-        for idx, spell in enumerate(spells[:9]):
+        y = box.y + 58
+        for idx, spell in enumerate(spells[:12]):
             selected = idx == self.cursor
             affordable = mana >= spell.mana_cost
             color = ((255, 240, 170) if selected else (225, 225, 235)) \
                 if affordable else \
                 ((180, 150, 150) if selected else (130, 125, 140))
             prefix = f"> {idx + 1}. " if selected else f"  {idx + 1}. "
+            head = f"{prefix}{spell.name} ({spell.mana_cost}m)"
+            target.blit(self._font.render(head, True, color),
+                        (box.x + 12, y))
             effect = []
             if spell.damage:
                 effect.append(f"dmg {spell.damage}")
             if spell.heal:
                 effect.append(f"heal {spell.heal}")
             if spell.status_effect:
-                effect.append(f"{spell.status_effect} "
-                              f"{spell.duration}t")
-            head = (f"{prefix}{spell.name}  ({spell.mana_cost} mana, "
-                    f"rng {int(spell.range)}, {', '.join(effect)})")
-            target.blit(self._font.render(head, True, color),
-                        (box.x + 16, y))
-            desc = self._font.render(
-                "      " + spell.description[:70], True, (150, 150, 170))
-            target.blit(desc, (box.x + 16, y + 15))
+                effect.append(spell.status_effect)
+            sub = f"     rng {int(spell.range)} · " + " · ".join(effect)
+            target.blit(self._font.render(sub[:42], True, (150, 150, 170)),
+                        (box.x + 12, y + 15))
             y += line_h
 
-        hint = self._font.render(
-            "[Up/Down or 1-9] select  [Enter] cast  [Esc] close",
-            True, (160, 160, 180))
-        target.blit(hint, (box.x + 16, box.bottom - 24))
+        for i, ln in enumerate(("[1-9] cast · SHIFT+N favourite",
+                                "[Enter] cast sel · [Esc] close")):
+            hint = self._font.render(ln, True, (160, 160, 180))
+            target.blit(hint, (box.x + 12, box.bottom - 40 + i * 18))

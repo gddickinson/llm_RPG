@@ -309,28 +309,14 @@ class InputHandler:
                 pass
             return True
 
-        # One-key overlays: collection/diaries/travel/topics/settings
-        overlays = {pygame.K_o: self.gui.show_collection_log,
-                    pygame.K_j: self.gui.show_diaries,
-                    pygame.K_u: self.gui.show_travel,
-                    pygame.K_y: self.gui.show_topics,
-                    pygame.K_COMMA: self.gui.show_settings}
-        if k in overlays:
-            overlays[k]()
+        # single-key overlays, play-mode number keys (guard / quick-cast), and
+        # the SHIFT skill verbs live in input_actions to hold the 500-line line
+        from ui.input_actions import (one_key_overlay, number_key, skill_verb)
+        if one_key_overlay(self.gui, k):
             return True
-
-        if getattr(self.engine.law, "active", None) and \
-                pygame.K_1 <= k <= pygame.K_5:   # answer the guard
-            self.engine.law.resolve(k - pygame.K_1 + 1)
+        if number_key(self.engine, k):
             return True
-
-        # PF2e skill verbs (P12.8): SHIFT + T/I/B/H
-        if shift and k in (pygame.K_t, pygame.K_i,
-                           pygame.K_b, pygame.K_h):
-            from engine import skill_actions as sa
-            {pygame.K_t: sa.trip, pygame.K_i: sa.demoralize,
-             pygame.K_b: sa.feint,
-             pygame.K_h: sa.battle_medicine}[k](self.engine)
+        if shift and skill_verb(self.engine, k):
             return True
 
         # Talk to adjacent NPC

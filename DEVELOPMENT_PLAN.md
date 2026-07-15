@@ -5286,14 +5286,17 @@ This phase gives NPCs agency, a social web, and gods that act.
   tints, richer weather.
 - [ ] **P22.5 UI theming.** A cohesive, art-styled HUD and panels with
   iconography.
-- [ ] **P22.6 Non-blocking spellcasting (George, 2026-07-12).** The X-key
-  spellbook overlay blocks the whole view — fatal when you're casting mid-
-  combat and need to see the field. Design a spell system that stays out
-  of the way: a quick-cast hotbar / number-key slots for favourited spells,
-  or a compact radial/side rail that leaves the battlefield visible, with a
-  target already picked (P8.7 targeting). Research how action-RPGs surface
-  spells in combat (Diablo/Path of Exile hotbars, Tyranny/Pillars quick-
-  cast, Caves of Qud ability slots). Important for combat feel.
+- [x] **P22.6 Non-blocking spellcasting (George, 2026-07-12).** DONE — a
+  Diablo-style quick-cast hotbar. New `engine/quick_spells.py`: number keys 1-5
+  in PLAY mode cast a favourited spell straight at the current target (the P8.7
+  lock or nearest hostile for a damage spell, self for a heal/buff) via the spell
+  system's own resolver — NO battlefield-hiding overlay. Slots auto-populate from
+  known spells (offensive → heal → buff) so a mage casts with zero setup, and
+  re-bind from the spellbook (SHIFT+1-5). `ui/quickbar.py` draws a compact
+  numbered HUD bar (mana-ready shading) over the map top-left, shown only for a
+  caster. Hint-bar cue + controls-reference entry. Extracted the play-mode
+  overlay/number/skill-verb key blocks into `input_actions` to hold the 500-line
+  line (input_handler 495). `tests/test_quick_spells.py` (+11).
 - [ ] **P22.7 Buildings you can read at a glance (George, 2026-07-12).**
   Every building looks alike, so you can't tell a smithy from a home or
   find the vendor. Give them IDENTITY: per-kind building styles/roof

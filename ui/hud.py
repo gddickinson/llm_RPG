@@ -53,6 +53,12 @@ class HUD:
             self.draw_minimap(target, engine, layout["minimap"])
         if "party" in layout:
             self.draw_party_panel(target, engine, layout["party"])
+        if "map" in layout:
+            try:                                   # P22.6 quick-cast bar
+                from ui.quickbar import draw_quickbar
+                draw_quickbar(target, engine, layout["map"], self.font)
+            except Exception:
+                pass
         if "map" in layout and settings.enabled(engine.player, "hints"):
             self.draw_hint_bar(target, engine, layout["map"])
 
