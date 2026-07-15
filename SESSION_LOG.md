@@ -7736,3 +7736,17 @@ wall-hidden NPCs, mirroring the top-down filter), and draws each with a contact 
 the SAME depth-sorted pass (layer 2), so a figure stands correctly in front of / behind a
 building or tree. Screenshot: Oakvale in iso with townsfolk among the 3D houses, trees,
 towers + a river. tests/test_iso_chars.py (7). Next P41.6: iso interiors (roof-fade).
+
+## 2026-07-15 — P41.6: ISO INTERIORS (dungeons/buildings in 3D, roof cut-away)
+
+Stepping into a building/dungeon now renders in iso too (when iso mode is on). `ui/iso_
+zone.py`: themed floor DIAMONDS + raised WALL blocks (P39.2 interior_theme floor/wall
+colours), furniture as billboarded prop sprites, the hero + occupants (`_zone_chars` — zone
+natives + dungeon mobs + visitors) as iso figures, all depth-sorted; a CUT-AWAY drops the
+FRONT (south/east) perimeter walls so the iso camera sees inside; dark levels keep the zone
+fog. renderer.render() now delegates BOTH the overworld and an active zone through one
+`iso_render.dispatch(renderer,…)` when `iso_enabled` (top-down path untouched otherwise) —
+which also slimmed renderer.py (504→490). Screenshot: the Drowned Vault crypt in iso —
+dark themed floor, braziers/sarcophagi/urns/cobwebs/sigils/stairs, guardians + the hero.
+tests/test_iso_zone.py (6). Next P41.7: fold in Phase 40 supersample fidelity + camera/
+lighting polish + flip default to iso at parity.

@@ -5671,6 +5671,6 @@ Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/
   depth-sorted.
 - [x] **P41.5 Iso CHARACTERS & movement** — player/NPCs at iso positions, facing + anim +
   depth sort; mouse/targeting via screen_to_tile.
-- [ ] **P41.6 Iso INTERIORS** — dungeons/buildings iso (themed/furnished/lit), roof-fade.
+- [x] **P41.6 Iso INTERIORS** — dungeons/buildings iso (themed/furnished/lit), roof-fade.
 - [ ] **P41.7 Fidelity + polish** — fold Phase 40 supersample/detail in; camera/zoom; UI fit;
   flip default to iso at parity.

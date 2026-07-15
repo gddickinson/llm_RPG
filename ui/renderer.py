@@ -68,19 +68,17 @@ class MapRenderer:
         except Exception:
             pass
         zone = self.active_zone(engine)
-        if zone is not None:
-            self._render_zone(target, engine, view_rect, zone)
-            return
-        # P41.3 isometric 3D-look world (behind the LLM_RPG_RENDER=iso toggle;
-        # interiors stay top-down until P41.6). The engine is untouched.
+        # P41.3/P41.6 isometric render (overworld + interiors) behind the
+        # LLM_RPG_RENDER=iso toggle; the engine + top-down path are untouched
         try:
             from ui import iso_render
-            if iso_render.iso_enabled(engine):
-                iso_render.render_iso(target, engine, view_rect,
-                                      self.tile_size)
+            if iso_render.dispatch(self, target, engine, view_rect, zone):
                 return
         except Exception:
             pass
+        if zone is not None:
+            self._render_zone(target, engine, view_rect, zone)
+            return
         world = engine.world
         wmap = world.map
         px, py = engine.player.position

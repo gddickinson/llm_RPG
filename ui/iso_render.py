@@ -23,6 +23,23 @@ _HEIGHT = {
 }
 
 
+def dispatch(renderer, target, engine, view_rect, zone) -> bool:
+    """If iso mode is on, render the active zone (P41.6) or the overworld in
+    isometric and return True; else False so the caller keeps the top-down path."""
+    if not iso_enabled(engine):
+        return False
+    try:
+        if zone is not None:
+            from ui import iso_zone
+            iso_zone.render_zone_iso(target, engine, view_rect, zone,
+                                     renderer.tile_size, renderer.sprites)
+        else:
+            render_iso(target, engine, view_rect, renderer.tile_size)
+        return True
+    except Exception:
+        return False
+
+
 def iso_enabled(engine=None) -> bool:
     """Iso mode on? env LLM_RPG_RENDER=iso, or a player 'iso' setting."""
     if os.environ.get("LLM_RPG_RENDER", "").lower() == "iso":
