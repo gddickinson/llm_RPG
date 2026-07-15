@@ -5551,3 +5551,9 @@ and persistence — but there is NO player-facing hook. Finish it:
   The menu sorts destinations NEAREST-first and notes any past the 9-cap. Tests + a
   screenshot. (Remainder P37.2b: wire an away-hero's brain to actually choose the network
   for a far goal; an optional toll / guild-standing gate.)
+- [x] **P37.3 Shut gates render as PORTCULLISES, not walls (George).** A closed town/castle
+  gate reverts its tile to a wall (P31.1d) — so it *looked* like a blank wall and you
+  couldn't tell it was a gate. Now `renderer_buildings.draw_buildings` detects a registered
+  gate tile and draws a taller GATEHOUSE with a barred iron PORTCULLIS in a stone arch
+  (`ui/gate_shapes.py`, pure geometry) instead of a plain block; an alarm-LOCKED gate's
+  bars glow iron-red. Pure-geometry tests + isolated & in-game screenshots.

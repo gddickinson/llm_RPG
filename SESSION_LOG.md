@@ -7434,3 +7434,17 @@ running.
 
 NEXT (George, new request): closed castle doors/gates should render as LOCKED DOORS /
 GATES / PORTCULLISES, not plain walls — the discoverability half of the "trapped" report.
+
+## 2026-07-14 (cont.) — P37.3: shut gates render as PORTCULLISES, not walls (George)
+
+George: "make doors to castles look like locked doors / gates / portcullises when closed,
+not walls." A closed town/castle gate reverts its tile to a WALL (P31.1d), so it read as a
+blank wall — you couldn't tell it was a gate (the discoverability half of the "trapped"
+report). Now `renderer_buildings.draw_buildings` collects the registered gate tiles
+(`_gate_tiles` — every location's `gates` property, with the P31.1d locked flag) and draws
+a shut one as a taller GATEHOUSE with a barred iron PORTCULLIS in a stone arch (`_draw_gate`
+over the new pure `ui/gate_shapes.py` — slim jambs, thin lintel, a vertical+horizontal iron
+grille) instead of a plain block; an alarm-LOCKED gate's bars glow iron-red. An open gate is
+still a ROAD gap (visibly passable), so a gate is never a blank wall in either state. Pure
+geometry tests (`tests/test_gate_shapes.py`) + isolated and in-game screenshots (the west
+gate now a clear barred archway in the wall). renderer_buildings 310 lines, gate_shapes 57.

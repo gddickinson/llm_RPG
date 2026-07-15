@@ -199,11 +199,32 @@ def _kind_at(engine, x: int, y: int):
         return ""
 
 
+def _gate_tiles(engine):
+    """Every registered town/castle GATE tile → whether it is barred by an
+    alarm (a locked gate). A gate reached in the BUILDING pass is CLOSED (an
+    open one is ROAD), so this marks which walls are really shut gateways."""
+    tiles = {}
+    tg = getattr(engine, "town_gates", None)
+    for l in getattr(engine.world, "locations", []):
+        for g in (l.get_property("gates") or []):
+            pos = (g[0], g[1])
+            locked = False
+            try:
+                if tg is not None:
+                    locked = tg.is_locked(pos)
+            except Exception:
+                pass
+            tiles[pos] = locked
+    return tiles
+
+
 def draw_buildings(target, engine, view_rect, cam_x, cam_y,
                    tile_size) -> None:
-    """Draw a raised block over every explored BUILDING tile in view."""
+    """Draw a raised block over every explored BUILDING tile in view; a shut
+    gate tile becomes a PORTCULLIS instead of a blank wall (P37.3)."""
     from world.world_map import TerrainType
     wmap = engine.world.map
+    gates = _gate_tiles(engine)
     cols = view_rect.width // tile_size
     rows = view_rect.height // tile_size
     for sy in range(rows):
@@ -219,11 +240,38 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
                     continue
             except Exception:
                 pass
-            kind = _kind_at(engine, wx, wy)
-            h = block_height(kind, tile_size)      # storey-driven (P33.3b)
             px = view_rect.x + sx * tile_size
             py = view_rect.y + sy * tile_size
+            if (wx, wy) in gates:              # a shut gate reads as a gateway
+                # a GATEHOUSE stands a storey taller than the curtain wall, so
+                # the barred archway is unmistakable, not a wall with a slot
+                _draw_gate(target, px, py, tile_size,
+                           block_height("watchtower", tile_size),
+                           gates[(wx, wy)])
+                continue
+            kind = _kind_at(engine, wx, wy)
+            h = block_height(kind, tile_size)      # storey-driven (P33.3b)
             _draw_block(target, kind, px, py, tile_size, h)
+
+
+def _draw_gate(target, px, py, ts, h, locked: bool = False) -> None:
+    """A shut gate as a barred PORTCULLIS in a stone arch (P37.3) — it reads as
+    a gateway, not a blank wall; an alarm-locked gate's bars glow iron-red."""
+    import pygame
+    from ui import gate_shapes as gs
+    off = max(1, ts // 7)
+    target.blit(_shadow(ts), (px + off, py + off))       # grounds the block
+    g = gs.portcullis(px, py, ts, h)
+    for key in ("left", "right", "lintel"):
+        pygame.draw.rect(target, gs.STONE, g["frame"][key])
+    pygame.draw.rect(target, gs.STONE_DARK, g["frame"]["lintel"], 1)
+    pygame.draw.rect(target, gs.OPENING, g["opening"])   # the dark recess
+    bar_col = gs.LOCKED_IRON if locked else gs.IRON
+    vw = max(1, ts // 16)
+    for (a, b) in g["bars_v"]:
+        pygame.draw.line(target, bar_col, a, b, vw)
+    for (a, b) in g["bars_h"]:
+        pygame.draw.line(target, gs.IRON_HI, a, b, max(1, ts // 22))
 
 
 def _draw_block(target, kind, px, py, ts, h) -> None:
