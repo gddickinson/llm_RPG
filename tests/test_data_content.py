@@ -105,7 +105,7 @@ class TestMonsterData(unittest.TestCase):
         from world.monsters import MONSTER_TEMPLATES
         self.assertGreaterEqual(len(MONSTER_TEMPLATES), 4)
         wolf = MONSTER_TEMPLATES["wolf"]
-        self.assertEqual((wolf["hp"], wolf["level"]), (14, 1))
+        self.assertEqual((wolf["hp"], wolf["level"]), (18, 1))
 
     def test_encounter_table_matches_data(self):
         from world.monsters import encounter_table, MONSTER_TEMPLATES
@@ -124,7 +124,7 @@ class TestMonsterData(unittest.TestCase):
         from world.monsters import build_monster
         troll = build_monster("wandering_troll", (5, 5))
         self.assertEqual(troll.name, "Wandering Troll")
-        self.assertEqual(troll.hp, 44)
+        self.assertEqual(troll.hp, 60)
         self.assertEqual(troll.position, (5, 5))
         self.assertEqual(
             getattr(troll.character_class, "value", ""), "troll")

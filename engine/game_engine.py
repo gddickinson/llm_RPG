@@ -294,6 +294,10 @@ class GameEngine(GameAPIMixin):
             # the ambient hostile/social AI
             if meta.get("wildlife"):
                 continue
+            # P37.6b: a hostile that already bit via the per-turn AggressionSystem
+            # this turn doesn't also swing here (no double attack)
+            if meta.get("_aggro_turn") == self.turn_counter:
+                continue
             try:
                 npc_x, npc_y = npc.position
                 if self._distance_to_player(npc_x, npc_y) > \
@@ -365,6 +369,10 @@ class GameEngine(GameAPIMixin):
             # neutral wildlife are driven by the WildlifeSystem (P32.3), never
             # the ambient hostile/social AI
             if meta.get("wildlife"):
+                continue
+            # P37.6b: a hostile that already bit via the per-turn AggressionSystem
+            # this turn doesn't also swing here (no double attack)
+            if meta.get("_aggro_turn") == self.turn_counter:
                 continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \

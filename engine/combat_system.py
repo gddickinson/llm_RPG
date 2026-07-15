@@ -473,6 +473,12 @@ class CombatSystem:
         for it in getattr(char, "inventory", []):
             if isinstance(it, Item) and it.is_weapon() and it.damage > best:
                 best = it.damage
+        if best == 0:
+            # P37.6b: a monster's NATURAL attack (claws/fangs/maul) so a weaponless
+            # beast still hits hard — data-driven per `data/monsters.json`
+            nat = (getattr(char, "metadata", {}) or {}).get("natural_damage", 0)
+            if nat:
+                return int(nat)
         return best  # 0 -> unarmed (still does 1 minimum via base clamp)
 
     def _total_armor(self, char) -> int:

@@ -8003,3 +8003,31 @@ knobs (curve coeff + kill award) for easy future tuning if George wants it slowe
 Updated the XP-assertion tests (test_leveling ×5, test_progression_playtest, class-stats).
 Full suite green. (Still open from George's message: P37.6b tougher+smarter monster AI, P37.6c
 encounter-source/camp-clearing quests — queued for the next rounds.)
+
+## 2026-07-15 — P37.6b: tougher + aggressive monsters (George)
+
+George: "combat is still too easy — monsters just stand and get killed, and need to be
+tougher." ROOT CAUSE: the whole NPC AI (attacks included) is throttled to NPC_ACTION_INTERVAL
+=5 turns, so an adjacent monster bit once per FIVE of the player's swings — the player got ~5
+free hits. Fixes:
+- **New `engine/aggression.py`**: `AggressionSystem.update` runs every real turn (right after
+  pursuit) and makes every hostile ADJACENT to the player PRESS the attack via
+  `combat_system._resolve`. ATTACK-ONLY (pursuit does the closing, so a SHOVE still buys a
+  turn's respite); reuses `pursuit._is_pursuer` eligibility; tags the struck hostile
+  `_aggro_turn` so the throttled ambient AI in `process_npc_turns` doesn't ALSO swing (no
+  double attack). Wired in engine_setup + turn_pipeline.
+- **Pursuit closes to ADJACENT**: `HOLD_DIST` 2→1, so a hostile actually reaches melee for the
+  aggression bite (was a 2-tile standoff waiting on the throttled AI — the real cause of the
+  passivity).
+- **Monsters hit harder**: a data-driven `natural_damage` (claws/fangs) read by
+  `combat_system._best_weapon_damage`, so a weaponless beast isn't stuck at ~1-4 dmg — wolf 4,
+  bandit 5, troll 10, level-scaled for the rest (via `build_monster` metadata).
+- **More HP**: wolf 14→18, goblin 11→14, bandit 20→26, bog_lurker 28→36, wandering_troll
+  44→60 (beyond the P37.5b buff).
+
+Net: an adjacent monster attacks EVERY turn and bites for real damage — a solo geared hero
+still wins a wolf but bleeds for it, and a pack or a troll is a genuine threat you might flee.
+`tests/test_aggression.py` (+7: adjacent bites every turn, far ones don't, party skipped, the
+double-attack tag, natural-damage lookup); updated HP-assertion tests (data_content, elites).
+Validator green; full suite green. Still open from George's message: P37.6c encounter-source
+(camp-clearing) quests.

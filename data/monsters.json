@@ -3,7 +3,7 @@
     "name": "Wolf",
     "class": "monster",
     "race": "goblin",
-    "hp": 14,
+    "hp": 18,
     "level": 1,
     "symbol": "w",
     "description": "A snarling wolf with hungry eyes.",
@@ -21,13 +21,14 @@
     "stats": {
       "strength": 12,
       "dexterity": 13
-    }
+    },
+    "natural_damage": 4
   },
   "bandit": {
     "name": "Bandit",
     "class": "brigand",
     "race": "human",
-    "hp": 20,
+    "hp": 26,
     "level": 2,
     "symbol": "b",
     "description": "A scarred outlaw clutching a rusty blade.",
@@ -44,13 +45,14 @@
     "stats": {
       "strength": 13,
       "constitution": 12
-    }
+    },
+    "natural_damage": 5
   },
   "goblin": {
     "name": "Goblin",
     "class": "monster",
     "race": "goblin",
-    "hp": 11,
+    "hp": 14,
     "level": 1,
     "symbol": "g",
     "description": "A green-skinned scavenger.",
@@ -68,13 +70,14 @@
     "stats": {
       "strength": 11,
       "dexterity": 12
-    }
+    },
+    "natural_damage": 3
   },
   "wandering_troll": {
     "name": "Wandering Troll",
     "class": "troll",
     "race": "troll",
-    "hp": 44,
+    "hp": 60,
     "level": 4,
     "symbol": "X",
     "description": "A solitary troll, lost from its kin.",
@@ -87,13 +90,14 @@
     "stats": {
       "strength": 18,
       "constitution": 16
-    }
+    },
+    "natural_damage": 10
   },
   "bog_lurker": {
     "name": "Bog Lurker",
     "class": "monster",
     "race": "troll",
-    "hp": 28,
+    "hp": 36,
     "level": 3,
     "symbol": "L",
     "description": "A moss-hided thing that rises dripping from the pools.",
@@ -109,13 +113,14 @@
     "behavior": {
       "ambush": 3
     },
-    "speed": 0.7
+    "speed": 0.7,
+    "natural_damage": 7
   },
   "marsh_wisp": {
     "name": "Marsh Wisp",
     "class": "monster",
     "race": "goblin",
-    "hp": 12,
+    "hp": 14,
     "level": 2,
     "symbol": "w",
     "description": "A flickering light with a hungry chill about it.",
@@ -131,7 +136,8 @@
     "speed": 1.3,
     "stats": {
       "dexterity": 15
-    }
+    },
+    "natural_damage": 3
   },
   "bounty_hunter": {
     "name": "Bounty Hunter",
@@ -150,7 +156,8 @@
     "behavior": {
       "flee_below": 0.15
     },
-    "speed": 1.2
+    "speed": 1.2,
+    "natural_damage": 4
   },
   "restless_bones": {
     "name": "Restless Bones",
@@ -170,7 +177,8 @@
       "min": 2,
       "max": 3,
       "word": "shamble"
-    }
+    },
+    "natural_damage": 4
   },
   "hill_giant": {
     "name": "Hill Giant",
@@ -190,7 +198,8 @@
       "giant": true,
       "flee_below": 0.1
     },
-    "speed": 0.8
+    "speed": 0.8,
+    "natural_damage": 12
   },
   "giant_warlord": {
     "name": "Giant Warlord",
@@ -228,7 +237,8 @@
       }
     },
     "boss_depth": 3,
-    "speed": 0.8
+    "speed": 0.8,
+    "natural_damage": 16
   },
   "tyrant_depths": {
     "name": "Tyrant of the Depths",
@@ -266,7 +276,8 @@
       }
     },
     "boss_depth": 2,
-    "speed": 0.9
+    "speed": 0.9,
+    "natural_damage": 14
   },
   "wisp_queen": {
     "name": "Wisp Queen",
@@ -306,7 +317,8 @@
       }
     },
     "boss_depth": 2,
-    "speed": 1.2
+    "speed": 1.2,
+    "natural_damage": 12
   },
   "dragon_whelp": {
     "name": "Dragon Whelp",
@@ -330,7 +342,8 @@
       "flying": true,
       "flee_below": 0.15
     },
-    "speed": 1.4
+    "speed": 1.4,
+    "natural_damage": 10
   },
   "young_dragon": {
     "name": "Young Dragon",
@@ -379,7 +392,8 @@
         ]
       }
     },
-    "speed": 1.5
+    "speed": 1.5,
+    "natural_damage": 16
   },
   "elder_dragon": {
     "name": "Elder Dragon",
@@ -436,7 +450,8 @@
         ]
       }
     },
-    "speed": 1.3
+    "speed": 1.3,
+    "natural_damage": 16
   },
   "grave_touched": {
     "name": "Grave-Touched",
@@ -463,7 +478,8 @@
       "max": 3,
       "word": "host"
     },
-    "speed": 0.9
+    "speed": 0.9,
+    "natural_damage": 6
   },
   "drowned_guardian": {
     "name": "Drowned Guardian",
@@ -483,7 +499,8 @@
       "undead": true,
       "flee_below": 0.0
     },
-    "speed": 0.7
+    "speed": 0.7,
+    "natural_damage": 8
   },
   "cinder_cultist": {
     "name": "Cinder Cultist",
@@ -504,7 +521,8 @@
       "max": 4,
       "word": "coven"
     },
-    "speed": 1.0
+    "speed": 1.0,
+    "natural_damage": 6
   },
   "cinder_captain": {
     "name": "The Ashen Captain",
@@ -523,7 +541,8 @@
     "behavior": {
       "flee_below": 0.15
     },
-    "speed": 1.0
+    "speed": 1.0,
+    "natural_damage": 10
   },
   "bog_goblin": {
     "name": "Bog Goblin",
@@ -546,7 +565,8 @@
       "max": 5,
       "word": "warband"
     },
-    "speed": 1.1
+    "speed": 1.1,
+    "natural_damage": 4
   },
   "bog_goblin_champion": {
     "name": "Reedmarsh Champion",
@@ -567,7 +587,8 @@
     "behavior": {
       "flee_below": 0.1
     },
-    "speed": 1.0
+    "speed": 1.0,
+    "natural_damage": 8
   },
   "vaelzhur_lich": {
     "name": "Vael'Zhur the Drowned",

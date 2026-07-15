@@ -5626,10 +5626,18 @@ remove certain encounters — clearing a bandit camp reduces bandit spawns in an
   that rewards fighting hard things, power still on gear + party. Tests updated
   (test_leveling/progression_playtest/class-stats). Two knobs (curve coeff + award) for easy
   future tuning.
-- [ ] **P37.6b Tougher + smarter monsters.** Monsters "just stand and get killed" — make the
-  hostile AI ADVANCE and press the attack (review `pursuit` HOLD_DIST standoff, the 5-turn
-  ambient-AI throttle, `monster_packs`), and raise monster HP/damage beyond P37.5b so fights
-  are a real threat. Keep winnable with gear + party.
+- [x] **P37.6b Tougher + smarter monsters.** DONE. Root cause of "they just stand and get
+  killed": the WHOLE NPC AI (attacks included) is throttled to `NPC_ACTION_INTERVAL`=5 turns,
+  so an adjacent monster bit once per FIVE player swings. Fix: new `engine/aggression.py` —
+  every real turn (right after pursuit) a hostile ADJACENT to the player PRESSES the attack
+  via `combat_system._resolve`; pursuit now closes to ADJACENT (`HOLD_DIST` 2→1) so they reach
+  melee, and the ambient AI skips a hostile already tagged `_aggro_turn` (no double attack).
+  Monsters also HIT HARDER: a data-driven `natural_damage` (claws/fangs) read by
+  `_best_weapon_damage` so a weaponless beast isn't stuck at 1-4 dmg — wolf 4 / bandit 5 /
+  troll 10, level-scaled for the rest; and MORE HP (wolf 14→18, goblin 11→14, bandit 20→26,
+  bog_lurker 28→36, troll 44→60). Net: an adjacent monster attacks EVERY turn and bites for
+  real — a solo geared hero still wins a wolf but bleeds, a pack/troll is a genuine threat.
+  `tests/test_aggression.py` (+7); updated the HP-assertion tests. Validator green.
 - [ ] **P37.6c Encounter-source quests.** Some spawns come from a SOURCE (a bandit camp, a
   lair — `world/lairs.py`); a quest to find + clear it drops that encounter's spawn rate in
   the area (`world/encounters.py` weighting). e.g. defeat the bandit camp → fewer bandits.

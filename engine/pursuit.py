@@ -22,10 +22,10 @@ your heels but never parks on the very tile you're about to step onto.
 HOSTILE_CLASSES = ("brigand", "monster", "troll")
 CHASE_RADIUS = 12        # a hostile within this many tiles gives chase
 MAX_STEPS = 3            # a very fast creature blurs, it never teleports
-HOLD_DIST = 2            # pursuit closes to a standoff, not onto your heels —
-#                          the last adjacent step (and the bite) is the ambient
-#                          AI's, so a pursuer never parks on the tile you're
-#                          about to step into. It still keeps pace at 2 tiles,
+HOLD_DIST = 1            # P37.6b: pursuit closes to ADJACENT (was a 2-tile
+#                          standoff) so a hostile actually reaches melee — the
+#                          bite is the AggressionSystem's, EVERY turn. It parks
+#                          adjacent (never on your tile), keeping pace so a
 #                          so you can't simply walk away from a faster creature.
 
 

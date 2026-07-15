@@ -160,6 +160,8 @@ def build_subsystems(engine, llm_model=None,
     self.npc_conflict = NPCConflictSystem(self)
     from engine.pursuit import PursuitSystem
     self.pursuit = PursuitSystem(self)
+    from engine.aggression import AggressionSystem
+    self.aggression = AggressionSystem(self)
     from world.wildlife import WildlifeSystem
     self.wildlife = WildlifeSystem(self)
     from engine.tower_defense import TowerDefense

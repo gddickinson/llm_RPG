@@ -313,6 +313,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Pursuit error: {e}")
 
+    # P37.6b: an adjacent hostile PRESSES the attack every turn (not the 5-turn
+    # AI cadence), so monsters no longer just stand and get killed
+    try:
+        self.aggression.update()
+    except Exception as e:
+        logger.debug(f"Aggression error: {e}")
+
     # Neutral wildlife graze, wander and flee (P32.3) — the living wild
     try:
         self.wildlife.update()
