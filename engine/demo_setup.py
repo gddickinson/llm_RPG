@@ -210,6 +210,13 @@ def initialize_demo_world(engine, player_spec=None,
         pass
     engine.world.npc_manager = engine.npc_manager
     engine.world.memory_manager = engine.memory_manager
+    # P36.3 a realistic world carries a deep-history chronicle → the Y-journal
+    try:
+        saga = getattr(engine.world, "history_chronicle", None)
+        if saga and getattr(engine, "chronicle", None) is not None:
+            engine.chronicle.seed_pregame(saga)
+    except Exception:
+        pass
 
     # NPCs — placed at their home_location (auto-adjusts to world size)
     npcs = engine.npc_manager.create_simple_npcs()

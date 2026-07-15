@@ -5486,11 +5486,18 @@ demo_setup; add a `"realistic"` kind + a `WorldGenerator(mode="realistic")`.
   into `_generate_realistic` after the biome pass. Minimap shows rivers draining the
   mountains. `tests/test_realistic_gen.py`. (Shore FOAM already rendered by the P33.2
   terrain-edges pass; `river_gen.is_shore` stays for future autotiling.)
-- [ ] **P36.3 Deep history sim → settlements, ruins, roads.** Expand `history_sim` to a
-  multi-century sim: tribes found settlements at suitable sites (`river_gen.score_site`),
-  wars destroy some (→ ruins), survivors lay roads / form realms — producing the real
-  settlement network + a CHRONICLE the Y-journal shows. NPCs/quests/factions seed into
-  the historical towns.
+- [x] **P36.3 Deep history sim → ruins + chronicle.** *Done:* new pure `world/world_
+  history.py` — over a simulated ~900 YEARS, seven peoples found settlements at suitable
+  sites (`river_gen.score_site`, spaced), rival realms WAR and raze some into RUINS
+  (ancient ruins / a ruined tower / an abandoned mine / a sunken hall / an old
+  battlefield), the survivors are bound by ROADS — returning the ruins + a dated
+  CHRONICLE. `WorldGenerator._place_history` scatters the ruins as Locations (RUBBLE
+  field, half hiding a CAVE dungeon, a legend line) away from the living towns, and
+  stashes the chronicle; `engine.chronicle.seed_pregame` shows it in the Y-journal as
+  "Chronicle of the Ages" (persists). So a realistic world has a visible + written PAST.
+  Screenshot: ruins ringed on the map beside the 900-year chronicle. `tests/test_world_
+  history.py`. (Living historical towns + faction realms fold into P36.5; the fixed
+  Oakvale stays the start town so its NPCs/quests are intact.)
 - [ ] **P36.4 Richer buildings (building-gen).** Adapt building-gen's room-subdivision
   for varied interior floorplans (not the fixed blueprints).
 - [ ] **P36.5 Integration & polish.** The realistic world is fully playable end-to-end

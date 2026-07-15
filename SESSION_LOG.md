@@ -7329,3 +7329,21 @@ into `_generate_realistic` right after the biome pass (before settlements, so th
 town-clearing carve + road bridges handle any town on a river). A minimap confirms
 rivers draining the mountain ranges and feeding the coastal water. `tests/
 test_realistic_gen.py` (+2). Full suite next. Next: P36.3 the deep-history sim.
+
+## 2026-07-14 (cont.) — P36.3: deep-history sim (ruins + a written chronicle)
+
+The heart of Phase 36. New pure `world/world_history.py` runs a lean adaptation of
+autonomous_world's history sim: over a simulated ~900 YEARS, seven peoples (the
+Ashfolk, Vael elves, Karrûn dwarves, Marshmen, Sunward realm, Iron confederacy, Hill
+clans) found settlements at the most suitable sites (`river_gen.score_site`, spaced 9+
+apart), rival realms go to WAR and raze some into RUINS (ancient ruins / a ruined tower
+/ an abandoned mine / a sunken hall / an old battlefield), and the survivors are bound
+by ROADS — returning the ruins + a dated CHRONICLE. `WorldGenerator._place_history`
+scatters the ruins as Locations (a RUBBLE field, half of them hiding a CAVE dungeon, a
+legend line) away from the living towns, and stashes the chronicle on the world;
+`demo_setup` seeds it into `engine.chronicle` and a new `Chronicle.seed_pregame` shows
+it in the Y-journal under "Chronicle of the Ages" (round-trips the save). So a realistic
+world now has a visible past (broken ruins scattered across the land) AND a written one
+(centuries of foundings and wars). A screenshot shows the ruins ringed on the map beside
+the full 900-year chronicle. `tests/test_world_history.py`. Full suite next. Next: P36.4
+building-gen interiors, P36.5 polish (living historical towns + faction realms).

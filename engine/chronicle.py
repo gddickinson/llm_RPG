@@ -40,6 +40,7 @@ class Chronicle:
     def __init__(self, engine):
         self.engine = engine
         self.entries: list = []          # [{day, text}, ...]
+        self.pregame: list = []          # P36.3 the world's deep-history saga
 
     # ---- capture ---------------------------------------------------
 
@@ -66,13 +67,23 @@ class Chronicle:
 
     # ---- the journal view ------------------------------------------
 
+    def seed_pregame(self, chronicle) -> None:
+        """P36.3: the world's founding history (from `world_history`), shown as the
+        deep past above the runtime saga."""
+        self.pregame = list(chronicle or [])
+
     def lines(self) -> list:
-        if not self.entries:
+        if not self.entries and not self.pregame:
             return []
-        out = ["", "Chronicle of the Age",
-               "(the saga of your own deeds and the realm's)", ""]
-        for e in self.entries[-SHOWN:]:
-            out.append(f"* Day {e['day']}: {e['text']}")
+        out = []
+        if self.pregame:
+            out += ["", "Chronicle of the Ages", "(the history of this land)", ""]
+            out += [f"* {line}" for line in self.pregame[-SHOWN:]]
+        if self.entries:
+            out += ["", "Chronicle of the Age",
+                    "(the saga of your own deeds and the realm's)", ""]
+            for e in self.entries[-SHOWN:]:
+                out.append(f"* Day {e['day']}: {e['text']}")
         return out
 
     def tail(self, k: int = 5) -> list:
@@ -81,7 +92,8 @@ class Chronicle:
     # ---- persistence -----------------------------------------------
 
     def to_dict(self) -> dict:
-        return {"entries": self.entries}
+        return {"entries": self.entries, "pregame": self.pregame}
 
     def from_dict(self, d: dict) -> None:
         self.entries = (d or {}).get("entries", []) or []
+        self.pregame = (d or {}).get("pregame", []) or []

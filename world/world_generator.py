@@ -87,8 +87,40 @@ class WorldGenerator:
             self._add_extra_civic_buildings()
             self._add_wilderness_buildings()
         self._add_wilderness_features()
+        self._place_history()                  # P36.3 ruins + the age's chronicle
         logger.info(f"Realistic world generated ({self.w}x{self.h}) with "
                     f"{len(self.world.locations)} locations")
+
+    def _place_history(self) -> None:
+        """P36.3 run the deep-history sim, scatter its RUINS across the land and
+        stash the CHRONICLE on the world for the Y-journal."""
+        from world import world_history
+        terrain_copy = [row[:] for row in self.world.map.terrain]
+        hist = world_history.simulate(terrain_copy, self.seed)
+        occupied = {(l.x, l.y) for l in self.world.locations}
+        for r in hist["ruins"]:
+            if any(abs(r.x - ox) + abs(r.y - oy) <= 4 for ox, oy in occupied):
+                continue                        # don't drop a ruin onto a town
+            self._place_ruin(r)
+        self.world.history_chronicle = hist["chronicle"]
+
+    def _place_ruin(self, r) -> None:
+        from world.location import Location
+        land = (TerrainType.GRASS, TerrainType.FOREST)
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                x, y = r.x + dx, r.y + dy
+                if 0 <= x < self.w and 0 <= y < self.h and \
+                        self.world.map.terrain[y][x] in land:
+                    self.world.map.terrain[y][x] = TerrainType.RUBBLE
+        if self.rng.random() < 0.5:             # some ruins hide a dungeon
+            self.world.map.terrain[r.y][r.x] = TerrainType.CAVE
+        loc = Location(f"{r.name} Ruins",
+                       f"Ruins — {r.legend}. Fallen in year {r.year}.",
+                       max(0, r.x - 1), max(0, r.y - 1), 3, 3)
+        loc.add_property("ruin", r.kind)
+        loc.add_property("legend", r.legend)
+        self.world.add_location(loc)
 
     def _carve_town_clearings(self) -> None:
         """Flatten the untamed terrain (water / mountain / marsh) inside a
