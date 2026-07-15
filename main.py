@@ -116,6 +116,12 @@ def main() -> int:
         except Exception as e:
             logger.warning(f"Start menu failed, skipping: {e}")
 
+    # A-disc: the menu's "Tutorial Island" start routes to the tutorial flag
+    # (the tutorial runs on the default world, not a world_kind of its own)
+    start_tutorial = args.tutorial or world_kind == "tutorial"
+    if world_kind == "tutorial":
+        world_kind = "default"
+
     # Build engine
     engine = GameEngine(
         llm_model=args.model,
@@ -124,7 +130,7 @@ def main() -> int:
                               and args.provider != "heuristic"),
         enable_quests=(not args.no_quests),
         player_spec=player_spec,
-        start_tutorial=args.tutorial,
+        start_tutorial=start_tutorial,
         enable_dm_bridge=args.dm_bridge,
         world_kind=world_kind,
     )

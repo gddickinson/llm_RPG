@@ -5689,9 +5689,13 @@ features) found the following "built but unreachable" gaps. Verified; ranked by 
   advertises it. Radiant + starter notices are no longer stranded. `tests/test_quest_board_
   reach.py` (+5). (Compacted `gui.py` back under 500 via an `_OVERLAY_MODES` const + tighter
   `show_quests`/`show_collection_log`/character-sheet goals.)
-- [ ] **A-disc: discoverability** — Tutorial Island isn't in the GUI New Game menu (only
-  `--tutorial` CLI); the `/bond` `/spend` `/order` dialog commands work but aren't advertised
-  in the dialog prompt; left-click-to-target isn't in the controls help. Small fixes.
+- [x] **A-disc: discoverability — DONE (audit CLOSED).** (a) **Tutorial Island** is now a New
+  Game menu option (`ui/start_menu.py` NEW_GAME_OPTIONS → `start:"tutorial"`, which `main.py`
+  routes to the `start_tutorial` engine flag on the default world) — a newcomer no longer needs
+  the `--tutorial` CLI flag. (b) **Left-click-to-target** is documented in the FIGHT controls
+  help (`ui/controls.py`, "L-CLICK — lock the target under the cursor"). (The `/bond` `/spend`
+  `/order` dialog prompt was already advertised in the A-train round.) `tests/test_start_menu_
+  tutorial.py` (+4).
 
 ## Phase 28.2d — SURFACE the mount feature (George, 2026-07-15)
 

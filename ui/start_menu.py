@@ -33,6 +33,7 @@ TITLE_OPTIONS = [
 
 NEW_GAME_OPTIONS = [
     ("Quick Start", "quick"),
+    ("Tutorial Island", "tutorial"),           # A-disc: learn every system
     ("Customize Character", "customize"),
     ("Realistic World", "realistic"),          # P36.1 heightmap landscape
     ("Begin at the Castle", "castle"),
@@ -134,6 +135,9 @@ class StartMenu:
             if code == "realistic":            # P36.1 a heightmap-generated world
                 return {"action": "new", "spec": default_quick_start_spec(),
                         "start": "realistic"}
+            if code == "tutorial":             # A-disc: Tutorial Island start
+                return {"action": "new", "spec": default_quick_start_spec(),
+                        "start": "tutorial"}
             if code in ("customize", "castle"):
                 # both make a hero; the castle option starts them at the gate
                 self.pending_start = "castle" if code == "castle" \

@@ -8175,3 +8175,17 @@ adventurers' board" when notices are posted. `tests/test_quest_board_reach.py` (
 tavern, lists notices, accepts one (→ ACTIVE), and guards the out-of-range/away cases.
 Compacted gui.py back under 500 (499) with an `_OVERLAY_MODES` const + tighter show_quests/
 show_collection_log/character-sheet goals. Validator clean; full suite green.
+
+## 2026-07-15 — AUDIT-fix A-disc: Tutorial Island in the menu + L-CLICK target doc (audit CLOSED)
+
+The final audit item — two small discoverability gaps. (a) Tutorial Island was reachable ONLY
+via the `--tutorial` CLI flag, so a GUI newcomer never saw the teach-every-system start. It's
+now a New Game menu option (`ui/start_menu.py` — NEW_GAME_OPTIONS gains `("Tutorial Island",
+"tutorial")`, `_newgame_key` returns `start:"tutorial"` with a quick-start hero); `main.py`
+routes a `"tutorial"` start to the engine's `start_tutorial=True` on the default world (the
+tutorial isn't a world_kind of its own). (b) Left-click already locked the target under the
+cursor (`input_handler` MOUSEBUTTONDOWN → `targeting.lock_tile`) but wasn't in the help — added
+"L-CLICK — lock the target under the cursor" to the FIGHT section of `ui/controls.py`.
+`tests/test_start_menu_tutorial.py` (+4). Screenshot: the New Game menu now lists Tutorial
+Island second. This CLOSES the codebase audit (A-items/A-trap/A-train/A-board/A-disc all done);
+next up is GRAPHICS Phase 1 (revive the shelved P40 top-down fidelity plan).

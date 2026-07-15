@@ -31,6 +31,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
         ("R", "ranged attack (bow/sling/thrown)"),
         ("SHIFT + R", "aimed shot (+2 dmg, slower)"),
         ("[ / ]", "cycle the locked target"),
+        ("L-CLICK", "lock the target under the cursor"),
         ("SHIFT + F", "shove a foe back (STR)"),
         ("SHIFT + V", "weapon action (once per rest)"),
         ("SHIFT + T", "trip an adjacent foe"),
