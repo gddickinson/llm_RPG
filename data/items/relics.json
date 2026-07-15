@@ -1,4 +1,59 @@
 {
+  "sunken_tome": {
+    "id": "sunken_tome",
+    "name": "The Sunken Tome of Vael'Zhur",
+    "item_type": "book",
+    "value": 1200,
+    "rarity": "legendary",
+    "description": "The archmage's magnum opus, bound in drowned leather and cold to the touch. Its pages whisper. To read it is to learn the soul-draining art Vael'Zhur bound his life to — and to risk what he became.",
+    "use_effect": {"teach_spell": "drain"},
+    "metadata": {"artifact": true, "tome_of_vaelzhur": true, "corruption": true}
+  },
+  "warding_key_i": {
+    "id": "warding_key_i",
+    "name": "Warding-Key Fragment I",
+    "item_type": "misc",
+    "value": 150,
+    "rarity": "rare",
+    "description": "A wedge of black glass etched with a binding-rune, warm where the others are cold. One of three that seal Vael'Zhur's sanctum.",
+    "metadata": {"warding_fragment": 1}
+  },
+  "warding_key_ii": {
+    "id": "warding_key_ii",
+    "name": "Warding-Key Fragment II",
+    "item_type": "misc",
+    "value": 150,
+    "rarity": "rare",
+    "description": "A second shard of the drowning-ward, its rune half-drowned in verdigris. The Reedmarsh goblins kept it as a totem.",
+    "metadata": {"warding_fragment": 2}
+  },
+  "warding_key_iii": {
+    "id": "warding_key_iii",
+    "name": "Warding-Key Fragment III",
+    "item_type": "misc",
+    "value": 150,
+    "rarity": "rare",
+    "description": "The last fragment of the ward, given up by the marsh-witch Ysolde. Held to the light, its rune completes the others.",
+    "metadata": {"warding_fragment": 3}
+  },
+  "warding_key": {
+    "id": "warding_key",
+    "name": "The Warding Key",
+    "item_type": "misc",
+    "value": 600,
+    "rarity": "legendary",
+    "description": "The three fragments made whole — a key of black glass that can open Vael'Zhur's sanctum without waking its traps, or bind the lich back into his drowning-sleep.",
+    "metadata": {"warding_key": true, "artifact": true}
+  },
+  "drowned_lantern": {
+    "id": "drowned_lantern",
+    "name": "The Drowned Lantern",
+    "item_type": "misc",
+    "value": 220,
+    "rarity": "rare",
+    "description": "A storm-lantern of green glass that burns underwater, its flame fed by the Vault itself. It throws back the dark of the flooded halls.",
+    "metadata": {"light_source": true, "artifact": true}
+  },
   "watchman_signet": {
     "id": "watchman_signet",
     "name": "Watchman's Signet",

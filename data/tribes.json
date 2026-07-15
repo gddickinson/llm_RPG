@@ -20,5 +20,16 @@
     "raider": "bog_lurker",
     "champion": "wandering_troll",
     "terrain": "mountains"
+  },
+  "reedmarsh_warren": {
+    "name": "The Reedmarsh Warren",
+    "race": "goblin",
+    "strength": 18,
+    "growth": 3,
+    "raid_threshold": 64,
+    "raid_cost": 18,
+    "raider": "bog_goblin",
+    "champion": "bog_goblin_champion",
+    "terrain": "swamp"
   }
 }

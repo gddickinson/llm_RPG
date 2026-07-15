@@ -1,4 +1,17 @@
 {
+  "guardian_halberd": {
+    "id": "guardian_halberd",
+    "name": "Runed Guardian Halberd",
+    "item_type": "weapon",
+    "value": 280,
+    "rarity": "rare",
+    "description": "The polearm of a Drowned Guardian, its head chased with binding-runes that bite the undead. A two-handed reach weapon, heavy but far-striking.",
+    "damage": 8,
+    "weapon_kind": "melee",
+    "damage_kind": "slash",
+    "two_handed": true,
+    "metadata": {"reach": true}
+  },
   "dagger": {
     "id": "dagger",
     "name": "Iron Dagger",

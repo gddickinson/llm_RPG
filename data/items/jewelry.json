@@ -1,4 +1,14 @@
 {
+  "tidecaller_signet": {
+    "id": "tidecaller_signet",
+    "name": "Tidecaller's Signet",
+    "item_type": "ring",
+    "value": 320,
+    "rarity": "rare",
+    "description": "A silver ring set with a bead of never-drying seawater. Worn, the deep parts around you — you swim like an otter and hold your breath far longer.",
+    "equip_bonuses": {"swim": 3, "climb": 1},
+    "metadata": {"artifact": true, "long_breath": true}
+  },
   "ring_strength": {
     "id": "ring_strength",
     "name": "Ring of Strength",

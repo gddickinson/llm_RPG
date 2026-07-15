@@ -5594,7 +5594,7 @@ plus deep integration tests that actually COMPLETE the main objectives. Built as
 
 - [x] **P38.0 Plan the adventure** (theme, 5-act plot, areas, factions, monsters, items,
   the lich, artifacts, clues, win conditions) → `docs/ADVENTURE_TOME.md`.
-- [ ] **P38.1 Content: monsters + tribes + magic items + artifacts** (`data/*.json`).
+- [x] **P38.1 Content: monsters + tribes + magic items + artifacts** (`data/*.json`).
 - [ ] **P38.2 Content: areas/structures (villages, camps, ruins, the sunken library) + NPCs.**
 - [ ] **P38.3 Content: the quest chain + clues + branching solve paths + the module pack.**
 - [ ] **P38.4 Deep integration tests + a scripted playthrough that completes the objectives.**

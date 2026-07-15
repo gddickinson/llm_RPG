@@ -7483,3 +7483,19 @@ themed adventure module (lost wizard's tome, a lich, artifacts, tribes/factions,
 camps/ruins, clues, branching solve paths) + deep integration tests that complete the
 objectives. To be planned in docs/ADVENTURE_TOME.md and built as a data/module_packs/ pack
 across P38.0–P38.4.
+
+## 2026-07-14 (cont.) — P38.1: adventure content — monsters, the lich, tribe, artifacts
+
+First build round of "The Sunken Tome of Vael'Zhur". All content-as-data:
+- data/monsters.json: 7 adventure foes (encounter_weight 0, so they only appear via the
+  adventure) — grave_touched + drowned_guardian (undead, class "monster" so holy/silver
+  bite them), cinder_cultist + the Ashen Captain (Cinder Circle), bog_goblin +
+  bog_goblin_champion (Reedmarsh), and VAEL'ZHUR THE DROWNED — a level-9 lich BOSS with a
+  necrotic telegraph and four phases (summon drowned guardians → electrify the flooded
+  floor → terror → enrage).
+- data/tribes.json: the Reedmarsh Warren (swamp goblin tribe) over the new bog goblins.
+- Artifacts: the Sunken Tome (legendary, teaches `drain`), 3 Warding-Key fragments + the
+  assembled Warding Key, the Drowned Lantern, the Tidecaller's Signet (ring, swim aid),
+  the Runed Guardian Halberd (two-handed reach weapon), and Scrolls of Frost Ray/Armor.
+Validator clean; tests/test_adventure_tome.py (9) green. Next P38.2: the areas/structures
+(the Drowned Vault + ward-puzzles) + the custom NPCs.

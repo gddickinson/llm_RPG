@@ -1,4 +1,24 @@
 {
+  "scroll_frost_ray": {
+    "id": "scroll_frost_ray",
+    "name": "Scroll of Frost Ray",
+    "item_type": "scroll",
+    "value": 70,
+    "rarity": "uncommon",
+    "description": "A vellum scroll rimed with frost — the Vault's cold, captured in a rune.",
+    "stackable": true,
+    "use_effect": {"spell": "frost_ray"}
+  },
+  "scroll_frost_armor": {
+    "id": "scroll_frost_armor",
+    "name": "Scroll of Frost Armor",
+    "item_type": "scroll",
+    "value": 85,
+    "rarity": "uncommon",
+    "description": "A warding-scroll of Vael'Zhur's own hand, sheathing its reader in protective ice.",
+    "stackable": true,
+    "use_effect": {"spell": "frost_armor"}
+  },
   "arrow": {
     "id": "arrow",
     "name": "Arrows",
