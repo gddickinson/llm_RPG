@@ -7709,3 +7709,18 @@ P41.6). To hold the 500-line line, split `_draw_pet`/`_draw_hp_bar` into ui/rend
 overlays.py (renderer.py 509→492). tests/test_iso_render.py (5) + a screenshot (Oakvale in
 iso — mountains as 3D blocks with cliffs, the walled town raised, water sunken, the hero a
 figure). Next P41.4: bake buildings + props to iso sprites via raster3d.bake.
+
+## 2026-07-15 — P41.4: baked 3D OBJECTS in the iso world (houses, trees, towers)
+
+The iso overworld now has real 3D objects. `ui/iso_objects.py` (60 lines): `building_sprite
+(kind,size)` bakes a box+roof mesh coloured from the P33.3 building styles (roof_shapes
+wall/covering colours; tall kinds = keeps/towers get a parapet cap), `tree_sprite`/`rock_
+sprite` bake a trunk+foliage tree and a boulder — each rasterised ONCE via raster3d.bake and
+CACHED by (kind,size). `iso_render.render_iso` refactored to a SINGLE depth-sorted pass over
+terrain diamonds + objects keyed by `iso.depth_key(wx,wy,z,layer)` (terrain 0, objects 1,
+hero 2): enterable buildings (from the world Locations + blueprint kind, `_building_anchors`)
+bake a 3D house/temple/tower at their footprint front tile, forest tiles get a 3D tree, and
+everything occludes correctly (a building hides tiles behind it). Screenshot: Oakvale in iso
+— 3D houses with roofs, a forest of trees, corner wall-towers, mountains as cliffed blocks.
+tests/test_iso_objects.py (10). Next P41.5: iso characters (bake/billboard player+NPCs,
+depth-sorted, facing).

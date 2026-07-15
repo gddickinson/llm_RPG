@@ -83,30 +83,86 @@ def render_iso(target, engine, view_rect, tile_size) -> None:
     origin = _origin(iso, engine, view_rect)
     target.fill((22, 22, 30), view_rect)
 
+    from ui import iso_objects
+    anchors = _building_anchors(engine)
     x0, x1, y0, y1 = _tile_box(iso, view_rect, origin, wmap)
-    tiles = [(wx, wy) for wy in range(y0, y1) for wx in range(x0, x1)]
-    tiles.sort(key=lambda t: iso.depth_key(t[0], t[1]))
 
-    for (wx, wy) in tiles:
-        if is_explored is not None and (wx, wy) != (px, py) \
-                and not is_explored(engine, wx, wy):
-            continue
-        name = _terrain_name(wmap.terrain[wy][wx])
-        z = _HEIGHT.get(name, 0.0)
-        sx, sy = iso.world_to_screen(wx, wy, z, origin)
-        if sx < view_rect.x - tile_size or sx > view_rect.right + tile_size \
-                or sy < view_rect.y - tile_size * 3 \
-                or sy > view_rect.bottom + tile_size:
-            continue
-        top = PALETTE.get(name, (90, 150, 70))
-        for i, face in enumerate(iso.cliff_faces(sx, sy, z)):   # sides first
-            pygame.draw.polygon(target, _scale(top, 0.55 if i == 0 else 0.4),
-                                [(int(a), int(b)) for a, b in face])
-        dia = [(int(a), int(b)) for a, b in iso.diamond(sx, sy)]
-        pygame.draw.polygon(target, top, dia)
-        pygame.draw.polygon(target, _scale(top, 0.72), dia, 1)   # tile edge
+    # ONE back-to-front pass over terrain + objects, keyed by iso depth so a
+    # building/tree correctly occludes what lies behind it (P41.4)
+    items = []                                  # (depth_key, tag, payload)
+    for wy in range(y0, y1):
+        for wx in range(x0, x1):
+            if is_explored is not None and (wx, wy) != (px, py) \
+                    and not is_explored(engine, wx, wy):
+                continue
+            name = _terrain_name(wmap.terrain[wy][wx])
+            z = _HEIGHT.get(name, 0.0)
+            sx, sy = iso.world_to_screen(wx, wy, z, origin)
+            if sx < view_rect.x - tile_size or sx > view_rect.right + tile_size \
+                    or sy < view_rect.y - tile_size * 3 \
+                    or sy > view_rect.bottom + tile_size:
+                continue
+            items.append((iso.depth_key(wx, wy, z, 0), "tile",
+                          (int(sx), int(sy), PALETTE.get(name, (90, 150, 70)),
+                           z)))
+            if name in ("forest", "forest2"):
+                items.append((iso.depth_key(wx, wy, z, 1), "obj",
+                              (iso_objects.tree_sprite(int(tile_size * 1.5)),
+                               int(sx), int(sy))))
+            kind = anchors.get((wx, wy))
+            if kind is not None:
+                bs = int(tile_size * 2.2)
+                items.append((iso.depth_key(wx, wy, 1.1, 1), "obj",
+                              (iso_objects.building_sprite(kind, bs),
+                               int(sx), int(sy))))
+    # the hero, in the same depth order
+    pz = _HEIGHT.get(_terrain_name(wmap.terrain[py][px]), 0.0)
+    items.append((iso.depth_key(px, py, pz, 2), "player", None))
+    items.sort(key=lambda t: t[0])
 
-    _draw_player(target, iso, engine, origin, tile_size)
+    for _, tag, data in items:
+        if tag == "tile":
+            _draw_tile(target, iso, data)
+        elif tag == "obj":
+            _blit_object(target, data)
+        else:
+            _draw_player(target, iso, engine, origin, tile_size)
+
+
+def _draw_tile(target, iso, data):
+    sx, sy, top, z = data
+    for i, face in enumerate(iso.cliff_faces(sx, sy, z)):       # sides first
+        pygame.draw.polygon(target, _scale(top, 0.55 if i == 0 else 0.4),
+                            [(int(a), int(b)) for a, b in face])
+    dia = [(int(a), int(b)) for a, b in iso.diamond(sx, sy)]
+    pygame.draw.polygon(target, top, dia)
+    pygame.draw.polygon(target, _scale(top, 0.72), dia, 1)      # tile edge
+
+
+def _blit_object(target, data):
+    """Blit a baked 3D sprite so its ground-point sits on the tile centre."""
+    spr, sx, sy = data
+    w, h = spr.get_size()
+    target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
+
+
+def _building_anchors(engine):
+    """{front-centre tile: kind} for each enterable building (P41.4)."""
+    out = {}
+    try:
+        from world.blueprints import blueprint_for_location
+    except Exception:
+        blueprint_for_location = None
+    ints = getattr(engine, "interiors", {}) or {}
+    for loc in getattr(engine.world, "locations", []):
+        if loc.name not in ints:
+            continue
+        kind = "home"
+        if blueprint_for_location is not None:
+            bp = blueprint_for_location(loc.name)
+            kind = getattr(bp, "kind", "") or "home" if bp else "home"
+        out[(loc.x + loc.width // 2, loc.y + loc.height - 1)] = kind
+    return out
 
 
 def _draw_player(target, iso, engine, origin, tile_size):
@@ -115,7 +171,6 @@ def _draw_player(target, iso, engine, origin, tile_size):
     sx, sy = iso.world_to_screen(px, py, z, origin)
     th = max(8, tile_size // 2)
     foot = (int(sx), int(sy))
-    # a small standing figure + a contact shadow
     sh = pygame.Surface((tile_size, th), pygame.SRCALPHA)
     pygame.draw.ellipse(sh, (0, 0, 0, 90), (0, 0, tile_size, th))
     target.blit(sh, (foot[0] - tile_size // 2, foot[1] - th // 2))
