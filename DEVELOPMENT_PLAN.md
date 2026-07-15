@@ -5592,7 +5592,7 @@ and areas (villages, camps, ruins); clues to find, battles to fight, many ways t
 plus deep integration tests that actually COMPLETE the main objectives. Built as a
 `data/module_packs/` campaign pack (+ any engine support). Planned in `docs/ADVENTURE_TOME.md`.
 
-- [ ] **P38.0 Plan the adventure** (theme, 5-act plot, areas, factions, monsters, items,
+- [x] **P38.0 Plan the adventure** (theme, 5-act plot, areas, factions, monsters, items,
   the lich, artifacts, clues, win conditions) → `docs/ADVENTURE_TOME.md`.
 - [ ] **P38.1 Content: monsters + tribes + magic items + artifacts** (`data/*.json`).
 - [ ] **P38.2 Content: areas/structures (villages, camps, ruins, the sunken library) + NPCs.**
