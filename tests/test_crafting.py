@@ -49,8 +49,7 @@ class TestCrafting(unittest.TestCase):
 
     def test_forge_required(self):
         p = FakePlayer(gold=100)
-        for _ in range(5):
-            p.inventory.append(create_item("coins"))
+        p.inventory.append(create_item("iron_bar", quantity=2))
         # No location property -> fail
         err = can_craft(p, "sword", location_properties={})
         self.assertIn("forge", err.lower())

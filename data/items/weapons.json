@@ -1,0 +1,225 @@
+{
+  "guardian_halberd": {
+    "id": "guardian_halberd",
+    "name": "Runed Guardian Halberd",
+    "item_type": "weapon",
+    "value": 280,
+    "rarity": "rare",
+    "description": "The polearm of a Drowned Guardian, its head chased with binding-runes that bite the undead. A two-handed reach weapon, heavy but far-striking.",
+    "damage": 8,
+    "weapon_kind": "melee",
+    "damage_kind": "slash",
+    "two_handed": true,
+    "metadata": {"reach": true}
+  },
+  "dagger": {
+    "id": "dagger",
+    "name": "Iron Dagger",
+    "item_type": "weapon",
+    "value": 10,
+    "description": "A short, sharp blade.",
+    "damage": 3,
+    "weapon_kind": "melee",
+    "damage_kind": "pierce",
+    "use_effect": {
+      "weapon_action": "lacerate"
+    }
+  },
+  "sword": {
+    "id": "sword",
+    "name": "Iron Sword",
+    "item_type": "weapon",
+    "value": 30,
+    "description": "A reliable steel sword.",
+    "damage": 6,
+    "weapon_kind": "melee",
+    "use_effect": {
+      "weapon_action": "pommel_strike"
+    }
+  },
+  "longsword": {
+    "id": "longsword",
+    "name": "Longsword",
+    "item_type": "weapon",
+    "value": 60,
+    "description": "A well-balanced longsword.",
+    "rarity": "uncommon",
+    "damage": 8,
+    "weapon_kind": "melee",
+    "use_effect": {
+      "weapon_action": "cleave"
+    }
+  },
+  "battleaxe": {
+    "id": "battleaxe",
+    "name": "Battleaxe",
+    "item_type": "weapon",
+    "value": 70,
+    "description": "A two-handed axe.",
+    "rarity": "uncommon",
+    "damage": 9,
+    "weapon_kind": "melee",
+    "two_handed": true,
+    "use_effect": {
+      "weapon_action": "cleave"
+    }
+  },
+  "crude_axe": {
+    "id": "crude_axe",
+    "name": "Crude Axe",
+    "item_type": "weapon",
+    "value": 8,
+    "description": "A roughly-made axe.",
+    "damage": 5,
+    "weapon_kind": "melee"
+  },
+  "warhammer": {
+    "id": "warhammer",
+    "name": "Warhammer",
+    "item_type": "weapon",
+    "value": 80,
+    "rarity": "uncommon",
+    "damage": 10,
+    "weapon_kind": "melee",
+    "damage_kind": "bludgeon",
+    "two_handed": true,
+    "use_effect": {
+      "weapon_action": "topple"
+    }
+  },
+  "staff": {
+    "id": "staff",
+    "name": "Wizard's Staff",
+    "item_type": "weapon",
+    "value": 40,
+    "description": "Channels arcane energy.",
+    "rarity": "uncommon",
+    "damage": 4,
+    "weapon_kind": "melee",
+    "damage_kind": "bludgeon",
+    "equip_bonuses": {
+      "max_mana": 3
+    }
+  },
+  "bow": {
+    "id": "bow",
+    "name": "Hunting Bow",
+    "item_type": "weapon",
+    "value": 35,
+    "description": "A simple ranged weapon.",
+    "damage": 5,
+    "weapon_kind": "ranged",
+    "damage_kind": "pierce",
+    "ammo_type": "arrow"
+  },
+  "longbow": {
+    "id": "longbow",
+    "name": "Longbow",
+    "item_type": "weapon",
+    "value": 70,
+    "description": "A long, powerful bow.",
+    "rarity": "uncommon",
+    "damage": 7,
+    "weapon_kind": "ranged",
+    "damage_kind": "pierce",
+    "ammo_type": "arrow",
+    "two_handed": true
+  },
+  "crossbow": {
+    "id": "crossbow",
+    "name": "Crossbow",
+    "item_type": "weapon",
+    "value": 90,
+    "description": "A heavy crossbow. Powerful but slow.",
+    "rarity": "uncommon",
+    "damage": 8,
+    "weapon_kind": "ranged",
+    "damage_kind": "pierce",
+    "ammo_type": "bolt",
+    "two_handed": true
+  },
+  "sling": {
+    "id": "sling",
+    "name": "Sling",
+    "item_type": "weapon",
+    "value": 8,
+    "description": "A simple sling. Uses any small stone.",
+    "damage": 2,
+    "weapon_kind": "ranged",
+    "damage_kind": "bludgeon",
+    "ammo_type": "stone"
+  },
+  "thrown_knife": {
+    "id": "thrown_knife",
+    "name": "Throwing Knife",
+    "item_type": "weapon",
+    "value": 12,
+    "description": "A balanced blade made for throwing.",
+    "damage": 3,
+    "weapon_kind": "thrown",
+    "damage_kind": "pierce"
+  },
+  "silver_blade": {
+    "id": "silver_blade",
+    "name": "Silver Blade",
+    "item_type": "weapon",
+    "value": 200,
+    "description": "A masterwork silver blade \u2014 devastating to monsters.",
+    "rarity": "rare",
+    "damage": 7,
+    "weapon_kind": "melee"
+  },
+  "flaming_sword": {
+    "id": "flaming_sword",
+    "name": "Flaming Sword",
+    "item_type": "weapon",
+    "value": 400,
+    "description": "A blade wreathed in flame.",
+    "rarity": "rare",
+    "damage": 8,
+    "weapon_kind": "melee",
+    "damage_kind": "fire",
+    "equip_bonuses": {
+      "damage": 2
+    }
+  },
+  "frost_dagger": {
+    "id": "frost_dagger",
+    "name": "Frost Dagger",
+    "item_type": "weapon",
+    "value": 180,
+    "description": "The hilt is ice-cold to the touch.",
+    "rarity": "uncommon",
+    "damage": 4,
+    "weapon_kind": "melee",
+    "damage_kind": "frost",
+    "equip_bonuses": {
+      "damage": 1
+    }
+  },
+  "holy_mace": {
+    "id": "holy_mace",
+    "name": "Holy Mace",
+    "item_type": "weapon",
+    "value": 160,
+    "description": "A mace blessed by clerics.",
+    "rarity": "uncommon",
+    "damage": 6,
+    "weapon_kind": "melee",
+    "damage_kind": "holy",
+    "equip_bonuses": {
+      "damage": 1,
+      "wisdom": 1
+    }
+  },
+  "bronze_sword": {
+    "id": "bronze_sword",
+    "name": "Bronze Sword",
+    "item_type": "weapon",
+    "damage": 4,
+    "value": 18,
+    "weapon_kind": "melee",
+    "damage_kind": "slash",
+    "description": "A serviceable sword of smelted bronze."
+  }
+}

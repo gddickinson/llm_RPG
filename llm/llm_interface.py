@@ -46,6 +46,8 @@ class LLMInterface:
             provider_kwargs["api_url"] = api_url
 
         self.provider = get_provider(self.provider_name, **provider_kwargs)
+        # Observability: how many calls of each kind this session (P3.9)
+        self.call_counts = {"response": 0, "action": 0, "dialog": 0}
         logger.info(
             f"LLMInterface initialized (provider={self.provider.name}, model={self.model_name})"
         )
@@ -55,6 +57,7 @@ class LLMInterface:
     def generate_response(self, prompt: str, system_prompt: str = "",
                           max_tokens: int = config.DEFAULT_MAX_TOKENS,
                           temperature: float = config.DEFAULT_TEMPERATURE) -> str:
+        self.call_counts["response"] += 1
         return self.provider.generate_response(prompt, system_prompt,
                                                max_tokens, temperature)
 
@@ -62,11 +65,13 @@ class LLMInterface:
                        game_history: List[str], visible_map: str,
                        system_prompt: str = None) -> Dict[str, str]:
         # system_prompt kwarg retained for compatibility with older callers
+        self.call_counts["action"] += 1
         return self.provider.get_npc_action(character, world_state,
                                             game_history, visible_map)
 
     def generate_npc_dialog(self, character: Any, player_message: str,
                             recent_history: List[str]) -> str:
+        self.call_counts["dialog"] += 1
         return self.provider.generate_npc_dialog(character, player_message,
                                                  recent_history)
 

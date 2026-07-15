@@ -1,0 +1,27 @@
+{
+  "_doc": "Supply-chain origins (P16.1). Every economic item has an ORIGIN: a RAW material (gathered/farmed/hunted from a source tile by a profession, with a tool) or a CRAFTED good (made from inputs at a workstation by a profession + skill level). Mining/woodcutting/fishing raws are DERIVED from gathering.json and crafted goods from recipes.json; this file adds the profession layer, the workstations, and the farmed/foraged/hunted raws that live outside gathering.json. Loaded + merged by engine/production.py.",
+  "professions": {
+    "miner": "mining",
+    "woodcutter": "woodcutting",
+    "fisher": "fishing",
+    "forager": "foraging",
+    "farmer": "foraging",
+    "hunter": "hunting",
+    "smith": "smithing",
+    "cook": "cooking",
+    "alchemist": "alchemy",
+    "carpenter": "carpentry"
+  },
+  "workstations": {
+    "smithing": "forge",
+    "cooking": "hearth",
+    "alchemy": "alchemy_bench",
+    "carpentry": "workbench"
+  },
+  "raw": {
+    "wheat_sheaf": {"profession": "farmer", "skill": "foraging", "source": "farmland", "tool": null, "yield": 1},
+    "herb_bundle": {"profession": "forager", "skill": "foraging", "source": "forest", "tool": null, "yield": 1},
+    "bogcap": {"profession": "forager", "skill": "foraging", "source": "swamp", "tool": null, "yield": 1},
+    "wolf_pelt": {"profession": "hunter", "skill": "hunting", "source": "beast", "tool": null, "yield": 1}
+  }
+}

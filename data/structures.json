@@ -1,0 +1,607 @@
+{
+  "drowned_vault": {
+    "attach_to": "The Drowned Vault",
+    "levels": [
+      {
+        "name": "Drowned Vault — Flooded Antechamber",
+        "description": "A sunken entry-hall, ankle-deep in cold marsh-water. Drowned sigils glimmer on the walls, warding the stair below.",
+        "grid": [
+          "WWWWWWWWWWWWWW",
+          "W.K.......G..W",
+          "W............W",
+          "WG.........>.W",
+          "W............W",
+          "W......G.....W",
+          "W..C.........W",
+          "W............W",
+          "WWWWWWDWWWWWWW"
+        ],
+        "inscriptions": [
+          "Here the drowning-wards begin. Touch the sigils as the drowned would walk: into the DARK, then the TIDE, then the DEEP."
+        ],
+        "puzzle": {
+          "kind": "sigil",
+          "names": ["Tide", "Deep", "Dark"],
+          "order": [2, 0, 1],
+          "wards": "down"
+        },
+        "monsters": [
+          {"template": "drowned_guardian", "at": [5, 4]},
+          {"template": "drowned_guardian", "at": [8, 6]}
+        ],
+        "chest_loot": ["drowned_lantern", "scroll_frost_ray"]
+      },
+      {
+        "name": "Drowned Vault — The Sunken Stacks",
+        "position": "below",
+        "dark": true,
+        "description": "Endless waterlogged shelves lean in the dark, their books fused to slabs of drowned pulp. Something armoured wades between them.",
+        "grid": [
+          "WWWWWWWWWWWWWW",
+          "W<..K.....G..W",
+          "W............W",
+          "W..G.......>.W",
+          "W............W",
+          "W........G...W",
+          "W...C........W",
+          "WWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Read the stacks in their order: INK, then SALT, then BONE, or the ward will not part."
+        ],
+        "puzzle": {
+          "kind": "sigil",
+          "names": ["Bone", "Ink", "Salt"],
+          "order": [1, 2, 0],
+          "wards": "down"
+        },
+        "monsters": [
+          {"template": "drowned_guardian", "at": [6, 2]},
+          {"template": "drowned_guardian", "at": [6, 4]}
+        ],
+        "chest_loot": ["guardian_halberd", "scroll_frost_armor"]
+      },
+      {
+        "name": "Drowned Vault — The Drowned Sanctum",
+        "position": "below",
+        "dark": true,
+        "description": "The heart of the vault: a domed reading-chamber where Vael'Zhur sits at his cold altar, the Sunken Tome open in his lap. Death did not take him.",
+        "grid": [
+          "WWWWWWWWWWWWWW",
+          "W<...........W",
+          "W............W",
+          "W.....S......W",
+          "W............W",
+          "W....C.......W",
+          "W............W",
+          "WWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [],
+        "monsters": [
+          {"template": "vaelzhur_lich", "at": [7, 3]},
+          {"template": "drowned_guardian", "at": [3, 5]}
+        ],
+        "chest_loot": ["tidecaller_signet"]
+      }
+    ]
+  },
+  "ruined_keep": {
+    "attach_to": "Ruined Keep",
+    "levels": [
+      {
+        "name": "Ruined Keep \u2014 Great Hall",
+        "description": "Fallen beams, a cold hearth, and the collapsed barracks beyond a spill of rubble.",
+        "grid": [
+          "WWWWWWWWWWWWWW",
+          "WF...TL...WBBW",
+          "WF.K......WFFW",
+          "WF...L....W.RW",
+          "WF...F....F.FW",
+          "WF.K.L....WFFW",
+          "WF.......>WCFW",
+          "WWWWWWDWWWWWWW"
+        ],
+        "inscriptions": [
+          "$history",
+          "Three iron levers bar the descent: throw the first and the last, but never the middle."
+        ],
+        "puzzle": {
+          "kind": "lever",
+          "pattern": [
+            0,
+            2
+          ],
+          "wards": "down"
+        }
+      },
+      {
+        "name": "Ruined Keep \u2014 Crypt",
+        "position": "below",
+        "dark": true,
+        "description": "Stone shelves and old bones. Something large breathes in the dark.",
+        "grid": [
+          "WWWWWWWWWWWWWW",
+          "WF....C......W",
+          "WFK..........W",
+          "WF...........W",
+          "WF...........W",
+          "WF...........W",
+          "WF.......<...W",
+          "WWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Here lies the last steward, sword in hand. The crown sleeps deeper than the dead."
+        ],
+        "monsters": [
+          {
+            "template": "wandering_troll",
+            "at": [
+              4,
+              3
+            ]
+          }
+        ],
+        "chest_loot": [
+          "greater_potion"
+        ]
+      }
+    ]
+  },
+  "temple_crypt": {
+    "attach_to": "Temple of Light",
+    "levels": [
+      {
+        "name": "Temple of Light \u2014 Sanctuary",
+        "description": "Sunlight through stained glass; the altar glows. A narrow stair descends behind the chancel.",
+        "grid": [
+          "WWWWWWWWWWWW",
+          "WF...S....>W",
+          "WF.T....T.FW",
+          "WFK.......FW",
+          "WF.T....T.FW",
+          "WWWWWDWWWWWW"
+        ],
+        "inscriptions": [
+          "Light keeps the door; the faithful keep the light."
+        ]
+      },
+      {
+        "name": "Temple of Light \u2014 Crypt",
+        "position": "below",
+        "dark": true,
+        "description": "The priests of old sleep in stone drawers. Some sleep less soundly.",
+        "grid": [
+          "WWWWWWWWWWWW",
+          "WF...C....<W",
+          "WFK........W",
+          "WF.........W",
+          "WWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Brother Anselm's candle never burned out. It was carried below."
+        ],
+        "monsters": [
+          {
+            "template": "restless_bones",
+            "at": [
+              3,
+              2
+            ]
+          },
+          {
+            "template": "restless_bones",
+            "at": [
+              7,
+              3
+            ]
+          }
+        ],
+        "chest_loot": [
+          "scroll_heal",
+          "amulet_health"
+        ]
+      }
+    ]
+  },
+  "wizard_tower": {
+    "attach_to": "Wizard's Tower",
+    "levels": [
+      {
+        "name": "Wizard's Tower \u2014 Entry Hall",
+        "description": "Coats on hooks, a dozing cat of uncertain solidity, and a spiral stair.",
+        "grid": [
+          "WWWWWWW",
+          "WF...<W",
+          "WFK...W",
+          "WWWDWWW"
+        ],
+        "inscriptions": [
+          "Alzara's tower. Knock, or don't \u2014 the tower already knows."
+        ]
+      },
+      {
+        "name": "Wizard's Tower \u2014 Library",
+        "position": "above",
+        "description": "Shelves curve impossibly. Three sigils glow on the floor, and the stair above shimmers behind a ward.",
+        "grid": [
+          "WWWWWWW",
+          "W<...>W",
+          "WFKG..W",
+          "WFG.G.W",
+          "WWWWWWW"
+        ],
+        "inscriptions": [
+          "Moon before Sun, Sun before Stars \u2014 so the sky is read from below."
+        ],
+        "puzzle": {
+          "order": [
+            1,
+            0,
+            2
+          ],
+          "names": [
+            "Sun",
+            "Moon",
+            "Stars"
+          ],
+          "wards": "up"
+        }
+      },
+      {
+        "name": "Wizard's Tower \u2014 Menagerie",
+        "position": "above",
+        "dark": true,
+        "description": "Cages of brass and glass. Most are empty. Most.",
+        "grid": [
+          "WWWWWWW",
+          "W>...<W",
+          "WF....W",
+          "WF....W",
+          "WWWWWWW"
+        ],
+        "monsters": [
+          {
+            "template": "marsh_wisp",
+            "at": [
+              3,
+              2
+            ]
+          },
+          {
+            "template": "marsh_wisp",
+            "at": [
+              4,
+              3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Wizard's Tower \u2014 Observatory",
+        "position": "above",
+        "description": "The roof is glass and the night leans close. A chest waits beneath the great lens.",
+        "grid": [
+          "WWWWWWW",
+          "W>..C.W",
+          "WFK...W",
+          "WWWWWWW"
+        ],
+        "inscriptions": [
+          "To the patient reader of skies: take what you came for."
+        ],
+        "chest_loot": [
+          "tome_of_fireball",
+          "potion_might"
+        ]
+      }
+    ]
+  },
+  "bloodstone_castle": {
+    "attach_to": "Bloodstone Castle",
+    "levels": [
+      {
+        "name": "Bloodstone Castle \u2014 The Battlements",
+        "description": "The wind-scoured wall-walk between the towers; the whole realm lies grey and small below the crenellations.",
+        "floor": 2,
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W.W.W.W.W.W.W.W.W.W.WW",
+          "W..................CWW",
+          "W>.......KK.........WW",
+          "W.F................FWW",
+          "W.W.W.W.W.W.W.W.W.W.WW",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "FROM THESE WALLS THE BLOODSTONE GUARD HAS TURNED BACK SEVEN SIEGES.",
+          "An arrow-loop looks north to the road; a watchman's chalk marks the range to the gate."
+        ],
+        "chest_loot": [
+          "arrow",
+          "potion"
+        ]
+      },
+      {
+        "name": "Bloodstone Castle \u2014 The Royal Apartments",
+        "description": "The royal solar and bedchambers, hung with tapestry; the courtiers' quarters lie off the passage.",
+        "floor": 1,
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<..W.BBW.K......W.BBW",
+          "W...D...D........D...W",
+          "W.BB....TT....CC.....W",
+          "W..................>WW",
+          "WK..W.BBW.......W.TT.W",
+          "W...D...D.......D....W",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "The royal library of Bloodstone \u2014 a king who reads is a king who rules, wrote the first Aldric.",
+          "This solar catches the morning; here the Queen holds her own small court."
+        ],
+        "chest_loot": [
+          "dukes_cipher",
+          "amulet_warding",
+          "greater_potion"
+        ]
+      },
+      {
+        "name": "Bloodstone Castle \u2014 The Great Hall",
+        "description": "Banners hang the length of a vaulted hall; the Bloodstone Throne sits cold at its head.",
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWWWW",
+          "WBB.WK....TT....W..T..CW",
+          "WFF.W.........WWWWWWW..W",
+          "W...D.........D.....D..W",
+          "W<........TT..........>W",
+          "WK...TT.......TT.......W",
+          "W.....................WW",
+          "W..WWWWW.......WWWWW...W",
+          "W..W.C.D.......D.T.W...W",
+          "W..WBB.W.......W.BBW...W",
+          "WWWWWWWWWWWDWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "The Bloodstone Throne \u2014 won in the War of the Two Rivers, never yet lost.",
+          "Here feast the King's household; strangers sit below the salt."
+        ],
+        "chest_loot": [
+          "ring_health",
+          "royal_seal"
+        ],
+        "occupants": [
+          {
+            "npc": "king_bloodstone",
+            "at": [
+              5,
+              2
+            ]
+          },
+          {
+            "npc": "queen_bloodstone",
+            "at": [
+              7,
+              3
+            ]
+          },
+          {
+            "npc": "heir_bloodstone",
+            "at": [
+              3,
+              4
+            ]
+          },
+          {
+            "npc": "duke_voss",
+            "at": [
+              21,
+              4
+            ]
+          },
+          {
+            "npc": "bard_bloodstone",
+            "at": [
+              21,
+              5
+            ]
+          },
+          {
+            "npc": "chaplain_bloodstone",
+            "at": [
+              15,
+              6
+            ]
+          },
+          {
+            "npc": "captain_bloodstone",
+            "at": [
+              20,
+              7
+            ]
+          },
+          {
+            "npc": "steward_bloodstone",
+            "at": [
+              20,
+              8
+            ]
+          }
+        ],
+        "floor": 0
+      },
+      {
+        "name": "Bloodstone Castle \u2014 Servants' Undercroft",
+        "description": "Kitchens, larders and the servants' hall, thick with woodsmoke and the clatter of work.",
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<...RR...WTT....W.BBW",
+          "W....RR...D......D.FFW",
+          "W.A.......W......W...W",
+          "W.........WWWDWWWW...W",
+          "WK..TT..............>W",
+          "W.......RR..RR......CW",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "The cook rules here more surely than the King rules above."
+        ],
+        "chest_loot": [
+          "greater_potion",
+          "potion"
+        ],
+        "occupants": [
+          {
+            "npc": "cook_bloodstone",
+            "at": [
+              14,
+              2
+            ]
+          },
+          {
+            "npc": "maid_bloodstone",
+            "at": [
+              19,
+              3
+            ]
+          },
+          {
+            "npc": "stablehand_bloodstone",
+            "at": [
+              11,
+              5
+            ]
+          }
+        ],
+        "floor": -1
+      },
+      {
+        "name": "Bloodstone Castle \u2014 Barracks & Armoury",
+        "description": "The garrison's bunks and the racked steel of the castle guard.",
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<.BBBB....WA.....CCCW",
+          "W..BBBB....D.........W",
+          "W.........W.........>W",
+          "WK.....TT.WWWWWDWWWWWW",
+          "W.BBBB.............FFW",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Oath of the Bloodstone Guard: the walls hold while one of us still stands."
+        ],
+        "chest_loot": [
+          "longsword",
+          "chainmail"
+        ],
+        "occupants": [
+          {
+            "npc": "guard_bloodstone_1",
+            "at": [
+              17,
+              2
+            ]
+          },
+          {
+            "npc": "guard_bloodstone_2",
+            "at": [
+              19,
+              3
+            ]
+          }
+        ],
+        "floor": -2
+      },
+      {
+        "name": "Bloodstone Castle \u2014 The Dungeons",
+        "description": "Damp cells off a black corridor; something scratches in the dark.",
+        "dark": true,
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<..W.CW.CW.CW.CW....W",
+          "W...D..D..D..D..D....W",
+          "WK..................>W",
+          "W...D..D..D..D..D....W",
+          "W...W.RW..W..W..W....W",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Scratched into the stone, a tally of days that stops abruptly."
+        ],
+        "monsters": [
+          {
+            "template": "restless_bones",
+            "at": [
+              10,
+              3
+            ]
+          },
+          {
+            "template": "restless_bones",
+            "at": [
+              6,
+              3
+            ]
+          },
+          {
+            "template": "goblin",
+            "at": [
+              14,
+              3
+            ]
+          }
+        ],
+        "chest_loot": [
+          "lockpicks",
+          "rusty_key"
+        ],
+        "floor": -3
+      },
+      {
+        "name": "Bloodstone Castle \u2014 The Royal Crypt",
+        "description": "The kings of Bloodstone lie in ranked sarcophagi. The air is very cold, and very still.",
+        "dark": true,
+        "grid": [
+          "WWWWWWWWWWWWWWWWWWWWWW",
+          "W<...................W",
+          "W.SS..SS..SS..SS..SS.W",
+          "WK..................KW",
+          "W.SS..SS..SS..SS..SS.W",
+          "W........C.C.........W",
+          "WWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "SLEEP LIGHTLY, KINGS OF BLOODSTONE, AGAINST THE DAY YOU ARE CALLED.",
+          "The last sarcophagus is empty. Its lid lies aside."
+        ],
+        "monsters": [
+          {
+            "template": "restless_bones",
+            "at": [
+              10,
+              3
+            ]
+          },
+          {
+            "template": "restless_bones",
+            "at": [
+              7,
+              4
+            ]
+          },
+          {
+            "template": "restless_bones",
+            "at": [
+              13,
+              4
+            ]
+          }
+        ],
+        "chest_loot": [
+          "crown_of_bloodstone",
+          "ring_protection"
+        ],
+        "floor": -4
+      }
+    ]
+  }
+}

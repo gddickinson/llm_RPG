@@ -1,0 +1,12 @@
+{
+  "_doc": "P17.10 armour, shields & damage types. `classes` map an armour_type to a per-damage-type resist multiplier (<1 turns the blow, >1 is punched through) and a `weight`. `shield` is a front-arc DC bonus, worth MORE vs ranged than melee. `weight_tax` is speed lost per unit of carried weight.",
+  "classes": {
+    "none":    {"weight": 0, "resist": {"slash": 1.0,  "pierce": 1.0,  "blunt": 1.0}},
+    "padded":  {"weight": 0, "resist": {"slash": 0.92, "pierce": 0.97, "blunt": 0.9}},
+    "leather": {"weight": 0, "resist": {"slash": 0.88, "pierce": 0.92, "blunt": 0.85}},
+    "mail":    {"weight": 1, "resist": {"slash": 0.78, "pierce": 1.1,  "blunt": 1.0}},
+    "plate":   {"weight": 2, "resist": {"slash": 0.6,  "pierce": 0.8,  "blunt": 1.2}}
+  },
+  "shield": {"melee": 1, "ranged": 3, "weight": 1},
+  "weight_tax": 0.1
+}

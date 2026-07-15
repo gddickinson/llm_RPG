@@ -40,12 +40,84 @@ class QuestManager:
         self.quests[quest_id] = quest
         return quest
 
+    def is_unlocked(self, quest: Quest) -> bool:
+        """Prerequisite quests hide it; a personal quest hides until
+        the bond is deep enough (P15.5)."""
+        need_bond = quest.metadata.get("requires_bond")
+        if need_bond:
+            engine = getattr(self, "engine", None)
+            if engine is None:
+                return False
+            from engine.bonds import points
+            giver = engine.npc_manager.get_npc(quest.giver_id)
+            if giver is None:
+                return False
+            # spent bond still counts as trust: the high-water mark
+            earned = engine.player.metadata.get(
+                "bond_earned", {}).get(giver.id, 0)
+            if max(points(engine, giver), earned) < need_bond:
+                return False
+        # Branching gates (P21.1): a choice-flag opens or shuts a path, and
+        # a mutually-exclusive sibling already taken locks this one out.
+        flags = self._flags()
+        need_flag = quest.metadata.get("prereq_flag")
+        if need_flag and not flags.get(need_flag):
+            return False
+        block_flag = quest.metadata.get("blocked_by_flag")
+        if block_flag and flags.get(block_flag):
+            return False
+        for sib_id in quest.metadata.get("excluded_by", []):
+            sib = self.quests.get(sib_id)
+            if sib is not None and sib.status in (
+                    QuestStatus.ACTIVE, QuestStatus.COMPLETED,
+                    QuestStatus.TURNED_IN):
+                return False
+        prereq = quest.metadata.get("prereq_quest")
+        if not prereq:
+            return True
+        done = self.quests.get(prereq)
+        return done is not None and done.status == QuestStatus.TURNED_IN
+
+    def _flags(self) -> dict:
+        eng = getattr(self, "engine", None)
+        if eng is None or getattr(eng, "player", None) is None:
+            return {}
+        return eng.player.metadata.setdefault("quest_flags", {})
+
     def accept_quest(self, quest_id: str) -> bool:
         quest = self.quests.get(quest_id)
-        if not quest or quest.status != QuestStatus.AVAILABLE:
+        if not quest or quest.status != QuestStatus.AVAILABLE or \
+                not self.is_unlocked(quest):
             return False
         quest.status = QuestStatus.ACTIVE
         self._log(f"Quest accepted: {quest.title}")
+        # Against the clock (P21.4): start the countdown on acceptance
+        limit = quest.metadata.get("time_limit")
+        if limit:
+            quest.metadata["turns_left"] = int(limit)
+        # Choosing this path shuts the door on its rivals (P21.1)
+        for ex_id in quest.metadata.get("excludes", []):
+            self.fail_quest(ex_id, reason=f"you sided with \"{quest.title}\"")
+        return True
+
+    def fail_quest(self, quest_id: str, reason: str = "") -> bool:
+        """Mark a quest FAILED — a rival path taken, a deadline missed, a
+        wrong turn. Long-dormant status, finally wired (P21.1)."""
+        q = self.quests.get(quest_id)
+        if q is None or q.status in (QuestStatus.TURNED_IN,
+                                     QuestStatus.FAILED):
+            return False
+        q.status = QuestStatus.FAILED
+        self._log(f"Quest failed: {q.title}"
+                  + (f" — {reason}" if reason else ""))
+        return True
+
+    def choose_reward(self, quest_id: str, index: int) -> bool:
+        """Pick one of a quest's reward options before turning it in."""
+        q = self.quests.get(quest_id)
+        if q is None or not q.metadata.get("reward_choices"):
+            return False
+        q.metadata["reward_choice"] = int(index)
         return True
 
     def turn_in(self, quest_id: str, player) -> bool:
@@ -60,6 +132,15 @@ class QuestManager:
         quest.update_status()
         if quest.status != QuestStatus.COMPLETED:
             return False
+
+        # Reward-choice (P21.1): fold the picked option into the payout
+        choices = quest.metadata.get("reward_choices")
+        if choices:
+            idx = quest.metadata.get("reward_choice", 0)
+            pick = choices[idx if 0 <= idx < len(choices) else 0]
+            quest.reward_gold = pick.get("gold", quest.reward_gold)
+            quest.reward_items = pick.get("items", quest.reward_items)
+            quest.reward_xp = pick.get("xp", quest.reward_xp)
 
         # Apply rewards
         player.gold = getattr(player, "gold", 0) + quest.reward_gold
@@ -81,16 +162,79 @@ class QuestManager:
             except Exception as e:
                 logger.warning(f"Level-up check failed: {e}")
 
+        # Capability unlocks: "teleport:<key>" / "topic:<id>" / "spell:<id>"
+        for unlock in quest.metadata.get("reward_unlocks", []):
+            self._apply_unlock(player, unlock)
+
+        # A choice that sticks: set the world flag this quest decides (P21.1)
+        flag = quest.metadata.get("sets_flag")
+        if flag:
+            self._flags()[flag] = True
+
+        # An adventure FINALE (P38.3): the chosen ending speaks into legend —
+        # the chronicle observes [Legend] beats, so the campaign closes in saga
+        legend = quest.metadata.get("legend")
+        if choices:
+            idx = quest.metadata.get("reward_choice", 0)
+            legend = choices[idx if 0 <= idx < len(choices)
+                             else 0].get("legend", legend)
+        if legend:
+            self._log(f"[Legend] {legend}")
+
         quest.status = QuestStatus.TURNED_IN
         self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")
         return True
 
+    def _apply_unlock(self, player, unlock: str) -> None:
+        kind, _, key = unlock.partition(":")
+        meta = player.metadata
+        if kind == "teleport":
+            bucket = meta.setdefault("teleport_unlocks", [])
+            if key not in bucket:
+                bucket.append(key)
+                self._log(f"Unlocked: fast travel to {key.title()}!")
+        elif kind == "topic":
+            bucket = meta.setdefault("topics_known", [])
+            if key not in bucket:
+                bucket.append(key)
+                self._log(f"New topic in your journal: {key}")
+        elif kind == "spell":
+            bucket = meta.setdefault("spells_known", [])
+            if key not in bucket:
+                bucket.append(key)
+                self._log(f"You have learned the {key} spell!")
+        else:
+            logger.warning(f"Unknown unlock kind: {unlock}")
+
+    def try_deliver(self, player, npc_id: str) -> List[str]:
+        """Talking to a DELIVER target hands over carried quest items."""
+        notes = []
+        for quest in self.active():
+            for obj in quest.objectives:
+                if obj.obj_type != ObjectiveType.DELIVER or \
+                        obj.is_complete():
+                    continue
+                item_id, _, recipient = obj.target.partition(":")
+                if recipient != npc_id:
+                    continue
+                for it in list(player.inventory):
+                    if getattr(it, "id", "") == item_id:
+                        player.inventory.remove(it)
+                        obj.increment(1)
+                        self._newly_completed(quest, obj)
+                        notes.append(
+                            f"You hand over {getattr(it, 'name', item_id)}.")
+                        break
+        return notes
+
     # ----- offered / turn-in queries (NPC-driven UI) ---------------------
 
     def offered_by(self, giver_id: str) -> List[Quest]:
-        """Quests in AVAILABLE state offered by this giver."""
+        """Unlocked AVAILABLE quests offered by this giver."""
         return [q for q in self.quests.values()
-                if q.giver_id == giver_id and q.status == QuestStatus.AVAILABLE]
+                if q.giver_id == giver_id and
+                q.status == QuestStatus.AVAILABLE and
+                self.is_unlocked(q)]
 
     def ready_for_turn_in(self, giver_id: str) -> List[Quest]:
         """Quests in COMPLETED state belonging to this giver."""
@@ -141,11 +285,20 @@ class QuestManager:
             self._log(f"Quest ready to turn in: {quest.title}")
 
     def on_npc_defeated(self, npc_id: str, npc_class: str = "") -> None:
+        hostile = npc_class in ("monster", "brigand", "troll")
+        # the monster TEMPLATE, e.g. "elder_dragon" from "enc_elder_dragon_a1"
+        template = ("_".join(npc_id.split("_")[1:-1])
+                    if npc_id.startswith("enc_") else "")
         for quest in self.active():
             for obj in quest.objectives:
                 if obj.obj_type != ObjectiveType.KILL:
                     continue
-                if obj.target == npc_id or obj.target == npc_class:
+                # Match by exact id, by TEMPLATE (a named quarry like the
+                # Elder Dragon), by class — and 'monster' as a forgiving
+                # authoring default matching ANY hostile kill (PT3.3).
+                if obj.target == npc_id or obj.target == npc_class \
+                        or (template and obj.target == template) \
+                        or (obj.target == "monster" and hostile):
                     obj.increment(1)
                     self._newly_completed(quest, obj)
 
@@ -185,6 +338,24 @@ class QuestManager:
                 if obj.obj_type == ObjectiveType.SURVIVE:
                     obj.increment(1)
                     self._newly_completed(quest, obj)
+        self._tick_deadlines()
+
+    def _tick_deadlines(self) -> None:
+        """Timed quests (P21.4) run down; one that expires unfinished FAILS."""
+        for quest in list(self.active()):
+            if "turns_left" not in quest.metadata:
+                continue
+            if quest.is_complete():
+                quest.metadata.pop("turns_left", None)   # beat the clock
+                continue
+            quest.metadata["turns_left"] -= 1
+            if quest.metadata["turns_left"] <= 0:
+                self.fail_quest(quest.id, reason="time ran out")
+
+    def time_left(self, quest_id: str):
+        """Turns remaining on a timed quest, or None if it isn't timed."""
+        q = self.quests.get(quest_id)
+        return q.metadata.get("turns_left") if q else None
 
     # ----- save/load ---------------------------------------------------------
 

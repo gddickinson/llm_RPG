@@ -1,0 +1,80 @@
+"""Carry capacity (George: "a character shouldn't be able to carry an
+infinite amount of items").
+
+Slot-based: a stack occupies one slot, capacity grows with Strength
+(18 + 2 per STR modifier — a STR 14 adventurer hauls 22 stacks, a
+STR 6 scholar 14). Enforced at the acquisition points a player
+actually hits: pickup, foraging, gathering, harvest, shop purchases,
+rummaging and structure chests (which stay lootable until you make
+room). Quest rewards and gifts are never blocked — refusing a reward
+is worse than a heavy pack. A full weight model (per-item weights,
+encumbrance slowdown) can layer on later; slots first because they're
+legible at a glance.
+"""
+
+BASE_SLOTS = 18
+
+
+def _bag_total(player, key: str) -> int:
+    """Sum a metadata bonus (`carry_bonus` / `ammo_capacity`) over every
+    container the character is carrying (P25.2)."""
+    total = 0
+    for it in getattr(player, "inventory", []):
+        meta = getattr(it, "metadata", None)
+        if isinstance(meta, dict):
+            try:
+                total += int(meta.get(key, 0) or 0)
+            except (TypeError, ValueError):
+                pass
+    return total
+
+
+def bag_bonus(player) -> int:
+    """Extra general slots granted by carried containers — a rucksack, an
+    Explorer's Pack, a Bottomless Bag (P25.2)."""
+    return _bag_total(player, "carry_bonus")
+
+
+def ammo_capacity(player) -> int:
+    """How many AMMO stacks a carried quiver holds OUTSIDE the general pack, so
+    they don't eat general slots (P25.2)."""
+    return _bag_total(player, "ammo_capacity")
+
+
+def capacity(player) -> int:
+    mod = (getattr(player, "strength", 10) - 10) // 2
+    base = max(8, BASE_SLOTS + 2 * mod)
+    # P28.2a: a mount hauls extra — the data-driven roster (a mule, donkey,
+    # elephant…), honouring the legacy P15.8b `mule` flag too
+    try:
+        from engine.mounts import carry_bonus
+        base += carry_bonus(player)
+    except Exception:
+        pass
+    base += bag_bonus(player)        # P25.2 rucksacks / magical bags
+    return base
+
+
+def used_slots(player) -> int:
+    inv = getattr(player, "inventory", [])
+    slots = len(inv)
+    # a quiver holds up to N ammo stacks outside the general pack (P25.2)
+    cap = ammo_capacity(player)
+    if cap > 0:
+        ammo = sum(1 for it in inv
+                   if hasattr(it, "is_ammo") and it.is_ammo())
+        slots -= min(ammo, cap)
+    meta = getattr(player, "metadata", None)
+    if isinstance(meta, dict) and meta.get("carrying_body"):
+        from engine.ransom import BODY_SLOTS
+        slots += BODY_SLOTS          # a body over the shoulder (P13.2)
+    return slots
+
+
+def can_carry(player, extra: int = 1) -> bool:
+    return used_slots(player) + extra <= capacity(player)
+
+
+def full_message(player) -> str:
+    return (f"Your pack is full ({used_slots(player)}/"
+            f"{capacity(player)}). Drop, sell or bank something.")

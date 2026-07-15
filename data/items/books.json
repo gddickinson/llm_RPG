@@ -1,0 +1,71 @@
+{
+  "tome_arcana": {
+    "id": "tome_arcana",
+    "name": "Tome of Arcana",
+    "item_type": "book",
+    "value": 180,
+    "description": "A heavy tome on arcane theory. +1 INT permanently.",
+    "rarity": "uncommon",
+    "use_effect": {
+      "permanent_stat": "intelligence",
+      "amount": 1
+    }
+  },
+  "manual_athletics": {
+    "id": "manual_athletics",
+    "name": "Manual of Combat Drills",
+    "item_type": "book",
+    "value": 180,
+    "description": "Drills for the warrior. +1 STR permanently.",
+    "rarity": "uncommon",
+    "use_effect": {
+      "permanent_stat": "strength",
+      "amount": 1
+    }
+  },
+  "manual_dexterity": {
+    "id": "manual_dexterity",
+    "name": "Manual of Reflex",
+    "item_type": "book",
+    "value": 180,
+    "description": "Reflex training. +1 DEX permanently.",
+    "rarity": "uncommon",
+    "use_effect": {
+      "permanent_stat": "dexterity",
+      "amount": 1
+    }
+  },
+  "tome_firebolt": {
+    "id": "tome_firebolt",
+    "name": "Primer of Flame",
+    "item_type": "book",
+    "value": 220,
+    "rarity": "uncommon",
+    "description": "A beginner's spellbook. Teaches Firebolt.",
+    "use_effect": {
+      "teach_spell": "firebolt"
+    }
+  },
+  "tome_hex": {
+    "id": "tome_hex",
+    "name": "Grimoire of Hexes",
+    "item_type": "book",
+    "value": 220,
+    "rarity": "uncommon",
+    "description": "Bound in something unpleasant. Teaches Hex.",
+    "use_effect": {
+      "teach_spell": "hex"
+    }
+  },
+  "tome_regrowth": {
+    "id": "tome_regrowth",
+    "name": "Herbal of Regrowth",
+    "item_type": "book",
+    "value": 220,
+    "rarity": "uncommon",
+    "description": "Pressed leaves mark every page. Teaches Regrowth.",
+    "use_effect": {
+      "teach_spell": "regrowth"
+    }
+  }
+}

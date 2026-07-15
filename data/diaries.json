@@ -1,0 +1,96 @@
+{
+  "oakvale": {
+    "name": "Oakvale Diary",
+    "location_keywords": ["Oakvale", "Durgan"],
+    "tiers": {
+      "easy": {
+        "tasks": [
+          {"type": "place", "target": "Oakvale Tavern", "label": "Visit the Oakvale Tavern"},
+          {"type": "place", "target": "Durgan's Forge", "label": "Visit Durgan's Forge"},
+          {"type": "collect", "target": "bread", "label": "Obtain a loaf of bread"},
+          {"type": "kill", "target": "Wolf", "label": "Slay a wolf"}
+        ],
+        "reward": {"gold": 50, "discount": 0.05}
+      },
+      "medium": {
+        "tasks": [
+          {"type": "craft", "target": "potion", "label": "Brew a healing potion"},
+          {"type": "skill", "target": "smithing", "level": 5, "label": "Reach Smithing 5"},
+          {"type": "kill", "target": "Bandit", "label": "Defeat a bandit"},
+          {"type": "collect", "target": "iron_ore", "label": "Mine some iron ore"}
+        ],
+        "reward": {"gold": 150, "discount": 0.05, "items": ["potion_might"]}
+      },
+      "hard": {
+        "tasks": [
+          {"type": "kill", "target": "Gorkash", "label": "Slay Gorkash the troll brigand"},
+          {"type": "craft", "target": "sword", "label": "Forge a sword from iron bars"},
+          {"type": "skill", "target": "smithing", "level": 15, "label": "Reach Smithing 15"},
+          {"type": "collect", "target": "mithril_ore", "label": "Mine mithril ore"}
+        ],
+        "reward": {"gold": 400, "discount": 0.05, "items": ["ring_protection"]}
+      }
+    }
+  },
+  "riverside": {
+    "name": "Riverside Diary",
+    "location_keywords": ["Riverside", "Hamlet", "Wheelwright"],
+    "tiers": {
+      "easy": {
+        "tasks": [
+          {"type": "place", "target": "Riverside Inn", "label": "Visit the Riverside Inn"},
+          {"type": "place", "target": "Hamlet Chapel", "label": "Visit the Hamlet Chapel"},
+          {"type": "collect", "target": "raw_trout", "label": "Catch a trout"}
+        ],
+        "reward": {"gold": 50, "discount": 0.05}
+      },
+      "medium": {
+        "tasks": [
+          {"type": "craft", "target": "cooked_trout", "label": "Cook a trout"},
+          {"type": "skill", "target": "fishing", "level": 10, "label": "Reach Fishing 10"},
+          {"type": "collect", "target": "herb_bundle", "label": "Forage a bundle of herbs"}
+        ],
+        "reward": {"gold": 150, "discount": 0.05, "items": ["fishing_rod"]}
+      },
+      "hard": {
+        "tasks": [
+          {"type": "collect", "target": "raw_salmon", "label": "Catch a salmon"},
+          {"type": "craft", "target": "greater_potion", "label": "Brew a greater healing potion"},
+          {"type": "skill", "target": "alchemy", "level": 15, "label": "Reach Alchemy 15"}
+        ],
+        "reward": {"gold": 400, "discount": 0.05, "items": ["amulet_health"]}
+      }
+    }
+  },
+  "stonepine": {
+    "name": "Stonepine Diary",
+    "location_keywords": ["Stonepine", "Camp", "Foreman"],
+    "tiers": {
+      "easy": {
+        "tasks": [
+          {"type": "place", "target": "Camp Tavern", "label": "Visit the Camp Tavern"},
+          {"type": "collect", "target": "copper_ore", "label": "Mine copper ore"},
+          {"type": "collect", "target": "logs", "label": "Chop some logs"}
+        ],
+        "reward": {"gold": 50, "discount": 0.05}
+      },
+      "medium": {
+        "tasks": [
+          {"type": "craft", "target": "bronze_bar", "label": "Smelt a bronze bar"},
+          {"type": "skill", "target": "mining", "level": 10, "label": "Reach Mining 10"},
+          {"type": "skill", "target": "woodcutting", "level": 10, "label": "Reach Woodcutting 10"}
+        ],
+        "reward": {"gold": 150, "discount": 0.05, "items": ["pickaxe"]}
+      },
+      "hard": {
+        "tasks": [
+          {"type": "collect", "target": "coal", "label": "Mine coal"},
+          {"type": "craft", "target": "iron_bar", "label": "Smelt an iron bar"},
+          {"type": "skill", "target": "mining", "level": 20, "label": "Reach Mining 20"},
+          {"type": "collect", "target": "oak_logs", "label": "Chop oak logs"}
+        ],
+        "reward": {"gold": 400, "discount": 0.05, "items": ["swift_boots"]}
+      }
+    }
+  }
+}

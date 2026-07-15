@@ -1,0 +1,330 @@
+{
+  "_doc": "P39.2/P39.4 interior visual themes. A zone picks a theme by keyword in its name or structure_id; the renderer tints its floor/walls and washes a mood over the view, then P39.4 casts a darkness with warm holes of LIGHT around the lit props (brazier/torch/\u2026) + the player, and drifts DUST for dank/deserted rooms. `fill` = background RGB; `floor`/`wall` = RGBA material washes; `mood` = a faint full-view RGBA overlay; `light`: {dark = room darkness alpha (high = dank), glow = warm light colour, dust = mote count}.",
+  "themes": {
+    "tomb": {
+      "keywords": [
+        "vault",
+        "crypt",
+        "tomb",
+        "sanctum",
+        "drowned",
+        "catacomb",
+        "mausoleum",
+        "sepulchre",
+        "barrow",
+        "ossuary"
+      ],
+      "fill": [
+        9,
+        11,
+        15
+      ],
+      "floor": [
+        34,
+        44,
+        54,
+        90
+      ],
+      "wall": [
+        26,
+        34,
+        44,
+        150
+      ],
+      "mood": [
+        18,
+        30,
+        46,
+        55
+      ],
+      "light": {
+        "dark": 120,
+        "glow": [
+          255,
+          150,
+          60
+        ],
+        "dust": 16
+      },
+      "stair": "stone"
+    },
+    "temple": {
+      "keywords": [
+        "temple",
+        "shrine",
+        "chapel",
+        "cathedral",
+        "lanternhall"
+      ],
+      "fill": [
+        26,
+        24,
+        20
+      ],
+      "floor": [
+        206,
+        196,
+        158,
+        60
+      ],
+      "wall": [
+        196,
+        186,
+        158,
+        110
+      ],
+      "mood": [
+        232,
+        202,
+        128,
+        28
+      ],
+      "light": {
+        "dark": 42,
+        "glow": [
+          255,
+          190,
+          110
+        ],
+        "dust": 5
+      },
+      "stair": "stone"
+    },
+    "smithy": {
+      "keywords": [
+        "forge",
+        "smithy",
+        "smith"
+      ],
+      "fill": [
+        20,
+        15,
+        11
+      ],
+      "floor": [
+        64,
+        48,
+        40,
+        100
+      ],
+      "wall": [
+        74,
+        56,
+        46,
+        120
+      ],
+      "mood": [
+        255,
+        150,
+        60,
+        30
+      ],
+      "light": {
+        "dark": 55,
+        "glow": [
+          255,
+          140,
+          50
+        ]
+      }
+    },
+    "tavern": {
+      "keywords": [
+        "tavern",
+        "inn",
+        "alehouse",
+        "rest"
+      ],
+      "fill": [
+        26,
+        18,
+        12
+      ],
+      "floor": [
+        124,
+        84,
+        48,
+        80
+      ],
+      "wall": [
+        116,
+        84,
+        52,
+        100
+      ],
+      "mood": [
+        240,
+        178,
+        92,
+        34
+      ],
+      "light": {
+        "dark": 45,
+        "glow": [
+          255,
+          175,
+          90
+        ]
+      }
+    },
+    "library": {
+      "keywords": [
+        "library",
+        "study",
+        "archive",
+        "hall of records"
+      ],
+      "fill": [
+        23,
+        19,
+        15
+      ],
+      "floor": [
+        152,
+        130,
+        90,
+        70
+      ],
+      "wall": [
+        124,
+        96,
+        62,
+        100
+      ],
+      "mood": [
+        220,
+        190,
+        130,
+        26
+      ],
+      "light": {
+        "dark": 62,
+        "glow": [
+          255,
+          200,
+          130
+        ],
+        "dust": 7
+      }
+    },
+    "castle": {
+      "keywords": [
+        "castle",
+        "keep",
+        "throne",
+        "bloodstone",
+        "great hall"
+      ],
+      "fill": [
+        19,
+        19,
+        25
+      ],
+      "floor": [
+        112,
+        112,
+        122,
+        75
+      ],
+      "wall": [
+        122,
+        122,
+        134,
+        110
+      ],
+      "mood": [
+        200,
+        190,
+        170,
+        22
+      ],
+      "light": {
+        "dark": 70,
+        "glow": [
+          255,
+          180,
+          100
+        ]
+      },
+      "stair": "spiral"
+    },
+    "cave": {
+      "keywords": [
+        "cave",
+        "cavern",
+        "depths",
+        "mine",
+        "warren",
+        "den",
+        "grotto"
+      ],
+      "fill": [
+        9,
+        9,
+        11
+      ],
+      "floor": [
+        42,
+        40,
+        42,
+        95
+      ],
+      "wall": [
+        30,
+        28,
+        30,
+        150
+      ],
+      "mood": [
+        40,
+        42,
+        58,
+        40
+      ],
+      "light": {
+        "dark": 128,
+        "glow": [
+          255,
+          150,
+          60
+        ],
+        "dust": 12
+      },
+      "stair": "stone"
+    },
+    "home": {
+      "keywords": [],
+      "fill": [
+        24,
+        18,
+        12
+      ],
+      "floor": [
+        132,
+        96,
+        56,
+        70
+      ],
+      "wall": [
+        142,
+        116,
+        86,
+        90
+      ],
+      "mood": [
+        235,
+        190,
+        120,
+        22
+      ],
+      "light": {
+        "dark": 34,
+        "glow": [
+          255,
+          185,
+          100
+        ]
+      }
+    }
+  }
+}

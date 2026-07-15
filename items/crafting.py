@@ -21,49 +21,31 @@ class Recipe:
     ingredients: Dict[str, int] = field(default_factory=dict)
     gold_cost: int = 0
     required_property: Optional[str] = None  # e.g. "forge" -- location-keyed
+    skill: str = "alchemy"  # which skill this recipe trains
 
     def output_name(self) -> str:
         item = ITEM_REGISTRY.get(self.output_id)
         return item.name if item else self.output_id
 
 
-# Recipe registry --------------------------------------------------------
+# Recipe registry — loaded from data/recipes.json ------------------------
 
-RECIPES: Dict[str, Recipe] = {
-    "potion": Recipe(
-        output_id="potion",
-        ingredients={"herb_bundle": 1},
-        gold_cost=5,
-    ),
-    "greater_potion": Recipe(
-        output_id="greater_potion",
-        ingredients={"herb_bundle": 3, "potion": 1},
-        gold_cost=10,
-    ),
-    "bandage": Recipe(
-        output_id="bandage",
-        ingredients={"wolf_pelt": 1},
-        gold_cost=1,
-    ),
-    "sword": Recipe(
-        output_id="sword",
-        ingredients={"coins": 3},
-        gold_cost=20,
-        required_property="forge",
-    ),
-    "iron_shield": Recipe(
-        output_id="iron_shield",
-        ingredients={"shield": 1, "coins": 2},
-        gold_cost=25,
-        required_property="forge",
-    ),
-    "silver_blade": Recipe(
-        output_id="silver_blade",
-        ingredients={"sword": 1, "troll_tooth": 1, "stolen_jewelry": 1},
-        gold_cost=100,
-        required_property="forge",
-    ),
-}
+def _build_recipes() -> Dict[str, Recipe]:
+    from items.data_loader import load_data_file
+    out: Dict[str, Recipe] = {}
+    for rid, entry in load_data_file("recipes.json").items():
+        out[rid] = Recipe(
+            output_id=entry.get("output_id", rid),
+            output_qty=entry.get("output_qty", 1),
+            ingredients=dict(entry.get("ingredients", {})),
+            gold_cost=entry.get("gold_cost", 0),
+            required_property=entry.get("required_property"),
+            skill=entry.get("skill", "alchemy"),
+        )
+    return out
+
+
+RECIPES: Dict[str, Recipe] = _build_recipes()
 
 
 def list_recipes() -> List[Recipe]:

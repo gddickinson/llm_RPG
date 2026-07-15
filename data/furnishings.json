@@ -1,0 +1,58 @@
+{
+  "_doc": "P39.3 themed furnishing. Each interior THEME (from data/interior_themes.json keywords) gets a list of DECORATIVE props laid out by a placement pass: `where` = wall (against a wall) / corner (in a corner) / center (mid-room) / scatter (anywhere free). `n` = how many to try (capped by room size). A prop already present (functional pieces from the hand-built interiors) is skipped so nothing doubles. Prop names route through ui/prop_sprites.py + the legacy furniture sprites.",
+  "themes": {
+    "tomb": {"props": [
+      {"name": "Sarcophagus", "n": 2, "where": "center"},
+      {"name": "Brazier", "n": 2, "where": "corner"},
+      {"name": "Urn", "n": 2, "where": "wall"},
+      {"name": "Cobweb", "n": 2, "where": "corner"},
+      {"name": "Bones", "n": 3, "where": "scatter"},
+      {"name": "Gravestone", "n": 1, "where": "wall"}
+    ]},
+    "temple": {"props": [
+      {"name": "Altar", "n": 1, "where": "center"},
+      {"name": "Pillar", "n": 4, "where": "wall"},
+      {"name": "Brazier", "n": 2, "where": "corner"},
+      {"name": "Tapestry", "n": 2, "where": "wall"},
+      {"name": "Pew", "n": 2, "where": "scatter"}
+    ]},
+    "smithy": {"props": [
+      {"name": "Anvil", "n": 1, "where": "center"},
+      {"name": "Hearth", "n": 1, "where": "wall"},
+      {"name": "Weapon Rack", "n": 2, "where": "wall"},
+      {"name": "Barrel", "n": 2, "where": "corner"},
+      {"name": "Crate", "n": 2, "where": "scatter"}
+    ]},
+    "tavern": {"props": [
+      {"name": "Table", "n": 3, "where": "scatter"},
+      {"name": "Barrel", "n": 3, "where": "corner"},
+      {"name": "Hearth", "n": 1, "where": "wall"},
+      {"name": "Bench", "n": 2, "where": "scatter"}
+    ]},
+    "library": {"props": [
+      {"name": "Bookshelf", "n": 4, "where": "wall"},
+      {"name": "Lectern", "n": 1, "where": "center"},
+      {"name": "Candelabra", "n": 2, "where": "corner"},
+      {"name": "Table", "n": 1, "where": "center"}
+    ]},
+    "castle": {"props": [
+      {"name": "Throne", "n": 1, "where": "center"},
+      {"name": "Pillar", "n": 4, "where": "wall"},
+      {"name": "Tapestry", "n": 3, "where": "wall"},
+      {"name": "Brazier", "n": 2, "where": "corner"},
+      {"name": "Table", "n": 1, "where": "center"}
+    ]},
+    "cave": {"props": [
+      {"name": "Bones", "n": 2, "where": "scatter"},
+      {"name": "Cobweb", "n": 2, "where": "corner"},
+      {"name": "Urn", "n": 1, "where": "wall"}
+    ]},
+    "home": {"props": [
+      {"name": "Bed", "n": 1, "where": "corner"},
+      {"name": "Table", "n": 1, "where": "center"},
+      {"name": "Hearth", "n": 1, "where": "wall"},
+      {"name": "Chest", "n": 1, "where": "corner"},
+      {"name": "Rug", "n": 1, "where": "center"}
+    ]}
+  }
+}

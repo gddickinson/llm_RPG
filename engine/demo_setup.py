@@ -60,6 +60,9 @@ def create_default_player(spec=None) -> Character:
         starters = starter_ids
         gold = 50
 
+    # P28.1a — every hero starts with a Wayfarer's Ring for the waystones
+    starters = list(starters) + ["teleport_ring"]
+
     # Build inventory from item ids
     inventory = []
     for item_id in starters:
@@ -70,7 +73,8 @@ def create_default_player(spec=None) -> Character:
             qty = 20
         item = create_item(item_id, quantity=qty)
         if item:
-            inventory.append(item)
+            from items.inventory_ops import stack_add
+            stack_add(inventory, item)      # merge duplicate stackables (P25.1)
 
     # HP from CON
     con = stats.get("constitution", 10)
@@ -182,15 +186,33 @@ def _resolve_player_spawn(engine) -> tuple:
     return (cx, cy)
 
 
-def initialize_demo_world(engine, player_spec=None) -> None:
-    """Populate `engine` with world terrain, NPCs, player, and starter quests."""
+def initialize_demo_world(engine, player_spec=None,
+                          world_kind="default") -> None:
+    """Populate `engine` with world terrain, NPCs, player, and starter
+    quests. `world_kind="castle"` plants the Bloodstone realm (P18.5)."""
+    castle = (world_kind == "castle")
     # World generation
-    try:
-        from world.world_generator import WorldGenerator
-        WorldGenerator(engine.world).generate()
-    except Exception as e:
-        logger.warning(f"Procedural worldgen failed ({e}); using legacy.")
-        engine.world.create_simple_world()
+    if castle:
+        from world.castle_region import build_castle_region
+        build_castle_region(engine.world)
+    else:
+        try:
+            from world.world_generator import WorldGenerator
+            mode = "realistic" if world_kind == "realistic" else "classic"
+            WorldGenerator(engine.world, mode=mode).generate()
+        except Exception as e:
+            logger.warning(f"Procedural worldgen failed ({e}); using legacy.")
+            engine.world.create_simple_world()
+
+    # A realistic world begins at MORNING, not the default midnight — you wake
+    # in a sunlit town with the gates open and folk about, not a dark, shut
+    # keep (George: "started in a castle with no way out"). The P37 gate fix
+    # handles night regardless; this is the friendlier first light of day.
+    if world_kind == "realistic":
+        try:
+            engine.world.time = 8 * 60          # 08:00
+        except Exception:
+            pass
 
     # Revival shrine + back-references
     try:
@@ -199,6 +221,13 @@ def initialize_demo_world(engine, player_spec=None) -> None:
         pass
     engine.world.npc_manager = engine.npc_manager
     engine.world.memory_manager = engine.memory_manager
+    # P36.3 a realistic world carries a deep-history chronicle → the Y-journal
+    try:
+        saga = getattr(engine.world, "history_chronicle", None)
+        if saga and getattr(engine, "chronicle", None) is not None:
+            engine.chronicle.seed_pregame(saga)
+    except Exception:
+        pass
 
     # NPCs — placed at their home_location (auto-adjusts to world size)
     npcs = engine.npc_manager.create_simple_npcs()
@@ -207,18 +236,36 @@ def initialize_demo_world(engine, player_spec=None) -> None:
         npc.position = _resolve_npc_spawn(engine, npc)
         engine.world.map.place_character(npc, *npc.position)
 
-    # Player — spawn near Oakvale's center
+    # Player — at the castle gate (P18.5) or near Oakvale's center
     engine.player = create_default_player(spec=player_spec)
-    engine.player.position = _resolve_player_spawn(engine)
+    spawn = None
+    if castle:
+        from world.castle_region import gate_approach
+        spawn = gate_approach(engine.world)
+    engine.player.position = spawn or _resolve_player_spawn(engine)
     engine.world.map.place_character(engine.player, *engine.player.position)
 
-    engine.memory_manager.add_event(
-        "You arrive at the outskirts of Oakvale Village.")
+    # P31.1/P31.1b — post guards at the walled town's gates AND corner towers
+    if not castle:
+        try:
+            from world.fortify import post_guards, post_towers
+            oak = next((l for l in engine.world.locations
+                        if l.name == "Oakvale Village"), None)
+            gates = (oak.get_property("gates") if oak else None) or []
+            post_guards(engine, [tuple(g) for g in gates])
+            towers = (oak.get_property("towers") if oak else None) or []
+            post_towers(engine, [tuple(c) for c in towers])
+        except Exception as e:
+            logger.debug(f"gate/tower guards: {e}")
 
-    # Offer starter quests
+    engine.memory_manager.add_event(
+        "You stand before the gates of Bloodstone Castle." if castle
+        else "You arrive at the outskirts of Oakvale Village.")
+
+    # Offer every authored quest (locked ones hide behind their prereqs)
     if engine.quest_manager:
-        for qid in ("tavern_intro", "troll_hunt", "herb_gathering",
-                    "cave_exploration", "deliver_sword", "survive_night"):
+        from quests.quest_templates import all_quest_ids
+        for qid in all_quest_ids():
             engine.quest_manager.offer_quest(qid)
 
     # Build interiors for every building

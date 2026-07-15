@@ -62,7 +62,23 @@ class LightingOverlay:
             return
 
         tod = engine.world.get_time_of_day()
-        darkness = TOD_DARKNESS.get(tod, 0)
+        # P15.2: ease the ambient darkness per-minute through dusk/dawn
+        # instead of snapping between morning/evening/night. Fall back to
+        # the discrete table if the pure helper is unavailable.
+        try:
+            from ui.animation import ambient_darkness
+            darkness = ambient_darkness((engine.world.time % 1440) / 60.0)
+        except Exception:
+            darkness = TOD_DARKNESS.get(tod, 0)
+        # Full moons lighten clear nights (P8.1)
+        if tod == "night":
+            try:
+                from world.astronomy import moonlight
+                day = engine.world.time // (24 * 60)
+                darkness = max(100, darkness -
+                               int(60 * moonlight(day)))
+            except Exception:
+                pass
         # Weather adds darkness
         try:
             weather = engine.weather_system.state.current.value
@@ -83,12 +99,17 @@ class LightingOverlay:
 
         self._overlay.fill((0, 0, 30, darkness))
 
-        # Player torchlight (warm)
+        # Player torchlight (warm); fog/storm shrink the lit radius
+        try:
+            vis_mod = engine.weather_system.visibility_modifier()
+        except Exception:
+            vis_mod = 1.0
         player = engine.player
         if player and player.is_alive():
             self._punch_light(
                 player.position, view_rect, cam_x, cam_y, tile_size,
-                radius_tiles=4.5, color=(255, 200, 100), strength=darkness)
+                radius_tiles=max(2.0, 4.5 * vis_mod),
+                color=(255, 200, 100), strength=darkness)
 
         # Window glow on building tiles
         try:
@@ -122,8 +143,45 @@ class LightingOverlay:
         except Exception:
             pass
 
+        # Coloured light sources (P15.4): marsh wisps glow blue-green
+        try:
+            from ui.light_palette import light_color
+            for npc in engine.npc_manager.npcs.values():
+                if not npc.is_active():
+                    continue
+                tag = (getattr(npc, "id", "") + " " +
+                       getattr(npc, "name", "")).lower()
+                if "wisp" in tag:
+                    self._punch_light(
+                        npc.position, view_rect, cam_x, cam_y, tile_size,
+                        radius_tiles=2.4, color=light_color("wisp"),
+                        strength=darkness * 0.75)
+        except Exception:
+            pass
+
         # Apply
         target.blit(self._overlay, view_rect.topleft)
+
+        # The whole-sky wash: aurora on conjunction nights, winter chill
+        # while it snows (P15.4).
+        self._apply_sky_tint(target, view_rect, engine, size)
+
+    def _apply_sky_tint(self, target, view_rect, engine, size) -> None:
+        try:
+            from ui.light_palette import sky_tint
+            from world.astronomy import is_conjunction
+            hour = (engine.world.time % 1440) / 60.0
+            conj = is_conjunction(engine.world.time // (24 * 60))
+            weather = engine.weather_system.state.current.value
+            season = engine.world.get_date().season.value
+            tint = sky_tint(hour, conjunction=conj, weather=weather,
+                            season=season)
+            if tint[3] > 0:
+                wash = pygame.Surface(size, pygame.SRCALPHA)
+                wash.fill(tint)
+                target.blit(wash, view_rect.topleft)
+        except Exception:
+            pass
 
     # ------------------------------------------------------------------
 

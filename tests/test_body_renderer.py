@@ -65,6 +65,67 @@ class TestBodyRenderer(unittest.TestCase):
         c.status = "defeated"
         draw_body(surf, c, 0, 0, 32, is_player=False)
 
+    def test_head_does_not_smear_across_camera_jumps(self):
+        """Regression (P34.3): the head/weapon springs run in body-LOCAL space,
+        so a camera pan or a move BETWEEN LOCATIONS (a big jump in the on-screen
+        sx) never drags the head away from the body. The stored spring offset
+        must stay local (~0), not go absolute and chase sx."""
+        c = _new_char()
+        ts = 48
+        surf = pygame.Surface((64, 64 * 4))
+        for _ in range(6):                      # settle at the origin
+            update_anim(c, 1 / 30.0)
+            draw_body(surf, c, 0, 0, ts, is_player=False)
+        near = c.metadata["_anim"]["_sec"]["head"][0]
+        for _ in range(6):                      # camera jumps 2000px away
+            update_anim(c, 1 / 30.0)
+            draw_body(surf, c, 2000, 0, ts, is_player=False)
+        far = c.metadata["_anim"]["_sec"]["head"][0]
+        H = int(ts * 1.5)
+        self.assertLess(abs(near), H)           # a local offset (~0), not sx
+        self.assertLess(abs(far), H)            # STILL local after the jump
+        self.assertLess(abs(near - far), ts)    # barely moved despite the jump
+
+    def test_facing_eases_toward_the_movement_heading(self):
+        """P34.14: walking a direction turns the continuous facing angle toward
+        that heading (east ~90°, north ~180°) — the cast faces where it moves."""
+        c = _new_char()
+        _ensure_anim(c)
+        x, y = c.position
+        for _ in range(10):                      # walk east
+            x += 1
+            c.position = (x, y)
+            update_anim(c, 1 / 30.0)
+        self.assertAlmostEqual(c.metadata["_anim"]["face_cur"], 90.0, delta=12)
+        for _ in range(12):                      # then turn north
+            y -= 1
+            c.position = (x, y)
+            update_anim(c, 1 / 30.0)
+        self.assertAlmostEqual(c.metadata["_anim"]["face_cur"], 180.0, delta=12)
+
+    def test_draw_at_every_facing_does_not_crash(self):
+        import math
+        from ui.body_renderer import draw_body
+        c = _new_char()
+        surf = pygame.Surface((96, 160))
+        for deg in range(0, 360, 30):
+            c.metadata.setdefault("_anim", _ensure_anim(c))["face_cur"] = deg
+            c.metadata["_anim"]["face_target"] = deg
+            draw_body(surf, c, 20, 40, 48, is_player=False)
+
+    def test_ssaa_crisp_draw_renders_the_body(self):
+        """P34.7: the oversampled crisp draw produces the character (non-empty)
+        and doesn't crash."""
+        from ui.body_renderer import draw_body_crisp
+        c = _new_char()
+        c.metadata.setdefault("_anim", _ensure_anim(c))["face_cur"] = 45
+        surf = pygame.Surface((160, 220))
+        surf.fill((0, 0, 0))
+        draw_body_crisp(surf, c, 60, 90, 48, is_player=True)
+        # something was drawn somewhere on the surface
+        arr = pygame.surfarray.array3d(surf)
+        self.assertGreater(int(arr.sum()), 0)
+
     def test_draw_projectile_kinds(self):
         surf = pygame.Surface((64, 64))
         for kind in ("arrow", "bolt", "stone", "spell", "unknown"):

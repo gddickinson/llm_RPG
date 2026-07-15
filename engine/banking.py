@@ -25,7 +25,11 @@ class Bank:
 
     def is_at_bank(self) -> Tuple[bool, str]:
         """Return (allowed, location_name) for player's current position."""
-        loc = self.engine.world.get_location_at(*self.engine.player.position)
+        try:
+            loc = self.engine.player_location()   # interior-aware (P9A.6)
+        except Exception:
+            loc = self.engine.world.get_location_at(
+                *self.engine.player.position)
         if not loc:
             return (False, "")
         ltype = loc.get_property("type", "")

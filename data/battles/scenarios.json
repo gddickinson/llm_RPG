@@ -1,0 +1,1963 @@
+{
+  "open_field": {
+    "name": "Open Field \u2014 Even Melee",
+    "desc": "Two equal sword lines meet on open grass. A fair fight \u2014 whoever wins the local scrum wins the day.",
+    "width": 40,
+    "height": 26,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_foot",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              6,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_foot",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              31,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "red_foot"
+          }
+        ]
+      }
+    ]
+  },
+  "numbers_tell": {
+    "name": "Numbers Tell",
+    "desc": "A larger levy against a smaller one, same troops both sides. The sim's clearest truth: mass wins.",
+    "width": 42,
+    "height": 26,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_horde",
+            "type": "infantry_sword",
+            "size": 16,
+            "anchor": [
+              6,
+              7
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_few"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_few",
+            "type": "infantry_sword",
+            "size": 8,
+            "anchor": [
+              33,
+              9
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "red_horde"
+          }
+        ]
+      }
+    ]
+  },
+  "cavalry_raid": {
+    "name": "Cavalry Raid",
+    "desc": "Fast, heavy-hitting horse slams a footman line. Shock cavalry as strong melee \u2014 until spears learn to blunt it.",
+    "width": 44,
+    "height": 26,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_light",
+            "type": "cavalry_light",
+            "size": 8,
+            "anchor": [
+              5,
+              8
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_foot"
+          },
+          {
+            "id": "red_heavy",
+            "type": "cavalry_heavy",
+            "size": 4,
+            "anchor": [
+              5,
+              15
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_foot",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              35,
+              8
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_light"
+          }
+        ]
+      }
+    ]
+  },
+  "storm_the_breach": {
+    "name": "Storm the Breach",
+    "desc": "Attackers funnel through a gap in the curtain wall into a waiting garrison \u2014 bows behind the stones. The defenders hold the breach.",
+    "width": 46,
+    "height": 30,
+    "walls": [
+      {
+        "type": "stone_wall",
+        "cells": [
+          [
+            23,
+            6
+          ],
+          [
+            23,
+            7
+          ],
+          [
+            23,
+            8
+          ],
+          [
+            23,
+            9
+          ],
+          [
+            23,
+            10
+          ],
+          [
+            23,
+            11
+          ],
+          [
+            23,
+            12
+          ],
+          [
+            23,
+            13
+          ],
+          [
+            23,
+            16
+          ],
+          [
+            23,
+            17
+          ],
+          [
+            23,
+            18
+          ],
+          [
+            23,
+            19
+          ],
+          [
+            23,
+            20
+          ],
+          [
+            23,
+            21
+          ],
+          [
+            23,
+            22
+          ],
+          [
+            23,
+            23
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_storm",
+            "type": "infantry_sword",
+            "size": 14,
+            "anchor": [
+              5,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_garrison"
+          },
+          {
+            "id": "red_spears",
+            "type": "infantry_spear",
+            "size": 10,
+            "anchor": [
+              5,
+              18
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_garrison"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_garrison",
+            "type": "infantry_sword",
+            "size": 8,
+            "anchor": [
+              27,
+              13
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_storm"
+          },
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 10,
+            "anchor": [
+              31,
+              10
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_storm"
+          }
+        ]
+      }
+    ]
+  },
+  "grand_clash": {
+    "name": "Grand Clash",
+    "desc": "A full battle line on a wide field \u2014 infantry centre, horse on a wing, archers behind. Zoom out to blobs to read the shape; zoom in to watch a company.",
+    "width": 120,
+    "height": 80,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_centre",
+            "type": "infantry_sword",
+            "size": 60,
+            "anchor": [
+              10,
+              26
+            ],
+            "cols": 6,
+            "order": "charge",
+            "target": "blue_centre"
+          },
+          {
+            "id": "red_left",
+            "type": "infantry_spear",
+            "size": 40,
+            "anchor": [
+              10,
+              46
+            ],
+            "cols": 5,
+            "order": "charge",
+            "target": "blue_centre"
+          },
+          {
+            "id": "red_horse",
+            "type": "cavalry_light",
+            "size": 24,
+            "anchor": [
+              12,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_bows"
+          },
+          {
+            "id": "red_bows",
+            "type": "archer_longbow",
+            "size": 24,
+            "anchor": [
+              4,
+              34
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "blue_centre"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_centre",
+            "type": "infantry_sword",
+            "size": 60,
+            "anchor": [
+              104,
+              26
+            ],
+            "cols": 6,
+            "order": "charge",
+            "target": "red_centre"
+          },
+          {
+            "id": "blue_right",
+            "type": "infantry_spear",
+            "size": 40,
+            "anchor": [
+              104,
+              46
+            ],
+            "cols": 5,
+            "order": "charge",
+            "target": "red_centre"
+          },
+          {
+            "id": "blue_horse",
+            "type": "cavalry_light",
+            "size": 24,
+            "anchor": [
+              104,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "red_bows"
+          },
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 24,
+            "anchor": [
+              114,
+              34
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_centre"
+          }
+        ]
+      }
+    ]
+  },
+  "treeline_defense": {
+    "name": "Archers in the Treeline",
+    "desc": "Bowmen loose from the cover of the woods; the open-field assault must cross the killing ground to reach them. Cover turns the exchange.",
+    "width": 44,
+    "height": 24,
+    "terrain": [
+      {
+        "kind": "forest",
+        "rect": [
+          30,
+          3,
+          9,
+          18
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_assault",
+            "type": "infantry_sword",
+            "size": 18,
+            "anchor": [
+              4,
+              7
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_bows"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 12,
+            "anchor": [
+              33,
+              7
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_assault"
+          }
+        ]
+      }
+    ]
+  },
+  "siege_assault": {
+    "name": "Siege \u2014 Batter the Wall",
+    "desc": "No breach yet: the rams must batter the palisade down before the assault can pour through. Infantry alone would mill at the wall \u2014 watch it fall.",
+    "width": 46,
+    "height": 28,
+    "walls": [
+      {
+        "type": "wooden_palisade",
+        "cells": [
+          [
+            24,
+            8
+          ],
+          [
+            24,
+            9
+          ],
+          [
+            24,
+            10
+          ],
+          [
+            24,
+            11
+          ],
+          [
+            24,
+            12
+          ],
+          [
+            24,
+            13
+          ],
+          [
+            24,
+            14
+          ],
+          [
+            24,
+            15
+          ],
+          [
+            24,
+            16
+          ],
+          [
+            24,
+            17
+          ],
+          [
+            24,
+            18
+          ],
+          [
+            24,
+            19
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_rams",
+            "type": "siege_ram",
+            "size": 4,
+            "anchor": [
+              20,
+              12
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_garrison"
+          },
+          {
+            "id": "red_foot",
+            "type": "infantry_sword",
+            "size": 16,
+            "anchor": [
+              5,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_garrison"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_garrison",
+            "type": "infantry_sword",
+            "size": 10,
+            "anchor": [
+              28,
+              11
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_foot"
+          }
+        ]
+      }
+    ]
+  },
+  "seize_the_hill": {
+    "name": "Seize the Hill",
+    "desc": "A capture point on the central rise \u2014 hold it and the day is yours, no need to kill every last foe. A stronger attacker drives for the crest against a dug-in defence.",
+    "width": 40,
+    "height": 26,
+    "terrain": [
+      {
+        "kind": "forest",
+        "rect": [
+          18,
+          11,
+          5,
+          5
+        ]
+      }
+    ],
+    "objectives": [
+      {
+        "id": "hill",
+        "tile": [
+          20,
+          13
+        ],
+        "radius": 3,
+        "hold": 10
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_foot",
+            "type": "infantry_sword",
+            "size": 18,
+            "anchor": [
+              4,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_foot",
+            "type": "infantry_sword",
+            "size": 9,
+            "anchor": [
+              24,
+              11
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_foot"
+          }
+        ]
+      }
+    ]
+  },
+  "bombard_the_keep": {
+    "name": "Bombard the Keep",
+    "desc": "Trebuchets stand off and pound the stone wall from range; when it cracks the footmen storm the breach. Artillery never touches the stones.",
+    "width": 50,
+    "height": 28,
+    "walls": [
+      {
+        "type": "stone_wall",
+        "cells": [
+          [
+            28,
+            8
+          ],
+          [
+            28,
+            9
+          ],
+          [
+            28,
+            10
+          ],
+          [
+            28,
+            11
+          ],
+          [
+            28,
+            12
+          ],
+          [
+            28,
+            13
+          ],
+          [
+            28,
+            14
+          ],
+          [
+            28,
+            15
+          ],
+          [
+            28,
+            16
+          ],
+          [
+            28,
+            17
+          ],
+          [
+            28,
+            18
+          ],
+          [
+            28,
+            19
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_guns",
+            "type": "siege_trebuchet",
+            "size": 3,
+            "anchor": [
+              20,
+              12
+            ],
+            "cols": 1,
+            "order": "charge",
+            "target": "blue_garrison"
+          },
+          {
+            "id": "red_foot",
+            "type": "infantry_sword",
+            "size": 18,
+            "anchor": [
+              5,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_garrison"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_garrison",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              32,
+              11
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_foot"
+          }
+        ]
+      }
+    ]
+  },
+  "cavalry_charge": {
+    "name": "The Cavalry Charge",
+    "desc": "Heavy horse at the gallop smashes into a loose infantry line and rides right through it \u2014 trampling, shoving men aside, breaking clean. Charge home against foot with no hedge of spears and you overrun them.",
+    "width": 46,
+    "height": 24,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_horse",
+            "type": "cavalry_heavy",
+            "size": 12,
+            "anchor": [
+              6,
+              7
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_foot",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              34,
+              7
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_horse"
+          }
+        ]
+      }
+    ]
+  },
+  "flanking_maneuver": {
+    "name": "The Flanking Maneuver",
+    "desc": "A steady line braces for the frontal assault \u2014 then a second column sweeps around and hits it in the flank, where shields don't reach. Getting behind the enemy wins battles.",
+    "width": 46,
+    "height": 26,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_front",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              5,
+              9
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_line"
+          },
+          {
+            "id": "red_flank",
+            "type": "infantry_sword",
+            "size": 10,
+            "anchor": [
+              30,
+              1
+            ],
+            "cols": 5,
+            "order": "charge",
+            "target": "blue_line"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_line",
+            "type": "infantry_spear",
+            "size": 16,
+            "anchor": [
+              30,
+              9
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_front"
+          }
+        ]
+      }
+    ]
+  },
+  "river_ford": {
+    "name": "The River Ford",
+    "desc": "A river splits the field; only a narrow ford crosses it. Numbers mean little in the press of a chokepoint \u2014 hold the crossing.",
+    "width": 46,
+    "height": 24,
+    "terrain": [
+      {
+        "kind": "water",
+        "rect": [
+          23,
+          0,
+          1,
+          10
+        ]
+      },
+      {
+        "kind": "water",
+        "rect": [
+          23,
+          14,
+          1,
+          10
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_host",
+            "type": "infantry_sword",
+            "size": 18,
+            "anchor": [
+              6,
+              7
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_guard"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_guard",
+            "type": "infantry_spear",
+            "size": 12,
+            "anchor": [
+              30,
+              8
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_host"
+          }
+        ]
+      }
+    ]
+  },
+  "last_stand": {
+    "name": "The Last Stand",
+    "desc": "A ring of foes closes on a knot of veterans. Surrounded, a man cannot guard every side \u2014 the circle is death unless it breaks.",
+    "width": 32,
+    "height": 22,
+    "armies": [
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_band",
+            "type": "infantry_sword",
+            "size": 8,
+            "anchor": [
+              15,
+              10
+            ],
+            "cols": 3,
+            "order": "hold",
+            "target": "red_n"
+          }
+        ]
+      },
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_n",
+            "type": "infantry_sword",
+            "size": 6,
+            "anchor": [
+              15,
+              3
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_band"
+          },
+          {
+            "id": "red_s",
+            "type": "infantry_sword",
+            "size": 6,
+            "anchor": [
+              15,
+              18
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_band"
+          },
+          {
+            "id": "red_e",
+            "type": "infantry_sword",
+            "size": 6,
+            "anchor": [
+              27,
+              10
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_band"
+          },
+          {
+            "id": "red_w",
+            "type": "infantry_sword",
+            "size": 6,
+            "anchor": [
+              3,
+              10
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_band"
+          }
+        ]
+      }
+    ]
+  },
+  "cavalry_clash": {
+    "name": "Clash of Horse",
+    "desc": "Two bodies of cavalry gallop headlong into each other \u2014 a swirling melee of overrun and counter-charge where the heavier horse tells.",
+    "width": 48,
+    "height": 24,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_knights",
+            "type": "cavalry_heavy",
+            "size": 8,
+            "anchor": [
+              6,
+              9
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_riders"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_riders",
+            "type": "cavalry_light",
+            "size": 12,
+            "anchor": [
+              38,
+              9
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "red_knights"
+          }
+        ]
+      }
+    ]
+  },
+  "pike_wall": {
+    "name": "The Pike Wall",
+    "desc": "Heavy horse hurls itself at a hedge of levelled pikes. The lesson every cavalry commander learns once: do not charge a braced pike block head-on.",
+    "width": 42,
+    "height": 24,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_charge",
+            "type": "cavalry_heavy",
+            "size": 12,
+            "anchor": [
+              6,
+              8
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_pikes"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_pikes",
+            "type": "infantry_pike",
+            "size": 14,
+            "anchor": [
+              32,
+              7
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_charge"
+          }
+        ]
+      }
+    ]
+  },
+  "combined_arms": {
+    "name": "Combined Arms",
+    "desc": "Foot lock shields in the centre while the horse sweeps a wing and the bows soften the advance. Every arm plays its part \u2014 screen, anvil, and hammer.",
+    "width": 44,
+    "height": 26,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "r_foot",
+            "type": "infantry_spear",
+            "size": 18,
+            "anchor": [
+              9,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "b_foot"
+          },
+          {
+            "id": "r_horse",
+            "type": "cavalry_heavy",
+            "size": 8,
+            "anchor": [
+              9,
+              3
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "b_foot"
+          },
+          {
+            "id": "r_bows",
+            "type": "archer_longbow",
+            "size": 6,
+            "anchor": [
+              4,
+              17
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "b_foot"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "b_foot",
+            "type": "infantry_sword",
+            "size": 20,
+            "anchor": [
+              34,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "r_foot"
+          },
+          {
+            "id": "b_bows",
+            "type": "archer_longbow",
+            "size": 6,
+            "anchor": [
+              39,
+              17
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "r_foot"
+          }
+        ]
+      }
+    ]
+  },
+  "urban_ruins": {
+    "name": "Fight in the Ruins",
+    "desc": "A street battle among broken walls. Rubble breaks up the lines and gives cover from arrows \u2014 a soldier's fight, won corner by corner.",
+    "width": 44,
+    "height": 26,
+    "terrain": [
+      {
+        "kind": "rubble",
+        "rect": [
+          16,
+          4,
+          4,
+          6
+        ]
+      },
+      {
+        "kind": "rubble",
+        "rect": [
+          24,
+          14,
+          5,
+          5
+        ]
+      },
+      {
+        "kind": "rubble",
+        "rect": [
+          20,
+          9,
+          3,
+          4
+        ]
+      },
+      {
+        "kind": "rubble",
+        "rect": [
+          12,
+          16,
+          4,
+          4
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_raiders",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              5,
+              10
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "blue_watch"
+          },
+          {
+            "id": "red_bows",
+            "type": "archer_crossbow",
+            "size": 6,
+            "anchor": [
+              4,
+              18
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "blue_watch"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_watch",
+            "type": "infantry_spear",
+            "size": 12,
+            "anchor": [
+              36,
+              10
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "red_raiders"
+          },
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 6,
+            "anchor": [
+              38,
+              18
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_raiders"
+          }
+        ]
+      }
+    ]
+  },
+  "gate_assault": {
+    "name": "Break the Gate",
+    "desc": "The curtain wall is sound, but the gate is timber. Rams make for the gatehouse while the garrison rains fire from the ramparts.",
+    "width": 48,
+    "height": 28,
+    "walls": [
+      {
+        "type": "stone_wall",
+        "cells": [
+          [
+            26,
+            6
+          ],
+          [
+            26,
+            7
+          ],
+          [
+            26,
+            8
+          ],
+          [
+            26,
+            9
+          ],
+          [
+            26,
+            10
+          ],
+          [
+            26,
+            11
+          ],
+          [
+            26,
+            12
+          ]
+        ]
+      },
+      {
+        "type": "stone_wall",
+        "cells": [
+          [
+            26,
+            15
+          ],
+          [
+            26,
+            16
+          ],
+          [
+            26,
+            17
+          ],
+          [
+            26,
+            18
+          ],
+          [
+            26,
+            19
+          ],
+          [
+            26,
+            20
+          ],
+          [
+            26,
+            21
+          ]
+        ]
+      },
+      {
+        "type": "gate",
+        "cells": [
+          [
+            26,
+            13
+          ],
+          [
+            26,
+            14
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_rams",
+            "type": "siege_ram",
+            "size": 4,
+            "anchor": [
+              20,
+              13
+            ],
+            "cols": 1,
+            "order": "charge",
+            "target": "blue_hold"
+          },
+          {
+            "id": "red_storm",
+            "type": "infantry_sword",
+            "size": 18,
+            "anchor": [
+              5,
+              11
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_hold"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_hold",
+            "type": "infantry_spear",
+            "size": 8,
+            "anchor": [
+              30,
+              12
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_storm"
+          },
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 6,
+            "anchor": [
+              33,
+              9
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_rams"
+          }
+        ]
+      }
+    ]
+  },
+  "hold_the_pass": {
+    "name": "Hold the Pass",
+    "desc": "A few defenders wedge a mountain defile against a host. Sheer rock caps the frontage \u2014 only so many can come at once, and numbers drown in the gap.",
+    "width": 40,
+    "height": 22,
+    "terrain": [
+      {
+        "kind": "mountain",
+        "rect": [
+          19,
+          0,
+          3,
+          8
+        ]
+      },
+      {
+        "kind": "mountain",
+        "rect": [
+          19,
+          14,
+          3,
+          8
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_horde",
+            "type": "infantry_sword",
+            "size": 22,
+            "anchor": [
+              5,
+              8
+            ],
+            "cols": 4,
+            "order": "charge",
+            "target": "blue_few"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_few",
+            "type": "infantry_spear",
+            "size": 8,
+            "anchor": [
+              28,
+              9
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_horde"
+          }
+        ]
+      }
+    ]
+  },
+  "the_sortie": {
+    "name": "The Sortie",
+    "desc": "Besiegers muster at a broken wall \u2014 and the garrison bursts out through the breach to scatter them before they can form. A capture point decides who holds the ground.",
+    "width": 46,
+    "height": 26,
+    "walls": [
+      {
+        "type": "wooden_palisade",
+        "cells": [
+          [
+            24,
+            6
+          ],
+          [
+            24,
+            7
+          ],
+          [
+            24,
+            8
+          ],
+          [
+            24,
+            9
+          ],
+          [
+            24,
+            10
+          ],
+          [
+            24,
+            11
+          ],
+          [
+            24,
+            14
+          ],
+          [
+            24,
+            15
+          ],
+          [
+            24,
+            16
+          ],
+          [
+            24,
+            17
+          ],
+          [
+            24,
+            18
+          ],
+          [
+            24,
+            19
+          ]
+        ]
+      }
+    ],
+    "objectives": [
+      {
+        "id": "breach",
+        "tile": [
+          24,
+          12
+        ],
+        "radius": 3,
+        "hold": 16
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_camp",
+            "type": "infantry_sword",
+            "size": 14,
+            "anchor": [
+              10,
+              10
+            ],
+            "cols": 3,
+            "order": "charge",
+            "target": "blue_sally"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_sally",
+            "type": "infantry_sword",
+            "size": 12,
+            "anchor": [
+              30,
+              10
+            ],
+            "cols": 2,
+            "order": "charge",
+            "target": "red_camp"
+          }
+        ]
+      }
+    ]
+  },
+  "the_war_mage": {
+    "name": "The War-Mage",
+    "desc": "War-mages behind a spear guard rain fireballs into the packed enemy block \u2014 each burst crumps a cluster of men and leaves the ground ablaze, the fire spreading through the ranks. Concentration is death against area magic: charge home before you burn.",
+    "width": 40,
+    "height": 22,
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_mages",
+            "type": "battle_mage",
+            "size": 3,
+            "anchor": [
+              6,
+              10
+            ],
+            "cols": 1,
+            "order": "hold",
+            "target": "blue_block"
+          },
+          {
+            "id": "red_guard",
+            "type": "infantry_spear",
+            "size": 8,
+            "anchor": [
+              10,
+              8
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "blue_block"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_block",
+            "type": "infantry_sword",
+            "size": 20,
+            "anchor": [
+              28,
+              8
+            ],
+            "cols": 4,
+            "order": "charge",
+            "target": "red_mages"
+          }
+        ]
+      }
+    ]
+  },
+  "castle_siege": {
+    "name": "The Siege of Bloodstone",
+    "desc": "The host is at the gates. Behind the stone curtain wall and its corner towers, the Bloodstone Guard holds the keep \u2014 spears at the gate, bows on the battlements. Rams batter the gatehouse while catapults pound the wall; break in, or die in the ditch.",
+    "width": 48,
+    "height": 28,
+    "walls": [
+      {
+        "type": "stone_wall",
+        "cells": [
+          [
+            30,
+            6
+          ],
+          [
+            30,
+            7
+          ],
+          [
+            30,
+            8
+          ],
+          [
+            30,
+            9
+          ],
+          [
+            30,
+            10
+          ],
+          [
+            30,
+            11
+          ],
+          [
+            30,
+            12
+          ],
+          [
+            30,
+            14
+          ],
+          [
+            30,
+            15
+          ],
+          [
+            30,
+            16
+          ],
+          [
+            30,
+            17
+          ],
+          [
+            30,
+            18
+          ],
+          [
+            30,
+            19
+          ],
+          [
+            30,
+            20
+          ],
+          [
+            30,
+            21
+          ],
+          [
+            31,
+            5
+          ],
+          [
+            31,
+            22
+          ],
+          [
+            32,
+            5
+          ],
+          [
+            32,
+            22
+          ],
+          [
+            33,
+            5
+          ],
+          [
+            33,
+            22
+          ],
+          [
+            34,
+            5
+          ],
+          [
+            34,
+            22
+          ],
+          [
+            35,
+            5
+          ],
+          [
+            35,
+            22
+          ],
+          [
+            36,
+            5
+          ],
+          [
+            36,
+            22
+          ],
+          [
+            37,
+            5
+          ],
+          [
+            37,
+            22
+          ],
+          [
+            38,
+            5
+          ],
+          [
+            38,
+            22
+          ],
+          [
+            39,
+            5
+          ],
+          [
+            39,
+            22
+          ],
+          [
+            40,
+            5
+          ],
+          [
+            40,
+            22
+          ],
+          [
+            41,
+            5
+          ],
+          [
+            41,
+            22
+          ],
+          [
+            42,
+            5
+          ],
+          [
+            42,
+            22
+          ],
+          [
+            43,
+            5
+          ],
+          [
+            43,
+            22
+          ],
+          [
+            44,
+            6
+          ],
+          [
+            44,
+            7
+          ],
+          [
+            44,
+            8
+          ],
+          [
+            44,
+            9
+          ],
+          [
+            44,
+            10
+          ],
+          [
+            44,
+            11
+          ],
+          [
+            44,
+            12
+          ],
+          [
+            44,
+            13
+          ],
+          [
+            44,
+            14
+          ],
+          [
+            44,
+            15
+          ],
+          [
+            44,
+            16
+          ],
+          [
+            44,
+            17
+          ],
+          [
+            44,
+            18
+          ],
+          [
+            44,
+            19
+          ],
+          [
+            44,
+            20
+          ],
+          [
+            44,
+            21
+          ]
+        ]
+      },
+      {
+        "type": "tower",
+        "cells": [
+          [
+            30,
+            5
+          ],
+          [
+            30,
+            22
+          ],
+          [
+            44,
+            5
+          ],
+          [
+            44,
+            22
+          ]
+        ]
+      },
+      {
+        "type": "gate",
+        "cells": [
+          [
+            30,
+            13
+          ]
+        ]
+      },
+      {
+        "type": "boiling_oil",
+        "cells": [
+          [
+            29,
+            13
+          ]
+        ]
+      }
+    ],
+    "armies": [
+      {
+        "team": "red",
+        "squads": [
+          {
+            "id": "red_rams",
+            "type": "siege_ram",
+            "size": 4,
+            "anchor": [
+              27,
+              12
+            ],
+            "cols": 1,
+            "order": "charge",
+            "target": "blue_gate"
+          },
+          {
+            "id": "red_guns",
+            "type": "siege_catapult",
+            "size": 2,
+            "anchor": [
+              23,
+              6
+            ],
+            "cols": 1,
+            "order": "charge",
+            "target": "blue_gate"
+          },
+          {
+            "id": "red_host",
+            "type": "infantry_sword",
+            "size": 30,
+            "anchor": [
+              13,
+              10
+            ],
+            "cols": 5,
+            "order": "charge",
+            "target": "blue_gate"
+          }
+        ]
+      },
+      {
+        "team": "blue",
+        "squads": [
+          {
+            "id": "blue_gate",
+            "type": "infantry_spear",
+            "size": 10,
+            "anchor": [
+              33,
+              11
+            ],
+            "cols": 3,
+            "order": "hold",
+            "target": "red_host"
+          },
+          {
+            "id": "blue_bows",
+            "type": "archer_longbow",
+            "size": 8,
+            "anchor": [
+              38,
+              7
+            ],
+            "cols": 5,
+            "order": "hold",
+            "target": "red_host"
+          },
+          {
+            "id": "blue_keep",
+            "type": "infantry_sword",
+            "size": 10,
+            "anchor": [
+              39,
+              15
+            ],
+            "cols": 2,
+            "order": "hold",
+            "target": "red_host"
+          }
+        ]
+      }
+    ]
+  }
+}

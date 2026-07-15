@@ -1,0 +1,36 @@
+{
+  "minstrel_01": [
+    "Melody hums: 'Every road's a verse if you walk it right.'",
+    "Melody: 'I once played a troll to sleep. Once.'",
+    "Melody: 'Write this down \u2014 no, wait, that cloud. LOOK at it.'",
+    "Melody: 'The Waterwheel crowd throws bread. Stonepine throws axes.'"
+  ],
+  "hamlet_priest_01": [
+    "Brother Anselm: 'The Light walks with us. So do my blisters.'",
+    "Brother Anselm: 'A prayer before a fight is worth two after.'",
+    "Brother Anselm: 'I have bandages. Try not to need them.'"
+  ],
+  "tower_wizard_01": [
+    "Alzara: 'The tower knows I'm out. It sulks.'",
+    "Alzara: 'Don't step there. Ley line. You'd taste purple for a week.'",
+    "Alzara: 'Adventure is just fieldwork with worse food.'"
+  ],
+  "_class_bard": [
+    "Your companion hums a walking tune."
+  ],
+  "_class_cleric": [
+    "Your companion murmurs a small blessing."
+  ],
+  "_class_wizard": [
+    "Your companion mutters arcana at the horizon."
+  ],
+  "_class_paladin": [
+    "Your companion scans the treeline, hand on hilt."
+  ],
+  "_class_ranger": [
+    "Your companion reads a bent twig like a letter."
+  ],
+  "_class_warrior": [
+    "Your companion cracks their knuckles cheerfully."
+  ]
+}

@@ -24,9 +24,8 @@ class CombatSystem:
         if not target:
             return f"You don't see {target_name} here."
 
-        px, py = self.engine.player.position
-        tx, ty = target.position
-        if ((px - tx) ** 2 + (py - ty) ** 2) ** 0.5 > 1.5:
+        from engine.presence import npc_adjacent_to_player
+        if not npc_adjacent_to_player(self.engine, target):
             return f"{target.name} is too far away to attack."
 
         # If the player has a ranged weapon equipped, melee uses fists
@@ -40,6 +39,8 @@ class CombatSystem:
         except Exception:
             pass
 
+        # Companions focus-fire the player's current target (P7.3)
+        self.engine.player_target_id = target.id
         return self._resolve(self.engine.player, target, "attack")
 
     # --------------------------------------------------------- npc attack
@@ -81,10 +82,44 @@ class CombatSystem:
             effective_weapon_damage_bonus,
         )
 
+        # a strike animates the attacker's sprite (P33.4): the renderer watches
+        # this counter and runs a lunge — engine stays clock-free
+        try:
+            m = attacker.metadata
+            m["_atk_seq"] = m.get("_atk_seq", 0) + 1
+            from ui import char_motion              # pure, pygame-free
+            char_motion.face_toward(attacker, defender.position)
+        except Exception:
+            pass
+
+        # Assault has consequences: a peaceful NPC the player attacks
+        # turns hostile (fight back or flee — heuristic provider) and
+        # word of it costs villager goodwill (P7 follow-up, George)
+        if attacker.id == self.engine.player.id:
+            kls = getattr(getattr(defender, "character_class", None),
+                          "value", "")
+            if kls not in ("brigand", "monster", "troll") and \
+                    not defender.metadata.get("provoked"):
+                defender.metadata["provoked"] = True
+                self.engine.memory_manager.add_event(
+                    f"{defender.name} turns on you!")
+                try:
+                    from characters.factions import Faction, modify_rep
+                    delta = modify_rep(self.engine.player,
+                                       Faction.VILLAGERS, -3)
+                    self.engine.memory_manager.add_event(
+                        f"Reputation with villagers: -3 ({delta})")
+                except Exception:
+                    pass
+
         # Determine ability + verb by action type
         if action_type == "cast":
             atk_ability = "intelligence"
             verb = "casts a spell at"
+            try:   # a spell casts a CASTING gesture, not a melee swing (P34.11)
+                attacker.metadata["_emote"] = "cast"
+            except Exception:
+                pass
         elif action_type in ("shoot",):
             atk_ability = "dexterity"
             verb = "shoots at"
@@ -95,26 +130,69 @@ class CombatSystem:
         atk_mod = effective_ability_mod(attacker, atk_ability)
         prof = proficiency_bonus(attacker)
 
-        # Flanking bonus
-        flanking = self._flanking_bonus(attacker, defender)
+        # Flanked defenders are OFF-GUARD (-2 AC) — P12.2 replaces
+        # the old attacker-side +2 with a visible condition
+        from characters.status_effects import (ac_penalty,
+                                               apply_effect,
+                                               attack_penalty)
+        if self._flanking_bonus(attacker, defender) > 0:
+            apply_effect(defender, "off_guard", duration=1)
 
         # Roll attack
         roll = self.rng.randint(1, 20)
         natural_crit = (roll == 20)
         natural_fumble = (roll == 1)
-        total_to_hit = roll + atk_mod + prof + flanking
-        ac = effective_ac(defender)
+        # P34.21 exertion: a gassed fighter swings wilder (fresh = no penalty, so
+        # existing balance is untouched); a melee blow also COSTS stamina
+        exert = 0
+        try:
+            from engine import stamina
+            if action_type == "attack":
+                exert = stamina.exertion_penalty(attacker)
+                stamina.spend_action(attacker, stamina.ATTACK_COST)
+        except Exception:
+            pass
+        # P35.3 terrain: high ground helps an archer, bad footing hurts a melee
+        # swing, and a defender in cover / against a wall is harder to hit
+        terr = 0
+        cover = 0
+        try:
+            from engine import terrain_combat as tc
+            ranged = action_type in ("shoot", "cast")
+            terr = tc.to_hit_mod(self.engine, attacker, defender, action_type)
+            cover = tc.cover_ac(self.engine, defender, ranged)
+        except Exception:
+            pass
+        total_to_hit = roll + atk_mod + prof + \
+            attack_penalty(attacker) - exert + terr
+        ac = effective_ac(defender) + ac_penalty(defender) + cover
 
         if natural_fumble or (not natural_crit and total_to_hit < ac):
             kind = "fumbles" if natural_fumble else "misses"
             return f"{attacker.name} {verb} {defender.name} but {kind}!"
 
+        if natural_crit:
+            # a perfect strike opens a wound (P12.2)
+            apply_effect(defender, "persistent_damage", duration=99,
+                         data={"amount": 2, "kind": "bleeding"})
+            if defender.id == self.engine.player.id:
+                try:   # a deep cut can turn (P12.12)
+                    from engine.infection import maybe_infect
+                    maybe_infect(self.engine, 0.15, "the deep cut")
+                except Exception:
+                    pass
         # Damage roll: weapon-base + ability + enchant + status mod
         weapon_dmg = self._best_weapon_damage(attacker)
         enchant_dmg = effective_weapon_damage_bonus(attacker)
         try:
             from characters.status_effects import attack_damage_modifier
-            stat_mod = attack_damage_modifier(attacker)
+            from characters.needs import (exhaustion_attack_penalty,
+                                          hunger_attack_penalty)
+            from engine.wounds import attack_penalty as wound_atk
+            stat_mod = attack_damage_modifier(attacker) + \
+                hunger_attack_penalty(attacker) + \
+                exhaustion_attack_penalty(attacker) + \
+                wound_atk(attacker)          # arm wounds (P15.9)
         except Exception:
             stat_mod = 0
         base = max(1, weapon_dmg + max(0, atk_mod) + enchant_dmg + stat_mod)
@@ -124,9 +202,40 @@ class CombatSystem:
             damage *= 2
 
         # Damage-type vs target weakness (e.g. silver vs trolls)
-        damage = self._apply_damage_type_modifier(attacker, defender, damage)
+        from engine.combat_math import damage_type_modifier
+        damage = damage_type_modifier(attacker, defender, damage)
 
         defender.take_damage(damage)
+        try:   # the struck body recoils (P33.6b)
+            from ui import char_motion
+            char_motion.emote(defender, "hurt")
+        except Exception:
+            pass
+        try:   # damage forces the keep-it check (P12.7)
+            from engine.combat_depth import concentration_check
+            concentration_check(self.engine, defender, damage)
+        except Exception:
+            pass
+        try:   # serious wounds splash blood (P14.2a)
+            from engine.surfaces import BLOOD_THRESHOLD
+            if damage >= BLOOD_THRESHOLD and \
+                    self.engine.active_zone() is None:
+                self.engine.surfaces_layer.splash_blood(
+                    *defender.position)
+        except Exception:
+            pass
+        try:   # and it may break a body part (P15.9)
+            from engine.wounds import maybe_wound
+            maybe_wound(self.engine, damage, defender)
+        except Exception:
+            pass
+        try:   # a boss may cross a phase threshold (P15.6)
+            from engine.bosses import boss_on_damaged, is_boss
+            if defender.is_alive() and is_boss(defender):
+                boss_on_damaged(self.engine, defender)
+        except Exception:
+            pass
+        self._wear_gear(attacker, defender)
 
         # Visual effects (damage popup + hit flash + death FX)
         try:
@@ -147,13 +256,61 @@ class CombatSystem:
         return f"{attacker.name} {verb} {defender.name} for {damage} damage!"
 
     def _handle_defeat(self, attacker, defender, damage: int) -> str:
+        # The player's defeat is a story beat, not always a game over
+        if defender.id == self.engine.player.id:
+            return self._handle_player_defeat(attacker, damage)
+
+        # An elite you strike down may escape as a nemesis instead (P19.6)
+        # — before the person/monster split, so it works for either.
+        if attacker.id == self.engine.player.id:
+            try:
+                escape = self.engine.nemesis.intercept_death(defender)
+                if escape is not None:
+                    return escape
+            except Exception:
+                pass
+
+        # People are knocked out; monsters die (P12.4, Kenshi)
+        try:
+            from engine.dying import is_person, ko_person
+            person = is_person(defender)
+        except Exception:
+            person = False
+        if person:
+            msg = ko_person(self.engine, attacker, defender)
+            kls = getattr(getattr(defender, "character_class", None),
+                          "value", "")
+            if self.engine.quest_manager:
+                self.engine.quest_manager.on_npc_defeated(
+                    defender.id, kls)
+            if attacker.id == self.engine.player.id:
+                self._award_xp(defender)
+                self._update_faction_rep(kls)
+                try:
+                    from engine.player_deeds import record_deed
+                    record_deed(self.engine,
+                                f"beat {defender.name} senseless")
+                except Exception:
+                    pass
+            return msg
+
         defender.defeat()
         defender.last_position = defender.position
         msg = (
             f"{attacker.name} attacks {defender.name} for {damage} damage. "
             f"{defender.name} is defeated!"
         )
-        self.engine.memory_manager.add_event(msg)
+        seen = (attacker.id == self.engine.player.id or
+                defender.id == self.engine.player.id)
+        if not seen:
+            try:   # only report a defeat the player could see (P15.11)
+                from engine.discovery import can_witness
+                seen = can_witness(self.engine, defender.position)
+            except Exception:
+                from engine.presence import in_earshot
+                seen = in_earshot(self.engine, defender.position)
+        if seen:
+            self.engine.memory_manager.add_event(msg)
 
         # Drops via loot tables
         try:
@@ -176,33 +333,91 @@ class CombatSystem:
             f"{defender.name}'s body", defender.position[0], defender.position[1]
         )
 
-        # Player defeated — flag for UI; UIs that don't handle it
-        # fall back to end_game (terminal mode).
-        if defender.id == self.engine.player.id:
-            self.engine.memory_manager.add_event("You have been defeated!")
-            self.engine.player_dead = True
-            # The GUI catches `player_dead` and shows a restart/quit menu.
-            # The terminal UI doesn't, so end the game as a safety net.
-            if not getattr(self.engine, "_has_gui", False):
-                self.engine.end_game()
-        else:
-            self.engine.world.map.remove_character(defender)
-            kls = getattr(getattr(defender, "character_class", None),
-                          "value", "")
-            # Notify quest manager
-            if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
-                self.engine.quest_manager.on_npc_defeated(defender.id, kls)
-            # XP + faction rep changes for player kills
-            if attacker.id == self.engine.player.id:
-                self._award_xp(defender)
-                self._update_faction_rep(kls)
+        self.engine.world.map.remove_character(defender)
+        kls = getattr(getattr(defender, "character_class", None),
+                      "value", "")
+        # Notify quest manager
+        if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
+            self.engine.quest_manager.on_npc_defeated(defender.id, kls)
+        try:   # a slain raider beats its tribe back (P19.4)
+            if (defender.metadata or {}).get("tribe"):
+                self.engine.monster_tribes.on_defeat(defender)
+        except Exception:
+            pass
+        # XP + faction rep changes for player kills
+        if attacker.id == self.engine.player.id:
+            self._award_xp(defender)
+            self._update_faction_rep(kls)
+            try:   # felling a wild beast trains Hunting (P15.9b)
+                from engine.skill_progression import train_hunting
+                train_hunting(self.engine, defender)
+            except Exception:
+                pass
+            try:
+                self.engine.collection_log.record_kill(defender)
+                from engine.player_deeds import record_deed
+                record_deed(self.engine, f"slew {defender.name}")
+            except Exception:
+                pass
+            # A fallen DM creation becomes legend (P6.7)
+            try:
+                parts = defender.id.split("_")
+                tid = "_".join(parts[1:-1]) if \
+                    defender.id.startswith("enc_") and len(parts) > 2 \
+                    else ""
+                if tid in self.engine.dm.defined_monsters:
+                    from engine.dm_library import record_legend
+                    record_legend({
+                        "name": defender.name,
+                        "kind": "monster",
+                        "story": self.engine.dm.defined_monsters[tid]
+                        .get("description", ""),
+                        "slain_by": self.engine.player.name,
+                        "day": self.engine.dm._day()})
+            except Exception:
+                pass
 
         return msg
 
+    def _handle_player_defeat(self, attacker, damage: int) -> str:
+        """0 HP: the dying ladder first (P12.4), then the story
+        outcomes (P4.7) when it resolves."""
+        try:
+            from engine.dying import enter_dying, is_dying, worsen
+            if is_dying(self.engine.player):
+                return worsen(self.engine, attacker)
+            self.engine.memory_manager.add_event(
+                f"{attacker.name} strikes you down!")
+            return enter_dying(self.engine, attacker)
+        except Exception as e:
+            logger.warning(f"Dying layer error: {e}")
+            from engine.defeat import handle_player_defeat
+            survived, msg = handle_player_defeat(
+                self.engine, attacker, rng=self.rng)
+            if not survived:
+                self.engine.player.defeat()
+                self.engine.player_dead = True
+                if not getattr(self.engine, "_has_gui", False):
+                    self.engine.end_game()
+            return msg
+
     def _award_xp(self, defeated) -> None:
         from engine.leveling import award_xp
-        xp = 20 + 30 * getattr(defeated, "level", 1)
-        msgs = award_xp(self.engine.player, xp)
+        # P37.6 (George: much slower levels): the curve is 10x steeper, and a kill
+        # scales harder with the foe's level (25 + 15*level) so a TOUGH foe pays
+        # far more than a weak one — leveling rewards fighting hard things, not
+        # grinding rats. Power still leans on gear + party, not XP farming.
+        xp = 25 + 15 * getattr(defeated, "level", 1)
+        actor = self.engine.player
+        msgs = award_xp(actor, xp)
+        # an adventurer NPC (P-M.6) driven through this path gains the XP,
+        # but the player-phrased "You gain … / You reached level …" would
+        # misattribute to the player — give it a quiet third-person beat
+        if (getattr(actor, "metadata", {}) or {}).get("adventurer"):
+            if msgs:
+                self.engine.memory_manager.add_event(
+                    f"[Realm] {actor.name} grows more seasoned in the craft.")
+            return
         self.engine.memory_manager.add_event(f"You gain {xp} XP.")
         for m in msgs:
             self.engine.memory_manager.add_event(m)
@@ -210,7 +425,10 @@ class CombatSystem:
     def _update_faction_rep(self, victim_class: str) -> None:
         try:
             from characters.factions import on_defeat
-            deltas = on_defeat(self.engine.player, victim_class)
+            actor = self.engine.player
+            deltas = on_defeat(actor, victim_class)
+            if (getattr(actor, "metadata", {}) or {}).get("adventurer"):
+                return              # an adventurer's rep is its own, not shown
             for faction, delta in deltas.items():
                 sign = "+" if delta > 0 else ""
                 self.engine.memory_manager.add_event(
@@ -220,13 +438,33 @@ class CombatSystem:
 
     # --------------------------------------------------------- helpers
 
+    def _wear_gear(self, attacker, defender) -> None:
+        """Landed hits wear the attacker's weapon and defender's armor."""
+        try:
+            from characters.equipment import equipped_weapon, get_equipment
+            from engine.durability import degrade
+            notes = []
+            w = equipped_weapon(attacker)
+            if w is not None:
+                notes.append(degrade(w))
+            eq = get_equipment(defender)
+            for slot in ("armor", "shield"):
+                if eq.get(slot) is not None:
+                    notes.append(degrade(eq[slot]))
+            for note in notes:
+                if note:
+                    self.engine.memory_manager.add_event(note)
+        except Exception:
+            pass
+
     def _best_weapon_damage(self, char) -> int:
         # Prefer equipped weapon
         try:
             from characters.equipment import equipped_weapon
+            from engine.durability import is_broken
             w = equipped_weapon(char)
             if w is not None and w.is_weapon():
-                return int(w.damage)
+                return 1 if is_broken(w) else int(w.damage)
         except Exception:
             pass
         # Fallback: best weapon in inventory (unarmed strikes deal 1)
@@ -235,6 +473,12 @@ class CombatSystem:
         for it in getattr(char, "inventory", []):
             if isinstance(it, Item) and it.is_weapon() and it.damage > best:
                 best = it.damage
+        if best == 0:
+            # P37.6b: a monster's NATURAL attack (claws/fangs/maul) so a weaponless
+            # beast still hits hard — data-driven per `data/monsters.json`
+            nat = (getattr(char, "metadata", {}) or {}).get("natural_damage", 0)
+            if nat:
+                return int(nat)
         return best  # 0 -> unarmed (still does 1 minimum via base clamp)
 
     def _total_armor(self, char) -> int:
@@ -288,42 +532,10 @@ class CombatSystem:
             pass
         return 0
 
-    def _apply_damage_type_modifier(self, attacker, defender, damage: int) -> int:
-        """Silver vs trolls/undead, fire vs trolls, etc."""
-        try:
-            from characters.equipment import equipped_weapon
-            w = equipped_weapon(attacker)
-            if w is None:
-                return damage
-            kind = (w.damage_kind or "slash").lower()
-            target_class = getattr(defender.character_class, "value", "")
-            target_race = getattr(defender.race, "value", "")
-
-            # Silver / holy vs troll, monster
-            if "silver" in (w.id or "") or "silver" in (w.name.lower() or ""):
-                if target_race == "troll" or target_class in ("troll", "monster"):
-                    return int(damage * 1.5)
-            if kind == "holy" and target_class in ("monster", "brigand"):
-                return int(damage * 1.3)
-            # Fire vs troll (regenerator)
-            if kind == "fire" and target_race == "troll":
-                return int(damage * 1.5)
-            # Frost mildly weaker vs frost-naturalish? skip
-        except Exception:
-            pass
-        return damage
-
     def _step_toward(self, attacker, target) -> bool:
-        dx = target.position[0] - attacker.position[0]
-        dy = target.position[1] - attacker.position[1]
-        dx = (dx > 0) - (dx < 0)
-        dy = (dy > 0) - (dy < 0)
-        if dx and dy:
-            if abs(target.position[0] - attacker.position[0]) > \
-                    abs(target.position[1] - attacker.position[1]):
-                dy = 0
-            else:
-                dx = 0
-        nx = attacker.position[0] + dx
-        ny = attacker.position[1] + dy
-        return self.engine.world.map.move_character(attacker, nx, ny)
+        # Approach the nearest FREE tile beside the target rather than
+        # its exact square — packs fan out and surround (P7.3)
+        from engine.squad_tactics import surround_step, greedy_step
+        wmap = self.engine.world.map
+        goal = surround_step(wmap, attacker, target) or target.position
+        return greedy_step(wmap, attacker, goal)

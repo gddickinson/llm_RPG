@@ -56,10 +56,13 @@ class TestEngineSmoke(unittest.TestCase):
         item = create_item("potion")
         x, y = self.engine.player.position
         self.engine.world.add_item_to_ground(item, x, y)
-        before = len(self.engine.player.inventory)
+        # count UNITS: a potion may merge into a starting potion stack (P25.1)
+        units = lambda: sum(getattr(it, "quantity", 1)
+                            for it in self.engine.player.inventory)
+        before = units()
         msg = self.engine.pickup_item()
         self.assertIn("pick up", msg.lower())
-        self.assertEqual(len(self.engine.player.inventory), before + 1)
+        self.assertEqual(units(), before + 1)
         drop_msg = self.engine.drop_item("Healing Potion")
         self.assertIn("drop", drop_msg.lower())
 

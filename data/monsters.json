@@ -1,0 +1,667 @@
+{
+  "wolf": {
+    "name": "Wolf",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 18,
+    "level": 1,
+    "symbol": "w",
+    "description": "A snarling wolf with hungry eyes.",
+    "encounter_weight": 4,
+    "dungeon": true,
+    "behavior": {
+      "pack_howl": true
+    },
+    "speed": 1.5,
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "pack"
+    },
+    "stats": {
+      "strength": 12,
+      "dexterity": 13
+    },
+    "natural_damage": 4
+  },
+  "bandit": {
+    "name": "Bandit",
+    "class": "brigand",
+    "race": "human",
+    "hp": 26,
+    "level": 2,
+    "symbol": "b",
+    "description": "A scarred outlaw clutching a rusty blade.",
+    "encounter_weight": 2,
+    "dungeon": true,
+    "behavior": {
+      "flee_below": 0.35
+    },
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "gang"
+    },
+    "stats": {
+      "strength": 13,
+      "constitution": 12
+    },
+    "natural_damage": 5
+  },
+  "goblin": {
+    "name": "Goblin",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 14,
+    "level": 1,
+    "symbol": "g",
+    "description": "A green-skinned scavenger.",
+    "encounter_weight": 2,
+    "dungeon": true,
+    "behavior": {
+      "flee_below": 0.25
+    },
+    "speed": 1.1,
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "warband"
+    },
+    "stats": {
+      "strength": 11,
+      "dexterity": 12
+    },
+    "natural_damage": 3
+  },
+  "wandering_troll": {
+    "name": "Wandering Troll",
+    "class": "troll",
+    "race": "troll",
+    "hp": 60,
+    "level": 4,
+    "symbol": "X",
+    "description": "A solitary troll, lost from its kin.",
+    "encounter_weight": 1,
+    "dungeon": false,
+    "behavior": {
+      "territorial": 8
+    },
+    "speed": 0.8,
+    "stats": {
+      "strength": 18,
+      "constitution": 16
+    },
+    "natural_damage": 10
+  },
+  "bog_lurker": {
+    "name": "Bog Lurker",
+    "class": "monster",
+    "race": "troll",
+    "hp": 36,
+    "level": 3,
+    "symbol": "L",
+    "description": "A moss-hided thing that rises dripping from the pools.",
+    "encounter_weight": 3,
+    "dungeon": false,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "strength": 15,
+      "constitution": 15
+    },
+    "behavior": {
+      "ambush": 3
+    },
+    "speed": 0.7,
+    "natural_damage": 7
+  },
+  "marsh_wisp": {
+    "name": "Marsh Wisp",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 14,
+    "level": 2,
+    "symbol": "w",
+    "description": "A flickering light with a hungry chill about it.",
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "behavior": {
+      "flee_below": 0.5,
+      "flying": true
+    },
+    "speed": 1.3,
+    "stats": {
+      "dexterity": 15
+    },
+    "natural_damage": 3
+  },
+  "bounty_hunter": {
+    "name": "Bounty Hunter",
+    "class": "brigand",
+    "race": "human",
+    "hp": 16,
+    "level": 2,
+    "symbol": "H",
+    "description": "A grim tracker in oiled leathers, here for the price on someone's head.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 13,
+      "dexterity": 14
+    },
+    "behavior": {
+      "flee_below": 0.15
+    },
+    "speed": 1.2,
+    "natural_damage": 4
+  },
+  "restless_bones": {
+    "name": "Restless Bones",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 12,
+    "level": 2,
+    "symbol": "s",
+    "description": "A clatter of old bones that will not stay at rest.",
+    "encounter_weight": 0,
+    "dungeon": true,
+    "behavior": {
+      "ambush": 2
+    },
+    "speed": 0.6,
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "shamble"
+    },
+    "natural_damage": 4
+  },
+  "hill_giant": {
+    "name": "Hill Giant",
+    "class": "troll",
+    "race": "troll",
+    "hp": 60,
+    "level": 6,
+    "symbol": "G",
+    "description": "A shoulder-of-the-hills brute who treats walls as suggestions.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 22,
+      "constitution": 18
+    },
+    "behavior": {
+      "giant": true,
+      "flee_below": 0.1
+    },
+    "speed": 0.8,
+    "natural_damage": 12
+  },
+  "giant_warlord": {
+    "name": "Giant Warlord",
+    "class": "troll",
+    "race": "goblin",
+    "hp": 90,
+    "level": 8,
+    "symbol": "G",
+    "description": "A giant in warpaint, hurling stones with a roar.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 22,
+      "constitution": 18
+    },
+    "behavior": {
+      "giant": true,
+      "flee_below": 0.1,
+      "boss": {
+        "telegraph": {
+          "kind": "boulder",
+          "range": 8,
+          "radius": 1,
+          "damage": 14,
+          "warn_turns": 1
+        },
+        "phases": [
+          {
+            "at": 0.4,
+            "action": "enrage",
+            "strength": 4,
+            "line": "The Warlord bellows \u2014 his throws come faster and harder!"
+          }
+        ]
+      }
+    },
+    "boss_depth": 3,
+    "speed": 0.8,
+    "natural_damage": 16
+  },
+  "tyrant_depths": {
+    "name": "Tyrant of the Depths",
+    "class": "troll",
+    "race": "goblin",
+    "hp": 80,
+    "level": 7,
+    "symbol": "T",
+    "description": "The den-lord, vast and slick, master of its dark water.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 20,
+      "constitution": 20
+    },
+    "behavior": {
+      "flee_below": 0.0,
+      "boss": {
+        "phases": [
+          {
+            "at": 0.5,
+            "action": "flood",
+            "duration": 120,
+            "max_tiles": 25,
+            "line": "The Tyrant slams the floor \u2014 black water surges up from the deep!"
+          },
+          {
+            "at": 0.25,
+            "action": "summon",
+            "template": "bog_lurker",
+            "count": 2,
+            "line": "It keens, and shapes rise from the flood!"
+          }
+        ]
+      }
+    },
+    "boss_depth": 2,
+    "speed": 0.9,
+    "natural_damage": 14
+  },
+  "wisp_queen": {
+    "name": "Wisp Queen",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 55,
+    "level": 6,
+    "symbol": "Q",
+    "description": "A great cold flame trailing a court of lesser lights.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "dexterity": 16,
+      "intelligence": 16
+    },
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.2,
+      "boss": {
+        "phases": [
+          {
+            "at": 0.5,
+            "action": "electrify",
+            "line": "The Queen flares \u2014 her pool ignites with cold lightning!"
+          },
+          {
+            "at": 0.5,
+            "action": "summon",
+            "template": "marsh_wisp",
+            "count": 3,
+            "line": "Her court answers, three lights kindling!"
+          }
+        ]
+      }
+    },
+    "boss_depth": 2,
+    "speed": 1.2,
+    "natural_damage": 12
+  },
+  "dragon_whelp": {
+    "name": "Dragon Whelp",
+    "class": "monster",
+    "race": "dragonborn",
+    "hp": 26,
+    "level": 5,
+    "symbol": "d",
+    "description": "A cat-sized dragon, all teeth and appetite, spitting sparks.",
+    "encounter_weight": 0,
+    "dungeon": true,
+    "spawn_terrain": [
+      "mountain"
+    ],
+    "stats": {
+      "strength": 14,
+      "constitution": 13,
+      "dexterity": 15
+    },
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.15
+    },
+    "speed": 1.4,
+    "natural_damage": 10
+  },
+  "young_dragon": {
+    "name": "Young Dragon",
+    "class": "monster",
+    "race": "dragonborn",
+    "hp": 120,
+    "level": 12,
+    "symbol": "D",
+    "description": "A young dragon, scales like banked coals, smoke curling from its jaws.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "boss_depth": 3,
+    "spawn_terrain": [
+      "mountain"
+    ],
+    "stats": {
+      "strength": 24,
+      "constitution": 22,
+      "dexterity": 14
+    },
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.0,
+      "boss": {
+        "telegraph": {
+          "kind": "breath",
+          "range": 6,
+          "radius": 1,
+          "damage": 18,
+          "warn_turns": 1
+        },
+        "phases": [
+          {
+            "at": 0.5,
+            "action": "terror",
+            "value": 2,
+            "duration": 3,
+            "line": "The dragon rears and ROARS \u2014 raw terror grips you!"
+          },
+          {
+            "at": 0.3,
+            "action": "enrage",
+            "strength": 5,
+            "line": "Wings snap wide \u2014 the dragon's fury blazes hotter!"
+          }
+        ]
+      }
+    },
+    "speed": 1.5,
+    "natural_damage": 16
+  },
+  "elder_dragon": {
+    "name": "Elder Dragon",
+    "class": "monster",
+    "race": "dragonborn",
+    "hp": 190,
+    "level": 16,
+    "symbol": "D",
+    "description": "An ancient wyrm vast as a hall, the air aching with heat before it.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "boss_depth": 5,
+    "spawn_terrain": [
+      "mountain"
+    ],
+    "stats": {
+      "strength": 27,
+      "constitution": 26,
+      "dexterity": 14,
+      "intelligence": 18
+    },
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.0,
+      "boss": {
+        "telegraph": {
+          "kind": "breath",
+          "range": 8,
+          "radius": 2,
+          "damage": 26,
+          "warn_turns": 1
+        },
+        "phases": [
+          {
+            "at": 0.6,
+            "action": "terror",
+            "value": 3,
+            "duration": 4,
+            "line": "The elder wyrm's roar shakes the stone \u2014 you are unmade by fear!"
+          },
+          {
+            "at": 0.5,
+            "action": "summon",
+            "template": "dragon_whelp",
+            "count": 2,
+            "line": "It calls, and its brood scrabble from the dark!"
+          },
+          {
+            "at": 0.25,
+            "action": "enrage",
+            "strength": 6,
+            "line": "Wounded, the ancient one unleashes its full wrath!"
+          }
+        ]
+      }
+    },
+    "speed": 1.3,
+    "natural_damage": 16
+  },
+  "grave_touched": {
+    "name": "Grave-Touched",
+    "class": "monster",
+    "race": "human",
+    "hp": 22,
+    "level": 3,
+    "symbol": "g",
+    "description": "A drowned monk risen grey and dripping, marsh-water for eyes. It shambles where the wards have failed.",
+    "encounter_weight": 0,
+    "dungeon": true,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "strength": 14,
+      "constitution": 15
+    },
+    "behavior": {
+      "undead": true
+    },
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "host"
+    },
+    "speed": 0.9,
+    "natural_damage": 6
+  },
+  "drowned_guardian": {
+    "name": "Drowned Guardian",
+    "class": "monster",
+    "race": "human",
+    "hp": 34,
+    "level": 4,
+    "symbol": "D",
+    "description": "A waterlogged suit of ancient warding-armour, moving of its own drowned will. Vael'Zhur's tireless sentinel.",
+    "encounter_weight": 0,
+    "dungeon": true,
+    "stats": {
+      "strength": 17,
+      "constitution": 18
+    },
+    "behavior": {
+      "undead": true,
+      "flee_below": 0.0
+    },
+    "speed": 0.7,
+    "natural_damage": 8
+  },
+  "cinder_cultist": {
+    "name": "Cinder Cultist",
+    "class": "brigand",
+    "race": "human",
+    "hp": 17,
+    "level": 3,
+    "symbol": "c",
+    "description": "A fire-scarred zealot of the Cinder Circle, embers smouldering in their eyes.",
+    "encounter_weight": 0,
+    "stats": {
+      "dexterity": 13,
+      "intelligence": 13
+    },
+    "behavior": {},
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "coven"
+    },
+    "speed": 1.0,
+    "natural_damage": 6
+  },
+  "cinder_captain": {
+    "name": "The Ashen Captain",
+    "class": "brigand",
+    "race": "tiefling",
+    "hp": 40,
+    "level": 5,
+    "symbol": "C",
+    "description": "Captain of the Cinder Circle, wreathed in heat-shimmer, a brand of black iron in hand.",
+    "encounter_weight": 0,
+    "stats": {
+      "strength": 16,
+      "constitution": 15,
+      "intelligence": 14
+    },
+    "behavior": {
+      "flee_below": 0.15
+    },
+    "speed": 1.0,
+    "natural_damage": 10
+  },
+  "bog_goblin": {
+    "name": "Bog Goblin",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 12,
+    "level": 2,
+    "symbol": "b",
+    "description": "A reed-cloaked marsh goblin of the Reedmarsh Warren, quick with a barbed spear.",
+    "encounter_weight": 0,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "dexterity": 14
+    },
+    "behavior": {},
+    "group": {
+      "min": 3,
+      "max": 5,
+      "word": "warband"
+    },
+    "speed": 1.1,
+    "natural_damage": 4
+  },
+  "bog_goblin_champion": {
+    "name": "Reedmarsh Champion",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 30,
+    "level": 4,
+    "symbol": "B",
+    "description": "The Warren's champion, scaled in turtle-shell plate, bellowing the tide-songs of his tribe.",
+    "encounter_weight": 0,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "strength": 15,
+      "constitution": 15
+    },
+    "behavior": {
+      "flee_below": 0.1
+    },
+    "speed": 1.0,
+    "natural_damage": 8
+  },
+  "vaelzhur_lich": {
+    "name": "Vael'Zhur the Drowned",
+    "class": "warlock",
+    "race": "human",
+    "hp": 120,
+    "level": 9,
+    "symbol": "L",
+    "description": "Archmage Vael'Zhur, robed in drowned silk, his soul bound into the Tome he clutches. Death did not take him \u2014 it waits.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "intelligence": 20,
+      "constitution": 18,
+      "wisdom": 16
+    },
+    "behavior": {
+      "undead": true,
+      "flee_below": 0.0,
+      "boss": {
+        "telegraph": {
+          "kind": "necrotic",
+          "range": 7,
+          "radius": 1,
+          "damage": 16,
+          "warn_turns": 1
+        },
+        "phases": [
+          {
+            "at": 0.66,
+            "action": "summon",
+            "template": "drowned_guardian",
+            "count": 2,
+            "line": "Vael'Zhur lifts a grey hand \u2014 the drowned rise at his call!"
+          },
+          {
+            "at": 0.5,
+            "action": "electrify",
+            "line": "He strikes the flooded floor \u2014 cold lightning races through the water!"
+          },
+          {
+            "at": 0.33,
+            "action": "terror",
+            "line": "Vael'Zhur's hollow voice rolls out, and your courage drowns with it!"
+          },
+          {
+            "at": 0.15,
+            "action": "enrage",
+            "strength": 5,
+            "line": "The Tome blazes with black light \u2014 the lich pours out his unbound wrath!"
+          }
+        ]
+      }
+    },
+    "speed": 0.9
+  },
+  "bandit_chief": {
+    "name": "Bandit Chief",
+    "class": "brigand",
+    "race": "human",
+    "hp": 40,
+    "level": 3,
+    "symbol": "B",
+    "description": "The scarred leader of the camp, blade already drawn.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "stats": {
+      "strength": 15,
+      "constitution": 13
+    },
+    "natural_damage": 6,
+    "behavior": {
+      "flee_below": 0.1
+    }
+  }
+}

@@ -1,0 +1,303 @@
+{
+  "magic_missile": {
+    "id": "magic_missile",
+    "name": "Magic Missile",
+    "mana_cost": 2,
+    "damage": 6,
+    "range": 8.0,
+    "description": "An arrow of arcane force, never misses.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  "fireball": {
+    "id": "fireball",
+    "name": "Fireball",
+    "mana_cost": 5,
+    "damage": 12,
+    "range": 6.0,
+    "description": "A roaring blast of flame that engulfs everyone near the target.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "area": 2.0
+  },
+  "frost_ray": {
+    "id": "frost_ray",
+    "name": "Frost Ray",
+    "mana_cost": 3,
+    "damage": 5,
+    "range": 6.0,
+    "description": "Icy beam that may freeze the target.",
+    "status_effect": "paralyzed",
+    "duration": 2,
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  "heal": {
+    "id": "heal",
+    "name": "Heal",
+    "mana_cost": 3,
+    "heal": 12,
+    "range": 1.0,
+    "description": "Restore health to yourself or an ally.",
+    "classes": [
+      "cleric",
+      "paladin",
+      "druid"
+    ]
+  },
+  "bless": {
+    "id": "bless",
+    "name": "Bless",
+    "mana_cost": 2,
+    "range": 1.0,
+    "description": "Grant a divine boon.",
+    "status_effect": "blessed",
+    "duration": 4,
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "concentration": true
+  },
+  "shock": {
+    "id": "shock",
+    "name": "Shock",
+    "mana_cost": 2,
+    "damage": 4,
+    "range": 2.0,
+    "description": "A jolt of lightning.",
+    "classes": [
+      "druid",
+      "wizard"
+    ]
+  },
+  "poison_dart": {
+    "id": "poison_dart",
+    "name": "Poison Dart",
+    "mana_cost": 2,
+    "damage": 2,
+    "range": 4.0,
+    "description": "A toxic dart that lingers.",
+    "status_effect": "poisoned",
+    "duration": 3,
+    "classes": [
+      "druid",
+      "warlock"
+    ]
+  },
+  "firebolt": {
+    "id": "firebolt",
+    "name": "Firebolt",
+    "mana_cost": 1,
+    "damage": 3,
+    "range": 6.0,
+    "description": "A snap of flame \u2014 every apprentice's first trick.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  "smite": {
+    "id": "smite",
+    "name": "Smite",
+    "mana_cost": 4,
+    "damage": 9,
+    "range": 1.5,
+    "description": "A hammerblow of holy wrath.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  "entangle": {
+    "id": "entangle",
+    "name": "Entangle",
+    "mana_cost": 3,
+    "damage": 1,
+    "range": 5.0,
+    "status_effect": "paralyzed",
+    "duration": 3,
+    "description": "Roots burst from the earth and bind the target.",
+    "classes": [
+      "druid"
+    ],
+    "concentration": true
+  },
+  "drain": {
+    "id": "drain",
+    "name": "Drain Life",
+    "mana_cost": 4,
+    "damage": 6,
+    "heal": 3,
+    "range": 3.0,
+    "description": "Steal the target's vitality for your own.",
+    "classes": [
+      "warlock"
+    ]
+  },
+  "regrowth": {
+    "id": "regrowth",
+    "name": "Regrowth",
+    "mana_cost": 2,
+    "heal": 8,
+    "range": 1.0,
+    "description": "Green life knits flesh like spring after frost.",
+    "classes": [
+      "druid"
+    ]
+  },
+  "war_cry": {
+    "id": "war_cry",
+    "name": "War Cry",
+    "mana_cost": 2,
+    "range": 1.0,
+    "status_effect": "blessed",
+    "duration": 3,
+    "description": "A bellow that steels your own arm.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  "hex": {
+    "id": "hex",
+    "name": "Hex",
+    "mana_cost": 3,
+    "damage": 2,
+    "range": 5.0,
+    "status_effect": "cursed",
+    "duration": 4,
+    "description": "A muttered curse that saps the target's strength.",
+    "classes": [
+      "warlock",
+      "sorcerer"
+    ],
+    "concentration": true
+  },
+  "frost_armor": {
+    "id": "frost_armor",
+    "name": "Frost Armor",
+    "mana_cost": 3,
+    "range": 1.0,
+    "status_effect": "blessed",
+    "duration": 5,
+    "description": "A rime of protective ice over your skin.",
+    "classes": [
+      "wizard"
+    ],
+    "concentration": true
+  },
+  "water_walk": {
+    "id": "water_walk",
+    "name": "Water Walk",
+    "mana_cost": 4,
+    "range": 1.0,
+    "status_effect": "water_walking",
+    "duration": 30,
+    "description": "The water bears your weight like flagstones.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "druid"
+    ]
+  },
+  "swimmers_grace": {
+    "id": "swimmers_grace",
+    "name": "Swimmer's Grace",
+    "mana_cost": 3,
+    "range": 1.0,
+    "status_effect": "swimmers_grace",
+    "duration": 40,
+    "description": "A blessing of the river: you cut water like an otter.",
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  "flight": {
+    "id": "flight",
+    "name": "Flight",
+    "mana_cost": 6,
+    "range": 1.0,
+    "status_effect": "flying",
+    "duration": 25,
+    "description": "The ground releases you; rivers and rocks scroll past below.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  "haste": {
+    "id": "haste",
+    "name": "Haste",
+    "mana_cost": 5,
+    "range": 1.0,
+    "status_effect": "hasted",
+    "duration": 20,
+    "description": "The world slows; you do not.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "concentration": true
+  },
+  "slow": {
+    "id": "slow",
+    "name": "Slow",
+    "mana_cost": 4,
+    "range": 6.0,
+    "status_effect": "slowed",
+    "duration": 8,
+    "description": "Your foe wades through thickened time.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  "transmute": {
+    "id": "transmute",
+    "name": "Transmute",
+    "mana_cost": 4,
+    "range": 1.0,
+    "description": "Base matter runs like wax and hardens into coin.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  "farsight": {
+    "id": "farsight",
+    "name": "Farsight",
+    "mana_cost": 5,
+    "range": 1.0,
+    "description": "Your mind's eye rises above the land, charting all around.",
+    "status_effect": "",
+    "classes": [
+      "wizard",
+      "druid"
+    ]
+  },
+  "keen_sight": {
+    "id": "keen_sight",
+    "name": "Keen Sight",
+    "mana_cost": 4,
+    "range": 1.0,
+    "description": "Your sight sharpens past stone and timber \u2014 for a while you glimpse the figures moving behind the walls.",
+    "status_effect": "keen_sight",
+    "duration": 20,
+    "classes": [
+      "wizard",
+      "cleric",
+      "druid"
+    ]
+  }
+}

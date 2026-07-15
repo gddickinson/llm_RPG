@@ -30,11 +30,24 @@ class ActionRouter:
     def process(self, npc, action_data: Dict[str, str]) -> bool:
         # Skip the turn if paralyzed/stunned
         try:
-            from characters.status_effects import can_act
+            from characters.status_effects import can_act, has_effect
             if not can_act(npc):
                 self.engine.memory_manager.add_event(
                     f"{npc.name} cannot move.")
                 return False
+            # Prone creatures spend the action standing up (P12.2)
+            if has_effect(npc, "prone"):
+                from characters.status_effects import remove_effect
+                remove_effect(npc, "prone")
+                self.engine.memory_manager.add_event(
+                    f"{npc.name} scrambles back to their feet.")
+                return False
+            # Slowed creatures act every other turn (P11.4)
+            if has_effect(npc, "slowed"):
+                skip = not npc.metadata.get("slow_skip", False)
+                npc.metadata["slow_skip"] = skip
+                if skip:
+                    return False
         except Exception:
             pass
 
@@ -73,10 +86,34 @@ class ActionRouter:
             return self._handle_rest(npc, target, action)
         if action in ("craft", "forge", "brew", "cook", "build", "repair", "work"):
             return self._handle_work(npc, target, action)
+        if action == "howl":
+            return self._handle_howl(npc)
 
         # Default — log as flavor
         self.engine.memory_manager.add_event(f"{npc.name} {action} {target}.")
         npc.add_memory(f"I {action} {target}", 1)
+        return True
+
+    def _handle_howl(self, npc) -> bool:
+        """Pack alert (P5.1): same-kind hostiles converge on the player."""
+        player = self.engine.player
+        if player is None:
+            return False
+        self.engine.memory_manager.add_event(
+            f"{npc.name}'s howl echoes across the wilds!")
+        px, py = player.position
+        nx, ny = npc.position
+        alerted = 0
+        for other in self.engine.npc_manager.npcs.values():
+            if other.id == npc.id or not other.is_active():
+                continue
+            if other.name != npc.name:
+                continue
+            ox, oy = other.position
+            if abs(ox - nx) + abs(oy - ny) <= 10:
+                other.metadata["alert"] = [px, py]
+                alerted += 1
+        logger.debug(f"{npc.name} alerted {alerted} packmates")
         return True
 
     # --------------- movement ----------------------------------------
@@ -194,7 +231,7 @@ class ActionRouter:
             for item in list(ground):
                 item_name = item.name if hasattr(item, "name") else str(item)
                 if target.lower() in item_name.lower() or target.lower() == "item":
-                    npc.inventory.append(item)
+                    npc.add_item(item)
                     self.engine.world.remove_item_from_ground(item, nx, ny)
                     self.engine.memory_manager.add_event(
                         f"{npc.name} picks up {item_name}.")
@@ -280,7 +317,7 @@ class ActionRouter:
                 if keyword in target.lower():
                     item = create_item(item_id)
                     if item:
-                        npc.inventory.append(item)
+                        npc.add_item(item)
                         self.engine.memory_manager.add_event(
                             f"{npc.name} forges a {item.name}.")
                         return True

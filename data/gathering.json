@@ -1,0 +1,41 @@
+{
+  "mining": {
+    "verb": "mine",
+    "terrain": ["mountain", "cave"],
+    "adjacent_ok": true,
+    "tool": "pickaxe",
+    "tool_name": "a pickaxe",
+    "regen_minutes": 240,
+    "tiers": [
+      {"item": "copper_ore", "level": 1, "xp": 18, "weight": 5},
+      {"item": "iron_ore", "level": 10, "xp": 32, "weight": 3},
+      {"item": "coal", "level": 20, "xp": 45, "weight": 2},
+      {"item": "mithril_ore", "level": 35, "xp": 80, "weight": 1}
+    ]
+  },
+  "woodcutting": {
+    "verb": "chop",
+    "terrain": ["forest"],
+    "adjacent_ok": false,
+    "tool": "axe",
+    "tool_name": "an axe",
+    "regen_minutes": 180,
+    "tiers": [
+      {"item": "logs", "level": 1, "xp": 15, "weight": 5},
+      {"item": "oak_logs", "level": 12, "xp": 30, "weight": 3},
+      {"item": "yew_logs", "level": 30, "xp": 70, "weight": 1}
+    ]
+  },
+  "fishing": {
+    "verb": "fish",
+    "terrain": ["water"],
+    "adjacent_ok": true,
+    "tool": "fishing_rod",
+    "tool_name": "a fishing rod",
+    "regen_minutes": 120,
+    "tiers": [
+      {"item": "raw_trout", "level": 1, "xp": 16, "weight": 5},
+      {"item": "raw_salmon", "level": 15, "xp": 38, "weight": 2}
+    ]
+  }
+}

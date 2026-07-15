@@ -1,0 +1,54 @@
+{
+  "module_id": "smugglers_cache",
+  "title": "The Smugglers' Cache",
+  "announcement": "Folk say the old farmhouse hides more than hay.",
+  "monsters": {},
+  "items": {},
+  "spawns": [],
+  "placements": [],
+  "quests": {},
+  "beats": [],
+  "structures": {
+    "smugglers_cache": {
+      "attach_to": "Old Farmhouse",
+      "levels": [
+        {
+          "name": "Old Farmhouse",
+          "description": "A plain room of straw and old timber \u2014 but one floorboard rings hollow.",
+          "grid": [
+            "WWWWWWWW",
+            "W.T....W",
+            "W......W",
+            "W.....>W",
+            "WWWDWWWW"
+          ]
+        },
+        {
+          "name": "Smugglers' Cache",
+          "position": "below",
+          "dark": true,
+          "description": "A low cellar that smells of river mud and candle wax.",
+          "grid": [
+            "WWWWWWWW",
+            "W..C...W",
+            "W......W",
+            "W.K..<.W",
+            "WWWWWWWW"
+          ],
+          "inscriptions": [
+            "Scratched into the beam: 'Wulf pays best. Ask no names.'"
+          ],
+          "monsters": [
+            {
+              "template": "restless_bones"
+            }
+          ],
+          "chest_loot": [
+            "lockpicks",
+            "wine"
+          ]
+        }
+      ]
+    }
+  }
+}

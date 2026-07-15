@@ -56,7 +56,7 @@ def parse_args():
                    help="Window width for GUI")
     p.add_argument("--height", type=int, default=800,
                    help="Window height for GUI")
-    p.add_argument("--tile-size", type=int, default=32,
+    p.add_argument("--tile-size", type=int, default=48,
                    help="Tile size in pixels")
     p.add_argument("--load", nargs="?", const="quicksave.json",
                    default=None,
@@ -65,6 +65,11 @@ def parse_args():
                    help="Disable quest system")
     p.add_argument("--no-npc-processes", action="store_true",
                    help="Disable multiprocess NPC actions (uses sync calls instead)")
+    p.add_argument("--dm-bridge", action="store_true",
+                   help="Enable the file-based Dungeon Master bridge "
+                        "(saves/dm/)")
+    p.add_argument("--tutorial", action="store_true",
+                   help="Start on Tutorial Island (learn every system)")
     p.add_argument("--no-menu", action="store_true",
                    help="Skip the start menu and go straight to the game")
     p.add_argument("--debug", action="store_true",
@@ -85,18 +90,29 @@ def main() -> int:
 
     # Start menu (GUI only) — returns the user's choice
     player_spec = None
+    world_kind = "default"
     load_save_name = args.load
     if args.ui == "gui" and has_pygame and not args.no_menu \
             and not args.load:
         try:
             from ui.start_menu import StartMenu
-            choice = StartMenu(width=args.width, height=args.height).run()
+            while True:                       # menu loops for the testbed
+                choice = StartMenu(
+                    width=args.width, height=args.height).run()
+                if choice["action"] == "battle":
+                    from ui.battle_screen import run_battle_testbed
+                    run_battle_testbed(choice["scenario"],
+                                       width=args.width,
+                                       height=args.height)
+                    continue                  # back to the menu
+                break
             if choice["action"] == "quit":
                 return 0
             if choice["action"] == "load":
                 load_save_name = choice["save_name"]
             elif choice["action"] == "new":
                 player_spec = choice.get("spec")
+                world_kind = choice.get("start", "default")
         except Exception as e:
             logger.warning(f"Start menu failed, skipping: {e}")
 
@@ -108,6 +124,9 @@ def main() -> int:
                               and args.provider != "heuristic"),
         enable_quests=(not args.no_quests),
         player_spec=player_spec,
+        start_tutorial=args.tutorial,
+        enable_dm_bridge=args.dm_bridge,
+        world_kind=world_kind,
     )
 
     # Optional load

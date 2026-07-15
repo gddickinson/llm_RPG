@@ -39,9 +39,11 @@ class ShopPanel:
 
     # ---------------- data ------------------------------------------
 
+    def _catalog(self):
+        return self.engine.shop_manager.catalog_for(self.merchant)
+
     def _merchant_items(self):
-        cat = self.engine.shop_manager.catalog_for(self.merchant)
-        return cat.items
+        return self._catalog().items
 
     def _player_items(self):
         return list(self.engine.player.inventory)
@@ -61,8 +63,31 @@ class ShopPanel:
         elif k in (pygame.K_DOWN, pygame.K_s):
             self._move(1)
         elif k in (pygame.K_RETURN, pygame.K_SPACE):
-            self._transact()
+            from engine.trade_info import BULK
+            bulk = bool(getattr(event, "mod", 0) & pygame.KMOD_SHIFT)
+            self._transact(BULK if bulk else 1)
+        elif k == pygame.K_j:   # sell all junk (PUX.2)
+            self._sell_all_junk()
+        elif k == pygame.K_h:   # haggle (P12.10)
+            try:
+                self.engine.shop_manager.haggle(
+                    self.engine.player, self.merchant)
+            except Exception:
+                pass
         return True
+
+    def _haggle_line(self) -> str:
+        try:
+            st = self.engine.shop_manager.haggle_state(
+                self.engine.player, self.merchant)
+            meter = "\u25cf" * st["patience"] + \
+                "\u25cb" * (3 - st["patience"])
+            deal = f"  deal -{int(st['discount'] * 100)}%" \
+                if st["discount"] else ""
+            return (f"[Enter] buy/sell  [H] haggle {meter}{deal}  "
+                    f"[Esc] leave")
+        except Exception:
+            return "[Enter] buy/sell  [Esc] leave"
 
     def _move(self, delta: int) -> None:
         if self.column == 0:
@@ -74,60 +99,124 @@ class ShopPanel:
             if items:
                 self.cursor_right = (self.cursor_right + delta) % len(items)
 
-    def _transact(self) -> None:
+    def _selected_item(self):
+        items = self._merchant_items() if self.column == 0 \
+            else self._player_items()
+        cur = self.cursor_left if self.column == 0 else self.cursor_right
+        return items[cur] if items and cur < len(items) else None
+
+    def _transact(self, qty: int = 1) -> None:
+        """Buy or sell up to `qty` units (PUX.2 bulk); stop early if a
+        purchase can't complete (no gold / no room / merchant broke)."""
+        for _ in range(max(1, qty)):
+            ok = self._buy_one() if self.column == 0 else self._sell_one()
+            if not ok:
+                break
+
+    def _sell_all_junk(self) -> None:
+        from engine.trade_info import junk_items
+        for it in junk_items(self.engine.player):
+            self._sell_one(it)
+
+    def _buy_one(self) -> bool:
         player = self.engine.player
         sm = self.engine.shop_manager
-        if self.column == 0:
-            items = self._merchant_items()
-            if not items or self.cursor_left >= len(items):
-                return
-            item = items[self.cursor_left]
-            price = sm.buy_price(player, item, self.merchant)
-            if player.gold < price:
-                self.engine.memory_manager.add_event(
-                    f"You can't afford {item.name} ({price}g).")
-                return
-            # Pay; reduce stack if stackable, else remove
-            player.gold -= price
-            if item.stackable:
-                # Take a single unit from the stack
-                from items.item_registry import create_item
-                bought = create_item(item.id, quantity=1)
-                if bought is None:
-                    bought = item.copy()
-                    bought.quantity = 1
-                player.inventory.append(bought)
-                item.quantity -= 1
-                if item.quantity <= 0:
-                    items.pop(self.cursor_left)
-                    self.cursor_left = max(0, self.cursor_left - 1)
-            else:
-                player.inventory.append(item)
+        items = self._merchant_items()
+        if not items or self.cursor_left >= len(items):
+            return False
+        item = items[self.cursor_left]
+        price = sm.buy_price(player, item, self.merchant)
+        from engine.carry import can_carry, full_message
+        from items.inventory_ops import find_stack
+        # a stacking buy adds no slot, so a full pack can still top up a stack
+        merges = find_stack(player.inventory, item) is not None
+        if not merges and not can_carry(player):
+            self.engine.memory_manager.add_event(full_message(player))
+            return False
+        if player.gold < price:
+            self.engine.memory_manager.add_event(
+                f"You can't afford {item.name} ({price}g).")
+            return False
+        player.gold -= price
+        self._catalog().gold += price
+        if item.stackable:
+            from items.item_registry import create_item
+            bought = create_item(item.id, quantity=1) or item.copy()
+            bought.quantity = 1
+            player.add_item(bought)
+            item.quantity -= 1
+            if item.quantity <= 0:
                 items.pop(self.cursor_left)
                 self.cursor_left = max(0, self.cursor_left - 1)
-            self.engine.memory_manager.add_event(
-                f"You buy {item.name} for {price}g.")
         else:
+            player.add_item(item)
+            items.pop(self.cursor_left)
+            self.cursor_left = max(0, self.cursor_left - 1)
+        self.engine.memory_manager.add_event(
+            f"You buy {item.name} for {price}g.")
+        try:
+            self.engine.market.note_purchase(item)   # P8.5 demand
+        except Exception:
+            pass
+        self._train_bartering()
+        return True
+
+    def _sell_one(self, item=None) -> bool:
+        player = self.engine.player
+        sm = self.engine.shop_manager
+        if item is None:
             items = self._player_items()
             if not items or self.cursor_right >= len(items):
-                return
+                return False
             item = items[self.cursor_right]
-            price = sm.sell_price(player, item, self.merchant)
-            # Transfer one unit
-            if item.stackable and item.quantity > 1:
-                player.gold += price
-                item.quantity -= 1
-                from items.item_registry import create_item
-                added = create_item(item.id, quantity=1) or item.copy()
-                added.quantity = 1
-                self._merchant_items().append(added)
-            else:
-                player.gold += price
-                player.inventory.remove(item)
-                self._merchant_items().append(item)
-                self.cursor_right = max(0, self.cursor_right - 1)
+        price = sm.sell_price(player, item, self.merchant)
+        try:   # stolen goods need a fence (P12.9b)
+            from engine.law import fence_sale
+            ok, price, note = fence_sale(
+                self.engine, item, self.merchant, price)
+            if not ok:
+                self.engine.memory_manager.add_event(note)
+                return False
+            if note:
+                self.engine.memory_manager.add_event(note)
+        except Exception:
+            pass
+        cat = self._catalog()
+        if cat.gold < price:
             self.engine.memory_manager.add_event(
-                f"You sell {item.name} for {price}g.")
+                f"{self.merchant.name} can't afford that right now "
+                f"({cat.gold}g left). Try after they restock.")
+            return False
+        cat.gold -= price
+        if item.stackable and item.quantity > 1:
+            player.gold += price
+            item.quantity -= 1
+            from items.item_registry import create_item
+            added = create_item(item.id, quantity=1) or item.copy()
+            added.quantity = 1
+            self._merchant_items().append(added)
+        else:
+            player.gold += price
+            if item in player.inventory:
+                player.inventory.remove(item)
+            self._merchant_items().append(item)
+            self.cursor_right = max(0, self.cursor_right - 1)
+        self.engine.memory_manager.add_event(
+            f"You sell {item.name} for {price}g.")
+        try:
+            self.engine.market.note_sale(item)   # P8.5 supply
+        except Exception:
+            pass
+        self._train_bartering()
+        return True
+
+    def _train_bartering(self) -> None:
+        """The B-key deal trains Bartering too (P15.9b)."""
+        try:
+            from engine.skill_progression import train_skill
+            train_skill(self.engine, "bartering", 5)
+        except Exception:
+            pass
 
     # ---------------- render ----------------------------------------
 
@@ -155,12 +244,15 @@ class ShopPanel:
         except Exception:
             ac = 10
         stats = self._font.render(
-            f"Gold: {self.engine.player.gold}    AC: {ac}",
+            f"Gold: {self.engine.player.gold}    AC: {ac}    "
+            f"{self.merchant.name}'s purse: {self._catalog().gold}g",
             True, (200, 200, 220))
         target.blit(stats, (box.x + 16, box.y + 36))
 
-        # Column rectangles
-        col_h = box.height - 90
+        # Column rectangles (leave a strip at the bottom for the
+        # inspect / price-breakdown pane, PUX.2)
+        inspect_h = 78
+        col_h = box.height - 90 - inspect_h
         col_w = (box.width - 48) // 2
         left = pygame.Rect(box.x + 16, box.y + 62, col_w, col_h)
         right = pygame.Rect(left.right + 16, box.y + 62, col_w, col_h)
@@ -171,11 +263,45 @@ class ShopPanel:
                           self.cursor_right,
                           is_buy=False, active=(self.column == 1))
 
+        inspect = pygame.Rect(box.x + 16, left.bottom + 6,
+                              box.width - 32, inspect_h - 12)
+        self._draw_inspect(target, inspect)
+
         hint = self._font.render(
-            "[Left/Right] switch  [Up/Down] move  "
-            "[Enter] buy/sell  [Esc] leave",
+            "[↔] switch  [↕] move  [Enter] deal  "
+            "[Shift+Enter] x5  [J] sell junk  " + self._haggle_line(),
             True, (160, 160, 180))
-        target.blit(hint, (box.x + 16, box.bottom - 24))
+        target.blit(hint, (box.x + 16, box.bottom - 22))
+
+    def _draw_inspect(self, target, rect) -> None:
+        """The selected item: what it is, how it compares to your gear,
+        and WHY its price is what it is (PUX.2 transparency)."""
+        pygame.draw.rect(target, (20, 20, 34), rect)
+        pygame.draw.rect(target, (120, 120, 150), rect, 1)
+        item = self._selected_item()
+        if item is None:
+            return
+        from engine import trade_info
+        sm = self.engine.shop_manager
+        player = self.engine.player
+        x, y = rect.x + 8, rect.y + 4
+        for ln in trade_info.item_report(item)[:2]:
+            target.blit(self._font.render(ln, True, (222, 222, 205)),
+                        (x, y))
+            y += 16
+        cmp = trade_info.compare_to_equipped(self.engine, item)
+        if cmp:
+            target.blit(self._font.render(cmp, True, (150, 220, 150)),
+                        (x, y))
+        selling = (self.column == 1)
+        price = (sm.sell_price(player, item, self.merchant) if selling
+                 else sm.buy_price(player, item, self.merchant))
+        factors = trade_info.price_factors(sm, player, item,
+                                           self.merchant, selling)
+        verb = "Sell" if selling else "Buy"
+        pline = f"{verb} {price}g   ({trade_info.factors_line(factors)})"
+        target.blit(self._font.render(pline, True, (240, 220, 140)),
+                    (rect.right - 8 - self._font.size(pline)[0], rect.y + 4))
 
     def _draw_column(self, target, rect, label, items, cursor,
                      is_buy: bool, active: bool) -> None:

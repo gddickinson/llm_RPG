@@ -1,0 +1,63 @@
+{
+  "deer": {
+    "name": "Deer",
+    "symbol": "d",
+    "hp": 8,
+    "level": 1,
+    "diet": "graze",
+    "timid": 6,
+    "terrain": ["grass", "forest"],
+    "weight": 5,
+    "loot_table": [["raw_meat", 3], ["game_hide", 2]],
+    "description": "A wary deer, ears twitching at every sound."
+  },
+  "rabbit": {
+    "name": "Rabbit",
+    "symbol": "r",
+    "hp": 3,
+    "level": 1,
+    "diet": "graze",
+    "timid": 5,
+    "terrain": ["grass", "forest"],
+    "weight": 6,
+    "loot_table": [["raw_meat", 2], ["game_hide", 1]],
+    "description": "A small rabbit that bolts at the first footfall."
+  },
+  "boar": {
+    "name": "Wild Boar",
+    "symbol": "b",
+    "hp": 14,
+    "level": 2,
+    "diet": "root",
+    "timid": 3,
+    "terrain": ["forest", "swamp"],
+    "weight": 4,
+    "loot_table": [["raw_meat", 4], ["game_hide", 2]],
+    "description": "A tusked boar — it flees, but corner it and it charges."
+  },
+  "pheasant": {
+    "name": "Pheasant",
+    "symbol": "p",
+    "hp": 2,
+    "level": 1,
+    "diet": "graze",
+    "timid": 7,
+    "terrain": ["grass", "forest"],
+    "weight": 5,
+    "loot_table": [["raw_meat", 1], ["feathers", 3]],
+    "description": "A plump gamebird that breaks cover in a clatter of wings."
+  },
+  "fox": {
+    "name": "Red Fox",
+    "symbol": "f",
+    "hp": 6,
+    "level": 1,
+    "diet": "hunt",
+    "timid": 6,
+    "preys_on": ["rabbit", "pheasant"],
+    "terrain": ["grass", "forest"],
+    "weight": 3,
+    "loot_table": [["game_hide", 2], ["raw_meat", 1]],
+    "description": "A russet fox, quick and clever, hunting the hedgerows."
+  }
+}

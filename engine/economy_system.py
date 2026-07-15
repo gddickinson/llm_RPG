@@ -69,7 +69,7 @@ class EconomySystem:
         buyer.gold -= price
         seller.gold += price
         seller.inventory.remove(item)
-        buyer.inventory.append(item)
+        buyer.add_item(item)
         name = item.name if hasattr(item, "name") else str(item)
         self._log(f"{buyer.name} buys {name} from {seller.name} for {price} gold.")
         return True
@@ -93,7 +93,7 @@ class EconomySystem:
         if not item:
             return False
         giver.inventory.remove(item)
-        receiver.inventory.append(item)
+        receiver.add_item(item)
         name = item.name if hasattr(item, "name") else str(item)
         self._log(f"{giver.name} gives {name} to {receiver.name}.")
 
@@ -120,9 +120,10 @@ class EconomySystem:
         self.engine.player.gold -= price
         seller.gold += price
         seller.inventory.remove(item)
-        self.engine.player.inventory.append(item)
+        self.engine.player.add_item(item)
         msg = f"You buy {item.name} for {price}g."
         self._log(msg)
+        self._train_bartering()
         return msg
 
     def _exec_sell_player(self, item_name: str, buyer) -> str:
@@ -133,10 +134,19 @@ class EconomySystem:
         buyer.gold = max(0, buyer.gold - price)
         self.engine.player.gold += price
         self.engine.player.inventory.remove(item)
-        buyer.inventory.append(item)
+        buyer.add_item(item)
         msg = f"You sell {item.name} for {price}g."
         self._log(msg)
+        self._train_bartering()
         return msg
+
+    def _train_bartering(self) -> None:
+        """Every completed deal sharpens Bartering (P15.9b)."""
+        try:
+            from engine.skill_progression import train_skill
+            train_skill(self.engine, "bartering", 5)
+        except Exception:
+            pass
 
     # ---- helpers ------------------------------------------------------
 
@@ -153,6 +163,12 @@ class EconomySystem:
         return target_text.strip(), None
 
     def _adjacent(self, a, b) -> bool:
+        # Player pairs go through the interior-aware check (P9A.7)
+        player = self.engine.player
+        if a.id == player.id or b.id == player.id:
+            from engine.presence import npc_adjacent_to_player
+            other = b if a.id == player.id else a
+            return npc_adjacent_to_player(self.engine, other)
         return ((a.position[0] - b.position[0]) ** 2 +
                 (a.position[1] - b.position[1]) ** 2) ** 0.5 <= 1.5
 

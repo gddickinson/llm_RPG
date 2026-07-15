@@ -1,0 +1,218 @@
+{
+  "lockpicks": {
+    "id": "lockpicks",
+    "name": "Set of Lockpicks",
+    "item_type": "misc",
+    "value": 15,
+    "description": "For the right kind of work.",
+    "stackable": true
+  },
+  "spellbook": {
+    "id": "spellbook",
+    "name": "Tome of Arcana",
+    "item_type": "misc",
+    "value": 80,
+    "description": "Pages crackle with latent magic.",
+    "rarity": "uncommon",
+    "stackable": true
+  },
+  "holy_symbol": {
+    "id": "holy_symbol",
+    "name": "Holy Symbol",
+    "item_type": "misc",
+    "value": 25,
+    "stackable": true
+  },
+  "ledger": {
+    "id": "ledger",
+    "name": "Merchant's Ledger",
+    "item_type": "misc",
+    "value": 2,
+    "stackable": true
+  },
+  "coins": {
+    "id": "coins",
+    "name": "Bag of Coins",
+    "item_type": "misc",
+    "value": 10,
+    "stackable": true
+  },
+  "lute": {
+    "id": "lute",
+    "name": "Lute",
+    "item_type": "misc",
+    "value": 50,
+    "description": "A finely-crafted lute.",
+    "stackable": true
+  },
+  "flute": {
+    "id": "flute",
+    "name": "Wooden Flute",
+    "item_type": "misc",
+    "value": 15,
+    "stackable": true
+  },
+  "whistle": {
+    "id": "whistle",
+    "name": "Guard Whistle",
+    "item_type": "misc",
+    "value": 5,
+    "stackable": true
+  },
+  "goods": {
+    "id": "goods",
+    "name": "Trade Goods",
+    "item_type": "misc",
+    "value": 15,
+    "stackable": true
+  },
+  "personal_items": {
+    "id": "personal_items",
+    "name": "Personal Effects",
+    "item_type": "misc",
+    "value": 2,
+    "stackable": true
+  },
+  "stolen_jewelry": {
+    "id": "stolen_jewelry",
+    "name": "Stolen Jewelry",
+    "item_type": "misc",
+    "value": 120,
+    "description": "Engraved with an unfamiliar crest.",
+    "rarity": "uncommon",
+    "stackable": true
+  },
+  "troll_tooth": {
+    "id": "troll_tooth",
+    "name": "Troll Tooth",
+    "item_type": "misc",
+    "value": 50,
+    "description": "Proof of a slain troll. Useful for quests.",
+    "rarity": "uncommon",
+    "stackable": true
+  },
+  "wolf_pelt": {
+    "id": "wolf_pelt",
+    "name": "Wolf Pelt",
+    "item_type": "misc",
+    "value": 20,
+    "stackable": true
+  },
+  "herb_bundle": {
+    "id": "herb_bundle",
+    "name": "Bundle of Herbs",
+    "item_type": "ingredient",
+    "value": 12,
+    "description": "Healing herbs gathered in the forest.",
+    "stackable": true
+  },
+  "old_map": {
+    "id": "old_map",
+    "name": "Old Map",
+    "item_type": "misc",
+    "value": 30,
+    "description": "Faded ink hints at hidden ruins.",
+    "rarity": "uncommon",
+    "stackable": true
+  },
+  "rusty_key": {
+    "id": "rusty_key",
+    "name": "Rusty Key",
+    "item_type": "key",
+    "value": 2,
+    "description": "Opens some old, forgotten door."
+  },
+  "bogcap": {
+    "id": "bogcap",
+    "name": "Bogcap Mushroom",
+    "item_type": "ingredient",
+    "value": 9,
+    "stackable": true,
+    "description": "A pale swamp mushroom; alchemists prize its bitterness."
+  },
+  "wheat_sheaf": {
+    "id": "wheat_sheaf",
+    "name": "Wheat Sheaf",
+    "item_type": "misc",
+    "value": 4,
+    "stackable": true,
+    "description": "A golden sheaf cut from a ripe field."
+  },
+  "tome_of_fireball": {
+    "id": "tome_of_fireball",
+    "name": "Tome of Fireball",
+    "item_type": "book",
+    "value": 150,
+    "rarity": "rare",
+    "description": "Alzara's teaching copy \u2014 margins full of scorch marks.",
+    "use_effect": {
+      "teach_spell": "fireball"
+    }
+  },
+  "royal_seal": {
+    "id": "royal_seal",
+    "name": "Royal Seal of Bloodstone",
+    "item_type": "misc",
+    "value": 150,
+    "rarity": "rare",
+    "description": "A wax-and-silver seal that speaks with the King's own voice. Doors open for the one who bears it."
+  },
+  "dukes_cipher": {
+    "id": "dukes_cipher",
+    "name": "Duke Voss's Cipher",
+    "item_type": "misc",
+    "value": 0,
+    "rarity": "rare",
+    "description": "A folded cipher in the Duke's own hand \u2014 proof, if it can be read, of a plot against the heir."
+  },
+  "game_hide": {
+    "id": "game_hide",
+    "name": "Game Hide",
+    "item_type": "misc",
+    "value": 12,
+    "stackable": true,
+    "description": "The hide of a wild beast \u2014 a tanner's raw stock."
+  },
+  "feathers": {
+    "id": "feathers",
+    "name": "Bundle of Feathers",
+    "item_type": "misc",
+    "value": 5,
+    "stackable": true,
+    "description": "Fletching for arrows, or a soft bed."
+  },
+  "rucksack": {
+    "id": "rucksack",
+    "name": "Rucksack",
+    "item_type": "misc",
+    "value": 45,
+    "description": "A sturdy leather pack — room for a good deal more.",
+    "metadata": {"carry_bonus": 8}
+  },
+  "explorers_pack": {
+    "id": "explorers_pack",
+    "name": "Explorer's Pack",
+    "item_type": "misc",
+    "value": 130,
+    "rarity": "uncommon",
+    "description": "A well-made pack of many pockets and straps.",
+    "metadata": {"carry_bonus": 14}
+  },
+  "bottomless_bag": {
+    "id": "bottomless_bag",
+    "name": "Bottomless Bag",
+    "item_type": "misc",
+    "value": 450,
+    "rarity": "rare",
+    "description": "Its inside is far larger than its outside — an enchanter's marvel.",
+    "metadata": {"carry_bonus": 40}
+  },
+  "quiver": {
+    "id": "quiver",
+    "name": "Quiver",
+    "item_type": "misc",
+    "value": 35,
+    "description": "A hip quiver — keeps arrows and bolts close, off your back.",
+    "metadata": {"ammo_capacity": 3}
+  }
+}

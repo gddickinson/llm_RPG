@@ -1,11 +1,20 @@
 """Leveling system — XP thresholds, level-up effects.
 
-XP curve (cumulative XP needed to reach level N):
+XP curve (cumulative XP needed to reach level N) — P37.5 rebalanced much STEEPER
+so the hero climbs slowly and power comes more from gear + companions than from
+raw levels (George, twice: "advances too quickly" / "the XP for the levels is
+still far too low"):
     level 1: 0        (starting level)
-    level 2: 100
-    level 3: 300
-    level 4: 600
-    level N: 50 * N * (N - 1)
+    level 2: 3000
+    level 3: 9000
+    level 4: 18000
+    level N: XP_CURVE_COEFF * N * (N - 1)   (XP_CURVE_COEFF = 1500)
+
+P37.6 (George: "level increases need much more XP — 10x more") takes the curve
+10x steeper. With the bumped kill award (25 + 15*foe_level) that is ~75 kills of a
+same-level L1 foe for the first level — but a TOUGHER foe pays far more (an L5 foe
+= 100 XP), so leveling is a slow, deliberate climb that rewards fighting hard
+things over grinding weak ones. Power still leans on gear + party, not XP.
 
 Per level-up the character gains:
     +5 max_hp (and full heal)
@@ -20,6 +29,7 @@ from characters.character_types import CharacterClass
 logger = logging.getLogger("llm_rpg.leveling")
 
 MAX_LEVEL = 20
+XP_CURVE_COEFF = 1500    # xp_threshold(L) = COEFF * L * (L-1); P37.6 (150→1500, 10x)
 
 # Stats favored by each class (gain +1 each on level-up)
 CLASS_STAT_FAVORS: Dict[CharacterClass, Tuple[str, str]] = {
@@ -49,7 +59,7 @@ def xp_threshold(level: int) -> int:
         return 0
     if level > MAX_LEVEL:
         level = MAX_LEVEL
-    return 50 * level * (level - 1)
+    return XP_CURVE_COEFF * level * (level - 1)
 
 
 def level_for_xp(xp: int) -> int:
@@ -124,5 +134,11 @@ def award_xp(character, amount: int) -> List[str]:
     if not isinstance(meta, dict):
         meta = {}
         character.metadata = meta
+    try:   # a good bed pays for itself (P12.6)
+        from characters.status_effects import has_effect
+        if has_effect(character, "well_rested"):
+            amount = int(amount * 1.10)
+    except Exception:
+        pass
     meta["xp"] = meta.get("xp", 0) + max(0, int(amount))
     return check_level_up(character)

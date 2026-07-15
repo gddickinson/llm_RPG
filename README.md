@@ -1,184 +1,243 @@
 # LLM-RPG
 
-A locally-runnable, D&D-style RPG with optional LLM-powered NPCs.
-The default mode requires **no LLM at all** — a heuristic NPC engine
-keeps the world alive — but you can plug in Ollama, Anthropic Claude,
-or OpenAI for richer character behavior.
+**A locally-runnable, D&D-style role-playing game with a living world and
+LLM-powered NPCs.** It runs entirely offline out of the box — a heuristic AI
+keeps the whole world alive with zero API calls — and plugs into Ollama,
+Anthropic Claude, or OpenAI when you want richer NPC minds.
 
-## Highlights
+> **This project is an *introduction* to building a role-playing game with an
+> LLM** — a working, playable reference you can read, run, and learn from. It's
+> deliberately structured so the ideas are legible: content lives in `data/*.json`,
+> every module is mapped in [`INTERFACE.md`](INTERFACE.md), the LLM is a pillar
+> that's *always* mirrored by an offline heuristic, and each source file stays
+> under 500 lines. It is still evolving in the open — see *Current state* and
+> *Future plans* below.
 
-- **Local-first**: Single-process Pygame game; runs on any modern Mac/Linux/Windows.
-- **Start menu + character creator**: Title screen with New Game / Load / Quit. Quick Start or full multi-step Customize (name → race → class → 4d6 stats → confirm).
-- **No mandatory LLM**: Heuristic provider gives NPCs personality, daily routines, schedules, combat behavior, and branching dialog out of the box.
-- **Pluggable LLM**: One flag to switch between heuristic / Ollama / Anthropic / OpenAI.
-- **Bigger world** (120×80, 9,600 tiles): three settlements — Oakvale Village, Riverside Hamlet, and Stonepine Camp (mining/lumber outpost) — connected by roads. Two cave entrances. Mountain spurs, a tributary river, more forest patches.
-- **Procedural dungeons**: step onto a cave tile and descend into BSP-generated tunnels with rooms, monsters, loot.
-- **Weather**: clear / cloudy / rain / fog / snow / storm; biased by season; reduces visibility.
-- **Foraging**: pick herbs and berries from forest/grass tiles with regen cooldown.
-- **NPC families + gossip**: NPCs have spouses, siblings, and gossip lines drawn from family ties and recent world events.
-- **History sim**: a brief pre-game simulation gives the world lore — faction tensions, a ruined keep, and starting reputation shifts.
-- **Schedule-driven movement**: NPCs actually walk to their schedule's target location (keywords like "tavern", "forge", "home", "village" resolve to the nearest matching place).
-- **Living world**: NPC daily schedules + needs (hunger, fatigue), seasons, calendar, day/night cycle.
-- **Inventory-driven combat**: melee uses your equipped weapon (fists if none); ranged requires an equipped bow/sling/crossbow plus matching ammo (arrows/bolts/stones), consumed per shot.
-- **D&D-style hit rolls**: 1d20 + ability mod + proficiency vs AC. Nat-20 crits (double damage), nat-1 fumbles. +2 to hit when flanking.
-- **Equipment that matters**: 6 worn slots (weapon, armor, shield, amulet, ring, boots). Rings/amulets/boots grant real stat / AC / HP / mana bonuses while worn.
-- **Interactive inventory (I)**: equipment slots up top, scrollable bag below; E equips/unequips, Q uses, D drops.
-- **Shop UI (S)**: opens with the adjacent merchant. Two-column buy/sell with faction-rep–modified prices. Merchants stock themed inventories (smith = weapons/armor, apothecary = potions/scrolls, etc.).
-- **Magic items**: silver / flaming / holy / frost weapons deal type-appropriate bonus damage (silver +50% vs trolls, fire vs troll regen, holy vs monsters).
-- **Spells + mana**: Wizard / cleric / sorcerer / druid spells with mana pool, range, and status effects.
-- **Status effects**: Poison ticks damage; paralyzed skips turns; blessed/cursed shift damage.
-- **Equipment slots**: Worn weapon / armor / shield / amulet / ring / boots, separate from the inventory bag.
-- **Real items + crafting**: Weapons, armor, potions, quest items; recipes for ingredients.
-- **Quests**: 6 quest types. Accept from NPC dialog or the tavern's quest board.
-- **Factions**: 8 factions with reputation tracking.
-- **Companions**: Recruit followers who fight alongside you.
-- **Building interiors**: Walk into the tavern, forge, shop, or temple.
-- **Random encounters**: Wilderness monster spawns.
-- **Banking**: Deposit gold safely at temple or shop.
-- **Save / load**: One-key F5/F9 JSON saves.
-- **Death popup**: When the player dies, a popup offers Restart or Quit.
-- **Procedural worldgen + sprite renderer**: No PNG asset files needed.
-- **D&D skill checks + leveling**: 18 skills, XP curve with class-favored stat gains.
+![The isometric 3D-look world](docs/img/iso_world.png)
+*The optional isometric renderer (Phase 41): the same world drawn in a baked-3D
+2:1 view — 3D buildings, trees, characters and furniture, interior lighting,
+day-night + weather, and decorative scatter. Toggle it in Settings; the classic
+top-down view stays the default.*
 
-## Quick Start
+![Gameplay — Oakvale Village in the rain](docs/img/gameplay.png)
+*The default top-down view: procedural sprites, eased day/night lighting and
+weather, fog-of-war, a live minimap, and an event log threaded with world lore,
+DM beats, and the legends of the fallen.*
 
 ```bash
 pip install -r requirements.txt
-python main.py                                  # Pygame GUI, heuristic AI
-python main.py --ui terminal                    # Terminal mode
-python main.py --provider ollama --model llama3 # Ollama backend
-python main.py --provider anthropic \
-       --model claude-haiku-4-5-20251001        # Anthropic Claude
-python main.py --load                           # Resume quicksave
+python main.py                       # Pygame GUI, no LLM needed (heuristic AI)
+python main.py --tutorial            # start on Tutorial Island
+python main.py --provider anthropic --model claude-haiku-4-5-20251001
+python main.py --ui terminal         # text UI
 ```
 
-For LLM modes, install the matching SDK:
-```bash
-pip install anthropic        # for --provider anthropic
-pip install openai           # for --provider openai
-# Ollama: see https://ollama.ai/
-```
+---
+
+## What the game is today
+
+A living-world RPG on a streaming, effectively-endless tile map. You wake near
+**Oakvale Village**, and from there the world is yours: three settlements and
+the Murkfen swamp joined by roads, caves that drop into procedural multi-level
+dungeons, hand-built structures (a wizard's tower, a ruined keep, a seven-floor
+**royal castle**), and a wilderness that gets more dangerous the stronger you
+grow. A new game can even **begin at the castle** from the title screen.
+
+Nothing here waits for you. NPCs keep daily schedules, tend needs, remember what
+you did, form opinions, and — now — pursue private ambitions and drift into
+friendships and feuds with each other. Factions raid and trade overnight;
+villages produce goods and caravan them to where they're scarce; the gods watch
+your deeds; and monsters band into packs, grow into tribes that raid the towns,
+and rise into named nemeses that survive your blade and come back for revenge.
+
+### The pillars
+
+- **A world that lives without you.** Every night a stack of heuristic systems
+  moves the world: a world director emits rumors and events, a faction ticker
+  fights off-screen battles with a real army model, villages produce and trade,
+  the market drifts, gods drop omens, tribes grow, ambitions advance, and the
+  social graph reshapes who likes whom. All of it runs on the offline default.
+
+- **Monsters that behave like an ecology.** Wolves hunt in packs that focus-fire
+  the softest target and break when their leader falls; goblin and troll tribes
+  grow in strength and raid the settlements until you beat them back; the
+  wilderness scales to your party with elite champions and warbands; dragons
+  breathe fire from mountain lairs; and a champion you almost kill can become a
+  named **nemesis** who flees, rises in title, and hunts you for the rest of the
+  campaign.
+
+- **The LLM as a gameplay pillar, never a crutch.** All LLM features are optional
+  and mirrored by a heuristic path, so the game is fully playable offline. NPC
+  dialog runs a structured JSON protocol the *engine* validates; NPCs hold
+  injection-proof gated secrets, remember conversations with retrieval-scored
+  memory, and react to your deeds; `/persuade` `/intimidate` `/deceive` are
+  judged social checks with real stakes; and an optional **Dungeon Master** layer
+  plans campaign beats within a code-enforced charter.
+
+![The battle testbed — the Siege of Bloodstone](docs/img/battle.png)
+*The Phase-17 tactical layer: squads with morale, formations, flanking arcs,
+armour-vs-damage-type, siege engines and breachable walls — here a war-host
+storms the castle's curtain wall.*
+
+### Systems overview
+
+| Area | What's in it |
+|---|---|
+| **Progression** | 12-skill lattice with geometric XP curves, tiered gathering & crafting, gear durability + forge repair, a collection log, skilling pets with loyalty, regional achievement diaries, quest points → guild ranks, earned teleports & Agility shortcuts |
+| **Combat depth** | degrees of success, flanking & opportunity attacks, cover & true line-of-sight, ranged fidelity (ammo, aim, reload), concentration spells, weapon actions, body-part wounds, infection, dying/stabilize, a Souls-like bloodstain on death |
+| **Monsters & menace** | dragons + apex tier, overworld lairs with hoards, coordinated packs, tribes that grow & raid, party-scaled elites & warbands, the Shadow-of-Mordor nemesis system |
+| **The living world** | nightly world director, faction ticker with a real Lanchester army model, settlement production + caravans + market prices, five gods with favor & miracles, disease, weather, two moons & conjunctions |
+| **The living society** | NPC needs & schedules, retrieval-scored memory & nightly opinions, gated secrets, bond ceremonies, heart events, a topic journal, ambitions that pay off (retire, wed, master a craft), and a peer social graph of friendships & feuds |
+| **The world itself** | streaming endless regions, destructible tiles & breachable walls, fire/oil/water/blood surfaces, floods, giants that smash & rebuild, environmental traversal (wade/swim/climb/dive) with a breath clock, claimable homes, a pack mule |
+| **Set-pieces** | multi-level buildings & dungeons, boss fights with telegraphed AoE & phases, a seven-floor royal castle with a living court and an intrigue questline, on-screen and off-screen sieges |
+| **The Dungeon Master** | a typed, budgeted, charter-checked command set; one planning call per game-day; a persistent Legendarium of everything created and everything slain |
+| **Multiplayer & agents** | a transport-free client/world contract with an optional TCP wire; agent-driven heroes that play through the real player API; an away-mode heartbeat |
+
+![Inventory & gear](docs/img/inventory.png)
+*The I-panel: equipment, bags, and use/equip/drop — the character screen the game
+drives from data.*
+
+---
+
+## How to play
+
+1. **Install & launch** — `pip install -r requirements.txt` then `python main.py`.
+   A title screen offers **New Game** (a character creator: race, class, stats),
+   **Load**, **Begin at the Castle**, and world options (a classic or a *Realistic
+   World*). No API key or network is needed — the offline heuristic AI runs the
+   whole world.
+2. **Find your feet in Oakvale** — you start safe in/near **Oakvale Village**.
+   `WASD`/arrows to walk; `T` to talk to townsfolk; `B` to barter; `I` for your
+   inventory; `Q` for your quest log; `F1`/`?` for the full controls. The **hint
+   bar** along the bottom always tells you which keys do something right here.
+3. **Take a quest & venture out** — accept a quest from an NPC or a tavern quest
+   board, then head into the wilds. It gets **more dangerous the further you go**
+   — monsters now close in and press the attack, so fight deliberately, use
+   cover and terrain, and retreat when outmatched.
+4. **Grow through gear & allies, not grinding** — power comes from better
+   weapons/armour, crafted and looted, and from **companions** you recruit; the
+   XP climb is intentionally slow. Rest at inns or camp to heal; bank your gold;
+   train skills by *doing* (mining, fishing, crafting, hunting).
+5. **Follow the adventure** — a rumor at the start points you toward *The Sunken
+   Tome of Vael'Zhur* (below). Or just live in the world: the map streams
+   endlessly, NPCs remember you, factions war, and the seasons turn.
+
+Prefer text? `python main.py --ui terminal`. Want a 3D look? Toggle the renderer
+to **iso** in Settings (`,`). Learning by doing? `python main.py --tutorial`.
 
 ## Controls (GUI)
 
-| Key                    | Action                          |
-|------------------------|---------------------------------|
-| WASD / Arrows          | Move                            |
-| SPACE / F              | Attack adjacent enemy           |
-| T                      | Talk to adjacent NPC            |
-| 1–9 (in dialog)        | Accept / turn in offered quests |
-| G / E                  | Pick up item                    |
-| H                      | Drink potion                    |
-| I                      | Inventory overlay               |
-| Q                      | Quest log                       |
-| C                      | Character sheet                 |
-| F5 / F9                | Save / Load                     |
-| F1 / `/`               | Help                            |
-| ESC                    | Close menu / quit               |
+**Move & explore** — `WASD`/arrows walk (a map edge streams a new region);
+`Numpad 1-9` walk in 8 directions; `SHIFT+move` disengage; `TAB` enter/leave a
+building or cave; `SHIFT+TAB` force a locked door; `L` look, `SHIFT+L` event-log
+detail; `ENTER` sleep at an inn or camp outdoors.
 
-In dialog mode: type your message, Enter to send, Esc to leave.
+**Fight** — `SPACE`/`F` melee; `R` ranged, `SHIFT+R` aimed shot; `[` `]` cycle
+target; `SHIFT+F` shove; `SHIFT+V` weapon action; `SHIFT+T` trip; `SHIFT+I`
+demoralize; `SHIFT+B` feint; `SHIFT+H` battle medicine; `X` spellbook (a compact
+side rail, `SHIFT+1-5` favourites a slot); `1-5` **quick-cast** a slotted spell
+with no overlay; `V` quick-Heal; `H` drink a potion.
 
-## Game Systems
+**People & world** — `T` talk (`/persuade` `/intimidate` `/deceive`); `B` barter;
+`G`/`E` pick up · use furniture · dig; `SHIFT+G` carry a downed body; `Z` forage
+/ harvest; `SHIFT+Z` treat your pet; `P` party; `SHIFT+P` pray; `K` craft;
+`N`/`M` bank; `1–5` answer a confronting guard.
 
-### NPCs — daily schedules + needs
+**Panels** — `I` inventory & gear · `C` character · `Q` quests · `O` collection
+· `J` diaries · `U` travel · `Y` topic journal · `,` settings · `F1`/`?` help ·
+`F5`/`F9` quicksave/quickload · `F11` fullscreen · `ESC` close.
 
-Peaceful NPCs follow class-specific daily routines: villagers and merchants work during the day, eat at the tavern at meals, drink in the evening, sleep at night. Bards play music in the tavern; clerics pray at the temple. NPCs accumulate hunger and fatigue as time passes; starving or exhausted NPCs break from their schedule to find food or rest.
+---
 
-Hostile NPCs (brigands, trolls, monsters) hunt the player on sight.
+## Playing "The Sunken Tome of Vael'Zhur" (the built-in adventure)
 
-### Combat
+A themed side-campaign is woven into every new game. At the start you'll hear a
+rumor — *"Fisherfolk speak of a drowned green light in the southern Mirefen
+marsh — and of the scholar Ondrel there."* That's your cue:
 
-- Player vs NPC vs NPC; stat-vs-stat hit chance with weapon damage / armor reduction.
-- Defeated characters drop class-keyed loot via `items/loot_tables.py`.
-- Player kills grant XP and shift faction reputation.
+1. **Travel south/south-east** to the **Mirefen** marsh (a good stretch out).
+2. **Talk to Sage Ondrel** (`T`) — he gives *The Whisper Beneath the Marsh*:
+   find the **Drowned Vault**.
+3. **The Scattered Keys** — recover the three **Warding-Key fragments** from
+   the **Thornwatch Ruins**, the **Ashen Camp**, and **Ysolde's Hollow** (each
+   guarded — fight for them), and bring them back to Ondrel, who forges the
+   **Warding Key**.
+4. **The Drowned Sanctum** (from **Warden Halric**) — descend the Vault's three
+   flooded, sigil-warded levels and face **Vael'Zhur the lich** at his altar.
+5. **Decide the Tome's fate** — at turn-in, choose to **Seal**, **Destroy**, or
+   **Claim** it. Each ending writes its own line into the Chronicle (`Y`).
 
-### Factions + reputation
+Tip: the Vault is dark — grab the **Drowned Lantern** from the first chest, and
+the **Tidecaller's Signet** helps you cross the flooded halls.
 
-Eight factions: villagers, guards, merchants, brigands, monsters, temple, bardic, neutral. Killing a brigand pleases villagers, guards, and temple — and hardens the brigand-rep further. Attacking a villager turns the town hostile.
+---
 
-Reputation labels: revered ▶ honored ▶ friendly ▶ warming ▶ neutral ▶ wary ▶ hostile ▶ hated.
+## Development
 
-### Quests
+- **Branch:** work happens on `v2-development` in small, tested rounds; every
+  green round is committed **and** pushed.
+- **Tests:** `.venv/bin/python -m unittest discover tests/` — **2800+** unit
+  tests, kept green. Content is validated with
+  `.venv/bin/python -m items.data_validate` after any `data/` edit.
+- **Navigation:** read **[`INTERFACE.md`](INTERFACE.md)** first — it maps every
+  module. **[`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md)** holds the phased plan;
+  **[`SESSION_LOG.md`](SESSION_LOG.md)** narrates every round.
+- **Content is data, not code.** Items, recipes, spells, monsters, quests, NPCs,
+  skills, structures, lairs, tribes and more live in `data/*.json`. New content
+  is a JSON edit plus a validator pass — never a re-hardcode.
+- **File-size rule:** every source file stays under 500 lines; modules are split
+  before they grow past it.
 
-Quests start AVAILABLE — discover them through NPC dialog (accept with 1-9) or the **quest board** at the tavern. Turn in completed quests at the giver for gold, items, and XP.
+### Current state
 
-Objective types: KILL, FETCH, TALK, EXPLORE, DELIVER, SURVIVE.
+The core game is complete and richly featured, and development continues in the
+open. Highlights of what's in now:
 
-### Items + crafting
+- **Phases 0–20** — the foundation: repair & modularization, the 12-skill
+  progression lattice, the LLM dialog/secrets/memory pillar, quests & the living
+  world, combat depth, the Dungeon Master layer, conflict systems, living
+  buildings & destructible world, traversal, the living economy with production &
+  caravans, the tactical battle layer, the seven-floor royal castle, the
+  **Monsters & Menace** ecology (dragons, lairs, packs, tribes, elites, the
+  Shadow-of-Mordor nemesis), and the **Living Society & Gods** (ambitions, a peer
+  social graph of friendships & feuds, divine boons & wrath).
+- **Multiplayer & agents** — a transport-free client/world contract with an
+  optional TCP wire, and agent-driven heroes that play through the real player API.
+- **A built-in adventure** — *The Sunken Tome of Vael'Zhur*, a guided 5-act
+  branching questline woven into every new game (see below).
+- **World detail & graphics** — themed, prop-decorated interiors; a per-tile
+  textured overworld with terrain edges, 2.5D buildings with real roofs and
+  gates, and decorative scatter; **an optional full isometric "3D-look" renderer**
+  (baked-3D objects, characters, furniture, interior lighting, and day-night +
+  weather — a toggle, with the top-down view still the default).
+- **Recent balance & feel** — a much slower, gear-and-party-driven power curve
+  (10× steeper XP), monsters that *press the attack* every turn and hit hard,
+  quests that clear an encounter source (break a bandit camp → fewer bandits),
+  non-blocking quick-cast, carry-raising bags & a quiver, and stackable ammo.
 
-- 35+ predefined items with type, rarity, value, effects.
-- Recipes turn ingredients into output items (`items/crafting.py`).
-- Some recipes are forge-gated — visit Durgan's Forge to craft weapons.
+See **[`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md)** for the full phased history
+and **[`SESSION_LOG.md`](SESSION_LOG.md)** for a round-by-round narrative.
 
-### Banking
+### Future plans
 
-Visit the Temple of Light or General Store to deposit/withdraw gold. Balance is stored in `player.metadata["bank"]`.
+Active and upcoming work (tracked in `DEVELOPMENT_PLAN.md`):
 
-### Companions
-
-Recruit certain NPC classes (warrior, bard, cleric, wizard, ranger, paladin) once you've built up enough relationship (≥30). Up to 3 party members. They follow you and fight adjacent hostiles automatically.
-
-### Building interiors
-
-Step on a tavern / forge / shop / temple tile and press E (or the interact button) to enter the indoor mini-map. Each interior has furniture and NPC spots. Step on the door tile to leave.
-
-### Random encounters
-
-When you wander far from town through grass or forest tiles, monsters (wolves, bandits, goblins, wandering trolls) may spawn nearby. Cooldown between encounters keeps them from being constant.
-
-### Calendar + seasons
-
-12 months × 30 days = 360-day year. Four seasons (spring/summer/autumn/winter) each tint the world's colors. The current date is shown in the HUD.
-
-### Skills + leveling
-
-- D&D-style skill checks: 1d20 + ability modifier (+ proficiency) vs DC, with advantage/disadvantage.
-- XP curve: cumulative `50 * N * (N-1)` per level.
-- On level-up: +5 max HP, full heal, +1 to two class-favored stats (e.g. Warrior STR+CON, Wizard INT+WIS).
-
-### Save / load
-
-One-key save (F5) and load (F9). Captures world, time, all NPCs, ground items, quests, player progress.
-
-## Project Layout
-
-See [`INTERFACE.md`](INTERFACE.md) for the full navigation map.
-
-## Running Tests
-
-```bash
-python -m unittest discover tests/
-```
-
-107 tests cover items, quests, save/load, combat, world gen, skills, leveling, factions, calendar, schedules, needs, encounters, banking, crafting, interiors, quest boards, companions, dialog trees, engine.
-
-## Configuration
-
-Edit `config.py` to tune:
-- `DEFAULT_PROVIDER`: heuristic | ollama | anthropic | openai
-- `DEFAULT_MODEL`: model name for the chosen provider
-- `DEFAULT_MAP_WIDTH` / `_HEIGHT`
-- `NPC_ACTION_INTERVAL`: turns between NPC actions
-- `MAX_HISTORY_ITEMS`: event log retention
-
-## Adding Content
-
-Quick recipes (see INTERFACE.md for details):
-- **New item**: append to `items/item_registry.py`.
-- **New recipe**: append to `items/crafting.py` `RECIPES` dict.
-- **New quest**: add template in `quests/quest_templates.py`; post to a board in `quests/quest_board.py`.
-- **New NPC class**: extend `CharacterClass`; add schedule in `characters/schedules.py`; add to `CLASS_TO_FACTION`.
-- **New dialog tree**: add factory in `engine/dialog_trees.py`.
-- **New encounter monster**: add entry in `world/encounters.py`.
-- **New LLM provider**: subclass `LLMProvider` in `llm/providers/`.
+- **Mounts you can ride** — surfacing the horse / pack-mule / rider system with a
+  stable near Oakvale to buy and ride from.
+- **Platform-gated travel** — teleport only from Wayfarer platforms (not
+  anywhere), with the hero spawning on a starting platform.
+- **Isometric polish** — camera pan/zoom, deeper iso lighting; optionally making
+  iso the default once it's fully at parity.
+- **Deeper systems** — an expanded skill web, a drag-and-drop character/items
+  window, a magic overhaul (slower mana, learned spells), and richer, tiered
+  procedural worlds with woven-in history.
 
 ## Requirements
 
-- Python 3.8+
-- pygame (or pygame-ce) — for GUI mode
-- requests — for Ollama
-- (optional) anthropic, openai — for cloud providers
+Python 3.12, `pygame`, `numpy`, `pytest` (see `requirements.txt`). A virtualenv is
+recommended (`python -m venv .venv && .venv/bin/pip install -r requirements.txt`).
+No network is required to play — LLM providers are strictly opt-in.
 
 ## License
 
-MIT
+See repository for license details.

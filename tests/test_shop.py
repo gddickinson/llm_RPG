@@ -57,15 +57,41 @@ class TestShop(unittest.TestCase):
 
     def test_merchants_near(self):
         from engine.shop import merchants_near
-        # Move player adjacent to Goren
+        # Meet Goren on open ground (indoors he'd be behind walls —
+        # P9A.7: no bartering through them)
         goren = self.engine.npc_manager.get_npc("tavernkeeper_01")
-        self.engine.world.map.remove_character(self.engine.player)
+        wmap = self.engine.world.map
+        wmap.remove_character(goren)
+        goren.position = (wmap.width - 3, wmap.height - 3)
+        wmap.place_character(goren, *goren.position)
+        wmap.remove_character(self.engine.player)
         self.engine.player.position = (goren.position[0] + 1,
                                        goren.position[1])
-        self.engine.world.map.place_character(self.engine.player,
-                                              *self.engine.player.position)
+        wmap.place_character(self.engine.player,
+                             *self.engine.player.position)
         nearby = merchants_near(self.engine, self.engine.player)
         self.assertTrue(any(n.id == "tavernkeeper_01" for n in nearby))
+
+    def test_merchants_inside_reachable_inside(self):
+        """P9A.7: bartering with the keeper works INSIDE the tavern."""
+        from engine.shop import merchants_near
+        from engine.presence import assign_visitors, zone_position
+        goren = self.engine.npc_manager.get_npc("tavernkeeper_01")
+        loc = next(l for l in self.engine.world.locations
+                   if "tavern" in l.name.lower()
+                   and l.name in self.engine.interiors)
+        wmap = self.engine.world.map
+        wmap.remove_character(goren)
+        goren.position = (loc.x, loc.y)
+        wmap.place_character(goren, *goren.position)
+        inter = self.engine.interiors[loc.name]
+        self.engine.current_interior = inter
+        assign_visitors(self.engine, inter, loc.name)
+        spot = zone_position(self.engine, goren)
+        self.engine.player.position = (spot[0], spot[1] + 1)
+        nearby = merchants_near(self.engine, self.engine.player)
+        self.assertTrue(any(n.id == "tavernkeeper_01" for n in nearby))
+        self.engine.current_interior = None
 
 
 class TestCategoryHeuristics(unittest.TestCase):

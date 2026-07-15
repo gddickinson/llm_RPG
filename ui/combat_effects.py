@@ -207,17 +207,27 @@ class CombatEffects:
 
     def draw(self, target: "pygame.Surface", view_rect,
              cam_x: int, cam_y: int, tile_size: int) -> None:
+        """Top-down draw: a grid camera maps world tiles → screen."""
+        def to_screen(x, y):
+            return self._world_to_screen(x, y, view_rect, cam_x, cam_y,
+                                         tile_size)
+        self.draw_with(target, view_rect, to_screen, tile_size)
+
+    def draw_with(self, target, view_rect, to_screen, tile_size) -> None:
+        """Projection-agnostic draw (P41.12): `to_screen(x, y) -> (sx, sy)` maps
+        a world tile to screen — the grid for top-down, the IsoProjection for the
+        3D view — so damage popups / hit flashes / death particles read in both."""
         if not PYGAME_OK:
             return
         self._ensure_font()
         for p in self.damage_popups:
-            self._draw_popup(target, view_rect, p, cam_x, cam_y, tile_size)
+            self._draw_popup(target, view_rect, p, to_screen, tile_size)
         for f in self.hit_flashes:
-            self._draw_flash(target, view_rect, f, cam_x, cam_y, tile_size)
+            self._draw_flash(target, view_rect, f, to_screen, tile_size)
         for d in self.death_effects:
-            self._draw_death(target, view_rect, d, cam_x, cam_y, tile_size)
+            self._draw_death(target, view_rect, d, to_screen, tile_size)
         for p in self.particles:
-            self._draw_particle(target, view_rect, p, cam_x, cam_y, tile_size)
+            self._draw_particle(target, view_rect, p, to_screen, tile_size)
 
     # ------------------------------------------------------------------ internals
 
@@ -238,11 +248,10 @@ class CombatEffects:
     def _on_screen(self, sx: int, sy: int, view_rect) -> bool:
         return view_rect.collidepoint(sx, sy)
 
-    def _draw_popup(self, surf, view_rect, p, cam_x, cam_y, tile_size):
+    def _draw_popup(self, surf, view_rect, p, to_screen, tile_size):
         if not self._font_dmg:
             return
-        sx, sy = self._world_to_screen(p.x, p.y, view_rect, cam_x, cam_y,
-                                       tile_size)
+        sx, sy = to_screen(p.x, p.y)
         if not self._on_screen(sx, sy, view_rect):
             return
         alpha = max(0, int(255 * (1 - p.age / p.max_age)))
@@ -250,9 +259,8 @@ class CombatEffects:
         text.set_alpha(alpha)
         surf.blit(text, (sx - text.get_width() // 2, sy - 18))
 
-    def _draw_flash(self, surf, view_rect, f, cam_x, cam_y, tile_size):
-        sx, sy = self._world_to_screen(f.x, f.y, view_rect, cam_x, cam_y,
-                                       tile_size)
+    def _draw_flash(self, surf, view_rect, f, to_screen, tile_size):
+        sx, sy = to_screen(f.x, f.y)
         if not self._on_screen(sx, sy, view_rect):
             return
         alpha = max(0, int(180 * (1 - f.age / f.max_age)))
@@ -261,9 +269,8 @@ class CombatEffects:
         pygame.draw.circle(overlay, (*f.color, alpha), (r, r), r)
         surf.blit(overlay, (sx - r, sy - r))
 
-    def _draw_death(self, surf, view_rect, d, cam_x, cam_y, tile_size):
-        sx, sy = self._world_to_screen(d.x, d.y, view_rect, cam_x, cam_y,
-                                       tile_size)
+    def _draw_death(self, surf, view_rect, d, to_screen, tile_size):
+        sx, sy = to_screen(d.x, d.y)
         if not self._on_screen(sx, sy, view_rect):
             return
         # Red flash for first 0.15s
@@ -280,9 +287,8 @@ class CombatEffects:
             pygame.draw.rect(surf, part["color"],
                              (px, py, part["size"], part["size"]))
 
-    def _draw_particle(self, surf, view_rect, p, cam_x, cam_y, tile_size):
-        sx, sy = self._world_to_screen(p.x, p.y, view_rect, cam_x, cam_y,
-                                       tile_size)
+    def _draw_particle(self, surf, view_rect, p, to_screen, tile_size):
+        sx, sy = to_screen(p.x, p.y)
         if not self._on_screen(sx, sy, view_rect):
             return
         alpha = max(0, int(220 * (p.life / p.max_life)))

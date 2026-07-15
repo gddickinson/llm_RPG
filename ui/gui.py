@@ -19,12 +19,41 @@ from ui.input_handler import InputHandler
 
 logger = logging.getLogger("llm_rpg.gui")
 
+# below this the side/bottom panels stop leaving a usable map
+MIN_W, MIN_H = 900, 640
+
+
+def compute_layout(width: int, height: int) -> dict:
+    """The screen regions for a given window size (PUX.4c) — RESPONSIVE:
+    the side/bottom panels scale within sane clamps and the map fills
+    whatever is left, so the layout works at any window size, not just
+    the old hard-pinned 1280×800. Pure (no display) so it's unit-tested.
+    """
+    width = max(MIN_W, width)
+    height = max(MIN_H, height)
+    side = max(260, min(420, int(width * 0.26)))
+    bottom = max(150, min(240, int(height * 0.24)))
+    bottom = min(bottom, height // 2 - 60)     # keep the Quests panel room
+    map_w = width - side
+    ev_w = max(160, min(map_w - 140, map_w // 2 + 80))
+    return {
+        "map": pygame.Rect(0, 0, map_w, height - bottom),
+        "status": pygame.Rect(width - side, 0, side, height // 2),
+        "quests": pygame.Rect(width - side, height // 2,
+                              side, height // 2 - bottom),
+        "events": pygame.Rect(0, height - bottom, ev_w, bottom),
+        "minimap": pygame.Rect(ev_w, height - bottom,
+                               map_w - ev_w, bottom),
+        # the party panel fills the bottom-right (PUX.4b)
+        "party": pygame.Rect(width - side, height - bottom, side, bottom),
+    }
+
 
 class GameGUI:
     """Pygame GUI — wraps engine state in a windowed application."""
 
     def __init__(self, engine, width: int = 1280, height: int = 800,
-                 tile_size: int = 32, title: str = "LLM-RPG"):
+                 tile_size: int = 48, title: str = "LLM-RPG"):
         if not PYGAME_OK:
             raise RuntimeError("pygame is not installed")
         self.engine = engine
@@ -41,21 +70,37 @@ class GameGUI:
         self.dialog_history: list = []   # list of strings (NPC last reply)
         self.dialog_input: str = ""
         self.dialog_pending_reply: Optional[str] = None
+        self.dialog_menu: list = []      # PUX.6 quick-pick options
 
-        # Inventory + shop panels (lazy)
+        # Inventory + shop + crafting + spell panels (lazy)
         self.inventory_panel = None
         self.shop_panel = None
+        self.crafting_panel = None
+        self.spell_panel = None
+        self.settings_panel = None
 
         # Init pygame
         pygame.init()
         pygame.display.set_caption(title)
-        self.screen = pygame.display.set_mode((width, height))
+        self.fullscreen = False
+        self._windowed_size = (width, height)
+        self.screen = pygame.display.set_mode((width, height),
+                                              pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
 
         # Subsystems
         self.renderer = MapRenderer(tile_size=tile_size)
         self.hud = HUD()
         self.input_handler = InputHandler(engine, self)
+        # Procedural sound (SFX via event observer, weather ambience)
+        try:
+            from ui.sound import SoundManager
+            self.sound = SoundManager()
+            if self.sound.enabled:
+                engine.memory_manager.add_observer(self.sound.on_event)
+        except Exception as e:
+            logger.debug(f"Sound unavailable: {e}")
+            self.sound = None
 
         # Layout
         self._compute_layout()
@@ -63,22 +108,29 @@ class GameGUI:
     # ---- layout ------------------------------------------------------
 
     def _compute_layout(self) -> None:
-        side = 320
-        bottom = 200
-        self.layout = {
-            "map": pygame.Rect(0, 0, self.width - side, self.height - bottom),
-            "status": pygame.Rect(self.width - side, 0,
-                                  side, self.height // 2),
-            "quests": pygame.Rect(self.width - side, self.height // 2,
-                                  side, self.height // 2 - bottom),
-            "events": pygame.Rect(0, self.height - bottom,
-                                  (self.width - side) // 2 + 100, bottom),
-            "minimap": pygame.Rect((self.width - side) // 2 + 100,
-                                   self.height - bottom,
-                                   self.width - side -
-                                   ((self.width - side) // 2 + 100),
-                                   bottom),
-        }
+        self.layout = compute_layout(self.width, self.height)
+
+    def resize(self, w: int, h: int) -> None:
+        """Re-lay the screen for a new window size (PUX.4c)."""
+        self.width = max(MIN_W, w)
+        self.height = max(MIN_H, h)
+        self.screen = pygame.display.set_mode((self.width, self.height),
+                                              pygame.RESIZABLE)
+        self._compute_layout()
+
+    def toggle_fullscreen(self) -> None:
+        self.fullscreen = not self.fullscreen
+        if self.fullscreen:
+            info = pygame.display.Info()
+            self.width = max(MIN_W, info.current_w)
+            self.height = max(MIN_H, info.current_h)
+            self.screen = pygame.display.set_mode(
+                (self.width, self.height), pygame.FULLSCREEN)
+        else:
+            self.width, self.height = self._windowed_size
+            self.screen = pygame.display.set_mode(
+                (self.width, self.height), pygame.RESIZABLE)
+        self._compute_layout()
 
     # ---- main loop ---------------------------------------------------
 
@@ -96,13 +148,67 @@ class GameGUI:
             if getattr(self.engine, "player_dead", False) and self.mode != "death":
                 self.mode = "death"
             for event in pygame.event.get():
+                if event.type == pygame.VIDEORESIZE:
+                    self.resize(event.w, event.h)
+                    continue
+                if event.type == pygame.KEYDOWN and \
+                        event.key == pygame.K_F11:
+                    self.toggle_fullscreen()
+                    continue
+                # M.9b: while away, [-/+] change the autoplay speed and [.]
+                # single-steps — handled here so they neither hand back nor
+                # reach the play handler
+                if self.mode == "play" and event.type == pygame.KEYDOWN \
+                        and self.engine.roster.is_away(self.engine.player):
+                    from ui.away_mode import handle_speed_key
+                    if handle_speed_key(self, event):
+                        continue
+                # M.3: a hero-directing key (move/act) hands control back;
+                # an observe/panel key does not, so you can check on autoplay
+                # without switching it off (2026-07-12d).
+                from ui.away_mode import hands_back
+                if self.mode == "play" and hands_back(self.engine, event):
+                    self.engine.roster.set_away(self.engine.player, False)
+                    self.engine.memory_manager.add_event(
+                        "You take the reins back from the agent.")
+                    # M.9a: greet the returning player with what happened
+                    try:
+                        from engine.away_digest import build_digest
+                        dg = build_digest(self.engine, self.engine.player)
+                        if dg:
+                            self.overlay = dg
+                            self.mode = "menu"
+                            continue      # don't let this key dismiss it
+                    except Exception:
+                        pass
                 self.input_handler.handle_event(event)
+            # P34.12: holding a direction keeps the hero stepping (key-repeat)
+            if self.mode == "play" and \
+                    not self.engine.roster.is_away(self.engine.player):
+                try:
+                    from ui import input_actions
+                    input_actions.auto_walk(self.input_handler)
+                except Exception as e:
+                    logger.debug(f"auto-walk error: {e}")
+            from ui.away_mode import heartbeat
+            heartbeat(self)               # M.3 tick the world while away
             # Drive NPC processes only while alive
             if self.mode != "death":
                 try:
                     self.engine.process_npc_turns_async()
                 except Exception as e:
                     logger.warning(f"NPC async tick error: {e}")
+            if self.sound is not None:
+                try:
+                    self.sound.update_ambient(
+                        self.engine.current_weather())
+                except Exception:
+                    pass
+            if getattr(self.engine, "dm_bridge", None) is not None:
+                try:
+                    self.engine.dm_bridge.tick()
+                except Exception:
+                    pass
             self._render()
             self.clock.tick(30)
 
@@ -111,6 +217,8 @@ class GameGUI:
         pass
 
     def shutdown(self) -> None:
+        if self.sound is not None:
+            self.sound.shutdown()
         try:
             self.engine.end_game()
         except Exception:
@@ -134,13 +242,30 @@ class GameGUI:
                 self.screen, self.screen.get_rect(),
                 name,
                 self.dialog_pending_reply or "",
-                prompt=f"> {self.dialog_input}_   (Enter to send, Esc to leave)",
+                prompt=(f"> {self.dialog_input}_   (Enter send, Esc leave, "
+                        f"/persuade /intimidate /deceive /court /hire)"),
+                menu=self.dialog_menu,
             )
 
-        if self.mode == "menu" and self.overlay:
+        if self.mode in ("menu", "travel", "waystone") and self.overlay:
             title, lines = self.overlay
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
+
+        if self.mode == "help":
+            self.hud.draw_help_overlay(
+                self.screen, self.screen.get_rect(), "Controls",
+                getattr(self, "help_columns", ([], [])))
+
+        if self.mode == "settings" and self.settings_panel is not None:
+            self.settings_panel.draw(self.screen, self.screen.get_rect())
+
+        if self.mode == "confirm_quit":
+            self.hud.draw_text_overlay(
+                self.screen, self.screen.get_rect(), "Leave the game?",
+                ["", "Quit to desktop? Unsaved progress is lost.",
+                 "  (F5 quicksaves)", "",
+                 "  [Y] quit        [N] keep playing"])
 
         if self.mode == "inventory" and self.inventory_panel is not None:
             self.inventory_panel.draw(self.screen, self.screen.get_rect())
@@ -148,62 +273,27 @@ class GameGUI:
         if self.mode == "shop" and self.shop_panel is not None:
             self.shop_panel.draw(self.screen, self.screen.get_rect())
 
+        if self.mode == "crafting" and self.crafting_panel is not None:
+            self.crafting_panel.draw(self.screen, self.screen.get_rect())
+
+        if self.mode == "spells" and self.spell_panel is not None:
+            self.spell_panel.draw(self.screen, self.screen.get_rect())
+
         if self.mode == "death":
             self._draw_death_popup()
+
+        # Top-most: the AUTOPLAY banner + spectator card ride over play
+        if self.mode == "play":
+            self.hud.draw_autoplay_banner(
+                self.screen, self, self.screen.get_rect())
+            self.hud.draw_spectator_panel(
+                self.screen, self.engine, self.screen.get_rect())
 
         pygame.display.flip()
 
     def _draw_death_popup(self) -> None:
-        """Centered popup with Restart / Quit options."""
-        screen_rect = self.screen.get_rect()
-        # Dim the world behind the popup
-        veil = pygame.Surface(screen_rect.size, pygame.SRCALPHA)
-        veil.fill((0, 0, 0, 170))
-        self.screen.blit(veil, (0, 0))
-
-        # Popup box
-        w, h = 460, 220
-        box = pygame.Rect((screen_rect.width - w) // 2,
-                          (screen_rect.height - h) // 2, w, h)
-        pygame.draw.rect(self.screen, (25, 10, 12), box)
-        pygame.draw.rect(self.screen, (200, 60, 60), box, 3)
-
-        # Title
-        if self.hud.big_font:
-            title_surf = self.hud.big_font.render(
-                "You have been defeated!", True, (255, 90, 90))
-            self.screen.blit(
-                title_surf,
-                (box.centerx - title_surf.get_width() // 2, box.y + 28),
-            )
-        if self.hud.font:
-            xp = (self.engine.player.metadata or {}).get("xp", 0)
-            level = self.engine.player.level
-            sub = self.hud.font.render(
-                f"Final level: {level}    XP: {xp}    Turn: {self.engine.turn_counter}",
-                True, (220, 220, 220))
-            self.screen.blit(
-                sub,
-                (box.centerx - sub.get_width() // 2, box.y + 72),
-            )
-            opt1 = self.hud.font.render(
-                "[R] Restart", True, (160, 230, 160))
-            self.screen.blit(
-                opt1,
-                (box.centerx - opt1.get_width() // 2, box.y + 120),
-            )
-            opt2 = self.hud.font.render(
-                "[Q] Quit", True, (230, 160, 160))
-            self.screen.blit(
-                opt2,
-                (box.centerx - opt2.get_width() // 2, box.y + 150),
-            )
-            hint = self.hud.font.render(
-                "(or press ESC to quit)", True, (160, 160, 180))
-            self.screen.blit(
-                hint,
-                (box.centerx - hint.get_width() // 2, box.y + 184),
-            )
+        from ui.death_popup import draw_death_popup
+        draw_death_popup(self)
 
     def restart(self) -> None:
         """Rebuild the engine and resume play. Called from the death popup."""
@@ -243,6 +333,74 @@ class GameGUI:
         self.shop_panel = ShopPanel(self.engine, merchant_npc)
         self.mode = "shop"
 
+    def show_crafting(self) -> None:
+        from ui.crafting_panel import CraftingPanel
+        if self.crafting_panel is None:
+            self.crafting_panel = CraftingPanel(self.engine)
+        self.mode = "crafting"
+
+    def show_spellbook(self) -> None:
+        from ui.spell_panel import SpellPanel
+        if self.spell_panel is None:
+            self.spell_panel = SpellPanel(self.engine)
+        self.mode = "spells"
+
+    def show_topics(self) -> None:
+        try:
+            lines = self.engine.topic_journal.overlay_lines()
+        except Exception:
+            lines = ["Journal unavailable."]
+        try:
+            from engine.legends import overlay_lines as legend_lines
+            lines += legend_lines(self.engine)
+        except Exception:
+            pass
+        try:   # the runtime saga (P20.5)
+            lines += self.engine.chronicle.lines()
+        except Exception:
+            pass
+        try:   # the ending, once the age is won (P21.2)
+            from engine.campaign import is_won, summary
+            if is_won(self.engine):
+                lines += summary(self.engine)
+        except Exception:
+            pass
+        self.overlay = ("Journal — Topics, Legends & Chronicle", lines)
+        self.mode = "menu"
+
+    def show_travel(self) -> None:
+        try:
+            lines = self.engine.travel_system.overlay_lines()
+        except Exception:
+            lines = ["Travel unavailable."]
+        self.overlay = ("Travel", lines)
+        self.mode = "travel"
+
+    def show_teleport(self) -> None:
+        """P37.1 the Wayfarer's Waystone destination menu (E on a platform)."""
+        try:
+            lines = self.engine.teleport_network.overlay_lines()
+        except Exception:
+            lines = ["The waystone is dormant."]
+        self.overlay = ("Wayfarer's Waystone", lines)
+        self.mode = "waystone"
+
+    def show_diaries(self) -> None:
+        try:
+            lines = self.engine.diary_manager.overlay_lines()
+        except Exception:
+            lines = ["Diaries unavailable."]
+        self.overlay = ("Achievement Diaries", lines)
+        self.mode = "menu"
+
+    def show_collection_log(self) -> None:
+        try:
+            lines = self.engine.collection_log.overlay_lines()
+        except Exception:
+            lines = ["Collection log unavailable."]
+        self.overlay = ("Collection Log", lines)
+        self.mode = "menu"
+
     def show_quests(self) -> None:
         qm = self.engine.quest_manager
         if not qm:
@@ -262,64 +420,54 @@ class GameGUI:
             f"HP: {p.hp}/{p.max_hp}",
             f"Gold: {p.gold}",
             f"XP: {(p.metadata or {}).get('xp', 0)}",
-            "",
-            "Goals:",
         ]
+        try:
+            lines.append(self.engine.guild.status_line())
+        except Exception:
+            pass
+        lines += ["", "Skills:"]
+        try:
+            from engine.skill_progression import (skill_summary,
+                                                  total_skill_level)
+            for line in skill_summary(p):
+                lines.append(f"  {line}")
+            lines.append(f"  {'Total':<14} {total_skill_level(p):>3}")
+        except Exception:
+            lines.append("  (unavailable)")
+        lines += ["", "Goals:"]
         for g in p.goals:
             lines.append(f"  * {g}")
         self.overlay = ("Character Sheet", lines)
         self.mode = "menu"
 
     def show_help(self) -> None:
-        lines = [
-            "MOVEMENT",
-            "  WASD / Arrows : move (off-edge = enter a new region)",
-            "  TAB           : enter / exit building or cave-dungeon",
-            "  L             : look around (describe what you see)",
-            "",
-            "COMBAT",
-            "  SPACE / F     : melee attack (uses equipped weapon)",
-            "  R             : ranged attack (needs equipped bow/sling/etc.)",
-            "  X             : cast Fireball at nearest hostile",
-            "  V             : cast Heal on self",
-            "",
-            "ITEMS & WORLD",
-            "  G / E         : pick up item on the ground",
-            "  H             : drink potion",
-            "  Z             : forage (forest / grass)",
-            "  T             : talk to adjacent NPC",
-            "",
-            "INTERACTIVE OVERLAYS",
-            "  I             : inventory + equipment slots",
-            "                  (E equip/unequip, Q use, D drop)",
-            "  S             : open shop with adjacent merchant",
-            "                  (Left/Right column, Enter buy/sell)",
-            "  Q             : quest log",
-            "  C             : character sheet",
-            "",
-            "BANKING",
-            "  N             : deposit all gold (at temple/shop)",
-            "  M             : withdraw all bank gold",
-            "",
-            "SYSTEM",
-            "  F5 / F9       : save / load",
-            "  F1 or /       : this help",
-            "  ESC           : close menu / quit",
-        ]
-        self.overlay = ("Controls", lines)
-        self.mode = "menu"
+        from ui.controls import help_columns
+        self.help_columns = help_columns()
+        self.mode = "help"
+
+    def show_settings(self) -> None:
+        from ui.settings_panel import SettingsPanel
+        if self.settings_panel is None:
+            self.settings_panel = SettingsPanel(self)
+        self.mode = "settings"
 
     # ---- dialog -----------------------------------------------------
+
+    def _refresh_dialog_menu(self) -> None:
+        from engine import conversation
+        npc = self.engine.npc_manager.get_npc(self.dialog_npc_id)
+        self.dialog_menu = conversation.menu(self.engine, npc) \
+            if npc is not None else []
 
     def start_dialog(self, npc_id: str) -> None:
         self.dialog_npc_id = npc_id
         self.dialog_input = ""
-        # Initial greeting
         try:
             self.dialog_pending_reply = self.engine.interact_with_npc(npc_id)
         except Exception as e:
             logger.warning(f"Dialog start error: {e}")
             self.dialog_pending_reply = "..."
+        self._refresh_dialog_menu()
         self.mode = "dialog"
 
     def submit_dialog(self) -> None:
@@ -336,31 +484,16 @@ class GameGUI:
         except Exception as e:
             logger.warning(f"Dialog submit error: {e}")
             self.dialog_pending_reply = "..."
+        self._refresh_dialog_menu()
 
     def end_dialog(self) -> None:
         self.dialog_npc_id = None
         self.dialog_pending_reply = None
         self.dialog_input = ""
+        self.dialog_menu = []
         self.mode = "play"
 
     def dialog_quest_action(self, idx: int) -> None:
-        """Handle 1-9 hotkeys in dialog mode for accepting/turning in quests."""
-        if not self.dialog_npc_id:
-            return
-        offered = self.engine.quests_offered_by(self.dialog_npc_id)
-        ready = self.engine.quests_to_turn_in_with(self.dialog_npc_id)
-        combined = list(offered) + list(ready)
-        if idx >= len(combined):
-            return
-        quest = combined[idx]
-        if quest in offered:
-            self.engine.accept_quest(quest.id)
-            self.dialog_pending_reply = (
-                f"(Quest accepted: {quest.title})"
-            )
-        else:
-            self.engine.turn_in_quest(quest.id)
-            self.dialog_pending_reply = (
-                f"(Quest turned in: {quest.title}. "
-                f"Reward: {quest.reward_gold}g, {quest.reward_xp}xp)"
-            )
+        """A numbered quick-pick from the conversation menu (PUX.6)."""
+        from ui.dialog_menu import apply
+        apply(self, idx)

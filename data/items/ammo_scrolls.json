@@ -1,0 +1,123 @@
+{
+  "scroll_frost_ray": {
+    "id": "scroll_frost_ray",
+    "name": "Scroll of Frost Ray",
+    "item_type": "scroll",
+    "value": 70,
+    "rarity": "uncommon",
+    "description": "A vellum scroll rimed with frost — the Vault's cold, captured in a rune.",
+    "stackable": true,
+    "use_effect": {"spell": "frost_ray"}
+  },
+  "scroll_frost_armor": {
+    "id": "scroll_frost_armor",
+    "name": "Scroll of Frost Armor",
+    "item_type": "scroll",
+    "value": 85,
+    "rarity": "uncommon",
+    "description": "A warding-scroll of Vael'Zhur's own hand, sheathing its reader in protective ice.",
+    "stackable": true,
+    "use_effect": {"spell": "frost_armor"}
+  },
+  "arrow": {
+    "id": "arrow",
+    "name": "Arrows",
+    "item_type": "ammo",
+    "description": "A bundle of arrows for a bow.",
+    "stackable": true,
+    "quantity": 20,
+    "ammo_type": "arrow"
+  },
+  "bolt": {
+    "id": "bolt",
+    "name": "Crossbow Bolts",
+    "item_type": "ammo",
+    "value": 2,
+    "description": "Heavy bolts for a crossbow.",
+    "stackable": true,
+    "quantity": 20,
+    "ammo_type": "bolt"
+  },
+  "stone": {
+    "id": "stone",
+    "name": "Sling Stones",
+    "item_type": "ammo",
+    "value": 0,
+    "description": "Smooth stones for a sling.",
+    "stackable": true,
+    "quantity": 20,
+    "ammo_type": "stone"
+  },
+  "scroll_fireball": {
+    "id": "scroll_fireball",
+    "name": "Scroll of Fireball",
+    "item_type": "scroll",
+    "value": 80,
+    "description": "A scroll inscribed with the fireball rune.",
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "fireball"
+    }
+  },
+  "scroll_heal": {
+    "id": "scroll_heal",
+    "name": "Scroll of Healing",
+    "item_type": "scroll",
+    "value": 60,
+    "description": "A scroll of healing.",
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "heal"
+    }
+  },
+  "scroll_frost": {
+    "id": "scroll_frost",
+    "name": "Scroll of Frost Ray",
+    "item_type": "scroll",
+    "value": 70,
+    "description": "A scroll of frost ray.",
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "frost_ray"
+    }
+  },
+  "scroll_bless": {
+    "id": "scroll_bless",
+    "name": "Scroll of Blessing",
+    "item_type": "scroll",
+    "value": 50,
+    "description": "A scroll of blessing.",
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "bless"
+    }
+  },
+  "scroll_water_walk": {
+    "id": "scroll_water_walk",
+    "name": "Scroll of Water Walking",
+    "item_type": "scroll",
+    "value": 60,
+    "description": "Read it at the bank; walk out over the river.",
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "water_walk"
+    }
+  },
+  "scroll_swimmers_grace": {
+    "id": "scroll_swimmers_grace",
+    "name": "Scroll of Swimmer's Grace",
+    "item_type": "scroll",
+    "value": 45,
+    "description": "The river's blessing, pressed onto vellum.",
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "swimmers_grace"
+    }
+  }
+}

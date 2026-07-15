@@ -1,0 +1,25 @@
+{
+  "wealth": {
+    "keywords": ["retire", "gold", "profit", "coin", "earn", "trade",
+                 "prosper", "business", "quota", "selling", "debt", "guild",
+                 "fortune", "rich"],
+    "per_night": 9, "jitter": 5, "goal": 100
+  },
+  "romance": {
+    "keywords": ["romance", "companionship", "sweetheart", "love"],
+    "per_night": 8, "jitter": 5, "goal": 100
+  },
+  "mastery": {
+    "keywords": ["craft", "skill", "recipe", "ingredient", "learn", "master",
+                 "rank", "advance", "apprentice", "renown"],
+    "per_night": 9, "jitter": 5, "goal": 100
+  },
+  "vengeance": {
+    "keywords": ["avenge", "wrong", "revenge", "vengeance", "grudge"],
+    "per_night": 7, "jitter": 4, "goal": 100
+  },
+  "escape": {
+    "keywords": ["escape", "troubled past", "family history", "move on"],
+    "per_night": 8, "jitter": 5, "goal": 100
+  }
+}

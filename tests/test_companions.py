@@ -53,8 +53,8 @@ class TestCompanions(unittest.TestCase):
         self.engine.player.position = (10, 10)
         self.engine.world.map.place_character(self.engine.player, 10, 10)
         self.engine.recruit("minstrel_01")
-        # Several follow ticks
-        for _ in range(20):
+        # Enough follow ticks to cover worldgen detours (lakes, walls)
+        for _ in range(40):
             self.engine.companion_manager.update()
         d = ((minstrel.position[0] - 10) ** 2 +
              (minstrel.position[1] - 10) ** 2) ** 0.5

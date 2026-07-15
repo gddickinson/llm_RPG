@@ -20,15 +20,8 @@ import config
 from world.world import World
 from characters.npc_manager import NPCManager
 from characters.character import Character
-from characters.character_types import CharacterClass, CharacterRace
-from items.item_registry import create_item
 from llm.llm_interface import LLMInterface
 from engine.memory_manager import MemoryManager
-from engine.combat_system import CombatSystem
-from engine.economy_system import EconomySystem
-from engine.dialog_system import DialogSystem
-from engine.action_router import ActionRouter
-from engine.player_actions import PlayerActions
 from engine.game_api_mixin import GameAPIMixin
 
 logger = logging.getLogger("llm_rpg.engine")
@@ -40,7 +33,10 @@ class GameEngine(GameAPIMixin):
     def __init__(self, llm_model: str = None, llm_provider: str = None,
                  enable_npc_processes: bool = True,
                  enable_quests: bool = True,
-                 player_spec=None):
+                 player_spec=None,
+                 start_tutorial: bool = False,
+                 enable_dm_bridge: bool = False,
+                 world_kind: str = "default"):
         # Core systems --------------------------------------------------
         self.world = World()
         self.npc_manager = NPCManager()
@@ -50,69 +46,9 @@ class GameEngine(GameAPIMixin):
             provider=llm_provider or getattr(config, "DEFAULT_PROVIDER", "heuristic"),
         )
 
-        # Subsystems ---------------------------------------------------
-        self.combat_system = CombatSystem(self)
-        self.economy_system = EconomySystem(self)
-        self.dialog_system = DialogSystem(self)
-        self.action_router = ActionRouter(self)
-        self.player_actions = PlayerActions(self)
-
-        # Optional quest manager
-        self.quest_manager = None
-        if enable_quests:
-            from quests.quest_manager import QuestManager
-            self.quest_manager = QuestManager()
-
-        # Encounter manager (wilderness monster spawns)
-        from world.encounters import EncounterManager
-        self.encounter_manager = EncounterManager(self)
-
-        # Bank
-        from engine.banking import Bank
-        self.bank = Bank(self)
-
-        # Shop manager (merchant catalogs)
-        from engine.shop import ShopManager
-        self.shop_manager = ShopManager(self)
-
-        # Weather + foraging
-        from world.weather import WeatherSystem
-        from world.foraging import ForageManager
-        self.weather_system = WeatherSystem(self)
-        self.forage_manager = ForageManager(self)
-
-        # Ranged combat (projectiles)
-        from engine.projectiles import ProjectileManager
-        self.projectile_manager = ProjectileManager(self)
-
-        # Combat visual effects (damage popups, hit flashes, particles)
-        self.combat_effects = None
-        try:
-            from ui.combat_effects import CombatEffects
-            self.combat_effects = CombatEffects(self)
-        except Exception as e:
-            logger.debug(f"Combat effects unavailable: {e}")
-
-        # Dungeons (lazy — built when player enters a cave)
-        self.dungeons = {}                # location_name -> Dungeon
-        self.current_dungeon = None
-        self.dungeon_return_pos = None
-
-        # Chunked-world streamer (region transitions)
-        self.world_streamer = None  # built lazily after world is initialized
-
-        # Quest boards
-        from quests.quest_board import QuestBoardManager
-        self.quest_board_manager = QuestBoardManager(self)
-
-        # Interiors (built after world generation in initialize_demo_game)
-        self.interiors = {}
-        self.current_interior = None
-        self.exterior_return_pos = None
-
-        # Companion / party
-        from characters.companions import CompanionManager
-        self.companion_manager = CompanionManager(self)
+        from engine.engine_setup import build_subsystems
+        build_subsystems(self, llm_model=llm_model,
+                         enable_quests=enable_quests)
 
         # State --------------------------------------------------------
         self.player: Optional[Character] = None
@@ -122,7 +58,24 @@ class GameEngine(GameAPIMixin):
         self.player_dead = False  # set by combat_system when player defeated
 
         # Initialize demo world
-        self.initialize_demo_game(player_spec=player_spec)
+        from engine.tutorial import TutorialManager
+        self.tutorial_manager = TutorialManager(self)
+        self.initialize_demo_game(player_spec=player_spec,
+                                  world_kind=world_kind)
+        # Baseline for the nightly-reflection day-change detector
+        self._last_reflection_day = self.world.time // (24 * 60)
+        from engine.rest import snapshot
+        self._day_metrics = snapshot(self)
+        self.dm_bridge = None
+        if enable_dm_bridge:
+            try:
+                from engine.dm_bridge import DMBridge
+                self.dm_bridge = DMBridge(self)
+                logger.info("DM bridge active at saves/dm/")
+            except Exception as e:
+                logger.warning(f"DM bridge unavailable: {e}")
+        if start_tutorial:
+            self.tutorial_manager.start()
 
         # NPC processes (optional) -------------------------------------
         self.process_manager = None
@@ -144,10 +97,12 @@ class GameEngine(GameAPIMixin):
     # World / state setup
     # ====================================================================
 
-    def initialize_demo_game(self, player_spec=None) -> None:
+    def initialize_demo_game(self, player_spec=None,
+                             world_kind="default") -> None:
         """Set up a starter world + NPCs + player + initial quests."""
         from engine.demo_setup import initialize_demo_world
-        initialize_demo_world(self, player_spec=player_spec)
+        initialize_demo_world(self, player_spec=player_spec,
+                              world_kind=world_kind)
         # World streamer (needs the world built first)
         try:
             from world.chunked_world import WorldStreamer
@@ -165,6 +120,13 @@ class GameEngine(GameAPIMixin):
         self.turn_counter = 0
         self.player_dead = False
         self.memory_manager.add_event("The adventure begins.")
+        try:   # walls are solid — install the movement guard (2026-07-12)
+            from engine.movement import ensure_wall_guard
+            ensure_wall_guard(self)
+        except Exception as e:
+            logger.debug(f"Wall guard: {e}")
+        from engine.engine_setup import seed_world
+        seed_world(self)
 
     def end_game(self) -> None:
         self.running = False
@@ -175,80 +137,26 @@ class GameEngine(GameAPIMixin):
             self.llm_interface.shutdown()
 
     def advance_turn(self) -> None:
-        self.turn_counter += 1
-        self.world.advance_time(1)
-        if self.quest_manager:
-            self.quest_manager.on_turn_advanced()
-
-        # Tick NPC needs (game minutes pass)
+        # Re-entrancy guard (M.2): an agent-driven hero acts through the
+        # real player-action API mid-turn, which would otherwise cascade
+        # a nested world tick. When already advancing, its action still
+        # happens (position/attack resolve first) but the pipeline runs
+        # once, not once per agent.
+        if getattr(self, "_advancing", False):
+            return
+        self._advancing = True
         try:
-            from characters.needs import tick_needs
-            for npc in self.npc_manager.npcs.values():
-                if npc.is_active():
-                    tick_needs(npc, elapsed_minutes=1)
-        except Exception as e:
-            logger.debug(f"Needs tick error: {e}")
-
-        # Tick status effects on all active characters (player + NPCs)
-        try:
-            from characters.status_effects import tick_effects
-            for char in [self.player] + list(self.npc_manager.npcs.values()):
-                if char and char.is_active():
-                    events = tick_effects(char, self)
-                    for ev in events:
-                        self.memory_manager.add_event(ev)
-        except Exception as e:
-            logger.debug(f"Status effects tick error: {e}")
-
-        # Slow mana regen for the player (1/turn while not in combat — simplified)
-        try:
-            from engine.spells import rest_recover_mana, ensure_mana
-            ensure_mana(self.player)
-            if self.turn_counter % 5 == 0:
-                rest_recover_mana(self.player, amount=1)
-        except Exception as e:
-            logger.debug(f"Mana regen error: {e}")
-
-        # Random wilderness encounter
-        try:
-            msg = self.encounter_manager.maybe_spawn()
-            if msg:
-                self.memory_manager.add_event(msg)
-        except Exception as e:
-            logger.debug(f"Encounter spawn error: {e}")
-
-        # Weather changes
-        try:
-            wmsg = self.weather_system.tick()
-            if wmsg:
-                self.memory_manager.add_event(wmsg)
-        except Exception as e:
-            logger.debug(f"Weather tick error: {e}")
-
-        # Advance in-flight projectiles
-        try:
-            results = self.projectile_manager.tick(dt=1.0)
-            for r in results:
-                if r.message:
-                    self.memory_manager.add_event(r.message)
-        except Exception as e:
-            logger.debug(f"Projectile tick error: {e}")
-
-        # Companions follow / fight
-        try:
-            self.companion_manager.update()
-        except Exception as e:
-            logger.debug(f"Companion update error: {e}")
-
-        if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
-            self.process_npc_turns_async()
+            from engine.turn_pipeline import run_turn
+            run_turn(self)
+        finally:
+            self._advancing = False
 
     # ====================================================================
     # Player API (delegates to PlayerActions)
     # ====================================================================
 
-    def move_player(self, dx: int, dy: int) -> bool:
-        return self.player_actions.move(dx, dy)
+    def move_player(self, dx: int, dy: int, careful: bool = False) -> bool:
+        return self.player_actions.move(dx, dy, careful=careful)
 
     def pickup_item(self, item_name: str = None) -> str:
         return self.player_actions.pickup(item_name)
@@ -300,6 +208,27 @@ class GameEngine(GameAPIMixin):
             self.memory_manager.add_event(
                 f"Quest turned in: {quest.title} (+{quest.reward_gold}g, "
                 f"+{quest.reward_xp}xp)")
+            try:
+                from engine.player_deeds import record_deed
+                record_deed(self, f"completed '{quest.title}'")
+            except Exception:
+                pass
+            # Quest points + guild rank-ups
+            try:
+                qp = int(quest.metadata.get("quest_points", 0))
+                for note in self.guild.award_points(qp):
+                    self.memory_manager.add_event(note)
+            except Exception:
+                pass
+            # Completing someone's quest earns real trust
+            giver = self.npc_manager.get_npc(quest.giver_id) \
+                if quest.giver_id else None
+            if giver is not None:
+                giver.modify_relationship(self.player.id, 15)
+                try:
+                    self.heart_events.maybe_trigger(giver)
+                except Exception:
+                    pass
             # Surface level-ups in the game event log
             if self.player.level > level_before:
                 for lvl in range(level_before + 1, self.player.level + 1):
@@ -311,23 +240,81 @@ class GameEngine(GameAPIMixin):
     # NPC turn processing
     # ====================================================================
 
+    def _npc_turns_due(self) -> bool:
+        """NPCs act on the turn cadence — or a slow wall-clock tick while
+        the player idles. The GUI calls processing every FRAME (30/s);
+        without this guard a static turn counter resting on a multiple of
+        NPC_ACTION_INTERVAL made every nearby NPC act 30x per second,
+        flooding the log."""
+        import time
+        now = time.monotonic()
+        last_turn = getattr(self, "_npc_last_turn", None)
+        last_time = getattr(self, "_npc_last_time", 0.0)
+        turn_due = (self.turn_counter != last_turn and
+                    self.turn_counter % config.NPC_ACTION_INTERVAL == 0)
+        idle_due = (now - last_time) >= 3.0
+        if not (turn_due or idle_due):
+            return False
+        self._npc_last_turn = self.turn_counter
+        self._npc_last_time = now
+        return True
+
     def process_npc_turns(self) -> None:
         """Synchronous NPC turn (kept for terminal mode)."""
-        if self.turn_counter % config.NPC_ACTION_INTERVAL != 0:
+        if not self._npc_turns_due():
             return
+        try:   # re-assert after any map swap (streaming keeps it; a fresh
+            from engine.movement import ensure_wall_guard  # map re-installs)
+            ensure_wall_guard(self)
+        except Exception:
+            pass
+        try:   # band nearby hostiles into packs before they act (P19.3)
+            self.monster_packs.update()
+        except Exception as e:
+            logger.debug(f"Monster packs: {e}")
         for npc_id, npc in list(self.npc_manager.npcs.items()):
             if hasattr(npc, "is_active") and not npc.is_active():
+                continue
+            if npc_id.startswith("tut_"):
+                continue  # tutorial cast stands still
+            # Party members are the companion system's to move —
+            # schedules were marching them home mid-adventure (PT3.3)
+            try:
+                if npc_id in self.companion_manager.party:
+                    continue
+            except Exception:
+                pass
+            # roster player-characters are driven by their controller
+            # (human / M.2 agent), never the ambient NPC AI (M.1b); the same
+            # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
+            meta = getattr(npc, "metadata", {}) or {}
+            if meta.get("player_char") or meta.get("adventurer"):
+                continue
+            # neutral wildlife are driven by the WildlifeSystem (P32.3), never
+            # the ambient hostile/social AI
+            if meta.get("wildlife"):
+                continue
+            # P37.6b: a hostile that already bit via the per-turn AggressionSystem
+            # this turn doesn't also swing here (no double attack)
+            if meta.get("_aggro_turn") == self.turn_counter:
                 continue
             try:
                 npc_x, npc_y = npc.position
                 if self._distance_to_player(npc_x, npc_y) > \
-                        config.DEFAULT_VISIBILITY_RANGE * 2:
+                        self.effective_visibility() * 2:
                     continue
                 visible_map = self.world.map.get_visible_description(npc_x, npc_y)
                 world_state = self._world_state_for(npc_x, npc_y)
                 history = self.memory_manager.get_recent_history()
-                action = self.llm_interface.get_npc_action(
-                    npc, world_state, history, visible_map)
+                # Budget: monsters + cooling-down NPCs act heuristically
+                from engine.llm_budget import (llm_action_allowed,
+                                               heuristic_provider)
+                if llm_action_allowed(self, npc):
+                    action = self.llm_interface.get_npc_action(
+                        npc, world_state, history, visible_map)
+                else:
+                    action = heuristic_provider(self).get_npc_action(
+                        npc, world_state, history, visible_map)
                 self.action_router.process(npc, action)
             except Exception as e:
                 logger.error(f"NPC {npc_id} error: {e}")
@@ -357,13 +344,51 @@ class GameEngine(GameAPIMixin):
                 logger.error(f"NPC {npc_id}: {resp.get('error')}")
             self.processing_npcs.discard(npc_id)
 
-        # Send new commands
+        # Send new commands — on the NPC cadence, not per frame
+        if not self._npc_turns_due():
+            return
+        from engine.llm_budget import llm_action_allowed, heuristic_provider
         for npc_id, npc in self.npc_manager.npcs.items():
             if not npc.is_active() or npc_id in self.processing_npcs:
                 continue
+            if npc_id.startswith("tut_"):
+                continue  # tutorial cast stands still
+            # Party members are the companion system's to move —
+            # schedules were marching them home mid-adventure (PT3.3)
+            try:
+                if npc_id in self.companion_manager.party:
+                    continue
+            except Exception:
+                pass
+            # roster player-characters are driven by their controller
+            # (human / M.2 agent), never the ambient NPC AI (M.1b); the same
+            # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
+            meta = getattr(npc, "metadata", {}) or {}
+            if meta.get("player_char") or meta.get("adventurer"):
+                continue
+            # neutral wildlife are driven by the WildlifeSystem (P32.3), never
+            # the ambient hostile/social AI
+            if meta.get("wildlife"):
+                continue
+            # P37.6b: a hostile that already bit via the per-turn AggressionSystem
+            # this turn doesn't also swing here (no double attack)
+            if meta.get("_aggro_turn") == self.turn_counter:
+                continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \
-                    config.DEFAULT_VISIBILITY_RANGE * 2:
+                    self.effective_visibility() * 2:
+                continue
+            # Budget: only NPCs off cooldown burn a subprocess LLM call;
+            # the rest act heuristically inline (cheap)
+            if not llm_action_allowed(self, npc):
+                try:
+                    action = heuristic_provider(self).get_npc_action(
+                        npc, self._world_state_for(nx, ny),
+                        self.memory_manager.get_recent_history(),
+                        self.world.map.get_visible_description(nx, ny))
+                    self.action_router.process(npc, action)
+                except Exception as e:
+                    logger.debug(f"Heuristic fallback error: {e}")
                 continue
             self.processing_npcs.add(npc_id)
             self.process_manager.send_command(npc_id, "get_action", {
@@ -421,20 +446,36 @@ class GameEngine(GameAPIMixin):
         # By id
         if name_or_id in self.npc_manager.npcs:
             return self.npc_manager.npcs[name_or_id]
-        # By name
-        for npc in self.npc_manager.npcs.values():
-            if npc.name.lower() == text:
-                return npc
+        # By name — prefer the NEAREST active match. Names can collide now
+        # (P19.2: a Wandering Troll in an overworld den and one in a crypt),
+        # so "attack the Wandering Troll" must mean the one in front of you.
+        exact = [n for n in self.npc_manager.npcs.values()
+                 if n.name.lower() == text]
+        if exact:
+            return self._nearest_active(exact)
         # Substring match
-        for npc in self.npc_manager.npcs.values():
-            if npc.name.lower() in text or text in npc.name.lower():
-                return npc
+        subs = [n for n in self.npc_manager.npcs.values()
+                if n.name.lower() in text or text in n.name.lower()]
+        if subs:
+            return self._nearest_active(subs)
         # Symbol
         if len(name_or_id) == 1:
             for npc in self.npc_manager.npcs.values():
                 if npc.symbol.lower() == text:
                     return npc
         return None
+
+    def _nearest_active(self, candidates):
+        """Of same-named characters, the nearest active one to the player
+        (an inactive one only if nothing else matches)."""
+        px, py = self.player.position
+
+        def key(n):
+            x, y = n.position
+            return (0 if n.is_active() else 1,
+                    (px - x) ** 2 + (py - y) ** 2)
+
+        return min(candidates, key=key)
 
     def _distance_to_player(self, x: int, y: int) -> float:
         px, py = self.player.position
@@ -445,4 +486,6 @@ class GameEngine(GameAPIMixin):
         return {
             "current_location": loc.name if loc else "wilderness",
             "time_of_day": self.world.get_time_of_day(),
+            "player_position": tuple(self.player.position)
+            if self.player else None,
         }

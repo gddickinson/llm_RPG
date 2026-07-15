@@ -1,0 +1,31 @@
+{
+  "_doc": "P39.6b deterministic overworld decorative scatter. `density` = the fraction of eligible tiles (per terrain) that carry a decorative prop; placement is a stable per-world-position hash so it never flickers and is identical in the top-down and isometric renderers. RUBBLE (what ruins/destroyed buildings leave behind) gets gravestones + bones, so scatter clings to ruined places without needing to query locations.",
+  "density": 0.11,
+  "terrain": {
+    "forest": [
+      {"prop": "fern", "w": 3},
+      {"prop": "mushroom", "w": 3},
+      {"prop": "deadwood", "w": 2},
+      {"prop": "stump", "w": 1}
+    ],
+    "grass": [
+      {"prop": "flowers", "w": 3},
+      {"prop": "boulder", "w": 1},
+      {"prop": "stump", "w": 1}
+    ],
+    "swamp": [
+      {"prop": "reeds", "w": 4},
+      {"prop": "mushroom", "w": 2},
+      {"prop": "bones", "w": 1}
+    ],
+    "scorched": [
+      {"prop": "bones", "w": 3},
+      {"prop": "deadwood", "w": 2}
+    ],
+    "rubble": [
+      {"prop": "gravestone", "w": 2},
+      {"prop": "bones", "w": 3},
+      {"prop": "boulder", "w": 2}
+    ]
+  }
+}

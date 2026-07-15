@@ -87,6 +87,37 @@ class TestWorldStreamer(unittest.TestCase):
         # Should have the same locations as before
         self.assertEqual(len(self.engine.world.locations), len(original))
 
+    def test_npcs_belong_to_their_region(self):
+        # The home villagers must NOT reappear in the next region over.
+        s = self.engine.world_streamer
+        home = set(self.engine.npc_manager.npcs)
+        self.assertTrue(home, "the home region has a cast")
+        s.transit("east")
+        new = set(self.engine.npc_manager.npcs)
+        self.assertFalse(home & new,
+                         "home NPCs bled into the new region")
+
+    def test_round_trip_restores_the_cast(self):
+        s = self.engine.world_streamer
+        home = set(self.engine.npc_manager.npcs)
+        s.transit("east")
+        s.transit("west")               # back home
+        self.assertEqual(s.cw.current_region, (0, 0))
+        self.assertTrue(home <= set(self.engine.npc_manager.npcs),
+                        "the home cast returns when we come back")
+
+    def test_a_companion_travels_between_regions(self):
+        s = self.engine.world_streamer
+        comp = next(iter(self.engine.npc_manager.npcs))
+        self.engine.companion_manager.party.append(comp)
+        others = set(self.engine.npc_manager.npcs) - {comp}
+        s.transit("east")
+        present = set(self.engine.npc_manager.npcs)
+        self.assertIn(comp, present, "the companion crosses with you")
+        self.assertFalse(others & present, "but the region's cast stays")
+        cached = {n.id for n in s.cw.cached_npcs.get((0, 0), [])}
+        self.assertNotIn(comp, cached, "companion isn't stowed in the region")
+
 
 if __name__ == "__main__":
     unittest.main()

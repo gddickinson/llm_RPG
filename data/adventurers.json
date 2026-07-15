@@ -1,0 +1,40 @@
+{
+  "adventurers": [
+    {
+      "id": "adv_kestrel",
+      "name": "Kestrel",
+      "class": "ranger",
+      "race": "human",
+      "level": 3,
+      "disposition": "explorer",
+      "home": "Oakvale",
+      "gold": 40,
+      "inventory": ["bow", "arrow", "arrow", "potion"],
+      "flavor": "a sharp-eyed scout after a band to run the deep woods with"
+    },
+    {
+      "id": "adv_bram",
+      "name": "Bram Ironjaw",
+      "class": "warrior",
+      "race": "dwarf",
+      "level": 4,
+      "disposition": "valiant",
+      "home": "Oakvale",
+      "gold": 30,
+      "inventory": ["sword", "potion"],
+      "flavor": "a broad axeman itching for a lair to crack open"
+    },
+    {
+      "id": "adv_sable",
+      "name": "Sable",
+      "class": "wizard",
+      "race": "human",
+      "level": 3,
+      "disposition": "balanced",
+      "home": "Riverside Hamlet",
+      "gold": 55,
+      "inventory": ["potion"],
+      "flavor": "a hedge-wizard chasing lost lore out among the ruins"
+    }
+  ]
+}

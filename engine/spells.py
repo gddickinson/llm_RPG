@@ -27,58 +27,35 @@ class Spell:
     description: str = ""
     status_effect: str = ""    # name of status to apply on hit
     duration: int = 0          # turns the status persists
+    area: float = 0.0          # blast radius in tiles (P10.1)
+    concentration: bool = False    # one sustained spell max (P12.7)
     classes: Tuple[str, ...] = ()   # who can learn it
 
 
-# Spell registry --------------------------------------------------------
+# Spell registry — loaded from data/spells.json --------------------------
 
-SPELL_REGISTRY: Dict[str, Spell] = {
-    "magic_missile": Spell(
-        id="magic_missile", name="Magic Missile",
-        mana_cost=2, damage=6, range=8.0,
-        description="An arrow of arcane force, never misses.",
-        classes=("wizard", "sorcerer", "warlock"),
-    ),
-    "fireball": Spell(
-        id="fireball", name="Fireball",
-        mana_cost=5, damage=12, range=6.0,
-        description="A roaring blast of flame.",
-        classes=("wizard", "sorcerer"),
-    ),
-    "frost_ray": Spell(
-        id="frost_ray", name="Frost Ray",
-        mana_cost=3, damage=5, range=6.0,
-        status_effect="paralyzed", duration=2,
-        description="Icy beam that may freeze the target.",
-        classes=("wizard", "sorcerer", "warlock"),
-    ),
-    "heal": Spell(
-        id="heal", name="Heal",
-        mana_cost=3, heal=12, range=1.0,
-        description="Restore health to yourself or an ally.",
-        classes=("cleric", "paladin", "druid"),
-    ),
-    "bless": Spell(
-        id="bless", name="Bless",
-        mana_cost=2, range=1.0,
-        status_effect="blessed", duration=4,
-        description="Grant a divine boon.",
-        classes=("cleric", "paladin"),
-    ),
-    "shock": Spell(
-        id="shock", name="Shock",
-        mana_cost=2, damage=4, range=2.0,
-        description="A jolt of lightning.",
-        classes=("druid", "wizard"),
-    ),
-    "poison_dart": Spell(
-        id="poison_dart", name="Poison Dart",
-        mana_cost=2, damage=2, range=4.0,
-        status_effect="poisoned", duration=3,
-        description="A toxic dart that lingers.",
-        classes=("druid", "warlock"),
-    ),
-}
+def _build_spells() -> Dict[str, Spell]:
+    from items.data_loader import load_data_file
+    out: Dict[str, Spell] = {}
+    for sid, entry in load_data_file("spells.json").items():
+        out[sid] = Spell(
+            id=entry.get("id", sid),
+            name=entry["name"],
+            mana_cost=entry["mana_cost"],
+            damage=entry.get("damage", 0),
+            heal=entry.get("heal", 0),
+            range=entry.get("range", 5.0),
+            description=entry.get("description", ""),
+            status_effect=entry.get("status_effect", ""),
+            duration=entry.get("duration", 0),
+            area=entry.get("area", 0.0),
+            concentration=entry.get("concentration", False),
+            classes=tuple(entry.get("classes", ())),
+        )
+    return out
+
+
+SPELL_REGISTRY: Dict[str, Spell] = _build_spells()
 
 
 def starting_spells_for(class_value: str) -> List[Spell]:
@@ -155,21 +132,74 @@ class SpellSystem:
         d = self._distance(caster, target)
         if d > spell.range:
             return f"{spell.name}: target out of range."
+        # Player attack spells need true line of sight (P8.7)
+        if spell.damage and target.id != caster.id and \
+                caster.id == getattr(self.engine.player, "id", None):
+            try:
+                ok, why = self.engine.targeting.can_hit(target)
+                if not ok:
+                    return why
+            except Exception:
+                pass
 
         # Pay mana
         caster.metadata["mana"] = mana - spell.mana_cost
 
         # Apply effects
         results = []
-        if spell.damage:
+        if spell.damage and spell.area > 0:
+            # Area damage (P10.1): everyone near the impact except
+            # the caster — friendly fire is REAL, companions included
+            victims = self._blast_victims(caster, target, spell.area)
+            names = []
+            for victim in victims:
+                victim.take_damage(spell.damage)
+                names.append(victim.name)
+                if not victim.is_alive():
+                    self._on_kill(caster, victim, spell.damage)
+            results.append(
+                f"{caster.name}'s {spell.name} engulfs "
+                f"{', '.join(names)} for {spell.damage} damage each!")
+            fallen = [v.name for v in victims if not v.is_alive()]
+            if fallen:
+                results.append(
+                    f"Slain in the blast: {', '.join(fallen)}.")
+            # The world burns too (P10.2) — overworld blasts only
+            try:
+                if self.engine.active_zone() is None:
+                    tx, ty = target.position
+                    razed = self.engine.tile_damage.damage_radius(
+                        tx, ty, spell.damage, spell.area, "fire")
+                    if razed:
+                        results.append(
+                            f"The blast razes {razed} of the "
+                            f"surroundings!")
+                    # flame lingers at the impact (P10.3)
+                    if spell.id == "fireball":
+                        lay = self.engine.surfaces_layer
+                        lay.ignite(tx, ty, intensity=2)
+                        for ddx, ddy in ((1, 0), (-1, 0),
+                                         (0, 1), (0, -1)):
+                            lay.ignite(tx + ddx, ty + ddy,
+                                       intensity=1)
+            except Exception:
+                pass
+        elif spell.damage:
             target.take_damage(spell.damage)
             results.append(
                 f"{caster.name} hits {target.name} with {spell.name} "
                 f"for {spell.damage} damage.")
+            if spell.id == "shock":   # lightning + water (P14.2a)
+                try:
+                    if self.engine.active_zone() is None:
+                        tx, ty = target.position
+                        self.engine.surfaces_layer.electrify(tx, ty)
+                except Exception:
+                    pass
             # Death from spell
             if not target.is_alive():
                 results.append(f"{target.name} is slain by the {spell.name}!")
-                self._on_kill(caster, target)
+                self._on_kill(caster, target, spell.damage)
         if spell.heal:
             healed = min(spell.heal, target.max_hp - target.hp)
             target.heal(spell.heal)
@@ -183,8 +213,25 @@ class SpellSystem:
                 results.append(
                     f"{target.name} is {spell.status_effect} "
                     f"({spell.duration} turns).")
+                if spell.concentration:   # one sustained max (P12.7)
+                    from engine.combat_depth import begin_concentration
+                    dropped = begin_concentration(
+                        self.engine, caster, spell, target)
+                    if dropped:
+                        results.append(dropped)
             except Exception as e:
                 logger.warning(f"Status apply failed: {e}")
+
+        if spell.id == "farsight" and \
+                caster.id == self.engine.player.id:   # P15.11
+            try:
+                from engine.discovery import reveal_around
+                n = reveal_around(self.engine, *caster.position,
+                                  radius=18)
+                results.append(f"The land unrolls in your mind "
+                               f"({n} tiles charted).")
+            except Exception:
+                pass
 
         msg = " ".join(results) if results else f"{caster.name} casts {spell.name}."
         self.engine.memory_manager.add_event(msg)
@@ -201,14 +248,62 @@ class SpellSystem:
     # ---- helpers -----------------------------------------------------
 
     def _resolve_target(self, caster, name: str, spell: Spell):
-        # Self-cast for buffs / heals
-        if spell.heal or spell.status_effect in ("blessed", "cursed"):
+        # Self-cast for buffs / heals / self-utility (P15.11 farsight)
+        if spell.heal or spell.id in ("farsight",) or \
+                spell.status_effect in (
+                "blessed", "cursed", "water_walking",
+                "swimmers_grace", "flying", "hasted", "keen_sight"):
             if not name or name.lower() in ("me", "self", caster.name.lower()):
                 return caster
         if not name:
-            # Nearest visible hostile, fallback to nearest character
+            # The player's ranged lock aims spells too (P8.7)
+            if caster.id == getattr(self.engine.player, "id", None):
+                try:
+                    locked = self.engine.targeting.current()
+                    if locked is not None and \
+                            self._distance(caster, locked) <= \
+                            spell.range:
+                        return locked
+                except Exception:
+                    pass
             return self._nearest_visible_hostile(caster, spell.range)
         return self.engine.find_character(name)
+
+    def _blast_victims(self, caster, target, radius: float) -> list:
+        """Everyone within the blast radius of the target's tile,
+        excluding the caster — same-space rules apply (a blast in the
+        crypt doesn't scorch the street)."""
+        engine = self.engine
+        cx, cy = target.position
+        zone = None
+        try:
+            zone = engine.active_zone()
+        except Exception:
+            pass
+        zname = getattr(zone, "name", None)
+        out = [target]
+        candidates = list(engine.npc_manager.npcs.values())
+        candidates.append(engine.player)
+        for ch in candidates:
+            if ch.id in (caster.id, target.id) or not ch.is_active():
+                continue
+            if ch.id != engine.player.id:
+                chz = getattr(ch, "metadata", {}).get("zone")
+                if zone is not None and chz != zname:
+                    continue                # a floor away is safe
+                if zone is None:
+                    if chz is not None:
+                        continue
+                    try:
+                        from engine.presence import is_indoors
+                        if is_indoors(engine, ch):
+                            continue        # walls shield them
+                    except Exception:
+                        pass
+            nx, ny = ch.position
+            if ((nx - cx) ** 2 + (ny - cy) ** 2) ** 0.5 <= radius:
+                out.append(ch)
+        return out
 
     def _nearest_visible_hostile(self, caster, max_range: float):
         nearest, best = None, max_range + 0.1
@@ -227,15 +322,13 @@ class SpellSystem:
         return ((a.position[0] - b.position[0]) ** 2 +
                 (a.position[1] - b.position[1]) ** 2) ** 0.5
 
-    def _on_kill(self, killer, victim) -> None:
-        # Defer to combat system's kill handling
+    def _on_kill(self, killer, victim, damage: int = 0) -> None:
+        """Route through the ONE defeat handler (PT3.3 finding: spell
+        kills left 0-HP 'alive' zombies — no defeat(), no XP, no
+        quest credit, still targetable)."""
         try:
-            self.engine.world.map.remove_character(victim)
-            from items.loot_tables import generate_loot
-            drops = generate_loot(victim)
-            for item in drops:
-                self.engine.world.add_item_to_ground(
-                    item, victim.position[0], victim.position[1])
+            self.engine.combat_system._handle_defeat(killer, victim,
+                                                     damage)
         except Exception as e:
             logger.warning(f"Spell-kill cleanup error: {e}")
 

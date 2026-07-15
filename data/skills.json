@@ -1,0 +1,50 @@
+{
+  "mining": {
+    "name": "Mining",
+    "description": "Extract ore and stone from rocks and mountain seams."
+  },
+  "woodcutting": {
+    "name": "Woodcutting",
+    "description": "Fell trees for timber and kindling."
+  },
+  "fishing": {
+    "name": "Fishing",
+    "description": "Catch fish from rivers and lakes."
+  },
+  "cooking": {
+    "name": "Cooking",
+    "description": "Turn raw food into hearty meals that heal and satisfy."
+  },
+  "smithing": {
+    "name": "Smithing",
+    "description": "Smelt ore and forge weapons and armor at a forge."
+  },
+  "alchemy": {
+    "name": "Alchemy",
+    "description": "Brew potions and remedies from herbs and reagents."
+  },
+  "foraging": {
+    "name": "Foraging",
+    "description": "Gather herbs, berries, and useful plants from the wild."
+  },
+  "agility": {
+    "name": "Agility",
+    "description": "Move fast and far; unlocks shortcuts across the land."
+  },
+  "swimming": {
+    "name": "Swimming",
+    "description": "Cross deep water without the river deciding for you."
+  },
+  "bartering": {
+    "name": "Bartering",
+    "description": "Haggle keener prices; every deal sharpens your eye for worth."
+  },
+  "hunting": {
+    "name": "Hunting",
+    "description": "Track and fell wild beasts; the wilds yield to a hunter."
+  },
+  "carpentry": {
+    "name": "Carpentry",
+    "description": "Raise beams and shore up walls; timber and stone made whole."
+  }
+}

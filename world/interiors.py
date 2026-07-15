@@ -30,6 +30,12 @@ class Interior:
     npc_spots: List[Tuple[int, int]] = field(default_factory=list)
     furniture: List[Dict] = field(default_factory=list)
     description: str = ""
+    # Multi-level buildings (P9A.5): linked level stack
+    ground: bool = True
+    stairs_up: Optional[Tuple[int, int]] = None
+    stairs_down: Optional[Tuple[int, int]] = None
+    level_above: Optional["Interior"] = None
+    level_below: Optional["Interior"] = None
 
     def init_grid(self) -> None:
         """Build the wall/floor grid and cut the current door."""
@@ -75,6 +81,8 @@ def make_tavern_interior() -> Interior:
             {"name": "Hearth", "x": 8, "y": 1},
             {"name": "Table", "x": 4, "y": 3},
             {"name": "Table", "x": 6, "y": 3},
+            {"name": "Bed", "x": 8, "y": 5},
+            {"name": "Barrel", "x": 1, "y": 1},
             {"name": "Stairs up", "x": 1, "y": 5},
         ],
         npc_spots=[(2, 2), (5, 3), (6, 3)],
@@ -138,10 +146,41 @@ def make_default_interior(name: str) -> Interior:
         door=(4, 5),
         furniture=[
             {"name": "Bed", "x": 1, "y": 1},
+            {"name": "Hearth", "x": 6, "y": 1},
+            {"name": "Chest", "x": 1, "y": 3},
             {"name": "Chair", "x": 5, "y": 3},
         ],
         npc_spots=[],
     )
+
+
+def _furnish_rooms(inter, rooms, seed) -> None:
+    """P36.4 furnish a subdivided interior room by room (biggest = the main room),
+    keeping the source furniture where it lands on floor and adding a little more."""
+    import random
+    rng = random.Random(seed ^ 0x2f3d)
+    kept = [f for f in inter.furniture
+            if inter.terrain[f.get("y", 1)][f.get("x", 1)] != TerrainType.BUILDING]
+    taken = {(f["x"], f["y"]) for f in kept} | {inter.door}
+    rooms = sorted(rooms, key=lambda r: -r[2] * r[3])
+    kits = (["Table", "Chair", "Hearth"], ["Bed", "Chest"], ["Shelf", "Barrel"],
+            ["Chest", "Chair"], ["Barrel"], ["Shelf"])
+    extra, spots = [], []
+    for i, (rx, ry, rw, rh) in enumerate(rooms):
+        kit = kits[i] if i < len(kits) else ["Barrel"]
+        cells = [(rx + rw // 2, ry + rh // 2), (rx + 1, ry + 1),
+                 (rx + rw - 2, ry + rh - 2)]
+        for item, (fx, fy) in zip(kit, cells):
+            if (0 < fx < inter.width - 1 and 0 < fy < inter.height - 1
+                    and inter.terrain[fy][fx] != TerrainType.BUILDING
+                    and (fx, fy) not in taken):
+                taken.add((fx, fy))
+                extra.append({"name": item, "x": fx, "y": fy})
+        if i == 0:
+            spots.append((rx + rw // 2, max(ry + 1, ry + rh // 2 - 1)))
+    inter.furniture = kept + extra
+    if spots:
+        inter.npc_spots = spots
 
 
 def make_from_blueprint(loc_name: str, bp) -> Interior:
@@ -175,6 +214,10 @@ def make_from_blueprint(loc_name: str, bp) -> Interior:
                     "C": "Chest", "P": "Hearth", "R": "Barrel",
                     "S": "Altar",
                 }
+                if getattr(bp, "kind", "") == "library":
+                    cell_name_map["R"] = "Shelves"
+                if getattr(bp, "kind", "") == "well":
+                    cell_name_map["S"] = "Well"
                 inter.furniture.append({
                     "name": cell_name_map.get(cell, "Furniture"),
                     "x": x, "y": y,
@@ -188,6 +231,140 @@ def make_from_blueprint(loc_name: str, bp) -> Interior:
     spot = (w // 2, h // 2)
     inter.npc_spots = [spot]
     return inter
+
+
+def fit_to_footprint(inter: Interior, loc) -> Interior:
+    """P9A.7b: the inside matches the outside. Interior dimensions
+    scale with the building's overworld footprint (a hut opens into a
+    hut, a hall into a hall), the interior door sits at the south-face
+    center — the same edge as the exterior door glyph — and furniture
+    keeps its relative layout, remapped proportionally."""
+    tw = max(6, min(16, loc.width * 3 + 2))
+    th = max(5, min(12, loc.height * 3 + 2))
+    old_w, old_h = inter.width, inter.height
+
+    def remap(x: int, y: int) -> Tuple[int, int]:
+        nx = 1 + round((x - 1) * (tw - 3) / max(1, old_w - 3))
+        ny = 1 + round((y - 1) * (th - 3) / max(1, old_h - 3))
+        return (max(1, min(tw - 2, nx)), max(1, min(th - 2, ny)))
+
+    # Fresh shell: walls around floor, door at south-center
+    inter.width, inter.height = tw, th
+    inter.terrain = [[TerrainType.GRASS for _ in range(tw)]
+                     for _ in range(th)]
+    for x in range(tw):
+        inter.terrain[0][x] = TerrainType.BUILDING
+        inter.terrain[th - 1][x] = TerrainType.BUILDING
+    for y in range(th):
+        inter.terrain[y][0] = TerrainType.BUILDING
+        inter.terrain[y][tw - 1] = TerrainType.BUILDING
+    inter.door = (tw // 2, th - 1)
+    inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
+
+    # P36.4: a roomy building becomes MULTI-ROOM (BSP subdivision); a hut stays
+    # one open room so its authored layout survives
+    if tw >= 11 and th >= 8:
+        from world import room_gen
+        seed = sum(ord(c) for c in inter.name) + old_w * 7 + old_h * 13
+        grid, rooms = room_gen.subdivide(tw, th, seed)
+        grid[th - 2][tw // 2] = room_gen.FLOOR       # keep the entrance clear
+        for y in range(th - 1):
+            for x in range(1, tw - 1):
+                if grid[y][x] == room_gen.WALL:
+                    inter.terrain[y][x] = TerrainType.BUILDING
+        inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
+        _furnish_rooms(inter, rooms, seed)
+        return inter
+
+    # Remap furniture, nudging collisions to the next free tile
+    taken = {inter.door}
+    moved = []
+    for piece in inter.furniture:
+        spot = remap(piece.get("x", 1), piece.get("y", 1))
+        if spot in taken:
+            spot = next((t for t in _inner_tiles(tw, th)
+                         if t not in taken), spot)
+        taken.add(spot)
+        piece["x"], piece["y"] = spot
+        moved.append(piece)
+    inter.furniture = moved
+    inter.npc_spots = [remap(x, y) for x, y in inter.npc_spots]
+    return inter
+
+
+def _inner_tiles(w: int, h: int) -> List[Tuple[int, int]]:
+    return [(x, y) for y in range(1, h - 1) for x in range(1, w - 1)]
+
+
+def _free_tiles(inter: Interior) -> List[Tuple[int, int]]:
+    """Inner floor tiles with no wall, door, or furniture on them."""
+    taken = {(f.get("x"), f.get("y")) for f in inter.furniture}
+    taken.add(inter.door)
+    out = []
+    for y in range(1, inter.height - 1):
+        for x in range(1, inter.width - 1):
+            if inter.terrain[y][x] == TerrainType.BUILDING:
+                continue
+            if (x, y) in taken:
+                continue
+            out.append((x, y))
+    return out
+
+
+def add_upper_floor(inter: Interior) -> Optional[Interior]:
+    """Bedrooms above the taproom (P9A.5). Clean transitions: the
+    stair tile on each level carries you to its twin on the other."""
+    free = _free_tiles(inter)
+    if not free:
+        return None
+    spot = free[-1]                      # a corner, away from the door
+    loft = Interior(name=f"{inter.name} — upstairs",
+                    width=inter.width, height=inter.height,
+                    door=spot, ground=False,
+                    description="Creaking boards, low beams, and the "
+                                "quiet of the bedrooms.")
+    loft.init_grid()
+    loft.stairs_down = spot
+    loft.furniture.append({"name": "Stairs down",
+                           "x": spot[0], "y": spot[1]})
+    beds = [t for t in _free_tiles(loft) if t != spot][:3]
+    for i, (bx, by) in enumerate(beds):
+        loft.furniture.append(
+            {"name": "Bed" if i < 2 else "Chest", "x": bx, "y": by})
+    inter.stairs_up = spot
+    inter.furniture.append({"name": "Stairs up",
+                            "x": spot[0], "y": spot[1]})
+    inter.level_above = loft
+    loft.level_below = inter
+    return loft
+
+
+def add_cellar(inter: Interior) -> Optional[Interior]:
+    """Storage below the shop floor (P9A.5)."""
+    free = _free_tiles(inter)
+    if not free:
+        return None
+    spot = free[0]
+    cellar = Interior(name=f"{inter.name} — cellar",
+                      width=inter.width, height=inter.height,
+                      door=spot, ground=False,
+                      description="Cool dark air, dust, and stacked "
+                                  "stores.")
+    cellar.init_grid()
+    cellar.stairs_up = spot
+    cellar.furniture.append({"name": "Stairs up",
+                             "x": spot[0], "y": spot[1]})
+    stock = [t for t in _free_tiles(cellar) if t != spot][:3]
+    for i, (bx, by) in enumerate(stock):
+        cellar.furniture.append(
+            {"name": "Barrel" if i < 2 else "Chest",
+             "x": bx, "y": by})
+    inter.stairs_down = spot
+    inter.furniture.append({"name": "Stairs down",
+                            "x": spot[0], "y": spot[1]})
+    inter.level_below = cellar
+    cellar.level_above = inter
+    return cellar
 
 
 def build_interiors_for_world(world) -> Dict[str, Interior]:
@@ -227,5 +404,28 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
             else:
                 continue
 
+        # The inside matches the outside (P9A.7b)
+        try:
+            fit_to_footprint(inter, loc)
+        except Exception as e:
+            logger.debug(f"footprint fit for {loc.name}: {e}")
+        try:   # P39.3 decorate it in-theme (braziers, pillars, rugs, …)
+            from world.furnishings import furnish
+            furnish(inter, loc.name)
+        except Exception as e:
+            logger.debug(f"furnish {loc.name}: {e}")
         interiors[loc.name] = inter
+
+    # Multi-level pass (P9A.5): bedrooms above taverns and inns,
+    # storage cellars below shops and forges
+    for name, inter in interiors.items():
+        low = name.lower()
+        try:
+            if "tavern" in low or "inn" in low:
+                add_upper_floor(inter)
+            elif any(k in low for k in ("store", "goods", "shop",
+                                        "smithy", "forge")):
+                add_cellar(inter)
+        except Exception as e:
+            logger.debug(f"level stack for {name}: {e}")
     return interiors

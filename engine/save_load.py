@@ -19,7 +19,7 @@ import config
 
 logger = logging.getLogger("llm_rpg.save_load")
 
-SAVE_VERSION = 2
+SAVE_VERSION = 3  # v3: +metadata, equipment, weather, foraging, companions
 
 
 class SaveManager:
@@ -67,7 +67,11 @@ class SaveManager:
         payload = self._serialize_engine(engine, label=label)
         tmp = path + ".tmp"
         with open(tmp, "w") as fp:
-            json.dump(payload, fp, indent=2, default=str)
+            # sets (e.g. the P15.11 explored mask) → lists, else str
+            json.dump(payload, fp, indent=2,
+                      default=lambda o: (sorted(list(o))
+                                         if isinstance(o, set)
+                                         else str(o)))
         os.replace(tmp, path)
         logger.info(f"Saved game to {path}")
         return path
@@ -98,11 +102,15 @@ class SaveManager:
         # Terrain — terrain[y][x] = TerrainType
         terrain = [[cell.value for cell in row] for row in world.map.terrain]
 
-        # Ground items — keys must be strings for JSON
+        # Ground items — keys must be strings for JSON. Save the OVERWORLD
+        # store even when saving inside a zone (its items are parked while
+        # world.ground_items points at the current floor — 2026-07-12).
         ground = {}
-        if hasattr(world, "ground_items"):
-            for (x, y), items in world.ground_items.items():
-                ground[f"{x},{y}"] = [self._serialize_item(it) for it in items]
+        overworld_items = getattr(world, "_overworld_ground_items", None)
+        if overworld_items is None:
+            overworld_items = getattr(world, "ground_items", {})
+        for (x, y), items in (overworld_items or {}).items():
+            ground[f"{x},{y}"] = [self._serialize_item(it) for it in items]
 
         # Locations
         locations = [loc.to_dict() for loc in world.locations]
@@ -138,7 +146,71 @@ class SaveManager:
             "quests": quests,
             "history": history,
             "turn_counter": getattr(engine, "turn_counter", 0),
+            "weather": self._subsystem_dict(engine, "weather_system"),
+            "foraging": self._subsystem_dict(engine, "forage_manager"),
+            "companions": self._subsystem_dict(engine, "companion_manager"),
+            "gathering": self._subsystem_dict(engine, "gathering_manager"),
+            "director": self._subsystem_dict(engine, "world_director"),
+            "factions_state": self._subsystem_dict(engine, "faction_ticker"),
+            "faction_agendas": self._subsystem_dict(engine, "faction_agendas"),
+            "chronicle": self._subsystem_dict(engine, "chronicle"),
+            "production": self._subsystem_dict(engine, "production"),
+            "resource_nodes": self._subsystem_dict(engine, "resource_nodes"),
+            "lairs": self._subsystem_dict(engine, "lairs"),
+            "guildhalls": self._subsystem_dict(engine, "guildhalls"),
+            "teleport_network": self._subsystem_dict(engine, "teleport_network"),
+            "adventure_tome": self._subsystem_dict(engine, "adventure_tome"),
+            "town_gates": self._subsystem_dict(engine, "town_gates"),
+            "adventurers": self._subsystem_dict(engine, "adventurers"),
+            "monster_tribes": self._subsystem_dict(engine, "monster_tribes"),
+            "nemesis": self._subsystem_dict(engine, "nemesis"),
+            "retaliation": self._subsystem_dict(engine, "retaliation"),
+            "farms": self._subsystem_dict(engine, "farm_manager"),
+            "market": self._subsystem_dict(engine, "market"),
+            "doors": self._subsystem_dict(engine, "door_manager"),
+            "structures": self._subsystem_dict(engine, "structures"),
+            "tile_damage": self._subsystem_dict(engine, "tile_damage"),
+            "surfaces": self._subsystem_dict(engine, "surfaces_layer"),
+            "flood": self._subsystem_dict(engine, "flood_system"),
+            "dm_state": self._subsystem_dict(engine, "dm"),
+            "world_history": list(getattr(engine, "world_history", [])),
+            "shops": self._subsystem_dict(engine, "shop_manager"),
+            "quest_boards": self._subsystem_dict(engine,
+                                                 "quest_board_manager"),
+            "dungeons": {key: dg.to_dict()
+                         for key, dg in getattr(engine, "dungeons", {}).items()},
+            "place_state": self._serialize_place_state(engine),
         }
+
+    @staticmethod
+    def _serialize_place_state(engine) -> Dict[str, Any]:
+        """Where the player 'is' beyond raw coordinates."""
+        cur_dungeon_key = None
+        for key, dg in getattr(engine, "dungeons", {}).items():
+            if dg is getattr(engine, "current_dungeon", None):
+                cur_dungeon_key = key
+                break
+        cur_interior_key = None
+        for key, inter in getattr(engine, "interiors", {}).items():
+            if inter is getattr(engine, "current_interior", None):
+                cur_interior_key = key
+                break
+        return {
+            "current_dungeon": cur_dungeon_key,
+            "dungeon_return_pos": getattr(engine, "dungeon_return_pos", None),
+            "current_interior": cur_interior_key,
+            "exterior_return_pos": getattr(engine, "exterior_return_pos", None),
+        }
+
+    @staticmethod
+    def _subsystem_dict(engine, attr: str) -> Optional[Dict[str, Any]]:
+        sub = getattr(engine, attr, None)
+        if sub is not None and hasattr(sub, "to_dict"):
+            try:
+                return sub.to_dict()
+            except Exception as e:
+                logger.warning(f"Could not serialize {attr}: {e}")
+        return None
 
     def _serialize_item(self, item: Any) -> Any:
         if hasattr(item, "to_dict"):
@@ -147,6 +219,7 @@ class SaveManager:
 
     def _serialize_character(self, char: Any) -> Dict[str, Any]:
         from items.item import Item
+        from characters import equipment as eq
         d = char.to_dict()
         # Override inventory to support full Item objects
         inv = []
@@ -158,6 +231,8 @@ class SaveManager:
         d["inventory"] = inv
         d["memories"] = list(char.memories) if hasattr(char, "memories") else []
         d["status"] = getattr(char, "status", "alive")
+        d["equipment"] = eq.to_dict(char)
+        d["home_location"] = getattr(char, "home_location", "")
         return d
 
     # ---------------------------------------------------------------- restore
@@ -214,6 +289,13 @@ class SaveManager:
             if npc.is_active():
                 engine.world.map.place_character(npc, *npc.position)
 
+        # Rebuild the player roster (M.1b) — the active player plus any
+        # player-characters that were living in the NPC pool.
+        try:
+            engine.roster.rehydrate()
+        except Exception:
+            pass
+
         # Quests
         if hasattr(engine, "quest_manager") and engine.quest_manager:
             engine.quest_manager.from_dict(data.get("quests", {}))
@@ -221,6 +303,66 @@ class SaveManager:
         # History
         engine.memory_manager.game_history = list(data.get("history", []))
         engine.turn_counter = data.get("turn_counter", 0)
+
+        # Subsystems (absent in pre-v2 saves — skip silently)
+        for key, attr in (("weather", "weather_system"),
+                          ("foraging", "forage_manager"),
+                          ("companions", "companion_manager"),
+                          ("gathering", "gathering_manager"),
+                          ("director", "world_director"),
+                          ("factions_state", "faction_ticker"),
+                          ("faction_agendas", "faction_agendas"),
+                          ("chronicle", "chronicle"),
+                          ("production", "production"),
+                          ("resource_nodes", "resource_nodes"),
+                          ("lairs", "lairs"),
+                          ("guildhalls", "guildhalls"),
+                          ("teleport_network", "teleport_network"),
+                          ("adventure_tome", "adventure_tome"),
+                          ("town_gates", "town_gates"),
+                          ("adventurers", "adventurers"),
+                          ("monster_tribes", "monster_tribes"),
+                          ("nemesis", "nemesis"),
+                          ("retaliation", "retaliation"),
+                          ("farms", "farm_manager"),
+                          ("market", "market"),
+                          ("doors", "door_manager"),
+                          ("structures", "structures"),
+                          ("tile_damage", "tile_damage"),
+                          ("surfaces", "surfaces_layer"),
+                          ("flood", "flood_system"),
+                          ("dm_state", "dm"),
+                          ("shops", "shop_manager"),
+                          ("quest_boards", "quest_board_manager")):
+            sub = getattr(engine, attr, None)
+            payload = data.get(key)
+            if sub is not None and payload is not None and hasattr(sub, "from_dict"):
+                try:
+                    sub.from_dict(payload)
+                except Exception as e:
+                    logger.warning(f"Could not restore {attr}: {e}")
+
+        engine.world_history = list(data.get("world_history", []))
+
+        # Dungeons + player place state (inside a dungeon / interior)
+        from world.dungeon import Dungeon
+        engine.dungeons = {}
+        for key, dd in data.get("dungeons", {}).items():
+            try:
+                engine.dungeons[key] = Dungeon.from_dict(dd)
+            except Exception as e:
+                logger.warning(f"Could not restore dungeon {key}: {e}")
+
+        place = data.get("place_state", {}) or {}
+        dg_key = place.get("current_dungeon")
+        engine.current_dungeon = engine.dungeons.get(dg_key) if dg_key else None
+        pos = place.get("dungeon_return_pos")
+        engine.dungeon_return_pos = tuple(pos) if pos else None
+        in_key = place.get("current_interior")
+        engine.current_interior = (
+            getattr(engine, "interiors", {}).get(in_key) if in_key else None)
+        pos = place.get("exterior_return_pos")
+        engine.exterior_return_pos = tuple(pos) if pos else None
 
 
 def _rebuild_character(d: Dict[str, Any]):
@@ -261,4 +403,10 @@ def _rebuild_character(d: Dict[str, Any]):
     )
     char.memories = list(d.get("memories", []))
     char.status = d.get("status", "alive")
+    char.faction = d.get("faction", "neutral")
+    char.metadata = dict(d.get("metadata", {}))
+    char.home_location = d.get("home_location", "")
+    if d.get("equipment"):
+        from characters import equipment as eq
+        eq.from_dict(char, d["equipment"])
     return char

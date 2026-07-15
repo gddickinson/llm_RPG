@@ -1,0 +1,35 @@
+{
+  "wooden_palisade": {
+    "hp": 200,
+    "defense_bonus": 1.3
+  },
+  "stone_wall": {
+    "hp": 500,
+    "defense_bonus": 1.5
+  },
+  "gate": {
+    "hp": 150,
+    "defense_bonus": 1.0
+  },
+  "tower": {
+    "hp": 300,
+    "defense_bonus": 1.4,
+    "archer_slots": 10,
+    "ranged_attack": 8
+  },
+  "moat": {
+    "hp": 9999,
+    "defense_bonus": 1.0,
+    "cavalry_penalty": 0.3
+  },
+  "boiling_oil": {
+    "hp": 50,
+    "defense_bonus": 1.0,
+    "damage_per_round": 15
+  },
+  "trench": {
+    "hp": 9999,
+    "defense_bonus": 1.1,
+    "speed_penalty": 0.5
+  }
+}

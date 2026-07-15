@@ -33,7 +33,10 @@ def _gather_bonuses(character) -> Dict[str, int]:
     except Exception:
         return {}
     out: Dict[str, int] = {}
+    from engine.durability import is_broken
     for it in equipped_items(character):
+        if is_broken(it):
+            continue
         bonus = getattr(it, "equip_bonuses", None) or {}
         for key, val in bonus.items():
             out[key] = out.get(key, 0) + int(val)
@@ -78,12 +81,18 @@ def total_armor_value(character) -> int:
         from characters.equipment import get_equipment
     except Exception:
         return 0
+    from engine.durability import is_broken
     eq = get_equipment(character)
     total = 0
     for slot in ("armor", "shield"):
         item = eq.get(slot)
-        if item:
+        if item and not is_broken(item):
             total += int(getattr(item, "armor", 0))
+    try:   # a matched set is worth more than its pieces (P15.10)
+        from characters.equipment import set_bonus
+        total += set_bonus(character)[0]
+    except Exception:
+        pass
     return total
 
 

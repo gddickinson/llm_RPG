@@ -4,7 +4,7 @@ Keeps `engine/game_engine.py` under 500 LOC by housing the spell /
 equipment / banking / crafting / party / interior wrappers separately.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 class GameAPIMixin:
@@ -23,27 +23,124 @@ class GameAPIMixin:
 
     # ---- interiors --------------------------------------------------
 
-    def enter_building(self) -> str:
+    def _sync_ground_items(self) -> None:
+        """Point `world.ground_items` at the ACTIVE grid's own item store,
+        so items dropped in a zone stay on THAT floor and don't bleed onto
+        every level (bug-fix 2026-07-12). The overworld's items are parked
+        on `world._overworld_ground_items` while you are inside. Idempotent
+        — safe to call after any zone transition."""
+        world = self.world
+        zone = self.current_interior or self.current_dungeon
+        if zone is None:
+            parked = getattr(world, "_overworld_ground_items", None)
+            if parked is not None:
+                world.ground_items = parked
+                world._overworld_ground_items = None
+            return
+        if getattr(world, "_overworld_ground_items", None) is None:
+            world._overworld_ground_items = getattr(world, "ground_items", {}) or {}
+        if getattr(zone, "ground_items", None) is None:
+            zone.ground_items = {}
+        world.ground_items = zone.ground_items
+
+    def enter_building(self, loc=None, via_breach: bool = False) -> str:
         if self.current_interior:
             return "You are already inside."
-        loc = self.world.get_location_at(*self.player.position)
+        if loc is None:
+            loc = self.world.get_location_at(*self.player.position)
         if not loc:
             return "There's no building here."
         inter = self.interiors.get(loc.name)
         if not inter:
             return f"You can't enter the {loc.name}."
+        # The door has a say (P9A.1) — unless you made your own door
+        if via_breach:
+            allowed, note = True, "You clamber through the breach. "
+        else:
+            allowed, note = self.door_manager.try_enter(loc.name)
+        if not allowed:
+            self.memory_manager.add_event(note)
+            return note
         self.exterior_return_pos = self.player.position
         self.current_interior = inter
+        self._sync_ground_items()
         self.player.position = inter.door
-        msg = f"You enter the {loc.name}. {inter.description}"
+        # Everyone inside appears inside (P9A.7)
+        try:
+            from engine.presence import assign_visitors
+            assign_visitors(self, inter, loc.name)
+        except Exception:
+            pass
+        # Exterior breaches show inside too (P10.4)
+        try:
+            self._sync_breaches(loc, inter)
+        except Exception:
+            pass
+        try:
+            self.structures.on_enter_level(inter)   # P9.1
+        except Exception:
+            pass
+        # Whose place is this? (P9A.3b nameplate)
+        plate = ""
+        try:
+            if self.homes.is_derelict(loc.name):
+                plate = " Long abandoned."
+            else:
+                owner = self.homes.owner_of(loc.name)
+                if owner is not None:
+                    plate = f" This is {owner.name}'s place."
+        except Exception:
+            pass
+        msg = f"{note}You enter the {loc.name}.{plate} " \
+              f"{inter.description}"
         self.memory_manager.add_event(msg)
+        # Entering counts as visiting (VISIT quest objectives)
+        try:
+            if self.quest_manager:
+                self.quest_manager.on_location_entered(loc.name)
+        except Exception:
+            pass
+        # Uninvited? Witnessed? (P9A.4)
+        try:
+            self.trespass.on_enter(loc)
+        except Exception:
+            pass
+        return msg
+
+    def _sync_breaches(self, loc, inter) -> None:
+        from engine.earthworks import sync_breaches
+        sync_breaches(self, loc, inter)
+
+    def force_door(self) -> str:
+        """SHIFT+TAB: force the door of the building underfoot."""
+        loc = self.world.get_location_at(*self.player.position)
+        if not loc or loc.name not in self.interiors:
+            return "There's no door here to force."
+        broke, msg = self.door_manager.force(loc.name)
+        if broke and "gives way" in msg:
+            return self.enter_building()
         return msg
 
     def exit_building(self) -> str:
         if not self.current_interior:
             return "You are already outside."
+        # Not on the ground floor? Head back to it first (P9A.5)
+        zone = self.current_interior
+        if not getattr(zone, "ground", True):
+            level = zone.level_below or zone.level_above
+            if level is not None:
+                landing = (zone.level_below and level.stairs_up) or \
+                    (zone.level_above and level.stairs_down) or \
+                    level.door
+                self.current_interior = level
+                self._sync_ground_items()
+                self.player.position = landing
+                msg = "You make your way back to the ground floor."
+                self.memory_manager.add_event(msg)
+                return msg
         name = self.current_interior.name
         self.current_interior = None
+        self._sync_ground_items()
         if self.exterior_return_pos:
             self.player.position = self.exterior_return_pos
             self.world.map.place_character(self.player, *self.player.position)
@@ -108,99 +205,14 @@ class GameAPIMixin:
 
     # ---- ranged combat -----------------------------------------------
 
-    def shoot_ranged(self, target_name: str = None) -> str:
-        """Fire a ranged attack at the named target (or nearest enemy).
-
-        Requires an equipped ranged weapon. Consumes ammo of the matching
-        ammo_type. Thrown weapons fire without ammo.
-        """
-        from items.item import Item
-
-        try:
-            from characters.equipment import equipped_weapon
-            weapon = equipped_weapon(self.player)
-        except Exception:
-            weapon = None
-        if weapon is None or not weapon.is_ranged_weapon():
-            msg = "You have no ranged weapon equipped."
-            self.memory_manager.add_event(msg)
-            return msg
-
-        weapon_type = self._weapon_type_str(weapon)
-
-        # Ammo check (thrown weapons skip)
-        ammo_item = None
-        if weapon.weapon_kind == "ranged" and weapon.ammo_type:
-            ammo_item = self._find_ammo(weapon.ammo_type)
-            if ammo_item is None:
-                msg = f"You're out of {weapon.ammo_type}s!"
-                self.memory_manager.add_event(msg)
-                return msg
-
-        # Resolve target
-        target = None
-        if target_name:
-            target = self.find_character(target_name)
-        if target is None:
-            target = self._nearest_hostile()
-        if target is None:
-            return "No target in sight."
-
-        from engine.effects import effective_weapon_damage_bonus
-        dex_bonus = max(0, (self.player.dexterity - 10) // 2)
-        damage = max(1, int(weapon.damage) + dex_bonus
-                     + effective_weapon_damage_bonus(self.player))
-
-        if ammo_item is not None:
-            self._consume_one_ammo(ammo_item)
-
-        proj = self.projectile_manager.spawn(
-            self.player, target, damage, weapon_type=weapon_type)
-        ammo_label = f" ({weapon.ammo_type} -1)" if ammo_item is not None else ""
-        msg = f"You loose a {proj.weapon_type} at {target.name}{ammo_label}."
-        self.memory_manager.add_event(msg)
-        self.advance_turn()
-        return msg
-
-    def _weapon_type_str(self, weapon) -> str:
-        name = (weapon.name or "").lower()
-        for key in ("longbow", "crossbow", "thrown knife", "javelin",
-                    "sling", "bow"):
-            if key in name or key.replace(" ", "_") in (weapon.id or ""):
-                return key.replace(" ", "_")
-        return "bow"
-
-    def _find_ammo(self, ammo_type: str):
-        from items.item import Item
-        for it in self.player.inventory:
-            if isinstance(it, Item) and it.is_ammo() and \
-                    it.ammo_type == ammo_type and it.quantity > 0:
-                return it
-        return None
-
-    def _consume_one_ammo(self, ammo_item) -> None:
-        ammo_item.quantity -= 1
-        if ammo_item.quantity <= 0:
-            try:
-                self.player.inventory.remove(ammo_item)
-            except ValueError:
-                pass
+    def shoot_ranged(self, target_name: str = None,
+                     aimed: bool = False) -> str:
+        from engine.ranged import shoot_ranged
+        return shoot_ranged(self, target_name, aimed)
 
     def _nearest_hostile(self):
-        px, py = self.player.position
-        best = None
-        best_d = 999
-        for npc in self.npc_manager.npcs.values():
-            if not npc.is_active():
-                continue
-            klass = getattr(npc.character_class, "value", "")
-            if klass not in ("brigand", "troll", "monster"):
-                continue
-            d = ((npc.position[0] - px) ** 2 +
-                 (npc.position[1] - py) ** 2) ** 0.5
-            if d < best_d:
-                best_d, best = d, npc
-        return best
+        from engine.ranged import _nearest_hostile
+        return _nearest_hostile(self)
 
     # ---- spell visual effects (used by spell system + UI) ------------
 
@@ -215,10 +227,124 @@ class GameAPIMixin:
     # ---- foraging / weather / dungeons -------------------------------
 
     def forage(self) -> str:
+        """Z key: gather (mine/chop/fish) when tooled-up; herbs otherwise.
+
+        Priority: node + tool -> gather; foragable terrain -> herbs;
+        node without tool -> teach the tool requirement. A gather node
+        on cooldown falls through to herb foraging where the terrain
+        allows (playtest finding: an axe must not lock you out of the
+        forest's herbs)."""
+        gm = self.gathering_manager
+        node = gm.node_at(*self.player.position)
+        x, y = self.player.position
+        # A ripe field beats everything (P8.3)
+        crop = self.farm_manager.harvest(x, y)
+        if crop:
+            return crop
+        from world.foraging import TERRAIN_FORAGE_TABLE
+        terrain = self.world.map.get_terrain_at(x, y)
+        foragable = terrain in TERRAIN_FORAGE_TABLE
+
+        if node is not None and gm.has_tool_for(node):
+            skill_id, spec, pos = node
+            if gm._cooldown_ok(skill_id, spec, pos):
+                return gm.gather()
+            if foragable:
+                return self.forage_manager.forage()
+            return "This spot is picked clean. Come back later."
+        if foragable:
+            return self.forage_manager.forage()
+        if node is not None:
+            return gm.tool_message(node)
         return self.forage_manager.forage()
+
+    def pray(self) -> str:
+        """SHIFT+P at a shrine/temple: prayer and (maybe) a miracle."""
+        return self.pantheon.pray()
+
+    def melee_or_shoot(self) -> str:
+        """Smart F (P8.7 UX): adjacent enemy -> melee; otherwise a
+        ranged weapon fires at the lock."""
+        from engine.presence import npc_adjacent_to_player
+        for npc in self.npc_manager.npcs.values():
+            if not npc.is_active():
+                continue
+            klass = getattr(npc.character_class, "value", "")
+            hostile = klass in ("brigand", "monster", "troll") or \
+                npc.metadata.get("provoked")
+            if hostile and npc_adjacent_to_player(self, npc):
+                return self.attack_character(npc.name)
+        try:
+            from characters.equipment import equipped_weapon
+            weapon = equipped_weapon(self.player)
+            if weapon is not None and weapon.is_ranged_weapon() and \
+                    self.targeting.current() is not None:
+                return self.shoot_ranged()
+        except Exception:
+            pass
+        msg = "No enemy adjacent."
+        self.memory_manager.add_event(msg)
+        return msg
+
+    def player_location(self):
+        """The Location the player occupies — interior-aware (P9A.6):
+        inside a building (any level), that building's location."""
+        if self.current_interior is not None:
+            zone = self.current_interior
+            for key, inter in self.interiors.items():
+                if inter is zone or inter.level_above is zone or \
+                        inter.level_below is zone:
+                    for loc in self.world.locations:
+                        if loc.name == key:
+                            return loc
+            return None
+        return self.world.get_location_at(*self.player.position)
+
+    def use_furniture(self) -> Optional[str]:
+        """E beside interior furniture (P9A.2). None = nothing here."""
+        from engine.furniture import interact
+        return interact(self)
+
+    # ---- Claim a home (P15.7) -----------------------------------------
+
+    def home_action(self) -> Optional[str]:
+        """E inside a ruin/home: buy the derelict, or repair your own."""
+        from engine.homestead import home_action
+        return home_action(self)
+
+    def home_deposit(self, item_name: str) -> str:
+        """Store a carried item in your home chest (from the I-panel)."""
+        from engine.homestead import deposit
+        return deposit(self, item_name)
+
+    def home_withdraw(self, item_name: str) -> str:
+        from engine.homestead import withdraw
+        return withdraw(self, item_name)
 
     def current_weather(self) -> str:
         return self.weather_system.state.current.value
+
+    def active_zone(self):
+        """The alternate grid the player is inside (dungeon/interior)."""
+        return getattr(self, "current_dungeon", None) or \
+            getattr(self, "current_interior", None)
+
+    def effective_visibility(self) -> int:
+        """Visibility range in tiles, shrunk by fog / rain / snow /
+        storm — and collapsed to 1 while blinded (P12.2)."""
+        import config
+        try:
+            from characters.status_effects import has_effect
+            if has_effect(self.player, "blinded"):
+                return 1
+        except Exception:
+            pass
+        base = config.DEFAULT_VISIBILITY_RANGE
+        try:
+            mod = self.weather_system.visibility_modifier()
+        except Exception:
+            mod = 1.0
+        return max(2, round(base * mod))
 
     def enter_dungeon(self) -> str:
         from world.world_map import TerrainType
@@ -230,11 +356,13 @@ class GameAPIMixin:
         loc = self.world.get_location_at(x, y)
         name = loc.name if loc else f"cave_{x}_{y}"
         if name not in self.dungeons:
-            dungeon = generate_dungeon(name=f"{name} (Depths)",
-                                       seed=hash(name) & 0xFFFFFFFF)
-            populate_dungeon(dungeon, self)
+            from world.dungeon import generate_multilevel
+            dungeon = generate_multilevel(
+                name=f"{name} (Depths)",
+                seed=hash(name) & 0xFFFFFFFF, engine=self)
             self.dungeons[name] = dungeon
         self.current_dungeon = self.dungeons[name]
+        self._sync_ground_items()
         self.dungeon_return_pos = self.player.position
         self.player.position = self.current_dungeon.exit_pos
         msg = (f"You descend into {self.current_dungeon.name}. "
@@ -245,8 +373,19 @@ class GameAPIMixin:
     def exit_dungeon(self) -> str:
         if not self.current_dungeon:
             return "You aren't in a dungeon."
+        # Deeper floors climb back up first (P9.5)
+        above = getattr(self.current_dungeon, "level_above", None)
+        if above is not None:
+            landing = above.stairs_down or above.exit_pos
+            self.current_dungeon = above
+            self._sync_ground_items()
+            self.player.position = landing
+            msg = "You climb back toward the light."
+            self.memory_manager.add_event(msg)
+            return msg
         name = self.current_dungeon.name
         self.current_dungeon = None
+        self._sync_ground_items()
         if self.dungeon_return_pos:
             self.player.position = self.dungeon_return_pos
             self.world.map.place_character(self.player, *self.player.position)
@@ -268,14 +407,38 @@ class GameAPIMixin:
 
     def can_craft_at_player(self, output_id: str) -> str:
         from items.crafting import can_craft
-        loc = self.world.get_location_at(*self.player.position)
+        loc = self.player_location()
         props = dict(loc.properties) if loc else {}
         return can_craft(self.player, output_id, props)
 
     def craft(self, output_id: str) -> str:
-        from items.crafting import craft
-        loc = self.world.get_location_at(*self.player.position)
+        from items.crafting import craft, find_recipe
+        loc = self.player_location()
         props = dict(loc.properties) if loc else {}
         msg = craft(self.player, output_id, props)
         self.memory_manager.add_event(msg)
+        if msg.startswith("You craft"):
+            self._award_craft_xp(find_recipe(output_id))
+            try:
+                self.collection_log.record_craft(output_id)
+            except Exception:
+                pass
+            # Crafted output counts for FETCH objectives too
+            if self.quest_manager:
+                recipe = find_recipe(output_id)
+                if recipe:
+                    self.quest_manager.on_item_acquired(recipe.output_id)
         return msg
+
+    def _award_craft_xp(self, recipe) -> None:
+        """Each recipe trains the skill declared in its data entry."""
+        from engine.skill_progression import add_skill_xp
+        if recipe is None:
+            return
+        xp = 20 + recipe.gold_cost // 2
+        for note in add_skill_xp(self.player, recipe.skill, xp):
+            self.memory_manager.add_event(note)
+        try:
+            self.pet_system.maybe_award(recipe.skill)
+        except Exception:
+            pass

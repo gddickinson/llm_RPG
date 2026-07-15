@@ -27,12 +27,15 @@ logger = logging.getLogger("llm_rpg.start_menu")
 TITLE_OPTIONS = [
     ("New Game", "new"),
     ("Load Game", "load"),
+    ("Battle Testbed", "battle"),
     ("Quit", "quit"),
 ]
 
 NEW_GAME_OPTIONS = [
     ("Quick Start", "quick"),
     ("Customize Character", "customize"),
+    ("Realistic World", "realistic"),          # P36.1 heightmap landscape
+    ("Begin at the Castle", "castle"),
     ("Back", "back"),
 ]
 
@@ -57,7 +60,9 @@ class StartMenu:
         self.selected = 0
         self.save_dir = save_dir or config.SAVE_DIRECTORY
         self.saves = []
+        self.scenarios = []
         self.creator: Optional[CharacterCreator] = None
+        self.pending_start = "default"     # "castle" for the P18.5 start
 
     # ------------------------------------------------------------- main
 
@@ -92,12 +97,16 @@ class StartMenu:
         if self.state == "load_menu":
             return self._load_key(k)
 
+        if self.state == "battle_menu":
+            return self._battle_key(k)
+
         if self.state == "customize":
             done = self.creator.handle_key(event)
             if done:
                 spec = self.creator.build_spec()
                 self.creator = None
-                return {"action": "new", "spec": spec}
+                start, self.pending_start = self.pending_start, "default"
+                return {"action": "new", "spec": spec, "start": start}
             return None
         return None
 
@@ -120,8 +129,15 @@ class StartMenu:
         elif k in (pygame.K_RETURN, pygame.K_SPACE):
             label, code = NEW_GAME_OPTIONS[self.selected]
             if code == "quick":
-                return {"action": "new", "spec": default_quick_start_spec()}
-            if code == "customize":
+                return {"action": "new", "spec": default_quick_start_spec(),
+                        "start": "default"}
+            if code == "realistic":            # P36.1 a heightmap-generated world
+                return {"action": "new", "spec": default_quick_start_spec(),
+                        "start": "realistic"}
+            if code in ("customize", "castle"):
+                # both make a hero; the castle option starts them at the gate
+                self.pending_start = "castle" if code == "castle" \
+                    else "default"
                 self.creator = CharacterCreator(
                     self.screen, self.font, self.big_font)
                 self.state = "customize"
@@ -153,6 +169,30 @@ class StartMenu:
             self.selected = 0
         return None
 
+    def _battle_key(self, k) -> Optional[dict]:
+        if not self.scenarios:
+            if k == pygame.K_ESCAPE:
+                self.state = "title"
+                self.selected = 0
+            return None
+        n = len(self.scenarios)
+        _, rows, _, _ = self._grid_dims()
+        if k in (pygame.K_UP, pygame.K_w):
+            self.selected = (self.selected - 1) % n
+        elif k in (pygame.K_DOWN, pygame.K_s):
+            self.selected = (self.selected + 1) % n
+        elif k in (pygame.K_LEFT, pygame.K_a):
+            self.selected = (self.selected - rows) % n    # jump a column
+        elif k in (pygame.K_RIGHT, pygame.K_d):
+            self.selected = (self.selected + rows) % n
+        elif k in (pygame.K_RETURN, pygame.K_SPACE):
+            sid = self.scenarios[self.selected][0]
+            return {"action": "battle", "scenario": sid}
+        elif k == pygame.K_ESCAPE:
+            self.state = "title"
+            self.selected = 0
+        return None
+
     def _pick_title(self) -> Optional[dict]:
         label, code = TITLE_OPTIONS[self.selected]
         if code == "new":
@@ -162,6 +202,11 @@ class StartMenu:
         if code == "load":
             self._refresh_saves()
             self.state = "load_menu"
+            self.selected = 0
+            return None
+        if code == "battle":
+            self._refresh_scenarios()
+            self.state = "battle_menu"
             self.selected = 0
             return None
         if code == "quit":
@@ -177,6 +222,10 @@ class StartMenu:
         from engine.save_load import SaveManager
         self.saves = SaveManager(self.save_dir).list_saves()
 
+    def _refresh_scenarios(self) -> None:
+        from engine.battle.battle_scenario import list_scenarios
+        self.scenarios = list_scenarios()
+
     # --------------------------------------------------------- render
 
     def _render(self) -> None:
@@ -189,6 +238,8 @@ class StartMenu:
                               "Quick Start uses a default warrior")
         elif self.state == "load_menu":
             self._render_save_list()
+        elif self.state == "battle_menu":
+            self._render_scenario_list()
         elif self.state == "customize" and self.creator:
             self.creator.render()
         pygame.display.flip()
@@ -268,3 +319,59 @@ class StartMenu:
             "Enter to load  ·  Esc to go back", True, (130, 130, 150))
         self.screen.blit(
             hint, (self.width // 2 - hint.get_width() // 2, self.height - 40))
+
+    def _grid_dims(self):
+        """(columns, rows-per-column, row-height, top-y) for the scenario
+        grid — sized so every battle fits the page (P17: the list grew
+        past a single scrollless column)."""
+        top = 165
+        bottom = self.height - 96
+        row_h = 32
+        rows = max(1, (bottom - top) // row_h)
+        n = max(1, len(self.scenarios))
+        cols = min(3, -(-n // rows))          # ceil; up to 3 columns
+        return cols, rows, row_h, top
+
+    def _render_scenario_list(self) -> None:
+        title_surf = self.big_font.render(
+            "Battle Testbed", True, (240, 220, 140))
+        self.screen.blit(
+            title_surf,
+            (self.width // 2 - title_surf.get_width() // 2, 70))
+        sub = self.sub_font.render(
+            "Watch the tactical layer fight a staged battle",
+            True, (170, 170, 200))
+        self.screen.blit(
+            sub, (self.width // 2 - sub.get_width() // 2, 118))
+
+        cols, rows, row_h, top = self._grid_dims()
+        col_w = (self.width - 200) // cols
+        for i, (sid, name, desc) in enumerate(self.scenarios):
+            col, row = i // rows, i % rows
+            if col >= cols:                    # safety: never draw off-grid
+                continue
+            selected = (i == self.selected)
+            color = (255, 255, 120) if selected else (175, 175, 195)
+            text = ("> " if selected else "  ") + name
+            surf = self.font.render(text, True, color)
+            self.screen.blit(surf, (110 + col * col_w, top + row * row_h))
+
+        # the selected battle's blurb, pinned below the grid so it never
+        # collides with a row
+        if self.scenarios:
+            _, name, desc = self.scenarios[self.selected]
+            nsurf = self.font.render(name, True, (240, 230, 160))
+            self.screen.blit(
+                nsurf, (self.width // 2 - nsurf.get_width() // 2,
+                        self.height - 78))
+            dsurf = self.sub_font.render(desc, True, (150, 175, 150))
+            self.screen.blit(
+                dsurf, (self.width // 2 - dsurf.get_width() // 2,
+                        self.height - 56))
+
+        hint = self.sub_font.render(
+            "Arrows move  ·  Enter to fight  ·  Esc to go back",
+            True, (130, 130, 150))
+        self.screen.blit(
+            hint, (self.width // 2 - hint.get_width() // 2,
+                   self.height - 32))

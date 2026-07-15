@@ -14,6 +14,7 @@ class DialogSystem:
 
     def __init__(self, engine):
         self.engine = engine
+        self._last_player_message = None
 
     def player_to_npc(self, npc_id: str, message: str = None) -> str:
         npc = self.engine.npc_manager.get_npc(npc_id)
@@ -23,32 +24,114 @@ class DialogSystem:
         if not self._adjacent_to_player(npc):
             return f"{npc.name} is too far away to talk to."
 
+        try:                                  # a nod & wave on being greeted
+            from engine import anim
+            anim.face(npc, self.engine.player.position)
+            anim.face(self.engine.player, npc.position)
+            if not message:
+                anim.emote(npc, "wave")
+        except Exception:
+            pass
+
         if not message:
             return self._greet(npc)
 
+        # The bond ceremony: /bond, /spend <secret|skill|join> (P12.11)
+        lowered = message.strip().lower()
+        if lowered.startswith("/bond"):
+            from engine.bonds import share_drink
+            result = share_drink(self.engine, npc)
+            self.engine.advance_turn()
+            return result
+        if lowered.startswith("/spend"):
+            from engine.bonds import spend
+            parts = message.split(maxsplit=1)
+            result = spend(self.engine, npc,
+                           parts[1] if len(parts) > 1 else "")
+            self.engine.advance_turn()
+            return result
+
+        if lowered.startswith("/court"):        # P20.6 romance ladder
+            from engine.romance import court
+            result = court(self.engine, npc)
+            self.engine.advance_turn()
+            return result
+
+        if lowered.startswith("/hire"):         # M.7 paid party member
+            from engine.hirelings import HirelingSystem
+            days = HirelingSystem.parse_days(message)
+            result = self.engine.hirelings.hire(npc.id, days)
+            self.engine.advance_turn()
+            return result
+
+        if lowered.startswith("/order"):
+            if npc.id not in self.engine.companion_manager.party:
+                return f"{npc.name} doesn't take orders from you."
+            parts = message.split(maxsplit=1)
+            return self.engine.companion_manager.set_order(
+                npc, (parts[1] if len(parts) > 1 else "").strip()
+                .lower())
+
+        # Social checks: /persuade /intimidate /deceive <argument>
+        from engine.persuasion import parse_command
+        cmd = parse_command(message)
+        if cmd is not None:
+            verb, argument = cmd
+            self.engine.memory_manager.add_event(
+                f"You try to {verb} {npc.name}: \"{argument}\"")
+            result = self.engine.persuasion.attempt(npc, verb, argument)
+            self.engine.advance_turn()
+            return result
+
         # Player speaks ---------------------------------------------------
+        self._last_player_message = message
         self.engine.memory_manager.add_event(
             f"You say to {npc.name}: \"{message}\"")
 
-        # Use NPC process if available (multiprocess)
+        # Structured protocol first (LLM providers), then legacy paths
         recent = self.engine.memory_manager.get_character_history(npc.name, count=5)
-        response = self._via_process(npc_id, message, recent) \
-            or self._via_inline(npc, message, recent)
+        response, action_note = self._via_protocol(npc, message, recent)
+        if response is None:
+            response = self._via_process(npc_id, message, recent) \
+                or self._via_inline(npc, message, recent)
 
         if not response:
             response = "..."
+        if action_note:
+            self.engine.memory_manager.add_event(action_note)
 
         # Append quest offers / turn-in prompts
         response = self._append_quest_prompts(npc_id, response)
 
         self.engine.memory_manager.add_event(
             f"{npc.name} says: \"{response}\"")
-        npc.add_memory(
-            f"Player said: \"{message}\". I replied: \"{response}\"", 2)
+        try:
+            from engine.npc_memory import remember, log_exchange
+            remember(npc, f"{self.engine.player.name} said: \"{message}\". "
+                          f"I replied: \"{response}\"", 2,
+                     self.engine.world.time)
+            log_exchange(npc, message, response)
+        except Exception:
+            npc.add_memory(
+                f"Player said: \"{message}\". I replied: \"{response}\"", 2)
 
-        # Quest hook
+        # Friendly conversation slowly builds trust (recruit gate is 30)
+        klass = getattr(npc.character_class, "value", "")
+        if klass not in ("brigand", "troll", "monster"):
+            npc.modify_relationship(self.engine.player.id, 2)
+
+        # Quest hooks: TALK objectives + hand over DELIVER items
         if hasattr(self.engine, "quest_manager") and self.engine.quest_manager:
             self.engine.quest_manager.on_npc_talked(npc_id)
+            for note in self.engine.quest_manager.try_deliver(
+                    self.engine.player, npc_id):
+                self.engine.memory_manager.add_event(note)
+
+        # Crossing an affinity threshold may trigger a heart event
+        try:
+            self.engine.heart_events.maybe_trigger(npc)
+        except Exception:
+            pass
 
         self.engine.advance_turn()
         return response
@@ -56,11 +139,15 @@ class DialogSystem:
     # ---- internals ---------------------------------------------------
 
     def _greet(self, npc) -> str:
-        recent = []
-        response = self._via_process(npc.id, "Hello", recent) \
-            or self._via_inline(npc, "Hello", recent)
-        if not response:
-            response = "Hello there, traveler."
+        from engine.llm_budget import cached_greeting, store_greeting
+        response = cached_greeting(self.engine, npc)
+        if response is None:
+            recent = []
+            response = self._via_process(npc.id, "Hello", recent) \
+                or self._via_inline(npc, "Hello", recent)
+            if not response:
+                response = "Hello there, traveler."
+            store_greeting(self.engine, npc, response)
 
         # Append quest offers / turn-in prompts
         response = self._append_quest_prompts(npc.id, response)
@@ -75,6 +162,49 @@ class DialogSystem:
         ready = qm.ready_for_turn_in(npc_id) if qm else []
 
         extras = [base]
+        # Known topics raised by the player get authored answers
+        # (heuristic mode; LLM mode grounds them via the prompt instead)
+        try:
+            if getattr(self.engine.llm_interface, "provider_name",
+                       "heuristic") == "heuristic" and \
+                    self._last_player_message:
+                npc0 = self.engine.npc_manager.get_npc(npc_id)
+                if npc0 is not None:
+                    for line in self.engine.topic_journal.heuristic_lines(
+                            npc0, self._last_player_message):
+                        extras.append(f"  {line}")
+        except Exception:
+            pass
+        # Heuristic mode: NPCs occasionally comment on your deeds
+        try:
+            if getattr(self.engine.llm_interface, "provider_name",
+                       "heuristic") == "heuristic":
+                from engine.player_deeds import heuristic_comment
+                comment = heuristic_comment(self.engine)
+                if comment:
+                    extras.append(f"  {comment}")
+        except Exception:
+            pass
+        # Heuristic mode: trusted NPCs share an unlocked secret outright
+        # (LLM mode reveals through the protocol action instead)
+        try:
+            if getattr(self.engine.llm_interface, "provider_name",
+                       "heuristic") == "heuristic":
+                from engine.secrets import (unlocked_secrets, reveal,
+                                            locked_count)
+                npc = self.engine.npc_manager.get_npc(npc_id)
+                if npc is not None:
+                    unlocked = unlocked_secrets(self.engine, npc)
+                    if unlocked:
+                        secret = unlocked[0]
+                        reveal(self.engine, npc, secret["id"])
+                        extras.append(
+                            f"  (leaning close) {secret['text']}")
+                    elif locked_count(self.engine, npc):
+                        extras.append(
+                            "  (They seem to be holding something back.)")
+        except Exception:
+            pass
         # Occasional gossip line from the NPC
         npc = self.engine.npc_manager.get_npc(npc_id)
         if npc is not None:
@@ -91,6 +221,17 @@ class DialogSystem:
         for j, q in enumerate(ready, start=len(offered) + 1):
             extras.append(f"  [Quest complete!] {q.title}  (press {j} to turn in)")
         return "\n".join(extras)
+
+    def _via_protocol(self, npc, message: str, recent):
+        """Structured JSON dialog (P3.1). (None, '') = not applicable."""
+        try:
+            from engine.dialog_protocol import run_dialog
+            result = run_dialog(self.engine, npc, message, recent)
+            if result is not None:
+                return result
+        except Exception as e:
+            logger.warning(f"Dialog protocol failed: {e}")
+        return (None, "")
 
     def _via_process(self, npc_id: str, message: str, recent) -> Optional[str]:
         pm = getattr(self.engine, "process_manager", None)
@@ -115,6 +256,9 @@ class DialogSystem:
             return ""
 
     def _adjacent_to_player(self, npc) -> bool:
-        px, py = self.engine.player.position
-        nx, ny = npc.position
-        return ((px - nx) ** 2 + (py - ny) ** 2) ** 0.5 <= 1.5
+        # Wall-aware and interior-aware (P9A.7): indoors, visitors
+        # count at their DISPLAYED positions — George's report of
+        # untalkable inhabitants was this check reading overworld
+        # coordinates from inside a building
+        from engine.presence import npc_adjacent_to_player
+        return npc_adjacent_to_player(self.engine, npc)

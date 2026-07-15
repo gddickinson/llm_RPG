@@ -1,0 +1,28 @@
+{
+  "_doc": "P28.1a/P37.2 — the Wayfarers' Conclave teleport network. A rune-circle PLATFORM is planted beside each settlement (`platforms`) AND beside notable PLACES OF INTEREST on the map (`landmarks`): every guild hall and castle, plus the nearest few ruins. A traveller carrying a Wayfarer's Ring (teleport_access) stands on one and steps to any other. `settlement` anchors the platform beside that town's location; landmark platforms anchor to a matching world Location by its property key.",
+  "landmarks": {
+    "always": ["guildhall", "castle"],
+    "settlement_keywords": ["village", "town", "hamlet"],
+    "limited": {"ruin": 3}
+  },
+  "platforms": [
+    {
+      "id": "waystone_oakvale",
+      "name": "Oakvale Waystone",
+      "settlement": "Oakvale",
+      "legend": "A ring of humming rune-stones on the green outside Oakvale."
+    },
+    {
+      "id": "waystone_riverside",
+      "name": "Riverside Waystone",
+      "settlement": "Riverside",
+      "legend": "A moss-grown rune-circle by the Riverside mill."
+    },
+    {
+      "id": "waystone_stonepine",
+      "name": "Stonepine Waystone",
+      "settlement": "Stonepine",
+      "legend": "A weathered waystone at the edge of the Stonepine camp."
+    }
+  ]
+}

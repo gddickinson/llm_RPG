@@ -47,6 +47,54 @@ class Dungeon:
     exit_pos: Tuple[int, int] = (1, 1)
     spawned: bool = False                  # whether monsters/items placed
     description: str = ""
+    # Multi-level (P9.5): same stack convention as interiors
+    depth: int = 1
+    stairs_down: "Tuple[int, int]" = None
+    stairs_up: "Tuple[int, int]" = None
+    level_below: "Dungeon" = None
+    level_above: "Dungeon" = None
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "width": self.width,
+            "height": self.height,
+            "terrain": [[c.value for c in row] for row in self.terrain],
+            "rooms": [[r.x, r.y, r.w, r.h] for r in self.rooms],
+            "exit_pos": list(self.exit_pos),
+            "spawned": self.spawned,
+            "description": self.description,
+            "depth": self.depth,
+            "stairs_down": list(self.stairs_down)
+            if self.stairs_down else None,
+            "stairs_up": list(self.stairs_up)
+            if self.stairs_up else None,
+            "below": self.level_below.to_dict()
+            if self.level_below else None,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Dungeon":
+        out = cls(
+            name=d["name"],
+            width=d["width"],
+            height=d["height"],
+            terrain=[[TerrainType(v) for v in row] for row in d["terrain"]],
+            rooms=[DungeonRoom(*r) for r in d.get("rooms", [])],
+            exit_pos=tuple(d.get("exit_pos", (1, 1))),
+            spawned=d.get("spawned", False),
+            description=d.get("description", ""),
+        )
+        out.depth = d.get("depth", 1)
+        if d.get("stairs_down"):
+            out.stairs_down = tuple(d["stairs_down"])
+        if d.get("stairs_up"):
+            out.stairs_up = tuple(d["stairs_up"])
+        if d.get("below"):
+            below = cls.from_dict(d["below"])
+            out.level_below = below
+            below.level_above = out
+        return out
 
 
 def generate_dungeon(name: str = "Cave Tunnels",
@@ -95,6 +143,35 @@ def generate_dungeon(name: str = "Cave Tunnels",
     return d
 
 
+def generate_multilevel(name: str, seed: int = None,
+                        engine=None) -> Dungeon:
+    """P9.5: a 2-3 level dungeon. Deeper floors hold stronger
+    monsters; the deepest holds a boss and its hoard. Stairs use the
+    same linked convention as building levels."""
+    rng = random.Random(seed)
+    depth_levels = rng.randint(2, 3)
+    levels = []
+    for i in range(depth_levels):
+        lv = generate_dungeon(
+            name=f"{name} — depth {i + 1}" if i else name,
+            seed=(seed or 0) + i * 7919,
+            description="Damp, echoing tunnels." if i == 0 else
+            ("The air is colder here." if i < depth_levels - 1 else
+             "Something large has made this floor its den."))
+        lv.depth = i + 1
+        levels.append(lv)
+    for upper, lower in zip(levels, levels[1:]):
+        down_room = upper.rooms[-1]
+        upper.stairs_down = down_room.center()
+        lower.stairs_up = lower.rooms[0].center()
+        upper.level_below = lower
+        lower.level_above = upper
+    if engine is not None:
+        for lv in levels:
+            populate_dungeon(lv, engine, rng=rng)
+    return levels[0]
+
+
 def _carve_room(d: Dungeon, room: DungeonRoom) -> None:
     for y in range(room.y, room.y + room.h):
         for x in range(room.x, room.x + room.w):
@@ -127,22 +204,51 @@ def populate_dungeon(d: Dungeon, engine, rng: random.Random = None) -> None:
         return
 
     from items.item_registry import create_item
-    from world.encounters import _build_monster
+    from world.monsters import build_monster, dungeon_pool
     from characters.character import Character
+
+    depth = getattr(d, "depth", 1)
+    is_boss_floor = depth > 1 and getattr(d, "level_below", None) is None
 
     # Drop a few items + a monster in each non-entrance room
     for room in d.rooms[1:]:
         cx, cy = room.center()
-        # Loot
+        # Loot (richer as you go down)
         for item_id in rng.sample(
                 ["potion", "coins", "bandage", "old_map", "rusty_key",
-                 "herb_bundle"], k=2):
+                 "herb_bundle"], k=min(2 + depth - 1, 4)):
             item = create_item(item_id)
             if item:
                 engine.world.add_item_to_ground(item, cx, cy)
-        # Monster
-        template = rng.choice(["goblin", "wolf", "bandit"])
-        monster = _build_monster(template, (cx, cy))
+        # Monster, scaled to the depth (P9.5)
+        template = rng.choice(dungeon_pool())
+        monster = build_monster(template, (cx, cy))
+        if depth > 1:
+            monster.level += depth - 1
+            monster.max_hp += 4 * (depth - 1)
+            monster.hp = monster.max_hp
+        monster.metadata["zone"] = d.name
         engine.npc_manager.add_npc(monster)
         engine.world.map.place_character(monster, cx, cy)
+
+    # The deepest floor has a den-lord and its hoard — drawn from the
+    # apex pool for this depth (P19.1): the built bosses become reachable
+    # and a dragon may wait in the deep dark.
+    if is_boss_floor and d.rooms:
+        from world.monsters import apex_pool
+        bx, by = d.rooms[-1].center()
+        pool = apex_pool(depth) or ["tyrant_depths"]
+        template = rng.choice(pool)
+        boss = build_monster(template, (bx, by))
+        boss.level += depth
+        boss.max_hp += 10 * depth
+        boss.hp = boss.max_hp
+        boss.metadata["zone"] = d.name
+        engine.npc_manager.add_npc(boss)
+        engine.world.map.place_character(boss, bx, by)
+        for item_id in ("greater_potion", "greater_potion",
+                        "scroll_heal"):
+            item = create_item(item_id)
+            if item:
+                engine.world.add_item_to_ground(item, bx + 1, by)
     d.spawned = True

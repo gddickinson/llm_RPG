@@ -84,6 +84,24 @@ def rep_label(score: int) -> str:
     return "hated"
 
 
+# Behavior thresholds (P12.11): rep gates conduct, not just prices
+BEHAVIOR_THRESHOLDS = (
+    (60, "revered"),
+    (20, "favored"),
+    (-20, "indifferent"),
+    (-60, "disliked"),
+    (-101, "despised"),
+)
+
+
+def threshold(player, faction) -> str:
+    score = get_rep(player, faction)
+    for floor, label in BEHAVIOR_THRESHOLDS:
+        if score >= floor:
+            return label
+    return "despised"
+
+
 def get_rep(player, faction: Faction) -> int:
     meta = getattr(player, "metadata", None) or {}
     if not isinstance(meta, dict):

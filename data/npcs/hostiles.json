@@ -1,0 +1,72 @@
+{
+  "troll_brigand_01": {
+    "name": "Gorkash",
+    "class": "brigand",
+    "race": "troll",
+    "level": 5,
+    "stats": {
+      "strength": 18,
+      "dexterity": 10,
+      "constitution": 16,
+      "intelligence": 8,
+      "wisdom": 8,
+      "charisma": 6
+    },
+    "hp": 40,
+    "position": [
+      25,
+      10
+    ],
+    "inventory": [
+      "crude axe",
+      "tattered armor",
+      "stolen jewelry"
+    ],
+    "gold": 50,
+    "symbol": "X",
+    "description": "A massive troll with greenish skin and a menacing grin",
+    "personality": {
+      "traits": [
+        "aggressive",
+        "greedy",
+        "territorial"
+      ],
+      "likes": [
+        "gold",
+        "food",
+        "fighting"
+      ],
+      "dislikes": [
+        "knights",
+        "villagers",
+        "being outnumbered"
+      ]
+    },
+    "goals": [
+      "Rob travelers on the road",
+      "Collect valuable items",
+      "Establish dominance in the area"
+    ],
+    "relationships": {
+      "tavernkeeper_01": -60,
+      "blacksmith_01": -70,
+      "guard_01": -80
+    },
+    "memories": [
+      {
+        "event": "I ambushed a merchant caravan and got shiny things",
+        "importance": 3
+      },
+      {
+        "event": "Villagers tried to drive me away with torches",
+        "importance": 2
+      },
+      {
+        "event": "I've been watching the road for easy prey",
+        "importance": 1
+      }
+    ],
+    "home_location": "",
+    "faction": "neutral"
+  }
+}

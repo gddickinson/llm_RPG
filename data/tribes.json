@@ -1,0 +1,35 @@
+{
+  "gorge_goblins": {
+    "name": "The Gorge Goblins",
+    "race": "goblin",
+    "strength": 25,
+    "growth": 5,
+    "raid_threshold": 55,
+    "raid_cost": 16,
+    "raider": "goblin",
+    "champion": "bandit",
+    "terrain": "forest"
+  },
+  "crag_trolls": {
+    "name": "The Crag Trolls",
+    "race": "troll",
+    "strength": 16,
+    "growth": 3,
+    "raid_threshold": 62,
+    "raid_cost": 22,
+    "raider": "bog_lurker",
+    "champion": "wandering_troll",
+    "terrain": "mountains"
+  },
+  "reedmarsh_warren": {
+    "name": "The Reedmarsh Warren",
+    "race": "goblin",
+    "strength": 18,
+    "growth": 3,
+    "raid_threshold": 64,
+    "raid_cost": 18,
+    "raider": "bog_goblin",
+    "champion": "bog_goblin_champion",
+    "terrain": "swamp"
+  }
+}

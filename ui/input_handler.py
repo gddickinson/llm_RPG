@@ -16,6 +16,20 @@ except ImportError:  # pragma: no cover
 
 logger = logging.getLogger("llm_rpg.input")
 
+from ui import input_actions
+
+# 8-directional movement on the numpad (the letter-corner keys QEZC that
+# a WASD player would reach for are already bound to quit/interact/forage/
+# sheet, so the numpad carries the diagonals — the classic roguelike map).
+_NUMPAD_MOVE = {}
+if PYGAME_OK:
+    _NUMPAD_MOVE = {
+        pygame.K_KP8: (0, -1), pygame.K_KP2: (0, 1),
+        pygame.K_KP4: (-1, 0), pygame.K_KP6: (1, 0),
+        pygame.K_KP7: (-1, -1), pygame.K_KP9: (1, -1),
+        pygame.K_KP1: (-1, 1), pygame.K_KP3: (1, 1),
+    }
+
 
 class InputHandler:
     """Translate pygame events into engine method calls."""
@@ -31,6 +45,14 @@ class InputHandler:
             self.gui.running = False
             return True
 
+        # Click-to-target (P8.7 UX): left-click a visible enemy
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 \
+                and self.gui.mode == "play":
+            tile = self._pixel_to_tile(event.pos)
+            if tile is not None:
+                self.engine.targeting.lock_tile(*tile)
+                return True
+
         # Death popup: only R / Q / ESC respond ----------------------------
         if self.gui.mode == "death":
             if event.type != pygame.KEYDOWN:
@@ -44,9 +66,70 @@ class InputHandler:
                 return True
             return True
 
-        # Dialog typing mode -----------------------------------------------
+        # Help overlay — any key dismisses it -----------------------------
+        if self.gui.mode == "help":
+            if event.type == pygame.KEYDOWN:
+                self.gui.mode = "play"
+            return True
+
+        # Quit confirmation — Y quits, N / Esc keeps playing
+        if self.gui.mode == "confirm_quit":
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_y, pygame.K_RETURN):
+                    self.engine.end_game()
+                    self.gui.running = False
+                elif event.key in (pygame.K_n, pygame.K_ESCAPE):
+                    self.gui.mode = "play"
+            return True
+        # Settings overlay
+        if self.gui.mode == "settings":
+            if self.gui.settings_panel is not None:
+                return self.gui.settings_panel.handle_key(event)
+            self.gui.mode = "play"
+            return True
+        # Dialog typing mode
         if self.gui.mode == "dialog":
-            return self._handle_dialog_input(event)
+            from ui.dialog_input import handle_dialog_input
+            return handle_dialog_input(self.gui, event)
+
+        # Travel menu: 1-9 teleports, Esc cancels
+        if self.gui.mode == "travel":
+            if event.type != pygame.KEYDOWN:
+                return True
+            if event.key in (pygame.K_ESCAPE, pygame.K_u):
+                self.gui.mode = "play"
+                self.gui.overlay = None
+                return True
+            if pygame.K_1 <= event.key <= pygame.K_9:
+                idx = event.key - pygame.K_1
+                try:
+                    self.engine.travel_system.teleport(idx)
+                except Exception:
+                    pass
+                self.gui.mode = "play"
+                self.gui.overlay = None
+                return True
+            return True
+
+        # Waystone menu (P37.1): 1-9 travel to a destination, Esc cancels
+        if self.gui.mode == "waystone":
+            if event.type != pygame.KEYDOWN:
+                return True
+            if event.key in (pygame.K_ESCAPE, pygame.K_e, pygame.K_g):
+                self.gui.mode = "play"
+                self.gui.overlay = None
+                return True
+            if pygame.K_1 <= event.key <= pygame.K_9:
+                idx = event.key - pygame.K_1
+                try:
+                    msg = self.engine.teleport_network.teleport_index(idx)
+                    self.engine.memory_manager.add_event(msg)
+                except Exception:
+                    pass
+                self.gui.mode = "play"
+                self.gui.overlay = None
+                return True
+            return True
 
         # Menu mode (text overlay — help / character sheet / quest log)
         if self.gui.mode == "menu":
@@ -77,6 +160,26 @@ class InputHandler:
                 return self.gui.shop_panel.handle_key(event)
             return True
 
+        # Spellbook panel
+        if self.gui.mode == "spells":
+            if event.type == pygame.KEYDOWN and event.key in \
+                    (pygame.K_ESCAPE, pygame.K_x):
+                self.gui.mode = "play"
+                return True
+            if self.gui.spell_panel is not None:
+                return self.gui.spell_panel.handle_key(event)
+            return True
+
+        # Crafting panel
+        if self.gui.mode == "crafting":
+            if event.type == pygame.KEYDOWN and event.key in \
+                    (pygame.K_ESCAPE, pygame.K_k):
+                self.gui.mode = "play"
+                return True
+            if self.gui.crafting_panel is not None:
+                return self.gui.crafting_panel.handle_key(event)
+            return True
+
         if event.type != pygame.KEYDOWN:
             return False
 
@@ -86,85 +189,134 @@ class InputHandler:
 
     def _handle_play_input(self, event) -> bool:
         k = event.key
-        # Movement
+        # SHIFT = move deliberately: RUN in the clear, careful DISENGAGE by a foe
+        # (P34.9 — macOS-safe: Ctrl is grabbed by the OS for Spaces/input switch).
+        mod = getattr(event, "mod", 0)
+        shift = bool(mod & pygame.KMOD_SHIFT)
+
+        if k == pygame.K_BACKQUOTE:              # ` = jump / leap forward
+            return input_actions.jump(self)
+        if k == pygame.K_PERIOD:                 # . = cycle pace (walk/jog/crawl)
+            return input_actions.cycle_move_mode(self)
+        if k == pygame.K_SEMICOLON:              # ; = a random dance / jig / taunt
+            return input_actions.perform_emote(self)
+        if k == pygame.K_QUOTE:                  # ' = slide (needs running momentum)
+            return input_actions.slide(self)
+
+        # Movement (SHIFT+move = run when safe, careful disengage next to a foe)
         if k in (pygame.K_w, pygame.K_UP):
-            self.engine.move_player(0, -1)
-            return True
+            return input_actions.step(self, 0, -1, shift)
         if k in (pygame.K_s, pygame.K_DOWN):
-            self.engine.move_player(0, 1)
-            return True
+            return input_actions.step(self, 0, 1, shift)
         if k in (pygame.K_a, pygame.K_LEFT):
-            self.engine.move_player(-1, 0)
-            return True
+            return input_actions.step(self, -1, 0, shift)
         if k in (pygame.K_d, pygame.K_RIGHT):
-            self.engine.move_player(1, 0)
+            return input_actions.step(self, 1, 0, shift)
+        if k in _NUMPAD_MOVE:                    # 8-way: diagonals included
+            dx, dy = _NUMPAD_MOVE[k]
+            return input_actions.step(self, dx, dy, shift)
+        if k == pygame.K_KP5:                    # wait a beat in place
+            self.engine.move_player(0, 0, careful=shift)
             return True
 
-        # Attack adjacent
+        # Attack adjacent (SHIFT+F = shove)
         if k in (pygame.K_SPACE, pygame.K_f):
-            target = self._find_adjacent_enemy()
-            if target:
-                self.engine.attack_character(target.name)
+            if shift:
+                from engine.tactics import shove
+                shove(self.engine)
+                return True
+            self.engine.melee_or_shoot()
+            return True
+
+        if k == pygame.K_r:   # ranged; SHIFT+R aims
+            self.engine.shoot_ranged(aimed=shift)
+            return True
+
+        if k == pygame.K_x:   # spellbook
+            self.gui.show_spellbook()
+            return True
+
+        if k == pygame.K_v:   # heal; SHIFT+V: weapon action (P12.7)
+            try:
+                from engine.combat_depth import weapon_action
+                (weapon_action(self.engine) if shift else
+                 self.engine.cast_spell("heal", "me"))
+            except Exception:
+                pass
+            return True
+
+        if k == pygame.K_z:   # forage; SHIFT+Z: treat the pet
+            if shift:
+                self.engine.pet_system.feed_pet()
             else:
-                self.engine.memory_manager.add_event("No enemy adjacent.")
-            return True
-
-        # Ranged attack (R)
-        if k == pygame.K_r:
-            self.engine.shoot_ranged()
-            return True
-
-        # Cast quick fireball (X)
-        if k == pygame.K_x:
-            try:
-                self.engine.cast_spell("fireball")
-            except Exception:
-                pass
-            return True
-
-        # Quick heal (V)
-        if k == pygame.K_v:
-            try:
-                self.engine.cast_spell("heal", "me")
-            except Exception:
-                pass
-            return True
-
-        # Forage (Z)
-        if k == pygame.K_z:
-            try:
                 self.engine.forage()
-            except Exception:
-                pass
             return True
 
-        # Enter / exit building or dungeon (Tab)
-        if k == pygame.K_TAB:
-            self._handle_interact()
+        if k == pygame.K_TAB:   # enter/exit; SHIFT forces the door
+            if shift and not self.engine.current_interior:
+                self.engine.force_door()
+            else:
+                self._handle_interact()
             return True
 
         # Bank deposit all (N) / withdraw all (M)
-        if k == pygame.K_n:
+        if k in (pygame.K_n, pygame.K_m):
             try:
-                self.engine.deposit_gold(self.engine.player.gold)
-            except Exception:
-                pass
-            return True
-        if k == pygame.K_m:
-            try:
-                self.engine.withdraw_gold(self.engine.bank_balance())
+                if k == pygame.K_n:
+                    self.engine.deposit_gold(self.engine.player.gold)
+                else:
+                    self.engine.withdraw_gold(
+                        self.engine.bank_balance())
             except Exception:
                 pass
             return True
 
-        # Look around (L) — log the visible description
-        if k == pygame.K_l:
-            self._look_around()
+        if k == pygame.K_l:   # look around; SHIFT+L: log detail
+            if shift:
+                from engine.event_filter import cycle_verbosity
+                cycle_verbosity(self.engine)
+            else:
+                input_actions.look_around(self.engine)
             return True
 
-        # Open shop with adjacent merchant (S)
-        if k == pygame.K_s:
-            self._open_shop()
+        # Cycle ranged targets ([ back, ] forward) (P8.7)
+        if k in (pygame.K_RIGHTBRACKET, pygame.K_LEFTBRACKET):
+            self.engine.targeting.cycle(
+                1 if k == pygame.K_RIGHTBRACKET else -1)
+            return True
+
+        if k == pygame.K_b:   # barter (S is shadowed by move-down)
+            input_actions.open_shop(self)
+            return True
+
+        if k == pygame.K_k:   # crafting overlay
+            self.gui.show_crafting()
+            return True
+
+        if k == pygame.K_p:   # SHIFT: pray; plain: party toggle
+            (self.engine.pray() if shift
+             else input_actions.toggle_party(self))
+            return True
+
+        if k == pygame.K_RETURN:   # sleep / camp (P12.6)
+            try:
+                from engine.rest import sleep
+                lines = sleep(self.engine)
+                if lines:
+                    self.gui.overlay = ("A New Day", lines)
+                    self.gui.mode = "menu"
+            except Exception:
+                pass
+            return True
+
+        # single-key overlays, play-mode number keys (guard / quick-cast), and
+        # the SHIFT skill verbs live in input_actions to hold the 500-line line
+        from ui.input_actions import (one_key_overlay, number_key, skill_verb)
+        if one_key_overlay(self.gui, k):
+            return True
+        if number_key(self.engine, k):
+            return True
+        if shift and skill_verb(self.engine, k):
             return True
 
         # Talk to adjacent NPC
@@ -176,13 +328,34 @@ class InputHandler:
                 self.engine.memory_manager.add_event("No one nearby to talk to.")
             return True
 
-        # Pickup
+        # E/G: ground item beats furniture; then furniture; then pickup
         if k in (pygame.K_g, pygame.K_e):
+            if shift and k == pygame.K_g:   # carry a body (P13.2)
+                from engine.ransom import hoist_or_deliver
+                hoist_or_deliver(self.engine)
+                return True
+            tn = getattr(self.engine, "teleport_network", None)   # P37.1
+            if tn is not None and not self.engine.current_interior \
+                    and tn.platform_at(self.engine.player.position) is not None:
+                self.gui.show_teleport()
+                return True
+            if self.engine.current_interior:
+                try:
+                    here = self.engine.world.get_items_at(
+                        *self.engine.player.position)
+                except Exception:
+                    here = []
+                if not here:   # furniture, else claim/repair a home (P15.7)
+                    msg = self.engine.use_furniture() or self.engine.home_action()
+                    if msg:
+                        return True
+            from engine.mount import try_buy_at_stable   # P15.8b mule
+            if try_buy_at_stable(self.engine):
+                return True
             msg = self.engine.pickup_item()
             return True
 
-        # Use item (potion auto-select)
-        if k == pygame.K_h:
+        if k == pygame.K_h:   # quick potion
             self._use_potion()
             return True
 
@@ -218,52 +391,48 @@ class InputHandler:
             self.gui.show_help()
             return True
 
-        # Quit
+        # Quit — ask first, never drop the game on a stray ESC
         if k == pygame.K_ESCAPE:
-            self.engine.end_game()
-            self.gui.running = False
+            self.gui.mode = "confirm_quit"
             return True
 
         return False
 
     # ---- dialog input ------------------------------------------------
 
-    def _handle_dialog_input(self, event) -> bool:
-        if event.type != pygame.KEYDOWN:
-            return False
-        if event.key == pygame.K_ESCAPE:
-            self.gui.end_dialog()
-            return True
-        if event.key == pygame.K_RETURN:
-            self.gui.submit_dialog()
-            return True
-        if event.key == pygame.K_BACKSPACE:
-            self.gui.dialog_input = self.gui.dialog_input[:-1]
-            return True
-        # Quest accept / turn-in hotkeys (1-9) -------------------------
-        # Only trigger if the dialog input field is empty (otherwise user
-        # is typing).
-        if not self.gui.dialog_input and pygame.K_1 <= event.key <= pygame.K_9:
-            idx = event.key - pygame.K_1  # 0-based
-            self.gui.dialog_quest_action(idx)
-            return True
-        # Typing
-        ch = event.unicode
-        if ch and ch.isprintable():
-            self.gui.dialog_input += ch
-            return True
-        return False
-
     # ---- helpers -----------------------------------------------------
 
+    def _pixel_to_tile(self, pos):
+        """Map-view pixel -> world/zone tile (mirrors the renderer's
+        camera math)."""
+        try:
+            rect = self.gui.layout["map"]
+            if not rect.collidepoint(pos):
+                return None
+            ts = self.gui.renderer.tile_size
+            engine = self.engine
+            zone = None
+            try:
+                zone = engine.active_zone()
+            except Exception:
+                pass
+            grid = zone if zone is not None else engine.world.map
+            cols = rect.width // ts
+            rows = rect.height // ts
+            px, py = engine.player.position
+            cam_x = max(0, min(grid.width - cols, px - cols // 2))
+            cam_y = max(0, min(grid.height - rows, py - rows // 2))
+            tx = cam_x + (pos[0] - rect.x) // ts
+            ty = cam_y + (pos[1] - rect.y) // ts
+            return (tx, ty)
+        except Exception:
+            return None
+
     def _find_adjacent_npc(self):
-        px, py = self.engine.player.position
+        from engine.presence import npc_adjacent_to_player
         for npc in self.engine.npc_manager.npcs.values():
-            if not npc.is_active():
-                continue
-            d = ((npc.position[0] - px) ** 2 +
-                 (npc.position[1] - py) ** 2) ** 0.5
-            if d <= 1.5:
+            if npc.is_active() and \
+                    npc_adjacent_to_player(self.engine, npc):
                 return npc
         return None
 
@@ -297,6 +466,12 @@ class InputHandler:
     def _handle_interact(self) -> None:
         """Smart 'Tab' key — enter/exit building, or descend into a cave."""
         try:
+            # On Tutorial Island, TAB only departs at the boat
+            tm = getattr(self.engine, "tutorial_manager", None)
+            if tm is not None and tm.active:
+                msg = tm.try_depart()
+                self.engine.memory_manager.add_event(msg)
+                return
             if self.engine.current_interior:
                 self.engine.exit_building()
                 return
@@ -316,28 +491,5 @@ class InputHandler:
                 return
             self.engine.memory_manager.add_event(
                 "There's nothing to enter here.")
-        except Exception:
-            pass
-
-    def _look_around(self) -> None:
-        try:
-            x, y = self.engine.player.position
-            visible = self.engine.world.map.get_visible_description(x, y)
-            for line in visible.split("\n"):
-                if line.strip():
-                    self.engine.memory_manager.add_event(line)
-        except Exception:
-            pass
-
-    def _open_shop(self) -> None:
-        try:
-            from engine.shop import merchants_near
-            merchants = merchants_near(self.engine, self.engine.player,
-                                       radius=2.0)
-            if not merchants:
-                self.engine.memory_manager.add_event(
-                    "There's no merchant nearby.")
-                return
-            self.gui.show_shop(merchants[0])
         except Exception:
             pass

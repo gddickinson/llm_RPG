@@ -1,0 +1,685 @@
+{
+  "q_tome_whisper": {
+    "title": "The Whisper Beneath the Marsh",
+    "description": "Sage Ondrel of Mirefen says a drowned light stirs in the southern marsh \u2014 the failing wards of Vael'Zhur's sunken tower-library. Find the Drowned Vault, that you may learn what wakes there.",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "The Drowned Vault",
+        "required": 1,
+        "description": "Find the Drowned Vault in the marsh"
+      }
+    ],
+    "giver_id": "sage_ondrel",
+    "reward_gold": 40,
+    "reward_xp": 120,
+    "sets_flag": "tome_whisper_done"
+  },
+  "q_tome_keys": {
+    "title": "The Scattered Keys",
+    "description": "The Vault's drowning-wards can only be safely stilled with the Warding Key \u2014 broken into three fragments, scattered to the Thornwatch Ruins, the Reedmarsh warren, and the marsh-witch Ysolde. Gather all three and bring them to Ondrel.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "warding_key_i",
+        "required": 1,
+        "description": "Recover Warding-Key Fragment I (Thornwatch Ruins)"
+      },
+      {
+        "type": "fetch",
+        "target": "warding_key_ii",
+        "required": 1,
+        "description": "Recover Warding-Key Fragment II (the Reedmarsh)"
+      },
+      {
+        "type": "fetch",
+        "target": "warding_key_iii",
+        "required": 1,
+        "description": "Recover Warding-Key Fragment III (Ysolde's Hollow)"
+      }
+    ],
+    "giver_id": "sage_ondrel",
+    "prereq_quest": "q_tome_whisper",
+    "reward_gold": 90,
+    "reward_xp": 260,
+    "reward_items": [
+      "warding_key"
+    ],
+    "sets_flag": "tome_keys_done"
+  },
+  "q_tome_reckoning": {
+    "title": "The Drowned Sanctum",
+    "description": "Descend the Drowned Vault to its flooded sanctum, face Vael'Zhur the lich, and decide the fate of the Sunken Tome \u2014 seal it, destroy it, or claim its power. Warden Halric would see it sealed.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "vaelzhur_lich",
+        "required": 1,
+        "description": "Defeat Vael'Zhur the Drowned"
+      }
+    ],
+    "giver_id": "warden_halric",
+    "prereq_quest": "q_tome_keys",
+    "reward_gold": 120,
+    "reward_xp": 400,
+    "sets_flag": "tome_won",
+    "reward_choices": [
+      {
+        "label": "Seal the Tome (bind Vael'Zhur)",
+        "xp": 450,
+        "gold": 180,
+        "items": [
+          "warding_key"
+        ],
+        "legend": "With the Warding Key made whole, you bound Vael'Zhur back into his drowning-sleep and sealed the Vault forever \u2014 the marsh-light troubles Mirefen no more."
+      },
+      {
+        "label": "Destroy the Tome",
+        "xp": 450,
+        "gold": 120,
+        "items": [],
+        "legend": "You shattered the Sunken Tome upon the cold altar; the lich crumbled to silt and old water. Vael'Zhur is ended, and his art lost with him."
+      },
+      {
+        "label": "Claim the Tome's power",
+        "xp": 450,
+        "gold": 90,
+        "items": [
+          "sunken_tome"
+        ],
+        "legend": "You took the Sunken Tome for your own. Its cold whisper follows you now \u2014 Vael'Zhur's soul-draining art is yours, and perhaps one day his fate."
+      }
+    ]
+  },
+  "troll_hunt": {
+    "title": "The Troll on the East Road",
+    "description": "A troll named Gorkash terrorizes travelers. Slay him.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "troll_brigand_01",
+        "required": 1,
+        "description": "Defeat Gorkash the troll brigand"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 100,
+    "reward_items": [
+      "longsword"
+    ],
+    "reward_xp": 200,
+    "quest_points": 3
+  },
+  "herb_gathering": {
+    "title": "Herbs for the Apothecary",
+    "description": "Gather healing herbs from the forest for Brother Anselm.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "herb_bundle",
+        "required": 3,
+        "description": "Collect 3 bundles of healing herbs"
+      }
+    ],
+    "giver_id": "hamlet_priest_01",
+    "reward_gold": 30,
+    "reward_items": [
+      "greater_potion"
+    ],
+    "reward_xp": 80,
+    "quest_points": 1
+  },
+  "tavern_intro": {
+    "title": "A Friendly Welcome",
+    "description": "Goren the tavern keeper wants to greet a newcomer.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "tavernkeeper_01",
+        "required": 1,
+        "description": "Speak with Goren in the tavern"
+      }
+    ],
+    "giver_id": "tavernkeeper_01",
+    "reward_gold": 10,
+    "reward_items": [
+      "ale"
+    ],
+    "reward_xp": 15,
+    "quest_points": 1
+  },
+  "cave_exploration": {
+    "title": "The Dark Cave",
+    "description": "Investigate the mysterious cave in the mountains.",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "Dark Cave",
+        "required": 1,
+        "description": "Enter the Dark Cave"
+      }
+    ],
+    "giver_id": "minstrel_01",
+    "reward_gold": 50,
+    "reward_items": [
+      "old_map"
+    ],
+    "reward_xp": 120,
+    "quest_points": 2
+  },
+  "deliver_sword": {
+    "title": "A Forged Blade",
+    "description": "Bring a sword from the smith to the guard.",
+    "objectives": [
+      {
+        "type": "deliver",
+        "target": "sword:guard_01",
+        "required": 1,
+        "description": "Deliver a sword to Karim the guard"
+      }
+    ],
+    "giver_id": "blacksmith_01",
+    "reward_gold": 40,
+    "reward_items": [
+      "shield"
+    ],
+    "reward_xp": 50,
+    "quest_points": 1
+  },
+  "survive_night": {
+    "title": "Through the Night",
+    "description": "Survive until dawn while monsters roam.",
+    "objectives": [
+      {
+        "type": "survive",
+        "target": "dawn",
+        "required": 50,
+        "description": "Survive 50 turns"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 80,
+    "reward_items": [
+      "potion",
+      "potion"
+    ],
+    "reward_xp": 150,
+    "quest_points": 1
+  },
+  "the_silver_edge": {
+    "title": "The Silver Edge",
+    "description": "Durgan will teach you his finest pattern: bring a plain sword, a troll's tooth, and stolen jewelry to his forge, and craft the silver blade yourself.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "silver_blade",
+        "required": 1,
+        "description": "Forge (or otherwise obtain) a Silver Blade"
+      }
+    ],
+    "giver_id": "blacksmith_01",
+    "reward_gold": 50,
+    "reward_items": [],
+    "reward_xp": 150,
+    "reward_unlocks": [
+      "topic:silver_blade"
+    ],
+    "quest_points": 3
+  },
+  "roads_and_rivers": {
+    "title": "Roads and Rivers",
+    "description": "Karim wants word carried to the outlying settlements. Walk the roads to Riverside Hamlet and Stonepine Camp and learn the lay of the land.",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "Riverside Hamlet",
+        "required": 1,
+        "description": "Visit Riverside Hamlet"
+      },
+      {
+        "type": "explore",
+        "target": "Stonepine Camp",
+        "required": 1,
+        "description": "Visit Stonepine Camp"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 60,
+    "reward_items": [],
+    "reward_xp": 120,
+    "reward_unlocks": [
+      "teleport:riverside",
+      "teleport:stonepine"
+    ],
+    "quest_points": 2
+  },
+  "supply_run": {
+    "title": "Supply Run",
+    "description": "Bram needs an iron bar carried to Hilde at the Stonepine smithy \u2014 the picks won't mend themselves.",
+    "objectives": [
+      {
+        "type": "deliver",
+        "target": "iron_bar:camp_smith_01",
+        "required": 1,
+        "description": "Deliver an iron bar to Hilde"
+      }
+    ],
+    "giver_id": "camp_foreman_01",
+    "reward_gold": 80,
+    "reward_items": [],
+    "reward_xp": 100,
+    "reward_unlocks": [
+      "topic:east_shaft"
+    ],
+    "quest_points": 1
+  },
+  "the_healers_art": {
+    "title": "The Healer's Art",
+    "description": "Brother Anselm offers to teach the healing prayer to one who has proven they understand herbs \u2014 brew a healing potion with your own hands first.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "potion",
+        "required": 1,
+        "description": "Brew (or obtain) a Healing Potion"
+      }
+    ],
+    "giver_id": "hamlet_priest_01",
+    "reward_gold": 0,
+    "reward_items": [],
+    "reward_xp": 150,
+    "prereq_quest": "herb_gathering",
+    "reward_unlocks": [
+      "spell:heal"
+    ],
+    "quest_points": 2
+  },
+  "caer_aldwyn": {
+    "title": "The Cellars of Caer Aldwyn",
+    "description": "Melody's grandmother's songs say the ruined keep's treasury was never opened. Bandits nest in the ruins now \u2014 clear them out and walk the old halls, and she'll finish the last verse at last.",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "Ruined Keep",
+        "required": 1,
+        "description": "Set foot in the Ruined Keep"
+      },
+      {
+        "type": "kill",
+        "target": "brigand",
+        "required": 2,
+        "description": "Drive off 2 of the bandits squatting there"
+      }
+    ],
+    "giver_id": "minstrel_01",
+    "reward_gold": 120,
+    "reward_items": [
+      "amulet_warding"
+    ],
+    "reward_xp": 250,
+    "reward_unlocks": [
+      "topic:ruined_keep"
+    ],
+    "quest_points": 3
+  },
+  "the_fence": {
+    "title": "The Fence",
+    "description": "Karim suspects someone respectable is fencing the bandits' loot. Take stolen jewelry off a bandit and bring it to him unfenced \u2014 the engraving will name the caravan it was robbed from.",
+    "objectives": [
+      {
+        "type": "deliver",
+        "target": "stolen_jewelry:guard_01",
+        "required": 1,
+        "description": "Bring stolen jewelry to Karim as evidence"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 90,
+    "reward_items": [
+      "lockpicks"
+    ],
+    "reward_xp": 180,
+    "prereq_quest": "roads_and_rivers",
+    "reward_unlocks": [
+      "topic:bandits"
+    ],
+    "quest_points": 2
+  },
+  "ballad_of_you": {
+    "title": "The Ballad of You",
+    "description": "Melody insists your legend needs verses \u2014 and verses need witnesses. Introduce yourself to every barkeep in the region so they can corroborate her wilder claims. ('Artistic license requires signatures,' she says.)",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "tavernkeeper_01",
+        "required": 1,
+        "description": "Get Goren's account at the Oakvale Tavern"
+      },
+      {
+        "type": "talk",
+        "target": "hamlet_innkeeper_01",
+        "required": 1,
+        "description": "Get Esra's account at the Riverside Inn"
+      },
+      {
+        "type": "talk",
+        "target": "camp_taverner_01",
+        "required": 1,
+        "description": "Get Wulf's account at the Camp Tavern"
+      }
+    ],
+    "giver_id": "minstrel_01",
+    "reward_gold": 25,
+    "reward_items": [
+      "flute"
+    ],
+    "reward_xp": 80,
+    "quest_points": 1
+  },
+  "melodys_lost_ballad": {
+    "title": "The Lost Ballad",
+    "description": "Melody's masterpiece needs a finale \u2014 and inspiration is thirsty work. Bring her two bottles of wine and she'll finish it on the road with you.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "wine",
+        "required": 2,
+        "description": "Gather 2 bottles of wine for Melody"
+      }
+    ],
+    "giver_id": "minstrel_01",
+    "reward_gold": 40,
+    "reward_xp": 150,
+    "quest_points": 2,
+    "requires_bond": 25
+  },
+  "castle_audience": {
+    "title": "An Audience with the King",
+    "description": "Captain Ser Brannock will present you to King Aldric III in the Great Hall. Mind your manners.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "king_bloodstone",
+        "required": 1,
+        "description": "Be presented to King Aldric III"
+      }
+    ],
+    "giver_id": "captain_bloodstone",
+    "reward_gold": 50,
+    "reward_xp": 100,
+    "quest_points": 1,
+    "reward_items": [
+      "potion"
+    ]
+  },
+  "castle_whispers": {
+    "title": "Whispers in the Hall",
+    "description": "Queen Maera fears Duke Voss moves against her son. Sound out those who see and hear everything at court \u2014 the maid and the bard.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "maid_bloodstone",
+        "required": 1,
+        "description": "Ask Maid Rowena what she has seen"
+      },
+      {
+        "type": "talk",
+        "target": "bard_bloodstone",
+        "required": 1,
+        "description": "Ask Lyle the Lute what he has heard"
+      }
+    ],
+    "giver_id": "queen_bloodstone",
+    "reward_gold": 75,
+    "reward_xp": 150,
+    "quest_points": 2,
+    "prereq_quest": "castle_audience"
+  },
+  "castle_the_spy": {
+    "title": "The Spy in the Household",
+    "description": "The trail leads to the Duke's own apartments. Find the proof of his plot and carry it to the Queen.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "dukes_cipher",
+        "required": 1,
+        "description": "Recover Duke Voss's cipher from the Royal Apartments"
+      },
+      {
+        "type": "deliver",
+        "target": "dukes_cipher:queen_bloodstone",
+        "required": 1,
+        "description": "Deliver the cipher to Queen Maera"
+      }
+    ],
+    "giver_id": "maid_bloodstone",
+    "reward_gold": 120,
+    "reward_xp": 250,
+    "quest_points": 3,
+    "reward_items": [
+      "ring_protection"
+    ],
+    "prereq_quest": "castle_whispers"
+  },
+  "castle_gambit": {
+    "title": "The Duke's Gambit",
+    "description": "With the cipher in hand, Prince Cedric asks you to stand with him and lay the Duke's treason before the King.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "king_bloodstone",
+        "required": 1,
+        "description": "Expose Duke Voss's plot to the King"
+      },
+      {
+        "type": "talk",
+        "target": "duke_voss",
+        "required": 1,
+        "description": "Face Duke Voss with his treason"
+      }
+    ],
+    "giver_id": "heir_bloodstone",
+    "reward_gold": 250,
+    "reward_xp": 500,
+    "quest_points": 5,
+    "reward_items": [
+      "longsword"
+    ],
+    "prereq_quest": "castle_the_spy",
+    "excluded_by": [
+      "castle_voss_gambit"
+    ],
+    "sets_flag": "exposed_voss"
+  },
+  "castle_crypt": {
+    "title": "What Stirs Below",
+    "description": "Mother Aldith cannot keep the dead of Bloodstone at rest. Descend to the Royal Crypt and put the restless bones back to sleep.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "monster",
+        "required": 3,
+        "description": "Lay the restless dead of the crypt to rest"
+      }
+    ],
+    "giver_id": "chaplain_bloodstone",
+    "reward_gold": 150,
+    "reward_xp": 300,
+    "quest_points": 3,
+    "reward_items": [
+      "amulet_warding"
+    ],
+    "prereq_quest": "castle_audience"
+  },
+  "castle_voss_gambit": {
+    "title": "The Duke's Offer",
+    "description": "Duke Voss knows you hold his cipher. He offers you gold and a place at his side \u2014 betray Prince Cedric, and the throne may yet change hands.",
+    "giver_id": "duke_voss",
+    "prereq_quest": "castle_the_spy",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "duke_voss",
+        "required": 1,
+        "description": "Take Duke Voss's offer"
+      },
+      {
+        "type": "talk",
+        "target": "heir_bloodstone",
+        "required": 1,
+        "description": "Betray Prince Cedric to the Duke"
+      }
+    ],
+    "excludes": [
+      "castle_gambit"
+    ],
+    "sets_flag": "sided_with_voss",
+    "reward_gold": 400,
+    "reward_xp": 500,
+    "reward_choices": [
+      {
+        "gold": 500,
+        "xp": 400,
+        "label": "The Duke's gold"
+      },
+      {
+        "gold": 150,
+        "items": [
+          "ring_protection",
+          "longsword"
+        ],
+        "xp": 500,
+        "label": "A commission in his guard"
+      }
+    ],
+    "quest_points": 5
+  },
+  "main_1_the_stirring": {
+    "title": "The Stirring Wilds",
+    "description": "Alzara the wizard has read dark omens: the wilds stir with an unnatural menace. Cull the beasts and prove the threat is real.",
+    "giver_id": "tower_wizard_01",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "monster",
+        "required": 3,
+        "description": "Slay 3 stirring beasts"
+      }
+    ],
+    "main": true,
+    "reward_gold": 60,
+    "reward_xp": 150,
+    "quest_points": 1
+  },
+  "main_2_the_source": {
+    "title": "The Source in the Deep",
+    "description": "Something calls the beasts out of the dark. Seek its source in the deep places of the world.",
+    "giver_id": "tower_wizard_01",
+    "prereq_quest": "main_1_the_stirring",
+    "objectives": [
+      {
+        "type": "explore",
+        "target": "Dark Cave",
+        "required": 1,
+        "description": "Descend into the Dark Cave"
+      }
+    ],
+    "main": true,
+    "reward_gold": 90,
+    "reward_xp": 250,
+    "quest_points": 2
+  },
+  "main_3_the_lore": {
+    "title": "The Old Lore",
+    "description": "Brother Anselm keeps the old lore of the wyrms. Learn what you face before it is too late.",
+    "giver_id": "hamlet_priest_01",
+    "prereq_quest": "main_2_the_source",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "hamlet_priest_01",
+        "required": 1,
+        "description": "Hear Brother Anselm's lore of the wyrms"
+      }
+    ],
+    "main": true,
+    "reward_gold": 80,
+    "reward_xp": 250,
+    "quest_points": 2
+  },
+  "main_4_the_gathering_night": {
+    "title": "The Gathering Night",
+    "description": "The darkness gathers to a head. Steel yourself and survive the coming night; at dawn, the reckoning waits.",
+    "giver_id": "tower_wizard_01",
+    "prereq_quest": "main_3_the_lore",
+    "objectives": [
+      {
+        "type": "survive",
+        "target": "night",
+        "required": 1,
+        "description": "Survive the gathering night"
+      }
+    ],
+    "main": true,
+    "reward_gold": 120,
+    "reward_xp": 350,
+    "quest_points": 3
+  },
+  "main_5_the_reckoning": {
+    "title": "The Reckoning",
+    "description": "The shadow over the realm has a name and a shape: the Elder Wyrm. Face it in its lair and end the darkness \u2014 or fall, and let it consume all.",
+    "giver_id": "tower_wizard_01",
+    "prereq_quest": "main_4_the_gathering_night",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "elder_dragon",
+        "required": 1,
+        "description": "Slay the Elder Dragon and end the shadow"
+      }
+    ],
+    "main": true,
+    "main_finale": true,
+    "sets_flag": "campaign_won",
+    "reward_gold": 1000,
+    "reward_xp": 2000,
+    "reward_items": [
+      "ring_protection"
+    ],
+    "quest_points": 10
+  },
+  "timed_bounty": {
+    "title": "Before the Trail Goes Cold",
+    "description": "A marauder was sighted at the edge of the wilds. Run it down before it slips away \u2014 you have only until dusk.",
+    "giver_id": "guard_01",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "brigand",
+        "required": 1,
+        "description": "Slay the marauder before time runs out"
+      }
+    ],
+    "time_limit": 60,
+    "reward_gold": 120,
+    "reward_xp": 200
+  },
+  "q_clear_bandit_camp": {
+    "title": "Break the Bandit Camp",
+    "description": "Outlaws raid the roads from a camp hidden in the forest. Find it and cut down their chief \u2014 scatter the band and the wilds will run far safer.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "bandit_chief",
+        "required": 1,
+        "description": "Defeat the Bandit Chief at the camp"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 120,
+    "reward_xp": 200,
+    "reward_items": [
+      "greater_potion"
+    ]
+  }
+}

@@ -26,15 +26,20 @@ logger = logging.getLogger("llm_rpg.worldgen")
 class WorldGenerator:
     """Procedurally fills a World with terrain + named locations."""
 
-    def __init__(self, world, seed: int = 42):
+    def __init__(self, world, seed: int = 42, mode: str = "classic"):
         self.world = world
+        self.seed = seed
+        self.mode = mode                       # "classic" | "realistic" (P36.1)
         self.rng = random.Random(seed)
         self.w = world.map.width
         self.h = world.map.height
+        self.elevation = None
 
     # ----- public -----------------------------------------------------
 
     def generate(self) -> None:
+        if self.mode == "realistic":
+            return self._generate_realistic()
         self._fill_base()
         self._add_forest_borders()
         self._add_river()
@@ -54,9 +59,128 @@ class WorldGenerator:
         if self.w >= 100 and self.h >= 60:
             self._add_extra_civic_buildings()
             self._add_wilderness_buildings()
+            self._add_murkfen_swamp()
         self._add_wilderness_features()
+        self._fortify_start_town()
         logger.info(f"Procedural world generated ({self.w}x{self.h}) "
                     f"with {len(self.world.locations)} locations")
+
+    def _generate_realistic(self) -> None:
+        """P36.1 a heightmap LANDSCAPE (mountains, forests, lakes, coasts, marsh)
+        instead of flat grass; the settlements clear playable land within it."""
+        from world import realistic_gen
+        self.elevation = realistic_gen.assign_terrain(self.world.map, self.seed)
+        realistic_gen.carve_rivers(self.world.map, self.elevation)   # P36.2
+        self._add_village()
+        if self.w >= 50 and self.h >= 30:
+            self._add_second_settlement()
+            self._add_connecting_road()
+        if self.w >= 100 and self.h >= 60:
+            self._add_third_settlement()
+            self._add_third_road()
+        self._carve_town_clearings()           # towns clear the land they sit on
+        self._clear_start_town_interior()      # ...esp. the whole WALLED enclosure
+        self._fortify_start_town()
+        self._add_cave()
+        if self.w >= 100:
+            self._add_second_cave()
+        if self.w >= 100 and self.h >= 60:
+            self._add_extra_civic_buildings()
+            self._add_wilderness_buildings()
+        self._add_wilderness_features()
+        self._place_history()                  # P36.3 ruins + the age's chronicle
+        logger.info(f"Realistic world generated ({self.w}x{self.h}) with "
+                    f"{len(self.world.locations)} locations")
+
+    def _place_history(self) -> None:
+        """P36.3 run the deep-history sim, scatter its RUINS across the land and
+        stash the CHRONICLE on the world for the Y-journal."""
+        from world import world_history
+        terrain_copy = [row[:] for row in self.world.map.terrain]
+        hist = world_history.simulate(terrain_copy, self.seed)
+        occupied = {(l.x, l.y) for l in self.world.locations}
+        for r in hist["ruins"]:
+            if any(abs(r.x - ox) + abs(r.y - oy) <= 4 for ox, oy in occupied):
+                continue                        # don't drop a ruin onto a town
+            self._place_ruin(r)
+        self.world.history_chronicle = hist["chronicle"]
+
+    def _place_ruin(self, r) -> None:
+        from world.location import Location
+        land = (TerrainType.GRASS, TerrainType.FOREST)
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                x, y = r.x + dx, r.y + dy
+                if 0 <= x < self.w and 0 <= y < self.h and \
+                        self.world.map.terrain[y][x] in land:
+                    self.world.map.terrain[y][x] = TerrainType.RUBBLE
+        if self.rng.random() < 0.5:             # some ruins hide a dungeon
+            self.world.map.terrain[r.y][r.x] = TerrainType.CAVE
+        loc = Location(f"{r.name} Ruins",
+                       f"Ruins — {r.legend}. Fallen in year {r.year}.",
+                       max(0, r.x - 1), max(0, r.y - 1), 3, 3)
+        loc.add_property("ruin", r.kind)
+        loc.add_property("legend", r.legend)
+        self.world.add_location(loc)
+
+    def _clear_start_town_interior(self) -> None:
+        """Bug-fix (George): a realistic world walls Oakvale, but heightmap water /
+        mountains INSIDE the wall trapped the hero with no reachable gate. Clear the
+        whole fortified enclosure to walkable ground BEFORE the wall goes up, so the
+        courtyard is passable and the gate is reachable (roads/bridges/caves kept)."""
+        oak = next((l for l in self.world.locations
+                    if l.name == "Oakvale Village"), None)
+        if oak is None:
+            return
+        from world.fortify import town_members, extent
+        try:
+            x0, y0, x1, y1 = extent(town_members(self.world, oak, radius=12),
+                                    margin=3)
+        except Exception:
+            x0, y0 = oak.x - 6, oak.y - 6
+            x1, y1 = oak.x + oak.width + 6, oak.y + oak.height + 6
+        keep = (TerrainType.BUILDING, TerrainType.ROAD, TerrainType.BRIDGE,
+                TerrainType.CAVE)
+        wild = (TerrainType.WATER, TerrainType.MOUNTAIN, TerrainType.SWAMP)
+        for y in range(max(0, y0), min(self.h, y1 + 1)):
+            for x in range(max(0, x0), min(self.w, x1 + 1)):
+                t = self.world.map.terrain[y][x]
+                if t in wild and t not in keep:
+                    self.world.map.terrain[y][x] = TerrainType.GRASS
+
+    def _carve_town_clearings(self) -> None:
+        """Flatten the untamed terrain (water / mountain / marsh) inside a
+        settlement's footprint + a margin to walkable grass, so a town founded on
+        the heightmap sits in a proper clearing (roads / bridges / walls kept)."""
+        keep = (TerrainType.BUILDING, TerrainType.ROAD, TerrainType.BRIDGE,
+                TerrainType.CAVE)
+        wild = (TerrainType.WATER, TerrainType.MOUNTAIN, TerrainType.SWAMP)
+        for loc in list(self.world.locations):
+            if not any(k in loc.name.lower()
+                       for k in ("village", "hamlet", "town", "outpost")):
+                continue
+            m = 3
+            for y in range(max(0, loc.y - m),
+                           min(self.h, loc.y + loc.height + m)):
+                for x in range(max(0, loc.x - m),
+                               min(self.w, loc.x + loc.width + m)):
+                    t = self.world.map.terrain[y][x]
+                    if t in wild and t not in keep:
+                        self.world.map.terrain[y][x] = TerrainType.GRASS
+
+    def _fortify_start_town(self) -> None:
+        """P31.1/P31.1b — ring the WHOLE Oakvale town (village + its nearby
+        buildings: the library, forge, market…) with a curtain wall, gates
+        where the roads cross, and a GUARD TOWER at each corner. Guards for the
+        gates and towers are posted in demo_setup (where the NPC manager lives)."""
+        from world.fortify import fortify_town
+        oak = next((l for l in self.world.locations
+                    if l.name == "Oakvale Village"), None)
+        if oak is None:
+            return
+        res = fortify_town(self.world, oak, margin=2, radius=12)
+        oak.add_property("gates", [list(g) for g in res["gates"]])
+        oak.add_property("towers", [list(c) for c in res["corners"]])
 
     # ----- terrain ----------------------------------------------------
 
@@ -86,13 +210,12 @@ class WorldGenerator:
             self._blob(cx, cy, 3, TerrainType.FOREST)
 
     def _add_river(self) -> None:
-        # A meandering horizontal river
-        y = self.h // 2
-        for x in range(self.w):
+        # An elevation-driven river: water follows the valley floor
+        # downhill across the map (P16.6), seed-reproducible.
+        from world.river_gen import elevation_field, trace_river
+        self.elevation = elevation_field(self.w, self.h, self.seed)
+        for x, y in trace_river(self.elevation, self.w, self.h):
             self.world.map.terrain[y][x] = TerrainType.WATER
-            if self.rng.random() < 0.3 and 1 <= y < self.h - 1:
-                y += self.rng.choice([-1, 0, 0, 1])
-                y = max(2, min(self.h - 3, y))
 
     def _add_road(self) -> None:
         # Road runs along y = h//2 - 3 (above the river)
@@ -117,6 +240,27 @@ class WorldGenerator:
             "Misty Mountains",
             "Tall mountains shrouded in mist.",
             mx, my, mw, mh,
+        ))
+
+    def _add_murkfen_swamp(self) -> None:
+        """The Murkfen — a brooding swamp in the south-central lowlands."""
+        sx, sy = self.w // 2 - 8, self.h - 18
+        sw, sh = 22, 13
+        for y in range(sy, min(self.h - 1, sy + sh)):
+            for x in range(sx, min(self.w - 1, sx + sw)):
+                current = self.world.map.terrain[y][x]
+                if current in (TerrainType.BUILDING, TerrainType.ROAD,
+                               TerrainType.CAVE):
+                    continue
+                roll = self.rng.random()
+                if roll < 0.72:
+                    self.world.map.terrain[y][x] = TerrainType.SWAMP
+                elif roll < 0.82:
+                    self.world.map.terrain[y][x] = TerrainType.WATER
+        self.world.add_location(Location(
+            "The Murkfen",
+            "A brooding swamp of black pools and whispering reeds.",
+            sx, sy, sw, sh,
         ))
 
     def _add_village(self) -> None:
@@ -198,13 +342,17 @@ class WorldGenerator:
         # L-shape path: horizontal then vertical
         for x in range(min(ax, bx), max(ax, bx) + 1):
             if 0 <= x < self.w and 0 <= ay < self.h:
-                if self.world.map.terrain[ay][x] not in (
-                        TerrainType.WATER, TerrainType.BUILDING):
+                t = self.world.map.terrain[ay][x]
+                if t == TerrainType.WATER:
+                    self.world.map.terrain[ay][x] = TerrainType.BRIDGE
+                elif t != TerrainType.BUILDING:
                     self.world.map.terrain[ay][x] = TerrainType.ROAD
         for y in range(min(ay, by), max(ay, by) + 1):
             if 0 <= y < self.h and 0 <= bx < self.w:
-                if self.world.map.terrain[y][bx] not in (
-                        TerrainType.WATER, TerrainType.BUILDING):
+                t = self.world.map.terrain[y][bx]
+                if t == TerrainType.WATER:
+                    self.world.map.terrain[y][bx] = TerrainType.BRIDGE
+                elif t != TerrainType.BUILDING:
                     self.world.map.terrain[y][bx] = TerrainType.ROAD
 
     def _add_third_settlement(self) -> None:
@@ -242,15 +390,19 @@ class WorldGenerator:
         # Vertical first, then horizontal
         for y in range(min(ay, by), max(ay, by) + 1):
             if 0 <= y < self.h and 0 <= ax < self.w:
-                if self.world.map.terrain[y][ax] not in (
-                        TerrainType.WATER, TerrainType.BUILDING,
-                        TerrainType.MOUNTAIN):
+                t = self.world.map.terrain[y][ax]
+                if t == TerrainType.WATER:
+                    self.world.map.terrain[y][ax] = TerrainType.BRIDGE
+                elif t not in (TerrainType.BUILDING,
+                               TerrainType.MOUNTAIN):
                     self.world.map.terrain[y][ax] = TerrainType.ROAD
         for x in range(min(ax, bx), max(ax, bx) + 1):
             if 0 <= x < self.w and 0 <= by < self.h:
-                if self.world.map.terrain[by][x] not in (
-                        TerrainType.WATER, TerrainType.BUILDING,
-                        TerrainType.MOUNTAIN):
+                t = self.world.map.terrain[by][x]
+                if t == TerrainType.WATER:
+                    self.world.map.terrain[by][x] = TerrainType.BRIDGE
+                elif t not in (TerrainType.BUILDING,
+                               TerrainType.MOUNTAIN):
                     self.world.map.terrain[by][x] = TerrainType.ROAD
 
     def _add_secondary_river(self) -> None:
@@ -344,6 +496,7 @@ class WorldGenerator:
         attempts = 0
         wanted = [
             ("Old Farmhouse", "A weathered farmhouse, fields gone fallow.", 2, 2),
+            ("Abandoned Cottage", "A tumbledown cottage, its roof half-caved and door hanging.", 2, 2),
             ("Roadside Farm", "A small farm beside the road.", 2, 2),
             ("Hunter's Lodge", "A log lodge with antlers above the door.", 2, 2),
             ("Wayside Shrine", "A lichen-covered roadside shrine.", 1, 1),

@@ -1,0 +1,11 @@
+{
+  "Oakvale Village": {
+    "arms": 1.0, "provisions": 1.0, "goods": 1.0, "arcana": 0.9
+  },
+  "Riverside Hamlet": {
+    "arms": 1.15, "provisions": 0.8, "goods": 1.1, "arcana": 1.1
+  },
+  "Stonepine Camp": {
+    "arms": 0.85, "provisions": 1.3, "goods": 0.9, "arcana": 1.25
+  }
+}

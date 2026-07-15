@@ -18,6 +18,35 @@ class TerrainType(Enum):
     ROAD = "road"
     BUILDING = "building"
     CAVE = "cave"
+    SWAMP = "swamp"
+    FARMLAND = "farmland"
+    RUBBLE = "rubble"
+    SCORCHED = "scorched"
+    BRIDGE = "bridge"          # P14.3b: roads cross water (George)
+
+
+def _mount_crosses(character, terrain_value) -> bool:
+    """P28.2b: a mount whose `traverses` list includes this terrain lets the
+    RIDER cross it — a magic carpet over water & mountains, a horse fording
+    shallows. Read straight off metadata so the map stays dependency-free
+    (`engine.mounts.buy_mount` writes `mount_traverses`)."""
+    meta = getattr(character, "metadata", None)
+    if not isinstance(meta, dict):
+        return False
+    return terrain_value in (meta.get("mount_traverses") or [])
+
+
+def _is_flier(character) -> bool:
+    """Flight (P11.4): a creature behavior flag or an active
+    'flying' status lets movement ignore ground-tile rules.
+    Read straight off metadata so the map stays dependency-free."""
+    meta = getattr(character, "metadata", None)
+    if not isinstance(meta, dict):
+        return False
+    if meta.get("behavior", {}).get("flying"):
+        return True
+    return any(e.get("name") == "flying"
+               for e in meta.get("status_effects", []))
 
 
 class WorldMap:
@@ -29,7 +58,30 @@ class WorldMap:
         self.terrain = [[TerrainType.GRASS for _ in range(width)] for _ in range(height)]
         self.objects = {}  # Key: (x, y), Value: Object at that location
         self.characters = {}  # Key: (x, y), Value: Character at that location
+        self._tile_callbacks = []  # fired by set_terrain (P10.0)
+        self.wall_guard = None  # engine-installed wall check (2026-07-12)
         logger.info(f"Map initialized with size {width}x{height}")
+
+    def register_tile_callback(self, fn) -> None:
+        """fn(x, y, old_terrain, new_terrain) on every set_terrain
+        (P10.0 — destruction routes through here so interiors and
+        systems can react)."""
+        self._tile_callbacks.append(fn)
+
+    def set_terrain(self, x: int, y: int,
+                    terrain_type: TerrainType) -> bool:
+        if not (0 <= x < self.width and 0 <= y < self.height):
+            return False
+        old = self.terrain[y][x]
+        if old == terrain_type:
+            return False
+        self.terrain[y][x] = terrain_type
+        for fn in list(self._tile_callbacks):
+            try:
+                fn(x, y, old, terrain_type)
+            except Exception:
+                pass
+        return True
 
     def add_terrain_feature(self, terrain_type: TerrainType, start_x: int, start_y: int, width: int, height: int):
         """Add a terrain feature of specified type and dimensions"""
@@ -63,10 +115,22 @@ class WorldMap:
             logger.debug(f"Move failed for {character.name}: Position ({new_x},{new_y}) is out of bounds")
             return False
 
-        # Check if terrain is traversable
+        # Check if terrain is traversable (fliers ignore ground rules)
         if self.terrain[new_y][new_x] == TerrainType.WATER or self.terrain[new_y][new_x] == TerrainType.MOUNTAIN:
-            logger.debug(f"Move failed for {character.name}: Terrain {self.terrain[new_y][new_x].value} is not traversable")
-            return False
+            tval = self.terrain[new_y][new_x].value
+            if not _is_flier(character) and not _mount_crosses(character, tval):
+                logger.debug(f"Move failed for {character.name}: Terrain {tval} is not traversable")
+                return False
+
+        # Walls are solid (bug-fix 2026-07-12): the installed guard rejects
+        # a move that would phase through a building footprint (overworld)
+        # or a zone wall (a zone-native monster while the player is inside).
+        guard = getattr(self, "wall_guard", None)
+        if guard is not None:
+            old = getattr(character, "position", None)
+            if old is not None and guard(character, old, (new_x, new_y)):
+                logger.debug(f"Move failed for {character.name}: wall guard blocked ({new_x},{new_y})")
+                return False
 
         # Check if position is occupied by another character
         if (new_x, new_y) in self.characters:

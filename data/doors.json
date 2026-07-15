@@ -1,0 +1,15 @@
+{
+  "styles": [
+    {"match": ["house", "cottage", "farmhouse", "hut", "home"],
+     "policy": "locked", "lock_level": 12},
+    {"match": ["lodge", "tower"],
+     "policy": "locked", "lock_level": 14},
+    {"match": ["shop", "emporium", "store", "goods", "forge",
+               "smithy"],
+     "policy": "night_locked", "lock_level": 10},
+    {"match": ["tavern", "inn", "temple", "shrine", "hall", "keep",
+               "ruin"],
+     "policy": "open"}
+  ],
+  "default": {"policy": "open"}
+}

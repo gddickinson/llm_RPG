@@ -81,6 +81,10 @@ class InventoryPanel:
             self._use(rows)
         elif k == pygame.K_d:
             self._drop(rows)
+        elif k == pygame.K_t:
+            self._transmute(rows)
+        elif k == pygame.K_h:
+            self._store(rows)
         return True
 
     def _move_cursor(self, delta: int, rows) -> None:
@@ -112,6 +116,10 @@ class InventoryPanel:
             except Exception:
                 pass
         elif kind == "bag" and item is not None:
+            if not hasattr(item, "is_equippable"):
+                self.engine.memory_manager.add_event(
+                    f"You can't equip {item}.")
+                return
             if not item.is_equippable():
                 self.engine.memory_manager.add_event(
                     f"{item.name} can't be equipped.")
@@ -125,6 +133,8 @@ class InventoryPanel:
         kind, _, item, _ = row
         if item is None or kind == "equip":
             return
+        if not hasattr(item, "name"):
+            return
         # Use via the engine API for consistent messaging
         self.engine.use_item(item.name)
 
@@ -135,7 +145,32 @@ class InventoryPanel:
         kind, _, item, _ = row
         if item is None or kind != "bag":
             return
-        self.engine.drop_item(item.name)
+        self.engine.drop_item(item.name if hasattr(item, "name")
+                              else str(item))
+
+    def _transmute(self, rows) -> None:
+        """P13.1: the value floor — coin from any carried thing."""
+        row = self._row_at_cursor(rows)
+        if row is None:
+            return
+        kind, _, item, _ = row
+        if item is None or kind != "bag" or not hasattr(item, "id"):
+            return
+        from engine.item_use import transmute_item
+        transmute_item(self.engine, item)
+
+    def _store(self, rows) -> None:
+        """P15.7: stash the highlighted item in your home chest."""
+        row = self._row_at_cursor(rows)
+        if row is None:
+            return
+        kind, _, item, _ = row
+        if item is None or kind != "bag":
+            return
+        msg = self.engine.home_deposit(item.name if hasattr(item, "name")
+                                       else str(item))
+        if msg:
+            self.engine.memory_manager.add_event(msg)
 
     # ---------------- render ---------------------------------------
 
@@ -203,18 +238,53 @@ class InventoryPanel:
             target.blit(txt, (box.x + 16, y))
             y += line_h
 
+        status = self._font.render(self._status_line(),
+                                   True, (200, 200, 150))
+        target.blit(status, (box.x + 16, box.bottom - 48))
         hint = self._font.render(
-            "[Up/Down] move  [E] (un)equip  [Q] use  [D] drop  [Esc] close",
+            "[Up/Down] move  [E] (un)equip  [Q] use  [D] drop  "
+            "[T] transmute  [H] store  [Esc] close",
             True, (160, 160, 180))
         target.blit(hint, (box.x + 16, box.bottom - 28))
+
+    def _status_line(self) -> str:
+        p = self.engine.player
+        parts = []
+        try:
+            from engine.effects import effective_ac
+            parts.append(f"AC {effective_ac(p)}")
+        except Exception:
+            pass
+        try:
+            from characters.equipment import set_bonus
+            n, name = set_bonus(p)
+            if n:
+                parts.append(f"{name} set +{n} AC ({n} pcs)")
+        except Exception:
+            pass
+        try:
+            from engine.carry import capacity, used_slots
+            parts.append(f"pack {used_slots(p)}/{capacity(p)}")
+        except Exception:
+            pass
+        return "   ".join(parts)
 
     def _render_row(self, kind, label, item, prefix) -> str:
         if kind == "sep":
             return f"  {label}"
         if kind == "equip":
             iname = item.name if item is not None else "(empty)"
+            if item is not None:
+                try:
+                    from engine.durability import durability_label
+                    iname += durability_label(item)
+                except Exception:
+                    pass
             return f"{prefix}[{label:7s}] {iname}"
-        # bag
+        # bag — tolerate plain strings (picked-up body markers);
+        # George hit a hard crash here
+        if not hasattr(item, "name"):
+            return f"{prefix}{str(item)}"
         name = item.name
         qty = f" x{item.quantity}" if item.stackable and item.quantity > 1 else ""
         suffix = ""

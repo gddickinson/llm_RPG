@@ -27,6 +27,7 @@ class CharacterClass(Enum):
     ARTIFICER = "artificer"
     TROLL = "troll"  # New class
     BRIGAND = "brigand"  # New class
+    ANIMAL = "animal"  # P32.3 neutral wildlife (never hostile; not a HOSTILE_CLASS)
 
 # Update the CharacterRace enum
 class CharacterRace(Enum):

@@ -84,5 +84,39 @@ class TestCombatEffects(unittest.TestCase):
         self.assertEqual(len(self.ce.damage_popups), 0)
 
 
+class TestProjectionAgnosticDraw(unittest.TestCase):
+    """P41.12 — draw_with lets the iso renderer reuse the same effect logic."""
+
+    def setUp(self):
+        self.ce = CombatEffects(FakeEngine())
+
+    def _paint_count(self, surf, box):
+        x0, y0, x1, y1 = box
+        return sum(1 for x in range(x0, x1, 2) for y in range(y0, y1, 2)
+                   if surf.get_at((x, y))[:3] != (0, 0, 0))
+
+    def test_draw_with_custom_projection_paints(self):
+        # a death burst (shapes, no font) routed through a custom to_screen that
+        # maps every world point to the view centre → paints there
+        self.ce.spawn_death_effect(5, 5)
+        self.ce.update(0.05)
+        surf = pygame.Surface((200, 200))
+        surf.fill((0, 0, 0))
+        view = pygame.Rect(0, 0, 200, 200)
+        self.ce.draw_with(surf, view, lambda x, y: (100, 100), 32)
+        self.assertGreater(self._paint_count(surf, (70, 70, 130, 130)), 0)
+
+    def test_topdown_draw_delegates_to_draw_with(self):
+        # the top-down draw still works after the refactor (a hit flash circle)
+        self.ce.spawn_death_effect(2, 2)
+        self.ce.update(0.05)
+        surf = pygame.Surface((200, 200))
+        surf.fill((0, 0, 0))
+        view = pygame.Rect(0, 0, 200, 200)
+        # cam at origin, ts 32 → world (2,2) maps near (80, 80)
+        self.ce.draw(surf, view, 0, 0, 32)
+        self.assertGreater(self._paint_count(surf, (0, 0, 200, 200)), 0)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -17,3 +17,8 @@ world/.DS_Store
 
 # Claude Code session metadata
 .claude/
+.venv/
+data/dm_library/
+
+# Local review artifacts (screenshots, PoCs) — not source
+scratchpad/

@@ -28,7 +28,7 @@ def default_boards() -> List[QuestBoard]:
         QuestBoard(
             location_name="Oakvale Tavern",
             posted_quest_ids=[
-                "herb_gathering", "cave_exploration",
+                "tavern_intro", "herb_gathering", "cave_exploration",
                 "deliver_sword", "survive_night",
             ],
             description="The tavern's adventurer board. Notices flutter in the breeze.",
@@ -50,7 +50,13 @@ class QuestBoardManager:
         return None
 
     def board_at_player(self) -> Optional[QuestBoard]:
-        loc = self.engine.world.get_location_at(*self.engine.player.position)
+        # Interior-aware (PT3.1 finding: solid walls made the tavern
+        # board unreachable — the board hangs INSIDE the tavern now)
+        try:
+            loc = self.engine.player_location()
+        except Exception:
+            loc = self.engine.world.get_location_at(
+                *self.engine.player.position)
         if not loc:
             return None
         return self.board_at(loc.name)
@@ -62,7 +68,8 @@ class QuestBoardManager:
         out = []
         for qid in board.posted_quest_ids:
             q = self.engine.quest_manager.get(qid)
-            if q and q.status == QuestStatus.AVAILABLE:
+            if q and q.status == QuestStatus.AVAILABLE and \
+                    self.engine.quest_manager.is_unlocked(q):
                 out.append(q)
         return out
 
@@ -74,3 +81,24 @@ class QuestBoardManager:
         if quest_id not in board.posted_quest_ids:
             return False
         return self.engine.accept_quest(quest_id)
+
+    # ---- persistence (P0.1b) -------------------------------------------
+
+    def to_dict(self) -> dict:
+        """Each board's LIVE postings — radiant notices and DM quests get
+        added/removed at runtime, so the defaults alone don't round-trip."""
+        return {"boards": {b.location_name: list(b.posted_quest_ids)
+                           for b in self.boards}}
+
+    def from_dict(self, data: dict) -> None:
+        saved = data.get("boards", {})
+        known = {b.location_name for b in self.boards}
+        for b in self.boards:
+            if b.location_name in saved:
+                b.posted_quest_ids = list(saved[b.location_name])
+        # a board that existed only in the save (a DM-raised board) — keep it
+        for loc, ids in saved.items():
+            if loc not in known:
+                self.boards.append(
+                    QuestBoard(location_name=loc,
+                               posted_quest_ids=list(ids)))

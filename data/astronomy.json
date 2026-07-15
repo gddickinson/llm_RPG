@@ -1,0 +1,10 @@
+{
+  "axial_tilt": 23.5,
+  "latitude": 45.0,
+  "twilight_hours": 1.0,
+  "conjunction_tolerance": 0.1,
+  "moons": [
+    {"name": "Lunara", "cycle": 28, "color": "silver"},
+    {"name": "Thal", "cycle": 47, "color": "copper"}
+  ]
+}
