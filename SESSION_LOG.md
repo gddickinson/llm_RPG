@@ -7694,3 +7694,18 @@ sprite — so a "3D-look" object is baked ONCE and blitted like any 2D image, ze
 a baked house (walls + red gable), a pillar and a sarcophagus render as real 3D objects
 (scratchpad/raster3d_bake.png). tests/test_raster3d.py (6). Next P41.3: the iso terrain
 render path (depth-sorted diamonds + cliffs behind the LLM_RPG_RENDER=iso toggle).
+
+## 2026-07-15 — P41.3: the ISO TERRAIN render path — the world tilts into 3D
+
+The first real 3D-look view. `ui/iso_render.py` (behind the LLM_RPG_RENDER=iso toggle; the
+top-down renderer stays default; a player 'iso' setting also works): `render_iso` centres
+the player's iso tile in the view, gathers the visible tiles (bbox from the view corners
+inverse-projected), depth-sorts them back-to-front, and draws each as a shaded DIAMOND —
+lifting raised terrain (mountains/buildings) and dropping CLIFF side-faces so the land
+reads 3D, sinking water; per-terrain relief in `_HEIGHT`; colours reuse sprite_loader.
+PALETTE; fog-of-war respected. The player is a marker + contact shadow for now (baked 3D
+chars are P41.5). renderer.render() delegates when iso is on (interiors stay top-down until
+P41.6). To hold the 500-line line, split `_draw_pet`/`_draw_hp_bar` into ui/renderer_
+overlays.py (renderer.py 509→492). tests/test_iso_render.py (5) + a screenshot (Oakvale in
+iso — mountains as 3D blocks with cliffs, the walled town raised, water sunken, the hero a
+figure). Next P41.4: bake buildings + props to iso sprites via raster3d.bake.

@@ -71,6 +71,16 @@ class MapRenderer:
         if zone is not None:
             self._render_zone(target, engine, view_rect, zone)
             return
+        # P41.3 isometric 3D-look world (behind the LLM_RPG_RENDER=iso toggle;
+        # interiors stay top-down until P41.6). The engine is untouched.
+        try:
+            from ui import iso_render
+            if iso_render.iso_enabled(engine):
+                iso_render.render_iso(target, engine, view_rect,
+                                      self.tile_size)
+                return
+        except Exception:
+            pass
         world = engine.world
         wmap = world.map
         px, py = engine.player.position
@@ -455,29 +465,12 @@ class MapRenderer:
             pass
 
     def _draw_pet(self, target, pet: dict, x: int, y: int) -> None:
-        """A tiny bobbing critter: colored body + eyes."""
-        ts = self.tile_size
-        color = tuple(pet.get("color", (200, 200, 200)))
-        cx = x + ts // 2
-        cy = y + int(ts * 0.68)
-        r = max(3, ts // 5)
-        pygame.draw.circle(target, color, (cx, cy), r)
-        dark = tuple(max(0, c - 70) for c in color)
-        pygame.draw.circle(target, dark, (cx, cy), r, 1)
-        eye = max(1, ts // 20)
-        pygame.draw.circle(target, (20, 20, 25),
-                           (cx - r // 2, cy - eye), eye)
-        pygame.draw.circle(target, (20, 20, 25),
-                           (cx + r // 2, cy - eye), eye)
+        from ui.renderer_overlays import draw_pet
+        draw_pet(target, pet, x, y, self.tile_size)
 
     def _draw_hp_bar(self, target, char, x: int, y: int) -> None:
-        w = self.tile_size - 4
-        h = 3
-        ratio = max(0.0, char.hp / max(1, char.max_hp))
-        pygame.draw.rect(target, (60, 0, 0),
-                         (x + 2, y - 5, w, h))
-        pygame.draw.rect(target, (200, 50, 50),
-                         (x + 2, y - 5, int(w * ratio), h))
+        from ui.renderer_overlays import draw_hp_bar
+        draw_hp_bar(target, char, x, y, self.tile_size)
 
     def _apply_tod_overlay(self, target, rect, time_of_day: str) -> None:
         # Recompute overlay only when TOD changes
