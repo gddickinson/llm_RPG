@@ -7827,3 +7827,19 @@ crypt's sarcophagi now read as solid lidded coffins, braziers as 3D stands, grav
 upright; the temple gains real columns (base/shaft/capital), a stepped altar and pews — a
 clear jump from flat sprites. `tests/test_iso_furniture.py` (+6); files 175/170 lines (well
 under 500). Full suite green.
+
+## 2026-07-15 — P41.9: iso interior-light pass (3D graphics upgrade)
+
+Continuing George's 3D/iso direction: the iso interiors were flatly, evenly lit — missing
+the top-down renderer's P39.4 dark/dust/warm-glow mood. Refactored `ui/interior_light.py`
+into a projection-agnostic screen-space CORE `draw_screen(target,view,ts,theme,srcs_screen,
+player_screen)` fed by two front-ends: the existing top-down `draw` (now delegates — the
+top-down crypt re-renders pixel-identical, behaviour preserved) and a new `draw_iso` that
+projects each lit prop + the hero through the `IsoProjection` and casts the SAME darkness
+with warm firelight pools + dust, `seen`-gated so dark dungeon levels only light seen props.
+Wired at the end of `iso_zone.render_zone_iso`. Result (screenshots): the iso crypt now
+reads dark and dank with warm brazier pools glowing on the stone, matching the top-down
+mood — a big atmosphere jump from the old even grey. One lighting model, both renderers.
+`tests/test_interior_light.py` (+3 iso: brazier lights its iso area, `seen` gates a prop,
+the shared core). interior_light.py 143 lines, iso_zone.py 181 (both < 500). Full suite
+green.

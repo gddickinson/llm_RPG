@@ -5704,3 +5704,11 @@ Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/
   view. Unmapped names (cobweb/rug/bones/tapestry) fall back to the flat billboard.
   `tests/test_iso_furniture.py` (+6). Screenshots re-rendered — the iso crypt & temple gain
   real depth. (Optional future iso polish: camera pan/zoom, an iso interior-light pass.)
+- [x] **P41.9 Iso interior-light pass.** The P39.4 dark/dust/warm-glow mood now renders in
+  the ISO view too. `interior_light.py` refactored into a projection-agnostic screen-space
+  core `draw_screen` + two front-ends: the existing top-down `draw` (behaviour-preserving —
+  top-down crypt renders pixel-identical) and a new `draw_iso` that projects each lit prop +
+  the hero through the `IsoProjection` and casts the same darkness-with-firelight-pools,
+  `seen`-gated on dark levels. Wired at the end of `iso_zone.render_zone_iso`. The iso crypt
+  now reads dark and dank with warm brazier pools (was flatly, evenly lit). ONE lighting
+  model for both renderers. `tests/test_interior_light.py` (+3 iso). Screenshots re-rendered.

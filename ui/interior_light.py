@@ -70,9 +70,12 @@ def _dust(target, view_rect, n, frame):
                     special_flags=pygame.BLEND_RGBA_ADD)
 
 
-def draw(target, zone, view_rect, cam_x, cam_y, ts, theme,
-         player_pos=None) -> None:
-    """Cast interior light + mood over the zone view."""
+def draw_screen(target, view_rect, ts, theme, srcs_screen,
+                player_screen=None) -> None:
+    """The screen-space core: darkness + light holes + warm pools + dust, given
+    ABSOLUTE screen positions for the light sources and the hero. Shared by the
+    top-down (`draw`) and isometric (`draw_iso`) paths so there's ONE lighting
+    model regardless of projection."""
     global _frame
     _frame = (_frame + 1) % 100000
     light = (theme or {}).get("light") or {}
@@ -81,30 +84,60 @@ def draw(target, zone, view_rect, cam_x, cam_y, ts, theme,
     prad = int(ts * 2.4)
     plyr_rad = int(ts * 3.0)
 
-    srcs = _sources(zone, ts)
-
     if dark_a > 0:
         dark = pygame.Surface((view_rect.width, view_rect.height),
                               pygame.SRCALPHA)
         dark.fill((*DARK_RGB, dark_a))
-        for (fx, fy) in srcs:
-            sx = (fx - cam_x) * ts + ts // 2
-            sy = (fy - cam_y) * ts + ts // 2
-            dark.blit(_hole(prad), (sx - prad, sy - prad),
+        for (sx, sy) in srcs_screen:
+            lx, ly = sx - view_rect.x, sy - view_rect.y
+            dark.blit(_hole(prad), (lx - prad, ly - prad),
                       special_flags=pygame.BLEND_RGBA_SUB)
-        if player_pos is not None:
-            sx = (player_pos[0] - cam_x) * ts + ts // 2
-            sy = (player_pos[1] - cam_y) * ts + ts // 2
-            dark.blit(_hole(plyr_rad), (sx - plyr_rad, sy - plyr_rad),
+        if player_screen is not None:
+            lx, ly = player_screen[0] - view_rect.x, player_screen[1] - view_rect.y
+            dark.blit(_hole(plyr_rad), (lx - plyr_rad, ly - plyr_rad),
                       special_flags=pygame.BLEND_RGBA_SUB)
         target.blit(dark, (view_rect.x, view_rect.y))
 
     grad = int(ts * 2.0)
-    for (fx, fy) in srcs:                             # warm colour pools
-        sx = view_rect.x + (fx - cam_x) * ts + ts // 2
-        sy = view_rect.y + (fy - cam_y) * ts + ts // 2
+    for (sx, sy) in srcs_screen:                      # warm colour pools
         target.blit(_glow(grad, glow_col), (sx - grad, sy - grad),
                     special_flags=pygame.BLEND_RGB_ADD)
 
     if light.get("dust"):
         _dust(target, view_rect, light["dust"], _frame)
+
+
+def draw(target, zone, view_rect, cam_x, cam_y, ts, theme,
+         player_pos=None) -> None:
+    """Cast interior light + mood over a TOP-DOWN zone view."""
+    srcs = _sources(zone, ts)
+    srcs_screen = [(view_rect.x + (fx - cam_x) * ts + ts // 2,
+                    view_rect.y + (fy - cam_y) * ts + ts // 2)
+                   for (fx, fy) in srcs if fx is not None and fy is not None]
+    player_screen = None
+    if player_pos is not None:
+        player_screen = (view_rect.x + (player_pos[0] - cam_x) * ts + ts // 2,
+                         view_rect.y + (player_pos[1] - cam_y) * ts + ts // 2)
+    draw_screen(target, view_rect, ts, theme, srcs_screen, player_screen)
+
+
+def draw_iso(target, zone, view_rect, iso, origin, ts, theme,
+             player_pos=None, seen=None) -> None:
+    """Cast the same interior light + mood over an ISOMETRIC zone view: the
+    light pools sit on the projected ground under each lit prop and the hero,
+    so a crypt reads dark with warm firelight pools in 3D too. `seen` (a set of
+    visible zone coords, or None) gates lit props on dark levels."""
+    srcs = _sources(zone, ts)
+    srcs_screen = []
+    for (fx, fy) in srcs:
+        if fx is None or fy is None:
+            continue
+        if seen is not None and (fx, fy) not in seen:
+            continue
+        sx, sy = iso.world_to_screen(fx, fy, 0, origin)
+        srcs_screen.append((int(sx), int(sy)))
+    player_screen = None
+    if player_pos is not None:
+        sx, sy = iso.world_to_screen(player_pos[0], player_pos[1], 0, origin)
+        player_screen = (int(sx), int(sy))
+    draw_screen(target, view_rect, ts, theme, srcs_screen, player_screen)

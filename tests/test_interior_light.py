@@ -87,5 +87,66 @@ class TestDraw(unittest.TestCase):
         self.assertEqual(_brightness(target, (0, 0, 320, 320)), before)
 
 
+class TestIsoLight(unittest.TestCase):
+    """P41.9 — the same mood over the isometric projection."""
+
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+
+    def _target(self):
+        s = pygame.Surface((320, 320))
+        s.fill((80, 80, 80))
+        return s
+
+    def _iso_origin(self, iso, fx, fy):
+        # centre the lit tile in the 320×320 view
+        sx, sy = iso.world_to_screen(fx, fy, 0)
+        return (160 - sx, 160 - sy)
+
+    def test_brazier_lights_its_iso_surroundings(self):
+        from ui.iso import IsoProjection
+        iso = IsoProjection(32, 16, 12)
+        zone = _Zone(10, 10, [{"name": "Brazier", "x": 5, "y": 5}])
+        theme = {"light": {"dark": 120, "glow": [255, 150, 60]}}
+        origin = self._iso_origin(iso, 5, 5)
+        target = self._target()
+        view = pygame.Rect(0, 0, 320, 320)
+        il.draw_iso(target, zone, view, iso, origin, 32, theme,
+                    player_pos=None)
+        near = _brightness(target, (152, 152, 16, 16))   # the tile centre
+        far = _brightness(target, (0, 0, 16, 16))
+        self.assertGreater(near, far, "the iso brazier should light its area")
+
+    def test_seen_gates_a_lit_prop_on_dark_levels(self):
+        from ui.iso import IsoProjection
+        iso = IsoProjection(32, 16, 12)
+        zone = _Zone(10, 10, [{"name": "Brazier", "x": 5, "y": 5}])
+        theme = {"light": {"dark": 120, "glow": [255, 150, 60]}}
+        origin = self._iso_origin(iso, 5, 5)
+        view = pygame.Rect(0, 0, 320, 320)
+        # brazier NOT in the seen set → no warm pool at its tile
+        target = self._target()
+        il.draw_iso(target, zone, view, iso, origin, 32, theme,
+                    player_pos=None, seen={(1, 1)})
+        near = _brightness(target, (152, 152, 16, 16))
+        # with it seen → the pool returns
+        target2 = self._target()
+        il.draw_iso(target2, zone, view, iso, origin, 32, theme,
+                    player_pos=None, seen={(5, 5)})
+        near2 = _brightness(target2, (152, 152, 16, 16))
+        self.assertGreater(near2, near, "an unseen prop should stay unlit")
+
+    def test_draw_screen_shared_core(self):
+        theme = {"light": {"dark": 120, "glow": [255, 150, 60]}}
+        target = self._target()
+        view = pygame.Rect(0, 0, 320, 320)
+        il.draw_screen(target, view, 32, theme, [(160, 160)],
+                       player_screen=None)
+        near = _brightness(target, (152, 152, 16, 16))
+        far = _brightness(target, (0, 0, 16, 16))
+        self.assertGreater(near, far)
+
+
 if __name__ == "__main__":
     unittest.main()

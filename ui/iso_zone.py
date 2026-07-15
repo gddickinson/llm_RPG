@@ -121,6 +121,17 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
         else:
             _char(target, iso_chars, data, tile_size)
 
+    # P41.9 interior light & mood in iso too: darkness with warm firelight pools
+    # around braziers/torches + the hero, drifting dust — a crypt reads dark and
+    # dank, a home warm (shares the top-down P39.4 model via draw_iso).
+    try:
+        from ui import interior_light
+        interior_light.draw_iso(target, zone, view_rect, iso, origin,
+                                tile_size, theme, engine.player.position,
+                                visible)
+    except Exception:
+        pass
+
 
 def _floor(target, iso, data, col):
     from ui.iso_render import draw_diamond
