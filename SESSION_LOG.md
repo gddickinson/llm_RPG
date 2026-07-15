@@ -8402,3 +8402,19 @@ forced adjacent in coord-space, an indoor hero takes 0 damage over 8 turns; over
 still bites (acted=1). This is the general fix for ANY overworld-hostile phantom-attack in an
 interior/dungeon, not just this stalker. tests/test_aggression.py + test_pursuit.py (+2 regression
 tests). (The (1,1) spawn itself is a separate, now-harmless placement oddity.)
+
+## 2026-07-15 — BLD.5: shopfronts + signage (street identity)
+
+After BLD.4 doors, buildings still only differed by their door. BLD.5 gives commercial/civic
+buildings a STREET IDENTITY. Extended ui/facade.py: shopfront_for(kind) → a motif set; draw_shopfront
+lays them on the building's south face (before the door): a striped AWNING (colour per trade) + a
+projecting HANGING SIGN on a bracket carrying a trade EMBLEM (a mug for tavern/inn, a coin for shop/
+market/stall, a loaf for bakery, an anvil for smithy/forge), a DISPLAY window (a glazed pane beside
+the door) for a shop, a forge-GLOW for a smithy/forge, an oven-glow for a bakery; a plain home/temple
+shows nothing. Wired thinly through door_glyphs (draw_shopfront then draw_door). Verified the real
+buildings resolve: Oakvale Tavern→awning+mug, Durgan's Forge→anvil+forge-glow, General Store→awning+
+coin+display. Before/after: scratchpad/bld5_shopfronts_compare.png (each business reads distinctly).
+tests/test_facade.py (+4: shopfront_for per kind, plain home has none, draw all kinds no-crash, it
+paints for a shop but not a home). facade.py 224 / door_glyphs 36 — under 500. Validator clean.
+Next: BLD.6 (decoration pass: corridor torches feed P39.4 light + occupant clutter + interior render
+polish — window light-pool/mortar walls/detailed bed+table recipes from autonomous_world).

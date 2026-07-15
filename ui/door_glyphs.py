@@ -28,8 +28,9 @@ def draw_door_glyphs(target, engine, view_rect, cam_x, cam_y, cols, rows,
             state = "open"
         sx = view_rect.x + (dx - cam_x) * ts
         sy = view_rect.y + (dy - cam_y) * ts
-        # BLD.4: a real per-kind entrance door (framed/planked/arched/double)
+        # BLD.4/5: per-kind shopfront (awning/sign/glow) then the entrance door
         kind = loc.get_property("type", "") if hasattr(loc, "get_property") \
             else ""
         from ui import facade
+        facade.draw_shopfront(target, sx, sy, ts, kind)
         facade.draw_door(target, sx, sy, ts, kind, state)

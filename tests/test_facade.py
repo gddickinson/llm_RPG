@@ -75,6 +75,41 @@ class TestDrawDoor(unittest.TestCase):
         self.assertTrue(found, "the closed-state colour paints the leaf")
 
 
+class TestShopfront(unittest.TestCase):
+    def test_shopfront_per_kind(self):
+        self.assertIn("awning", facade.shopfront_for("tavern"))
+        self.assertEqual(facade.shopfront_for("tavern")["sign"], "mug")
+        self.assertTrue(facade.shopfront_for("smithy").get("forge"))
+        self.assertEqual(facade.shopfront_for("smithy")["sign"], "anvil")
+        self.assertTrue(facade.shopfront_for("shop").get("display"))
+        self.assertTrue(facade.shopfront_for("bakery").get("oven"))
+
+    def test_plain_home_has_no_shopfront(self):
+        self.assertEqual(facade.shopfront_for("home"), {})
+        self.assertEqual(facade.shopfront_for("temple"), {})
+        self.assertEqual(facade.shopfront_for(""), {})
+
+    def test_draw_shopfront_all_kinds_no_crash(self):
+        for kind in ("tavern", "inn", "shop", "stall", "bakery", "smithy",
+                     "forge", "home", "temple"):
+            surf = pygame.Surface((64, 64))
+            surf.fill((150, 120, 86))
+            facade.draw_shopfront(surf, 0, 0, 64, kind)
+
+    def test_shopfront_paints_something_for_a_shop(self):
+        blank = pygame.Surface((64, 64))
+        blank.fill((150, 120, 86))
+        painted = blank.copy()
+        facade.draw_shopfront(painted, 0, 0, 64, "tavern")
+        self.assertNotEqual(pygame.image.tostring(blank, "RGB"),
+                            pygame.image.tostring(painted, "RGB"))
+        # a plain home paints nothing
+        home = blank.copy()
+        facade.draw_shopfront(home, 0, 0, 64, "home")
+        self.assertEqual(pygame.image.tostring(blank, "RGB"),
+                         pygame.image.tostring(home, "RGB"))
+
+
 class TestIntegration(unittest.TestCase):
     def test_door_glyphs_renders_via_facade(self):
         # the glyph pass delegates to facade without crashing

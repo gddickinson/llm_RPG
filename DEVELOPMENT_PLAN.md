@@ -5886,8 +5886,15 @@ ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly 
   45→35, `renderer_buildings` untouched at 417). Before/after: scratchpad/bld4_doors_compare.png
   (identical flat rects → distinct per-kind doors) + bld4_street.png (an arched temple door + a
   panelled home door in an Oakvale street). `tests/test_facade.py` (+8).
-- [ ] **BLD.5 Shopfronts & signage** — awnings, hanging signs, display windows, forge-glow/anvil,
-  bakery oven; per-kind identity so a smithy ≠ a house.
+- [x] **BLD.5 Shopfronts & signage — DONE.** Commercial/civic buildings now read from the STREET
+  (before, only the door differed). Extended `ui/facade.py`: `shopfront_for(kind)` names the motifs
+  and `draw_shopfront` lays them on the south face (before the door) — a striped AWNING (colour per
+  trade) + a projecting HANGING SIGN with a trade EMBLEM (mug=tavern/inn, coin=shop, loaf=bakery,
+  anvil=smithy), a DISPLAY window for a shop/market, a forge-GLOW for a smithy/forge, an oven-glow
+  for a bakery; a plain home shows none. Wired thinly through `door_glyphs` (draws the shopfront
+  then the door). Before/after: scratchpad/bld5_shopfronts_compare.png (tavern awning+mug / smithy
+  anvil+forge-glow / shop coin+awning+display / bakery loaf+oven / inn mug). `tests/test_facade.py`
+  (+4). facade.py 224, door_glyphs 36 — under 500.
 - [ ] **BLD.6 Decoration pass + occupant clutter + interior render polish** — carpet-before-hearth,
   corridor torches (feed P39.4 light), storage clutter; occupant→furnishings; window light-pool +
   mortar walls + detailed bed/table recipes (port aw renderer_buildings).
