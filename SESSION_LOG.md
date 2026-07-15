@@ -8384,3 +8384,21 @@ bld4_street.png (an arched temple door + a panelled home door read on the Oakval
 tests/test_facade.py (+8: style per kind, geometry per style, all lock states draw, the state colour
 paints the leaf, door_glyphs integration). Files under 500 (facade 126). Validator clean.
 Next: BLD.5 (shopfronts + signage: awnings, hanging signs, display windows, forge-glow, oven).
+
+## 2026-07-15 — BUGFIX (George): invisible mire stalker attacks the hero in EVERY building
+
+George: "Everytime the hero goes into any building he is attacked by an invisible mire stalker
+until dead." Root-caused: a Mire Stalker (from the mire_beacon module pack, anchor:wilderness)
+had spawned at overworld tile (1,1) — the top-left corner, INSIDE interior-coordinate range. When
+the hero enters a building, `player.position` becomes an INTERIOR-LOCAL coordinate (e.g. (4,7)),
+and the every-turn PURSUIT (engine/pursuit.py) + AGGRESSION (engine/aggression.py) systems targeted
+that position with RAW overworld coordinates — so the corner stalker chased the hero's interior
+coords across the grid (verified: it stepped (1,1)→(2,3) toward an interior player) and, on reaching
+adjacency in coordinate space, bit the hero every turn THROUGH the building's walls, invisibly,
+until dead. Both systems checked the CREATURE's zone but never the PLAYER's. Fix: pursuit.update AND
+aggression.update now early-return 0 when `current_interior`/`current_dungeon` is set — a hero in a
+separate coordinate space is simply unreachable by an overworld hostile. Verified: with a stalker
+forced adjacent in coord-space, an indoor hero takes 0 damage over 8 turns; overworld aggression
+still bites (acted=1). This is the general fix for ANY overworld-hostile phantom-attack in an
+interior/dungeon, not just this stalker. tests/test_aggression.py + test_pursuit.py (+2 regression
+tests). (The (1,1) spawn itself is a separate, now-harmless placement oddity.)

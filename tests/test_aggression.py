@@ -89,6 +89,23 @@ class TestAggression(unittest.TestCase):
         finally:
             self._clear(m)
 
+    def test_indoors_player_is_not_bitten_by_overworld_hostile(self):
+        # George 2026-07-15: an invisible Mire Stalker sitting at a low overworld
+        # tile bit the hero in EVERY building until dead — a player in an
+        # interior is a SEPARATE coordinate space and must be unreachable.
+        eng = self.engine
+        eng.player.hp = eng.player.max_hp = 60
+        m = self._place("wolf", 1, 0)                # 'adjacent' in coord space
+        saved = getattr(eng, "current_interior", None)
+        eng.current_interior = object()             # the hero is indoors
+        try:
+            for _ in range(8):
+                self.assertEqual(eng.aggression.update(), 0)
+            self.assertEqual(eng.player.hp, 60, "no bite reaches an indoor hero")
+        finally:
+            eng.current_interior = saved
+            self._clear(m)
+
     def test_non_adjacent_hostile_does_not_bite(self):
         eng = self.engine
         eng.player.hp = eng.player.max_hp = 60
