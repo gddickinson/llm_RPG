@@ -125,6 +125,8 @@ class MapRenderer:
             from ui.renderer_buildings import draw_buildings
             draw_terrain_edges(target, engine, view_rect, cam_x, cam_y, ts)
             draw_buildings(target, engine, view_rect, cam_x, cam_y, ts)
+            from ui.scatter_draw import draw_scatter          # P39.6b props
+            draw_scatter(target, engine, view_rect, cam_x, cam_y, ts)
         except Exception:
             pass
 

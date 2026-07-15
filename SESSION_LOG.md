@@ -7874,3 +7874,24 @@ Screenshot (scratchpad/parity_iso.png) confirms the gold reticle brackets + whit
 loot render at clear noon. `tests/test_iso_render.py` (+4: integration reticle check + pure
 `_draw_surface`/`_draw_grounditem`/`_get_sprites` tests). iso_render.py 370 lines (< 500).
 Top-down renderer untouched; iso stays opt-in. Full suite green.
+
+## 2026-07-15 — P39.6b: overworld decorative scatter props (both renderers)
+
+The visual-richness item George originally asked for. Sparse standing props now dot the
+overworld in BOTH the top-down and iso renderers from ONE deterministic placement, so the
+world reads far less empty. New modules: `ui/overworld_scatter.py` (`prop_at(wx,wy,terrain)`
+— a stable per-world-position hash + density gate + weighted pick over
+`data/overworld_scatter.json`, so scatter never flickers and both renderers agree),
+`ui/scatter_sprites.py` (procedural boulder / deadwood / mushroom cluster / reeds / fern /
+flowers / stump, plus a dispatch to `prop_sprites` for the shared bones / gravestone), and
+`ui/scatter_draw.py` (the thin top-down pass, wired into `renderer.render` after the 2.5D
+buildings). The iso renderer runs the same `prop_at` in its depth-sorted pass
+(`_draw_scatter` — BAKED 3D for boulders (iso rock) + gravestones (iso furniture), billboard
+for the rest). Recipes are terrain-appropriate: forest → mushrooms/ferns/deadwood/stumps,
+grass → flowers/boulders, swamp → reeds/mushrooms/bones, scorched → bones/deadwood, and
+RUBBLE (what ruins/destroyed buildings leave) → gravestones/bones — so scatter clings to
+ruined places WITHOUT querying locations. Screenshots (scatter_topdown/iso.png) confirm
+flowers on the meadows, mushrooms in the woods, boulders and stumps scattered about.
+`tests/test_overworld_scatter.py` (+9: determinism, density-matches-config, ineligible
+terrain scatters nothing, every recipe prop is drawable, top-down draw paints). renderer.py
+492 lines, all new files < 130. Full suite green. Both renderers, one placement.

@@ -5644,6 +5644,18 @@ EVERY building, many more decorative props / furniture / diases / stair & window
   ornate with pillars/tapestries/altar/pews. Overworld scatter TEXTURE (grass blades, forest
   canopy, mountain rocks, swamp reeds) already ships via P33.1 `tile_variants`; sparse
   decorative overworld PROPS remain an optional follow-up (P39.6b). Closes Phase 39.
+- [x] **P39.6b Overworld decorative scatter PROPS (both renderers).** Sparse standing props
+  now dot the overworld in BOTH renderers from ONE deterministic placement: new
+  `ui/overworld_scatter.py` (`prop_at` — a per-world-position hash + density gate + weighted
+  pick over `data/overworld_scatter.json` recipes), `ui/scatter_sprites.py` (procedural
+  boulder / deadwood / mushroom / reeds / fern / flowers / stump, + `prop_sprites` for shared
+  bones / gravestone), `ui/scatter_draw.py` (the top-down pass, wired into `renderer.render`).
+  The iso renderer runs the same placement in its depth-sorted pass (`_draw_scatter` — baked
+  3D for boulders/gravestones, billboard otherwise). Recipes are terrain-appropriate — forest
+  gets mushrooms/ferns/deadwood, grass flowers, swamp reeds/bones, scorched bones/deadwood,
+  and RUBBLE (what ruins leave) gravestones/bones so scatter clings to ruined places.
+  Screenshots confirm flowers on meadows, mushrooms in woods, boulders scattered — the
+  overworld reads far less empty. `tests/test_overworld_scatter.py` (+9). All files < 500.
 
 ## Phase 37.5a-tune — leveling made genuinely tough (George, 2026-07-14)
 

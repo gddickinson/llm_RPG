@@ -13,6 +13,7 @@ import os
 import pygame
 
 from ui.iso import IsoProjection
+from ui import overworld_scatter as _scatter
 
 # per-terrain relief (tile heights, in z units) — mountains rise, water sinks
 _HEIGHT = {
@@ -167,6 +168,10 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
                 nm = gi[0].name if hasattr(gi[0], "name") else str(gi[0])
                 items.append((iso.depth_key(wx, wy, z, 0.6), "item",
                               (sprites.item(nm), int(sx), int(sy))))
+            sp = _scatter.prop_at(wx, wy, name)        # P39.6b decorative props
+            if sp:
+                items.append((iso.depth_key(wx, wy, z, 0.9), "scatter",
+                              (sp, int(sx), int(sy))))
     # characters (hero + visible NPCs) in the same depth order (layer 2)
     for char in _visible_chars(engine):
         cx, cy = char.position
@@ -188,6 +193,8 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
             _draw_surface(target, iso, data)
         elif tag == "item":
             _draw_grounditem(target, data)
+        elif tag == "scatter":
+            _draw_scatter(target, data, tile_size)
         elif tag == "obj":
             _blit_object(target, data)
         else:
@@ -290,6 +297,29 @@ def _draw_grounditem(target, data):
     spr, sx, sy = data
     w, h = spr.get_size()
     target.blit(spr, (sx - w // 2, sy - int(h * 0.7)))
+
+
+def _scatter_iso_sprite(name, ts):
+    """A scatter prop for the iso view: BAKED 3D where we have it (boulder ->
+    rock, gravestone -> the baked stone), else the flat billboard sprite."""
+    if name in ("boulder", "rock"):
+        from ui import iso_objects
+        return iso_objects.rock_sprite(int(ts * 0.9))
+    from ui import iso_furniture
+    baked = iso_furniture.furniture_sprite(name, int(ts * 1.2))
+    if baked is not None:                          # gravestone
+        return baked
+    from ui.scatter_sprites import scatter_sprite
+    return scatter_sprite(name, int(ts * 0.85))
+
+
+def _draw_scatter(target, data, tile_size):
+    name, sx, sy = data
+    spr = _scatter_iso_sprite(name, tile_size)
+    if spr is None:
+        return
+    w, h = spr.get_size()
+    target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
 
 
 def _draw_iso_projectiles(target, engine, iso, origin, wmap, tile_size):
