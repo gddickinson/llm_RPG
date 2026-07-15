@@ -5650,6 +5650,36 @@ remove certain encounters — clearing a bandit camp reduces bandit spawns in an
   **This closes George's 2026-07-15 combat-difficulty message end to end** (P37.6a XP 10x +
   P37.6b aggressive/tougher monsters + P37.6c camp-clearing).
 
+## Phase AUDIT — unsurfaced / unimplemented code (George, 2026-07-15)
+
+George: "review the entire codebase and determine if there is unimplemented code that needs to
+be surfaced." A three-agent audit (engine reachability, dead data content, half-wired
+features) found the following "built but unreachable" gaps. Verified; ranked by impact.
+
+- [x] **A-items: ~11 stranded ITEMS now obtainable + hill_giant spawnable.** The audit found
+  high-value items with NO acquisition path: `flaming_sword`, `plate`, `silent_boots`,
+  `ring_strength`, `manual_athletics`/`manual_dexterity` (the only permanent-stat items!),
+  `frost_dagger`, `holy_mace`, `explorers_chart`, `crossbow`+`sling` (their AMMO was sold but
+  not the weapons), `thrown_knife`. Surfaced via data edits — shops (`data/shop_catalogs.json`:
+  plate→blacksmith, crossbow/sling/thrown_knife/explorers_chart→general, holy_mace→priest,
+  ring_strength→wizard, silent_boots→ranger) + lair hoards (`data/lairs.json`:
+  flaming_sword/frost_dagger→dragon roost, manuals→troll den/goblin warren). `hill_giant`
+  (was `encounter_weight:0`, unspawnable) → weight 1 on mountains. `tests/test_content_
+  reachability.py` (+4) locks it in.
+- [ ] **A-trap: home-chest WITHDRAWAL (item-loss trap).** `game_api_mixin.home_withdraw()`
+  works but has NO caller — you can DEPOSIT into a home chest (H in the I-panel) but never take
+  items back; the chest contents aren't even rendered. Fix: render chest rows in
+  `InventoryPanel` while home + a withdraw key. **Highest priority — it loses player items.**
+- [ ] **A-train: guild-hall TRAINING unreachable.** `guildhalls.train(skill_id)` (pay gold →
+  skill XP at a seeded hall) has no key/dialog/GUI trigger. Fix: `/train <skill>` dialog branch
+  or an E-at-hall menu (mirror `show_stable`).
+- [ ] **A-board: quest BOARD unreachable.** `quest_board_at_player()`/`accept_quest_from_
+  board()` have no caller — radiant quests posted each morning are STRANDED. Fix: an E-on-board
+  overlay to view/accept.
+- [ ] **A-disc: discoverability** — Tutorial Island isn't in the GUI New Game menu (only
+  `--tutorial` CLI); the `/bond` `/spend` `/order` dialog commands work but aren't advertised
+  in the dialog prompt; left-click-to-target isn't in the controls help. Small fixes.
+
 ## Phase 28.2d — SURFACE the mount feature (George, 2026-07-15)
 
 George: "implement horses, pack mules and rider/mount feature — we started this previously

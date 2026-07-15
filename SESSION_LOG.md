@@ -8092,3 +8092,30 @@ seeds near Oakvale, marker is a stable Location, buying a horse mounts you + lif
 can't buy away from a stable, the menu lists the mounts, save round-trip, the mount draws).
 Validator green; full suite next. Next queued (George): platform-gated travel + spawn on a
 platform.
+
+## 2026-07-15 — AUDIT: unsurfaced-code review + surface the stranded items (George)
+
+George: "review the entire codebase and determine if there is unimplemented code that needs to
+be surfaced." Ran a THREE-AGENT audit (engine reachability / dead data content / half-wired
+features), each verifying every claim by grepping for the actual trigger. Findings (all "built
+but unreachable"):
+- CRITICAL: home-chest WITHDRAWAL missing — you can deposit into a home chest but never take
+  items back (`home_withdraw` has no caller) — an item-LOSS trap.
+- HIGH: guild-hall TRAINING (`guildhalls.train`) has no key/dialog/GUI trigger; the quest BOARD
+  (`quest_board_at_player`/`accept_quest_from_board`) has no caller so radiant quests posted
+  each morning are STRANDED.
+- HIGH (quick data wins): ~11 items with no acquisition path (flaming_sword, plate,
+  silent_boots, ring_strength, manual_athletics/dexterity — the only permanent-stat items,
+  frost_dagger, holy_mace, explorers_chart, crossbow+sling — ammo sold but not the weapons,
+  thrown_knife), and hill_giant (encounter_weight 0 → unspawnable).
+- MED: Tutorial Island absent from the GUI New Game menu; /bond /spend /order undiscoverable;
+  left-click-to-target not in the help.
+- Verified CLEAN: all 15 GUI panels are key-bound; every engine_setup subsystem is seeded/
+  updated; all spells/recipes/quests are reachable; all slash-commands dispatch.
+
+THIS ROUND surfaced the quick, low-risk data wins: the ~11 stranded items are now sold by
+fitting merchants / dropped in lair hoards, and hill_giant is a rare mountain encounter (data
+edits only). `tests/test_content_reachability.py` (+4) locks it in. Validator green.
+The audit is recorded in DEVELOPMENT_PLAN "Phase AUDIT"; the item-loss trap + guild-hall
+training + quest board are queued (trap FIRST). Full audit detail:
+scratchpad-style notes were kept during the review.

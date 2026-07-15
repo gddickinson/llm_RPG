@@ -14,7 +14,8 @@
     "bandage",
     "scroll_heal",
     "scroll_bless",
-    "holy_symbol"
+    "holy_symbol",
+    "holy_mace"
   ],
   "blacksmith": [
     "sword",
@@ -24,7 +25,8 @@
     "leather",
     "chainmail",
     "shield",
-    "iron_shield"
+    "iron_shield",
+    "plate"
   ],
   "smithy": [
     "dagger",
@@ -73,7 +75,11 @@
     "waterskin",
     "regional_map",
     "rucksack",
-    "explorers_pack"
+    "explorers_pack",
+    "crossbow",
+    "sling",
+    "thrown_knife",
+    "explorers_chart"
   ],
   "wheelwright": [
     "leather",
@@ -95,7 +101,8 @@
     "tome_regrowth",
     "scroll_water_walk",
     "scroll_swimmers_grace",
-    "bottomless_bag"
+    "bottomless_bag",
+    "ring_strength"
   ],
   "ranger": [
     "bow",
@@ -105,6 +112,7 @@
     "bandage",
     "wolf_pelt",
     "swift_boots",
-    "quiver"
+    "quiver",
+    "silent_boots"
   ]
 }

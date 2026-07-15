@@ -188,7 +188,7 @@
     "level": 6,
     "symbol": "G",
     "description": "A shoulder-of-the-hills brute who treats walls as suggestions.",
-    "encounter_weight": 0,
+    "encounter_weight": 1,
     "dungeon": false,
     "stats": {
       "strength": 22,
@@ -199,7 +199,10 @@
       "flee_below": 0.1
     },
     "speed": 0.8,
-    "natural_damage": 12
+    "natural_damage": 12,
+    "spawn_terrain": [
+      "mountain"
+    ]
   },
   "giant_warlord": {
     "name": "Giant Warlord",
