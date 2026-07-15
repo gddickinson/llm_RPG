@@ -8119,3 +8119,21 @@ edits only). `tests/test_content_reachability.py` (+4) locks it in. Validator gr
 The audit is recorded in DEVELOPMENT_PLAN "Phase AUDIT"; the item-loss trap + guild-hall
 training + quest board are queued (trap FIRST). Full audit detail:
 scratchpad-style notes were kept during the review.
+
+## 2026-07-15 — AUDIT-fix A-trap: home-chest item-loss trap fixed + 495-file sync-junk cleanup
+
+George: "fix the home-chest withdrawal item-loss trap first." The audit flagged that you could
+DEPOSIT into a home chest but never take items back. On inspection the real `engine/furniture.py`
+DOES wire `chest_interact` (E on the chest takes the TOP item), so it wasn't fully lost — but
+the chest contents were INVISIBLE (not shown anywhere) and withdrawal was top-item-only, which
+reads as a trap. Fixed properly: `ui/inventory_panel.rows()` now appends a "-- Home Chest ([H]
+take back) --" section listing the stored items when you have a finished home, and `_store`
+([H]) is context-aware — DEPOSIT a highlighted bag item, WITHDRAW a highlighted chest item (via
+`engine.home_withdraw`). `homestead.withdraw` now stacks (P25.1). `tests/test_home_chest.py` (+4).
+
+ALSO — while investigating I found George's file-sync service had committed **495 " N.py"/
+" N.md" conflict copies** into the repo (exact duplicates of real files, swept in by
+`git add -A`). Deleted all 495 and added `.gitignore` patterns ("* [0-9].py", "* [0-9].md",
+"* [0-9].json", …) so a sync copy is never staged again (verified it ignores "name 2.py" but not
+"name.py"). Pairs with the earlier data_loader hardening. Committed separately; the game still
+starts cleanly. Validator green; full suite next.

@@ -61,6 +61,20 @@ class InventoryPanel:
         out.append(("sep", "-- Inventory --", None, None))
         for it in self.engine.player.inventory:
             out.append(("bag", "", it, None))
+        # Home chest (P15.7) — show stored goods so they're never invisible or
+        # unrecoverable; [H] on a chest row takes the item back
+        try:
+            from engine.homestead import is_ready, _storage
+            from items.item import Item
+            if is_ready(self.engine.player):
+                stored = _storage(self.engine.player)
+                if stored:
+                    out.append(("sep", "-- Home Chest ([H] take back) --",
+                                None, None))
+                    for d in stored:
+                        out.append(("chest", "", Item.from_dict(d), None))
+        except Exception:
+            pass
         return out
 
     # ---------------- input ----------------------------------------
@@ -160,15 +174,22 @@ class InventoryPanel:
         transmute_item(self.engine, item)
 
     def _store(self, rows) -> None:
-        """P15.7: stash the highlighted item in your home chest."""
+        """P15.7: [H] moves an item between the pack and the home chest — DEPOSIT
+        a highlighted bag item, or WITHDRAW (take back) a highlighted chest item
+        (so stashed goods are never lost)."""
         row = self._row_at_cursor(rows)
         if row is None:
             return
         kind, _, item, _ = row
-        if item is None or kind != "bag":
+        if item is None:
             return
-        msg = self.engine.home_deposit(item.name if hasattr(item, "name")
-                                       else str(item))
+        name = item.name if hasattr(item, "name") else str(item)
+        if kind == "bag":
+            msg = self.engine.home_deposit(name)
+        elif kind == "chest":
+            msg = self.engine.home_withdraw(name)
+        else:
+            return
         if msg:
             self.engine.memory_manager.add_event(msg)
 

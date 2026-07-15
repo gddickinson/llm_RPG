@@ -5666,10 +5666,13 @@ features) found the following "built but unreachable" gaps. Verified; ranked by 
   flaming_sword/frost_dagger→dragon roost, manuals→troll den/goblin warren). `hill_giant`
   (was `encounter_weight:0`, unspawnable) → weight 1 on mountains. `tests/test_content_
   reachability.py` (+4) locks it in.
-- [ ] **A-trap: home-chest WITHDRAWAL (item-loss trap).** `game_api_mixin.home_withdraw()`
-  works but has NO caller — you can DEPOSIT into a home chest (H in the I-panel) but never take
-  items back; the chest contents aren't even rendered. Fix: render chest rows in
-  `InventoryPanel` while home + a withdraw key. **Highest priority — it loses player items.**
+- [x] **A-trap: home-chest WITHDRAWAL (item-loss trap) — FIXED.** The inventory panel now
+  shows a "-- Home Chest ([H] take back) --" section listing stored goods (when you have a
+  finished home), and `[H]` is context-aware — it DEPOSITS a highlighted bag item and WITHDRAWS
+  a highlighted chest item (`InventoryPanel.rows`/`_store` → `engine.home_withdraw`). Stashed
+  items are visible and recoverable; `homestead.withdraw` now stacks (P25.1). `tests/test_home_
+  chest.py` (+4: stored items show, panel-withdraw returns them, round-trip preserves quantity,
+  no chest section without a home). (Also: E on the home chest still takes the top item.)
 - [ ] **A-train: guild-hall TRAINING unreachable.** `guildhalls.train(skill_id)` (pay gold →
   skill XP at a seeded hall) has no key/dialog/GUI trigger. Fix: `/train <skill>` dialog branch
   or an E-at-hall menu (mirror `show_stable`).
