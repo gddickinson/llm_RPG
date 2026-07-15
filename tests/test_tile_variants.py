@@ -131,6 +131,32 @@ class TestLoaderIntegration(unittest.TestCase):
         a = self.sl.tile_variant("building", 1, 1)
         self.assertIs(a, self.sl.tile("building"))
 
+    def test_smooth_off_uses_the_classic_flat_tile(self):
+        # ESCAPE HATCH: "Smooth sprites" off (SSAA<=1) → known-good flat tile,
+        # no gfx/smoothscale path (George's "ground tiles are mainly black")
+        self.sl._variant_cache.clear()
+        tv.SSAA = 1
+        try:
+            self.assertIs(self.sl.tile_variant("grass", 5, 5),
+                          self.sl.tile("grass"))
+        finally:
+            tv.SSAA = None
+
+    def test_built_tiles_are_32bit(self):
+        # 32-bit source is what makes smoothscale safe on any display
+        s = tv.build_tile("grass", 0, 32, ss=3)
+        self.assertGreaterEqual(s.get_bitsize(), 24)
+
+    def test_broken_dark_tile_falls_back(self):
+        from ui.sprite_loader import _looks_broken
+        import pygame
+        black = pygame.Surface((32, 32))
+        black.fill((0, 0, 0))
+        self.assertTrue(_looks_broken(black, self.sl.tile("grass")))
+        # a normal built tile is NOT flagged
+        good = tv.build_tile("grass", 0, 32, ss=3)
+        self.assertFalse(_looks_broken(good, self.sl.tile("grass")))
+
 
 if __name__ == "__main__":
     unittest.main()

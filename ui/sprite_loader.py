@@ -18,6 +18,30 @@ except ImportError:  # pragma: no cover
 
 logger = logging.getLogger("llm_rpg.sprite_loader")
 
+
+def _looks_broken(built, flat) -> bool:
+    """True if a built variant tile came out anomalously dark/blank versus the
+    reference flat tile — the signal that a display/`smoothscale` quirk mangled
+    it (George's "ground tiles are mainly black"). Cheap sparse-grid average;
+    a legitimately dark terrain (scorched) has a dark flat tile too, so it is
+    NOT flagged."""
+    try:
+        w = min(built.get_width(), flat.get_width())
+        step = max(1, w // 6)
+
+        def avg(s):
+            tot = n = 0
+            for x in range(0, w, step):
+                for y in range(0, w, step):
+                    c = s.get_at((x, y))
+                    tot += c[0] + c[1] + c[2]
+                    n += 1
+            return tot / max(1, n)
+        return avg(built) < 30 and avg(flat) > 60
+    except Exception:
+        return False
+
+
 # Palette --------------------------------------------------------------
 PALETTE = {
     "grass":      (90, 150, 70),
@@ -76,19 +100,29 @@ class SpriteLoader:
         picked by a hash of (wx, wy), so neighbours differ and the grid stops
         reading as one repeated stamp. A PNG tileset or a recipe-less terrain
         falls straight back to the classic single `tile()` surface."""
-        from ui import tile_variants
-        if self.tileset_dir is not None or \
+        from ui import tile_variants, gfx
+        ss = tile_variants.SSAA
+        if ss is None:                     # renderer hasn't set it yet → default
+            ss = gfx.ss_factor(3)
+        # ESCAPE HATCH: with "Smooth sprites" OFF (ss<=1, or LLM_RPG_SS=1) fall
+        # back to the classic reliable flat tile — no gfx/smoothscale path at
+        # all. So a player whose display renders the fancy tiles wrong (George's
+        # "ground tiles are mainly black") can turn the setting off for
+        # known-good art.
+        if self.tileset_dir is not None or ss <= 1 or \
                 terrain_name not in tile_variants.RECIPES:
             return self.tile(terrain_name)
         v = tile_variants.variant_index(wx, wy, terrain_name)
-        # cache key carries the SSAA factor so toggling "Smooth sprites"
-        # rebuilds fresh tiles instead of serving the old-fidelity surface
-        key = (terrain_name, v, self.tile_size, tile_variants.SSAA)
+        key = (terrain_name, v, self.tile_size, ss)   # SSAA in key → rebuild on toggle
         surf = self._variant_cache.get(key)
         if surf is None:
+            flat = self.tile(terrain_name)
             surf = tile_variants.build_tile(terrain_name, v, self.tile_size)
-            if surf is None:
-                surf = self.tile(terrain_name)
+            # SAFETY GUARD: if the built tile came out anomalously dark (a
+            # display/smoothscale quirk), use the known-good flat tile instead
+            # so the ground is NEVER black, whatever the cause.
+            if surf is None or _looks_broken(surf, flat):
+                surf = flat
             self._variant_cache[key] = surf
         return surf
 

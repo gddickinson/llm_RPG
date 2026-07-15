@@ -50,13 +50,26 @@ def apply_ssaa_setting(engine) -> None:
 
 def supersample(build_fn, size: int, ss=None):
     """Render `build_fn(S)` at S = size·ss, then smoothscale to (size, size)
-    so every curve/edge is anti-aliased. ss<=1 builds at native size."""
+    so every curve/edge is anti-aliased. ss<=1 builds at native size.
+
+    Defensive: `smoothscale` needs a 24/32-bit source and misbehaves (can
+    render BLACK) on some display formats. We force a 32-bit source and fall
+    back to plain `scale` if smoothscale ever raises, so a tile never comes
+    out black on an odd display (George 2026-07-15)."""
     import pygame
     ss = ss_factor() if ss is None else max(1, int(ss))
     if ss <= 1:
         return build_fn(size)
     big = build_fn(size * ss)
-    return pygame.transform.smoothscale(big, (size, size))
+    if big.get_bitsize() < 24:                 # 8/16-bit → smoothscale-unsafe
+        try:
+            big = big.convert_alpha()
+        except pygame.error:
+            pass
+    try:
+        return pygame.transform.smoothscale(big, (size, size))
+    except (ValueError, pygame.error):
+        return pygame.transform.scale(big, (size, size))
 
 
 # ---- colour helpers ---------------------------------------------------
@@ -81,12 +94,18 @@ def shade_ramp(base, n: int = 5, lo: float = 0.72, hi: float = 1.24):
 # ---- layer builders ---------------------------------------------------
 
 def vgradient(size: int, top, bottom):
-    """A vertical top→bottom gradient Surface (opaque, cheap row fills)."""
+    """A vertical top→bottom gradient Surface (cheap row fills). Explicitly
+    32-bit SRCALPHA (opaque fills) — NOT a bare `Surface` that would inherit
+    the display's format, which can make `smoothscale` render BLACK on some
+    displays (George 2026-07-15: "the ground tiles are still mainly black").
+    The working character path (`draw_body_crisp`) uses SRCALPHA for the same
+    reason."""
     import pygame
-    surf = pygame.Surface((size, size))
+    surf = pygame.Surface((size, size), pygame.SRCALPHA)
     denom = max(1, size - 1)
     for y in range(size):
-        surf.fill(lerp_rgb(top, bottom, y / denom), (0, y, size, 1))
+        r, g, b = lerp_rgb(top, bottom, y / denom)
+        surf.fill((r, g, b, 255), (0, y, size, 1))
     return surf
 
 
@@ -103,13 +122,13 @@ def rgradient(size: int, inner, outer, center=None):
     import pygame
 
     def _b(s):
-        surf = pygame.Surface((s, s))
+        surf = pygame.Surface((s, s), pygame.SRCALPHA)   # 32-bit (smoothscale-safe)
         cx, cy = center or (s / 2, s / 2)
         maxd = math.hypot(max(cx, s - cx), max(cy, s - cy)) or 1
         for y in range(s):
             for x in range(s):
                 t = math.hypot(x - cx, y - cy) / maxd
-                surf.set_at((x, y), lerp_rgb(inner, outer, t))
+                surf.set_at((x, y), (*lerp_rgb(inner, outer, t), 255))
         return surf
     return _upscaled(_b, size)
 

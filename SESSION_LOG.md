@@ -8258,3 +8258,27 @@ Night still falls later, kept playable by the earlier widened torch-pool (1c564a
 save restores its own clock. `demo_setup.py` (drop the `world_kind == "realistic"` guard);
 `tests/test_morning_start.py` (+2: default game starts after dawn / not night). Proof:
 scratchpad/gfx_startfix.png (bright daylight town vs the midnight gfx_default.png).
+
+## 2026-07-15 — FIX black ground tiles (real bug): 32-bit tile surfaces + escape hatch + guard
+
+George, a THIRD time: "the ground tiles are still mainly black — please fix." My night/morning
+explanations were wrong — it's a real render bug, present in DAYLIGHT, on his display (my headless
+dummy-driver renders never reproduced it). Root cause found by contrast with the WORKING character
+path: `draw_body_crisp` builds on an explicit `Surface(..., SRCALPHA)` (guaranteed 32-bit) before
+`smoothscale`; the terrain path used `gfx.vgradient` → a BARE `Surface((size,size))` that inherits
+the DISPLAY's pixel format. `pygame.transform.smoothscale` can render BLACK on some display formats
+but is reliable on explicit 32-bit surfaces — so characters drew fine while ground tiles went black.
+
+Four layers of defence (ui/gfx.py + ui/sprite_loader.py):
+1. ROOT FIX — `gfx.vgradient`/`rgradient` now build 32-bit `SRCALPHA` surfaces (opaque fills),
+   matching the working character path, so smoothscale is safe.
+2. DEFENSIVE `supersample` — forces a 24/32-bit source and falls back to plain `scale` if
+   `smoothscale` ever raises.
+3. SAFETY GUARD — `sprite_loader._looks_broken` samples a built tile vs the flat reference; an
+   anomalously-black tile auto-falls-back to the known-good flat tile (ground is NEVER black,
+   whatever the cause). Scorched/dark terrain isn't falsely flagged (its flat tile is dark too).
+4. ESCAPE HATCH — with "Smooth sprites" OFF (or LLM_RPG_SS=1) tiles use the classic flat path,
+   no gfx/smoothscale at all — a manual known-good override the player controls.
+
+`tests/test_tile_variants.py` +3 (smooth-off→flat, 32-bit build, broken-tile fallback). No visual
+regression (scratchpad/gfx_srcalpha_check.png). Full suite green.
