@@ -8348,3 +8348,20 @@ Result: a tavern reads common-room + bar + kitchen, a smithy forge + workshop + 
 counter + storeroom, at ~35% furniture density (scratchpad/bld2_tavern.png; the hearth glows via
 BLD.1). tests/test_room_plan.py (+11). Validator clean. Next: BLD.3 (feature-composition furnishing
 — a real L-shaped bar counter, pew rows, carpet runners — + door-apron placement hardening).
+
+## 2026-07-15 — BLD.3: feature-composition furnishing + door-apron hardening
+
+BLD.2 typed each room but still filled it with SCATTERED single props. BLD.3 adds named
+COMPOSITIONS (ported from autonomous_world's ROOM_FURNISHINGS): new world/furnish_features.py —
+bar_counter (an L-shaped run of counter-tables in the bar's corner), pew_rows (rows of pews every
+other tile with a central aisle in a nave), pillar_row (a colonnade down a great hall), carpet_
+runner (a rug runner down the aisle), altar_end (an altar centred on the far wall). Each room_type
+lists its features[] in data/room_templates.json; room_plan.furnish_typed stamps the compositions
+BEFORE the fill pass. Plus placement HARDENING: furnish_features.doorways/apron detect doorway gaps
+(a floor tile walled on opposite sides) + the building entrance + the floor directly in front, and
+furnish_typed AND furnishings._buckets exclude that apron, so furniture never blocks a passage.
+A tavern now gets a real bar counter (scratchpad/bld3_tavern.png); the grand compositions (pews/
+colonnade) shine in big buildings — the default world's 8x8 temples/halls constrain them but they
+read. tests/test_furnish_features.py (+7: each composition's shape, the aisle stays clear, the apron
+covers doorways, furnish_typed never blocks one). Files: furnish_features 141, room_plan 170,
+furnishings 150 — all <500. Validator clean. Next: BLD.4/5 (facade doors + shopfronts, new ui/facade.py).

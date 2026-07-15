@@ -5,17 +5,17 @@
     "bedroom": {"min_size": [2, 2], "max_size": [5, 5], "furniture": [["Bed", 1, 1], ["Chest", 1, 1], ["Rug", 0, 1]]},
     "kitchen": {"min_size": [3, 3], "furniture": [["Hearth", 1, 1], ["Table", 1, 1], ["Barrel", 1, 2], ["Shelf", 0, 1]]},
     "common_room": {"min_size": [4, 4], "furniture": [["Table", 2, 3], ["Bench", 2, 4], ["Hearth", 1, 1], ["Barrel", 1, 2]]},
-    "bar": {"min_size": [3, 3], "furniture": [["Table", 1, 2], ["Barrel", 2, 3], ["Shelf", 1, 1]]},
+    "bar": {"min_size": [3, 3], "features": ["bar_counter"], "furniture": [["Barrel", 2, 3], ["Shelf", 1, 1]]},
     "storeroom": {"min_size": [2, 2], "furniture": [["Barrel", 2, 3], ["Crate", 1, 2], ["Shelf", 1, 1]]},
     "counter": {"min_size": [3, 3], "furniture": [["Table", 1, 1], ["Shelf", 1, 2], ["Crate", 1, 2], ["Urn", 1, 2]]},
     "forge": {"min_size": [3, 3], "furniture": [["Anvil", 1, 1], ["Hearth", 1, 1], ["Weapon Rack", 1, 2], ["Barrel", 1, 1]]},
     "workshop": {"min_size": [3, 3], "furniture": [["Table", 1, 1], ["Barrel", 1, 2], ["Crate", 1, 2], ["Weapon Rack", 0, 1]]},
-    "nave": {"min_size": [4, 4], "furniture": [["Pew", 2, 4], ["Pillar", 2, 2], ["Brazier", 1, 2]]},
-    "sanctuary": {"min_size": [3, 3], "furniture": [["Altar", 1, 1], ["Candelabra", 1, 2], ["Brazier", 1, 2], ["Pillar", 0, 2]]},
+    "nave": {"min_size": [4, 4], "features": ["pew_rows", "carpet_runner"], "furniture": [["Brazier", 1, 2]]},
+    "sanctuary": {"min_size": [3, 3], "features": ["altar_end"], "furniture": [["Candelabra", 1, 2], ["Brazier", 1, 2], ["Pillar", 0, 2]]},
     "vestry": {"min_size": [2, 2], "max_size": [5, 5], "furniture": [["Shelf", 1, 2], ["Chest", 1, 1], ["Candelabra", 0, 1]]},
     "guest_room": {"min_size": [2, 2], "max_size": [5, 5], "furniture": [["Bed", 1, 1], ["Chest", 1, 1], ["Rug", 0, 1]]},
     "study": {"min_size": [3, 3], "furniture": [["Shelves", 2, 3], ["Lectern", 1, 1], ["Candelabra", 1, 1], ["Table", 0, 1]]},
-    "great_room": {"min_size": [4, 4], "furniture": [["Table", 1, 2], ["Throne", 0, 1], ["Pillar", 2, 2], ["Tapestry", 1, 2], ["Brazier", 1, 2]]},
+    "great_room": {"min_size": [4, 4], "features": ["pillar_row"], "furniture": [["Table", 1, 2], ["Throne", 0, 1], ["Tapestry", 1, 2], ["Brazier", 1, 2]]},
     "stall": {"min_size": [2, 2], "furniture": [["Crate", 2, 3], ["Barrel", 1, 2], ["Shelf", 1, 1]]}
   }
 }

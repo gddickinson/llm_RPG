@@ -92,6 +92,11 @@ def _buckets(inter) -> dict:
         at = sp.get("at") if isinstance(sp, dict) else None
         if at:
             taken.add(tuple(at))
+    try:   # BLD.3: keep doorways + the floor in front of them clear
+        from world import furnish_features
+        taken |= furnish_features.apron(inter)
+    except Exception:
+        pass
     walls, corners, centres, scatter = [], [], [], []
     for y in range(1, inter.height - 1):
         for x in range(1, inter.width - 1):

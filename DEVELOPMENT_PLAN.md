@@ -5867,9 +5867,16 @@ ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly 
   a shop counter + storeroom (scratchpad/bld2_tavern.png). `tests/test_room_plan.py` (+11);
   `test_furniture`/`test_room_gen`/`test_carry` made robust to the denser typed layout (they had
   hardcoded a specific furniture tile).
-- [ ] **BLD.3 Feature-composition furnishing + placement hardening** — `features[]` in
-  furnishings.json + a dispatch (bar_counter/pew_rows/pillar_row/carpet_runner/altar_end/…); WALL/
-  CENTER/INNER_WALL categories, count ranges, and a DOOR-APRON exclusion (never block a doorway).
+- [x] **BLD.3 Feature-composition furnishing + placement hardening — DONE.** New
+  `world/furnish_features.py`: named COMPOSITIONS instead of scattered props — `bar_counter`
+  (an L of counter-tables in the bar), `pew_rows` (rows of pews with a central aisle in a nave),
+  `pillar_row` (a colonnade in a great hall), `carpet_runner` (a rug runner down the aisle),
+  `altar_end` (an altar centred on the far wall). Each room_type lists its `features[]` in
+  `data/room_templates.json`; `room_plan.furnish_typed` stamps them before the fill pass. Plus a
+  DOOR-APRON exclusion (`furnish_features.doorways`/`apron` — a doorway gap + the floor in front)
+  so furniture never blocks a passage, wired into both `furnish_typed` and `furnishings._buckets`.
+  A tavern gets a real bar counter (scratchpad/bld3_tavern.png). `tests/test_furnish_features.py`
+  (+7). (Grand compositions shine in big buildings; small 8×8 rooms constrain them but they read.)
 - [ ] **BLD.4 Facade doors** — new `ui/facade.py`: real framed/panelled/planked/arched doors per
   kind + lintel + step, on the street-facing wall.
 - [ ] **BLD.5 Shopfronts & signage** — awnings, hanging signs, display windows, forge-glow/anvil,

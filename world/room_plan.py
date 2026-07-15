@@ -124,15 +124,23 @@ def furnish_typed(inter, rooms, kind, seed) -> None:
     room_set = room_set_for(kind)
     templates = _templates()
 
+    from world import furnish_features as FF
     # the BSP rebuilt the room layout, so the blueprint furniture's positions
     # are meaningless — discard it (the room kits re-furnish each room by its
     # function) and keep only structural stairs, so rooms don't double up
     kept = [f for f in inter.furniture
             if "stair" in f.get("name", "").lower()]
-    taken = {(f["x"], f["y"]) for f in kept} | {tuple(inter.door)}
+    # BLD.3: never place on a doorway or the floor directly in front of it
+    taken = {(f["x"], f["y"]) for f in kept} | {tuple(inter.door)} \
+        | FF.apron(inter)
     added, npc_spots = [], []
     for idx, (rect, rtype) in enumerate(assign_types(rooms, inter.door, room_set)):
-        kit = templates.get(rtype, {}).get("furniture", [])
+        tmpl = templates.get(rtype, {})
+        # BLD.3: signature COMPOSITIONS first (bar counter, pew rows, altar…)
+        for feat in tmpl.get("features", []):
+            for (fx, fy, nm) in FF.apply_feature(feat, inter, rect, taken, rng):
+                added.append({"name": nm, "x": fx, "y": fy})
+        kit = tmpl.get("furniture", [])
         walls, centres = _cells(inter, rect, taken)
         rng.shuffle(walls)
         rng.shuffle(centres)
