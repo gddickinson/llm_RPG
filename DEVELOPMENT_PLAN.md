@@ -5598,3 +5598,35 @@ plus deep integration tests that actually COMPLETE the main objectives. Built as
 - [x] **P38.2 Content: areas/structures (villages, camps, ruins, the sunken library) + NPCs.**
 - [ ] **P38.3 Content: the quest chain + clues + branching solve paths + the module pack.**
 - [ ] **P38.4 Deep integration tests + a scripted playthrough that completes the objectives.**
+
+## Phase 39 — World detail & decoration (George, 2026-07-14)
+
+George: themed regions (tombs dark/deserted/dank), building embellishments (pillars,
+tapestries, braziers, torches, mausoleum decor), appropriate furnishings + decorations for
+EVERY building, many more decorative props / furniture / diases / stair & window variants —
+"make the world come alive with far more detail." Researched building-gen + autonomous_world
+(see docs/WORLD_DETAIL.md for the synthesis + design).
+
+- [x] **P39.0 Plan** — research + design in `docs/WORLD_DETAIL.md`.
+- [ ] **P39.1 Prop sprite library** — `ui/prop_sprites.py` procedural sprites for many new
+  props (pillar/brazier/torch/tapestry/sarcophagus/statue/fountain/dais/gravestone/urn/
+  cobweb/candelabra/rug/…); `sprites.furniture()` dispatches them. Tests + a contact sheet.
+- [ ] **P39.2 Interior themes** — `data/interior_themes.json` (floor/wall palette + tint per
+  theme: tomb/temple/smithy/home/tavern/library/castle/cave); `_render_zone` applies it with
+  a dank-dim + dust for deserted, a warm wash for lived-in.
+- [ ] **P39.3 Themed furnishing** — `data/furnishings.json` (kind→props) + a wall-preference
+  placement pass (adapted from building-gen fixtures.py) so every building is furnished
+  in-theme.
+- [ ] **P39.4 Interior light sources & mood** — radial glow for braziers/torches/hearths/
+  altars; dank vs warm made to read.
+- [ ] **P39.5 Stair / window / door variants** — spiral/stone stairs, arched/lancet/rose/
+  arrow-loop windows, plank/portcullis doors, per theme.
+- [ ] **P39.6 Apply everywhere + adventure polish** — the Drowned Vault gets the tomb/crypt
+  theme; all settlement buildings themed; overworld scatter detail; broad screenshots.
+
+## Phase 37.5a-tune — leveling made genuinely tough (George, 2026-07-14)
+
+George (again): "the XP for the levels is still far too low." Raised the XP curve
+coefficient 60 → 150 (L2 120→300, L3 360→900, L4 720→1800): same-level kills to reach a
+level jump L2 8→20, L3 20→50, L5 51→126 — a real grind. Kill XP unchanged (10+5·foe_level).
+Tests updated; full suite green.

@@ -7521,3 +7521,19 @@ Also fixed the latent module_packs.py `note` bug (a structures-only pack that pl
 nothing now logs gracefully instead of crashing). Validator clean; +8 tests (15 total in
 test_adventure_tome). Full suite 2636 green. Screenshot: the vault antechamber (sigils,
 chest, stairs, two guardians). Next P38.3: the 5-act branching quest chain + clues + the pack.
+
+## 2026-07-14 (cont.) — P37.5a-tune + P39.0: tougher leveling + world-detail PLAN
+
+XP TUNE (George, again — "the XP for the levels is still far too low"): raised
+`leveling.XP_CURVE_COEFF` 60 → 150 (L2 120→300, L3 360→900, L4 720→1800). Same-level kills
+to reach a level: L2 8→20, L3 20→50, L4 35→86, L5 51→126 — a genuine grind now, thresholds
+2.5× higher. test_leveling updated; full suite 2636 green.
+
+P39.0 (world detail & decoration — George's big new ask): researched building-gen +
+autonomous_world (two Explore agents) and wrote docs/WORLD_DETAIL.md — a themed-interior +
+prop-decoration design. autonomous_world's prop→procedural-sprite dispatch, kind→furniture
+table, decoration-pass, radial-glow light sources and ambient dust (deserted/dank) are the
+reusable patterns; building-gen supplies the fixtures.py placement engine, window/stair
+variants, and temple/tomb/smithy flavor. Build order P39.1 (prop sprites) → P39.2 (themes/
+palette) → P39.3 (themed furnishing) → P39.4 (light/mood) → P39.5 (stair/window/door
+variants) → P39.6 (apply everywhere + the Drowned Vault crypt theme).
