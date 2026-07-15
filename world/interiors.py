@@ -154,6 +154,35 @@ def make_default_interior(name: str) -> Interior:
     )
 
 
+def _furnish_rooms(inter, rooms, seed) -> None:
+    """P36.4 furnish a subdivided interior room by room (biggest = the main room),
+    keeping the source furniture where it lands on floor and adding a little more."""
+    import random
+    rng = random.Random(seed ^ 0x2f3d)
+    kept = [f for f in inter.furniture
+            if inter.terrain[f.get("y", 1)][f.get("x", 1)] != TerrainType.BUILDING]
+    taken = {(f["x"], f["y"]) for f in kept} | {inter.door}
+    rooms = sorted(rooms, key=lambda r: -r[2] * r[3])
+    kits = (["Table", "Chair", "Hearth"], ["Bed", "Chest"], ["Shelf", "Barrel"],
+            ["Chest", "Chair"], ["Barrel"], ["Shelf"])
+    extra, spots = [], []
+    for i, (rx, ry, rw, rh) in enumerate(rooms):
+        kit = kits[i] if i < len(kits) else ["Barrel"]
+        cells = [(rx + rw // 2, ry + rh // 2), (rx + 1, ry + 1),
+                 (rx + rw - 2, ry + rh - 2)]
+        for item, (fx, fy) in zip(kit, cells):
+            if (0 < fx < inter.width - 1 and 0 < fy < inter.height - 1
+                    and inter.terrain[fy][fx] != TerrainType.BUILDING
+                    and (fx, fy) not in taken):
+                taken.add((fx, fy))
+                extra.append({"name": item, "x": fx, "y": fy})
+        if i == 0:
+            spots.append((rx + rw // 2, max(ry + 1, ry + rh // 2 - 1)))
+    inter.furniture = kept + extra
+    if spots:
+        inter.npc_spots = spots
+
+
 def make_from_blueprint(loc_name: str, bp) -> Interior:
     """Build an Interior from a Blueprint grid.
 
@@ -231,6 +260,21 @@ def fit_to_footprint(inter: Interior, loc) -> Interior:
         inter.terrain[y][tw - 1] = TerrainType.BUILDING
     inter.door = (tw // 2, th - 1)
     inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
+
+    # P36.4: a roomy building becomes MULTI-ROOM (BSP subdivision); a hut stays
+    # one open room so its authored layout survives
+    if tw >= 11 and th >= 8:
+        from world import room_gen
+        seed = sum(ord(c) for c in inter.name) + old_w * 7 + old_h * 13
+        grid, rooms = room_gen.subdivide(tw, th, seed)
+        grid[th - 2][tw // 2] = room_gen.FLOOR       # keep the entrance clear
+        for y in range(th - 1):
+            for x in range(1, tw - 1):
+                if grid[y][x] == room_gen.WALL:
+                    inter.terrain[y][x] = TerrainType.BUILDING
+        inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
+        _furnish_rooms(inter, rooms, seed)
+        return inter
 
     # Remap furniture, nudging collisions to the next free tile
     taken = {inter.door}

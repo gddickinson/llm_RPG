@@ -5498,7 +5498,15 @@ demo_setup; add a `"realistic"` kind + a `WorldGenerator(mode="realistic")`.
   Screenshot: ruins ringed on the map beside the 900-year chronicle. `tests/test_world_
   history.py`. (Living historical towns + faction realms fold into P36.5; the fixed
   Oakvale stays the start town so its NPCs/quests are intact.)
-- [ ] **P36.4 Richer buildings (building-gen).** Adapt building-gen's room-subdivision
-  for varied interior floorplans (not the fixed blueprints).
+- [x] **P36.4 Richer buildings — BSP room subdivision.** *Done:* new pure `world/
+  room_gen.py` adapts building-gen's room-splitting idea into a tiny BSP generator —
+  recursively cut a rectangle with an internal wall, then punch a spanning tree of
+  DOORWAYS (union-find over the floor components) so every room is reachable —
+  returning a wall/floor/door grid + the leaf rooms. `interiors.fit_to_footprint` now
+  SUBDIVIDES a roomy building (≥11×8 interior) into a believable multi-room floorplan
+  furnished room-by-room (`_furnish_rooms`, biggest = the main room) — while a small
+  hut keeps its single authored room. Connected from the entrance to every room
+  (verified). Screenshot: cottage / guildhall / manor floorplans. `tests/test_room_
+  gen.py` (incl. 40-seed connectivity).
 - [ ] **P36.5 Integration & polish.** The realistic world is fully playable end-to-end
   (economy, factions, wildlife, encounters seeded correctly), and beautiful.

@@ -7347,3 +7347,19 @@ world now has a visible past (broken ruins scattered across the land) AND a writ
 (centuries of foundings and wars). A screenshot shows the ruins ringed on the map beside
 the full 900-year chronicle. `tests/test_world_history.py`. Full suite next. Next: P36.4
 building-gen interiors, P36.5 polish (living historical towns + faction realms).
+
+## 2026-07-14 (cont.) — P36.4: richer buildings (BSP room subdivision)
+
+Buildings used to open into a single box; now a roomy one has a believable MULTI-ROOM
+floorplan. New pure `world/room_gen.py` adapts building-gen's room-splitting into a
+tiny BSP: `subdivide(w,h,seed)` recursively cuts a rectangle with an internal wall,
+then — crucially — punches a SPANNING TREE of doorways via union-find over the floor
+components, so every room is reachable (40-seed connectivity test). Returns a
+wall/floor/door grid + the leaf-room rectangles. `interiors.fit_to_footprint` now
+subdivides a big interior (≥11×8, i.e. a ~3×3+ footprint) into rooms and furnishes them
+room-by-room (`_furnish_rooms` — the biggest room gets the table/hearth + an NPC, others
+a bed/chest/shelf), keeping any authored furniture that still lands on floor; a small
+hut keeps its single open room so hand-tuned layouts (the tavern/forge) survive. The
+entrance reaches every room (verified). A screenshot shows cottage / guildhall / manor
+floorplans with rooms, doorways, furniture and NPC spots. `tests/test_room_gen.py` (9).
+Full suite next. Phase 36 almost done — P36.5 polish remains.
