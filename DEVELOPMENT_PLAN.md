@@ -5721,3 +5721,13 @@ Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/
   now darkens blue at night, washes at dusk/winter, and shows fog blobs / rain streaks — at
   parity with top-down (the per-tile torch/window punches stay a top-down nicety; interiors
   keep their P41.9 light). `tests/test_sky_overlay.py` (+6). Top-down renderer untouched.
+- [x] **P41.11 Iso overworld gameplay parity.** The iso overworld drew terrain/objects/chars
+  but NOT the gameplay overlays the top-down renderer shows — so dropped loot was invisible,
+  and combat didn't read. `render_iso` now also draws: dropped GROUND ITEMS (`sprites.item`,
+  depth-sorted so a building occludes loot behind it), fire/oil/water SURFACE pools
+  (`_draw_surface` — translucent iso diamonds via `animation.surface_fill`), in-flight
+  PROJECTILES (`_draw_iso_projectiles`), and the ranged RETICLE (`_draw_iso_reticle` — gold
+  iso brackets). A cached `_get_sprites(ts)` backs the item icons; `dispatch` passes the
+  renderer's `SpriteLoader`. Screenshot confirms the reticle + arrow + loot render. Real
+  playability fix (loot was unlootable-looking in iso). `tests/test_iso_render.py` (+4).
+  iso_render.py 370 lines (< 500). Top-down untouched.

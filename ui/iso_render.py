@@ -34,7 +34,8 @@ def dispatch(renderer, target, engine, view_rect, zone) -> bool:
             iso_zone.render_zone_iso(target, engine, view_rect, zone,
                                      renderer.tile_size, renderer.sprites)
         else:
-            render_iso(target, engine, view_rect, renderer.tile_size)
+            render_iso(target, engine, view_rect, renderer.tile_size,
+                       getattr(renderer, "sprites", None))
             # P41.10 day-night + weather parity for the iso OVERWORLD (interiors
             # keep their own P41.9 light); reuse the renderer's persistent
             # weather overlay so particles animate frame-to-frame.
@@ -102,13 +103,15 @@ def _tile_box(iso, view_rect, origin, wmap, pad=3):
             max(0, min(ys) - pad - 4), min(wmap.height, max(ys) + pad + 1))
 
 
-def render_iso(target, engine, view_rect, tile_size) -> None:
+def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
     """Draw the overworld in isometric into `target`."""
     from ui.sprite_loader import PALETTE
     try:
         from engine.discovery import is_explored
     except Exception:
         is_explored = None
+    if sprites is None:
+        sprites = _get_sprites(tile_size)
     wmap = engine.world.map
     px, py = engine.player.position
     iso = _projection(tile_size)
@@ -118,6 +121,14 @@ def render_iso(target, engine, view_rect, tile_size) -> None:
     from ui import iso_objects
     anchors = _building_anchors(engine)
     x0, x1, y0, y1 = _tile_box(iso, view_rect, origin, wmap)
+    # P41.11 gameplay parity: dropped loot, fire/oil/water pools, projectiles,
+    # and the ranged reticle must show in iso too (they were top-down-only)
+    ground_items = getattr(engine.world, "ground_items", {}) or {}
+    try:
+        surfaces = engine.surfaces_layer.surfaces
+    except Exception:
+        surfaces = {}
+    clk = pygame.time.get_ticks() / 1000.0
 
     # ONE back-to-front pass over terrain + objects, keyed by iso depth so a
     # building/tree correctly occludes what lies behind it (P41.4)
@@ -147,6 +158,15 @@ def render_iso(target, engine, view_rect, tile_size) -> None:
                 items.append((iso.depth_key(wx, wy, 1.1, 1), "obj",
                               (iso_objects.building_sprite(kind, bs),
                                int(sx), int(sy))))
+            si = surfaces.get((wx, wy))
+            if si:                                     # fire / oil / water pool
+                items.append((iso.depth_key(wx, wy, z, 0.5), "surface",
+                              (si.get("kind", "water"), int(sx), int(sy), clk)))
+            gi = ground_items.get((wx, wy))
+            if gi:                                     # dropped loot / a body
+                nm = gi[0].name if hasattr(gi[0], "name") else str(gi[0])
+                items.append((iso.depth_key(wx, wy, z, 0.6), "item",
+                              (sprites.item(nm), int(sx), int(sy))))
     # characters (hero + visible NPCs) in the same depth order (layer 2)
     for char in _visible_chars(engine):
         cx, cy = char.position
@@ -164,10 +184,20 @@ def render_iso(target, engine, view_rect, tile_size) -> None:
     for _, tag, data in items:
         if tag == "tile":
             _draw_tile(target, iso, data)
+        elif tag == "surface":
+            _draw_surface(target, iso, data)
+        elif tag == "item":
+            _draw_grounditem(target, data)
         elif tag == "obj":
             _blit_object(target, data)
         else:
             _draw_char(target, data, tile_size)
+
+    # transient overlays on top of the scene (matches the top-down order:
+    # before the sky_overlay darkness/weather that dispatch() adds after)
+    _draw_iso_projectiles(target, engine, iso, origin, wmap, tile_size)
+    _draw_iso_reticle(target, engine, iso, origin, wmap, tile_size,
+                      x0, x1, y0, y1)
 
 
 def _visible_chars(engine):
@@ -224,6 +254,86 @@ def _draw_tile(target, iso, data):
         pygame.draw.polygon(target, _scale(top, 0.55 if i == 0 else 0.4),
                             [(int(a), int(b)) for a, b in face])
     draw_diamond(target, iso, sx, sy, top, wx * 131 + wy)
+
+
+_SPRITES = {}
+
+
+def _get_sprites(tile_size):
+    """A cached SpriteLoader per tile size (for iso ground-item icons)."""
+    if tile_size not in _SPRITES:
+        from ui.sprite_loader import SpriteLoader
+        _SPRITES[tile_size] = SpriteLoader(tile_size=tile_size)
+    return _SPRITES[tile_size]
+
+
+def _draw_surface(target, iso, data):
+    """A translucent fire/oil/water pool as an iso diamond over the tile."""
+    kind, sx, sy, clk = data
+    from ui.animation import surface_fill
+    col = surface_fill(kind, clk)
+    pts = iso.diamond(sx, sy)
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    minx, miny = int(min(xs)), int(min(ys))
+    w = int(max(xs) - minx) + 2
+    h = int(max(ys) - miny) + 2
+    if w <= 0 or h <= 0:
+        return
+    s = pygame.Surface((w, h), pygame.SRCALPHA)
+    pygame.draw.polygon(s, col, [(int(x - minx), int(y - miny)) for x, y in pts])
+    target.blit(s, (minx, miny))
+
+
+def _draw_grounditem(target, data):
+    """Dropped loot sitting on its tile (lifted to read on the ground)."""
+    spr, sx, sy = data
+    w, h = spr.get_size()
+    target.blit(spr, (sx - w // 2, sy - int(h * 0.7)))
+
+
+def _draw_iso_projectiles(target, engine, iso, origin, wmap, tile_size):
+    from ui.body_renderer import draw_projectile
+    try:
+        active = list(engine.projectile_manager.active)
+    except Exception:
+        return
+    for proj in active:
+        ix, iy = int(proj.x), int(proj.y)
+        z = 0.0
+        if 0 <= iy < wmap.height and 0 <= ix < wmap.width:
+            z = _HEIGHT.get(_terrain_name(wmap.terrain[iy][ix]), 0.0)
+        sx, sy = iso.world_to_screen(proj.x, proj.y, z, origin)
+        try:
+            draw_projectile(target, proj.kind, int(sx), int(sy), tile_size)
+        except Exception:
+            pass
+
+
+def _draw_iso_reticle(target, engine, iso, origin, wmap, tile_size,
+                      x0, x1, y0, y1):
+    tid = getattr(engine, "player_target_id", None)
+    if not tid:
+        return
+    npc = engine.npc_manager.npcs.get(tid)
+    if npc is None or not (hasattr(npc, "is_active") and npc.is_active()):
+        return
+    tx, ty = npc.position
+    if not (x0 <= tx < x1 and y0 <= ty < y1):
+        return
+    z = _HEIGHT.get(_terrain_name(wmap.terrain[ty][tx]), 0.0)
+    sx, sy = iso.world_to_screen(tx, ty, z, origin)
+    pts = iso.diamond(sx, sy)
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    minx, maxx = int(min(xs)), int(max(xs))
+    miny, maxy = int(min(ys)), int(max(ys))
+    gold = (235, 195, 60)
+    arm = max(4, tile_size // 4)
+    for cx, cy, dx, dy in ((minx, miny, 1, 1), (maxx, miny, -1, 1),
+                           (minx, maxy, 1, -1), (maxx, maxy, -1, -1)):
+        pygame.draw.line(target, gold, (cx, cy), (cx + dx * arm, cy), 2)
+        pygame.draw.line(target, gold, (cx, cy), (cx, cy + dy * arm), 2)
 
 
 def _blit_object(target, data):

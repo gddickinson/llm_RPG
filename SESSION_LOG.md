@@ -7858,3 +7858,19 @@ confirm parity: the iso overworld now darkens deep blue at 2am, washes at dusk, 
 fog blobs over an evening-fog scene — matching the top-down mood; interiors keep their P41.9
 light. `tests/test_sky_overlay.py` (+6). iso_render.py 260 / sky_overlay.py 78 lines. Top-
 down renderer untouched; iso stays opt-in. Full suite green.
+
+## 2026-07-15 — P41.11: iso overworld gameplay parity (dropped loot visible!)
+
+A real playability fix flagged last round: the iso overworld (`render_iso`) drew terrain,
+3D objects and characters but NONE of the gameplay overlays the top-down renderer shows — so
+dropped loot was invisible, fire/oil pools didn't appear, and the ranged targeting reticle +
+in-flight arrows never rendered in iso. `render_iso` now draws them all: GROUND ITEMS
+(`sprites.item`, added to the depth-sorted pass so a building in front occludes loot behind
+it), fire/oil/water SURFACE pools (`_draw_surface` — translucent iso diamonds via
+`animation.surface_fill`), PROJECTILES (`_draw_iso_projectiles`), and the RETICLE
+(`_draw_iso_reticle` — gold iso brackets around the locked target). A cached `_get_sprites(
+tile_size)` backs the item icons; `dispatch` passes the renderer's `SpriteLoader` through.
+Screenshot (scratchpad/parity_iso.png) confirms the gold reticle brackets + white arrow +
+loot render at clear noon. `tests/test_iso_render.py` (+4: integration reticle check + pure
+`_draw_surface`/`_draw_grounditem`/`_get_sprites` tests). iso_render.py 370 lines (< 500).
+Top-down renderer untouched; iso stays opt-in. Full suite green.

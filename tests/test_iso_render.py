@@ -104,6 +104,75 @@ class TestRenderIso(unittest.TestCase):
                   for x in range(50, 78, 3) for y in range(54, 74, 3)}
         self.assertGreaterEqual(len(shades), 2, "the tile should be shaded")
 
+    def test_gameplay_overlays_render_in_iso(self):        # P41.11 parity
+        import types
+        from items.item_registry import create_item
+        eng = self.engine
+        px, py = eng.player.position
+        meta = eng.player.metadata.setdefault("explored", set())
+        for x in range(px - 8, px + 9):
+            for y in range(py - 8, py + 9):
+                meta.add((x, y))
+        # dropped loot, a fire pool, an in-flight arrow, and a target lock
+        eng.world.ground_items[(px + 1, py)] = [create_item("sword")]
+        eng.surfaces_layer.surfaces[(px - 1, py)] = {"kind": "fire"}
+        eng.projectile_manager.active.append(
+            types.SimpleNamespace(x=px + 0.5, y=py - 1.0, kind="arrow"))
+        locked = None
+        for npc in eng.npc_manager.npcs.values():
+            if npc.is_active():
+                eng.player_target_id = npc.id
+                npc.position = (px, py + 1)          # keep it in view
+                locked = npc
+                break
+        surf = pygame.Surface((640, 480))
+        surf.fill((0, 0, 0))
+        try:
+            iso_render.render_iso(surf, eng, pygame.Rect(0, 0, 640, 480), 48)
+            # the gold reticle should have painted somewhere
+            gold = any(
+                abs(surf.get_at((x, y))[0] - 235) < 25 and
+                abs(surf.get_at((x, y))[1] - 195) < 25 and
+                surf.get_at((x, y))[2] < 110
+                for x in range(0, 640, 3) for y in range(0, 480, 3))
+            self.assertTrue(gold, "the ranged reticle should draw in iso")
+        finally:
+            eng.world.ground_items.pop((px + 1, py), None)
+            eng.surfaces_layer.surfaces.pop((px - 1, py), None)
+            eng.projectile_manager.active.clear()
+            eng.player_target_id = None
+
+
+class TestIsoOverlayHelpers(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+
+    def test_draw_surface_paints_a_pool(self):
+        from ui.iso import IsoProjection
+        iso = IsoProjection(64, 32, 16)
+        surf = pygame.Surface((128, 128))
+        surf.fill((0, 0, 0))
+        iso_render._draw_surface(surf, iso, ("fire", 64, 64, 0.0))
+        painted = sum(1 for x in range(30, 98, 2) for y in range(48, 80, 2)
+                      if surf.get_at((x, y))[:3] != (0, 0, 0))
+        self.assertGreater(painted, 10, "a fire pool should tint the tile")
+
+    def test_draw_grounditem_blits(self):
+        spr = pygame.Surface((32, 32))
+        spr.fill((200, 80, 80))
+        surf = pygame.Surface((128, 128))
+        surf.fill((0, 0, 0))
+        iso_render._draw_grounditem(surf, (spr, 64, 64))
+        painted = sum(1 for x in range(40, 90, 2) for y in range(30, 80, 2)
+                      if surf.get_at((x, y))[:3] != (0, 0, 0))
+        self.assertGreater(painted, 10, "dropped loot should blit on its tile")
+
+    def test_get_sprites_is_cached(self):
+        a = iso_render._get_sprites(48)
+        b = iso_render._get_sprites(48)
+        self.assertIs(a, b)
+
 
 if __name__ == "__main__":
     unittest.main()
