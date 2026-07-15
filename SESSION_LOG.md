@@ -7895,3 +7895,25 @@ flowers on the meadows, mushrooms in the woods, boulders and stumps scattered ab
 `tests/test_overworld_scatter.py` (+9: determinism, density-matches-config, ineligible
 terrain scatters nothing, every recipe prop is drawable, top-down draw paints). renderer.py
 492 lines, all new files < 130. Full suite green. Both renderers, one placement.
+
+## 2026-07-15 — P41.12: iso combat popups + pet (iso parity COMPLETE)
+
+The last iso overworld parity gaps: floating damage numbers / hit flashes / death bursts
+(`engine.combat_effects`) and the skilling-pet follower didn't render in the isometric view,
+so combat had no damage readout in iso. Refactored `ui/combat_effects.py` to a
+projection-agnostic core `draw_with(target, view, to_screen, ts)` — the top-down `draw(cam_x,
+cam_y, ts)` now builds a grid `to_screen` closure over it (behaviour-preserving), and the iso
+renderer passes an `IsoProjection` closure via a new `iso_render.draw_combat_iso`, drawn ON
+TOP after the sky/interior light (matching the top-down order) for BOTH the overworld
+(`dispatch`) and interiors (`render_zone_iso`). The PET follower is depth-sorted into
+`render_iso` (`_draw_pet_iso`, reusing `renderer_overlays.draw_pet` at the projected tile).
+Screenshot (combat_iso.png) confirms the red damage number, a hit-flash circle and a death
+burst render in iso. ONE effect implementation now serves both projections.
+`tests/test_combat_effects.py` (+2: draw_with paints via a custom projection, top-down still
+delegates) and `tests/test_iso_render.py` (+2: pet paints, draw_combat_iso paints). iso_render
+.py 449 / combat_effects.py 298 lines (< 500). Top-down untouched; iso stays opt-in.
+
+With this, ISO PARITY IS COMPLETE — the isometric 3D-look world now matches the top-down
+renderer across visuals AND gameplay: 3D terrain/objects/chars/furniture, interior lighting,
+day-night + weather, loot/surfaces/projectiles/reticle, decorative scatter, and now combat
+effects + the pet. Full suite green.

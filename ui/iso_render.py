@@ -47,6 +47,10 @@ def dispatch(renderer, target, engine, view_rect, zone) -> bool:
                     renderer._weather_overlay = WeatherOverlay()
                 sky_overlay.apply(target, view_rect, engine,
                                   renderer._weather_overlay)
+                iso = _projection(renderer.tile_size)
+                origin = _origin(iso, engine, view_rect)
+                draw_combat_iso(target, engine, view_rect, iso, origin,
+                                engine.world.map, renderer.tile_size)
             except Exception:
                 pass
         return True
@@ -184,6 +188,18 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
         sx, sy = iso.world_to_screen(cx, cy, cz, origin)
         items.append((iso.depth_key(cx, cy, cz, 2), "char",
                       (char, int(sx), int(sy))))
+    # the skilling-pet follower (P41.12), depth-sorted just behind the cast
+    try:
+        pet = engine.pet_system.active_pet()
+        ppos = engine.pet_system.follow_pos
+        if pet and ppos and x0 <= ppos[0] < x1 and y0 <= ppos[1] < y1 \
+                and (is_explored is None or is_explored(engine, *ppos)):
+            pz = _HEIGHT.get(_terrain_name(wmap.terrain[ppos[1]][ppos[0]]), 0.0)
+            sx, sy = iso.world_to_screen(ppos[0], ppos[1], pz, origin)
+            items.append((iso.depth_key(ppos[0], ppos[1], pz, 1.9), "pet",
+                          (pet, int(sx), int(sy))))
+    except Exception:
+        pass
     items.sort(key=lambda t: t[0])
 
     for _, tag, data in items:
@@ -195,6 +211,8 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
             _draw_grounditem(target, data)
         elif tag == "scatter":
             _draw_scatter(target, data, tile_size)
+        elif tag == "pet":
+            _draw_pet_iso(target, data, tile_size)
         elif tag == "obj":
             _blit_object(target, data)
         else:
@@ -320,6 +338,37 @@ def _draw_scatter(target, data, tile_size):
         return
     w, h = spr.get_size()
     target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
+
+
+def _draw_pet_iso(target, data, tile_size):
+    from ui.renderer_overlays import draw_pet
+    pet, sx, sy = data
+    ts = max(8, int(tile_size * 0.8))
+    draw_pet(target, pet, sx - ts // 2, sy - int(ts * 0.68), ts)
+
+
+def _iso_to_screen(iso, origin, wmap, x, y):
+    """World tile (float) → iso screen point, lifted by the tile's relief."""
+    ix, iy = int(x), int(y)
+    z = 0.0
+    if 0 <= iy < wmap.height and 0 <= ix < wmap.width:
+        z = _HEIGHT.get(_terrain_name(wmap.terrain[iy][ix]), 0.0)
+    sx, sy = iso.world_to_screen(x, y, z, origin)
+    return int(sx), int(sy)
+
+
+def draw_combat_iso(target, engine, view_rect, iso, origin, wmap, tile_size):
+    """Draw floating damage numbers / hit flashes / death particles in the iso
+    view (P41.12) — on TOP, after the sky/interior light, like the top-down."""
+    ce = getattr(engine, "combat_effects", None)
+    if not ce:
+        return
+    try:
+        ce.draw_with(target, view_rect,
+                     lambda x, y: _iso_to_screen(iso, origin, wmap, x, y),
+                     tile_size)
+    except Exception:
+        pass
 
 
 def _draw_iso_projectiles(target, engine, iso, origin, wmap, tile_size):

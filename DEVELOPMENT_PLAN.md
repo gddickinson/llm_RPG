@@ -5743,3 +5743,14 @@ Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/
   renderer's `SpriteLoader`. Screenshot confirms the reticle + arrow + loot render. Real
   playability fix (loot was unlootable-looking in iso). `tests/test_iso_render.py` (+4).
   iso_render.py 370 lines (< 500). Top-down untouched.
+- [x] **P41.12 Iso combat-effect popups + pet (finishes iso parity).** The last iso overworld
+  gaps: floating damage numbers / hit flashes / death bursts (`engine.combat_effects`) and the
+  skilling-pet follower didn't render in iso. `combat_effects` refactored to a
+  projection-agnostic `draw_with(target, view, to_screen, ts)` core (top-down `draw` now
+  builds a grid `to_screen` closure over it — behaviour-preserving); the iso renderer calls it
+  with an `IsoProjection` closure via `draw_combat_iso` (on top, after the sky/interior light —
+  matching the top-down order) for BOTH the overworld (`dispatch`) and interiors
+  (`render_zone_iso`). The PET follower is depth-sorted into `render_iso` (`_draw_pet_iso`).
+  Screenshot confirms damage numbers, a hit flash and a death burst render in iso. ONE effect
+  implementation, both projections. `tests/test_combat_effects.py` (+2) &
+  `tests/test_iso_render.py` (+2). iso_render.py 449 lines (< 500). Iso PARITY is complete.

@@ -173,6 +173,51 @@ class TestIsoOverlayHelpers(unittest.TestCase):
         b = iso_render._get_sprites(48)
         self.assertIs(a, b)
 
+    def test_draw_pet_iso_paints(self):        # P41.12
+        surf = pygame.Surface((128, 128))
+        surf.fill((0, 0, 0))
+        iso_render._draw_pet_iso(surf, ({"color": (210, 130, 60)}, 64, 64), 48)
+        painted = sum(1 for x in range(40, 90, 2) for y in range(40, 96, 2)
+                      if surf.get_at((x, y))[:3] != (0, 0, 0))
+        self.assertGreater(painted, 0, "the iso pet critter should draw")
+
+
+class TestIsoCombatEffects(unittest.TestCase):        # P41.12
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+        from engine.game_engine import GameEngine
+        cls.engine = GameEngine(llm_provider="heuristic",
+                                enable_npc_processes=False)
+        cls.engine.start_game()
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            cls.engine.end_game()
+        except Exception:
+            pass
+
+    def test_draw_combat_iso_paints_a_death_burst(self):
+        eng = self.engine
+        px, py = eng.player.position
+        eng.combat_effects.spawn_death_effect(px, py)
+        eng.combat_effects.update(0.05)
+        view = pygame.Rect(0, 0, 640, 480)
+        iso = iso_render._projection(48)
+        origin = iso_render._origin(iso, eng, view)
+        surf = pygame.Surface((640, 480))
+        surf.fill((0, 0, 0))
+        try:
+            iso_render.draw_combat_iso(surf, eng, view, iso, origin,
+                                       eng.world.map, 48)
+            painted = sum(1 for x in range(0, 640, 4) for y in range(0, 480, 4)
+                          if surf.get_at((x, y))[:3] != (0, 0, 0))
+            self.assertGreater(painted, 0,
+                               "combat effects should paint in the iso view")
+        finally:
+            eng.combat_effects.death_effects.clear()
+
 
 if __name__ == "__main__":
     unittest.main()

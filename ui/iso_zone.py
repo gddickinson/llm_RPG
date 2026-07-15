@@ -132,6 +132,17 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
     except Exception:
         pass
 
+    # P41.12 combat popups / hit flashes / death particles on top, in the zone
+    try:
+        ce = getattr(engine, "combat_effects", None)
+        if ce:
+            def _cs(x, y):
+                sx2, sy2 = iso.world_to_screen(x, y, 0, origin)
+                return int(sx2), int(sy2)
+            ce.draw_with(target, view_rect, _cs, tile_size)
+    except Exception:
+        pass
+
 
 def _floor(target, iso, data, col):
     from ui.iso_render import draw_diamond
