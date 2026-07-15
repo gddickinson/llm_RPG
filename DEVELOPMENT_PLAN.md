@@ -5662,7 +5662,7 @@ Built as a TOGGLEABLE render mode (LLM_RPG_RENDER=iso|topdown, default topdown u
 so the game stays playable + green throughout — iso is a VIEW change only, engine untouched.
 Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/ISOMETRIC.md.
 
-- [ ] **P41.1 Iso projection foundation** — ui/iso.py (world_to_screen / screen_to_tile /
+- [x] **P41.1 Iso projection foundation** — ui/iso.py (world_to_screen / screen_to_tile /
   diamond+cliff geometry / depth_key). Headless tests.
 - [ ] **P41.2 numpy software rasterizer** — ui/raster3d.py (ported): render + bake(mesh)→sprite.
 - [ ] **P41.3 Iso TERRAIN render path** — depth-sorted shaded diamonds + elevation cliffs

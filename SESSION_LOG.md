@@ -7669,3 +7669,16 @@ is teleported; every quest STEP uses the real gameplay hook. README gains a "Pla
 Sunken Tome of Vael'Zhur" section (the rumor → Mirefen → Ondrel → keys → the Vault → choose
 the ending). PHASE 38 COMPLETE — a substantial, guided, branching adventure is playable.
 Next: Phase 41 (isometric 3D world) begins.
+
+## 2026-07-15 — P41.1: isometric projection foundation (3D-look world begins)
+
+George: "continue with the 3D graphics upgrade." First round of the Phase 41 isometric
+world. `ui/iso.py` (pure, headless, 90 lines): `IsoProjection(tile_w=64,tile_h=32,
+z_scale=16)` — `world_to_screen(wx,wy,z)` (2:1 dimetric, +z lifts up-screen),
+`screen_to_tile` (the EXACT ground-plane inverse for mouse/targeting), `diamond` (the 4
+corners of a tile's top face), `cliff_faces` (the two SW/SE side quads an elevated tile
+drops so hills read 3D), `depth_key` (painter's back-to-front order — the heart of iso
+occlusion), and `visible_tiles` (the depth-ordered in-bounds tiles for a view). No pygame
+/ engine coupling yet — the renderer consumes it in P41.3. tests/test_iso.py (11): the
+transform round-trips, height lifts, the diamond is a 2:1 rhombus, cliffs drop, depth sorts.
+Next P41.2: port movieMaker's numpy software rasterizer (ui/raster3d.py) to bake objects.
