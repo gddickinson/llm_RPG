@@ -5519,3 +5519,21 @@ demo_setup; add a `"realistic"` kind + a `WorldGenerator(mode="realistic")`.
   the walled start town with a walkable courtyard + a road-gate. `tests/test_realistic_
   gen.py` (escape + chronicle-seeded regressions). **Phase 36 COMPLETE** — a realistic,
   deep-history world is a selectable, playable start option.
+
+## Phase 37 — Teleport network as public transport (George, 2026-07-14)
+
+George: spawn/TELEPORT PLATFORMS at major cities/towns/places of interest, usable by
+anyone (player/NPC) holding a TELEPORT RING — a public-transport network run by a major
+magical guild (the Wayfarers' Conclave), giving safe spawn + teleport points. The
+`engine/teleport_network.py` (P28.1a) already plants waystones beside settlements, has
+the `teleport_ring` (every hero starts with it), `platform_at`/`destinations`/`teleport`,
+and persistence — but there is NO player-facing hook. Finish it:
+
+- [ ] **P37.1 Player teleport hook.** Standing on a waystone with a ring, a key opens a
+  DESTINATION MENU (the other waystones, by name) → `teleport(dest)` with a safe landing;
+  a hint-bar telegraph ("[key] Wayfarer's platform — travel"), an event beat, wired into
+  the GUI (a menu overlay like the travel menu / conversation menu). Waystones seed on
+  the realistic world too. Tests + a screenshot.
+- [ ] **P37.2 Reach & polish.** Waystones at more places of interest (guild halls, the
+  castle, notable ruins); NPCs/away-heroes can use the network; a small toll or
+  guild-standing gate (optional), the Conclave lore.
