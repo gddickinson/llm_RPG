@@ -5818,8 +5818,15 @@ water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
   the "Smooth sprites" setting). Before/after: scratchpad/gfx_props_compare.png (a prop+scatter
   strip — floating flat icons → crisp, shadow-grounded pieces). `tests/test_gfx.py` +1,
   `test_prop_sprites.py` +4, `test_overworld_scatter.py` +1.
-- [ ] **P40.4 High-detail BUILDINGS** — brick/stone coursing, roof-tile texture, framed
-  windows, weathering, AO.
+- [x] **P40.4 High-detail BUILDINGS — DONE.** Buildings read as MATERIAL, not flat blocks:
+  `roof_shapes.wall_courses(quad, wall, ts)` lays masonry COURSING (horizontal courses +
+  staggered running-bond joints) on stone/brick walls and half-timber framing on timber/wood;
+  `roof_shapes.roof_courses(pts, covering, ts)` draws tile/shingle ROWS parallel to the eaves on
+  each roof face. Both are pure quad geometry (a bilinear `_bilerp` follows the face's
+  perspective) drawn as 1px lines from a thin loop in `renderer_buildings._draw_block` +
+  `_draw_footprint` (gated ts≥12). Before/after: scratchpad/gfx_buildings_compare.png (flat
+  blocks → coursed walls + tiled roofs; the tower reads as brick). `tests/test_roof_shapes.py`
+  +5. (Windows already framed via P39.5 `openings`; mullions/panelled doors deferred to P40.5.)
 - [ ] **P40.5 Lighting & atmosphere polish** — soft shadows, AO, colour grading, light bloom.
   - [x] Night torch-pool WIDENED (George live feedback: "night is too dark"): player radius
     4.5→7.5 tiles, companion 3.0→5.0, `_radial_light` falloff ^2→^1.5, night floor 170→148 —

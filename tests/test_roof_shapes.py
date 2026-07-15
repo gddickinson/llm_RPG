@@ -126,5 +126,41 @@ class TestStyles(unittest.TestCase):
             self.assertIn(s["wall"], rs.WALLS, kind)
 
 
+class TestMaterialCoursing(unittest.TestCase):
+    """P40.4 wall coursing + roof tile rows — flat faces read as material."""
+    QUAD = [(10, 20), (58, 20), (58, 68), (10, 68)]     # a front-wall rect
+
+    def test_masonry_wall_has_courses_and_joints(self):
+        segs = rs.wall_courses(self.QUAD, "brick", 48)
+        # both horizontal courses and vertical joints appear
+        horiz = [s for s in segs if s[1][1] == s[2][1]]
+        vert = [s for s in segs if s[1][0] == s[2][0]]
+        self.assertTrue(horiz, "brick has horizontal courses")
+        self.assertTrue(vert, "brick has staggered vertical joints")
+
+    def test_running_bond_is_staggered(self):
+        # adjacent course rows offset their joints (not a stacked grid)
+        segs = rs.wall_courses(self.QUAD, "stone", 48)
+        vert_x = sorted({s[1][0] for s in segs if s[1][0] == s[2][0]})
+        self.assertGreater(len(vert_x), 2, "several joint columns")
+
+    def test_timber_frames_not_bricks(self):
+        segs = rs.wall_courses(self.QUAD, "timber", 48)
+        # timber is a few framing beams, far fewer than brick courses
+        self.assertLess(len(segs), len(rs.wall_courses(self.QUAD, "brick", 48)))
+
+    def test_roof_courses_follow_the_face(self):
+        quad = [(10, 0), (58, 0), (58, 24), (10, 24)]
+        rows = rs.roof_courses(quad, "slate", 48)
+        self.assertTrue(rows, "a roof face gets tile rows")
+        # rows span the face width and are darker than the covering
+        for _col, a, b in rows:
+            self.assertLess(a[0], b[0])
+        self.assertLess(sum(rows[0][0]), sum(rs.covering_color("slate")))
+
+    def test_tiny_face_is_safe(self):
+        self.assertEqual(rs.roof_courses([(0, 0), (1, 0)], "slate", 48), [])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -8228,3 +8228,19 @@ night 170→148, evening 80→66) so the ground beyond the pool stays dim-but-vi
 pure black. Same midnight scene is now clearly playable (scratchpad/gfx_night_after.png vs
 gfx_default.png — a tight bright circle → a wide lit play area). `tests/test_lighting_and_
 weather_overlay.py` +2 (the lifted floor + the wider pool lighting more than a corner).
+
+## 2026-07-15 — GRAPHICS Phase 3 (P40.4): building material texture
+
+Continuing the fidelity work. Buildings were flat-filled 2.5D blocks (a solid wall colour, a
+solid roof colour). Now they read as MATERIAL. Two pure quad-geometry helpers in
+`ui/roof_shapes.py`: `wall_courses(quad, wall, ts)` lays masonry COURSING — horizontal courses
++ staggered running-bond vertical joints — on stone/brick walls, and half-timber framing beams
+on timber/wood; `roof_courses(pts, covering, ts)` draws tile/shingle ROWS parallel to the eaves
+across each roof face. A bilinear `_bilerp` makes the rows/joints follow the face's 2.5D
+perspective, so it works for both the per-tile block front (a rectangle) and the footprint span
+front (a parallelogram). `renderer_buildings._draw_block` + `_draw_footprint` draw the returned
+(colour, p1, p2) segments as 1px lines right after the flat fill (gated ts≥12 so distant tiles
+skip it). Before/after: scratchpad/gfx_buildings_compare.png — flat blocks become coursed walls
++ tiled roofs; the tower reads as brick with a running-bond pattern. `tests/test_roof_shapes.py`
++5 (courses + joints, running-bond stagger, timber≠brick, roof rows follow the face, tiny-face
+safety). Files stay under 500 (roof_shapes 236, renderer_buildings 417).

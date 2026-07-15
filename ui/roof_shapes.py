@@ -53,6 +53,70 @@ def front_color(wall):
     return _scale(wall_color(wall), 0.72)
 
 
+# ---- P40.4 material texture: coursing & tile rows (pure geometry) ----------
+# A face is given as a QUAD [TL, TR, BR, BL] (screen points). Both the per-tile
+# block front (a rectangle) and the footprint span front (a parallelogram) are
+# quads, so one set of helpers textures either. Callers draw the returned
+# (color, p1, p2) segments as 1px lines over the flat-filled face.
+
+def _lerp(a, b, t):
+    return (int(a[0] + (b[0] - a[0]) * t), int(a[1] + (b[1] - a[1]) * t))
+
+
+def _bilerp(quad, u, v):
+    """Point at across-fraction u (0..1) and down-fraction v (0..1) of a
+    QUAD [TL, TR, BR, BL] — bilinear, so rows/joints follow the face."""
+    tl, tr, br, bl = quad
+    return _lerp(_lerp(tl, tr, u), _lerp(bl, br, u), v)
+
+
+def wall_courses(quad, wall, ts):
+    """Masonry COURSING (rows + staggered running-bond joints) or TIMBER
+    framing over a front-wall quad — the flat block becomes a material wall."""
+    base = front_color(wall)
+    mortar = _scale(base, 0.72)
+    ys = [p[1] for p in quad]
+    fh = max(ys) - min(ys)
+    segs = []
+    if wall in ("timber", "wood"):
+        beam = _scale(base, 0.6)                 # dark half-timber framing
+        for i in range(1, 3):
+            segs.append((beam, _bilerp(quad, i / 3, 0), _bilerp(quad, i / 3, 1)))
+        segs.append((beam, _bilerp(quad, 0, 0.5), _bilerp(quad, 1, 0.5)))
+        return segs
+    nrows = max(2, min(14, fh // max(3, ts // 7)))
+    bricks = 4
+    for r in range(1, nrows):                    # horizontal courses
+        v = r / nrows
+        segs.append((mortar, _bilerp(quad, 0, v), _bilerp(quad, 1, v)))
+    for r in range(nrows):                        # staggered vertical joints
+        v0, v1 = r / nrows, (r + 1) / nrows
+        off = (0.5 / bricks) if r % 2 else 0.0
+        k = 0
+        while off + k / bricks < 1.0:
+            u = off + k / bricks
+            if u > 0:
+                segs.append((mortar, _bilerp(quad, u, v0), _bilerp(quad, u, v1)))
+            k += 1
+    return segs
+
+
+def roof_courses(pts, covering, ts):
+    """Tile / shingle ROWS parallel to the eaves across a roof-face polygon
+    (quad or triangle) — the flat roof reads as a covered surface."""
+    if len(pts) < 3:
+        return []
+    line = _scale(covering_color(covering), 0.8)
+    if len(pts) == 4:
+        left, right = (pts[0], pts[3]), (pts[1], pts[2])
+    else:                                         # triangle (hip end): from apex
+        left, right = (pts[0], pts[1]), (pts[0], pts[2])
+    ys = [p[1] for p in pts]
+    n = max(2, min(12, (max(ys) - min(ys)) // max(3, ts // 8)))
+    return [(line, _lerp(left[0], left[1], i / n), _lerp(right[0], right[1], i / n))
+            for i in range(1, n)]
+
+
 def gable_polys(sx, sy, ts, h):
     """A ridge across the middle: a lit north slope + a shadowed south slope."""
     y0, y1 = sy - h, sy + ts - h

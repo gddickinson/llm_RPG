@@ -316,11 +316,18 @@ def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
     sh.fill((0, 0, 0, 70))
     target.blit(sh, (px + off, py + off))
     front = rs.front_color(style["wall"])
-    pygame.draw.polygon(target, front, rs.span_faces(px, py, w, d, h)["front"])
+    front_quad = rs.span_faces(px, py, w, d, h)["front"]
+    pygame.draw.polygon(target, front, front_quad)
+    if ts >= 12:                                   # P40.4 masonry/timber texture
+        for col, a, b in rs.wall_courses(front_quad, style["wall"], ts):
+            pygame.draw.line(target, col, a, b, 1)
     shades = rs.roof_shades(style["covering"])
     rp = rs.span_roof(style["roof"], px, py, w, d, h, style.get("parapet", False))
     for pts, key in rp["polys"]:
         pygame.draw.polygon(target, shades[key], pts)
+        if ts >= 12:                               # P40.4 roof tile rows
+            for col, a, b in rs.roof_courses(pts, style["covering"], ts):
+                pygame.draw.line(target, col, a, b, 1)
     if rp["ridge"]:
         pygame.draw.line(target, shades["ridge"],
                          rp["ridge"][0], rp["ridge"][1], max(1, ts // 20))
@@ -376,11 +383,18 @@ def _draw_block(target, kind, px, py, ts, h) -> None:
     off = max(1, ts // 7)
     target.blit(_shadow(ts), (px + off, py + off))     # grounds the block
     front = rs.front_color(style["wall"])
-    pygame.draw.polygon(target, front, cube_faces(px, py, ts, h)["front"])
+    front_quad = cube_faces(px, py, ts, h)["front"]
+    pygame.draw.polygon(target, front, front_quad)
+    if ts >= 12:                                   # P40.4 masonry/timber texture
+        for col, a, b in rs.wall_courses(front_quad, style["wall"], ts):
+            pygame.draw.line(target, col, a, b, 1)
     shades = rs.roof_shades(style["covering"])
     rp = rs.roof_polys(style["roof"], px, py, ts, h, style.get("parapet", False))
     for pts, key in rp["polys"]:
         pygame.draw.polygon(target, shades[key], pts)
+        if ts >= 12:                               # P40.4 roof tile rows
+            for col, a, b in rs.roof_courses(pts, style["covering"], ts):
+                pygame.draw.line(target, col, a, b, 1)
     if rp["ridge"]:
         pygame.draw.line(target, shades["ridge"],
                          rp["ridge"][0], rp["ridge"][1], 1)
