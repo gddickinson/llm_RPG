@@ -8244,3 +8244,17 @@ skip it). Before/after: scratchpad/gfx_buildings_compare.png — flat blocks bec
 + tiled roofs; the tower reads as brick with a running-bond pattern. `tests/test_roof_shapes.py`
 +5 (courses + joints, running-bond stagger, timber≠brick, roof rows follow the face, tiny-face
 safety). Files stay under 500 (roof_shapes 236, renderer_buildings 417).
+
+## 2026-07-15 — Fix "the tiles are still mainly black": new games start at MORNING
+
+George, twice: the ground renders "mainly black." Root cause found: the friendly MORNING start
+(`engine.world.time = 8*60`) in `demo_setup` was gated to `world_kind == "realistic"` ONLY — the
+DEFAULT Oakvale world (what a normal new game uses) started at MIDNIGHT (00:00). So a fresh game
+was a tiny torch-pool in a sea of unexplored black fog — which reads as "mainly black," and looks
+like the new terrain graphics broke. (Measured: explored tiles at night are actually visible,
+avg 155; the black is the midnight + fresh-fog first impression.) Fix: EVERY new game now starts
+at 08:00 — you wake in a sunlit town and see the world (and its new terrain/building detail).
+Night still falls later, kept playable by the earlier widened torch-pool (1c564ab). A loaded
+save restores its own clock. `demo_setup.py` (drop the `world_kind == "realistic"` guard);
+`tests/test_morning_start.py` (+2: default game starts after dawn / not night). Proof:
+scratchpad/gfx_startfix.png (bright daylight town vs the midnight gfx_default.png).
