@@ -22,3 +22,13 @@ data/dm_library/
 
 # Local review artifacts (screenshots, PoCs) — not source
 scratchpad/
+
+# File-sync (iCloud / Dropbox / OneDrive) conflict copies — "name 2.ext",
+# "name copy.ext". These carry duplicate content ids and pollute the repo.
+* [0-9].py
+* [0-9].md
+* [0-9].json
+* [0-9].txt
+* copy.py
+* copy.md
+* copy.json
