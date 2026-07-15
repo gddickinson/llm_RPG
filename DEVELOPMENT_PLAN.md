@@ -5651,3 +5651,26 @@ water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
   windows, weathering, AO.
 - [ ] **P40.5 Lighting & atmosphere polish** — soft shadows, AO, colour grading, light bloom.
 - [ ] **P40.6 Characters** — richer body shading/outlines/gear (only if needed).
+
+## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
+
+George chose the "full isometric 3D-look world" for the "more 3D like movieMaker" ask.
+Tilt the world to a 2:1 iso view with real height; render buildings/props/characters as
+true 3D-shaded geometry BAKED once (at the fixed iso angle) to cached sprites via a ported
+numpy software rasterizer (movieMaker's raster3d.py — validated in scratchpad/3d_poc.png).
+Built as a TOGGLEABLE render mode (LLM_RPG_RENDER=iso|topdown, default topdown until solid)
+so the game stays playable + green throughout — iso is a VIEW change only, engine untouched.
+Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/ISOMETRIC.md.
+
+- [ ] **P41.1 Iso projection foundation** — ui/iso.py (world_to_screen / screen_to_tile /
+  diamond+cliff geometry / depth_key). Headless tests.
+- [ ] **P41.2 numpy software rasterizer** — ui/raster3d.py (ported): render + bake(mesh)→sprite.
+- [ ] **P41.3 Iso TERRAIN render path** — depth-sorted shaded diamonds + elevation cliffs
+  (behind the toggle); first iso screenshot.
+- [ ] **P41.4 Iso OBJECTS** — bake buildings (box+roof) + props to iso sprites, placed +
+  depth-sorted.
+- [ ] **P41.5 Iso CHARACTERS & movement** — player/NPCs at iso positions, facing + anim +
+  depth sort; mouse/targeting via screen_to_tile.
+- [ ] **P41.6 Iso INTERIORS** — dungeons/buildings iso (themed/furnished/lit), roof-fade.
+- [ ] **P41.7 Fidelity + polish** — fold Phase 40 supersample/detail in; camera/zoom; UI fit;
+  flip default to iso at parity.

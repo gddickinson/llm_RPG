@@ -7623,3 +7623,19 @@ design in docs/GRAPHICS.md; Phase 40 (P40.1 gfx foundation → P40.2 terrain →
 → P40.4 buildings → P40.5 lighting → P40.6 characters) added to DEVELOPMENT_PLAN, subsuming
 the old P39.6 polish round. Peeked movieMaker (a JS/py video tool — not directly reusable
 for pygame tiles; autonomous_world's layered terrain gens are the model).
+
+## 2026-07-14 (cont.) — 3D graphics: research + PoC → George chose ISOMETRIC (Phase 41)
+
+George: "Can we make the graphics more 3D? Like in movieMaker." Researched movieMaker: its
+final films render in Blender (offline, not portable), BUT its studio has raster3d.py — a
+compact pure-NUMPY software triangle rasterizer (perspective, z-buffer, back-face cull,
+Lambert shading, headless). Ported it in a proof-of-concept (scratchpad/3d_poc.png): a
+house+red roof, temple pillars, a sarcophagus, a pillar and two figures rendered as REAL 3D
+geometry with depth + directional light. Key insight: the game's camera angle is FIXED, so
+each mesh bakes ONCE to a cached sprite → real-time, zero per-frame 3D cost. Per-frame full
+software 3D isn't real-time (movieMaker uses a GPU for its live view). Presented 4 options;
+George chose "Full isometric 3D-look world" (Diablo/BG look). Planned as Phase 41 in
+docs/ISOMETRIC.md — a TOGGLEABLE render mode (engine untouched, game stays playable), 2:1
+iso projection + 3D-baked objects, folding Phase 40 fidelity into the iso textures. Build
+P41.1 iso math → P41.2 raster3d → P41.3 iso terrain → P41.4 objects → P41.5 chars → P41.6
+interiors → P41.7 fidelity+polish.
