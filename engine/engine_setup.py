@@ -89,6 +89,8 @@ def build_subsystems(engine, llm_model=None,
     self.guildhalls = GuildHallSystem(self)
     from engine.teleport_network import TeleportNetwork
     self.teleport_network = TeleportNetwork(self)
+    from engine.adventure_tome import AdventureTome
+    self.adventure_tome = AdventureTome(self)
     from engine.adventurers import AdventurerSystem
     self.adventurers = AdventurerSystem(self)
     from engine.monster_packs import MonsterPackSystem
@@ -220,6 +222,7 @@ def seed_world(engine) -> None:
         ("Lairs", lambda: self.lairs.seed()),           # P19.2
         ("Guild halls", lambda: self.guildhalls.seed()),  # M.7b
         ("Teleport network", lambda: self.teleport_network.seed()),  # P28.1a
+        ("Sunken Tome adventure", lambda: self.adventure_tome.seed()),  # P38
         ("Adventurers", lambda: self.adventurers.seed()),  # P-M.6
     ):
         try:

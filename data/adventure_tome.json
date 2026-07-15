@@ -1,0 +1,59 @@
+{
+  "_doc": "P38 'The Sunken Tome of Vael'Zhur' adventure — area markers + custom NPCs. Kept OUT of data/npcs/ so these NPCs seed ONLY through the adventure (engine/adventure_tome.py), not the general world roster. Areas are Location markers planted near their terrain; 'The Drowned Vault' triggers the data/structures.json 'drowned_vault' structure to attach (an enterable dungeon).",
+  "areas": [
+    {"id": "mirefen", "name": "Mirefen", "kind": "village", "near": "swamp",
+     "legend": "A huddle of stilt-houses at the marsh's edge, where the fisherfolk whisper of a light beneath the water."},
+    {"id": "thornwatch_ruins", "name": "Thornwatch Ruins", "kind": "ruin", "near": "swamp",
+     "legend": "A drowned monastery, its cloisters gone to reed and grave-cold silence."},
+    {"id": "ashen_camp", "name": "The Ashen Camp", "kind": "camp", "near": "swamp",
+     "legend": "Cook-fires that never gutter — the Cinder Circle, camped and waiting for the wards to fail."},
+    {"id": "ysolde_hollow", "name": "Ysolde's Hollow", "kind": "hut", "near": "swamp",
+     "legend": "A witch's hut on a hummock of black willow, hung with tide-charms."},
+    {"id": "drowned_vault", "name": "The Drowned Vault", "kind": "dungeon", "near": "swamp", "tile": "cave",
+     "legend": "Where Vael'Zhur sank his tower-library to cheat death. The drowning-wards are failing."}
+  ],
+  "npcs": {
+    "sage_ondrel": {
+      "name": "Sage Ondrel",
+      "class": "wizard", "race": "human", "level": 4,
+      "stats": {"intelligence": 16, "wisdom": 15, "charisma": 12},
+      "hp": 22, "gold": 40, "symbol": "O", "area": "mirefen",
+      "faction": "neutral",
+      "inventory": ["scroll_frost_ray"],
+      "description": "A stooped scholar of Mirefen, ink-stained and sharp-eyed, who has spent forty years reading the marsh's drowned history.",
+      "personality": {"traits": ["curious", "cautious", "kindly"],
+                       "likes": ["old books", "careful minds"],
+                       "dislikes": ["reckless power", "the Cinder Circle"]},
+      "goals": ["See the Sunken Tome safely sealed", "Understand Vael'Zhur's binding"],
+      "metadata": {"adventure": "sunken_tome", "quest_giver": true}
+    },
+    "warden_halric": {
+      "name": "Warden Halric",
+      "class": "paladin", "race": "human", "level": 5,
+      "stats": {"strength": 15, "constitution": 15, "charisma": 14, "wisdom": 13},
+      "hp": 38, "gold": 60, "symbol": "H", "area": "mirefen",
+      "faction": "neutral",
+      "inventory": ["scroll_frost_armor"],
+      "description": "A grim Lantern Warden in salt-stained mail, sworn to seal what should stay drowned. His order wants the Tome bound, never read.",
+      "personality": {"traits": ["dutiful", "stern", "brave"],
+                       "likes": ["oaths kept", "the drowned left in peace"],
+                       "dislikes": ["grave-robbers", "necromancy"]},
+      "goals": ["Bind Vael'Zhur back into his drowning-sleep"],
+      "metadata": {"adventure": "sunken_tome", "faction_role": "warden"}
+    },
+    "witch_ysolde": {
+      "name": "Ysolde the Marsh-Witch",
+      "class": "druid", "race": "half-elf", "level": 5,
+      "stats": {"wisdom": 16, "intelligence": 14, "dexterity": 13, "charisma": 13},
+      "hp": 30, "gold": 30, "symbol": "Y", "area": "ysolde_hollow",
+      "faction": "neutral",
+      "inventory": ["warding_key_iii"],
+      "description": "The marsh-witch of the black willow hollow, neither friend nor foe — a keeper of old bargains who holds the last warding-fragment, for a price.",
+      "personality": {"traits": ["shrewd", "wild", "fair"],
+                       "likes": ["a fair trade", "the marsh's balance"],
+                       "dislikes": ["being cheated", "fire in her fens"]},
+      "goals": ["Keep the marsh's balance", "Trade the last fragment for a favor"],
+      "metadata": {"adventure": "sunken_tome", "faction_role": "ysolde"}
+    }
+  }
+}

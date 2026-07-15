@@ -137,6 +137,7 @@ def install_packs(engine) -> int:
     for pack in discover_packs():
         module = _skip_inherited(_resolve_anchors(engine, pack))
         placed = _install_structures(engine, pack)
+        note = ""                            # bug-fix: a structures-only pack
         if any(module.get(k) for k in ("monsters", "items", "spawns",
                                        "placements", "quests",
                                        "beats")):
@@ -145,6 +146,7 @@ def install_packs(engine) -> int:
             engine.dm._spent = spent_before  # authored content is free
         else:
             ok = placed > 0                  # a structures-only pack
+            note = note or "no structures placed"
         if ok:
             installed += 1
             engine.memory_manager.add_event(

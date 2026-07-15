@@ -1,4 +1,90 @@
 {
+  "drowned_vault": {
+    "attach_to": "The Drowned Vault",
+    "levels": [
+      {
+        "name": "Drowned Vault — Flooded Antechamber",
+        "description": "A sunken entry-hall, ankle-deep in cold marsh-water. Drowned sigils glimmer on the walls, warding the stair below.",
+        "grid": [
+          "WWWWWWWWWWWWWW",
+          "W.K.......G..W",
+          "W............W",
+          "WG.........>.W",
+          "W............W",
+          "W......G.....W",
+          "W..C.........W",
+          "W............W",
+          "WWWWWWDWWWWWWW"
+        ],
+        "inscriptions": [
+          "Here the drowning-wards begin. Touch the sigils as the drowned would walk: into the DARK, then the TIDE, then the DEEP."
+        ],
+        "puzzle": {
+          "kind": "sigil",
+          "names": ["Tide", "Deep", "Dark"],
+          "order": [2, 0, 1],
+          "wards": "down"
+        },
+        "monsters": [
+          {"template": "drowned_guardian", "at": [5, 4]},
+          {"template": "drowned_guardian", "at": [8, 6]}
+        ],
+        "chest_loot": ["drowned_lantern", "scroll_frost_ray"]
+      },
+      {
+        "name": "Drowned Vault — The Sunken Stacks",
+        "position": "below",
+        "dark": true,
+        "description": "Endless waterlogged shelves lean in the dark, their books fused to slabs of drowned pulp. Something armoured wades between them.",
+        "grid": [
+          "WWWWWWWWWWWWWW",
+          "W<..K.....G..W",
+          "W............W",
+          "W..G.......>.W",
+          "W............W",
+          "W........G...W",
+          "W...C........W",
+          "WWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [
+          "Read the stacks in their order: INK, then SALT, then BONE, or the ward will not part."
+        ],
+        "puzzle": {
+          "kind": "sigil",
+          "names": ["Bone", "Ink", "Salt"],
+          "order": [1, 2, 0],
+          "wards": "down"
+        },
+        "monsters": [
+          {"template": "drowned_guardian", "at": [6, 2]},
+          {"template": "drowned_guardian", "at": [6, 4]}
+        ],
+        "chest_loot": ["guardian_halberd", "scroll_frost_armor"]
+      },
+      {
+        "name": "Drowned Vault — The Drowned Sanctum",
+        "position": "below",
+        "dark": true,
+        "description": "The heart of the vault: a domed reading-chamber where Vael'Zhur sits at his cold altar, the Sunken Tome open in his lap. Death did not take him.",
+        "grid": [
+          "WWWWWWWWWWWWWW",
+          "W<...........W",
+          "W............W",
+          "W.....S......W",
+          "W............W",
+          "W....C.......W",
+          "W............W",
+          "WWWWWWWWWWWWWW"
+        ],
+        "inscriptions": [],
+        "monsters": [
+          {"template": "vaelzhur_lich", "at": [7, 3]},
+          {"template": "drowned_guardian", "at": [3, 5]}
+        ],
+        "chest_loot": ["tidecaller_signet"]
+      }
+    ]
+  },
   "ruined_keep": {
     "attach_to": "Ruined Keep",
     "levels": [

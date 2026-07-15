@@ -7499,3 +7499,25 @@ First build round of "The Sunken Tome of Vael'Zhur". All content-as-data:
   the Runed Guardian Halberd (two-handed reach weapon), and Scrolls of Frost Ray/Armor.
 Validator clean; tests/test_adventure_tome.py (9) green. Next P38.2: the areas/structures
 (the Drowned Vault + ward-puzzles) + the custom NPCs.
+
+## 2026-07-14 (cont.) — P38.2: adventure AREAS — the Drowned Vault + the cast
+
+Verified module packs ship monsters/items/quests/structures but NOT NPCs, so the
+adventure gets a light seeder (like lairs/guildhalls). Built:
+- data/structures.json `drowned_vault`: a 3-level flooded dungeon — the Flooded
+  Antechamber (a 3-sigil ward gating the stair, 2 drowned guardians, a chest with the
+  Drowned Lantern + a frost scroll), the dark Sunken Stacks (a second sigil ward, 2
+  guardians, the Guardian Halberd), and the Drowned Sanctum (Vael'Zhur the lich at his
+  cold altar + a guardian). Charter-safe cells (sigil/altar wards, no levers).
+- data/adventure_tome.json: the 5 area markers (Mirefen, Thornwatch Ruins, the Ashen
+  Camp, Ysolde's Hollow, the Drowned Vault) + 3 custom NPC specs (Sage Ondrel the
+  quest-giver, Warden Halric of the Lantern Wardens, Ysolde the marsh-witch) — kept OUT
+  of data/npcs/ so they never leak into the general world roster.
+- engine/adventure_tome.py: `AdventureTome.seed()` plants the areas near marsh (far from
+  the player, clustered), attaches the vault structure (entered via enter_building like
+  the Ruined Keep — NOT the procedural CAVE dungeon), and seats the cast beside their
+  area; gated with the adventurers, persisted (registered in engine_setup + save_load).
+Also fixed the latent module_packs.py `note` bug (a structures-only pack that places
+nothing now logs gracefully instead of crashing). Validator clean; +8 tests (15 total in
+test_adventure_tome). Full suite 2636 green. Screenshot: the vault antechamber (sigils,
+chest, stairs, two guardians). Next P38.3: the 5-act branching quest chain + clues + the pack.

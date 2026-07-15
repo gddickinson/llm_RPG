@@ -110,5 +110,84 @@ class TestArtifacts(unittest.TestCase):
         self.assertGreater((sig.equip_bonuses or {}).get("swim", 0), 0)
 
 
+class TestVaultStructure(unittest.TestCase):
+    """P38.2 — the Drowned Vault structure parses into three linked levels."""
+
+    def test_three_levels_with_wards_and_the_lich(self):
+        from world.structures import StructureBuilder, STRUCTURES
+        from engine.game_engine import GameEngine
+        eng = GameEngine(llm_provider="heuristic", enable_npc_processes=False)
+        eng.start_game()
+        try:
+            spec = STRUCTURES["drowned_vault"]
+            self.assertEqual(len(spec["levels"]), 3)
+            sb = StructureBuilder(eng)
+            levels = [sb._build_level(lv, "drowned_vault")
+                      for lv in spec["levels"]]
+            # levels 1 & 2 have a sigil ward; level 3 holds the lich
+            self.assertTrue(any(f["name"] == "Sigil"
+                                for f in levels[0].furniture))
+            self.assertTrue(levels[1].dark, "the stacks are dark")
+            sanctum = levels[2]
+            self.assertIn("vaelzhur_lich",
+                          [s.get("template") for s in sanctum.spawns])
+        finally:
+            eng.end_game()
+
+
+class _AdvBase(unittest.TestCase):
+    def setUp(self):
+        self._flag = _os.environ.pop("LLM_RPG_NO_ADVENTURERS", None)
+        self.addCleanup(_os.environ.__setitem__,
+                        "LLM_RPG_NO_ADVENTURERS", self._flag or "1")
+        from engine.game_engine import GameEngine
+        self.engine = GameEngine(llm_provider="heuristic",
+                                 enable_npc_processes=False)
+        self.engine.start_game()
+        self.at = self.engine.adventure_tome
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+
+class TestSeeder(_AdvBase):
+    def test_all_areas_are_planted(self):
+        names = {a["name"] for a in self.at.areas}
+        for want in ("Mirefen", "Thornwatch Ruins", "The Ashen Camp",
+                     "Ysolde's Hollow", "The Drowned Vault"):
+            self.assertIn(want, names)
+
+    def test_the_vault_is_an_enterable_dungeon(self):
+        self.assertIn("The Drowned Vault", self.engine.interiors)
+        inter = self.engine.interiors["The Drowned Vault"]
+        self.assertEqual(getattr(inter, "structure_id", None), "drowned_vault")
+
+    def test_the_cast_is_seated(self):
+        for nid in ("sage_ondrel", "warden_halric", "witch_ysolde"):
+            self.assertIn(nid, self.at.npc_ids)
+            npc = self.engine.npc_manager.npcs.get(nid)
+            self.assertIsNotNone(npc, f"{nid} not in the world")
+            self.assertEqual((npc.metadata or {}).get("adventure"),
+                             "sunken_tome")
+
+    def test_the_adventure_npcs_do_not_leak_into_the_general_roster(self):
+        from characters.npc_presets import all_presets
+        ids = {n.id for n in all_presets()}
+        self.assertNotIn("sage_ondrel", ids)
+        self.assertNotIn("witch_ysolde", ids)
+
+    def test_state_round_trips(self):
+        d = self.at.to_dict()
+        from engine.adventure_tome import AdventureTome
+        fresh = AdventureTome(self.engine)
+        fresh.from_dict(d)
+        self.assertEqual([a["id"] for a in fresh.areas],
+                         [a["id"] for a in self.at.areas])
+        self.assertEqual(fresh.npc_ids, self.at.npc_ids)
+
+
 if __name__ == "__main__":
     unittest.main()
