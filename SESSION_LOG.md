@@ -7917,3 +7917,22 @@ With this, ISO PARITY IS COMPLETE — the isometric 3D-look world now matches th
 renderer across visuals AND gameplay: 3D terrain/objects/chars/furniture, interior lighting,
 day-night + weather, loot/surfaces/projectiles/reticle, decorative scatter, and now combat
 effects + the pet. Full suite green.
+
+## 2026-07-15 — P41.13: iso end-to-end playtest (validates the whole iso arc)
+
+Pivoted off graphics-building to VALIDATION: is the now-complete iso mode genuinely playable?
+Drove a scripted heuristic session with the iso renderer active through every real game state
+— fresh overworld, four moves, a monster adjacent + reticle lock, combat effects + a fireball
+spell burst, dropped loot + a fire surface pool, night + fog, a building INTERIOR (Oakvale
+Tavern), and a generated DUNGEON level — rendering the iso path (render_iso + sky_overlay +
+draw_combat_iso, and render_zone_iso for zones) at each step. Result: ZERO exceptions, every
+state drew a full frame. So the entire iso arc (P41.1–41.12 + P39.6b) holds up under real
+play. Locked in `tests/test_iso_playtest.py` (+4): the tests assert `iso_render.dispatch`
+returns True across all these states — dispatch SWALLOWS a render error and returns False, so
+True is a strong "no silent fallback" guard — plus that the overworld draws varied 3D content.
+A future change that breaks iso rendering in any of these states now fails here. No source
+change this round (test-only); full suite green. The iso 3D-look world is confirmed genuinely
+PLAYABLE end-to-end.
+
+Open for George: whether to FLIP THE DEFAULT renderer to iso (his call — a UX change I'm
+leaving to him); optional iso camera pan/zoom.

@@ -5754,3 +5754,13 @@ Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/
   Screenshot confirms damage numbers, a hit flash and a death burst render in iso. ONE effect
   implementation, both projections. `tests/test_combat_effects.py` (+2) &
   `tests/test_iso_render.py` (+2). iso_render.py 449 lines (< 500). Iso PARITY is complete.
+- [x] **P41.13 Iso end-to-end playtest (validates the whole arc).** Drove a scripted session
+  with the iso renderer active through every real game state — fresh overworld, movement, a
+  monster adjacent + reticle lock, combat effects + a spell burst, dropped loot + a fire
+  surface, night + fog, a building INTERIOR, and a generated DUNGEON level — rendering the iso
+  path at each step. ZERO exceptions; every state drew a full frame. Locked in
+  `tests/test_iso_playtest.py` (+4), which asserts `iso_render.dispatch` returns True (never
+  silently falls back to top-down) across all these states + that the overworld draws varied
+  3D content — so a future change that breaks iso rendering in any state fails here. The iso
+  3D-look world is confirmed genuinely PLAYABLE. (Open for George: whether to flip the DEFAULT
+  renderer to iso — his call; and optional iso camera pan/zoom.)
