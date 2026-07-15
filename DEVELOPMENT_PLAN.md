@@ -5557,3 +5557,11 @@ and persistence — but there is NO player-facing hook. Finish it:
   gate tile and draws a taller GATEHOUSE with a barred iron PORTCULLIS in a stone arch
   (`ui/gate_shapes.py`, pure geometry) instead of a plain block; an alarm-LOCKED gate's
   bars glow iron-red. Pure-geometry tests + isolated & in-game screenshots.
+- [x] **P37.4 Buildings get ONE roof spanning their footprint (George).** A real building
+  was drawn as a grid of per-tile roofs (a 2×2 building = four little roofs), not one
+  building — unlike "the other version" (building-gen). Now `draw_buildings` renders each
+  enterable building as a single W×D block with ONE spanning gable/hip/flat roof over its
+  whole Location footprint (`roof_shapes.span_roof`/`span_faces`/`span_chimneys` +
+  `_draw_footprint`/`_footprint_map`), drawn at its SW anchor for correct 2.5D overlap;
+  loose BUILDING tiles (walls) still draw per-tile. Span-geometry tests + a screenshot
+  (the red gable and grey hip each now span a full 2×2 footprint).

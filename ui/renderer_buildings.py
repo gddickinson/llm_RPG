@@ -218,13 +218,51 @@ def _gate_tiles(engine):
     return tiles
 
 
+def _footprint_map(engine):
+    """(wx,wy) -> (loc, kind, is_anchor) for every real (enterable) building —
+    so its whole footprint draws as ONE spanning roof (P37.4), not a grid of
+    per-tile roofs. The ANCHOR is the south-west tile: drawing the building
+    there gives the right 2.5D paint order (its lifted roof overlaps whatever
+    lies north)."""
+    fmap = {}
+    ints = getattr(engine, "interiors", {}) or {}
+    for l in getattr(engine.world, "locations", []):
+        if l.name not in ints:
+            continue
+        try:
+            from world.blueprints import blueprint_for_location
+            bp = blueprint_for_location(l.name)
+            kind = getattr(bp, "kind", "") if bp else ""
+        except Exception:
+            kind = ""
+        anchor = (l.x, l.y + l.height - 1)
+        for yy in range(l.y, l.y + l.height):
+            for xx in range(l.x, l.x + l.width):
+                fmap[(xx, yy)] = (l, kind, (xx, yy) == anchor)
+    return fmap
+
+
+def _footprint_explored(engine, loc) -> bool:
+    try:
+        from engine.discovery import is_explored
+    except Exception:
+        return True
+    for yy in range(loc.y, loc.y + loc.height):
+        for xx in range(loc.x, loc.x + loc.width):
+            if is_explored(engine, xx, yy):
+                return True
+    return False
+
+
 def draw_buildings(target, engine, view_rect, cam_x, cam_y,
                    tile_size) -> None:
-    """Draw a raised block over every explored BUILDING tile in view; a shut
-    gate tile becomes a PORTCULLIS instead of a blank wall (P37.3)."""
+    """Real buildings draw as ONE footprint-spanning block (P37.4); loose
+    BUILDING tiles (walls) draw per-tile; a shut gate becomes a PORTCULLIS
+    (P37.3). Fog-respecting, north-to-south for correct 2.5D overlap."""
     from world.world_map import TerrainType
     wmap = engine.world.map
     gates = _gate_tiles(engine)
+    fmap = _footprint_map(engine)
     cols = view_rect.width // tile_size
     rows = view_rect.height // tile_size
     for sy in range(rows):
@@ -232,6 +270,13 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
             wx, wy = cam_x + sx, cam_y + sy
             if not (0 <= wx < wmap.width and 0 <= wy < wmap.height):
                 continue
+            fp = fmap.get((wx, wy))
+            if fp is not None:                    # part of a real building
+                loc, kind, is_anchor = fp
+                if is_anchor and _footprint_explored(engine, loc):
+                    _draw_footprint(target, kind, loc, view_rect,
+                                    cam_x, cam_y, tile_size)
+                continue                          # tiles drawn by the anchor
             if wmap.terrain[wy][wx] != TerrainType.BUILDING:
                 continue
             try:
@@ -252,6 +297,51 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
             kind = _kind_at(engine, wx, wy)
             h = block_height(kind, tile_size)      # storey-driven (P33.3b)
             _draw_block(target, kind, px, py, tile_size, h)
+
+
+def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
+    """One real building drawn as a single W×D block with a SPANNING roof
+    (P37.4): a drop shadow, a front wall, one gable/hip/flat roof over the whole
+    footprint, storey bands + windows along the front, and chimneys."""
+    import pygame
+    from ui import roof_shapes as rs
+    style = style_for(kind)
+    px = view_rect.x + (loc.x - cam_x) * ts
+    py = view_rect.y + (loc.y - cam_y) * ts
+    w = loc.width * ts
+    d = loc.height * ts
+    h = block_height(kind, ts)
+    off = max(1, ts // 7)
+    sh = pygame.Surface((w, d), pygame.SRCALPHA)
+    sh.fill((0, 0, 0, 70))
+    target.blit(sh, (px + off, py + off))
+    front = rs.front_color(style["wall"])
+    pygame.draw.polygon(target, front, rs.span_faces(px, py, w, d, h)["front"])
+    shades = rs.roof_shades(style["covering"])
+    rp = rs.span_roof(style["roof"], px, py, w, d, h, style.get("parapet", False))
+    for pts, key in rp["polys"]:
+        pygame.draw.polygon(target, shades[key], pts)
+    if rp["ridge"]:
+        pygame.draw.line(target, shades["ridge"],
+                         rp["ridge"][0], rp["ridge"][1], max(1, ts // 20))
+    if rp["parapet"]:
+        pygame.draw.lines(target, shades["ridge"], True, rp["parapet"], 1)
+    fy = py + d - h                                   # top of the front wall
+    storeys = max(1, int(h / max(4, int(ts * FLOOR_FRAC))))
+    for i in range(1, storeys):                       # floor bands
+        by = fy + round(h * i / storeys)
+        pygame.draw.line(target, _scale(front, 0.7), (px, by), (px + w, by), 1)
+    ww = max(3, ts // 4)                              # a row of windows/floor
+    for i in range(storeys):
+        by = fy + round(h * (i + 0.35) / storeys)
+        for c in range(loc.width):
+            wx0 = px + c * ts + (ts - ww) // 2
+            pygame.draw.rect(target, WINDOW, (wx0, by, ww, max(2, ww)))
+            pygame.draw.rect(target, WINDOW_GLASS,
+                             (wx0, by, ww, max(1, ww - 1)))
+    for (cx, cy, cw, ch) in rs.span_chimneys(px, py, w, h, style["chimneys"]):
+        pygame.draw.rect(target, rs.CHIMNEY, (cx, cy, cw, ch))
+        pygame.draw.rect(target, rs.CHIMNEY_CAP, (cx, cy, cw, max(1, ch // 4)))
 
 
 def _draw_gate(target, px, py, ts, h, locked: bool = False) -> None:

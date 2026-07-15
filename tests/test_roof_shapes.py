@@ -64,6 +64,45 @@ class TestRoofShapes(unittest.TestCase):
         self.assertEqual(len(rs.chimney_rects(0, 0, 32, 16, 5)), 2)  # cap 2
 
 
+class TestSpanRoofs(unittest.TestCase):
+    """P37.4 — one roof SPANNING a W×D footprint, not a grid of tile roofs."""
+
+    def test_span_faces_cover_the_footprint(self):
+        f = rs.span_faces(100, 200, 96, 64, 20)   # a 3x2 building at ts=32
+        top, front = f["top"], f["front"]
+        self.assertEqual(min(p[0] for p in top), 100)
+        self.assertEqual(max(p[0] for p in top), 196)          # px + w
+        # the front wall sits below the roof, full width, `h` tall
+        self.assertEqual(min(p[0] for p in front), 100)
+        self.assertEqual(max(p[0] for p in front), 196)
+        ys = sorted(p[1] for p in front)
+        self.assertEqual(ys[-1] - ys[0], 20)                    # h pixels tall
+
+    def test_span_gable_ridge_spans_full_width(self):
+        g = rs.span_roof("gable", 0, 0, 120, 60, 24)
+        self.assertEqual(len(g["polys"]), 2)
+        (rl, rr) = g["ridge"]
+        self.assertEqual(rl[0], 0)
+        self.assertEqual(rr[0], 120)                            # ridge = width
+
+    def test_span_hip_has_a_ridge_line_not_a_point(self):
+        hp = rs.span_roof("hip", 0, 0, 120, 60, 24)
+        self.assertEqual(len(hp["polys"]), 4)
+        rl, rr = hp["ridge"]
+        self.assertLess(rl[0], rr[0])              # a real ridge segment
+        self.assertGreater(rl[0], 0)               # inset from the eaves
+        self.assertLess(rr[0], 120)
+
+    def test_span_flat_parapet_toggle(self):
+        self.assertIsNone(rs.span_roof("flat", 0, 0, 64, 64, 16)["parapet"])
+        self.assertIsNotNone(
+            rs.span_roof("flat", 0, 0, 64, 64, 16, parapet=True)["parapet"])
+
+    def test_span_chimneys_scale_and_cap(self):
+        self.assertEqual(rs.span_chimneys(0, 0, 8, 4, 2), [])       # too small
+        self.assertEqual(len(rs.span_chimneys(0, 0, 128, 20, 5)), 2)  # cap 2
+
+
 class TestStyles(unittest.TestCase):
     def test_load_and_lookup(self):
         from ui.renderer_buildings import load_styles, style_for

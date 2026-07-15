@@ -92,6 +92,72 @@ def roof_polys(shape, sx, sy, ts, h, parapet=False):
     return gable_polys(sx, sy, ts, h)
 
 
+# ---- P37.4 footprint-SPANNING roofs -------------------------------------
+# A real building is a W×D footprint (its Location rect), not a lone tile, so
+# ONE roof should span the whole thing — not a per-tile grid of little roofs
+# (George: "roofs spanning multiple adjoined buildings"). `w`/`d` are the
+# footprint's screen WIDTH and DEPTH in pixels; the roof lifts `h`.
+
+def span_faces(sx, sy, w, d, h):
+    """The lifted TOP and the FRONT (south) wall of a W×D-pixel footprint."""
+    top = [(sx, sy - h), (sx + w, sy - h),
+           (sx + w, sy + d - h), (sx, sy + d - h)]
+    front = [(sx, sy + d - h), (sx + w, sy + d - h),
+             (sx + w, sy + d), (sx, sy + d)]
+    return {"top": top, "front": front}
+
+
+def _span_gable(sx, sy, w, d, h):
+    y0, y1 = sy - h, sy + d - h
+    ymid = (y0 + y1) // 2
+    return {"polys": [([(sx, y0), (sx + w, y0), (sx + w, ymid), (sx, ymid)],
+                       "lit"),
+                      ([(sx, ymid), (sx + w, ymid), (sx + w, y1), (sx, y1)],
+                       "shadow")],
+            "ridge": [(sx, ymid), (sx + w, ymid)], "parapet": None}
+
+
+def _span_hip(sx, sy, w, d, h):
+    """A hip roof over a footprint: a real RIDGE line (not a point) with four
+    slopes — the coherent look a big building wants."""
+    y0, y1 = sy - h, sy + d - h
+    inset = max(1, min(w, d) // 4)
+    ym = (y0 + y1) // 2
+    rl, rr = (sx + inset, ym), (sx + w - inset, ym)
+    tl, tr, br, bl = (sx, y0), (sx + w, y0), (sx + w, y1), (sx, y1)
+    return {"polys": [([tl, tr, rr, rl], "lit"),
+                      ([tr, br, rr], "shadow"),
+                      ([br, bl, rl, rr], "shadow"),
+                      ([bl, tl, rl], "mid")],
+            "ridge": [rl, rr], "parapet": None}
+
+
+def _span_flat(sx, sy, w, d, h, parapet=False):
+    y0, y1 = sy - h, sy + d - h
+    top = [(sx, y0), (sx + w, y0), (sx + w, y1), (sx, y1)]
+    return {"polys": [(top, "mid")], "ridge": None,
+            "parapet": top if parapet else None}
+
+
+def span_roof(shape, sx, sy, w, d, h, parapet=False):
+    if shape == "hip":
+        return _span_hip(sx, sy, w, d, h)
+    if shape == "flat":
+        return _span_flat(sx, sy, w, d, h, parapet)
+    return _span_gable(sx, sy, w, d, h)
+
+
+def span_chimneys(sx, sy, w, h, n):
+    """Up to two chimneys standing on a footprint roof of screen-width `w`."""
+    if n <= 0 or w < 12:
+        return []
+    top_y = sy - h
+    cw = max(2, w // 16)
+    ch = max(3, w // 12)
+    return [(sx + w // 3 + i * (w // 3), top_y - ch, cw, ch)
+            for i in range(min(int(n), 2))]
+
+
 def chimney_rects(sx, sy, ts, h, n):
     """Up to two chimney (x, y, w, h) rects standing on the roof top."""
     if n <= 0 or ts < 12:

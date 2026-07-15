@@ -7448,3 +7448,21 @@ grille) instead of a plain block; an alarm-LOCKED gate's bars glow iron-red. An 
 still a ROAD gap (visibly passable), so a gate is never a blank wall in either state. Pure
 geometry tests (`tests/test_gate_shapes.py`) + isolated and in-game screenshots (the west
 gate now a clear barred archway in the wall). renderer_buildings 310 lines, gate_shapes 57.
+
+## 2026-07-14 (cont.) — P37.4: buildings get ONE roof spanning their footprint (George)
+
+George: "the buildings in the realistic world don't have roofs spanning multiple adjoined
+buildings — like in the other version." A real building was rendered as a grid of per-tile
+2.5D blocks (a 2×2 building = four little roofs), reading as a cluster of huts, not one
+building. Now `renderer_buildings.draw_buildings` renders each ENTERABLE building as a
+single W×D block with ONE spanning roof over its whole Location footprint: `_footprint_map`
+maps every building tile → its Location (+ an SW-corner ANCHOR for correct north-to-south
+2.5D paint order), and `_draw_footprint` draws the front wall + one gable/hip/flat roof
+(`roof_shapes.span_roof`/`span_faces` — the hip now has a real RIDGE line, not a point) +
+per-floor storey bands & window rows across the width + `span_chimneys`. Loose BUILDING
+tiles (curtain walls) still draw per-tile; a shut gate is still a portcullis. Screenshot:
+the red gable and grey hip each now span a full 2×2 footprint (vs the old 2×2 roof grid).
++9 span-geometry tests. renderer_buildings 400 lines, roof_shapes 172.
+
+QUEUED (George, new): the hero levels up & gains power too FAST — combat should be harder
+and progression slower, leaning more on gear/weapons/armour/party than raw XP. Next round.
