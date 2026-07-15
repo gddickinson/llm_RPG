@@ -5833,6 +5833,40 @@ water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
     night is playable now (scratchpad/gfx_night_after.png). `test_lighting_and_weather_overlay` +2.
 - [ ] **P40.6 Characters** — richer body shading/outlines/gear (only if needed).
 
+## Phase BLD — Buildings elaboration (George, 2026-07-15) — see `docs/BUILDINGS.md`
+
+George (after the P40 graphics + black-tile fix landed): buildings "are still very basic and
+need elaboration" — MUCH better/more realistic FRONTAGE, LAYOUTS, FURNISHING, DECORATION.
+Research-first: 3 parallel audits (exterior, interior, and mining `building-gen` +
+`autonomous_world`) → full design + plan in **`docs/BUILDINGS.md`**. Core finding: rooms are
+ANONYMOUS (BSP makes untyped cells; furnishing themes the whole interior by NAME, no `shop`
+theme → shops get a bed). `autonomous_world` shares llm_RPG's tile paradigm so its
+ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly verbatim.
+
+- [x] **BLD.0 Research + design doc** — `docs/BUILDINGS.md` (3-agent synthesis + phased plan).
+- [ ] **BLD.1 Data quick-wins** — close theme/furnishing coverage gaps (`data/furnishings.json`
+  + `data/interior_themes.json`: shop/farmhouse/stable/lodge/hall/tower/well/shrine), `theme_of`
+  falls back through building KIND not name, and `hearth`/`forge`/`fireplace`/`oven` → `LIT_PROPS`
+  (fire-lit rooms glow). Pure data + a one-liner.
+- [ ] **BLD.2 Functional room plans** — `data/room_templates.json` + `data/building_room_sets.json`
+  (port aw ROOM_TEMPLATES/BUILDING_ROOM_SETS); tag each BSP leaf a `room_type` by function + size;
+  role→furniture kit; new `world/room_plan.py`. Retune the BSP gate so medium buildings subdivide.
+- [ ] **BLD.3 Feature-composition furnishing + placement hardening** — `features[]` in
+  furnishings.json + a dispatch (bar_counter/pew_rows/pillar_row/carpet_runner/altar_end/…); WALL/
+  CENTER/INNER_WALL categories, count ranges, and a DOOR-APRON exclusion (never block a doorway).
+- [ ] **BLD.4 Facade doors** — new `ui/facade.py`: real framed/panelled/planked/arched doors per
+  kind + lintel + step, on the street-facing wall.
+- [ ] **BLD.5 Shopfronts & signage** — awnings, hanging signs, display windows, forge-glow/anvil,
+  bakery oven; per-kind identity so a smithy ≠ a house.
+- [ ] **BLD.6 Decoration pass + occupant clutter + interior render polish** — carpet-before-hearth,
+  corridor torches (feed P39.4 light), storage clutter; occupant→furnishings; window light-pool +
+  mortar walls + detailed bed/table recipes (port aw renderer_buildings).
+- [ ] **BLD.7 Window trim, shutters, bays & architectural trim** — lintels/sills, shutters, 2×2
+  glazing on a regular bay rhythm, quoins, cornice, gutters/downpipe.
+- [ ] **BLD.8 Roof relief, depth & weathering** — eaves overhang + soffit shadow, ridge caps,
+  dormers, material texture depth; build facade via `gfx.supersample` + cache + contact shadow +
+  deterministic weathering (moss/stains) so clones differ.
+
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
 George chose the "full isometric 3D-look world" for the "more 3D like movieMaker" ask.

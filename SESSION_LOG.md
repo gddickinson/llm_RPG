@@ -8282,3 +8282,23 @@ Four layers of defence (ui/gfx.py + ui/sprite_loader.py):
 
 `tests/test_tile_variants.py` +3 (smooth-off→flat, 32-bit build, broken-tile fallback). No visual
 regression (scratchpad/gfx_srcalpha_check.png). Full suite green.
+
+## 2026-07-15 — BLD.0: buildings-elaboration RESEARCH + design doc (docs/BUILDINGS.md)
+
+George (after the top-down graphics + black-tile fix; confirmed "tiles are good now"): buildings
+"are still very basic and need elaboration" — wants MUCH better/more realistic FRONTAGE, LAYOUTS,
+FURNISHING, DECORATION (Ultrathink). Research-first, like the P40 work. Commissioned 3 parallel
+research agents: (1) exterior/frontage audit, (2) interior/layout/furnishing audit, (3) mining the
+on-disk building-gen + autonomous_world projects. Synthesized into docs/BUILDINGS.md — a full
+current-state analysis + an 8-phase plan (BLD.1-BLD.8) + concrete reference-technique ports.
+
+Core findings: EXTERIOR — flat 2.5D blocks, doors are a disconnected flat rect, no shopfronts/
+signage/trim so smithy≈bakery≈house; doesn't compose with gfx.py. INTERIOR — rooms are ANONYMOUS
+(BSP cells furnished by size-rank not purpose), furniture is a non-blocking scatter, theme keyed
+off NAME with no `shop` theme (shops get a bed+hearthrug), hearth/forge unlit (not in LIT_PROPS),
+occupant ignored. KEY LEVER: autonomous_world shares llm_RPG's exact tile paradigm, so its
+ROOM_TEMPLATES/BUILDING_ROOM_SETS, feature-composition furnishing (bar_counter/pew_rows/carpet_
+runner), placement hardening (door-apron exclusion), and decoration pass (corridor torches feed
+P39.4 lighting) port nearly verbatim; building-gen gives StyleParams/grid-templates/adjacency
+rules (it already gave us roof_shapes.py). Plan added to DEVELOPMENT_PLAN.md as Phase BLD.
+Next: BLD.1 (pure-data theme/lighting quick-wins), then BLD.2 (functional room typing — the unlock).
