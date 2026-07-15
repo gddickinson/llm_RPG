@@ -8214,3 +8214,17 @@ Before/after: scratchpad/gfx_before.png vs gfx_after.png (Oakvale scene) and gfx
 night-and-day jump). Kept ui/renderer.py UNDER 500 (499, was a pre-existing 506) by extracting the
 SSAA block into gfx.apply_ssaa_setting + merging two hidden-actor guards. Next: P40.3 props/scatter
 (shading + contact shadows) then P40.4 building material texture.
+
+## 2026-07-15 — Night lighting: widen the torch pool (George live feedback)
+
+While playing the new terrain, George: "Most of the ground renders black now… night is
+too dark, widen the light radius." Diagnosed: not the terrain upgrade (new tiles measured
+BRIGHTER than old at midnight, 103 vs 85) — it was the NIGHT lighting (the game starts at
+00:00), whose torch-pool was a tight 4.5 tiles with a steep ^2 falloff, leaving most of the
+screen black. Fix in `ui/lighting.py`: player torch radius 4.5→7.5 tiles (floor 2.0→4.0),
+companion torch 3.0→5.0, the `_radial_light` falloff softened ^2→^1.5 (so MORE of the disc
+reads lit, not just the innermost tiles), and the ambient night floor lifted (TOD_DARKNESS
+night 170→148, evening 80→66) so the ground beyond the pool stays dim-but-visible instead of
+pure black. Same midnight scene is now clearly playable (scratchpad/gfx_night_after.png vs
+gfx_default.png — a tight bright circle → a wide lit play area). `tests/test_lighting_and_
+weather_overlay.py` +2 (the lifted floor + the wider pool lighting more than a corner).

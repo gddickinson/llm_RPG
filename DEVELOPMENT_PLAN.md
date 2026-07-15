@@ -5821,6 +5821,9 @@ water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
 - [ ] **P40.4 High-detail BUILDINGS** — brick/stone coursing, roof-tile texture, framed
   windows, weathering, AO.
 - [ ] **P40.5 Lighting & atmosphere polish** — soft shadows, AO, colour grading, light bloom.
+  - [x] Night torch-pool WIDENED (George live feedback: "night is too dark"): player radius
+    4.5→7.5 tiles, companion 3.0→5.0, `_radial_light` falloff ^2→^1.5, night floor 170→148 —
+    night is playable now (scratchpad/gfx_night_after.png). `test_lighting_and_weather_overlay` +2.
 - [ ] **P40.6 Characters** — richer body shading/outlines/gear (only if needed).
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)

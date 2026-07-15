@@ -21,11 +21,13 @@ logger = logging.getLogger("llm_rpg.lighting")
 
 
 # Time-of-day -> ambient darkness alpha (0=clear day, 200=very dark night)
+# George 2026-07-15: night was too dark to play — lifted the floor so the
+# ground beyond the torch-pool stays dim-but-visible instead of pure black.
 TOD_DARKNESS = {
     "morning": 0,
     "afternoon": 0,
-    "evening": 80,
-    "night": 170,
+    "evening": 66,
+    "night": 148,
 }
 
 
@@ -41,8 +43,10 @@ def _radial_light(radius: int, color: Tuple[int, int, int]) -> "pygame.Surface":
         return cached
     size = radius * 2
     surf = pygame.Surface((size, size), pygame.SRCALPHA)
+    # gentler falloff (^1.5 not ^2) so MORE of the disc reads as lit, not just
+    # the innermost couple of tiles — the torch-pool feels wider (George)
     for r in range(radius, 0, -1):
-        alpha = int(255 * (1 - r / radius) ** 2)
+        alpha = int(255 * (1 - r / radius) ** 1.5)
         pygame.draw.circle(surf, (*color, alpha), (radius, radius), r)
     _GRADIENT_CACHE[key] = surf
     return surf
@@ -108,7 +112,7 @@ class LightingOverlay:
         if player and player.is_alive():
             self._punch_light(
                 player.position, view_rect, cam_x, cam_y, tile_size,
-                radius_tiles=max(2.0, 4.5 * vis_mod),
+                radius_tiles=max(4.0, 7.5 * vis_mod),   # widened (George)
                 color=(255, 200, 100), strength=darkness)
 
         # Window glow on building tiles
@@ -138,7 +142,7 @@ class LightingOverlay:
                     continue
                 self._punch_light(
                     ally.position, view_rect, cam_x, cam_y, tile_size,
-                    radius_tiles=3.0, color=(255, 200, 100),
+                    radius_tiles=5.0, color=(255, 200, 100),
                     strength=darkness * 0.7)
         except Exception:
             pass
