@@ -160,7 +160,7 @@ llm_RPG/
 - **`memory_manager.py`** — Event history + `on_event` observer hook (feeds the topic journal).
 - **`save_load.py`** — JSON full-state save/load.
 - **`skills.py`** — D&D-style skill checks; P12.1 degrees of success: `check()` → `CheckResult` with `Degree` (crit ±10 margins, nat 20/1 shift one degree) — lockpicking, forcing, persuasion, shove, and forage all route through it.
-- **`leveling.py`** — XP curve, auto level-up with HP/stat increases.
+- **`leveling.py`** — XP curve, auto level-up with HP/stat increases. P37.5a a STEEPER curve (`XP_CURVE_COEFF`=60 → L2 120/L3 360/L4 720) paired with a much smaller kill award (`combat_system._award_xp` = 10+5·foe_level) and radiant-quest XP (15+8·level) — a deliberately slow, ramping climb (~8 same-level kills for the first level, dozens by mid-game) so power leans on gear + companions, not XP farming.
 - **`skill_progression.py`** — 12-skill lattice from `data/skills.json`; geometric curve, `add_skill_xp()`, levels 1–50. P15.9b: `train_skill(engine,id,xp)` (award + log + pet-roll, the shared use-site one-liner) and `train_hunting` (beast kills); new skills bartering (shop deals) / hunting (felling beasts) / carpentry (home repair), each with a pet + a bond teacher.
 - **`collection_log.py`** — `CollectionLog`; unique items/kills/crafts/places vs registry totals (O-key overlay).
 - **`pets.py`** — `PetSystem`; rare skilling-pet rolls from `data/pets.json`, follower trails the player; P12.14 loyalty 1–20 (SHIFT+Z treats +1, nightly neglect −1, 0 walks away), apport fetch at 12+.

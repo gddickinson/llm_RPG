@@ -108,7 +108,7 @@ class RadiantQuestGenerator:
 
         level = max(1, self.engine.player.level)
         reward_gold = 20 + 12 * level + 5 * count
-        reward_xp = 30 + 15 * level
+        reward_xp = 15 + 8 * level                # P37.5 slower-climb rebalance
 
         obj = QuestObjective(
             obj_type=(ObjectiveType.FETCH if obj_type == "fetch"

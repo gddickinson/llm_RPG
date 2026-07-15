@@ -7466,3 +7466,20 @@ the red gable and grey hip each now span a full 2×2 footprint (vs the old 2×2 
 
 QUEUED (George, new): the hero levels up & gains power too FAST — combat should be harder
 and progression slower, leaning more on gear/weapons/armour/party than raw XP. Next round.
+
+## 2026-07-14 (cont.) — P37.5a: XP economy rebalanced for a SLOW climb (George)
+
+George: "the hero advances through levels much too quickly." Round (a) of the balance arc —
+the XP economy. Steepened the curve (`leveling.XP_CURVE_COEFF` 50→60: L2 100→120, L3
+300→360, L4 600→720) and cut the kill award (`combat_system._award_xp` 20+30·lvl →
+10+5·lvl) + radiant-quest XP (30+15·lvl → 15+8·lvl). Same-level kills to reach a level went
+L2 2→8, L3 5→20, L5 11→51, L7 17→86 — a ~4–5× slower, ramping climb, so a hero's power now
+leans on better gear + companions rather than XP farming. Named `XP_CURVE_COEFF` constant;
+test_leveling + the 5 dependent suites updated/green. Next: P37.5b (tougher monsters) and
+P37.5c (gear/party emphasis + full playtest).
+
+Also QUEUED (George, big new ask): Phase 38 — "The Sunken Tome of Vael'Zhur", a substantial
+themed adventure module (lost wizard's tome, a lich, artifacts, tribes/factions, villages/
+camps/ruins, clues, branching solve paths) + deep integration tests that complete the
+objectives. To be planned in docs/ADVENTURE_TOME.md and built as a data/module_packs/ pack
+across P38.0–P38.4.

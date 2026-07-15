@@ -1,11 +1,16 @@
 """Leveling system — XP thresholds, level-up effects.
 
-XP curve (cumulative XP needed to reach level N):
+XP curve (cumulative XP needed to reach level N) — P37.5 rebalanced STEEPER so
+the hero climbs slowly and power comes more from gear + companions than from
+raw levels (George: "advances through levels much too quickly"):
     level 1: 0        (starting level)
-    level 2: 100
-    level 3: 300
-    level 4: 600
-    level N: 50 * N * (N - 1)
+    level 2: 120
+    level 3: 360
+    level 4: 720
+    level N: XP_CURVE_COEFF * N * (N - 1)   (XP_CURVE_COEFF = 60)
+
+With the P37.5 kill award (10 + 5*foe_level) that is ~8 same-level kills for the
+first level and MORE per level after — a deliberate, gear-driven ramp (was ~2).
 
 Per level-up the character gains:
     +5 max_hp (and full heal)
@@ -20,6 +25,7 @@ from characters.character_types import CharacterClass
 logger = logging.getLogger("llm_rpg.leveling")
 
 MAX_LEVEL = 20
+XP_CURVE_COEFF = 60      # xp_threshold(L) = COEFF * L * (L-1); P37.5 (was 50)
 
 # Stats favored by each class (gain +1 each on level-up)
 CLASS_STAT_FAVORS: Dict[CharacterClass, Tuple[str, str]] = {
@@ -49,7 +55,7 @@ def xp_threshold(level: int) -> int:
         return 0
     if level > MAX_LEVEL:
         level = MAX_LEVEL
-    return 50 * level * (level - 1)
+    return XP_CURVE_COEFF * level * (level - 1)
 
 
 def level_for_xp(xp: int) -> int:

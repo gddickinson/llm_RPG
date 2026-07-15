@@ -403,7 +403,9 @@ class CombatSystem:
 
     def _award_xp(self, defeated) -> None:
         from engine.leveling import award_xp
-        xp = 20 + 30 * getattr(defeated, "level", 1)
+        # P37.5 rebalance: a kill is worth far less (was 20 + 30*level), so the
+        # hero climbs slowly and leans on gear + companions, not XP farming.
+        xp = 10 + 5 * getattr(defeated, "level", 1)
         actor = self.engine.player
         msgs = award_xp(actor, xp)
         # an adventurer NPC (P-M.6) driven through this path gains the XP,

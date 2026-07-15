@@ -29,11 +29,17 @@ class TestThresholds(unittest.TestCase):
             self.assertGreater(xp_threshold(n + 1), xp_threshold(n))
 
     def test_level_for_xp(self):
+        # P37.5 steeper curve: L2=120, L3=360, L4=720
         self.assertEqual(level_for_xp(0), 1)
-        self.assertEqual(level_for_xp(99), 1)
-        self.assertEqual(level_for_xp(100), 2)
-        self.assertEqual(level_for_xp(299), 2)
-        self.assertEqual(level_for_xp(300), 3)
+        self.assertEqual(level_for_xp(119), 1)
+        self.assertEqual(level_for_xp(120), 2)
+        self.assertEqual(level_for_xp(359), 2)
+        self.assertEqual(level_for_xp(360), 3)
+
+    def test_curve_is_steeper_than_the_old_50_coeff(self):
+        # a deliberate slow climb — the first level costs more than the old 100
+        self.assertEqual(xp_threshold(2), 120)
+        self.assertEqual(xp_threshold(3), 360)
 
     def test_xp_to_next(self):
         cur, need = xp_to_next(150)
@@ -51,7 +57,7 @@ class TestLevelUp(unittest.TestCase):
 
     def test_levelup_at_threshold(self):
         c = _new_char()
-        c.metadata = {"xp": 100}
+        c.metadata = {"xp": 120}         # P37.5 L2 threshold
         msgs = check_level_up(c)
         self.assertEqual(len(msgs), 1)
         self.assertEqual(c.level, 2)
@@ -63,7 +69,7 @@ class TestLevelUp(unittest.TestCase):
 
     def test_multi_level_skip(self):
         c = _new_char()
-        c.metadata = {"xp": 700}  # enough for level 4
+        c.metadata = {"xp": 720}  # enough for level 4 (P37.5 curve)
         msgs = check_level_up(c)
         self.assertEqual(len(msgs), 3)
         self.assertEqual(c.level, 4)
@@ -81,7 +87,7 @@ class TestLevelUp(unittest.TestCase):
         c = _new_char(klass=CharacterClass.WIZARD)
         c.intelligence = 10
         c.wisdom = 10
-        c.metadata = {"xp": 100}
+        c.metadata = {"xp": 120}
         check_level_up(c)
         # Wizard favors INT + WIS
         self.assertEqual(c.intelligence, 11)

@@ -5565,3 +5565,36 @@ and persistence — but there is NO player-facing hook. Finish it:
   `_draw_footprint`/`_footprint_map`), drawn at its SW anchor for correct 2.5D overlap;
   loose BUILDING tiles (walls) still draw per-tile. Span-geometry tests + a screenshot
   (the red gable and grey hip each now span a full 2×2 footprint).
+
+## Phase 37.5 — Slower progression, harder combat (George, 2026-07-14)
+
+George: "the hero gathers experience and advances through levels much too quickly. Combat
+needs to be more difficult, the hero slowly gaining power through levels AND better gear +
+party members." A dedicated balance arc:
+
+- [x] **P37.5a XP economy — a slow climb.** Steepened the XP curve
+  (`leveling.XP_CURVE_COEFF` 50→60: L2 100→120, L3 300→360, L4 600→720) and cut the kill
+  award (`combat_system._award_xp` 20+30·lvl → 10+5·lvl) and radiant-quest XP (30+15·lvl →
+  15+8·lvl). Same-level kills to reach a level: L2 2→8, L3 5→20, L5 11→51, L7 17→86 — a
+  ~4–5× slower, ramping climb, so power leans on gear/party not XP farming. Tests updated.
+- [ ] **P37.5b Combat is harder.** Wilderness monsters tougher (HP / to-hit / damage via
+  `data/monsters.json` + the elite/encounter scaling) so fights are riskier and gear +
+  companions matter; keep the game winnable and the DM/away-agent balanced. Data-driven.
+- [ ] **P37.5c Gear & party emphasis + playtest.** Verify a scripted heuristic run: the hero
+  no longer rockets up levels, early fights are meaningfully harder, better weapons/armour
+  and companions carry the power curve. Before/after progression check.
+
+## Phase 38 — "The Sunken Tome of Vael'Zhur" — a substantial adventure module (George, 2026-07-14)
+
+George: a substantial, themed campaign — a lost wizard's tome to discover & explore, booby
+traps, monsters, a wizard LICH, ancient magic artifacts; many groups of monsters/NPCs/tribes
+and areas (villages, camps, ruins); clues to find, battles to fight, many ways to solve it;
+plus deep integration tests that actually COMPLETE the main objectives. Built as a
+`data/module_packs/` campaign pack (+ any engine support). Planned in `docs/ADVENTURE_TOME.md`.
+
+- [ ] **P38.0 Plan the adventure** (theme, 5-act plot, areas, factions, monsters, items,
+  the lich, artifacts, clues, win conditions) → `docs/ADVENTURE_TOME.md`.
+- [ ] **P38.1 Content: monsters + tribes + magic items + artifacts** (`data/*.json`).
+- [ ] **P38.2 Content: areas/structures (villages, camps, ruins, the sunken library) + NPCs.**
+- [ ] **P38.3 Content: the quest chain + clues + branching solve paths + the module pack.**
+- [ ] **P38.4 Deep integration tests + a scripted playthrough that completes the objectives.**
