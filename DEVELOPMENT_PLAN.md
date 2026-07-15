@@ -5712,3 +5712,12 @@ Phase 40's fidelity work folds into the iso textures/shading. Full design: docs/
   `seen`-gated on dark levels. Wired at the end of `iso_zone.render_zone_iso`. The iso crypt
   now reads dark and dank with warm brazier pools (was flatly, evenly lit). ONE lighting
   model for both renderers. `tests/test_interior_light.py` (+3 iso). Screenshots re-rendered.
+- [x] **P41.10 Iso day-night + weather parity.** The iso OVERWORLD bypassed the top-down
+  lighting/weather passes, so night/rain/fog didn't read in iso. New `ui/sky_overlay.py` — a
+  flat, projection-agnostic pass (`night_darkness` eased night alpha + moonlight relief +
+  storm/fog/rain bump; `sky_wash` the aurora/winter `sky_tint`; `apply` = darkness + tint +
+  the weather PARTICLE overlay) — is applied by `iso_render.dispatch` after `render_iso`,
+  reusing the renderer's persistent `WeatherOverlay`. Screenshots confirm: the iso overworld
+  now darkens blue at night, washes at dusk/winter, and shows fog blobs / rain streaks — at
+  parity with top-down (the per-tile torch/window punches stay a top-down nicety; interiors
+  keep their P41.9 light). `tests/test_sky_overlay.py` (+6). Top-down renderer untouched.

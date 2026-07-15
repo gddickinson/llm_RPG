@@ -35,6 +35,18 @@ def dispatch(renderer, target, engine, view_rect, zone) -> bool:
                                      renderer.tile_size, renderer.sprites)
         else:
             render_iso(target, engine, view_rect, renderer.tile_size)
+            # P41.10 day-night + weather parity for the iso OVERWORLD (interiors
+            # keep their own P41.9 light); reuse the renderer's persistent
+            # weather overlay so particles animate frame-to-frame.
+            try:
+                from ui import sky_overlay
+                if getattr(renderer, "_weather_overlay", None) is None:
+                    from ui.weather_overlay import WeatherOverlay
+                    renderer._weather_overlay = WeatherOverlay()
+                sky_overlay.apply(target, view_rect, engine,
+                                  renderer._weather_overlay)
+            except Exception:
+                pass
         return True
     except Exception:
         return False

@@ -7843,3 +7843,18 @@ mood — a big atmosphere jump from the old even grey. One lighting model, both 
 `tests/test_interior_light.py` (+3 iso: brazier lights its iso area, `seen` gates a prop,
 the shared core). interior_light.py 143 lines, iso_zone.py 181 (both < 500). Full suite
 green.
+
+## 2026-07-15 — P41.10: iso day-night + weather parity (3D graphics upgrade)
+
+The iso OVERWORLD bypassed the top-down renderer's lighting + weather passes (iso `dispatch`
+returns early), so night, rain and fog didn't read in the isometric view. New
+`ui/sky_overlay.py` — a flat, projection-agnostic pass: `night_darkness(engine)` (eased
+ambient night alpha + full-moon relief + a storm/fog/rain darkness bump), `sky_wash(engine)`
+(the `light_palette.sky_tint` green-aurora / winter-chill RGBA), and `apply(...)` (fills the
+night darkness, blits the sky tint, then drives the weather PARTICLE overlay). `iso_render.
+dispatch` applies it over the overworld after `render_iso`, reusing the renderer's persistent
+`WeatherOverlay` so particles animate frame-to-frame. Screenshots (scratchpad/sky_*.png)
+confirm parity: the iso overworld now darkens deep blue at 2am, washes at dusk, and drifts
+fog blobs over an evening-fog scene — matching the top-down mood; interiors keep their P41.9
+light. `tests/test_sky_overlay.py` (+6). iso_render.py 260 / sky_overlay.py 78 lines. Top-
+down renderer untouched; iso stays opt-in. Full suite green.
