@@ -154,33 +154,13 @@ def make_default_interior(name: str) -> Interior:
     )
 
 
-def _furnish_rooms(inter, rooms, seed) -> None:
-    """P36.4 furnish a subdivided interior room by room (biggest = the main room),
-    keeping the source furniture where it lands on floor and adding a little more."""
-    import random
-    rng = random.Random(seed ^ 0x2f3d)
-    kept = [f for f in inter.furniture
-            if inter.terrain[f.get("y", 1)][f.get("x", 1)] != TerrainType.BUILDING]
-    taken = {(f["x"], f["y"]) for f in kept} | {inter.door}
-    rooms = sorted(rooms, key=lambda r: -r[2] * r[3])
-    kits = (["Table", "Chair", "Hearth"], ["Bed", "Chest"], ["Shelf", "Barrel"],
-            ["Chest", "Chair"], ["Barrel"], ["Shelf"])
-    extra, spots = [], []
-    for i, (rx, ry, rw, rh) in enumerate(rooms):
-        kit = kits[i] if i < len(kits) else ["Barrel"]
-        cells = [(rx + rw // 2, ry + rh // 2), (rx + 1, ry + 1),
-                 (rx + rw - 2, ry + rh - 2)]
-        for item, (fx, fy) in zip(kit, cells):
-            if (0 < fx < inter.width - 1 and 0 < fy < inter.height - 1
-                    and inter.terrain[fy][fx] != TerrainType.BUILDING
-                    and (fx, fy) not in taken):
-                taken.add((fx, fy))
-                extra.append({"name": item, "x": fx, "y": fy})
-        if i == 0:
-            spots.append((rx + rw // 2, max(ry + 1, ry + rh // 2 - 1)))
-    inter.furniture = kept + extra
-    if spots:
-        inter.npc_spots = spots
+def _furnish_rooms(inter, rooms, seed, kind="") -> None:
+    """BLD.2: furnish a subdivided interior by ROOM FUNCTION — each leaf is
+    tagged a room_type from the building's room-set and gets that type's kit
+    (`world/room_plan.py`), so a tavern reads common-room + bar + kitchen and a
+    smithy forge + workshop, not a size-ranked bed-and-chest in every room."""
+    from world import room_plan
+    room_plan.furnish_typed(inter, rooms, kind, seed)
 
 
 def make_from_blueprint(loc_name: str, bp) -> Interior:
@@ -261,19 +241,34 @@ def fit_to_footprint(inter: Interior, loc) -> Interior:
     inter.door = (tw // 2, th - 1)
     inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
 
-    # P36.4: a roomy building becomes MULTI-ROOM (BSP subdivision); a hut stays
-    # one open room so its authored layout survives
-    if tw >= 11 and th >= 8:
+    # BLD.2: a building whose function has a MULTI-ROOM program becomes multi-
+    # room (BSP subdivision + functional room typing); a single-room building
+    # (a well) or a tiny footprint stays one open room so its layout survives.
+    kind = loc.get_property("type", "") if hasattr(loc, "get_property") else ""
+    from world import room_plan
+    room_set = room_plan.room_set_for(kind)
+    # subdivide when the building's FUNCTION wants ≥2 rooms (a small tavern still
+    # gets a common-room + bar), OR its footprint is simply big enough (a large
+    # building is multi-room whatever its kind); a tiny kindless hut stays open.
+    has_program = len(room_set) >= 2
+    big_footprint = tw >= 11 and th >= 8
+    if (has_program and tw >= 8 and th >= 7) or big_footprint:
         from world import room_gen
         seed = sum(ord(c) for c in inter.name) + old_w * 7 + old_h * 13
-        grid, rooms = room_gen.subdivide(tw, th, seed)
+        # min_room=2 so a medium building (8x8 → 6x6 inner) still splits; depth
+        # scales with footprint so a small building gets a couple of rooms, not
+        # a warren of 1-tile closets
+        big = tw >= 12 and th >= 10
+        depth = 3 if (big and len(room_set) > 3) else 2
+        grid, rooms = room_gen.subdivide(tw, th, seed,
+                                         min_room=2, max_depth=depth)
         grid[th - 2][tw // 2] = room_gen.FLOOR       # keep the entrance clear
         for y in range(th - 1):
             for x in range(1, tw - 1):
                 if grid[y][x] == room_gen.WALL:
                     inter.terrain[y][x] = TerrainType.BUILDING
         inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
-        _furnish_rooms(inter, rooms, seed)
+        _furnish_rooms(inter, rooms, seed, kind)
         return inter
 
     # Remap furniture, nudging collisions to the next free tile

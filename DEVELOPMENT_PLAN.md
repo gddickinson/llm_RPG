@@ -5853,9 +5853,20 @@ ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly 
   `fireplace`/`oven` joined `prop_sprites.LIT_PROPS`, so a home's hearth / a smithy's forge /
   a bakery's oven now cast a warm light pool (scratchpad/bld1_smithy.png) instead of an unlit room.
   `tests/test_furnishings.py` +5, `test_prop_sprites.py`/`test_interior_theme.py` updated.
-- [ ] **BLD.2 Functional room plans** — `data/room_templates.json` + `data/building_room_sets.json`
-  (port aw ROOM_TEMPLATES/BUILDING_ROOM_SETS); tag each BSP leaf a `room_type` by function + size;
-  role→furniture kit; new `world/room_plan.py`. Retune the BSP gate so medium buildings subdivide.
+- [x] **BLD.2 Functional room plans — DONE (the unlock).** Rooms are no longer anonymous. New
+  `data/room_templates.json` (16 room_types → furniture kit `[name,min,max]` + size) +
+  `data/building_room_sets.json` (function/kind → ordered room list, ported from aw
+  ROOM_TEMPLATES/BUILDING_ROOM_SETS) + new `world/room_plan.py`: after `room_gen.subdivide`, the
+  leaf touching the entrance becomes the building's PUBLIC room (`room_set[0]`) and the rest are
+  typed by descending area, each furnished with its kit (wall pieces hug walls, tables/rugs/anvils
+  centre, capped at ⅓ the room's free cells so it stays roomy). `interiors._furnish_rooms` now
+  delegates here (interiors.py 432→422). BSP gate retuned (`min_room=2`, footprint-scaled depth):
+  subdivide when the FUNCTION wants ≥2 rooms (a small tavern still splits) OR the footprint is big
+  (`tw≥11 and th≥8`, so a large building is multi-room whatever its kind); a tiny kindless hut
+  stays open. So a tavern reads common-room + bar + kitchen, a smithy forge + workshop + storeroom,
+  a shop counter + storeroom (scratchpad/bld2_tavern.png). `tests/test_room_plan.py` (+11);
+  `test_furniture`/`test_room_gen`/`test_carry` made robust to the denser typed layout (they had
+  hardcoded a specific furniture tile).
 - [ ] **BLD.3 Feature-composition furnishing + placement hardening** — `features[]` in
   furnishings.json + a dispatch (bar_counter/pew_rows/pillar_row/carpet_runner/altar_end/…); WALL/
   CENTER/INNER_WALL categories, count ranges, and a DOOR-APRON exclusion (never block a doorway).

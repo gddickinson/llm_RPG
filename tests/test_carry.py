@@ -126,11 +126,22 @@ class TestExplorerFixes(unittest.TestCase):
 
     def test_pickup_works_indoors_beside_furniture(self):
         """George: furniture flavor shadowed indoor pickups."""
+        from world.world_map import TerrainType
         inter = self.engine.interiors["Oakvale Tavern"]
         self.engine.current_interior = inter
         hearth = next(f for f in inter.furniture
                       if f["name"] == "Hearth")
-        spot = (hearth["x"] + 1, hearth["y"])
+        # a free FLOOR tile beside the hearth (BLD.2 may wall hearth+1)
+        occupied = {(f["x"], f["y"]) for f in inter.furniture}
+        spot = next(
+            ((hearth["x"] + dx, hearth["y"] + dy)
+             for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) if
+             0 < hearth["x"] + dx < inter.width - 1
+             and 0 < hearth["y"] + dy < inter.height - 1
+             and inter.terrain[hearth["y"] + dy][hearth["x"] + dx]
+             != TerrainType.BUILDING
+             and (hearth["x"] + dx, hearth["y"] + dy) not in occupied), None)
+        self.assertIsNotNone(spot, "a free floor tile beside the hearth")
         self.player.position = spot
         item = create_item("potion")
         self.engine.world.add_item_to_ground(item, *spot)

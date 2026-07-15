@@ -8323,3 +8323,28 @@ cast no light (missing from LIT_PROPS). Fixed both, cheaply:
 `tests/test_furnishings.py` +5 (new themes resolve, shop≠home, kind fallback, every theme has
 props, watchtower-beats-tower); test_prop_sprites + test_interior_theme updated for the new
 behavior. Validator clean. Next: BLD.2 (functional room typing — the unlock).
+
+## 2026-07-15 — BLD.2: functional room typing (the interior unlock)
+
+The core buildings finding: interior rooms are ANONYMOUS — BSP (room_gen) makes untyped cells
+and the old _furnish_rooms filled them by SIZE RANK (a tavern's 2nd room and a temple's 2nd room
+both got bed+chest). Fixed by porting autonomous_world's room-template system:
+- NEW data/room_templates.json — 16 room_types (hearth_room/bedroom/kitchen/common_room/bar/
+  storeroom/counter/forge/workshop/nave/sanctuary/vestry/guest_room/study/great_room/stall), each
+  a furniture KIT [name,min,max] + size hints, using llm_RPG's existing furniture/prop names.
+- NEW data/building_room_sets.json — building FUNCTION (or kind) → an ORDERED room list (tavern=
+  common_room+bar+kitchen+storeroom+guest_room; smithy=forge+workshop+storeroom; temple=nave+
+  sanctuary+vestry; shop=counter+storeroom; home/default=hearth_room+bedroom+storeroom).
+- NEW world/room_plan.py (162 lines, pure/seeded): room_set_for(kind) (by kind → function →
+  default), assign_types (the leaf touching the entrance = the PUBLIC room = room_set[0]; the rest
+  typed by descending area), furnish_typed (lay each room's kit — wall pieces on wall-adjacent
+  cells, tables/rugs/anvils/pews centre, capped at ⅓ the room's free cells; discards the stale
+  blueprint furniture the BSP layout invalidated; seats the NPC in the public room).
+- world/interiors._furnish_rooms now delegates to room_plan (432→422 lines). The BSP gate was
+  retuned — min_room=2 + footprint-scaled depth + tw>=8/th>=7 + a >=2-room program — so MEDIUM
+  buildings subdivide (an 8x8 tavern is now 2-3 functional rooms, not one open box). A single-room
+  program (a well) stays one room.
+Result: a tavern reads common-room + bar + kitchen, a smithy forge + workshop + storeroom, a shop
+counter + storeroom, at ~35% furniture density (scratchpad/bld2_tavern.png; the hearth glows via
+BLD.1). tests/test_room_plan.py (+11). Validator clean. Next: BLD.3 (feature-composition furnishing
+— a real L-shaped bar counter, pew rows, carpet runners — + door-apron placement hardening).
