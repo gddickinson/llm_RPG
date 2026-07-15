@@ -250,5 +250,64 @@ class TestQuestChain(_AdvBase):
         self.assertTrue(player.metadata.get("quest_flags", {}).get("tome_won"))
 
 
+class TestPlaythrough(_AdvBase):
+    """P38.4 — a scripted playthrough through the REAL engine: the quest is
+    offered in dialog, the Vault is entered, the fragments are picked up, the
+    lich is defeated, and BOTH endings complete + fire a [Legend]. (Long travel
+    is teleported; every quest step uses the real gameplay hook.)"""
+
+    def _tp(self, pos):
+        e = self.engine
+        e.world.map.remove_character(e.player)
+        e.player.position = tuple(pos)
+        e.world.map.place_character(e.player, *pos)
+
+    def _run_to_reckoning(self):
+        e, qm, p = self.engine, self.engine.quest_manager, self.engine.player
+        at = e.adventure_tome
+        # Act 1 — Ondrel offers it in the world; accept + reach the Vault
+        self.assertIn("q_tome_whisper",
+                      [q.id for q in e.quests_offered_by("sage_ondrel")])
+        self.assertTrue(qm.accept_quest("q_tome_whisper"))
+        self._tp(at.area_pos("drowned_vault"))
+        e.enter_building()                                # real: fires EXPLORE
+        self.assertTrue(qm.turn_in("q_tome_whisper", p))
+        if e.current_interior:
+            e.exit_building()
+        # Act 2 — pick up all three fragments through the real pickup path
+        self.assertTrue(qm.accept_quest("q_tome_keys"))
+        frag_pos = [pos for pos, items in e.world.ground_items.items()
+                    for i in items if "warding_key_" in getattr(i, "id", "")]
+        for pos in frag_pos:
+            self._tp(pos)
+            e.pickup_item()
+        self.assertTrue(qm.turn_in("q_tome_keys", p))
+        self.assertTrue(any(getattr(i, "id", "") == "warding_key"
+                            for i in p.inventory))
+        # Act 5 — the lich falls (the real combat→quest hook, template match)
+        self.assertTrue(qm.accept_quest("q_tome_reckoning"))
+        qm.on_npc_defeated("enc_vaelzhur_lich_ab99cd", "warlock")
+        qm.quests["q_tome_reckoning"].update_status()
+        self.assertEqual(qm.quests["q_tome_reckoning"].status.value,
+                         "completed")
+        return e, qm, p
+
+    def test_seal_ending(self):
+        e, qm, p = self._run_to_reckoning()
+        qm.choose_reward("q_tome_reckoning", 0)           # Seal
+        qm.turn_in("q_tome_reckoning", p)
+        self.assertTrue(any("[Legend]" in str(m) and "sealed" in str(m)
+                            for m in qm.event_log))
+        self.assertTrue(p.metadata.get("quest_flags", {}).get("tome_won"))
+
+    def test_destroy_ending(self):
+        e, qm, p = self._run_to_reckoning()
+        qm.choose_reward("q_tome_reckoning", 1)           # Destroy
+        qm.turn_in("q_tome_reckoning", p)
+        self.assertTrue(any("[Legend]" in str(m) and "shattered" in str(m)
+                            for m in qm.event_log))
+        self.assertTrue(p.metadata.get("quest_flags", {}).get("tome_won"))
+
+
 if __name__ == "__main__":
     unittest.main()

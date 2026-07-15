@@ -7655,3 +7655,17 @@ Mirefen marsh + Ondrel. data_validate learns the adventure NPCs (from data/adven
 json) are valid givers. tests/test_adventure_tome.py drives the whole chain end to end
 (Whisper → Keys → Reckoning → Destroy finale [Legend] + tome_won flag). Validator clean.
 Full suite next. Next P38.4: a world-scale scripted playthrough + a "how to play" README note.
+
+## 2026-07-15 — P38.4: adventure playthrough test + "how to play" README
+
+The Sunken Tome is proven completable through the REAL engine. tests/test_adventure_tome.py
+`TestPlaythrough` drives the whole arc on a live game: Ondrel offers the quest in dialog →
+accept → enter the Drowned Vault (real enter_building fires the EXPLORE objective) → turn in
+→ pick up all 3 Warding-Key fragments through the real pickup path (fires FETCH) → turn in
+(get the assembled Warding Key) → accept the reckoning → the lich falls (the real
+combat→quest hook, matched by its enc_ template) → both the SEAL and DESTROY endings
+complete and fire their [Legend] finale + the tome_won flag (two test methods). Long travel
+is teleported; every quest STEP uses the real gameplay hook. README gains a "Playing The
+Sunken Tome of Vael'Zhur" section (the rumor → Mirefen → Ondrel → keys → the Vault → choose
+the ending). PHASE 38 COMPLETE — a substantial, guided, branching adventure is playable.
+Next: Phase 41 (isometric 3D world) begins.

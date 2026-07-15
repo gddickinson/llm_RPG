@@ -108,6 +108,29 @@ quick-Heal; `H` drink a potion.
 
 ---
 
+## Playing "The Sunken Tome of Vael'Zhur" (the built-in adventure)
+
+A themed side-campaign is woven into every new game. At the start you'll hear a
+rumor — *"Fisherfolk speak of a drowned green light in the southern Mirefen
+marsh — and of the scholar Ondrel there."* That's your cue:
+
+1. **Travel south/south-east** to the **Mirefen** marsh (a good stretch out).
+2. **Talk to Sage Ondrel** (`T`) — he gives *The Whisper Beneath the Marsh*:
+   find the **Drowned Vault**.
+3. **The Scattered Keys** — recover the three **Warding-Key fragments** from
+   the **Thornwatch Ruins**, the **Ashen Camp**, and **Ysolde's Hollow** (each
+   guarded — fight for them), and bring them back to Ondrel, who forges the
+   **Warding Key**.
+4. **The Drowned Sanctum** (from **Warden Halric**) — descend the Vault's three
+   flooded, sigil-warded levels and face **Vael'Zhur the lich** at his altar.
+5. **Decide the Tome's fate** — at turn-in, choose to **Seal**, **Destroy**, or
+   **Claim** it. Each ending writes its own line into the Chronicle (`Y`).
+
+Tip: the Vault is dark — grab the **Drowned Lantern** from the first chest, and
+the **Tidecaller's Signet** helps you cross the flooded halls.
+
+---
+
 ## Development
 
 - **Branch:** work happens on `v2-development` in small, tested rounds; every
