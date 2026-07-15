@@ -111,6 +111,26 @@ class InputHandler:
                 return True
             return True
 
+        # Waystone menu (P37.1): 1-9 travel to a destination, Esc cancels
+        if self.gui.mode == "waystone":
+            if event.type != pygame.KEYDOWN:
+                return True
+            if event.key in (pygame.K_ESCAPE, pygame.K_e, pygame.K_g):
+                self.gui.mode = "play"
+                self.gui.overlay = None
+                return True
+            if pygame.K_1 <= event.key <= pygame.K_9:
+                idx = event.key - pygame.K_1
+                try:
+                    msg = self.engine.teleport_network.teleport_index(idx)
+                    self.engine.memory_manager.add_event(msg)
+                except Exception:
+                    pass
+                self.gui.mode = "play"
+                self.gui.overlay = None
+                return True
+            return True
+
         # Menu mode (text overlay — help / character sheet / quest log)
         if self.gui.mode == "menu":
             if event.type == pygame.KEYDOWN and event.key in \
@@ -327,6 +347,11 @@ class InputHandler:
             if shift and k == pygame.K_g:   # carry a body (P13.2)
                 from engine.ransom import hoist_or_deliver
                 hoist_or_deliver(self.engine)
+                return True
+            tn = getattr(self.engine, "teleport_network", None)   # P37.1
+            if tn is not None and not self.engine.current_interior \
+                    and tn.platform_at(self.engine.player.position) is not None:
+                self.gui.show_teleport()
                 return True
             if self.engine.current_interior:
                 try:

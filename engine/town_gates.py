@@ -44,6 +44,41 @@ class TownGateSystem:
     def is_open(self, gate) -> bool:
         return self.state_of(gate) == "open"
 
+    def is_locked(self, gate) -> bool:
+        return self.state_of(gate) == "locked"
+
+    def gate_at(self, pos):
+        """The gate at `pos`, or None — a fast tile lookup for movement/hints."""
+        for g in self._gates():
+            if g == (pos[0], pos[1]):
+                return g
+        return None
+
+    def closed_gate_near(self, pos, r: int = 1):
+        """The nearest shut (closed/locked) gate within `r` — for the hint bar."""
+        for g in self._gates():
+            if abs(g[0] - pos[0]) <= r and abs(g[1] - pos[1]) <= r \
+                    and not self.is_open(g):
+                return g
+        return None
+
+    # ---- the player walks THROUGH a shut gate ----------------------
+
+    def player_step_open(self, pos):
+        """The player steps into a shut town gate. An unlocked one swings OPEN
+        for them (they live here / are a traveller — no crime); a LOCKED gate
+        (raiders at the walls) stays barred. Returns a line if it opened, so the
+        move can proceed onto the now-ROAD tile, else None."""
+        g = self.gate_at(pos)
+        if g is None or self.is_open(g):
+            return None
+        if self.is_locked(g):
+            return None                      # barred by the alarm — force it
+        if self._set_tile(g, closed=False):
+            self.state[self._key(g)] = "open"
+            return "The town gate swings open for you."
+        return None
+
     # ---- open / close ----------------------------------------------
 
     def _set_tile(self, gate, closed: bool) -> bool:

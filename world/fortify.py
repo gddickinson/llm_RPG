@@ -105,6 +105,45 @@ def _ring(wmap, x0, y0, x1, y1):
     return gates
 
 
+_OUT = {"north": (0, -1), "south": (0, 1), "west": (-1, 0), "east": (1, 0)}
+
+
+def _ensure_min_gates(wmap, x0, y0, x1, y1, gates, minimum: int = 2):
+    """Cut extra gates on gate-less edges until the town has at least `minimum`
+    on DIFFERENT sides — so a walled town is never a one-door prison (George:
+    "no way through the four main walls"). A new gate needs open ground just
+    outside it, never a cliff, lake, or another wall."""
+    def edge_of(g):
+        x, y = g
+        if y == y0:
+            return "north"
+        if y == y1:
+            return "south"
+        if x == x0:
+            return "west"
+        return "east"
+
+    have = {edge_of(g) for g in gates}
+    mids = {"north": ((x0 + x1) // 2, y0), "south": ((x0 + x1) // 2, y1),
+            "west": (x0, (y0 + y1) // 2), "east": (x1, (y0 + y1) // 2)}
+    for side in ("south", "north", "east", "west"):
+        if len(gates) >= minimum:
+            break
+        if side in have:
+            continue
+        gx, gy = mids[side]
+        ox, oy = gx + _OUT[side][0], gy + _OUT[side][1]
+        if not (0 <= ox < wmap.width and 0 <= oy < wmap.height):
+            continue
+        if wmap.terrain[oy][ox] in _NATURAL_BARRIER \
+                or wmap.terrain[oy][ox] == WALL:
+            continue                       # opens onto a barrier — try next edge
+        wmap.terrain[gy][gx] = GATE
+        gates.append((gx, gy))
+        have.add(side)
+    return gates
+
+
 def fortify(wmap, location, margin: int = 2):
     """Wall a single location's perimeter (the base ring). Returns gate tiles."""
     gates = _ring(wmap, *town_bounds(location, margin))
@@ -120,6 +159,7 @@ def fortify_town(world, center_loc, margin: int = 2, radius: int = 12):
     members = town_members(world, center_loc, radius)
     x0, y0, x1, y1 = _clamp(wmap, *extent(members, margin))
     gates = _ring(wmap, x0, y0, x1, y1)
+    _ensure_min_gates(wmap, x0, y0, x1, y1, gates, minimum=2)
     corners = [(x0, y0), (x1, y0), (x0, y1), (x1, y1)]
     for cx, cy in corners:
         wmap.terrain[cy][cx] = WALL          # a solid tower block at the corner

@@ -117,6 +117,51 @@ class TestForce(_Base):
         self.assertIn("open", self.tg.force_gate(self.gates[0]).lower())
 
 
+class TestPlayerPasses(_Base):
+    """P37 — a shut UNLOCKED gate opens for the player who walks into it, so a
+    walled town is never a prison at night (George: trapped inside the walls)."""
+
+    def _stand_inside(self, g):
+        """Place the player on a walkable tile just inside gate `g`, and return
+        the (dx, dy) step that walks OUT through it."""
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            ix, iy = g[0] - dx, g[1] - dy          # the inside neighbour
+            if 0 <= ix < self.wmap.width and 0 <= iy < self.wmap.height \
+                    and self.wmap.terrain[iy][ix] not in (
+                        TerrainType.BUILDING, TerrainType.WATER,
+                        TerrainType.MOUNTAIN) \
+                    and (ix, iy) not in self.wmap.characters:
+                self.wmap.remove_character(self.engine.player)
+                self.engine.player.position = (ix, iy)
+                self.wmap.place_character(self.engine.player, ix, iy)
+                return dx, dy
+        return None
+
+    def test_walking_into_a_night_gate_opens_it(self):
+        self._time("night")
+        self.tg.sync()
+        g = next(x for x in self.gates if self.tg.state_of(x) == "closed")
+        self.assertEqual(self.wmap.terrain[g[1]][g[0]], TerrainType.BUILDING)
+        step = self._stand_inside(g)
+        self.assertIsNotNone(step, "no walkable tile just inside the gate")
+        moved = self.engine.player_actions.move(*step)
+        self.assertTrue(moved, "the shut gate should swing open and admit you")
+        self.assertEqual(self.engine.player.position, tuple(g))
+        self.assertEqual(self.wmap.terrain[g[1]][g[0]], TerrainType.ROAD)
+
+    def test_a_locked_gate_stays_barred_against_the_player(self):
+        self._time("night")
+        self.tg.close_all(locked=True)
+        g = next(x for x in self.gates if self.tg.state_of(x) == "locked")
+        step = self._stand_inside(g)
+        self.assertIsNotNone(step)
+        before = self.engine.player.position
+        self.engine.player_actions.move(*step)
+        self.assertEqual(self.engine.player.position, before,
+                         "a raider-locked gate turns even the player back")
+        self.assertEqual(self.wmap.terrain[g[1]][g[0]], TerrainType.BUILDING)
+
+
 class TestPersistence(_Base):
     def test_gate_state_round_trips(self):
         self.tg.close_all(locked=True)

@@ -5529,11 +5529,18 @@ magical guild (the Wayfarers' Conclave), giving safe spawn + teleport points. Th
 the `teleport_ring` (every hero starts with it), `platform_at`/`destinations`/`teleport`,
 and persistence — but there is NO player-facing hook. Finish it:
 
-- [ ] **P37.1 Player teleport hook.** Standing on a waystone with a ring, a key opens a
-  DESTINATION MENU (the other waystones, by name) → `teleport(dest)` with a safe landing;
-  a hint-bar telegraph ("[key] Wayfarer's platform — travel"), an event beat, wired into
-  the GUI (a menu overlay like the travel menu / conversation menu). Waystones seed on
-  the realistic world too. Tests + a screenshot.
+- [x] **P37.1 Player teleport hook.** Standing on a waystone (E), the Wayfarer's Waystone
+  DESTINATION MENU lists the other waystones by name → a number key `teleport_index` steps
+  you there with a safe landing; a hint-bar telegraph ("[E] waystone — travel the Wayfarer
+  network"), an event beat, wired into the GUI as a "waystone" menu overlay. Waystones
+  seed on the realistic world too. Tests + a screenshot. **Also fixed (George, reported
+  twice): the walled start town was a night-time PRISON** — both worlds start at midnight,
+  the P31.1d gate system closes every gate to a wall, and the realistic town had only ONE
+  gate, so there was no way out. Fix: (a) a shut UNLOCKED gate now swings OPEN when the
+  player walks into it (`town_gates.player_step_open`, like a door — only a raider-ALARM
+  lock bars it, which `force_gate` still opens); (b) `fortify._ensure_min_gates` guarantees
+  a walled town has ≥2 gates on different walls; (c) a directional hint-bar cue points to a
+  shut gate. Regression tests drive the player out through a night-shut gate.
 - [ ] **P37.2 Reach & polish.** Waystones at more places of interest (guild halls, the
   castle, notable ruins); NPCs/away-heroes can use the network; a small toll or
   guild-standing gate (optional), the Conclave lore.

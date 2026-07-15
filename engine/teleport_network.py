@@ -133,6 +133,46 @@ class TeleportNetwork:
         """The other waystones a traveller can step to from `from_id`."""
         return [p for p in self.platforms if p["id"] != from_id]
 
+    # ---- player-facing hook (P37.1) --------------------------------
+
+    def can_use(self, player) -> bool:
+        """True when `player` stands on a waystone AND holds a ring — the
+        gate the hint bar and the E-key route on."""
+        return (self.platform_at(player.position) is not None
+                and self.has_ring(player))
+
+    def overlay_lines(self) -> List[str]:
+        """The Wayfarer's Waystone destination menu (numbered), for the GUI."""
+        player = self.engine.player
+        here = self.platform_at(player.position)
+        if here is None:
+            return ["You are not standing on a waystone."]
+        if not self.has_ring(player):
+            return ["You need a Wayfarer's Ring to use the waystones.",
+                    "", "The Conclave's rings are common enough — ask in town."]
+        dests = self.destinations(here["id"])
+        lines = [f"You stand on the {here['name']}.",
+                 "The Wayfarers' Conclave links it to:", ""]
+        if not dests:
+            lines.append("  (no other waystone is attuned yet)")
+        for i, p in enumerate(dests[:9], start=1):
+            where = p.get("settlement") or p["name"]
+            lines.append(f"  [{i}] {p['name']}  —  {where}")
+        lines += ["", "  [Esc] step back"]
+        return lines
+
+    def teleport_index(self, i: int) -> str:
+        """Travel to the i-th (0-based) destination from the current waystone —
+        the 1-9 key route. Player-facing line."""
+        player = self.engine.player
+        here = self.platform_at(player.position)
+        if here is None:
+            return "You must stand on a waystone to travel the network."
+        dests = self.destinations(here["id"])
+        if not (0 <= i < len(dests)):
+            return "No such waystone to travel to."
+        return self.teleport(dests[i]["id"])
+
     def teleport(self, dest_id: str) -> str:
         """Step from the waystone you're on to `dest_id`. Player-facing line."""
         engine = self.engine

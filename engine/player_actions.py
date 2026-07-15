@@ -240,6 +240,20 @@ class PlayerActions:
         except Exception:
             pass
 
+        # A shut town gate opens for you (P31.1d/P37): walk into it and — unless
+        # a raider ALARM has barred it — it swings open, so you are never sealed
+        # inside your own walled town at night. George: "no way through the four
+        # main walls." Runs BEFORE the wall guard, which would else stop the
+        # BUILDING tile a closed gate reverts to.
+        try:
+            tg = getattr(self.engine, "town_gates", None)
+            if tg is not None:
+                opened = tg.player_step_open((nx, ny))
+                if opened:
+                    self.engine.memory_manager.add_event(opened)
+        except Exception:
+            pass
+
         # Solid buildings (P9A.3b): walls block, the door tile admits.
         # George: "I can just walk onto the building tile — shouldn't
         # there be doors and walls?"

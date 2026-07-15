@@ -7382,3 +7382,36 @@ a road-gate to the west. `tests/test_realistic_gen.py` (escape + chronicle regre
 PHASE 36 COMPLETE: a realistic, deep-history world (heightmap biomes + rivers + a
 900-year settlement/ruins/roads chronicle + BSP multi-room interiors) is a selectable,
 playable New Game option.
+
+## 2026-07-14 (cont.) — P37.1: teleport network player hook + the walled-town PRISON fix
+
+P37.1 finished the P28.1a Wayfarers' Conclave teleport network with the missing
+player-facing hook: standing on a waystone, `E` opens the "Wayfarer's Waystone" menu
+(`teleport_network.overlay_lines` → `gui.show_teleport` → a "waystone" GUI overlay +
+`input_handler` mode) listing the other waystones by name; a number key routes through
+`teleport_index(i)` to travel with a safe landing; a hint-bar telegraph advertises it.
+`can_use`/`overlay_lines`/`teleport_index` + 5 tests; a screenshot shows the menu.
+
+BUG-FIX (George, reported TWICE — "the realistic world starting castle still doesn't
+have anyway to get through the four main walls"): the P36.5 terrain fix wasn't enough
+because the trap was in the GATE SYSTEM, not the terrain. Both worlds start at midnight
+(`world.time == 0`); the P31.1d `TownGateSystem.sync` CLOSES every gate to a WALL at
+night; and the realistic town had only ONE gate (one road crossed it) — so at the
+midnight start the single exit was a wall and the player, with no way to open it short
+of the crime `force_gate`, was sealed in (a real-movement flood-fill reached just 67
+tiles). Three-part fix:
+  (1) `town_gates.player_step_open` — a shut UNLOCKED gate swings OPEN when the PLAYER
+      walks into it (called from `player_actions.move` before the wall guard, like a
+      door): you live here / are a traveller, so you're never sealed inside your own
+      walls; only a raider-ALARM `is_locked` gate bars you (and `force_gate` still opens
+      that).
+  (2) `fortify._ensure_min_gates` (in `fortify_town`) — guarantees a walled town has ≥2
+      gates on DIFFERENT walls (the realistic town now gets a west road-gate + a cut
+      south gate), so it's never a one-door prison and an exit is findable on more than
+      one side.
+  (3) a directional hint-bar cue ("[move] the town gate (west) is shut for the night —
+      walk into it to pass"; the alarm variant points at forcing it).
+Verified: at the midnight start the player walks WEST into the shut gate → it opens →
+steps through and out. Regression tests in `tests/test_town_gates.py` (walk through a
+night-shut gate; a locked gate still bars the player) + `tests/test_fortify.py` (≥2
+gates on ≥2 walls). Classic world unchanged (3 gates). Full suite next.

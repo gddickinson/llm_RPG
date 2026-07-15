@@ -247,7 +247,7 @@ class GameGUI:
                 menu=self.dialog_menu,
             )
 
-        if self.mode in ("menu", "travel") and self.overlay:
+        if self.mode in ("menu", "travel", "waystone") and self.overlay:
             title, lines = self.overlay
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
@@ -375,6 +375,15 @@ class GameGUI:
             lines = ["Travel unavailable."]
         self.overlay = ("Travel", lines)
         self.mode = "travel"
+
+    def show_teleport(self) -> None:
+        """P37.1 the Wayfarer's Waystone destination menu (E on a platform)."""
+        try:
+            lines = self.engine.teleport_network.overlay_lines()
+        except Exception:
+            lines = ["The waystone is dormant."]
+        self.overlay = ("Wayfarer's Waystone", lines)
+        self.mode = "waystone"
 
     def show_diaries(self) -> None:
         try:

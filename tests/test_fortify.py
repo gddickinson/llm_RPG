@@ -168,6 +168,24 @@ class TestWalledStartTown(unittest.TestCase):
                     q.append(n)
         self.assertTrue(escaped, "the player can leave the walled town")
 
+    def test_town_has_gates_on_at_least_two_sides(self):
+        # P37: a walled town is never a one-door prison — when only one road
+        # crosses, a second gate is cut on another wall, so an exit is findable.
+        gates = self._oak().get_property("gates")
+        self.assertGreaterEqual(len(gates), 2, "at least two ways out")
+        x0, y0, x1, y1 = self._box()
+        sides = set()
+        for gx, gy in gates:
+            if gy <= y0:
+                sides.add("N")
+            elif gy >= y1:
+                sides.add("S")
+            elif gx <= x0:
+                sides.add("W")
+            else:
+                sides.add("E")
+        self.assertGreaterEqual(len(sides), 2, "gates on more than one wall")
+
 
 if __name__ == "__main__":
     unittest.main()

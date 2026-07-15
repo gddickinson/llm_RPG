@@ -159,6 +159,54 @@ class TestArrivalCollision(_Base):
                             "a second arrival takes a different tile")
 
 
+class TestPlayerHook(_Base):
+    """P37.1 — the player-facing hook: stand on a waystone with a ring, a menu
+    lists the other waystones, a number key steps you there."""
+
+    def test_can_use_gates_on_platform_and_ring(self):
+        self.assertFalse(self.tn.can_use(self.p), "not on a waystone yet")
+        self._stand_on(self.tn.platforms[0])
+        self.assertTrue(self.tn.can_use(self.p), "on a waystone, ring in bag")
+
+    def test_overlay_lists_numbered_destinations(self):
+        self._stand_on(self.tn.platforms[0])
+        lines = self.tn.overlay_lines()
+        joined = "\n".join(lines)
+        self.assertIn("[1]", joined)
+        # every OTHER waystone is offered
+        for pf in self.tn.platforms[1:]:
+            self.assertIn(pf["name"], joined)
+        self.assertNotIn(self.tn.platforms[0]["name"].split()[0] + " Waystone\n"
+                         + "  [", joined)   # never lists itself as a target
+
+    def test_overlay_asks_for_a_ring_when_missing(self):
+        self.p.inventory = [it for it in self.p.inventory
+                            if "teleport" not in getattr(it, "id", "")]
+        try:
+            from characters.equipment import get_equipment
+            for slot, it in list(get_equipment(self.p).items()):
+                if it and "teleport" in getattr(it, "id", ""):
+                    get_equipment(self.p)[slot] = None
+        except Exception:
+            pass
+        self._stand_on(self.tn.platforms[0])
+        self.assertIn("ring", " ".join(self.tn.overlay_lines()).lower())
+
+    def test_teleport_index_travels(self):
+        src = self.tn.platforms[0]
+        self._stand_on(src)
+        dst = self.tn.destinations(src["id"])[0]
+        msg = self.tn.teleport_index(0)
+        self.assertIn("arrive", msg.lower())
+        self.assertLessEqual(
+            max(abs(self.p.position[0] - dst["pos"][0]),
+                abs(self.p.position[1] - dst["pos"][1])), 8)
+
+    def test_teleport_index_rejects_out_of_range(self):
+        self._stand_on(self.tn.platforms[0])
+        self.assertIn("no such", self.tn.teleport_index(99).lower())
+
+
 class TestPersistence(_Base):
     def test_platforms_survive_a_save(self):
         tmp = tempfile.mkdtemp()

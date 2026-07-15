@@ -107,6 +107,35 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    try:   # a shut town gate nearby (P31.1d/P37) — never a prison
+        tg = getattr(engine, "town_gates", None)
+        if tg is not None and not getattr(engine, "current_interior", None):
+            g = tg.closed_gate_near(player.position, r=5)
+            if g is not None:
+                dx, dy = g[0] - x, g[1] - y
+                comp = ((("east" if dx > 0 else "west") if abs(dx) >= abs(dy)
+                         else ("south" if dy > 0 else "north"))
+                        if (dx or dy) else "here")
+                if tg.is_locked(g):
+                    hints.insert(0, f"[!] the town gate ({comp}) is barred — "
+                                    f"raiders! (SHIFT+TAB to force it)")
+                else:
+                    hints.insert(0, f"[move] the town gate ({comp}) is shut for "
+                                    f"the night — walk into it to pass")
+    except Exception:
+        pass
+
+    try:   # a Wayfarer's waystone underfoot (P37.1)
+        tn = getattr(engine, "teleport_network", None)
+        if tn is not None and not getattr(engine, "current_interior", None) \
+                and tn.platform_at(player.position) is not None:
+            if tn.has_ring(player):
+                hints.insert(0, "[E] waystone — travel the Wayfarer network")
+            else:
+                hints.insert(0, "[waystone] you'd need a Wayfarer's Ring")
+    except Exception:
+        pass
+
     adjacent = _adjacent_npcs(engine)
     enemies = [n for n in adjacent if _hostile(n)]
     friendly = [n for n in adjacent if not _hostile(n)]
