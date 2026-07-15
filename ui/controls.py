@@ -65,7 +65,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
         ("Y", "topic journal"),
     ]),
     ("SYSTEM", [
-        (",", "settings & options"),
+        (",", "settings — 3D iso view, zoom, sound"),
         ("F11", "toggle fullscreen"),
         ("F5 / F9", "quicksave / quickload"),
         ("F1 or ?", "this help"),
