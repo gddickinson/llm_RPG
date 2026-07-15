@@ -5630,3 +5630,24 @@ George (again): "the XP for the levels is still far too low." Raised the XP curv
 coefficient 60 → 150 (L2 120→300, L3 360→900, L4 720→1800): same-level kills to reach a
 level jump L2 8→20, L3 20→50, L5 51→126 — a real grind. Kill XP unchanged (10+5·foe_level).
 Tests updated; full suite green.
+
+## Phase 40 — Graphical fidelity: higher-resolution detail (George, 2026-07-14)
+
+George: "Vastly improve the graphics of the world and its objects. Much more detail is
+needed, at a higher resolution." Full design + a validated proof-of-concept in
+docs/GRAPHICS.md. Technique: SUPERSAMPLE (build each sprite at ~3× → smoothscale down) +
+layered shading (gradient base + 5-7 tone mottle + 3-5× denser varied detail + directional
+light + soft AO/outline), all still procedural + cached. The P40.0 PoC (scratchpad/
+gfx_poc.png) shows a night-and-day jump: flat noise → shaded grass with blades+flowers,
+water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
+
+- [x] **P40.0 Plan + proof-of-concept** (docs/GRAPHICS.md + gfx_poc.png).
+- [ ] **P40.1 gfx foundation** — `ui/gfx.py` (supersample/gradient/shade_ramp/soft_shadow/
+  outline/mottle) + route the sprite builders through it.
+- [ ] **P40.2 High-detail TERRAIN** (biggest win) — rebuild tile_variants recipes with the
+  full layer stack, supersampled; compose with P33.2 edges.
+- [ ] **P40.3 High-detail OBJECTS** — richer prop/furniture sprites (shading/texture/outline).
+- [ ] **P40.4 High-detail BUILDINGS** — brick/stone coursing, roof-tile texture, framed
+  windows, weathering, AO.
+- [ ] **P40.5 Lighting & atmosphere polish** — soft shadows, AO, colour grading, light bloom.
+- [ ] **P40.6 Characters** — richer body shading/outlines/gear (only if needed).

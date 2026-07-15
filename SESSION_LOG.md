@@ -7609,3 +7609,17 @@ temple = lancet, wall_tower/keep = arrow-loop, library = arched, else square).
 `data/interior_themes.json` gains a per-theme `stair`. Screenshots: stone steps in the
 crypt, lancet windows on the temple. tests/test_openings.py (10). renderer.py 499. Full
 suite next. Next P39.6: apply detail everywhere + overworld scatter + broad polish.
+
+## 2026-07-14 (cont.) — P40.0: graphical-fidelity PLAN + proof-of-concept (George)
+
+George: "vastly improve the graphics of the world and its objects — much more detail, at a
+higher resolution." Diagnosed the flat/low-res look (2-3 flat tones + sparse scatter drawn
+aliased at native size) and validated the fix with a proof-of-concept (scratchpad/gfx_poc.
+png): SUPERSAMPLE (build at ~3× → smoothscale down) + layered shading (gradient base + 5-7
+tone mottle + 3-5× denser varied detail + directional light + soft AO/outline). PoC grass
+gained shaded patches + blades + flowers; water gained depth + ripples + sparkle — a
+night-and-day jump at the same display size, cached so per-frame cost is unchanged. Full
+design in docs/GRAPHICS.md; Phase 40 (P40.1 gfx foundation → P40.2 terrain → P40.3 objects
+→ P40.4 buildings → P40.5 lighting → P40.6 characters) added to DEVELOPMENT_PLAN, subsuming
+the old P39.6 polish round. Peeked movieMaker (a JS/py video tool — not directly reusable
+for pygame tiles; autonomous_world's layered terrain gens are the model).
