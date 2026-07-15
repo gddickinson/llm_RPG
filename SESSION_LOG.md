@@ -7781,3 +7781,17 @@ exactly George's ask. New `tests/test_monster_balance.py` (+4) locks the tougher
 and the solo-winnable floor; updated three tests that hard-coded the old HP
 (test_data_content ×2, test_elites — wolf 14×3 = 42). Validator green. Next: P37.5c
 gear/party emphasis + a before/after progression playtest.
+
+## 2026-07-15 — P37.5c: gear & party carry the curve (playtest — closes P37.5)
+
+The balance arc's proof. New `tests/test_progression_playtest.py` (+4, deterministic —
+seeded combat RNG) drives REAL `combat_system._resolve` fights between constructed
+Fighter characters (so no player-death machinery fires) and pins George's three levers:
+**(1) slow leveling** — L2 needs ~20 same-level kills under the P37.5a economy;
+**(2) gear matters** — a common sword + chainmail + iron shield leaves a lone-wolf winner
+at ~22/24 HP vs a bare hero's ~16, and a 3-wolf pack that kills a bare hero (0% win) is a
+~55% coin-flip once geared; **(3) party matters** — a second sword turns that coin-flip
+into a ~100% clean win. So power comes from gear + party, not XP farming — exactly the
+ask. P37.5 (slower progression / harder combat) is now COMPLETE end to end: P37.5a XP
+economy → P37.5a-TUNE steeper curve → P37.5b tougher wild foes → P37.5c this playtest.
+Full suite green (2727 tests).

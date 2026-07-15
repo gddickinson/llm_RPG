@@ -5586,9 +5586,15 @@ party members." A dedicated balance arc:
   while an L3 hero with better gear (str16, wpn+6) clears them (61% wolf pack, 100% troll).
   Fights are riskier and level+gear+party carry the curve. `tests/test_monster_balance.py`
   locks the tougher stats + the solo-winnable floor. Data-driven; validator green.
-- [ ] **P37.5c Gear & party emphasis + playtest.** Verify a scripted heuristic run: the hero
-  no longer rockets up levels, early fights are meaningfully harder, better weapons/armour
-  and companions carry the power curve. Before/after progression check.
+- [x] **P37.5c Gear & party emphasis + playtest.** A deterministic before/after playtest
+  (`tests/test_progression_playtest.py`, +4) drives real `combat_system._resolve` fights
+  between constructed fighters and pins the three levers: (1) leveling is a SLOW climb (L2
+  needs ~20 same-level kills under the P37.5a economy); (2) GEAR matters — a common sword +
+  chainmail + shield cuts damage taken hard (a lone wolf leaves a bare hero at ~16 HP vs a
+  geared hero at ~22 of 24) AND lifts a hopeless pack fight (a 3-wolf pack kills a bare hero
+  0%, but a geared solo hero wins ~55%); (3) PARTY matters — a second sword turns that 55%
+  coin-flip into a ~100% clean win. Power comes from gear + party, not XP farming — George's
+  ask, verified. Closes the P37.5 balance arc.
 
 ## Phase 38 — "The Sunken Tome of Vael'Zhur" — a substantial adventure module (George, 2026-07-14)
 
