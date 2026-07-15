@@ -5614,7 +5614,7 @@ EVERY building, many more decorative props / furniture / diases / stair & window
 - [x] **P39.2 Interior themes** — `data/interior_themes.json` (floor/wall palette + tint per
   theme: tomb/temple/smithy/home/tavern/library/castle/cave); `_render_zone` applies it with
   a dank-dim + dust for deserted, a warm wash for lived-in.
-- [ ] **P39.3 Themed furnishing** — `data/furnishings.json` (kind→props) + a wall-preference
+- [x] **P39.3 Themed furnishing** — `data/furnishings.json` (kind→props) + a wall-preference
   placement pass (adapted from building-gen fixtures.py) so every building is furnished
   in-theme.
 - [ ] **P39.4 Interior light sources & mood** — radial glow for braziers/torches/hearths/

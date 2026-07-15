@@ -217,6 +217,11 @@ class StructureBuilder:
         inter.occupants = list(spec.get("occupants", []))   # P18.2 residents
         inter.puzzle = spec.get("puzzle")
         inter.floor = spec.get("floor")                     # P18.3 elevation
+        try:   # P39.3 decorate the level in-theme (a crypt gets sarcophagi…)
+            from world.furnishings import furnish
+            furnish(inter, spec.get("name", sid))
+        except Exception as e:
+            logger.debug(f"furnish structure level {sid}: {e}")
         return inter
 
     # --------------------------------------------------------- puzzles

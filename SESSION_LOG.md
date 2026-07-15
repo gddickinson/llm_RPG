@@ -7566,3 +7566,19 @@ bright-green interior grass), and washes a faint mood tint over the room. Screen
 Drowned Vault is now a proper dark dank crypt. To hold the 500-line line, split the door-
 glyph draw into `ui/door_glyphs.py` (renderer.py 522→484). tests/test_interior_theme.py (8).
 Full suite next. Next P39.3: themed FURNISHING (kind→props placement).
+
+## 2026-07-14 (cont.) — P39.3: themed FURNISHING (every building decorated in-theme)
+
+Where P39.1 (props) + P39.2 (themes) combine: every interior is now DECORATED in-theme.
+`data/furnishings.json` (theme → prop list with placement `where` = wall/corner/center/
+scatter + a count) + `world/furnishings.py` (`theme_of` reuses the interior-theme keywords;
+`furnish(inter,name)` classifies free floor tiles into wall/corner/centre buckets — adapted
+from building-gen's wall-preference fixtures.py — and lays each prop out, skipping walls/
+doors/stairs/spawns/existing furniture, capped so a room never overcrowds; deterministic).
+Wired into `interiors.build_interiors_for_world` (after fit_to_footprint) AND the structure
+builder `_build_level`, so EVERY building + structure level is furnished. Results: the
+Drowned Vault is now a proper crypt (sarcophagi + braziers + urns + cobwebs + bones +
+gravestone), the Temple ornate (altar + pillars + braziers + tapestries + pews), the Forge
+a working smithy (anvil + hearth + weapon racks + barrels), the Tavern cozy, homes furnished.
+tests/test_furnishings.py (8) + a screenshot of the furnished crypt. Full suite next.
+Next P39.4: interior light sources (the emits_light props glow) + dust for deserted rooms.

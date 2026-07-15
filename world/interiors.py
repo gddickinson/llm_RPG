@@ -409,6 +409,11 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
             fit_to_footprint(inter, loc)
         except Exception as e:
             logger.debug(f"footprint fit for {loc.name}: {e}")
+        try:   # P39.3 decorate it in-theme (braziers, pillars, rugs, …)
+            from world.furnishings import furnish
+            furnish(inter, loc.name)
+        except Exception as e:
+            logger.debug(f"furnish {loc.name}: {e}")
         interiors[loc.name] = inter
 
     # Multi-level pass (P9A.5): bedrooms above taverns and inns,
