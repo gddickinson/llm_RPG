@@ -5810,7 +5810,14 @@ water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
   overrides); the loader cache keys on it. Before/after: scratchpad/gfx_before.png vs gfx_after
   .png (scene) + gfx_tiles_compare.png (tile strip — night-and-day). Built once + cached (36
   tiles in 0.02s). Composes with the P33.2 edge/coastline pass (unchanged).
-- [ ] **P40.3 High-detail OBJECTS** — richer prop/furniture sprites (shading/texture/outline).
+- [x] **P40.3 High-detail OBJECTS — DONE.** Every decorative PROP (`prop_sprites.render_prop`)
+  and overworld SCATTER piece (`scatter_sprites.scatter_sprite`) is now SUPERSAMPLED (built at
+  ts·SSAA via `gfx.supersample`, curves anti-alias) and GROUNDED with a soft `gfx.contact_shadow`
+  so it stops floating — wall/ceiling pieces (tapestry/banner/cobweb/torch/sconce/chandelier)
+  skip the ground shadow. Wired through `sprite_loader.furniture` (SSAA in the cache key, follows
+  the "Smooth sprites" setting). Before/after: scratchpad/gfx_props_compare.png (a prop+scatter
+  strip — floating flat icons → crisp, shadow-grounded pieces). `tests/test_gfx.py` +1,
+  `test_prop_sprites.py` +4, `test_overworld_scatter.py` +1.
 - [ ] **P40.4 High-detail BUILDINGS** — brick/stone coursing, roof-tile texture, framed
   windows, weathering, AO.
 - [ ] **P40.5 Lighting & atmosphere polish** — soft shadows, AO, colour grading, light bloom.

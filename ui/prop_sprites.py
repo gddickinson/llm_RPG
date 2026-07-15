@@ -310,6 +310,11 @@ LIT_PROPS = ("brazier", "torch", "sconce", "candelabra", "chandelier",
              "cauldron")
 
 
+# props hung on a wall / ceiling — no ground contact shadow (P40.3)
+_WALL_PROPS = ("tapestry", "banner", "cobweb", "web", "torch", "sconce",
+               "chandelier")
+
+
 def draw_prop(surf, name: str, ts: int) -> bool:
     """Paint the prop matching `name` onto `surf`. Returns True if handled."""
     low = name.lower()
@@ -318,6 +323,38 @@ def draw_prop(surf, name: str, ts: int) -> bool:
             fn(surf, ts)
             return True
     return False
+
+
+def _prop_fn(name: str):
+    low = name.lower()
+    for key, fn in PROPS.items():
+        if key in low:
+            return fn
+    return None
+
+
+def render_prop(name: str, ts: int, ss=None, shadow: bool = True):
+    """P40.3: a SUPERSAMPLED, ground-shadowed prop sprite (or None if `name`
+    isn't a prop). The prop is drawn at ts·ss and smoothscaled down (curves
+    anti-alias) via `gfx.supersample`, then composited OVER a soft contact
+    shadow so it reads as standing on the floor — unless it's wall/ceiling-
+    hung. Callers cache the result."""
+    fn = _prop_fn(name)
+    if fn is None:
+        return None
+    from ui import gfx
+
+    def _paint(S):
+        s = pygame.Surface((S, S), pygame.SRCALPHA)
+        fn(s, S)
+        return s
+    sprite = gfx.supersample(_paint, ts, ss)
+    low = name.lower()
+    if shadow and not any(w in low for w in _WALL_PROPS):
+        grounded = gfx.contact_shadow(ts)
+        grounded.blit(sprite, (0, 0))
+        return grounded
+    return sprite
 
 
 def prop_names():

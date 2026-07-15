@@ -169,6 +169,28 @@ def soft_shadow(size: int, alpha: int = 120):
     return _upscaled(_b, size)
 
 
+def contact_shadow(size: int, w_frac: float = 0.7, h_frac: float = 0.2,
+                   y_frac: float = 0.8, alpha: int = 115):
+    """A soft elliptical shadow near the bottom-centre of a size×size tile — to
+    GROUND a prop/scatter piece that would otherwise float. SRCALPHA; built
+    from concentric fading ellipses then upscaled for a soft edge."""
+    import pygame
+
+    def _b(s):
+        surf = pygame.Surface((s, s), pygame.SRCALPHA)
+        ew, eh = max(2, int(s * w_frac)), max(1, int(s * h_frac))
+        ecx, ecy = s / 2, s * y_frac
+        rings = 5
+        for i in range(rings, 0, -1):
+            f = i / rings                       # 1 = outer/faint … small = dark
+            a = min(255, int(alpha * (1 - f) ** 1.1) + 8)
+            rw, rh = ew * f, eh * f
+            pygame.draw.ellipse(surf, (0, 0, 0, a),
+                                (ecx - rw / 2, ecy - rh / 2, rw, rh))
+        return surf
+    return _upscaled(_b, size, small=24)
+
+
 def outline(surf, color=(0, 0, 0), alpha: int = 90):
     """Return a copy of `surf` with a soft darker rim around its opaque mass
     (Phase 2/3) — so an object pops from the ground. Needs SRCALPHA input."""

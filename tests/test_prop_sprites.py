@@ -56,6 +56,36 @@ class TestProps(unittest.TestCase):
             self.assertTrue(handled and painted, f"brazier at {ts}px")
 
 
+class TestRenderProp(unittest.TestCase):
+    """P40.3 supersampled + ground-shadowed props."""
+    def test_render_prop_returns_sized_sprite(self):
+        s = ps.render_prop("pillar", 48, ss=3)
+        self.assertIsNotNone(s)
+        self.assertEqual(s.get_size(), (48, 48))
+
+    def test_non_prop_is_none(self):
+        self.assertIsNone(ps.render_prop("flibbertigibbet", 48))
+
+    def test_ground_prop_gets_a_contact_shadow(self):
+        # a floor prop has dark shadow pixels below its base that the bare
+        # draw (no shadow) does not
+        grounded = ps.render_prop("sarcophagus", 48, ss=2, shadow=True)
+        bare = ps.render_prop("sarcophagus", 48, ss=2, shadow=False)
+        band = [(x, y) for x in range(14, 34) for y in range(38, 45)]
+        g_alpha = sum(grounded.get_at(p)[3] for p in band)
+        b_alpha = sum(bare.get_at(p)[3] for p in band)
+        self.assertGreater(g_alpha, b_alpha, "shadow adds grounding under it")
+
+    def test_wall_prop_has_no_ground_shadow(self):
+        # a wall/ceiling piece is not grounded (tapestry, chandelier)
+        grounded = ps.render_prop("tapestry", 48, ss=2, shadow=True)
+        bare = ps.render_prop("tapestry", 48, ss=2, shadow=False)
+        self.assertEqual(
+            pygame.image.tostring(grounded, "RGBA"),
+            pygame.image.tostring(bare, "RGBA"),
+            "a wall prop should get no ground shadow")
+
+
 class TestFurnitureDispatch(unittest.TestCase):
     def test_sprite_loader_routes_new_props(self):
         from ui.sprite_loader import SpriteLoader

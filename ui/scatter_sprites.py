@@ -109,19 +109,27 @@ _CACHE = {}
 
 
 def scatter_sprite(name, ts):
-    """A cached tile-sized scatter sprite, or None if `name` isn't drawable."""
-    key = (name, ts)
+    """A cached, SUPERSAMPLED + ground-shadowed scatter sprite, or None if
+    `name` isn't drawable. P40.3: built at ts·SSAA and smoothscaled (crisp
+    curves) with a soft contact shadow so the prop reads as standing on the
+    ground instead of floating; SSAA follows the "Smooth sprites" setting."""
+    from ui import gfx, tile_variants, prop_sprites
+    ss = tile_variants.SSAA if tile_variants.SSAA is not None \
+        else gfx.ss_factor(3)
+    key = (name, ts, ss)
     if key not in _CACHE:
-        s = pygame.Surface((ts, ts), pygame.SRCALPHA)
         fn = _NATURE.get(name)
         if fn is not None:
-            fn(s, ts)
+            def _paint(S, _fn=fn):
+                s = pygame.Surface((S, S), pygame.SRCALPHA)
+                _fn(s, S)
+                return s
+            sprite = gfx.supersample(_paint, ts, ss)
+            grounded = gfx.contact_shadow(ts, w_frac=0.5, alpha=95)
+            grounded.blit(sprite, (0, 0))
+            _CACHE[key] = grounded
         else:                                   # bones / gravestone / …
-            from ui import prop_sprites
-            if not prop_sprites.draw_prop(s, name, ts):
-                _CACHE[key] = None
-                return None
-        _CACHE[key] = s
+            _CACHE[key] = prop_sprites.render_prop(name, ts, ss=ss)
     return _CACHE[key]
 
 

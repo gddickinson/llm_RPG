@@ -78,6 +78,12 @@ class TestLayers(unittest.TestCase):
         ss = gfx.soft_shadow(48)
         self.assertGreater(ss.get_at((24, 24))[3], ss.get_at((2, 2))[3])
 
+    def test_contact_shadow_sits_low(self):
+        cs = gfx.contact_shadow(48)
+        self.assertTrue(cs.get_flags() & pygame.SRCALPHA)
+        # darker near the bottom-centre than the top (it grounds a prop)
+        self.assertGreaterEqual(cs.get_at((24, 40))[3], cs.get_at((24, 6))[3])
+
 
 class TestTileFidelity(unittest.TestCase):
     """The whole point: a built tile is no longer a flat fill."""

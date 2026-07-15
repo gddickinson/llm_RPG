@@ -70,6 +70,15 @@ class TestSprites(unittest.TestCase):
         self.assertIs(scatter_sprite("boulder", 40),
                       scatter_sprite("boulder", 40))
 
+    def test_scatter_is_grounded_with_a_shadow(self):
+        # P40.3: a scatter piece has soft dark shadow pixels below its base
+        # (it no longer floats). Boulder sits low-centre.
+        spr = scatter_sprite("boulder", 48)
+        shadow_band = [spr.get_at((x, y)) for x in range(16, 32)
+                       for y in range(40, 46)]
+        dark = [p for p in shadow_band if p[3] > 0 and sum(p[:3]) < 210]
+        self.assertTrue(dark, "boulder should cast a grounding shadow")
+
 
 class TestTopDownDraw(unittest.TestCase):
     @classmethod

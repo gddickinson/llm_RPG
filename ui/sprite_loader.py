@@ -299,20 +299,25 @@ class SpriteLoader:
     # ------------------------------------------------------------ furniture
     def furniture(self, name: str) -> pygame.Surface:
         """Recognizable procedural sprites for interior pieces (P9A.3b)."""
-        key = f"furn:{name.lower()}"
+        from ui import prop_sprites, tile_variants, gfx
+        ts = self.tile_size
+        low = name.lower()
+        # P40.3 supersampled + ground-shadowed props (SSAA follows the "Smooth
+        # sprites" setting via tile_variants.SSAA, so the cache key carries it)
+        ss = tile_variants.SSAA if tile_variants.SSAA is not None \
+            else gfx.ss_factor(3)
+        key = f"furn:{low}:{ss}"
         if key in self._tile_cache:
             return self._tile_cache[key]
-        ts = self.tile_size
-        surf = pygame.Surface((ts, ts), pygame.SRCALPHA)
-        low = name.lower()
         wood = PALETTE["building"]
         dark = PALETTE["building2"]
         # P39.1 the decorative-prop library takes first pick (pillars, braziers,
         # tapestries, sarcophagi, statues, fountains, …); legacy pieces below
-        from ui import prop_sprites
-        if prop_sprites.draw_prop(surf, low, ts):
-            self._tile_cache[key] = surf
-            return surf
+        psurf = prop_sprites.render_prop(low, ts, ss=ss)
+        if psurf is not None:
+            self._tile_cache[key] = psurf
+            return psurf
+        surf = pygame.Surface((ts, ts), pygame.SRCALPHA)
         if "bed" in low:
             pygame.draw.rect(surf, dark, (3, ts // 3, ts - 6,
                                           ts // 2), border_radius=3)
