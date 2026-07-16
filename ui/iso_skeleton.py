@@ -41,6 +41,64 @@ def clip_for(action: str) -> str:
     return _CLIP.get(action, "idle")
 
 
+# ---- ISO.9 facing calibration ------------------------------------------
+# The skeleton is rotated by an angle about the vertical, then baked through
+# the FIXED perspective CAM. Because that camera is tilted, the body's forward
+# (+z) projects to a screen direction that is a NON-LINEAR function of the
+# rotation (perspective foreshortening) — so rotating by the raw world azimuth
+# (the ISO.7 bug) pointed the figure the wrong way. We instead CALIBRATE: for a
+# world move (dx,dy) whose iso-screen direction is (dx-dy, dx+dy), find the
+# rotation whose forward projects to that same screen direction.
+
+def _fwd_screen_angle(a: float) -> float:
+    """Screen direction (radians, y-DOWN) the body-forward (+z) projects to at
+    skeleton rotation `a`, through CAM (matches `raster3d.render`'s projection).
+    """
+    cam = np.array(CAM["cam_pos"], float)
+    fwd = np.array(CAM["look"], float) - cam
+    fwd /= (np.linalg.norm(fwd) or 1.0)
+    right = np.cross(fwd, np.array([0.0, 1.0, 0.0]))
+    right /= (np.linalg.norm(right) or 1.0)
+    upv = np.cross(right, fwd)
+    thf = math.tan(math.radians(CAM["vfov_deg"]) / 2.0)
+
+    def scr(p):
+        rel = np.asarray(p, float) - cam
+        zc = rel @ fwd
+        return np.array([(rel @ right) / (zc * thf), -(rel @ upv) / (zc * thf)])
+
+    base = np.array([0.0, 1.0, 0.0])
+    tip = base + 0.5 * np.array([math.sin(a), 0.0, math.cos(a)])
+    d = scr(tip) - scr(base)
+    return math.atan2(d[1], d[0])
+
+
+_FACE_TABLE = None
+
+
+def _face_table():
+    global _FACE_TABLE
+    if _FACE_TABLE is None:
+        _FACE_TABLE = [(_fwd_screen_angle(math.radians(a)), math.radians(a))
+                       for a in range(0, 360, 2)]
+    return _FACE_TABLE
+
+
+def angle_for_delta(dx: float, dy: float) -> float:
+    """The skeleton rotation (radians) that makes the figure FACE the world
+    movement (dx,dy) as seen in the iso view — inverts the camera's perspective
+    foreshortening so the character strides the way it actually moves."""
+    if dx == 0 and dy == 0:
+        dx, dy = 0, 1                                 # still → face the camera
+    want = math.atan2(dx + dy, dx - dy)               # iso-screen dir (y-down)
+
+    def ad(x, y):
+        d = abs(x - y) % (2 * math.pi)
+        return min(d, 2 * math.pi - d)
+
+    return min(_face_table(), key=lambda t: ad(t[0], want))[1]
+
+
 def build_of(char) -> float:
     """ISO.7 polish: a stable per-person BUILD factor (0.88 slight / 1.0 average
     / 1.14 broad) seeded off the character id, so folk read apart in the crowd —

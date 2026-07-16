@@ -148,29 +148,23 @@ def _stance_of(char) -> int:
     return h % 3
 
 
-N_DIRS = 16                       # ISO.7 baked facings → smooth 360° turning
+# N, NE, E, SE, S, SW, W, NW — the 8 grid movement directions (world dx,dy)
+_DELTAS = [(0, -1), (1, -1), (1, 0), (1, 1),
+           (0, 1), (-1, 1), (-1, 0), (-1, -1)]
 
 
-def facing_dir(char, n: int = N_DIRS) -> int:
-    """ISO.7: a 0..n-1 facing INDEX from the character's LAST MOVEMENT direction
-    (the `_anim['facing']` (dx,dy) tuple), quantised to `n` directions so the
-    figure FACES WHERE IT MOVES over a smooth 360° (was hard-wired to south).
-    Defaults to south (toward the camera) when still."""
+def move_delta(char):
+    """The character's LAST MOVEMENT direction as a sign tuple (dx,dy) from
+    `_anim['facing']` — one of the 8 grid directions, default south (0,1) when
+    still. ISO.9 feeds this to `iso_skeleton.angle_for_delta` so the figure
+    faces WHERE IT MOVES (was a broken world-azimuth quantisation)."""
     anim = (getattr(char, "metadata", {}) or {}).get("_anim", {})
     f = anim.get("facing", (0, 1))
-    if isinstance(f, (tuple, list)) and len(f) == 2:
-        dx, dy = f
-    else:
-        dx, dy = 0, 1
-    if dx == 0 and dy == 0:
-        dx, dy = 0, 1                                  # still → face the camera
-    # north=0, east=90°, south=180°, west=270° (matches the world→iso mapping)
-    ang = math.atan2(dx, -dy)
-    return int(round(ang / (2 * math.pi / n))) % n
-
-
-def dir_angle(dir_idx: int, n: int = N_DIRS) -> float:
-    return dir_idx * (2 * math.pi / n)
+    if isinstance(f, (tuple, list)) and len(f) == 2 and (f[0] or f[1]):
+        sx = (f[0] > 0) - (f[0] < 0)
+        sy = (f[1] > 0) - (f[1] < 0)
+        return (sx, sy)
+    return (0, 1)
 
 
 _FRAMES = {"walk": 8, "attack": 6, "idle": 6}          # ISO.6 smoother mocap
@@ -214,13 +208,14 @@ def _frame_state(char):
 
 
 def char_sprite(char, size: int, facing=None):
-    d = (facing % N_DIRS) if facing is not None else facing_dir(char)
-    angle = dir_angle(d)                              # ISO.7 face where you move
+    # facing: None → read the character's movement; an int → a legacy 0-7 octant
+    delta = _DELTAS[int(facing) % 8] if facing is not None else move_delta(char)
+    from ui import iso_skeleton
+    angle = iso_skeleton.angle_for_delta(*delta)      # ISO.9 face where you move
     tint, hair = _tint(char), _hair(char)
     action, frame = _frame_state(char)
-    from ui import iso_skeleton
     build = iso_skeleton.build_of(char)               # ISO.7 silhouette variety
-    key = (tint, hair, size, d, action, frame, build)
+    key = (tint, hair, size, delta, action, frame, build)
     if key not in _CACHE:
         phase = frame / _FRAMES[action]
         # ISO.6: a real Mixamo-mocap-driven rigged skeleton; if the clip is

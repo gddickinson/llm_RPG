@@ -8989,3 +8989,30 @@ over the same `TWEEN_DUR=0.16s` the top-down renderer uses, so an iso step now S
 wall-clock; extracted that to `config.NPC_IDLE_INTERVAL` and halved it to 1.5s, so ambient NPCs act
 twice as often when the player is standing still — livelier, more continuous — while the anti-flood
 bound stays. Both the top-down and iso views now read smooth. Full suite green; validator clean.
+
+## 2026-07-16 — ISO.9: iso facing CALIBRATION (the real fix)
+
+George: "The isometric figures are NOT facing the correct directions as they move — investigate and fix."
+ISO.7 was wrong. It rotated the skeleton by the raw WORLD azimuth of the movement (atan2(dx,-dy)), but a
+character is baked ONCE through a fixed, TILTED perspective camera (raster3d) — so the body's forward
+(+z), after that camera's projection, lands on a screen direction that is a NON-LINEAR function of the
+rotation angle (perspective foreshortening). Rotating by the world azimuth therefore pointed the figure
+the wrong way in the iso view.
+
+Root-caused it two ways that agreed: (a) analytically projecting the forward vector through the character
+CAM, and (b) empirically — baking the figure with a bright red "nub" at its forward, sweeping the rotation
+0-360°, and reading the nub-vs-body screen direction straight from the pixels. Both gave the same
+non-linear angle→screen-facing curve (e.g. skeleton angle 0° → the forward projects to ~205° screen, not
+0°). The right model: for a world move (dx,dy) whose iso-screen direction is (dx-dy, dx+dy), pick the
+rotation whose projected forward matches that screen heading.
+
+Fix: `iso_skeleton._fwd_screen_angle(a)` projects the body-forward through CAM to a screen angle, cached
+into `_face_table`; `angle_for_delta(dx,dy)` inverts it (nearest table entry to the move's screen
+heading). `iso_chars` drops the broken `facing_dir`/`dir_angle` for `move_delta(char)` (the movement sign
+tuple) + `char_sprite` baking at `angle_for_delta(*delta)`, cache-keyed by the delta. Verified in-world at
+scale: NE walks right in a clean side profile, SW mirrors it left, N/W show the figure's BACK (moving
+up/away), S/E show the FRONT (moving down/toward) — scratchpad/iso_realwalk.png (isolated 8-way),
+iso9_big.png (150px player per direction + heading arrow), iso9_inworld.png (real renderer). The tests now
+assert the chosen rotation's forward projects within 12° of the true move heading, and that E vs W face
+>120° apart (TestFacing rewritten). Full suite green. This also made George's scale point concrete: at
+64px the facing is invisible, at 150px it's obvious — the ISO.10 scale/detail/realism round follows.

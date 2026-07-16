@@ -6140,6 +6140,23 @@ rasterizer/camera/SSAA.
   smooth-slide the top-down renderer already had. (2) `config.NPC_IDLE_INTERVAL` (new; 3.0→1.5s), read by
   `game_engine._npc_turns_due`, so idle NPCs take a turn twice as often (livelier, more continuous ambient
   movement) while still bounded against log-flood. Full suite green.
+- [x] **ISO.9 FACING CALIBRATION — the real fix (George 2026-07-16) — DONE.** George: "the iso figures are
+  NOT facing the correct directions as they move." ISO.7's mapping was wrong: it rotated the skeleton by
+  the raw WORLD azimuth, but the figure is baked through a fixed, TILTED perspective camera, so the body's
+  forward (+z) projects to a screen direction that is a NON-LINEAR function of the rotation (perspective
+  foreshortening) — pointing the wrong way. Root-caused by measuring both analytically and empirically
+  (a forward "nub" swept over 0-360° and its projected screen direction read from pixels — the two agreed).
+  Fix: `iso_skeleton._fwd_screen_angle(a)` projects the forward through CAM, `angle_for_delta(dx,dy)` picks
+  the rotation whose forward lands on the move's iso-screen heading (dx-dy, dx+dy); `iso_chars.move_delta`
+  reads the sign tuple and `char_sprite` uses the calibrated angle (cache-keyed by delta). Verified
+  in-world: NE walks right in profile, SW mirrors left, N/W show backs (up/away), S/E show fronts
+  (down/toward) — scratchpad/iso_realwalk.png, iso9_big.png, iso9_inworld.png. tests assert the chosen
+  rotation's forward projects within 12° of the move heading (test_iso_chars TestFacing rewritten).
+- [ ] **ISO.10 SCALE + DETAIL + REALISM (George 2026-07-16) — IN PROGRESS.** George: "add more detail to
+  the iso world and figures, increase the scale and zoom in so more details can be seen, make the
+  characters more realistic." Bump the default iso zoom; give the baked skeleton tapered limbs / real
+  hands+feet / a shaped head + face / clothing tone; richer world props. (The 150px bake already shows how
+  much more reads at scale — iso9_big.png.)
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
