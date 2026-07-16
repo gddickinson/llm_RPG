@@ -56,6 +56,26 @@ class TestInteriors(unittest.TestCase):
         self.assertIn("leave", msg.lower())
         self.assertIsNone(self.engine.current_interior)
 
+    def test_scale_up_roomier_interiors(self):
+        # GX.3 (George: "the scale feels small and cramped"): a footprint opens
+        # into a bigger interior — a 2x2 building is roomier than the old 8x8,
+        # and a large footprint yields a genuinely big hall (a church nave).
+        from world.interiors import fit_to_footprint
+        from world.location import Location
+
+        def fit(w, h):
+            it = Interior(name="Test", width=8, height=6)
+            it.init_grid()
+            fit_to_footprint(it, Location("Test", "", 0, 0, w, h))
+            return it.width, it.height
+
+        small = fit(2, 2)
+        self.assertGreaterEqual(small[0], 9, "a 2x2 is roomier than the old 8")
+        big = fit(5, 5)
+        self.assertGreater(big[0] * big[1], small[0] * small[1] * 3,
+                           "a big footprint gives a much bigger interior")
+        self.assertGreaterEqual(big[0], 18, "room for a church nave")
+
 
 if __name__ == "__main__":
     unittest.main()

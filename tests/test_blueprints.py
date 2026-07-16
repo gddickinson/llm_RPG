@@ -64,9 +64,9 @@ class TestInteriorsUseBlueprints(unittest.TestCase):
         try:
             inter = e.interiors.get("Oakvale Tavern")
             self.assertIsNotNone(inter)
-            # Tavern blueprint is 8x8
-            self.assertEqual(inter.width, 8)
-            self.assertEqual(inter.height, 8)
+            # GX.3 SCALE-UP: a 2x2 footprint now opens into a roomy 10x10
+            self.assertGreaterEqual(inter.width, 10)
+            self.assertGreaterEqual(inter.height, 10)
             # Has furniture (table, hearth, etc.)
             self.assertTrue(inter.furniture)
         finally:

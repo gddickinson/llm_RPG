@@ -5847,9 +5847,15 @@ Interleaved with Phase BLD; process one per round, priority order:
   unmistakable from a distance. Drawn thinly from `renderer_buildings.draw_buildings` (renderer.py
   untouched at 499). Before/after: scratchpad/gx2_dais.png. `tests/test_dais.py` (+5). (Top-down;
   an iso-projected dais is a follow-up.)
-- [ ] **GX.3 Building SCALE-UP (Ultrathink)** — everything too small/cramped; raise interior
-  footprint scaling (`fit_to_footprint` tw/th) + major-building overworld footprints so buildings
-  are roomy (bigger interiors → more/larger functional rooms, more seating).
+- [x] **GX.3 Building SCALE-UP (interiors) — DONE.** Root cause of "cramped": `interiors.fit_to_
+  footprint` gave a 2×2 building only an 8×8 interior. Raised the scaling — ×4 footprint multiplier
+  + far bigger caps (`tw = clamp(loc.width*4+2, 7..28)`, `th = clamp(loc.height*4+2, 6..22)`): a 2×2
+  building now opens into a roomy 10×10, and a 5×5 footprint yields a 22×22 hall (400 inner tiles —
+  a church nave that seats scores). Small buildings stay modest; the room typing + torch decoration
+  scale up (a tavern reads roomier with more tables/seating — scratchpad/gx3_tavern_roomy.png). All
+  97 interior tests still green (BLD.2/3 already made them size-robust). `tests/test_interiors.py`
+  +1. **Remainder GX.3b (deferred):** bump the OVERWORLD footprints of major buildings (needs a
+  village re-layout in `world_generator._add_village` — buildings are packed 2 rows apart).
 - [ ] **GX.4 A large CHURCH in Oakvale seating 50-100** — a big nave (pew_rows) + altar; depends
   on GX.3. Taverns/other buildings accommodate far more people (falls out of the scale-up).
 - [ ] **GX.5 Deep DUNGEON/CAVE via a secret Oakvale entrance + other regional entrances/exits.**

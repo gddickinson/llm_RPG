@@ -219,8 +219,12 @@ def fit_to_footprint(inter: Interior, loc) -> Interior:
     hut, a hall into a hall), the interior door sits at the south-face
     center — the same edge as the exterior door glyph — and furniture
     keeps its relative layout, remapped proportionally."""
-    tw = max(6, min(16, loc.width * 3 + 2))
-    th = max(5, min(12, loc.height * 3 + 2))
+    # GX.3 SCALE-UP (George: "the scale of everything feels small and cramped").
+    # A ×4 footprint multiplier + far bigger caps, so a 2×2 building opens into a
+    # roomy 10×10 (was 8×8) and a large footprint yields a genuinely big hall —
+    # room enough for a church nave to seat scores. Small buildings stay modest.
+    tw = max(7, min(28, loc.width * 4 + 2))
+    th = max(6, min(22, loc.height * 4 + 2))
     old_w, old_h = inter.width, inter.height
 
     def remap(x: int, y: int) -> Tuple[int, int]:

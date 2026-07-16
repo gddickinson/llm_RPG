@@ -8485,3 +8485,23 @@ becomes a raised glowing arcane platform beside Oakvale). tests/test_dais.py (+5
 dais bigger than a tile, rune on the top tier, draw paints stone+glow, draw_all marks waystones).
 dais.py 100 / renderer_buildings 422 — under 500. Validator clean. (Top-down; an iso-projected dais
 is a follow-up.) Next: GX.3 (building scale-up).
+
+## 2026-07-15 — GX.3: building SCALE-UP (roomier interiors)
+
+George: "The size of all the buildings seems a little off — everything needs to be larger... The
+scale of everything feels small and cramped." Root cause: interiors.fit_to_footprint scaled a
+building's interior at loc.width*3+2 capped 6..16 / loc.height*3+2 capped 5..12, so a 2x2 building
+(the common village footprint) opened into a cramped 8x8 (which is exactly why the BLD.2/3 room
+compositions felt tight). Raised it: a x4 multiplier + much bigger caps — tw=clamp(loc.width*4+2,
+7..28), th=clamp(loc.height*4+2, 6..22). So a 2x2 building now opens into a roomy 10x10 (was 8x8),
+a 3x3 into 14x14, and a 5x5 footprint into a 22x22 hall (400 inner tiles) — big enough for a church
+nave to seat scores (pew_rows every 2 tiles over a ~18-wide room = dozens of seats). Small buildings
+stay modest; big footprints get genuinely big. The BLD.2 room typing + BLD.6 torch decoration scale
+with it — the tavern reads noticeably roomier with more open floor + more torch-lit pools + more
+tables (scratchpad/gx3_tavern_roomy.png). The BLD.2/3-hardened interior tests stayed green, but 3
+tests that hardcoded the OLD scaling/layout broke and were made robust: test_footprint_fit (→ the
+new ×4 formula), test_blueprints (tavern is now ≥10×10, not 8×8), test_squeeze_past (find two
+adjacent floor tiles instead of a now-walled hardcoded tile). tests/test_interiors.py +1 (a
+footprint yields a bigger interior; a big footprint a much bigger one). Validator clean. Remainder
+GX.3b (deferred, needs a village re-layout): bump the OVERWORLD footprints of major buildings.
+Next: GX.4 (a large Oakvale church seating 50-100 — now feasible with the 22x22 nave).

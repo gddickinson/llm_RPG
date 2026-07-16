@@ -29,12 +29,13 @@ class TestFootprintFit(unittest.TestCase):
             yield loc, inter
 
     def test_interior_size_scales_with_footprint(self):
+        # GX.3 SCALE-UP: ×4 multiplier + bigger caps (a 2×2 → 10×10, not 8×8)
         for loc, inter in self._pairs():
             self.assertEqual(inter.width,
-                             max(6, min(16, loc.width * 3 + 2)),
+                             max(7, min(28, loc.width * 4 + 2)),
                              loc.name)
             self.assertEqual(inter.height,
-                             max(5, min(12, loc.height * 3 + 2)),
+                             max(6, min(22, loc.height * 4 + 2)),
                              loc.name)
 
     def test_wide_buildings_open_into_wide_rooms(self):
