@@ -114,5 +114,31 @@ class TestCombatMoves(unittest.TestCase):
         self.assertGreater(len(m), 20, "a full body + a sword")
 
 
+class TestBakedClips(unittest.TestCase):
+    """ISO.14 — the extra Mixamo captures baked into data/anim."""
+
+    def test_new_clips_load(self):
+        for name in ("fight_idle", "jab", "block", "charge", "stab",
+                     "acknowledge", "point", "ask", "beckon", "bored",
+                     "look", "pray", "no", "silly"):
+            pose = isk.cm.sample_norm(name, 0.4)
+            self.assertIsNotNone(pose, f"{name} clip is baked + loads")
+            self.assertIn("r_hand", pose)
+
+    def test_weapon_picks_the_combat_clip(self):
+        # unarmed → a jab, a dagger → a stab, a sword → the procedural swing
+        tint, hair = (150, 150, 165), (90, 60, 40)
+        jab = isk.sample_figure("attack", 0.5, tint, hair, 0.0, 1.0, 0,
+                                (None, None, False, 1.0), "overhead")
+        stab = isk.sample_figure("attack", 0.5, tint, hair, 0.0, 1.0, 0,
+                                 ("dagger", None, False, 1.0), "overhead")
+        # the jab (Mixamo) and the procedural overhead put the hand elsewhere
+        sword = isk.sample_figure("attack", 0.5, tint, hair, 0.0, 1.0, 0,
+                                  ("sword", None, False, 1.0), "overhead")
+        for m in (jab, stab, sword):
+            self.assertIsNotNone(m)
+            self.assertGreater(len(m), 20)
+
+
 if __name__ == "__main__":
     unittest.main()

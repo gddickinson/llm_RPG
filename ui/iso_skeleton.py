@@ -33,16 +33,22 @@ _CLIP = {
     "idle": "idle", "walk": "walk", "jog": "walk", "run": "run",
     "sneak": "walk", "attack": "idle",
     "dance": "dance", "sit": "sit", "sleep": "sit", "stoop": "sit",
-    "crawl": "sit", "climb": "climb", "talk": "talk", "wave": "talk",
-    "cast": "talk", "argue": "argue", "guard": "idle", "bow": "nod",
+    "crawl": "sit", "climb": "climb", "talk": "talk",
+    "cast": "talk", "argue": "argue", "bow": "nod",
     "cheer": "hiphop", "jump": "jump", "leap": "jump", "hurt": "stagger",
     "dodge": "stagger", "stagger": "stagger", "kick": "kick",
-    # ISO.13 ambient gestures (the P34.4 idle-life fidgets) so idle folk LIVE
-    "shrug": "talk", "ponder": "nod", "yawn": "idle", "stretch": "climb",
-    "reach": "climb", "salute": "talk", "beckon": "talk", "facepalm": "talk",
-    "clap": "argue", "laugh": "argue", "point": "talk", "nod": "nod",
-    "kneel": "sit", "winded": "stagger", "cast_point": "talk",
-    "cast_staff": "talk",
+    # ISO.13 ambient gestures (the P34.4 idle-life fidgets) so idle folk LIVE —
+    # ISO.14 now routes them to their OWN Mixamo captures where one fits
+    "shrug": "ask", "ponder": "bored", "yawn": "bored", "stretch": "climb",
+    "reach": "climb", "salute": "acknowledge", "beckon": "beckon",
+    "facepalm": "bored", "clap": "argue", "laugh": "silly", "point": "point",
+    "nod": "nod", "kneel": "pray", "winded": "stagger", "cast_point": "talk",
+    "cast_staff": "talk", "wave": "beckon", "guard": "fight_idle",
+    # ISO.14 the newly-baked combat + gesture captures (self-mapped)
+    "fight_idle": "fight_idle", "jab": "jab", "block": "block",
+    "charge": "charge", "stab": "stab", "acknowledge": "acknowledge",
+    "ask": "ask", "bored": "bored", "look": "look", "pray": "pray",
+    "no": "no", "silly": "silly",
 }
 # ISO.11 per-character VARIETY: a seeded idle/dance picks one of the Mixamo
 # variants so a crowd doesn't loop in lockstep.
@@ -230,7 +236,16 @@ def _swing_arm(P, style, phase, angle):
 
 
 def attack_figure(phase, style, tint, hair, angle, build, kit):
-    """ISO.13 the figure mid-STRIKE — the idle base with a 3D `style` swing."""
+    """The figure mid-STRIKE. ISO.14 uses a real Mixamo combat clip where one
+    fits the weapon — a fist JAB unarmed, a dagger STAB — else the ISO.13
+    procedural 3D `style` swing (overhead / slash / thrust), which suits a blade
+    (the weapon at r_hand follows the arm)."""
+    weapon = kit[0] if kit else None
+    clip = "stab" if weapon == "dagger" else ("jab" if not weapon else None)
+    if clip:
+        pose = cm.sample_norm(clip, phase)
+        if pose is not None:
+            return figure(pose, tint, hair, angle, build, kit)
     P = _apply_height(pose3d(cm.sample_norm("idle", 0.0), angle, build), kit)
     P = _swing_arm(P, style or "overhead", phase, angle)
     return _build(P, tint, hair, angle, kit)

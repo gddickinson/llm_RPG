@@ -95,6 +95,21 @@ CLIPS = [
     ("Flying Knee Punch Combo", "kick", False, 20),
     ("Idle-2", "idle2", True, 16),
     ("Idle-3", "idle3", True, 16),
+    # ISO.14 — more combat moves + gestures baked from Mixamo (George)
+    ("Bouncing Fight Idle", "fight_idle", True, 18),
+    ("Body Jab Cross", "jab", False, 18),
+    ("Center Block", "block", False, 14),
+    ("Charge", "charge", False, 18),
+    ("Double Dagger Stab", "stab", False, 16),
+    ("Acknowledging", "acknowledge", False, 16),
+    ("Angry Point", "point", False, 16),
+    ("Asking Question", "ask", False, 18),
+    ("Beckoning", "beckon", False, 16),
+    ("Bored", "bored", True, 20),
+    ("Looking Around", "look", True, 20),
+    ("Praying", "pray", True, 18),
+    ("No", "no", False, 14),
+    ("Silly Dancing", "silly", True, 24),
 ]
 
 

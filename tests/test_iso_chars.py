@@ -171,6 +171,13 @@ class TestAnimation(unittest.TestCase):
         update_anim(c, 0.05)
         self.assertEqual(iso_chars._frame_state(c)[0], "dance")
 
+    def test_ambient_idle_drifts_but_stays_calm(self):
+        # ISO.14: an idle character only ever drifts to a calm look/bored/idle
+        c = _Char("stander", "villager")
+        seen = {iso_chars._ambient_idle(c) for _ in range(6)}
+        self.assertTrue(seen <= {"idle", "look", "bored"},
+                        "ambient idle stays calm")
+
     def test_action_frames_bake_distinct_sprites(self):
         pygame.init()
         from ui.body_renderer import update_anim

@@ -173,21 +173,32 @@ def move_delta(char):
 _ACT_FRAMES = {"walk": 12, "run": 12, "jog": 12, "idle": 8, "dance": 10,
                "sit": 4, "sleep": 4, "climb": 10, "talk": 8, "swim": 8,
                "attack": 8, "jump": 8, "leap": 8, "cheer": 8, "wave": 7,
-               "cast": 7, "hurt": 5, "stagger": 6, "guard": 4, "crawl": 4,
+               "cast": 7, "hurt": 5, "stagger": 6, "guard": 10, "crawl": 4,
                "kick": 8, "argue": 8, "sneak": 12, "stoop": 6, "dodge": 5,
                "shrug": 7, "ponder": 7, "yawn": 6, "stretch": 8, "reach": 7,
                "salute": 7, "beckon": 7, "facepalm": 7, "clap": 7, "laugh": 8,
                "point": 7, "nod": 6, "kneel": 5, "winded": 6,
-               "cast_point": 7, "cast_staff": 7}
+               "cast_point": 7, "cast_staff": 7,
+               # ISO.14 the new combat + gesture captures
+               "fight_idle": 10, "jab": 8, "block": 7, "charge": 8, "stab": 8,
+               "acknowledge": 8, "ask": 8, "bored": 10, "look": 10, "pray": 10,
+               "no": 7, "silly": 12}
 _LOOP_PERIOD = {"walk": 720, "run": 620, "jog": 760, "idle": 2600,
                 "dance": 1100, "sit": 3000, "sleep": 3000, "climb": 1000,
-                "talk": 1400, "swim": 900, "guard": 2600, "crawl": 1400,
-                "argue": 1400, "sneak": 1000, "stagger": 900}
+                "talk": 1400, "swim": 900, "guard": 900, "crawl": 1400,
+                "argue": 1400, "sneak": 1000, "stagger": 900,
+                "fight_idle": 700, "bored": 2400, "look": 2200, "pray": 2600,
+                "silly": 1100}
 _ONESHOT = {"attack", "jump", "leap", "bow", "wave", "cast", "cheer",
             "stoop", "dodge", "hurt", "kick", "shrug", "ponder", "yawn",
             "stretch", "reach", "salute", "beckon", "facepalm", "clap",
             "laugh", "point", "nod", "kneel", "winded", "cast_point",
-            "cast_staff"}
+            "cast_staff", "jab", "block", "charge", "stab", "acknowledge",
+            "ask", "no"}
+# ISO.14 calm ambient GESTURES an idle character drifts into now and then (a
+# glance around, a bored shift) so a standing crowd looks ALIVE — cosmetic,
+# render-only, both LOOPS.
+_AMBIENT_IDLE = ("idle", "idle", "idle", "idle", "look", "bored")
 
 
 def _frames_of(action) -> int:
@@ -200,6 +211,16 @@ def _clock_ms() -> int:
         return pygame.time.get_ticks()
     except Exception:
         return 0
+
+
+def _ambient_idle(char):
+    """ISO.14: a calm standing character drifts through idle → a glance → a
+    bored shift → idle over a slow, per-person-desynced cycle (cosmetic), so a
+    crowd never stands frozen."""
+    slot_ms = 3700
+    off = _stance_of(char) * slot_ms + (len(getattr(char, "id", "") or "") * 811)
+    slot = ((_clock_ms() + off) // slot_ms) % len(_AMBIENT_IDLE)
+    return _AMBIENT_IDLE[slot]
 
 
 def _frame_state(char):
@@ -215,6 +236,8 @@ def _frame_state(char):
     action = anim.get("cur_action", "idle")
     if action not in _ACT_FRAMES:
         action = "idle"                               # unmapped → a calm idle
+    if action == "idle":                              # ISO.14 ambient life
+        action = _ambient_idle(char)
     n = _frames_of(action)
     if action in _ONESHOT:                            # progress through the arc
         if action == "attack":

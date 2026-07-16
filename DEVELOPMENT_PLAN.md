@@ -6204,6 +6204,19 @@ rasterizer/camera/SSAA.
   frame counts (walk/run 8->12, idle 6->8, dance 8->10). (5) PROPORTIONS: `_body` slimmed to a more
   athletic silhouette (narrower waist, slimmer limbs, less pauldron-like shoulders) — iso13_refined.png.
   Retired the 2D `_attack_overlay`. Full suite green.
+- [x] **ISO.14 BAKE IN MORE MIXAMO CAPTURES (George 2026-07-16) — DONE.** George: "yes, please bake in
+  more mixamo captures." The game shipped only 18 baked clips though movieMaker holds hundreds of Mixamo
+  FBX. Reused the existing pipeline: a Blender headless dump (`mm/engine/blender/scripts/dump_clip.py`) →
+  pose-cache → `tools/bake_mocap.py` (added 14 entries to its `CLIPS`) → `data/anim/*.json` (now 32 clips).
+  Baked real COMBAT — jab (Body Jab Cross), stab (Double Dagger Stab), block, charge, fight_idle (Bouncing
+  Fight Idle) — and GESTURES — acknowledge, point, ask, beckon, bored, look, pray, no, silly. Wired in:
+  `iso_skeleton.attack_figure` now throws a real fist JAB unarmed and a dagger STAB (else the ISO.13
+  procedural swing for a blade); the idle-life fidgets route to the distinct gesture captures (ponder→
+  bored, shrug→ask, wave→beckon, salute→acknowledge, kneel→pray); and `iso_chars._ambient_idle` drifts an
+  idle character through calm glances/bored shifts so a standing crowd never freezes. Dropped 2 unclean
+  captures (Big Body Blow = a horizontal haymaker, Boxing = a low crouch). scratchpad/iso14_newclips.png,
+  iso14_combat.png, iso14_fightidle.png. tests: the new clips load + weapon picks the combat clip
+  (test_iso_skeleton), ambient idle stays calm (test_iso_chars). Full suite green.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

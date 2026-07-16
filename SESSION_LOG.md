@@ -9128,3 +9128,32 @@ single per-frame tick (no double-age). Regression test: a spawned spray clears a
   a crowd varied stances and life.
 tests: combat-effects expire in iso (regression); the three strike styles hold the hand apart + the swing
 moves over its arc (test_iso_skeleton TestCombatMoves). Full suite green.
+
+## 2026-07-16 — ISO.14: bake in MORE Mixamo captures (combat moves + gestures)
+
+George: "yes, please bake in more mixamo captures." The game shipped 18 baked clips, but movieMaker holds
+hundreds of raw Mixamo FBX. Rather than hand-author, I reused the exact existing pipeline end to end:
+a Blender headless dump (`mm/engine/blender/scripts/dump_clip.py` — loads an FBX, writes per-frame bone
+WORLD matrices to a pose-cache JSON), then `tools/bake_mocap.py` (projects the 65-bone rig to our 15-joint
+2D side-view, removes root motion, normalises to standing-height=1, downsamples to K keyframes → `data/
+anim/<key>.json`). Proved it on one clip (Bouncing Fight Idle → fight_idle, a boxing guard bob), then
+batch-dumped 15 more via Blender and added 14 to bake_mocap's `CLIPS`. `data/anim` is now 32 clips; the
+existing 18 re-bake byte-identical (deterministic).
+
+Baked and KEPT: combat — jab (Body Jab Cross), stab (Double Dagger Stab), block (Center Block), charge,
+fight_idle (Bouncing Fight Idle); gestures — acknowledge, point (Angry Point), ask (Asking Question),
+beckon (Beckoning), bored, look (Looking Around), pray (Praying), no (a head shake), silly (Silly Dancing).
+Dropped two that rendered badly: Big Body Blow (a full-body horizontal haymaker — the figure went
+upside-down) and Boxing (an unflattering low crouch); fight_idle already covers the combat idle.
+
+Wired into the iso characters: `iso_skeleton.attack_figure` now picks a real Mixamo COMBAT clip by weapon
+— a fist JAB when unarmed, a dagger STAB — and falls back to the ISO.13 procedural swing (overhead/slash/
+thrust) for a blade, so a brawler punches, a rogue stabs and a knight swings (scratchpad/iso14_combat.png).
+The idle-life fidgets route to the distinct new GESTURE captures (ponder→bored, shrug→ask, wave→beckon,
+salute→acknowledge, yawn→bored, kneel→pray, laugh→silly, point→point, guard→fight_idle). And
+`iso_chars._ambient_idle` drifts an idle character through calm ambient gestures over a slow per-person
+cycle — an occasional glance-around (look) or bored shift — so a standing crowd looks alive rather than
+frozen. All new clips registered in `_CLIP` + the frame/one-shot maps. tests: the 14 new clips load, the
+weapon picks the right combat clip (test_iso_skeleton TestBakedClips), the ambient idle stays calm
+(test_iso_chars). Full suite green.
+
