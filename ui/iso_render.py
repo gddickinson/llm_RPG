@@ -401,6 +401,11 @@ def draw_combat_iso(target, engine, view_rect, iso, origin, wmap, tile_size):
     if not ce:
         return
     try:
+        # AGE the effects (bug-fix: the top-down renderer updates them each
+        # frame; the iso path only drew them, so the red damage sprays never
+        # expired — George). In iso mode dispatch() skips the top-down update,
+        # so this is the single per-frame tick.
+        ce.update(1.0 / 30.0)
         ce.draw_with(target, view_rect,
                      lambda x, y: _iso_to_screen(iso, origin, wmap, x, y),
                      tile_size)

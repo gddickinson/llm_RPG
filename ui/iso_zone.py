@@ -143,6 +143,7 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
             def _cs(x, y):
                 sx2, sy2 = iso.world_to_screen(x, y, 0, origin)
                 return int(sx2), int(sy2)
+            ce.update(1.0 / 30.0)          # AGE them (else sprays never expire)
             ce.draw_with(target, view_rect, _cs, tile_size)
     except Exception:
         pass
