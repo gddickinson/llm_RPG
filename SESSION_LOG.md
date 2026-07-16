@@ -8432,3 +8432,18 @@ read plainly (scratchpad/contrast_tavern.png, contrast_shop.png — dark wall di
 floor). Data-only (53 wall-value lines in interior_themes.json); interior_theme.tile_surface renders
 it unchanged. tests/test_interior_theme.py +1 (every theme's wall differs from its floor by >=30
 luminance, so this can't silently regress). Validator clean. Then continuing BLD rounds (BLD.6 next).
+
+## 2026-07-15 — BLD.6: interior decoration pass (torches + hearthrugs)
+
+Interiors had a single light source (the hearth) — one warm pool, the rest dark. BLD.6 adds an
+atmosphere pass (ported from autonomous_world's Stage-5 decoration). New furnish_features.decorate_
+pass(inter, seed), run after furnish in interiors.build_interiors_for_world: (1) a hearthRUG on the
+floor tile in front of every Hearth/Forge; (2) wall TORCHES on wall-adjacent floor tiles, evenly
+spaced (>=5 Chebyshev apart, so lit but not a bonfire). Torches are in prop_sprites.LIT_PROPS, so
+interior_light._sources finds them and casts P39.4 warm light POOLS immediately — a tavern went from
+1 lit prop to 3, and the whole room reads (composes with the wall/floor contrast fix). Nothing lands
+on a doorway apron (reuses furnish_features.apron); deterministic (seeded off the location name).
+Before/after: scratchpad/bld6_tavern_lit.png (three warm pools lighting the tavern vs one lonely
+hearth). tests/test_furnish_features.py (+5: torches emit light + are spaced, hearthrug in front of
+the hearth, never on a doorway, deterministic). furnish_features 202 / interiors 432 — under 500.
+Validator clean. Next: BLD.7 (window trim/shutters/bays + quoins/cornice/gutters in facade/roof_shapes).

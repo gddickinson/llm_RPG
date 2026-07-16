@@ -410,6 +410,11 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
             furnish(inter, loc.name, kind=(getattr(bp, "kind", None) or ltype))
         except Exception as e:
             logger.debug(f"furnish {loc.name}: {e}")
+        try:   # BLD.6 atmosphere: wall torches (light pools) + hearthrugs
+            from world.furnish_features import decorate_pass
+            decorate_pass(inter, seed=sum(ord(c) for c in loc.name))
+        except Exception as e:
+            logger.debug(f"decorate {loc.name}: {e}")
         interiors[loc.name] = inter
 
     # Multi-level pass (P9A.5): bedrooms above taverns and inns,

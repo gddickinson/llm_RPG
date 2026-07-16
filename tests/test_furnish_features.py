@@ -71,6 +71,56 @@ class TestCompositions(unittest.TestCase):
         self.assertEqual(y, 1, "altar sits at the far (top) wall")
 
 
+class TestDecoratePass(unittest.TestCase):
+    def _hearth_room(self):
+        inter = _room(12, 9)
+        inter.furniture = [{"name": "Hearth", "x": 3, "y": 1}]
+        return inter
+
+    def test_places_wall_torches_that_emit_light(self):
+        from ui import prop_sprites
+        inter = self._hearth_room()
+        FF.decorate_pass(inter, seed=1)
+        torches = [f for f in inter.furniture if f["name"] == "Torch"]
+        self.assertTrue(torches, "the pass lights the room with wall torches")
+        self.assertTrue(prop_sprites.emits_light("Torch"))
+
+    def test_torches_are_spaced_out(self):
+        inter = self._hearth_room()
+        FF.decorate_pass(inter, seed=1)
+        pts = [(f["x"], f["y"]) for f in inter.furniture if f["name"] == "Torch"]
+        for i in range(len(pts)):
+            for j in range(i + 1, len(pts)):
+                self.assertGreaterEqual(FF._cheb(pts[i], pts[j]), 5,
+                                        "torches must not cluster")
+
+    def test_hearth_gets_a_rug_in_front(self):
+        inter = self._hearth_room()
+        FF.decorate_pass(inter, seed=1)
+        rugs = [(f["x"], f["y"]) for f in inter.furniture if f["name"] == "Rug"]
+        self.assertTrue(rugs, "a hearthrug is laid in front of the hearth")
+        # adjacent to the hearth at (3,1)
+        self.assertTrue(any(FF._cheb(r, (3, 1)) == 1 for r in rugs))
+
+    def test_never_decorates_a_doorway(self):
+        inter = _room(13, 9)
+        for y in range(1, 8):
+            inter.terrain[y][6] = T.BUILDING
+        inter.terrain[3][6] = T.GRASS            # a doorway
+        FF.decorate_pass(inter, seed=2)
+        ap = FF.apron(inter)
+        self.assertFalse([f for f in inter.furniture
+                          if (f["x"], f["y"]) in ap])
+
+    def test_deterministic(self):
+        a = self._hearth_room()
+        FF.decorate_pass(a, seed=1)
+        b = self._hearth_room()
+        FF.decorate_pass(b, seed=1)
+        self.assertEqual([(f["name"], f["x"], f["y"]) for f in a.furniture],
+                         [(f["name"], f["x"], f["y"]) for f in b.furniture])
+
+
 class TestDoorApron(unittest.TestCase):
     def test_apron_covers_a_doorway_gap(self):
         # a room split by a vertical wall with one doorway gap

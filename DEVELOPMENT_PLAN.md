@@ -5895,9 +5895,14 @@ ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly 
   then the door). Before/after: scratchpad/bld5_shopfronts_compare.png (tavern awning+mug / smithy
   anvil+forge-glow / shop coin+awning+display / bakery loaf+oven / inn mug). `tests/test_facade.py`
   (+4). facade.py 224, door_glyphs 36 — under 500.
-- [ ] **BLD.6 Decoration pass + occupant clutter + interior render polish** — carpet-before-hearth,
-  corridor torches (feed P39.4 light), storage clutter; occupant→furnishings; window light-pool +
-  mortar walls + detailed bed/table recipes (port aw renderer_buildings).
+- [x] **BLD.6 Decoration pass (torches + hearthrugs) — DONE.** New `furnish_features.decorate_pass`
+  (ported from autonomous_world's Stage-5 decoration), run after furnishing in
+  `interiors.build_interiors_for_world`: wall TORCHES spaced ≥5 tiles apart (they're in `LIT_PROPS`,
+  so they immediately cast P39.4 warm light POOLS — an interior went from 1 light source to ~3,
+  legible + atmospheric) + a hearthRUG on the floor in front of each hearth/forge; never on a
+  doorway apron; deterministic. Before/after: scratchpad/bld6_tavern_lit.png (three warm pools
+  lighting the whole tavern vs one lonely hearth). `tests/test_furnish_features.py` (+5). (Occupant
+  clutter + interior tile-render recipes remain for a later slice.)
 - [ ] **BLD.7 Window trim, shutters, bays & architectural trim** — lintels/sills, shutters, 2×2
   glazing on a regular bay rhythm, quoins, cornice, gutters/downpipe.
 - [ ] **BLD.8 Roof relief, depth & weathering** — eaves overhang + soffit shadow, ridge caps,
