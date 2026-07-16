@@ -5972,6 +5972,33 @@ ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly 
   — scratchpad/bld8_closeup.png shows moss-flecked roofs with soffit depth, each wall segment weathered
   differently. tests/test_roof_relief.py (11).
 
+## Phase OAKVALE — a large, living, walled town + countryside (George, 2026-07-16) — see `docs/OAKVALE.md`
+
+George: "Oakvale should be redesigned, enlarged and given much greater depth… a large town with
+multiple districts with a central defended region surrounded with a wall with multiple gates…
+guilds, shops, taverns, blacksmith and crafts, wizards crafts, libraries, cathedral, churches, pubs,
+numerous dwellings… populated by townsfolk (NPCs for all the roles)… farmers farming the nearby
+lands… villages to support them… a detailed living countryside… rivers and roads that make sense,
+with bridges and a water supply." Researched `autonomous_world` (Voronoi wards, street templates,
+wall-polygon gates, A* terrain roads, role pools) + `building-gen` (roof/type/interior data). New
+reusable `world/town/` generator; full design in `docs/OAKVALE.md`.
+
+- [x] **T1 District wards — DONE.** `world/town/wards.py` over `data/town/districts.json`: sunflower
+  seeds → numpy Voronoi → 3× Lloyd relaxation → ring classification (inner market/civic/temple/guild,
+  middle residential/craft, outer residential/stable/farming). `plan_districts` → a `DistrictPlan`
+  (`type_at`/`ring_at`/`tiles_of_type`), deterministic. scratchpad/oakvale_t1_districts.png shows
+  organic even wards with a civic core + suburbs. tests/test_town_wards.py (10).
+- [ ] **T2 Street network** — size-scaled templates (boulevards + ring road + radial lanes + core
+  grid + a reserved central market square), rasterised, water-aware; road hierarchy.
+- [ ] **T3 Town wall & gates** — inner-core wall polygon; gates where main streets cross it; towers.
+- [ ] **T4 Building lots & placement** — frontage lots → building KIND by ward → `Location`s.
+- [ ] **T5 Integration** — replace small Oakvale with `build_town`; interiors + fortify; size the map.
+- [ ] **T6 Role population** — every building its keeper/craftsfolk; dwellings→townsfolk; mayor/
+  bankers/guildsmen/thieves/urchins/vagrants; homes↔workplaces.
+- [ ] **T7 Living countryside** — A* terrain roads + bridges, supporting villages (MST-linked), farm
+  rings worked by farmers, wells/fountains for water supply.
+- [ ] **T8+ Building variety polish** — roof-shape variety, per-KIND specs, multi-rect massing.
+
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
 George chose the "full isometric 3D-look world" for the "more 3D like movieMaker" ask.

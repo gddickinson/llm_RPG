@@ -8610,3 +8610,25 @@ depth, each wall segment weathered differently (George's "clones differ"). `rend
 deterministic + clones differ + in-bounds + empty on tiny, soffit band, dormers none-on-narrow/1-2-on-
 wide/on-the-slope, headless draws + clip restored). No data change. This clears the BLD phase
 (BLD.0-8 done). Next: pick the next DEVELOPMENT_PLAN item (Phase 41 iso polish, or a playtest pass).
+
+## 2026-07-16 — OAKVALE T1: district wards (the large-town generator begins)
+
+George's new directive: redesign & ENLARGE Oakvale into a large multi-district town with a walled
+defended core + multiple gates, all the building types (guilds/shops/taverns/pubs/smiths/armourers/
+wizard crafts/libraries/cathedral/churches/dwellings), a full role-based population, and a living
+countryside (supporting villages, farmers, terrain-sensible roads + bridges, wells). "Ultrathink,
+research" both `/autonomous_world` (settlement layout) + `/building-gen` (building design). Two Explore
+agents mined both repos; key portable ideas — Voronoi wards + Lloyd relaxation + radial ring
+classification for districts; "gate = where a main street crosses the wall polygon" for a defended
+core; A* over a terrain cost-field (+MST) for terrain-aware roads; size-scaled street templates with a
+market square; specialization-weighted profession pools for population. building-gen turned out to be a
+DATA mine (its code only builds rectangles); roofs/fixtures/room-templates/building-types/facade-trim
+are already ported. Design + 8-phase plan written to `docs/OAKVALE.md`; new reusable `world/town/`
+subpackage. T1 lands the DISTRICT ENGINE: `world/town/wards.py` over `data/town/districts.json` —
+`sunflower_seeds` (golden-angle spiral) → numpy `assign_wards` (nearest-seed Voronoi) → `lloyd_relax`
+(3× centroid relaxation, even organic wards) → `classify_wards` (by distance ring → district type);
+`plan_districts` → a `DistrictPlan` (`type_at`/`ring_at`/`types_present`/`tiles_of_type`),
+deterministic in seed. A radius-24 town yields ~1800 tiles across ~10 district types — a civic/market/
+temple core, residential/craft middle, farming/stable/storage suburbs (scratchpad/oakvale_t1_
+districts.png: organic even Voronoi wards). Purely additive (no game code touched); game starts clean.
+tests/test_town_wards.py (10). Next: T2 (street network templates + market square).
