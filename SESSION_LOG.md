@@ -9157,3 +9157,25 @@ frozen. All new clips registered in `_CLIP` + the frame/one-shot maps. tests: th
 weapon picks the right combat clip (test_iso_skeleton TestBakedClips), the ambient idle stays calm
 (test_iso_chars). Full suite green.
 
+## 2026-07-16 — ISO.15: footprint-spanning iso buildings (they match their footprints now)
+
+George: "try to improve the buildings, they don't seem to match their footprints very well." In the iso
+view a building was drawn as ONE fixed baked sprite (size tile*2.2) parked at its front-centre tile, while
+the footprint tiles were LIFTED to a raised brown block — so a building bigger than about a tile sat on a
+brown pedestal with a too-small house floating on part of it, the rest of the footprint bare brown apron.
+
+New `ui/iso_structures.py` draws each enterable building as a real 3D BOX projected through the SAME
+`iso.world_to_screen` the ground tiles use, so it can't help but land on its footprint. `building_infos`
+returns each enterable building's full `loc` rect + kind; `footprint_tiles` are now drawn as flat GROUND
+(no lifted pedestal) so the box sits on the earth; `draw_building` projects the footprint's outer corners
+at ground + eaves height and fills the two camera-facing WALLS (south + east, shaded), a centred DOOR and a
+pair of per-storey WINDOWS on each, then a real ROOF by the building's style — a gable RIDGE along the
+longer axis, a hip PYRAMID for a square plan, or a flat PARAPET — all in the same `roof_shapes` materials
+(varied per building via `building_variety`). `iso_render` draws the footprint tiles as ground and adds one
+building box per structure, depth-keyed on its FRONT tile so it occludes what's behind and is occluded by
+the cast in front; the old baked-sprite building draw + the `_building_anchors` helper are retired
+(iso_render back under 500). Verified in the demo world (scratchpad/bldg_fixed.png at zoom 72, bldg_zoom.png
+at 96): a 2x2 cottage, a 6x5 hall, a stone watchtower each fill their tiles with walls + windows + a gabled
+roof, sitting on the grass. tests: footprint tiles cover the rect + the draw paints walls+roof
+(test_iso_render TestBuildingFootprints), building_infos exposes footprints (test_iso_objects). Full suite green.
+

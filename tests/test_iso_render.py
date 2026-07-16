@@ -181,6 +181,40 @@ class TestCombatEffectsExpire(unittest.TestCase):
                          "the iso draw must age the spray away")
 
 
+class TestBuildingFootprints(unittest.TestCase):
+    """ISO.15 — buildings drawn as footprint-spanning boxes on the ground."""
+
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+
+    def test_footprint_tiles_cover_the_rect(self):
+        from ui import iso_structures
+
+        class _Loc:
+            name, x, y, width, height = "House", 5, 6, 3, 2
+
+        class _Eng:
+            interiors = {"House": object()}
+            world = type("W", (), {"locations": [_Loc()]})()
+        tiles = iso_structures.footprint_tiles(_Eng())
+        self.assertEqual(len(tiles), 6, "3x2 footprint = 6 tiles")
+        self.assertIn((5, 6), tiles)
+        self.assertIn((7, 7), tiles)
+
+    def test_draw_building_paints_walls_and_roof(self):
+        from ui import iso_structures
+        from ui.iso import IsoProjection
+        iso = IsoProjection(48, 24, 14)
+        surf = pygame.Surface((300, 300))
+        surf.fill((0, 0, 0))
+        iso_structures.draw_building(surf, iso, (150, 90),
+                                     (0, 0, 2, 2, "home"), "clay", "timber")
+        painted = sum(1 for x in range(0, 300, 4) for y in range(0, 300, 4)
+                      if surf.get_at((x, y))[:3] != (0, 0, 0))
+        self.assertGreater(painted, 30, "a spanning building should paint")
+
+
 class TestIsoOverlayHelpers(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

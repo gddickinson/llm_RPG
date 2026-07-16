@@ -67,14 +67,16 @@ class TestPlacement(unittest.TestCase):
         except Exception:
             pass
 
-    def test_building_anchors_found(self):
-        from ui.iso_render import _building_anchors
-        anchors = _building_anchors(self.engine)
-        self.assertTrue(anchors, "the town's buildings should have anchors")
-        # each anchor names a kind and sits at a real tile
-        for (wx, wy), kind in anchors.items():
+    def test_building_footprints_found(self):
+        # ISO.15: enterable buildings expose a full footprint rect + kind
+        from ui import iso_structures
+        infos = iso_structures.building_infos(self.engine)
+        self.assertTrue(infos, "the world's buildings should have footprints")
+        wm = self.engine.world.map
+        for x0, y0, x1, y1, kind in infos:
             self.assertIsInstance(kind, str)
-            self.assertTrue(0 <= wx < self.engine.world.map.width)
+            self.assertTrue(0 <= x0 <= x1 < wm.width)
+            self.assertTrue(0 <= y0 <= y1 < wm.height)
 
     def test_iso_frame_with_objects_paints(self):
         from ui import iso_render

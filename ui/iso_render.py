@@ -135,8 +135,9 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
     origin = _origin(iso, engine, view_rect)
     target.fill((22, 22, 30), view_rect)
 
-    from ui import iso_objects
-    anchors = _building_anchors(engine)
+    from ui import iso_objects, iso_structures
+    binfos = iso_structures.building_infos(engine)          # ISO.15 footprints
+    footprints = iso_structures.footprint_tiles(engine)
     x0, x1, y0, y1 = _tile_box(iso, view_rect, origin, wmap)
     # P41.11 gameplay parity: dropped loot, fire/oil/water pools, projectiles,
     # and the ranged reticle must show in iso too (they were top-down-only)
@@ -157,6 +158,8 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
                 continue
             name = _terrain_name(wmap.terrain[wy][wx])
             z = _HEIGHT.get(name, 0.0)
+            if (wx, wy) in footprints:               # ISO.15 building footprint
+                name, z = "grass", 0.0               # → flat ground under the box
             sx, sy = iso.world_to_screen(wx, wy, z, origin)
             if sx < view_rect.x - tile_size or sx > view_rect.right + tile_size \
                     or sy < view_rect.y - tile_size * 3 \
@@ -168,13 +171,6 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
             if name in ("forest", "forest2"):
                 items.append((iso.depth_key(wx, wy, z, 1), "obj",
                               (iso_objects.tree_sprite(int(tile_size * 1.5)),
-                               int(sx), int(sy))))
-            kind = anchors.get((wx, wy))
-            if kind is not None:
-                bs = int(tile_size * 2.2)
-                cov, wl = _variant_materials(kind, wx, wy)   # ISO.1 variety
-                items.append((iso.depth_key(wx, wy, 1.1, 1), "obj",
-                              (iso_objects.building_sprite(kind, bs, cov, wl),
                                int(sx), int(sy))))
             si = surfaces.get((wx, wy))
             if si:                                     # fire / oil / water pool
@@ -235,6 +231,17 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
                            int(sx), int(sy))))
     except Exception:
         pass
+    # ISO.15 footprint-spanning building boxes, keyed on the FRONT tile so they
+    # occlude what's behind and are occluded by what's in front (explored-gated)
+    for info in binfos:
+        bx0, by0, bx1, by1, kind = info
+        if bx1 < x0 or bx0 > x1 or by1 < y0 or by0 > y1:
+            continue
+        if is_explored is not None and not is_explored(engine, bx0, by0):
+            continue
+        cov, wl = _variant_materials(kind, bx0, by0)
+        items.append((iso.depth_key(bx1, by1, 1.5, 1.3), "building",
+                      (info, cov, wl)))
     items.sort(key=lambda t: t[0])
 
     for _, tag, data in items:
@@ -252,6 +259,9 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
             _draw_mount_iso(target, data, tile_size)
         elif tag == "obj":
             _blit_object(target, data)
+        elif tag == "building":
+            info, cov, wl = data
+            iso_structures.draw_building(target, iso, origin, info, cov, wl)
         else:
             _draw_char(target, data, tile_size)
 
@@ -470,22 +480,5 @@ def _blit_object(target, data):
     target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
 
 
-def _building_anchors(engine):
-    """{front-centre tile: kind} for each enterable building (P41.4)."""
-    out = {}
-    try:
-        from world.blueprints import blueprint_for_location
-    except Exception:
-        blueprint_for_location = None
-    ints = getattr(engine, "interiors", {}) or {}
-    for loc in getattr(engine.world, "locations", []):
-        if loc.name not in ints:
-            continue
-        kind = "home"
-        if blueprint_for_location is not None:
-            bp = blueprint_for_location(loc.name)
-            kind = getattr(bp, "kind", "") or "home" if bp else "home"
-        out[(loc.x + loc.width // 2, loc.y + loc.height - 1)] = kind
-    return out
 
 

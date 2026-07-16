@@ -6217,6 +6217,18 @@ rasterizer/camera/SSAA.
   captures (Big Body Blow = a horizontal haymaker, Boxing = a low crouch). scratchpad/iso14_newclips.png,
   iso14_combat.png, iso14_fightidle.png. tests: the new clips load + weapon picks the combat clip
   (test_iso_skeleton), ambient idle stays calm (test_iso_chars). Full suite green.
+- [x] **ISO.15 FOOTPRINT-SPANNING BUILDINGS (George 2026-07-16) — DONE.** George: "the buildings don't
+  seem to match their footprints very well." In iso a building was ONE fixed baked sprite (tile*2.2) parked
+  at its front tile, so anything bigger than ~1 tile left the footprint as a raised BROWN pedestal with an
+  undersized house floating on it. New `ui/iso_structures.py` draws each enterable building as a real 3D
+  BOX projected through the SAME `iso.world_to_screen` as the ground: `building_infos` (the full loc rect +
+  kind), `footprint_tiles` (drawn as flat GROUND, no pedestal), and `draw_building` (two camera-facing
+  WALLS with a door + per-storey windows rising the whole footprint to a real ROOF — gable ridge / hip
+  pyramid / flat parapet — in the style materials). Because it shares the tile projection, the box lands
+  EXACTLY on its footprint and depth-sorts with the cast. `iso_render` now draws footprint tiles as ground
+  + one building box each (front-tile keyed), retiring the baked-sprite path + the `_building_anchors`
+  helper. scratchpad/bldg_fixed.png, bldg_zoom.png. tests: footprint tiles cover the rect, draw paints
+  walls+roof (test_iso_render), building_infos exposes footprints (test_iso_objects). Full suite green.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
