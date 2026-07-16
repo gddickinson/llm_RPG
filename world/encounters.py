@@ -84,10 +84,11 @@ class EncounterManager:
         if terrain not in (TerrainType.FOREST, TerrainType.GRASS,
                            TerrainType.SWAMP):
             return None
-        # P27.1: a settlement's guarded environs are SAFE — no monsters
-        # wander in or right around a town (the walled starting town too)
-        d = self._nearest_settlement_dist(player.position)
-        if d is not None and d <= SAFE_RADIUS:
+        # P27.1: a settlement's guarded environs are SAFE — no monsters wander
+        # in or right around a town. The whole walled town footprint is safe
+        # (not just a small disc around the centre), so a large Oakvale stays
+        # calm for a starting hero to equip + learn in.
+        if self._in_safe_zone(player.position):
             return None
         if self.rng.random() > self.spawn_chance():
             return None
@@ -206,14 +207,18 @@ class EncounterManager:
             pass
         return ENCOUNTER_CHANCE * (2.0 - mod) * mult * self.danger_multiplier()
 
+    def _is_settlement(self, loc) -> bool:
+        name = getattr(loc, "name", "").lower()
+        return bool(loc.get_property("town") or loc.get_property("village")
+                    or any(k in name for k in _SETTLEMENT_KEYS))
+
     def _nearest_settlement_dist(self, pos) -> Optional[float]:
-        """Distance to the nearest SETTLEMENT (village/hamlet/town), or None
-        if the world has none placed."""
+        """Distance to the nearest SETTLEMENT (village/hamlet/town — or a
+        town/village-tagged marker), or None if the world has none placed."""
         px, py = pos
         best = None
         for loc in getattr(self.engine.world, "locations", []):
-            name = getattr(loc, "name", "").lower()
-            if not any(k in name for k in _SETTLEMENT_KEYS):
+            if not self._is_settlement(loc):
                 continue
             try:
                 cx, cy = loc.center()
@@ -223,6 +228,22 @@ class EncounterManager:
             if best is None or dd < best:
                 best = dd
         return best
+
+    def _in_safe_zone(self, pos) -> bool:
+        """Inside a settlement's FOOTPRINT (+ a SAFE_RADIUS margin) — no
+        wandering monsters. Scales to the settlement's size, so the WHOLE
+        walled town (a big `town`-marked Location) is safe, not just a small
+        disc around its centre (George: 'inside the walled area should be
+        relatively safe, especially at the start')."""
+        px, py = pos
+        for loc in getattr(self.engine.world, "locations", []):
+            if not self._is_settlement(loc):
+                continue
+            if (loc.x - SAFE_RADIUS <= px < loc.x + loc.width + SAFE_RADIUS
+                    and loc.y - SAFE_RADIUS <= py
+                    < loc.y + loc.height + SAFE_RADIUS):
+                return True
+        return False
 
     def danger_multiplier(self) -> float:
         """P27.1 tier factor on the spawn chance: quieter near a settlement,

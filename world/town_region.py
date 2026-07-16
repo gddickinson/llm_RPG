@@ -96,6 +96,8 @@ def build_oakvale_region(world, seed: int = 7) -> dict:
     logger.info("Oakvale region planted: %s", res)
     out = {"town": "Oakvale", "center": (cx, cy), "plan": plan}
     out.update(res)
+    _plant_arrival_waystone(world, cx, cy)          # the hero arrives on this
+    out["grate"] = _plant_sewer_grate(world, cx, cy)  # a visible Deepdelve way in
     # T7 the living countryside — supporting villages, farms, roads + bridges
     try:
         from world.town.countryside import build_countryside
@@ -107,8 +109,65 @@ def build_oakvale_region(world, seed: int = 7) -> dict:
     return out
 
 
+def _plant_arrival_waystone(world, cx, cy):
+    """A teleport DIAS at the market square — the hero arrives on it, as if
+    stepping off the Wayfarers' network into the town."""
+    from world.location import Location
+    wm = world.map
+    if wm.terrain[cy][cx] == TerrainType.WATER:
+        wm.terrain[cy][cx] = TerrainType.ROAD
+    loc = Location("Oakvale Waystone",
+                   "A rune-circle waystone in the market square, where "
+                   "travellers step in from afar.", cx, cy, 1, 1)
+    loc.add_property("waystone", "waystone_oakvale")
+    world.add_location(loc)
+    return (cx, cy)
+
+
+def _grate_spot(wm, cx, cy):
+    """A road/plaza tile a few paces off the square for the sewer grate."""
+    for r in range(3, 12):
+        for dy in range(-r, r + 1):
+            for dx in range(-r, r + 1):
+                if max(abs(dx), abs(dy)) != r:
+                    continue
+                x, y = cx + dx, cy + dy
+                if 0 <= x < wm.width and 0 <= y < wm.height \
+                        and wm.terrain[y][x] == TerrainType.ROAD:
+                    return (x, y)
+    return None
+
+
+def _plant_sewer_grate(world, cx, cy):
+    """A VISIBLE iron sewer grate in the street — an OBVIOUS way down into the
+    Deepdelve (George: 'make the entrance more obvious, a grate/sewer entrance')."""
+    from world.location import Location
+    wm = world.map
+    spot = _grate_spot(wm, cx, cy)
+    if spot is None:
+        return None
+    gx, gy = spot
+    wm.terrain[gy][gx] = TerrainType.CAVE
+    loc = Location("The Oakvale Sewers",
+                   "A rusted iron grate set in the cobbles, a stone stair "
+                   "beneath it descending into the Deepdelve.", gx, gy, 1, 1)
+    loc.add_property("dungeon_key", "deepdelve")
+    loc.add_property("dungeon_name", "The Deepdelve")
+    loc.add_property("deep_dungeon", True)
+    loc.add_property("deep_levels", 6)
+    loc.add_property("deepdelve_mouth", True)
+    loc.add_property("sewer_grate", True)
+    world.add_location(loc)
+    return spot
+
+
 def oakvale_spawn(world):
-    """Where the player wakes — the central market square of Oakvale."""
+    """Where the player wakes — the market-square WAYSTONE (as if just
+    arrived), else the square centre."""
+    ws = next((l for l in world.locations
+               if l.get_property("waystone") == "waystone_oakvale"), None)
+    if ws is not None:
+        return (ws.x, ws.y)
     town = next((l for l in world.locations
                  if l.name == "Oakvale" and l.get_property("town")), None)
     if town is None:

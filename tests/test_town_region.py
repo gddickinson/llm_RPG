@@ -78,6 +78,39 @@ class TestRegionIntegration(unittest.TestCase):
         self.assertEqual(len(with_int), len(enterable),
                          "every home/hall/shop is enterable")
 
+    def test_hero_arrives_on_a_teleport_platform(self):
+        px, py = self.engine.player.position
+        ws = next((l for l in self.engine.world.locations
+                   if l.get_property("waystone") == "waystone_oakvale"), None)
+        self.assertIsNotNone(ws, "an arrival waystone")
+        self.assertEqual((ws.x, ws.y), (px, py), "the hero wakes ON it")
+        # and it is a usable platform on the network
+        tn = self.engine.teleport_network
+        self.assertIsNotNone(tn.platform_at((px, py)))
+
+    def test_town_is_safe_no_wandering_monsters(self):
+        em = self.engine.encounter_manager
+        px, py = self.engine.player.position
+        self.assertTrue(em._in_safe_zone((px, py)), "the square is safe")
+        # nowhere inside the town spawns a wandering monster
+        spawns = sum(1 for _ in range(200) if em.maybe_spawn())
+        self.assertEqual(spawns, 0, "no monsters wander the walled town")
+
+    def test_visible_sewer_grate_into_the_deepdelve(self):
+        from world.world_map import TerrainType
+        grate = next((l for l in self.engine.world.locations
+                      if l.get_property("sewer_grate")), None)
+        self.assertIsNotNone(grate, "a visible sewer grate")
+        self.assertEqual(grate.get_property("dungeon_key"), "deepdelve")
+        self.assertEqual(self.engine.world.map.terrain[grate.y][grate.x],
+                         TerrainType.CAVE,
+                         "the grate is a real, enterable way down")
+        # it descends into the shared Deepdelve
+        self.engine.player.position = (grate.x, grate.y)
+        msg = self.engine.enter_dungeon()
+        self.assertIn("Deepdelve", msg)
+        self.engine.exit_dungeon()
+
 
 if __name__ == "__main__":
     unittest.main()

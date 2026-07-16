@@ -306,6 +306,11 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
         dais.draw_all(target, engine, view_rect, cam_x, cam_y, tile_size)
     except Exception:
         pass
+    try:   # OAKVALE a visible iron SEWER GRATE over the Deepdelve way down
+        from ui import grate
+        grate.draw_all(target, engine, view_rect, cam_x, cam_y, tile_size)
+    except Exception:
+        pass
 
 
 def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:

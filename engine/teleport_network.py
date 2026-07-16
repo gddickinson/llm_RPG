@@ -43,22 +43,22 @@ class TeleportNetwork:
 
     def seed(self) -> int:
         # gated with the guild halls / adventurers so a few extra Location
-        # markers don't perturb the general suite; the teleport tests clear it
+        # markers don't perturb the general suite; the teleport tests clear it.
+        # The pre-planted ARRIVAL waystone (OAKVALE) is adopted regardless.
         import os
-        if os.environ.get("LLM_RPG_NO_ADVENTURERS"):
-            return 0
-        if self._seeded or self.platforms:
+        if self._seeded:
             return 0
         self._seeded = True
         placed = 0
-        for spec in self._specs():
+        gated = bool(os.environ.get("LLM_RPG_NO_ADVENTURERS"))
+        for spec in ([] if gated else self._specs()):
             spot = self._site(spec.get("settlement", ""))
             if spot is None:
                 continue
             self._plant(spec, spot)
             placed += 1
         # P37.2 — also link the notable PLACES OF INTEREST on the map
-        for spec in self._landmark_specs():
+        for spec in ([] if gated else self._landmark_specs()):
             anchor = spec.pop("_anchor")
             if self._too_close_to_platform((anchor.x, anchor.y)):
                 continue
@@ -68,6 +68,16 @@ class TeleportNetwork:
                 continue
             self._plant(spec, spot)
             placed += 1
+        # OAKVALE: adopt any pre-planted waystone Locations (the region's
+        # market-square ARRIVAL platform) into the network so they work.
+        known = {p["id"] for p in self.platforms}
+        for loc in getattr(self.engine.world, "locations", []):
+            wid = loc.get_property("waystone")
+            if wid and wid not in known:
+                self.platforms.append({"id": wid, "name": loc.name,
+                                       "settlement": "", "pos": [loc.x, loc.y]})
+                known.add(wid)
+                placed += 1
         if placed:
             logger.info(f"Seeded {placed} teleport platform(s).")
         return placed

@@ -8807,3 +8807,28 @@ the secret reveal → enter_dungeon descends the full 6 floors → exit clean. S
 game setting with adventures right in the town (the T6 street thieves/urchins + the Deepdelve). The
 classic-world deepdelve is unaffected (test_deepdelve 15 green). Next: final full suite + commit the
 T7-T9 stretch; the Oakvale overhaul (T1-T9) is essentially complete.
+
+## 2026-07-16 — OAKVALE region polish (George): safe town, arrival waystone, visible sewer grate
+
+Three fixes to the playable Oakvale region from George's feedback:
+1. **Safe walled town** ("too many monster encounters inside Oakvale near the start; inside the walled
+   area should be relatively safe so the player can equip + learn"). Root cause: `encounters._nearest_
+   settlement_dist` only recognised names containing village/hamlet/town (the "Oakvale" MARKER matches
+   none) and `SAFE_RADIUS`=7 is tiny vs a radius-42 town. Fixed: `_is_settlement` also accepts a
+   `town`/`village` PROPERTY, and a new `_in_safe_zone(pos)` treats the whole settlement FOOTPRINT (+ a
+   SAFE_RADIUS margin) as no-spawn — so the entire walled Oakvale is safe (verified: 0 spawns in 300
+   attempts at the square; the far wild still spawns). `maybe_spawn` uses it.
+2. **Arrive on a teleport platform** ("the hero spawn should be onto a teleport platform, as if just
+   arrived"). `town_region._plant_arrival_waystone` plants an "Oakvale Waystone" (a GX.2 glowing DIAS)
+   at the market square; `oakvale_spawn` now returns its tile so the hero wakes ON it. `teleport_network
+   .seed` restructured to ALWAYS adopt pre-planted waystone Locations (even under the suite's
+   LLM_RPG_NO_ADVENTURERS gate) into `platforms`, so the arrival dais is a usable network platform (the
+   hint bar shows "[E] waystone — travel the Wayfarer network").
+3. **Visible sewer-grate Deepdelve entrance** ("make the DeepDelve entrance more obvious — a visible
+   grate/sewer entrance"). `town_region._plant_sewer_grate` plants "The Oakvale Sewers" — a CAVE tile a
+   few paces off the square, tagged `sewer_grate` + `dungeon_key:"deepdelve"` — so it's an OBVIOUS,
+   always-visible way down into the shared 6-floor Deepdelve (no searching). New `ui/grate.py` draws a
+   rusted IRON GRATE in a stone kerb over a dark shaft (`grate_geometry`/`draw_grate`/`draw_all`), wired
+   into `renderer_buildings.draw_buildings` beside the dais. Rendered scratchpad/oakvale_arrival_grate
+   .png: the hero on the glowing arrival dais with the sewer grate a few tiles off. tests/test_grate.py
+   (3) + test_town_region.py +3 (arrive-on-platform, town-is-safe, visible-grate-descends). All green.
