@@ -122,11 +122,22 @@ def _fill(rgb, mask, zbuf, sx, sy, zc, i, j, k, w, h, shade):
     mask[miny:maxy + 1, minx:maxx + 1][upd] = True
 
 
+# ISO.5 supersample factor for the bake — renders at SSAA× then smoothscales
+# down for crisper silhouettes + finer detail (cost is one-time per cache key).
+# Overridable via LLM_RPG_ISO_SS (clamped 2..4).
+def _ssaa() -> int:
+    import os
+    try:
+        return max(2, min(4, int(os.environ.get("LLM_RPG_ISO_SS", "3"))))
+    except Exception:
+        return 3
+
+
 def bake(meshes, size=64, **cam):
     """Render `meshes` once at the iso camera → a pygame RGBA sprite (cached by
-    the caller). Antialiased by rendering at 2× and smooth-scaling down."""
+    the caller). Antialiased by rendering at SSAA× and smooth-scaling down."""
     import pygame
-    ss = size * 2
+    ss = size * _ssaa()
     rgb, mask = render(meshes, width=ss, height=ss, **cam)
     rgba = np.zeros((ss, ss, 4), np.uint8)
     rgba[..., :3] = rgb

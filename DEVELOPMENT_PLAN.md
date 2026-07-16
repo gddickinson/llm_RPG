@@ -6101,7 +6101,11 @@ rasterizer/camera/SSAA.
   while the character moves tile-to-tile, ATTACK on a fresh `_atk_seq` strike, else IDLE; folk desync by
   stance. `char_sprite` bakes/caches per (…, action, frame). scratchpad/iso4_anim.png: a clear walk
   cycle (striding legs + swinging arms) + an attack (arm arcing overhead). tests/test_iso_chars.py +5.
-- [ ] **ISO.5 Scale & fidelity polish** — larger bake resolution / tile_size; re-frame the bake camera.
+- [x] **ISO.5 Scale & fidelity polish — DONE.** `raster3d.bake` now supersamples at 3× (was 2×) via a
+  clamped `_ssaa()` (`LLM_RPG_ISO_SS` override, 2..4) for crisper silhouettes + finer detail on every
+  baked iso sprite (buildings/characters/objects); cost is one-time per cache key, steady-state frame
+  unchanged (~0.1s, cached blits). scratchpad/iso5_crisp.png. This completes Phase ISO (1-5): the
+  isometric world now has real buildings, textured terrain, and bodied + animated characters.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

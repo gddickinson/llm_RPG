@@ -8911,3 +8911,18 @@ tests/test_iso_chars.py +5 (walk moves the legs, stride extremes differ, attack 
 frame-state transitions idle→walk→attack, action frames bake distinct sprites). Phase ISO now has real
 buildings (ISO.1) + textured tiles (ISO.2) + bodied (ISO.3) + ANIMATED (ISO.4) characters. Remaining:
 ISO.5 (scale/fidelity polish).
+
+## 2026-07-16 — ISO.5: iso scale/fidelity polish (crisper sprites) — Phase ISO complete
+
+George: "the scale might need to be larger for more detail." `raster3d.bake` now supersamples at 3× (was
+2×) via a clamped `_ssaa()` helper (`LLM_RPG_ISO_SS` env override, 2..4), so every baked iso sprite —
+buildings, characters, objects — renders with crisper silhouettes + finer detail. The cost is one-time
+per cache key (measured: first frame ~0.38s while baking, steady-state frame ~0.096s UNCHANGED — the
+bakes are cached, so no per-frame regression). Chose the SSAA bump over a global tile_size change (which
+would disrupt the whole game's layout + the top-down view); the user's own Map-zoom setting handles
+size. scratchpad/iso5_crisp.png: the full iso Oakvale — textured terrain, pitched-roof varied buildings,
+bodied+animated characters — rendered crisp. tests/test_raster3d.py +1 (SSAA default 3 + clamp 2..4 +
+bad-value fallback). This COMPLETES Phase ISO (docs/ISO_GRAPHICS.md): ISO.1 real buildings, ISO.2
+textured tiles, ISO.3 character bodies (proportions/arms/stance/two-light shading), ISO.4 character
+ANIMATION (walk/attack/idle), ISO.5 fidelity — the isometric world is now markedly more realistic across
+tiles, buildings and animated characters, per George's request.

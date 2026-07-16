@@ -69,3 +69,24 @@ class TestBake(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSSAA(unittest.TestCase):
+    def test_ssaa_default_and_clamp(self):
+        import os
+        from ui import raster3d as r3
+        old = os.environ.get("LLM_RPG_ISO_SS")
+        try:
+            os.environ.pop("LLM_RPG_ISO_SS", None)
+            self.assertEqual(r3._ssaa(), 3, "default 3x supersample")
+            os.environ["LLM_RPG_ISO_SS"] = "9"
+            self.assertEqual(r3._ssaa(), 4, "clamped to 4")
+            os.environ["LLM_RPG_ISO_SS"] = "1"
+            self.assertEqual(r3._ssaa(), 2, "clamped to 2")
+            os.environ["LLM_RPG_ISO_SS"] = "junk"
+            self.assertEqual(r3._ssaa(), 3, "bad value → default")
+        finally:
+            if old is None:
+                os.environ.pop("LLM_RPG_ISO_SS", None)
+            else:
+                os.environ["LLM_RPG_ISO_SS"] = old
