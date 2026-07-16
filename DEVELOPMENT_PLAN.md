@@ -6010,15 +6010,19 @@ reusable `world/town/` generator; full design in `docs/OAKVALE.md`.
   A radius-40 town → **~177 buildings across ~26 KINDs** with every landmark present (scratchpad/
   oakvale_t4_town.png: a dense walled town, civic/temple/market core + residential/craft/farm suburbs).
   tests/test_town_lots.py (9). Next: T5 stamps a `TownPlan` onto the world.
-- [~] **T5 Integration** — (T5a DONE) `world/town/stamp.py` `stamp_town(world, plan, name)` stamps a
-  `TownPlan` onto the world map: disc cleared to grass (rivers kept), streets→ROAD (WATER→BRIDGE),
-  wall→WALL(BUILDING), gates→ROAD, each lot→BUILDING + a `Location` carrying its `kind` (the 2.5D
-  renderer now reads `loc.kind` in `_kind_at`) + `type`/`forge` tags + a unique name; a town-marker
-  `Location` records gates+towers. Landmarks now GUARANTEED (fall back to the core if their ward is
-  absent — a cathedral always exists). Rendered IN-ENGINE: scratchpad/oakvale_t5_ingame.png — a dense
-  104-building walled town with streets, market square, gates, towers, varied roofs. tests/test_town_
-  stamp.py (8). **(T5b remaining):** wire into `world_generator` (replace small Oakvale), size the map,
-  build interiors for the town buildings — the enlarge-in-place vs dedicated-region choice George steers.
+- [x] **T5 Integration — DONE** (George chose a dedicated large-town region). T5a `world/town/stamp.py`
+  `stamp_town` stamps a `TownPlan` onto the world (disc→grass keeping rivers, streets→ROAD/WATER→BRIDGE,
+  wall→WALL, gates→ROAD, lots→BUILDING+`Location` with `kind`/`type`/`forge` + unique names; a town
+  marker records gates+towers); `renderer_buildings._kind_at` reads `loc.kind`; landmarks GUARANTEED.
+  T5b `world/town_region.py` `build_oakvale_region` — a `world_kind="oakvale"` region on a bigger
+  **190×140** map (`region_size` sizes it in `game_engine`): grass basin + forest ring + a river +
+  mountain shoulder, then the big walled Oakvale (radius 42) at centre; `oakvale_spawn` wakes the
+  player in the market square. Wired into `demo_setup` (build + spawn + gate/tower guards) +
+  `start_menu` ("Large Town (Oakvale)") + main.py routing. `interiors.build_interiors_for_world` made
+  KIND-AWARE so EVERY building (homes/halls/guildhalls/libraries incl.) is enterable — a 222-building
+  town, all 214 non-marker buildings with interiors. Rendered IN-ENGINE: scratchpad/oakvale_t5b_region
+  .png — a large living walled town, player in the market square, boulevards/ring/radials, a river with
+  bridges, forest borders. tests/test_town_stamp.py (8) + test_town_region.py (7).
 - [ ] **T6 Role population** — every building its keeper/craftsfolk; dwellings→townsfolk; mayor/
   bankers/guildsmen/thieves/urchins/vagrants; homes↔workplaces.
 - [ ] **T7 Living countryside** — A* terrain roads + bridges, supporting villages (MST-linked), farm

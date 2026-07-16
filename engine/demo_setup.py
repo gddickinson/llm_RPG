@@ -191,8 +191,12 @@ def initialize_demo_world(engine, player_spec=None,
     """Populate `engine` with world terrain, NPCs, player, and starter
     quests. `world_kind="castle"` plants the Bloodstone realm (P18.5)."""
     castle = (world_kind == "castle")
+    oakvale = (world_kind == "oakvale")
     # World generation
-    if castle:
+    if oakvale:
+        from world.town_region import build_oakvale_region
+        engine._oakvale_region = build_oakvale_region(engine.world)
+    elif castle:
         from world.castle_region import build_castle_region
         build_castle_region(engine.world)
     else:
@@ -240,7 +244,10 @@ def initialize_demo_world(engine, player_spec=None,
     # Player — at the castle gate (P18.5) or near Oakvale's center
     engine.player = create_default_player(spec=player_spec)
     spawn = None
-    if castle:
+    if oakvale:
+        from world.town_region import oakvale_spawn
+        spawn = oakvale_spawn(engine.world)
+    elif castle:
         from world.castle_region import gate_approach
         spawn = gate_approach(engine.world)
     engine.player.position = spawn or _resolve_player_spawn(engine)
@@ -252,6 +259,9 @@ def initialize_demo_world(engine, player_spec=None,
             from world.fortify import post_guards, post_towers
             oak = next((l for l in engine.world.locations
                         if l.name == "Oakvale Village"), None)
+            if oak is None:                # OAKVALE T5b region: the town marker
+                oak = next((l for l in engine.world.locations
+                            if l.get_property("town")), None)
             gates = (oak.get_property("gates") if oak else None) or []
             post_guards(engine, [tuple(g) for g in gates])
             towers = (oak.get_property("towers") if oak else None) or []

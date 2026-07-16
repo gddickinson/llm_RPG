@@ -38,7 +38,14 @@ class GameEngine(GameAPIMixin):
                  enable_dm_bridge: bool = False,
                  world_kind: str = "default"):
         # Core systems --------------------------------------------------
-        self.world = World()
+        # OAKVALE T5b: a big-town world gets a larger map so the whole town +
+        # its countryside fit (the classic world stays its default size).
+        try:
+            from world.town_region import region_size
+            _sz = region_size(world_kind)
+        except Exception:
+            _sz = None
+        self.world = World(*_sz) if _sz else World()
         self.npc_manager = NPCManager()
         self.memory_manager = MemoryManager()
         self.llm_interface = LLMInterface(

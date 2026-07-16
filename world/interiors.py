@@ -402,6 +402,23 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
                 inter = make_temple_interior()   # GX.4 rescaled to a big nave
             elif ltype in ("tavern", "shop", "temple", "forge", "cathedral"):
                 inter = make_default_interior(loc.name)
+            elif loc.get_property("kind"):
+                # OAKVALE T5b: a town-generated building — a factory by KIND so
+                # every home/hall/guildhall/library is enterable (1x1 markers
+                # like wells/stalls stay open, no interior)
+                k = loc.get_property("kind")
+                if k in ("well", "stall"):
+                    continue
+                if k in ("tavern", "inn"):
+                    inter = make_tavern_interior()
+                elif k in ("forge", "smithy", "armoury"):
+                    inter = make_forge_interior()
+                elif k in ("shop", "bakery", "bank"):
+                    inter = make_shop_interior()
+                elif k in ("temple", "cathedral", "chapel", "shrine"):
+                    inter = make_temple_interior()
+                else:
+                    inter = make_default_interior(loc.name)
             else:
                 continue
 

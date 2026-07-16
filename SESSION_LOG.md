@@ -8706,3 +8706,23 @@ settlement with the river running through. The generator produces a real, playab
 tests/test_town_stamp.py (8). Next: T5b — wire `stamp_town` into `world_generator` (replace the small
 Oakvale), size the map, build interiors for the town buildings (the enlarge-in-place vs dedicated-region
 choice George steers), then T6 population / T7 countryside / T8 building variety / T9 Deepdelve+playtest.
+
+## 2026-07-16 — OAKVALE T5b: the PLAYABLE large-town region (George chose dedicated region)
+
+George: "Go ahead with the dedicated large-town region." `world/town_region.py` builds a
+`world_kind="oakvale"` world — a dedicated, BIGGER map (`REGION_SIZE` 190×140; `region_size` sizes the
+`World()` in `game_engine.__init__` for this kind only, classic world untouched) whose centrepiece is
+the big procedurally-generated Oakvale. `build_oakvale_region(world)` lays the setting (grass basin +
+broken forest ring + a meandering river the town's streets BRIDGE + a mountain shoulder) then
+`plan_town`+`stamp_town`s Oakvale (radius 42) at the centre; `oakvale_spawn` wakes the player in the
+central market square. Wired into `demo_setup` (an `oakvale` branch: build the region, spawn the player,
+post gate/tower guards off the town marker), `ui/start_menu` (a new "Large Town (Oakvale)" option →
+`start:"oakvale"` → `world_kind` via main.py). Made `interiors.build_interiors_for_world` KIND-AWARE (a
+factory by `loc.kind` — tavern/forge/shop/temple specifics, else the default interior; 1×1 wells/stalls
+stay open markers) so EVERY town building — homes/halls/guildhalls/libraries included — is ENTERABLE.
+Result: a 222-building town, all 214 non-marker buildings with interiors (225 total), player on the
+market-square road. Rendered IN-ENGINE: scratchpad/oakvale_t5b_region.png — a large living walled town
+of many districts, boulevards/ring/radial streets, the market square, a river with bridges down the
+west, forest borders, varied roofs, a circular walled minimap. interiors.py 454 / town_region.py 122.
+tests/test_town_region.py (7). Next: T6 role population, then T7 countryside / T8 variety / T9
+Deepdelve+playtest.

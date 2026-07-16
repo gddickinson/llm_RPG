@@ -36,6 +36,7 @@ NEW_GAME_OPTIONS = [
     ("Tutorial Island", "tutorial"),           # A-disc: learn every system
     ("Customize Character", "customize"),
     ("Realistic World", "realistic"),          # P36.1 heightmap landscape
+    ("Large Town (Oakvale)", "oakvale"),       # OAKVALE the big walled town
     ("Begin at the Castle", "castle"),
     ("Back", "back"),
 ]
@@ -138,6 +139,9 @@ class StartMenu:
             if code == "tutorial":             # A-disc: Tutorial Island start
                 return {"action": "new", "spec": default_quick_start_spec(),
                         "start": "tutorial"}
+            if code == "oakvale":              # OAKVALE the large walled town
+                return {"action": "new", "spec": default_quick_start_spec(),
+                        "start": "oakvale"}
             if code in ("customize", "castle"):
                 # both make a hero; the castle option starts them at the gate
                 self.pending_start = "castle" if code == "castle" \
