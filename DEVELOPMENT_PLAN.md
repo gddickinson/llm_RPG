@@ -6063,6 +6063,30 @@ reusable `world/town/` generator; full design in `docs/OAKVALE.md`.
   the secret reveals + descends 6 floors, exits clean. The in-town thieves/urchins (T6) + the Deepdelve
   are the "adventures right in the town". (Authored in-town quests can layer on later.)
 
+## Phase ISO — realistic isometric graphics (George, 2026-07-16) — see `docs/ISO_GRAPHICS.md`
+
+George: "make the iso graphics more realistic — tiles, buildings, characters; better character
+animation (movieMaker inspiration); scale may need larger." Research: an audit of the iso renderer + a
+study of `/claude_test/movieMaker`. Core finding: iso bakes crude boxes/flat diamonds and IGNORES the
+rich top-down modules (roof_shapes/facade_trim/roof_relief/building_variety/tile_variants/char_pose/
+char_mocap); the fix is richer meshes + reusing that data. `raster3d` already ported movieMaker's
+rasterizer/camera/SSAA.
+
+- [x] **ISO.1 Realistic BUILDINGS — DONE.** `ui/iso_buildings.py` builds a believable structure from
+  the same style data: storey-driven HEIGHT (a tower towers), a real roof SHAPE (gable ridge / hip
+  `pyramid` / flat parapet), recessed WINDOW boxes per storey on the two camera walls, a DOOR, a
+  CHIMNEY — in per-building VARIETY materials (`building_variety` covering/wall, cache-keyed).
+  `iso_objects.building_sprite(kind,size,covering,wall)`; `iso_render._variant_materials` picks the
+  variant per world pos. scratchpad/iso1_{buildings,closeup}.png: real houses vs old flat grey boxes.
+  tests/test_iso_buildings.py (7).
+- [ ] **ISO.2 Richer TILES** — `tile_variants` texture (blades/ripples/furrows), animated water,
+  softer inter-terrain shading, ramp-shaded slopes.
+- [ ] **ISO.3 Character bodies: proportions + stance + shading** (movieMaker) — anthropometric
+  proportions, seeded contrapposto/relaxed STANCE, two-light shading + per-part colour, 3–4× SSAA.
+- [ ] **ISO.4 Character ANIMATION** (movieMaker) — bone hierarchy + FK; bake POSED frames per
+  clip-phase (walk + attack) from `char_mocap`; phase from `metadata["_anim"]`.
+- [ ] **ISO.5 Scale & fidelity polish** — larger bake resolution / tile_size; re-frame the bake camera.
+
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
 George chose the "full isometric 3D-look world" for the "more 3D like movieMaker" ask.

@@ -24,6 +24,18 @@ _HEIGHT = {
 }
 
 
+def _variant_materials(kind, wx, wy):
+    """ISO.1 the per-building (covering, wall) variant — buildings of a kind
+    differ (thatch/tile/slate × timber/stone/brick), seeded by world position."""
+    try:
+        from ui.building_variety import variant_style
+        from ui.renderer_buildings import style_for
+        s = variant_style(style_for(kind), kind, wx, wy)
+        return s.get("covering"), s.get("wall")
+    except Exception:
+        return None, None
+
+
 def dispatch(renderer, target, engine, view_rect, zone) -> bool:
     """If iso mode is on, render the active zone (P41.6) or the overworld in
     isometric and return True; else False so the caller keeps the top-down path."""
@@ -160,8 +172,9 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
             kind = anchors.get((wx, wy))
             if kind is not None:
                 bs = int(tile_size * 2.2)
+                cov, wl = _variant_materials(kind, wx, wy)   # ISO.1 variety
                 items.append((iso.depth_key(wx, wy, 1.1, 1), "obj",
-                              (iso_objects.building_sprite(kind, bs),
+                              (iso_objects.building_sprite(kind, bs, cov, wl),
                                int(sx), int(sy))))
             si = surfaces.get((wx, wy))
             if si:                                     # fire / oil / water pool

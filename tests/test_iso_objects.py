@@ -37,9 +37,12 @@ class TestBakedSprites(unittest.TestCase):
                       io.building_sprite("home", 48))
         self.assertIs(io.tree_sprite(48), io.tree_sprite(48))
 
-    def test_building_mesh_is_walls_plus_roof(self):
-        meshes = io._building_mesh("home")
-        self.assertEqual(len(meshes), 2)               # a box + a roof
+    def test_building_mesh_is_walls_roof_and_more(self):
+        # ISO.1: a rich building mesh (walls + windows + door + roof), now in
+        # ui.iso_buildings
+        from ui import iso_buildings as ib
+        meshes = ib.building_mesh("home")
+        self.assertGreater(len(meshes), 2)             # more than a box + roof
         for verts, tris, color in meshes:
             self.assertEqual(verts.shape[1], 3)
             self.assertEqual(tris.shape[1], 3)

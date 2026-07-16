@@ -8832,3 +8832,27 @@ Three fixes to the playable Oakvale region from George's feedback:
    into `renderer_buildings.draw_buildings` beside the dais. Rendered scratchpad/oakvale_arrival_grate
    .png: the hero on the glowing arrival dais with the sewer grate a few tiles off. tests/test_grate.py
    (3) + test_town_region.py +3 (arrive-on-platform, town-is-safe, visible-grate-descends). All green.
+## 2026-07-16 — ISO.1: realistic isometric BUILDINGS (real houses, not boxes)
+
+George: "next round for the isometric graphics — make them more realistic... buildings... characters...
+better animation (movieMaker inspiration)... scale might need to be larger." Research-first (two Explore
+agents): an AUDIT of the iso renderer + a study of /claude_test/movieMaker's 3D character stack. Core
+finding — the iso path (ui/iso_*.py) BAKES numpy-software-rasterized 3D into cached sprites (a sound
+architecture; raster3d already ported movieMaker's rasterizer/camera/2×SSAA) but renders CRUDE boxes +
+flat diamonds and IGNORES every rich top-down module (roof_shapes/facade_trim/roof_relief/building_
+variety/tile_variants/char_pose/char_mocap). Plan in docs/ISO_GRAPHICS.md (ISO.1 buildings, ISO.2 tiles,
+ISO.3 char proportions/stance/shading, ISO.4 char animation, ISO.5 scale). ISO.1 lands the buildings —
+the single biggest gap. New `ui/iso_buildings.py` `building_mesh(kind, covering, wall)` builds a
+believable little structure from the SAME building_styles.json data the top-down uses: storey-driven
+HEIGHT (`storeys_for` — a tower/mill towers over a cottage), a real roof SHAPE (gable `roof` ridge / hip
+`pyramid` (new helper) / flat parapet + a crown block for towers), recessed WINDOW boxes per storey on
+the +z (front) and +x (right) camera-facing walls, a DOOR, and a CHIMNEY+cap for a hearthed building —
+all in the building's WALL + COVERING material colours, VARIED per-building via `building_variety`
+(cache-keyed on (kind,covering,wall,size) so distinct looks stay bounded, not one per tile).
+`iso_objects.building_sprite(kind,size,covering,wall)` bakes/caches it; `iso_render._variant_materials`
+picks each building's covering/wall variant by world position (like the top-down BLD.8 variety). Result
+(scratchpad/iso1_buildings.png + iso1_closeup.png): real houses with pitched gable roofs, storey
+windows, doors, chimneys, and varied thatch/tile/slate + timber/stone/brick materials — a dramatic
+lift over the old uniform flat grey boxes; a tower genuinely towers with windows up its storeys.
+iso_buildings.py 86 / iso_objects.py 45 lines. tests/test_iso_buildings.py (7) + fixed test_iso_objects
+(the old `_building_mesh` moved). Next: ISO.2 (richer textured tiles), then ISO.3/4 (characters).
