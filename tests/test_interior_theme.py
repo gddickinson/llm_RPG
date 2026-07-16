@@ -83,6 +83,18 @@ class TestThemeSurfaces(unittest.TestCase):
         self.assertIsNotNone(mood)
         self.assertLess(mood.get_at((10, 10))[3], 120)   # faint
 
+    def test_every_theme_wall_is_distinct_from_its_floor(self):
+        # George 2026-07-15: walls and floor were too similar to tell apart.
+        # Every theme's wall must differ from its floor by a clear luminance gap.
+        def lum(c):
+            return 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]
+        for tid, spec in it._themes().items():
+            floor, wall = spec.get("floor"), spec.get("wall")
+            self.assertTrue(floor and wall, tid)
+            self.assertGreaterEqual(
+                abs(lum(floor[:3]) - lum(wall[:3])), 30,
+                f"theme '{tid}' wall {wall[:3]} too close to floor {floor[:3]}")
+
 
 if __name__ == "__main__":
     unittest.main()

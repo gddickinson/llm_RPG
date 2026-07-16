@@ -8418,3 +8418,17 @@ tests/test_facade.py (+4: shopfront_for per kind, plain home has none, draw all 
 paints for a shop but not a home). facade.py 224 / door_glyphs 36 — under 500. Validator clean.
 Next: BLD.6 (decoration pass: corridor torches feed P39.4 light + occupant clutter + interior render
 polish — window light-pool/mortar walls/detailed bed+table recipes from autonomous_world).
+
+## 2026-07-15 — BUGFIX (George): interior wall/floor too similar to distinguish
+
+George: "The graphics inside some of the buildings make it difficult to distinguish walls and
+floor — can you make them all different enough to see clearly?" Measured every theme in
+data/interior_themes.json: nearly all had floor and wall within ~10 luminance (dLum) — a tavern
+floor [124,84,48] vs wall [116,84,52] is a 2-luminance gap, invisible as a boundary. Fixed: pushed
+each theme's WALL a strong, consistent luminance gap (dLum≈46) from its FLOOR while preserving the
+wall's hue — DARKER for a light floor (tavern/shop/home/hall walls now clearly dark), LIGHTER for a
+dark floor (a tomb/cave/smithy gets lit stone walls framing a dark floor). Now every room's edges
+read plainly (scratchpad/contrast_tavern.png, contrast_shop.png — dark wall dividers over a light
+floor). Data-only (53 wall-value lines in interior_themes.json); interior_theme.tile_surface renders
+it unchanged. tests/test_interior_theme.py +1 (every theme's wall differs from its floor by >=30
+luminance, so this can't silently regress). Validator clean. Then continuing BLD rounds (BLD.6 next).
