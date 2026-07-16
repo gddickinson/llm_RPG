@@ -8571,3 +8571,22 @@ discovery cue could go unseen; promoted both to lead the overworld hints. tests/
 cave + idempotent, opens the shared deepdelve, search→descend hint hand-off, persistence). Validator
 clean. GX.5 complete (5c per-mouth cross-map short-cut is an optional stretch). Next: the queue is
 CLEAR — resume BLD exterior polish (BLD.7 window trim/shutters, BLD.8 roof relief).
+
+## 2026-07-15 — BLD.7: window trim, shutters & architectural dress
+
+George's whole rapid-fire queue is done; resumed the deferred BLD exterior polish. New
+`ui/facade_trim.py` (pure geometry + thin pygame draws, in the `gate_shapes`/`openings` mould) adds
+the fine detail that makes a 2.5D building front read as BUILT: SHUTTERS flanking each window, a stone
+SILL under it (+ a LINTEL over it on grand buildings), a CORNICE band riding the roof eave, and QUOINS
+(dressed corner stones) stepping up the front corners. `trim_style_for(kind)` gives grand sacred/civic
+buildings (temple/cathedral/hall/keep/library/inn/tower…) the full dress and a plain home just
+shutters + a sill. Wired into `renderer_buildings._draw_block` (per-tile block: `draw_corner_trim` +
+`draw_window_trim` per window, drawn UNDER the glazing) and `_draw_footprint` (the footprint-spanning
+enterable buildings: `draw_span_corner_trim` across the full width + outer-corner `span_quoin_blocks`).
+Rendered scratchpad/bld7_closeup.png — the Oakvale Cathedral front now reads as a row of shuttered
+windows on stone sills (brown shutters flanking blue-glazed panes), a clear step up from blank walls.
+`renderer_buildings.py` 415→431 (under 500; the heavy geometry lives in the new module).
+tests/test_facade_trim.py (11: grand-vs-plain style, shutters flank without covering, sill-below/
+lintel-above, cornice rides the eave + None on tiny blocks, quoins climb both corners, span quoins at
+outer corners, headless draws don't crash). No data change; validator unaffected. Next: BLD.8 (roof
+relief — eaves/soffit/ridge caps/dormers + weathering).

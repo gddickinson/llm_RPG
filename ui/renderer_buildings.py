@@ -345,12 +345,17 @@ def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
         pygame.draw.line(target, _scale(front, 0.7), (px, by), (px + w, by), 1)
     ww = max(3, ts // 4)                              # a row of windows/floor
     from ui.openings import draw_window, window_shape_for
+    from ui import facade_trim as ft
     shape = window_shape_for(kind)
+    tstyle = ft.trim_style_for(kind)                  # BLD.7 architectural dress
+    ft.draw_span_corner_trim(target, px, fy, py + d, w, ts, tstyle)
     for i in range(storeys):
         by = fy + round(h * (i + 0.35) / storeys)
         for c in range(loc.width):
             wx0 = px + c * ts + (ts - ww) // 2
-            draw_window(target, (wx0, by, ww, max(2, ww)), shape,
+            wr = (wx0, by, ww, max(2, ww))
+            ft.draw_window_trim(target, wr, tstyle, ts)   # sill/lintel/shutters
+            draw_window(target, wr, shape,
                         frame=WINDOW, glass=WINDOW_GLASS)
     for (cx, cy, cw, ch) in rs.span_chimneys(px, py, w, h, style["chimneys"]):
         pygame.draw.rect(target, rs.CHIMNEY, (cx, cy, cw, ch))
@@ -408,10 +413,14 @@ def _draw_block(target, kind, px, py, ts, h) -> None:
     storeys = storeys_for(kind)
     for (a, b) in storey_lines(px, py, ts, h, storeys):
         pygame.draw.line(target, _scale(front, 0.7), a, b, 1)
-    # per-floor windows make the storeys READ (P33.3b)
+    # per-floor windows make the storeys READ (P33.3b); BLD.7 dresses them
     from ui.openings import draw_window, window_shape_for
+    from ui import facade_trim as ft
     shape = window_shape_for(kind)
+    tstyle = ft.trim_style_for(kind)
+    ft.draw_corner_trim(target, px, py, ts, h, tstyle)   # cornice + quoins
     for (wx, wy, ww, wh) in wall_windows(px, py, ts, h, storeys):
+        ft.draw_window_trim(target, (wx, wy, ww, wh), tstyle, ts)  # sill/shutters
         draw_window(target, (wx, wy, ww, wh), shape,
                     frame=WINDOW, glass=WINDOW_GLASS)
     for (cx, cy, cw, ch) in rs.chimney_rects(px, py, ts, h, style["chimneys"]):

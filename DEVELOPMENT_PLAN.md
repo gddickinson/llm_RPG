@@ -5955,8 +5955,13 @@ ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly 
   doorway apron; deterministic. Before/after: scratchpad/bld6_tavern_lit.png (three warm pools
   lighting the whole tavern vs one lonely hearth). `tests/test_furnish_features.py` (+5). (Occupant
   clutter + interior tile-render recipes remain for a later slice.)
-- [ ] **BLD.7 Window trim, shutters, bays & architectural trim** — lintels/sills, shutters, 2×2
-  glazing on a regular bay rhythm, quoins, cornice, gutters/downpipe.
+- [x] **BLD.7 Window trim, shutters & architectural trim — DONE.** New `ui/facade_trim.py` (pure
+  geometry + thin draws, in the `gate_shapes`/`openings` mould): SHUTTERS flanking each window, a
+  stone SILL under it (+ a LINTEL over it on grand buildings), CORNICE band riding the eave, and
+  QUOINS stepping up the front corners. `trim_style_for(kind)` dresses grand sacred/civic buildings
+  fully, a plain home just with shutters + a sill. Wired into `renderer_buildings._draw_block`
+  (per-tile) + `_draw_footprint` (span-aware `draw_span_corner_trim`/`span_quoin_blocks`); windows
+  now read as shuttered bays on sills (scratchpad/bld7_closeup.png). tests/test_facade_trim.py (11).
 - [ ] **BLD.8 Roof relief, depth & weathering** — eaves overhang + soffit shadow, ridge caps,
   dormers, material texture depth; build facade via `gfx.supersample` + cache + contact shadow +
   deterministic weathering (moss/stains) so clones differ.
