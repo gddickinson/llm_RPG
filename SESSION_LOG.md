@@ -9094,3 +9094,37 @@ Oakvale crowd (iso12_world.png): the wizard reads a purple robe + pointed hat + 
 + sword, the cleric a mace, warriors a helmet + shield, merchants plain — each derived automatically from
 class + equipment + a seed. tests/test_iso_gear.py (weapons/headgear/shield/accessories) + kit tests in
 test_iso_chars. Full suite green.
+
+## 2026-07-16 — iso combat-effects bug-fix + ISO.13: character naturalism pass
+
+George: "In the iso view during fighting the red damage sprays don't disappear after a hit. And keep
+improving all character animations and bodies — smoother motion, more gestures, more combat moves, much
+more variation to look as alive as possible, better body proportions and realistic stances."
+
+**Bug-fix — the damage sprays that wouldn't clear.** `combat_effects.update(dt)` is what AGES the damage
+popups / hit flashes / death particles and drops the expired ones; the top-down renderer calls it every
+frame. The iso paths (`iso_render.draw_combat_iso` + `iso_zone`'s effect block) only ever called
+`draw_with` — never `update` — so in iso mode the red sprays aged 0 and stayed on screen forever. Both now
+`ce.update(1/30)` before drawing. In iso mode `dispatch()` skips the top-down update, so this is the
+single per-frame tick (no double-age). Regression test: a spawned spray clears after ~45 iso draws.
+
+**ISO.13 naturalism.** Five improvements toward "as alive as possible":
+- COMBAT MOVES. The iso attack had been one generic overhead swing. Now `iso_skeleton._swing_arm` /
+  `attack_figure` play a real 3D strike chosen by the character's `atk_style`: an OVERHEAD chop (arm arcs
+  up-back → down-front), a horizontal SLASH sweeping across the body (rotated about the vertical), or a
+  forward THRUST/stab — the weapon, attached at r_hand, follows the swing. `iso_chars` reads
+  `anim["atk_style"]`, which `body_renderer.update_anim` already rotates through the weapon's combo
+  (`char_style.attack_variants`) per strike — so a fight varies swing-to-swing for free
+  (scratchpad/iso13_combat.png, iso13_combat_kit.png). Retired the old 2D `_attack_overlay`.
+- GESTURES / "alive". The P34.4 idle-life system (`anim.update_idle_life`, wired in turn_pipeline) already
+  makes idle folk play ambient fidgets (shrug/ponder/yawn/stretch/wave/nod), but iso normalised every
+  unmapped action to idle, so they stood frozen. Mapped the fidgets to gesture clips (talk/nod/argue/climb)
+  and added them to the frame + one-shot maps, so a standing crowd now shrugs, ponders, stretches and nods.
+- SMOOTHER. The common actions bake at higher frame counts (walk/run/jog 8→12, idle 6→8, dance/climb→10),
+  so the cached animation reads smoother (still one-time bakes, cached).
+- PROPORTIONS. `_body` was slimmed to a more athletic, less blocky silhouette — a narrower waist, slimmer
+  arms/legs, and smaller shoulder joints (they'd read as pauldrons) — scratchpad/iso13_refined.png.
+- STANCES / variation. The per-character seeded idle/dance VARIANT (ISO.11) + the new visible gestures give
+  a crowd varied stances and life.
+tests: combat-effects expire in iso (regression); the three strike styles hold the hand apart + the swing
+moves over its arc (test_iso_skeleton TestCombatMoves). Full suite green.

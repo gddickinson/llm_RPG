@@ -6189,6 +6189,21 @@ rasterizer/camera/SSAA.
   Verified in-world: a wizard reads a hat + staff, a guard a helmet + sword, a cleric a mace, plain
   merchants, varied heights (scratchpad/iso12_kit.png, iso12_weapons2.png, iso12_world.png). Full suite
   green.
+- [x] **iso combat-effects BUG-FIX + ISO.13 NATURALISM (George 2026-07-16) — DONE.** George: "the iso red
+  damage sprays don't disappear after a hit; keep improving all character animations + bodies — smoother,
+  more gestures, more combat moves, more variation, better proportions + realistic stances." (1) BUG: the
+  top-down renderer calls `combat_effects.update(dt)` each frame to AGE effects, but the iso paths
+  (`iso_render.draw_combat_iso` + `iso_zone`) only DREW them — so damage popups/particles never expired.
+  Both now `ce.update(1/30)` before drawing (regression test: the spray clears after ~45 iso frames).
+  (2) COMBAT MOVES: iso attacks were one generic swing; now `iso_skeleton._swing_arm`/`attack_figure` play
+  a real 3D strike chosen by `atk_style` — an OVERHEAD chop / a horizontal SLASH / a forward THRUST — and
+  `iso_chars` reads the rotating per-weapon combo the top-down already computes, so a fight varies
+  swing-to-swing (scratchpad/iso13_combat*.png). (3) GESTURES: the ambient P34.4 idle-life fidgets
+  (shrug/ponder/yawn/stretch/wave/nod) now map to gesture clips (talk/nod/argue/climb) + are in the frame
+  maps, so idle NPCs visibly LIVE instead of freezing. (4) SMOOTHER: the common actions bake at higher
+  frame counts (walk/run 8->12, idle 6->8, dance 8->10). (5) PROPORTIONS: `_body` slimmed to a more
+  athletic silhouette (narrower waist, slimmer limbs, less pauldron-like shoulders) — iso13_refined.png.
+  Retired the 2D `_attack_overlay`. Full suite green.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

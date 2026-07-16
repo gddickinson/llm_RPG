@@ -167,19 +167,27 @@ def move_delta(char):
     return (0, 1)
 
 
-# ISO.11 frames baked per action (a full loop, or the arc of a one-shot) + the
-# ms period of a looping cycle. Any action not here reads as idle.
-_ACT_FRAMES = {"walk": 8, "run": 8, "jog": 8, "idle": 6, "dance": 8, "sit": 4,
-               "sleep": 4, "climb": 8, "talk": 6, "swim": 6, "attack": 6,
-               "jump": 6, "leap": 6, "cheer": 6, "wave": 6, "bow": 5,
-               "cast": 6, "hurt": 4, "stagger": 5, "guard": 4, "crawl": 4,
-               "kick": 6, "argue": 6, "sneak": 8, "stoop": 5, "dodge": 4}
+# ISO.13 frames baked per action (a full loop, or the arc of a one-shot) + the
+# ms period of a looping cycle. Higher frame counts on the common actions =
+# SMOOTHER motion (baked once, cached). Any action not here reads as idle.
+_ACT_FRAMES = {"walk": 12, "run": 12, "jog": 12, "idle": 8, "dance": 10,
+               "sit": 4, "sleep": 4, "climb": 10, "talk": 8, "swim": 8,
+               "attack": 8, "jump": 8, "leap": 8, "cheer": 8, "wave": 7,
+               "cast": 7, "hurt": 5, "stagger": 6, "guard": 4, "crawl": 4,
+               "kick": 8, "argue": 8, "sneak": 12, "stoop": 6, "dodge": 5,
+               "shrug": 7, "ponder": 7, "yawn": 6, "stretch": 8, "reach": 7,
+               "salute": 7, "beckon": 7, "facepalm": 7, "clap": 7, "laugh": 8,
+               "point": 7, "nod": 6, "kneel": 5, "winded": 6,
+               "cast_point": 7, "cast_staff": 7}
 _LOOP_PERIOD = {"walk": 720, "run": 620, "jog": 760, "idle": 2600,
                 "dance": 1100, "sit": 3000, "sleep": 3000, "climb": 1000,
                 "talk": 1400, "swim": 900, "guard": 2600, "crawl": 1400,
                 "argue": 1400, "sneak": 1000, "stagger": 900}
 _ONESHOT = {"attack", "jump", "leap", "bow", "wave", "cast", "cheer",
-            "stoop", "dodge", "hurt", "kick"}
+            "stoop", "dodge", "hurt", "kick", "shrug", "ponder", "yawn",
+            "stretch", "reach", "salute", "beckon", "facepalm", "clap",
+            "laugh", "point", "nod", "kneel", "winded", "cast_point",
+            "cast_staff"}
 
 
 def _frames_of(action) -> int:
@@ -266,13 +274,17 @@ def char_sprite(char, size: int, facing=None):
     build = iso_skeleton.build_of(char)               # ISO.7 silhouette variety
     seed = _stance_of(char)                            # ISO.11 idle/dance variety
     kit = kit_of(char)                                 # ISO.12 weapon/armour/body
-    key = (tint, hair, size, delta, action, frame, build, seed, kit)
+    style = None
+    if action == "attack":                             # ISO.13 varied strikes
+        anim = (getattr(char, "metadata", {}) or {}).get("_anim", {})
+        style = anim.get("atk_style", "overhead")
+    key = (tint, hair, size, delta, action, frame, build, seed, kit, style)
     if key not in _CACHE:
         phase = frame / _frames_of(action)
         # ISO.6: a real Mixamo-mocap-driven rigged skeleton; if the clip is
         # missing, fall back to the ISO.3/4 procedural box figure.
         mesh = iso_skeleton.sample_figure(action, phase, tint, hair, angle,
-                                          build, seed, kit)
+                                          build, seed, kit, style)
         cam = iso_skeleton.CAM
         if mesh is None:
             mesh = _figure(tint, hair, angle, _stance_of(char), action, phase)

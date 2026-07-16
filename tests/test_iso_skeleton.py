@@ -84,5 +84,35 @@ class TestFigure(unittest.TestCase):
             0.05)
 
 
+class TestCombatMoves(unittest.TestCase):
+    """ISO.13 — distinct 3D strike styles + a mid-swing that moves the arm."""
+
+    def _hand(self, style, phase):
+        # the r_hand joint of the swung pose (weapon rides it)
+        P = isk._apply_height(
+            isk.pose3d(isk.cm.sample_norm("idle", 0.0), 0.0, 1.0), None)
+        return isk._swing_arm(P, style, phase, 0.0)["r_hand"]
+
+    def test_the_three_styles_move_the_hand_apart(self):
+        # at the windup (early phase) the styles hold the hand in distinct
+        # places (they cross near neutral only mid-swing)
+        pts = [self._hand(s, 0.15) for s in ("overhead", "slash", "thrust")]
+        for i in range(3):
+            for j in range(i + 1, 3):
+                self.assertGreater(float(np.linalg.norm(pts[i] - pts[j])), 0.1,
+                                   "each strike style holds the hand elsewhere")
+
+    def test_the_swing_moves_over_its_arc(self):
+        a = self._hand("overhead", 0.1)
+        b = self._hand("overhead", 0.9)
+        self.assertGreater(float(np.linalg.norm(a - b)), 0.2, "the arm swings")
+
+    def test_attack_figure_builds_a_body(self):
+        m = isk.sample_figure("attack", 0.5, (150, 150, 165), (90, 60, 40),
+                              0.0, 1.0, 0, ("sword", None, False, 1.0), "slash")
+        self.assertIsNotNone(m)
+        self.assertGreater(len(m), 20, "a full body + a sword")
+
+
 if __name__ == "__main__":
     unittest.main()

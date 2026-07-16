@@ -37,6 +37,12 @@ _CLIP = {
     "cast": "talk", "argue": "argue", "guard": "idle", "bow": "nod",
     "cheer": "hiphop", "jump": "jump", "leap": "jump", "hurt": "stagger",
     "dodge": "stagger", "stagger": "stagger", "kick": "kick",
+    # ISO.13 ambient gestures (the P34.4 idle-life fidgets) so idle folk LIVE
+    "shrug": "talk", "ponder": "nod", "yawn": "idle", "stretch": "climb",
+    "reach": "climb", "salute": "talk", "beckon": "talk", "facepalm": "talk",
+    "clap": "argue", "laugh": "argue", "point": "talk", "nod": "nod",
+    "kneel": "sit", "winded": "stagger", "cast_point": "talk",
+    "cast_staff": "talk",
 }
 # ISO.11 per-character VARIETY: a seeded idle/dance picks one of the Mixamo
 # variants so a crowd doesn't loop in lockstep.
@@ -165,19 +171,69 @@ def pose3d(pose_norm, angle, build: float = 1.0) -> dict:
 _EYE = (34, 28, 26)
 
 
-def figure(pose_norm, tint, hair, angle, build: float = 1.0, kit=None):
-    """ISO.10/12 — a believable low-poly BODY over the mocap joints (tapered
-    limbs, ball joints, hands, booted feet, a tunic torso + belt, a shaped head
-    with hair + a face), plus the person's HEIGHT and worn GEAR (weapon / shield
-    / headgear) from `kit`. Faces `angle` with the `build` (shoulder breadth)."""
-    P = pose3d(pose_norm, angle, build)
-    if kit and len(kit) > 3 and kit[3] != 1.0:            # ISO.12 height
-        P = {k: v * np.array([1.0, kit[3], 1.0]) for k, v in P.items()}
+def _apply_height(P, kit):
+    if kit and len(kit) > 3 and kit[3] != 1.0:            # ISO.12 body height
+        return {k: v * np.array([1.0, kit[3], 1.0]) for k, v in P.items()}
+    return P
+
+
+def _build(P, tint, hair, angle, kit):
+    """Body mesh + worn gear from a (possibly transformed) joint dict `P`."""
     m = _body(P, tint, hair, angle)
     if kit and any(kit[:3]):                              # ISO.12 worn gear
         from ui import iso_gear
         m += iso_gear.accessories(P, angle, kit)
     return m
+
+
+def figure(pose_norm, tint, hair, angle, build: float = 1.0, kit=None):
+    """ISO.10/12 — a believable low-poly BODY over the mocap joints (tapered
+    limbs, ball joints, hands, booted feet, a tunic torso + belt, a shaped head
+    with hair + a face), plus the person's HEIGHT and worn GEAR (weapon / shield
+    / headgear) from `kit`. Faces `angle` with the `build` (shoulder breadth)."""
+    P = _apply_height(pose3d(pose_norm, angle, build), kit)
+    return _build(P, tint, hair, angle, kit)
+
+
+def _rot_about(v, piv, axis, ang):
+    """Rotate point `v` by `ang` about `axis` through `piv` (Rodrigues)."""
+    axis = axis / (np.linalg.norm(axis) or 1.0)
+    d = v - piv
+    c, s = math.cos(ang), math.sin(ang)
+    return piv + d * c + np.cross(axis, d) * s + axis * np.dot(axis, d) * (1 - c)
+
+
+def _swing_arm(P, style, phase, angle):
+    """ISO.13 a real 3D weapon-arm SWING — a distinct move per style: an OVERHEAD
+    chop (up-back → down-front), a horizontal SLASH sweeping across the body, or
+    a forward THRUST/stab. The weapon (attached at r_hand) follows the swing."""
+    fwd = np.array([math.sin(angle), 0.0, math.cos(angle)])
+    rt = np.array([math.cos(angle), 0.0, -math.sin(angle)])
+    up = np.array([0.0, 1.0, 0.0])
+    P = dict(P)
+    sh = P["r_sh"]
+    if style == "thrust":
+        ext = math.sin(phase * math.pi) * 0.42
+        P["r_elbow"] = P["r_elbow"] + fwd * ext * 0.5 + up * 0.06
+        P["r_hand"] = P["r_hand"] + fwd * ext + up * 0.12
+        return P
+    if style == "slash":
+        a = math.radians(95 - 180 * phase)               # right → across → left
+        axis = up
+    else:                                                # overhead (default)
+        a = math.radians(-95 + 185 * phase)              # raised → chop down
+        axis = rt
+    for j in ("r_elbow", "r_hand"):
+        P[j] = _rot_about(P[j], sh, axis, a)
+    P["r_elbow"] = P["r_elbow"] + up * 0.05              # clear the body
+    return P
+
+
+def attack_figure(phase, style, tint, hair, angle, build, kit):
+    """ISO.13 the figure mid-STRIKE — the idle base with a 3D `style` swing."""
+    P = _apply_height(pose3d(cm.sample_norm("idle", 0.0), angle, build), kit)
+    P = _swing_arm(P, style or "overhead", phase, angle)
+    return _build(P, tint, hair, angle, kit)
 
 
 def _body(P, tint, hair, angle):
@@ -193,26 +249,27 @@ def _body(P, tint, hair, angle):
     # segs tuned for a good look at a modest triangle budget (baked once/cached):
     # tapered limbs seg 6, joints seg 5, the prominent head seg 7, tiny face 4
     m = []
-    # legs — thigh + shin taper to a ball knee, a booted foot, a hip ball
+    # ISO.13 slimmer, more athletic proportions (was blockier). legs — thigh +
+    # shin taper to a ball knee, a booted foot, a hip ball
     for s in ("l_", "r_"):
         hip, kn, ft = P[s + "hip"], P[s + "knee"], P[s + "foot"]
-        m += [r3.taper(hip, kn, 0.098, 0.07, _LEG, 6), r3.ball(kn, 0.066, _LEG, 5),
-              r3.taper(kn, ft, 0.07, 0.05, _LEG, 6), r3.ball(hip, 0.088, tunic, 5),
-              r3.box(ft[0] + fwd[0] * 0.04, ft[1] - 0.02, ft[2] + fwd[2] * 0.04,
-                     0.11, 0.06, 0.22, boot)]
-    # torso — waist→shoulders taper, chest ball, a neck stump, a belt band
+        m += [r3.taper(hip, kn, 0.09, 0.062, _LEG, 6), r3.ball(kn, 0.06, _LEG, 5),
+              r3.taper(kn, ft, 0.062, 0.046, _LEG, 6), r3.ball(hip, 0.082, tunic, 5),
+              r3.box(ft[0] + fwd[0] * 0.05, ft[1] - 0.02, ft[2] + fwd[2] * 0.05,
+                     0.1, 0.055, 0.24, boot)]
+    # torso — a narrower waist tapering to squarer shoulders, chest, neck, belt
     pel, chest, neck = P["pelvis"], P["chest"], P["neck"]
-    m += [r3.taper(pel, chest, 0.14, 0.175, tunic, 7),
-          r3.ball(chest, 0.108, tunic, 6),
-          r3.taper(chest, neck, 0.1, 0.068, tunic, 6),
-          r3.taper(pel + np.array([0, -0.02, 0]), pel + np.array([0, 0.045, 0]),
-                   0.146, 0.146, belt, 7)]
-    # arms — a shoulder ball, sleeved upper arm, elbow, bare forearm + a hand
+    m += [r3.taper(pel, chest, 0.122, 0.168, tunic, 7),
+          r3.ball(chest, 0.1, tunic, 6),
+          r3.taper(chest, neck, 0.092, 0.058, tunic, 6),
+          r3.taper(pel + np.array([0, -0.02, 0]), pel + np.array([0, 0.04, 0]),
+                   0.128, 0.128, belt, 7)]
+    # arms — a slim shoulder, sleeved upper arm, elbow, bare forearm + a hand
     for s in ("l_", "r_"):
         sh, el, ha = P[s + "sh"], P[s + "elbow"], P[s + "hand"]
-        m += [r3.ball(sh, 0.058, tunic, 5), r3.taper(sh, el, 0.056, 0.045, sleeve, 6),
-              r3.ball(el, 0.044, sleeve, 4), r3.taper(el, ha, 0.045, 0.036, _SKIN, 5),
-              r3.ball(ha, 0.047, _SKIN, 5)]
+        m += [r3.ball(sh, 0.05, tunic, 5), r3.taper(sh, el, 0.048, 0.04, sleeve, 6),
+              r3.ball(el, 0.039, sleeve, 4), r3.taper(el, ha, 0.04, 0.031, _SKIN, 5),
+              r3.ball(ha, 0.043, _SKIN, 5)]
     # neck + head + hair cap + a face (two eyes, a nose)
     m.append(r3.taper(neck, neck + np.array([0, 0.07, 0]), 0.046, 0.05, _SKIN, 5))
     hc = P["head"] + np.array([0, -0.01, 0])
@@ -223,19 +280,6 @@ def _body(P, tint, hair, angle):
                          + np.array([0, 0.012, 0]), 0.019, _EYE, 4))
     m.append(r3.ball(hc + fwd * 0.112 + np.array([0, -0.02, 0]), 0.021, _SKIN, 4))
     return m
-
-
-def _attack_overlay(pose, phase):
-    """No Mixamo sword-swing ships, so ATTACK rides the idle base with the weapon
-    (right) arm ARCED overhead then down — a melee swing. Lifts the right
-    elbow/hand (rest ~0.71/0.55 → overhead ~0.9/1.0) + carries them forward."""
-    a = math.sin(phase * math.pi)                     # 0..1..0 over the swing
-    out = dict(pose)
-    for j, up, fwd in (("r_elbow", 0.20, 0.12), ("r_hand", 0.48, 0.24)):
-        if j in out:
-            nx, ny = out[j]
-            out[j] = (nx + a * fwd, ny + a * up)
-    return out
 
 
 def swim_figure(phase, tint, hair, angle, build: float = 1.0, kit=None):
@@ -266,17 +310,20 @@ def swim_figure(phase, tint, hair, angle, build: float = 1.0, kit=None):
 
 
 def sample_figure(action, phase, tint, hair, angle, build: float = 1.0, seed=0,
-                  kit=None):
+                  kit=None, style=None):
     """The body mesh for `action` at `phase` facing `angle` radians (with the
     person's `build` + worn `kit`), or None if the clip is missing (caller falls
-    back to the box figure). SWIM is procedural; ATTACK rides idle + the swing."""
+    back to the box figure). SWIM is procedural; ATTACK is a 3D `style` swing."""
     if action == "swim":
         return swim_figure(phase, tint, hair, angle, build, kit)
+    if action == "attack":
+        try:
+            return attack_figure(phase, style, tint, hair, angle, build, kit)
+        except Exception:
+            return None
     pose = cm.sample_norm(clip_for(action, seed), phase)
     if pose is None:
         return None
-    if action == "attack":
-        pose = _attack_overlay(pose, phase)
     try:
         return figure(pose, tint, hair, angle, build, kit)
     except Exception:
