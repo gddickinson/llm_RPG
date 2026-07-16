@@ -47,6 +47,51 @@ def roof(cx, cy, cz, w, h, d, color):
     return v, t, color
 
 
+def taper(a, b, r0, r1, color, seg=8):
+    """A tapered round tube (frustum) from point `a` (radius r0) to `b` (r1) —
+    a limb segment that swells at the joint and narrows toward the end. ISO.10."""
+    a = np.asarray(a, float)
+    b = np.asarray(b, float)
+    axis = b - a
+    d = axis / (np.linalg.norm(axis) or 1e-6)
+    up = np.array([0, 0, 1.0]) if abs(d[1]) > 0.9 else np.array([0, 1.0, 0])
+    p1 = np.cross(d, up)
+    p1 /= (np.linalg.norm(p1) or 1.0)
+    p2 = np.cross(d, p1)
+    ang = 2 * math.pi * np.arange(seg) / seg
+    ring = np.cos(ang)[:, None] * p1 + np.sin(ang)[:, None] * p2
+    v = np.vstack([a + ring * r0, b + ring * r1, a, b])
+    t = []
+    for i in range(seg):
+        j = (i + 1) % seg
+        t += [[i, j, seg + i], [j, seg + j, seg + i],
+              [2 * seg, j, i], [2 * seg + 1, seg + i, seg + j]]
+    return v, np.array(t), tuple(int(c) for c in color)
+
+
+def ball(c, r, color, seg=6):
+    """A low-res UV sphere — a joint, a head, a hand. ISO.10."""
+    c = np.asarray(c, float)
+    v = []
+    rings = []
+    for iy in range(seg + 1):
+        phi = math.pi * iy / seg
+        y, rr = math.cos(phi), math.sin(phi)
+        row = []
+        for ix in range(seg):
+            th = 2 * math.pi * ix / seg
+            row.append(len(v))
+            v.append(c + r * np.array([rr * math.cos(th), y, rr * math.sin(th)]))
+        rings.append(row)
+    t = []
+    for iy in range(seg):
+        for ix in range(seg):
+            a, b = rings[iy][ix], rings[iy][(ix + 1) % seg]
+            cc, dd = rings[iy + 1][ix], rings[iy + 1][(ix + 1) % seg]
+            t += [[a, b, cc], [b, dd, cc]]
+    return np.array(v), np.array(t), tuple(int(x) for x in color)
+
+
 def render(meshes, cam_pos=ISO_CAM, look=ISO_LOOK, up=(0.0, 1.0, 0.0),
            vfov_deg=ISO_VFOV, width=64, height=64, light_dir=LIGHT_DIR):
     """meshes: [(verts Nx3, tris Mx3, rgb)] -> (rgb uint8, mask bool)."""

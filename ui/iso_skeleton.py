@@ -132,48 +132,54 @@ def pose3d(pose_norm, angle, build: float = 1.0) -> dict:
     return {k: rot @ v for k, v in out.items()}
 
 
-def _bone(a, b, r, color):
-    """A box of half-thickness `r` laid along the segment a→b (a limb)."""
-    a = np.asarray(a, float)
-    b = np.asarray(b, float)
-    axis = b - a
-    L = np.linalg.norm(axis) or 1e-6
-    d = axis / L
-    up = np.array([0, 0, 1.0]) if abs(d[1]) > 0.9 else np.array([0, 1.0, 0])
-    p1 = np.cross(d, up)
-    p1 = p1 / (np.linalg.norm(p1) or 1.0)
-    p2 = np.cross(d, p1)
-    cs = [a + sx * r * p1 + sy * r * p2 for sx in (-1, 1) for sy in (-1, 1)] \
-        + [b + sx * r * p1 + sy * r * p2 for sx in (-1, 1) for sy in (-1, 1)]
-    v = np.array(cs)
-    t = np.array([[0, 1, 3], [0, 3, 2], [4, 7, 5], [4, 6, 7],
-                  [0, 4, 5], [0, 5, 1], [1, 5, 7], [1, 7, 3],
-                  [3, 7, 6], [3, 6, 2], [2, 6, 4], [2, 4, 0]])
-    return v, t, tuple(int(x) for x in color)
+_EYE = (34, 28, 26)
 
 
 def figure(pose_norm, tint, hair, angle, build: float = 1.0):
-    """Build the rigged bone-skeleton mesh from a sampled mocap pose, facing
-    `angle` radians, with the person's `build` (shoulder breadth)."""
+    """ISO.10 — a believable low-poly BODY over the mocap joints: tapered limbs
+    that swell at BALL joints, real hands & booted feet, a tunic torso in the
+    character's colour with a belt, and a shaped head with hair + a face (eyes +
+    nose). Faces `angle` radians with the person's `build` (shoulder breadth)."""
     P = pose3d(pose_norm, angle, build)
-    dark = tuple(int(v * 0.82) for v in tint)
+    tunic = tuple(int(x) for x in tint)
+    sleeve = tuple(int(c * 0.9) for c in tunic)
+    boot = tuple(int(c * 0.55) for c in _LEG)
+    belt = tuple(int(c * 0.5) for c in tunic)
+    hair = tuple(int(x) for x in hair)
+    fwd = np.array([math.sin(angle), 0.0, math.cos(angle)])   # facing forward
+    rt = np.array([math.cos(angle), 0.0, -math.sin(angle)])   # facing right
+    # segs tuned for a good look at a modest triangle budget (baked once/cached):
+    # tapered limbs seg 6, joints seg 5, the prominent head seg 7, tiny face 4
     m = []
-    for side in ("l_", "r_"):
-        m.append(_bone(P[side + "hip"], P[side + "knee"], 0.075, _LEG))
-        m.append(_bone(P[side + "knee"], P[side + "foot"], 0.06, _LEG))
-        f = P[side + "foot"]
-        m.append(r3.box(f[0], f[1] - 0.02, f[2] + 0.05, 0.11, 0.05, 0.17, _LEG))
-    m.append(_bone(P["pelvis"], P["chest"], 0.15, tint))
-    m.append(_bone(P["chest"], P["neck"], 0.10, tint))
-    m.append(_bone(P["chest"], P["l_sh"], 0.06, tint))
-    m.append(_bone(P["chest"], P["r_sh"], 0.06, tint))
-    for side in ("l_", "r_"):
-        m.append(_bone(P[side + "sh"], P[side + "elbow"], 0.055, dark))
-        m.append(_bone(P[side + "elbow"], P[side + "hand"], 0.045, dark))
-    h = P["head"]
-    m.append(r3.box(h[0], h[1] - 0.11, h[2], 0.22, 0.24, 0.22, _SKIN))
-    m.append(r3.box(h[0], h[1] + 0.11, h[2], 0.24, 0.09, 0.24,
-                    tuple(int(x) for x in hair)))
+    # legs — thigh + shin taper to a ball knee, a booted foot, a hip ball
+    for s in ("l_", "r_"):
+        hip, kn, ft = P[s + "hip"], P[s + "knee"], P[s + "foot"]
+        m += [r3.taper(hip, kn, 0.098, 0.07, _LEG, 6), r3.ball(kn, 0.066, _LEG, 5),
+              r3.taper(kn, ft, 0.07, 0.05, _LEG, 6), r3.ball(hip, 0.088, tunic, 5),
+              r3.box(ft[0] + fwd[0] * 0.04, ft[1] - 0.02, ft[2] + fwd[2] * 0.04,
+                     0.11, 0.06, 0.22, boot)]
+    # torso — waist→shoulders taper, chest ball, a neck stump, a belt band
+    pel, chest, neck = P["pelvis"], P["chest"], P["neck"]
+    m += [r3.taper(pel, chest, 0.14, 0.175, tunic, 7),
+          r3.ball(chest, 0.108, tunic, 6),
+          r3.taper(chest, neck, 0.1, 0.068, tunic, 6),
+          r3.taper(pel + np.array([0, -0.02, 0]), pel + np.array([0, 0.045, 0]),
+                   0.146, 0.146, belt, 7)]
+    # arms — a shoulder ball, sleeved upper arm, elbow, bare forearm + a hand
+    for s in ("l_", "r_"):
+        sh, el, ha = P[s + "sh"], P[s + "elbow"], P[s + "hand"]
+        m += [r3.ball(sh, 0.058, tunic, 5), r3.taper(sh, el, 0.056, 0.045, sleeve, 6),
+              r3.ball(el, 0.044, sleeve, 4), r3.taper(el, ha, 0.045, 0.036, _SKIN, 5),
+              r3.ball(ha, 0.047, _SKIN, 5)]
+    # neck + head + hair cap + a face (two eyes, a nose)
+    m.append(r3.taper(neck, neck + np.array([0, 0.07, 0]), 0.046, 0.05, _SKIN, 5))
+    hc = P["head"] + np.array([0, -0.01, 0])
+    m += [r3.ball(hc, 0.112, _SKIN, 7),
+          r3.ball(hc + np.array([0, 0.045, 0]) - fwd * 0.02, 0.115, hair, 6)]
+    for sgn in (-1, 1):
+        m.append(r3.ball(hc + fwd * 0.098 + rt * 0.043 * sgn
+                         + np.array([0, 0.012, 0]), 0.019, _EYE, 4))
+    m.append(r3.ball(hc + fwd * 0.112 + np.array([0, -0.02, 0]), 0.021, _SKIN, 4))
     return m
 
 

@@ -150,6 +150,9 @@ def main() -> int:
         else:
             ui = GameGUI(engine, width=args.width, height=args.height,
                          tile_size=args.tile_size)
+            # ISO.10: honour the player's saved / default map-zoom from boot
+            from ui.settings_panel import init_zoom
+            init_zoom(ui)
     else:
         ui = TerminalUI(engine)
 

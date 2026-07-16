@@ -21,6 +21,26 @@ class TestMeshes(unittest.TestCase):
             self.assertTrue((tris < len(verts)).all())
             self.assertEqual(len(color), 3)
 
+    def test_taper_and_ball_are_valid_meshes(self):
+        # ISO.10 limb + joint primitives
+        for verts, tris, color in (
+                r3.taper((0, 0, 0), (0, 1, 0), 0.2, 0.1, (120, 120, 130)),
+                r3.ball((0, 0, 0), 0.5, (200, 180, 150))):
+            self.assertEqual(verts.shape[1], 3)
+            self.assertEqual(tris.shape[1], 3)
+            self.assertTrue((tris < len(verts)).all(), "tri indices in range")
+            self.assertEqual(len(color), 3)
+
+    def test_taper_spans_its_endpoints(self):
+        verts, _, _ = r3.taper((0, 0, 0), (0, 1.5, 0), 0.2, 0.05, (0, 0, 0))
+        self.assertLess(verts[:, 1].min(), 0.05, "starts at a")
+        self.assertGreater(verts[:, 1].max(), 1.45, "reaches b")
+
+    def test_ball_is_centred_with_radius(self):
+        verts, _, _ = r3.ball((1.0, 2.0, 0.0), 0.5, (0, 0, 0))
+        self.assertAlmostEqual(float(verts[:, 0].mean()), 1.0, places=6)
+        self.assertLess(abs(float(verts[:, 1].max()) - 2.5), 0.02, "top at c+r")
+
 
 class TestRender(unittest.TestCase):
     def test_a_box_paints_shaded_faces(self):

@@ -6152,11 +6152,18 @@ rasterizer/camera/SSAA.
   in-world: NE walks right in profile, SW mirrors left, N/W show backs (up/away), S/E show fronts
   (down/toward) — scratchpad/iso_realwalk.png, iso9_big.png, iso9_inworld.png. tests assert the chosen
   rotation's forward projects within 12° of the move heading (test_iso_chars TestFacing rewritten).
-- [ ] **ISO.10 SCALE + DETAIL + REALISM (George 2026-07-16) — IN PROGRESS.** George: "add more detail to
-  the iso world and figures, increase the scale and zoom in so more details can be seen, make the
-  characters more realistic." Bump the default iso zoom; give the baked skeleton tapered limbs / real
-  hands+feet / a shaped head + face / clothing tone; richer world props. (The 150px bake already shows how
-  much more reads at scale — iso9_big.png.)
+- [x] **ISO.10 SCALE + DETAIL + REALISM (George 2026-07-16) — DONE.** George: "add more detail to the iso
+  world and figures, increase the scale and zoom in so more details can be seen, make the characters more
+  realistic." (1) REALISTIC BODY: `raster3d` gains `taper` (a round tapered tube) + `ball` (a low-res UV
+  sphere); `iso_skeleton.figure` rebuilds the character over the same mocap joints as a believable
+  low-poly body — tapered limbs swelling at ball joints, real hands + booted feet, a tunic torso in the
+  character's colour with a belt, a shaped head with hair + a FACE (eyes, nose) — replacing the uniform
+  grey boxes. Segs tuned (1110 tris, ~20ms bake, cached). (2) SCALE: the map-zoom setting gains an 80
+  level and its DEFAULT rises 48→64; `settings_panel.init_zoom` (called from `main.py`) applies the saved
+  / default zoom AT BOOT so the bigger scale takes effect from the start (was stuck at the CLI default).
+  Verified in-world: at zoom 80 the townsfolk read as distinct little 3D people with faces + class-colour
+  tunics, facing correctly (scratchpad/iso10_scale_80.png, iso10_tuned.png, iso10_world_t72.png). Full
+  suite green.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

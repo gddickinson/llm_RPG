@@ -6,20 +6,27 @@ import numpy as np
 import pygame
 
 from ui import iso_skeleton as isk
+from ui import char_mocap as cm
 
 
-class TestBone(unittest.TestCase):
-    def test_bone_is_a_box_along_the_segment(self):
-        v, t, c = isk._bone((0, 0, 0), (0, 1, 0), 0.1, (100, 100, 100))
-        self.assertEqual(len(v), 8, "a box between two joints")
-        self.assertEqual(len(t), 12)
-        # spans from ~0 to ~1 in y (the bone direction)
-        self.assertLess(v[:, 1].min(), 0.2)
-        self.assertGreater(v[:, 1].max(), 0.8)
+class TestBody(unittest.TestCase):
+    """ISO.10 — the fleshed-out body (tapered limbs, ball joints, head+face)."""
 
-    def test_bone_orients_along_any_axis(self):
-        v, _, _ = isk._bone((0, 0, 0), (1, 0, 0), 0.1, (0, 0, 0))
-        self.assertGreater(v[:, 0].max(), 0.8, "spans the x bone direction")
+    def test_figure_has_many_limbed_parts(self):
+        pose = cm.sample_norm("idle", 0.0)
+        m = isk.figure(pose, (150, 150, 165), (90, 60, 40), 0.0)
+        # legs+feet+hips, torso+belt, arms+hands, head+hair+eyes+nose → many parts
+        self.assertGreater(len(m), 25, "a limbed body, not a few boxes")
+        for v, t, c in m:
+            self.assertEqual(np.asarray(v).shape[1], 3)
+            self.assertEqual(len(c), 3)
+
+    def test_figure_spans_head_to_foot(self):
+        pose = cm.sample_norm("idle", 0.0)
+        m = isk.figure(pose, (150, 150, 165), (90, 60, 40), 0.0)
+        ys = np.concatenate([np.asarray(v)[:, 1] for v, _, _ in m])
+        self.assertLess(ys.min(), 0.2, "feet near the ground")
+        self.assertGreater(ys.max(), 1.5, "head near ~1.6 tall")
 
 
 class TestPose(unittest.TestCase):

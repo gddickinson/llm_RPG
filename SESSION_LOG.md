@@ -9016,3 +9016,32 @@ iso9_big.png (150px player per direction + heading arrow), iso9_inworld.png (rea
 assert the chosen rotation's forward projects within 12° of the true move heading, and that E vs W face
 >120° apart (TestFacing rewritten). Full suite green. This also made George's scale point concrete: at
 64px the facing is invisible, at 150px it's obvious — the ISO.10 scale/detail/realism round follows.
+
+## 2026-07-16 — ISO.10: realistic iso character BODIES + bigger scale
+
+George: "Add more detail to the iso world and figures, increase the scale and zoom in so more details can
+be seen. Make the characters more realistic." Two parts.
+
+**Realistic body.** The iso characters had been a stack of uniform grey BOXES (bones between mocap joints).
+Added two general primitives to `raster3d` — `taper(a,b,r0,r1,color,seg)` (a round tapered tube = a limb
+that swells at the joint and narrows at the end) and `ball(c,r,color,seg)` (a low-res UV sphere = a joint,
+a head, a hand). `iso_skeleton.figure` now rebuilds the character OVER THE SAME mocap joints as a
+believable low-poly body: tapered thighs/shins to ball knees + booted feet, a tunic torso (the character's
+class/armour colour) tapering waist→shoulders with a belt band, shoulder balls + sleeved upper arms +
+bare skin forearms + hands, and a shaped head with a hair cap and a FACE — two eyes and a nose on the
+front, so a character seen from the front reads a face and from the back shows only hair (which also
+reinforces the ISO.9 facing at a glance). Colours derive from the existing `_tint` (class/armour) + `_hair`
+plus fixed skin/trouser/boot tones. Prototyped in scratch (iso10_proto{,2,3}.png) then ported; segs tuned
+to 1110 tris / ~20ms per bake (baked once, cached, so per-frame cost is unchanged). `_bone` retired in
+favour of `raster3d.taper` — its test moves to a taper/ball test in test_raster3d, and test_iso_skeleton
+asserts the body is many-parted and spans foot→head.
+
+**Bigger scale.** The map-zoom setting gains an 80 level and its default rises 48→64. The catch: the GUI
+started at the CLI `--tile-size` default (48) and only ever applied the zoom SETTING when the settings
+overlay was opened — so the persisted/default zoom was ignored at boot. Fixed with
+`settings_panel.init_zoom(gui)` (reads the player's zoom setting → `apply_setting`), called from `main.py`
+right after the GUI is built (kept out of `gui.py`, which sits on the 500-line line). So a new game starts
+at 64 and a player's chosen 80 sticks across reloads. Verified in-world: at zoom 80 the townsfolk read as
+distinct little 3D people — faces, class-colour tunics, hands, boots — facing the way they move
+(scratchpad/iso10_scale_80.png, iso10_world_t72.png, iso10_tuned.png). Settings tests updated for the new
+default + cycle order. Full suite green.
