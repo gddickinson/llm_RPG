@@ -144,12 +144,15 @@ def generate_dungeon(name: str = "Cave Tunnels",
 
 
 def generate_multilevel(name: str, seed: int = None,
-                        engine=None) -> Dungeon:
+                        engine=None, depth: int = None) -> Dungeon:
     """P9.5: a 2-3 level dungeon. Deeper floors hold stronger
     monsters; the deepest holds a boss and its hoard. Stairs use the
-    same linked convention as building levels."""
+    same linked convention as building levels.
+
+    GX.5: `depth` forces an exact number of levels (a DEEP delve like the
+    Oakvale Deepdelve runs 5-6 floors); omitted, it rolls the classic 2-3."""
     rng = random.Random(seed)
-    depth_levels = rng.randint(2, 3)
+    depth_levels = max(1, depth) if depth else rng.randint(2, 3)
     levels = []
     for i in range(depth_levels):
         lv = generate_dungeon(

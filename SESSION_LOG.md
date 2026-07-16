@@ -8525,3 +8525,28 @@ torchlight) + gx4_street.png (the arched cathedral door on the Oakvale street). 
 +1 (`test_oakvale_cathedral_seats_scores`: the location exists, room_set is [nave, vestry], the
 interior is ≥400 tiles, ≥50 pews + an altar, temple theme, enterable footprint). Validator clean.
 Next: GX.5 (a deep dungeon/cave via a secret Oakvale entrance + regional entrances/exits).
+
+## 2026-07-15 — GX.5a: the DEEP Oakvale Deepdelve + wilderness cave mouths (shared dungeon)
+
+George: "add a deep dungeon/cave system accessible via a secret entrance in oakvale — with other
+entrances/exits in the surrounding area." Split into GX.5a (the deep dungeon + its wilderness mouths,
+this round) and GX.5b (the secret Oakvale stair, next). Research (Explore agent) found the key lever:
+`enter_dungeon` caches a generated dungeon keyed by the entrance LOCATION — so same-keyed mouths
+share one dungeon. Built on that: (1) `enter_dungeon` now keys `engine.dungeons` on a Location
+`dungeon_key` property (falling back to the name) and reads `deep_dungeon`/`deep_levels`/
+`dungeon_name`, and `world.dungeon.generate_multilevel` took a `depth` param (omitted = the classic
+2-3 roll; set = exactly N floors). (2) New `engine/deepdelve.py` `DeepdelveSystem` over
+`data/deepdelve.json` seeds 3 wilderness CAVE mouths — Blackroot Cleft (forest), The Sunless Stair
+(mountain), The Drowned Adit (waterside) — at sites ≥16 from spawn and ≥12 apart, each a `Location`
+tagged `dungeon_key:"deepdelve"` + `deep_dungeon`/`deep_levels:6`/`dungeon_name:"The Deepdelve"` +
+`deepdelve_mouth`, with a couple of guards and a per-mouth `[Legend]`; a starting `[Realm]` rumor
+points to the delve. All three mouths open the SAME shared, persistent, 6-floor dungeon (verified:
+one 'deepdelve' cache entry however you enter), and `dungeon_return_pos` surfaces you at the mouth you
+descended by. `ui/hints.py` names a mouth ("[TAB] descend into Blackroot Cleft (the Deepdelve)").
+Wired into `engine_setup` (seed, beside the lairs) + `save_load` (persist). Rendered
+scratchpad/gx5_deepdelve_l1.png (a dark, echoing cave with the hero at the entrance + a lurking
+goblin). tests/test_deepdelve.py (9: forced/default depth, mouths are deep cave Locations, spread +
+far from start, entering yields ≥5 floors, all mouths share ONE dungeon, return-to-entry-mouth,
+persistence). Validator clean; `world_generator.py` had spilled to 594 lines in GX.4 so its extra-
+civic/wilderness passes were shed into `world/worldgen_extras.py` (mixin) to hold the 500-line line.
+Next: GX.5b (the SECRET Oakvale entrance — a searchable trapdoor into the same Deepdelve).

@@ -5864,7 +5864,21 @@ Interleaved with Phase BLD; process one per round, priority order:
   fills with **114 pews facing an altar** (temple theme, torchlit) — room to seat scores. Arched
   grand door (`facade._ARCHED += cathedral/church`). Taverns/other buildings accommodate far more
   people (falls out of the scale-up).
-- [ ] **GX.5 Deep DUNGEON/CAVE via a secret Oakvale entrance + other regional entrances/exits.**
+- [~] **GX.5 Deep DUNGEON/CAVE via a secret Oakvale entrance + other regional entrances/exits.**
+  - [x] **GX.5a — the DEEP shared dungeon + wilderness mouths — DONE.** `enter_dungeon` now keys
+    the dungeon cache on a Location `dungeon_key` (not just its name) + reads `deep_dungeon`/
+    `deep_levels`, so several mouths open ONE shared, persistent, DEEP dungeon; `generate_multilevel`
+    took a `depth` param. `engine/deepdelve.py` (`DeepdelveSystem`) over `data/deepdelve.json` seeds 3
+    wilderness CAVE mouths (Blackroot Cleft / The Sunless Stair / The Drowned Adit) at wooded/rocky/
+    waterside sites far from spawn + spread apart, all sharing `dungeon_key:"deepdelve"` → a 6-floor
+    delve; guards + a rumor + per-mouth `[Legend]`; hint bar names the mouth. Persisted (engine_setup
+    + save_load). tests/test_deepdelve.py (9).
+  - [ ] **GX.5b — the SECRET Oakvale entrance.** A hidden trapdoor/stair in Oakvale revealed by a
+    search action (no reveal mechanism exists yet — nearest analog is the structures ward-gate), then
+    stamping a CAVE tile with the same `dungeon_key:"deepdelve"` so it opens the SAME complex. Hint-bar
+    cue + a pointer rumor.
+  - [ ] **GX.5c (stretch) — true cross-mouth traversal.** Per-mouth up-stairs so you descend one
+    mouth and surface at a distant one (a wilderness short-cut), instead of returning to your entry.
 
 ## Phase BLD — Buildings elaboration (George, 2026-07-15) — see `docs/BUILDINGS.md`
 

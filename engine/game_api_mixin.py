@@ -380,12 +380,21 @@ class GameAPIMixin:
         if terrain != TerrainType.CAVE:
             return "There's no cave entrance here."
         loc = self.world.get_location_at(x, y)
-        name = loc.name if loc else f"cave_{x}_{y}"
+        # GX.5: several mouths sharing one `dungeon_key` resolve to ONE shared
+        # persistent dungeon (so the Deepdelve's distinct cave mouths — and its
+        # secret Oakvale stair — all open into the SAME complex). Fall back to
+        # the Location name for a plain, single-mouth cave.
+        key = (loc.get_property("dungeon_key") if loc else None)
+        name = key or (loc.name if loc else f"cave_{x}_{y}")
         if name not in self.dungeons:
             from world.dungeon import generate_multilevel
+            # A `deep_dungeon` mouth forces a deep 5-6 floor delve (vs 2-3).
+            deep = bool(loc and loc.get_property("deep_dungeon"))
+            disp = ((loc.get_property("dungeon_name") if loc else None)
+                    or f"{name} (Depths)")
             dungeon = generate_multilevel(
-                name=f"{name} (Depths)",
-                seed=hash(name) & 0xFFFFFFFF, engine=self)
+                name=disp, seed=hash(name) & 0xFFFFFFFF, engine=self,
+                depth=(loc.get_property("deep_levels", 5) if deep else None))
             self.dungeons[name] = dungeon
         self.current_dungeon = self.dungeons[name]
         self._sync_ground_items()

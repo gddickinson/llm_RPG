@@ -85,6 +85,8 @@ def build_subsystems(engine, llm_model=None,
     self.resource_nodes = ResourceNodeSystem(self)
     from engine.lairs import LairSystem
     self.lairs = LairSystem(self)
+    from engine.deepdelve import DeepdelveSystem
+    self.deepdelve = DeepdelveSystem(self)
     from engine.guildhalls import GuildHallSystem
     self.guildhalls = GuildHallSystem(self)
     from engine.stables import StableSystem
@@ -224,6 +226,7 @@ def seed_world(engine) -> None:
         ("Resource nodes", lambda: self.resource_nodes.seed()),
         ("Structures", lambda: self.structures.build()),
         ("Lairs", lambda: self.lairs.seed()),           # P19.2
+        ("Deepdelve", lambda: self.deepdelve.seed()),   # GX.5
         ("Guild halls", lambda: self.guildhalls.seed()),  # M.7b
         ("Stables", lambda: self.stables.seed()),        # P28.2d mounts
         ("Teleport network", lambda: self.teleport_network.seed()),  # P28.1a

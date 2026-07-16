@@ -222,7 +222,11 @@ def context_hints(engine) -> List[str]:
             from world.world_map import TerrainType
             terrain = engine.world.map.get_terrain_at(x, y)
             if terrain == TerrainType.CAVE:
-                hints.append("[TAB] descend into the cave")
+                loc = engine.world.get_location_at(x, y)
+                if loc and loc.get_property("deepdelve_mouth"):
+                    hints.append(f"[TAB] descend into {loc.name} (the Deepdelve)")
+                else:
+                    hints.append("[TAB] descend into the cave")
         except Exception:
             pass
         try:
