@@ -222,6 +222,40 @@ def _frame_state(char):
     return action, int(((now + off) / per) * n) % n
 
 
+_HELM = {"warrior", "guard", "paladin", "knight", "fighter", "soldier"}
+_HAT = {"wizard", "sorcerer", "warlock", "mage", "necromancer"}
+_HOOD = {"rogue", "ranger", "druid", "assassin", "thief", "monk", "cultist"}
+_CIRCLET = {"noble", "king", "queen", "lord", "lady", "prince", "princess"}
+
+
+def _headgear_for(char):
+    klass = getattr(getattr(char, "character_class", None), "value", "")
+    if klass in _HELM:
+        return "helmet"
+    if klass in _HAT:
+        return "hat"
+    if klass in _HOOD:
+        return "hood"
+    if klass in _CIRCLET:
+        return "circlet"
+    return None
+
+
+def kit_of(char):
+    """ISO.12 the worn GEAR as a hashable tuple (weapon, head, shield, height):
+    the equipped weapon KIND, class headgear, a shield flag, and the body-type
+    height — so a warrior reads a helmet + sword + shield, a wizard a hat + staff,
+    a ranger a hood + bow."""
+    from ui import char_motion, iso_skeleton
+    try:
+        weapon = char_motion.weapon_kind(char)
+        shield = char_motion.has_shield(char)
+    except Exception:
+        weapon, shield = None, False
+    height = iso_skeleton.body_of(char)[1]
+    return (weapon, _headgear_for(char), bool(shield), height)
+
+
 def char_sprite(char, size: int, facing=None):
     # facing: None → read the character's movement; an int → a legacy 0-7 octant
     delta = _DELTAS[int(facing) % 8] if facing is not None else move_delta(char)
@@ -230,14 +264,15 @@ def char_sprite(char, size: int, facing=None):
     tint, hair = _tint(char), _hair(char)
     action, frame = _frame_state(char)
     build = iso_skeleton.build_of(char)               # ISO.7 silhouette variety
-    seed = _stance_of(char)                           # ISO.11 idle/dance variety
-    key = (tint, hair, size, delta, action, frame, build, seed)
+    seed = _stance_of(char)                            # ISO.11 idle/dance variety
+    kit = kit_of(char)                                 # ISO.12 weapon/armour/body
+    key = (tint, hair, size, delta, action, frame, build, seed, kit)
     if key not in _CACHE:
         phase = frame / _frames_of(action)
         # ISO.6: a real Mixamo-mocap-driven rigged skeleton; if the clip is
         # missing, fall back to the ISO.3/4 procedural box figure.
         mesh = iso_skeleton.sample_figure(action, phase, tint, hair, angle,
-                                          build, seed)
+                                          build, seed, kit)
         cam = iso_skeleton.CAM
         if mesh is None:
             mesh = _figure(tint, hair, angle, _stance_of(char), action, phase)

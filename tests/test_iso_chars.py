@@ -86,6 +86,26 @@ class TestSprite(unittest.TestCase):
     def setUp(self):
         pygame.init()
 
+    def test_kit_headgear_by_class(self):
+        # ISO.12: class → headgear (helmet/hat/hood/circlet or none)
+        self.assertEqual(iso_chars.kit_of(_Char("a", "warrior"))[1], "helmet")
+        self.assertEqual(iso_chars.kit_of(_Char("b", "wizard"))[1], "hat")
+        self.assertEqual(iso_chars.kit_of(_Char("c", "rogue"))[1], "hood")
+        self.assertEqual(iso_chars.kit_of(_Char("d", "noble"))[1], "circlet")
+        self.assertIsNone(iso_chars.kit_of(_Char("e", "merchant"))[1])
+
+    def test_kit_is_hashable_with_body_height(self):
+        kit = iso_chars.kit_of(_Char("f", "guard"))
+        self.assertEqual(len(kit), 4, "(weapon, head, shield, height)")
+        self.assertIsInstance(hash(kit), int, "cache-key hashable")
+        self.assertIn(kit[3], (0.92, 1.0, 1.08), "a seeded body height")
+
+    def test_gear_changes_the_sprite(self):
+        # a helmeted warrior bakes apart from a bare merchant
+        w = iso_chars.char_sprite(_Char("aldric", "warrior"), 80)
+        m = iso_chars.char_sprite(_Char("aldric", "merchant"), 80)
+        self.assertIsNot(w, m, "class gear differentiates the bake")
+
     def test_sprite_drawn_and_cached_with_stance(self):
         c = _Char("aldric", "warrior")
         s1 = iso_chars.char_sprite(c, 72, 2)

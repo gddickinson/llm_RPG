@@ -118,15 +118,26 @@ def angle_for_delta(dx: float, dy: float) -> float:
     return min(_face_table(), key=lambda t: ad(t[0], want))[1]
 
 
-def build_of(char) -> float:
-    """ISO.7 polish: a stable per-person BUILD factor (0.88 slight / 1.0 average
-    / 1.14 broad) seeded off the character id, so folk read apart in the crowd —
-    the practical stand-in for sex-driven shoulder width (Character has no sex
-    field). Scales the shoulder/arm lateral spread."""
+def _seed_of(char) -> int:
     h = 0
     for ch in (getattr(char, "id", "") or getattr(char, "name", "") or "x"):
         h = (h * 131 + ord(ch)) & 0x7fffffff
-    return (0.88, 1.0, 1.14)[h % 3]
+    return h
+
+
+def body_of(char):
+    """ISO.12 a stable per-person BODY TYPE (shoulder breadth, overall height)
+    seeded off the id, so a crowd has slight/broad + short/tall folk — different
+    body types with no sex field on Character."""
+    h = _seed_of(char)
+    shoulder = (0.86, 1.0, 1.15)[h % 3]
+    height = (0.92, 1.0, 1.08)[(h // 3) % 3]
+    return shoulder, height
+
+
+def build_of(char) -> float:
+    """ISO.7 the shoulder-breadth factor (see body_of)."""
+    return body_of(char)[0]
 
 
 def _lat(j: str, build: float = 1.0) -> float:
@@ -154,12 +165,19 @@ def pose3d(pose_norm, angle, build: float = 1.0) -> dict:
 _EYE = (34, 28, 26)
 
 
-def figure(pose_norm, tint, hair, angle, build: float = 1.0):
-    """ISO.10 — a believable low-poly BODY over the mocap joints: tapered limbs
-    that swell at BALL joints, real hands & booted feet, a tunic torso in the
-    character's colour with a belt, and a shaped head with hair + a face (eyes +
-    nose). Faces `angle` radians with the person's `build` (shoulder breadth)."""
-    return _body(pose3d(pose_norm, angle, build), tint, hair, angle)
+def figure(pose_norm, tint, hair, angle, build: float = 1.0, kit=None):
+    """ISO.10/12 — a believable low-poly BODY over the mocap joints (tapered
+    limbs, ball joints, hands, booted feet, a tunic torso + belt, a shaped head
+    with hair + a face), plus the person's HEIGHT and worn GEAR (weapon / shield
+    / headgear) from `kit`. Faces `angle` with the `build` (shoulder breadth)."""
+    P = pose3d(pose_norm, angle, build)
+    if kit and len(kit) > 3 and kit[3] != 1.0:            # ISO.12 height
+        P = {k: v * np.array([1.0, kit[3], 1.0]) for k, v in P.items()}
+    m = _body(P, tint, hair, angle)
+    if kit and any(kit[:3]):                              # ISO.12 worn gear
+        from ui import iso_gear
+        m += iso_gear.accessories(P, angle, kit)
+    return m
 
 
 def _body(P, tint, hair, angle):
@@ -220,10 +238,11 @@ def _attack_overlay(pose, phase):
     return out
 
 
-def swim_figure(phase, tint, hair, angle, build: float = 1.0):
+def swim_figure(phase, tint, hair, angle, build: float = 1.0, kit=None):
     """ISO.11 procedural SWIM (no Mixamo swim clip): the climb clip drives an
     arm-over-arm STROKE, and the whole body is PITCHED to horizontal about the
-    pelvis and dropped to lie at the water surface — a front crawl."""
+    pelvis and dropped to lie at the water surface — a front crawl. Headgear
+    rides along; a weapon/shield is stowed while swimming."""
     pose = cm.sample_norm("climb", phase)
     if pose is None:
         return None
@@ -235,23 +254,30 @@ def swim_figure(phase, tint, hair, angle, build: float = 1.0):
     lift = 0.28 - min(float(v[1]) for v in P.values())   # lie ~at the surface
     P = {k: v + np.array([0.0, lift, 0.0]) for k, v in P.items()}
     try:
-        return _body(P, tint, hair, angle)
+        m = _body(P, tint, hair, angle)
+        if kit and kit[1]:                               # keep the headgear on
+            from ui import iso_gear
+            m += iso_gear.headgear_mesh(
+                kit[1], P["head"] + np.array([0.0, -0.01, 0.0]),
+                np.array([math.sin(angle), 0.0, math.cos(angle)]))
+        return m
     except Exception:
         return None
 
 
-def sample_figure(action, phase, tint, hair, angle, build: float = 1.0, seed=0):
+def sample_figure(action, phase, tint, hair, angle, build: float = 1.0, seed=0,
+                  kit=None):
     """The body mesh for `action` at `phase` facing `angle` radians (with the
-    person's `build`), or None if the clip is missing (caller falls back to the
-    box figure). SWIM is procedural; ATTACK rides idle + the swing overlay."""
+    person's `build` + worn `kit`), or None if the clip is missing (caller falls
+    back to the box figure). SWIM is procedural; ATTACK rides idle + the swing."""
     if action == "swim":
-        return swim_figure(phase, tint, hair, angle, build)
+        return swim_figure(phase, tint, hair, angle, build, kit)
     pose = cm.sample_norm(clip_for(action, seed), phase)
     if pose is None:
         return None
     if action == "attack":
         pose = _attack_overlay(pose, phase)
     try:
-        return figure(pose, tint, hair, angle, build)
+        return figure(pose, tint, hair, angle, build, kit)
     except Exception:
         return None

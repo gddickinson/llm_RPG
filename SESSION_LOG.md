@@ -9069,3 +9069,28 @@ all-actions montage on the ISO.10 body (iso11_montage.png) and an in-world pass 
 each stance/emote (iso11_inworld.png) — dance, sit, climb, talk, jump, swim all flow engine→cur_action→iso.
 Tests: `_frame_state` reads cur_action (driven via update_anim), a stance reaches iso, dance/sit/jump/swim
 bake distinct meshes. Full suite green.
+
+## 2026-07-16 — ISO.12: iso character VARIETY (body types, weapons, armour)
+
+George: "Add variety to the iso characters — different body types, different weapons, different clothing
+and armour." A crowd of identical grey figures becomes a mix of callings.
+
+New `ui/iso_gear.py` builds the worn GEAR as pure `raster3d` geometry, baked into the same cached sprite
+as the body (zero per-frame cost). `weapon_mesh(kind, hand, fwd)` covers all seven `char_motion.weapon_
+kind` categories — sword (dark hilt + gold crossguard + steel blade), dagger, axe (haft + a wedge head),
+mace (haft + a steel ball), spear (a long shaft + a point), staff (a rod + a gold tip), bow (a vertical
+limb + string in the off-hand). The weapon is held UP-and-FORWARD from the grip (a ready stance) rather
+than along the forearm, so it reads at any pose and TRACKS the hand through walk/attack (verified across
+idle/walk/attack — iso12_swordanim.png). `headgear_mesh` gives a metal helmet (with a nasal guard), a
+wizard's pointed hat, a drawn hood, or a noble's circlet; `shield_mesh` a round off-hand shield.
+
+`iso_chars.kit_of(char)` derives a hashable `(weapon, head, shield, height)` tuple: the equipped weapon
+kind, class headgear (`_headgear_for`: warrior/guard/paladin→helmet, wizard/sorcerer→hat, rogue/ranger/
+druid→hood, noble→circlet), a shield flag, and a body-type HEIGHT. `iso_skeleton.body_of(char)` extends
+the ISO.7 seeded build to a `(shoulder, height)` pair so folk are short/tall AND slight/broad; the height
+scales the pose before the mesh is laid, the kit adds the gear (`iso_skeleton.figure`/`sample_figure`
+thread it, `swim_figure` keeps the headgear but stows the weapon). All cache-keyed. Verified in a real
+Oakvale crowd (iso12_world.png): the wizard reads a purple robe + pointed hat + staff, the guard a helmet
++ sword, the cleric a mace, warriors a helmet + shield, merchants plain — each derived automatically from
+class + equipment + a seed. tests/test_iso_gear.py (weapons/headgear/shield/accessories) + kit tests in
+test_iso_chars. Full suite green.

@@ -6177,10 +6177,18 @@ rasterizer/camera/SSAA.
   split into `_body(P,…)` so a pose can be pitched before the mesh is laid. Verified: a montage of all
   actions renders as the ISO.10 body (scratchpad/iso11_montage.png, iso11_swim.png, iso11_inworld.png).
   Full suite green.
-- [ ] **ISO.12 CHARACTER VARIETY (George 2026-07-16) — NEXT.** George: "add variety to the iso characters
-  — different body types, different weapons, different clothing and armour." Vary build/height; draw the
-  equipped WEAPON in-hand (sword/axe/bow/staff…, via `char_motion.weapon_kind`); vary clothing/armour
-  (helmet/robe/hood/chestplate/cape) by class + worn gear.
+- [x] **ISO.12 CHARACTER VARIETY (George 2026-07-16) — DONE.** George: "add variety to the iso characters
+  — different body types, different weapons, different clothing and armour." New `ui/iso_gear.py` builds
+  the worn GEAR as meshes baked into the same cached sprite: `weapon_mesh` (sword/dagger/axe/mace/spear/
+  staff/bow — held up-and-forward in a ready stance so it tracks the hand through the animation),
+  `headgear_mesh` (metal helmet / wizard's pointed hat / drawn hood / noble's circlet), `shield_mesh` (a
+  round off-hand shield). `iso_chars.kit_of(char)` derives a hashable (weapon, head, shield, height) tuple
+  from the equipped weapon (`char_motion.weapon_kind`), class headgear, a shield flag, and a seeded
+  body-type HEIGHT; `iso_skeleton.body_of` extends the seeded build to (shoulder, height) so a crowd has
+  short/tall + slight/broad folk. Threaded through `figure`/`sample_figure`/`char_sprite` (cache-keyed).
+  Verified in-world: a wizard reads a hat + staff, a guard a helmet + sword, a cleric a mace, plain
+  merchants, varied heights (scratchpad/iso12_kit.png, iso12_weapons2.png, iso12_world.png). Full suite
+  green.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
