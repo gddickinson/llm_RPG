@@ -8632,3 +8632,57 @@ deterministic in seed. A radius-24 town yields ~1800 tiles across ~10 district t
 temple core, residential/craft middle, farming/stable/storage suburbs (scratchpad/oakvale_t1_
 districts.png: organic even Voronoi wards). Purely additive (no game code touched); game starts clean.
 tests/test_town_wards.py (10). Next: T2 (street network templates + market square).
+
+## 2026-07-16 — OAKVALE T2: the street network (boulevards, ring, radials, market square)
+
+`world/town/streets.py` lays a town's streets by SIZE TEMPLATE (adapted from autonomous_world's
+street_layout): main BOULEVARDS crossing the centre (N-S + E-W, slight angle jitter), a polygonal RING
+road at ~0.6 radius (12-gon), RADIAL lanes spoking from the ring out to the disc edge, a small core
+GRID for cities, and a reserved central MARKET SQUARE plaza the civic core sits around. Roads carry a
+hierarchy (main/ring/lane/grid) → a rasterised width. `plan_streets(cx,cy,radius,size,seed)` → a
+`StreetPlan` of `Segment`s + the square; `road_tiles()` rasterises every segment (`_line_tiles`
+Bresenham + `_thicken` square brush) to a `{(x,y): kind}` map, a denser road winning on a shared tile,
+clipped to the town disc. Rendered scratchpad/oakvale_t2_streets.png over the T1 wards — reads as a
+real medieval town: crossing boulevards, a ring road, radial streets, a market square at the crossroads,
+the inner civic core (which T3 walls) surrounded by district suburbs; streets reach the edge where the
+gates will meet them. Pure + deterministic; 153 lines. tests/test_town_streets.py (11). Next: T3 (the
+defended-core wall + gates where main streets cross it).
+
+## 2026-07-16 — OAKVALE T3: the defended core (wall polygon + boulevard gates)
+
+`world/town/town_wall.py` walls the inner core (adapted from autonomous_world's wall_generation): an
+organic wall POLYGON around ~0.5 radius (jittered ring, 2× Laplacian `_smooth` so it reads as a
+medieval enceinte, not a circle), rasterised to WALL tiles. The elegant part — GATES are placed exactly
+where a MAIN BOULEVARD crosses a wall edge (`_seg_intersect` segment×segment), so a road always runs
+THROUGH a gate, never into a blank wall (≥3 gates, falling back to the polygon's compass extremes if too
+few boulevards cross). TOWERS stand at spaced wall vertices. `build_core_wall(...)` → a `CoreWall` whose
+`.wall` set has the gate tiles (+ neighbours) carved out as GAPs the boulevard passes through, `.gates`/
+`.towers` lists, and `.encloses(x,y)` (even-odd ray cast) telling the central defended region from the
+suburbs. Rendered scratchpad/oakvale_t3_wall.png over the T1 wards + T2 streets: a walled civic/market/
+temple core with 4 gates on the N/S/E/W boulevards, towers round the wall, and the residential/craft/
+farming districts as suburbs OUTSIDE — exactly George's "central defended region surrounded with a wall
+with multiple gates". Pure geometry + deterministic; 166 lines. tests/test_town_wall.py (12). The T5
+integration will stamp `.wall`→WALL(BUILDING) / `.gates`→ROAD reusing the P31.1 fortify + P37.3 gate
+machinery. Next: T4 (building lots along the streets → Locations by district).
+
+## 2026-07-16 — OAKVALE T4: building lots + the town-generator orchestrator
+
+`world/town/lots.py` seats the town's buildings in THREE passes (adapted from autonomous_world's
+plan_building_lots + lot_subdivision): (1) LANDMARKS — the grand singletons placed FIRST so they always
+exist and get room (cathedral + temple in the sacred ward, town hall + bank in the civic core,
+guildhalls + libraries in the guild ward, inns + taverns in commercial, an armoury in metal-craft, a
+tower); (2) FRONTAGE — walk each street's centre-line seating lots set back on BOTH sides so buildings
+front the street; (3) INTERIOR FILL — scatter district-appropriate buildings into the pockets between
+streets. Each is a `BuildingLot(x,y,w,h,kind,district)` keyed to its ward's KIND (from districts.json,
+`_SIZE` footprints — cathedral 6×5 … home 2×2 … stall/well 1×1), rejected if it leaves the disc or
+overlaps a street/plaza/wall/another lot (a 1-tile yard gap keeps lots from fusing). `world/town/
+town_gen.py` `plan_town(cx,cy,radius,size,seed)` runs the whole pipeline (districts→streets→wall→lots)
+→ a `TownPlan` (`building_count`/`kind_counts`/`core_lots`/`gates`/`lots_of_kind`). A radius-40 town
+yields ~177 buildings across ~26 KINDs with EVERY landmark present — a walled civic/temple/market/guild
+core (41 buildings inside the wall incl. the cathedral/hall) surrounded by dense residential/craft/
+farming suburbs (scratchpad/oakvale_t4_town.png). First cut was sparse (47, home/stall-heavy, no grand
+buildings); the landmark pass + denser frontage + interior fill fixed it. Pure + deterministic; lots.py
+207 / town_gen.py 52 lines. tests/test_town_lots.py (9: rich count, all landmarks, no overlaps, none on
+street/wall, all in-disc, core lots walled, deterministic). Next: T5 — stamp a `TownPlan` onto the real
+world map (streets→ROAD, wall→WALL, gates→ROAD, lots→BUILDING+`Location`) + wire interiors/fortify; and
+the enlarge-in-place vs dedicated-region choice George steers.

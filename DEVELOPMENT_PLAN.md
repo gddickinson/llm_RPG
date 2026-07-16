@@ -5988,16 +5988,43 @@ reusable `world/town/` generator; full design in `docs/OAKVALE.md`.
   middle residential/craft, outer residential/stable/farming). `plan_districts` → a `DistrictPlan`
   (`type_at`/`ring_at`/`tiles_of_type`), deterministic. scratchpad/oakvale_t1_districts.png shows
   organic even wards with a civic core + suburbs. tests/test_town_wards.py (10).
-- [ ] **T2 Street network** — size-scaled templates (boulevards + ring road + radial lanes + core
-  grid + a reserved central market square), rasterised, water-aware; road hierarchy.
-- [ ] **T3 Town wall & gates** — inner-core wall polygon; gates where main streets cross it; towers.
-- [ ] **T4 Building lots & placement** — frontage lots → building KIND by ward → `Location`s.
-- [ ] **T5 Integration** — replace small Oakvale with `build_town`; interiors + fortify; size the map.
+- [x] **T2 Street network — DONE.** `world/town/streets.py`: size-scaled templates — main BOULEVARDS
+  crossing the centre + a polygonal RING road (~0.6 r) + RADIAL lanes spoking to the edge + a core
+  GRID (cities) + a reserved central MARKET SQUARE plaza; road hierarchy (main/ring/lane/grid → width).
+  `plan_streets` → a `StreetPlan`; `road_tiles()` rasterises (Bresenham + width, denser road wins,
+  clipped to the disc) to `{(x,y): kind}`. scratchpad/oakvale_t2_streets.png: boulevards + ring +
+  radials + plaza over the wards. tests/test_town_streets.py (11).
+- [x] **T3 Town wall & gates — DONE.** `world/town/town_wall.py`: an organic, Laplacian-smoothed
+  wall POLYGON around the inner core (~0.5 r), rasterised to WALL tiles; GATES placed where a MAIN
+  boulevard crosses a wall edge (`_seg_intersect`) so a road always runs through a gate (≥3, fallback
+  to compass extremes); TOWERS spaced around the vertices. `CoreWall` (`.wall`/`.gates`/`.towers`/
+  `.encloses`) — a gate is a GAP in the wall so the boulevard passes through; `encloses` (even-odd ray
+  cast) tells core from suburb. scratchpad/oakvale_t3_wall.png: a defended civic/market/temple core,
+  4 boulevard gates, towers, suburbs outside. tests/test_town_wall.py (12).
+- [x] **T4 Building lots & placement — DONE.** `world/town/lots.py` (3 passes: LANDMARKS place the
+  grand singletons first — cathedral/temple/hall/bank/guildhalls/libraries/inns/taverns/armoury/tower
+  in matching wards; FRONTAGE lines the streets densely on both sides; INTERIOR FILL scatters
+  district buildings into the pockets) → `BuildingLot`s keyed to their district's KIND, none
+  overlapping/on-street/on-wall/off-disc. `world/town/town_gen.py` `plan_town(cx,cy,radius,size,seed)`
+  → a `TownPlan` (districts+streets+wall+lots; `building_count`/`kind_counts`/`core_lots`/`gates`).
+  A radius-40 town → **~177 buildings across ~26 KINDs** with every landmark present (scratchpad/
+  oakvale_t4_town.png: a dense walled town, civic/temple/market core + residential/craft/farm suburbs).
+  tests/test_town_lots.py (9). Next: T5 stamps a `TownPlan` onto the world.
+- [ ] **T5 Integration** — stamp a `TownPlan` onto the world (streets→ROAD, wall→WALL, gates→ROAD,
+  lots→BUILDING+`Location` tagged for interiors/residents); replace small Oakvale with `build_town`;
+  size the map. (The enlarge-in-place vs dedicated-region choice George steers here.)
 - [ ] **T6 Role population** — every building its keeper/craftsfolk; dwellings→townsfolk; mayor/
   bankers/guildsmen/thieves/urchins/vagrants; homes↔workplaces.
 - [ ] **T7 Living countryside** — A* terrain roads + bridges, supporting villages (MST-linked), farm
   rings worked by farmers, wells/fountains for water supply.
-- [ ] **T8+ Building variety polish** — roof-shape variety, per-KIND specs, multi-rect massing.
+- [ ] **T8 Building variety & decoration (George 2026-07-16)** — per-building STYLE: tudor half-timber
+  beams, thatch/tile/slate roofs, stone/timber/brick walls, varied window shapes (openings.py) + door
+  styles (facade.py), deterministic per world pos so clones differ; roof-shape variety (mansard/gambrel/
+  cross-gable). Into `data/building_styles.json`.
+- [ ] **T9 Manual review, DEEPDELVE entrance & playtest (George 2026-07-16)** — walk the built town,
+  add detail, plant the Deepdelve SECRET ENTRANCE inside Oakvale (a dungeon to delve from town) + a few
+  in-town adventures (thieves' guild / urchins / cellar-rats / a board quest); then PLAYTEST (scripted
+  headless walkthrough + screenshots) and adapt until it plays well — "adventures right in the town".
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

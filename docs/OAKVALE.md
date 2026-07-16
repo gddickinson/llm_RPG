@@ -86,8 +86,22 @@ Existing reused infrastructure: `fortify.py` (walls/gates/towers/guards),
 - **T7 — Living countryside** (`countryside.py` + `road_astar.py`): terrain-aware
   roads + bridges, supporting villages (MST-linked), farm rings worked by farmers,
   wells/fountains for water supply.
-- **T8+ — Building variety polish**: roof-shape variety, per-KIND specs,
-  multi-rect massing. Incremental.
+- **T8 — Building variety & decoration** (George 2026-07-16, explicit): each
+  building gets a distinct STYLE — tudor half-timber beams, thatched vs tile vs
+  slate roofs, stone vs timber vs brick walls, varied WINDOW shapes (already
+  have square/arched/lancet/rose/round/arrow-loop in `openings.py`) and DOOR
+  styles (panelled/planked/arched/double in `facade.py`). Drive a per-building
+  `style` off its KIND + a seeded roll (deterministic per world position, like
+  BLD.8 weathering) so clones differ. Expand roof SHAPES (mansard/gambrel/
+  cross-gable) per the building-gen roof rules. Fold into `data/building_styles.json`.
+- **T9 — Manual review, Deepdelve entrance & playtest** (George 2026-07-16,
+  explicit): after the town builds, I personally walk it and add detail — most
+  importantly plant the **Deepdelve secret entrance** (`engine/deepdelve.py`
+  `_place_secret`) INSIDE the town so there's a dungeon to delve right from
+  Oakvale; seed a few in-town adventures (a thieves' guild / urchins / a
+  murder-board quest / rats in the cellars). Then PLAYTEST (scripted headless
+  walkthrough + screenshots) and adapt until it plays well as a game setting —
+  "adventures to be had right in the town."
 
 ## Open decision (steer at T5)
 
