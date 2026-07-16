@@ -96,6 +96,14 @@ def build_oakvale_region(world, seed: int = 7) -> dict:
     logger.info("Oakvale region planted: %s", res)
     out = {"town": "Oakvale", "center": (cx, cy), "plan": plan}
     out.update(res)
+    # T7 the living countryside — supporting villages, farms, roads + bridges
+    try:
+        from world.town.countryside import build_countryside
+        out["villages"] = build_countryside(world, (cx, cy),
+                                            OAKVALE_RADIUS, seed=seed)
+    except Exception as e:                           # pragma: no cover
+        logger.warning("countryside build failed: %s", e)
+        out["villages"] = []
     return out
 
 

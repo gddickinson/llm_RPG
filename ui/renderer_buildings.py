@@ -314,7 +314,8 @@ def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
     footprint, storey bands + windows along the front, and chimneys."""
     import pygame
     from ui import roof_shapes as rs
-    style = style_for(kind)
+    from ui.building_variety import variant_style   # OAKVALE T8 per-building style
+    style = variant_style(style_for(kind), kind, loc.x, loc.y)
     px = view_rect.x + (loc.x - cam_x) * ts
     py = view_rect.y + (loc.y - cam_y) * ts
     w = loc.width * ts
@@ -357,7 +358,8 @@ def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
         pygame.draw.line(target, _scale(front, 0.7), (px, by), (px + w, by), 1)
     ww = max(3, ts // 4)                              # a row of windows/floor
     from ui.openings import draw_window, window_shape_for
-    shape = window_shape_for(kind)
+    from ui.building_variety import window_shape
+    shape = window_shape(kind, window_shape_for(kind), loc.x, loc.y)
     tstyle = ft.trim_style_for(kind)                  # BLD.7 architectural dress
     ft.draw_span_corner_trim(target, px, fy, py + d, w, ts, tstyle)
     for i in range(storeys):
@@ -401,7 +403,8 @@ def _draw_block(target, kind, px, py, ts, h, wx=0, wy=0) -> None:
     weathering (seeded by world pos `wx`,`wy`)."""
     import pygame
     from ui import roof_shapes as rs
-    style = style_for(kind)
+    from ui.building_variety import variant_style   # OAKVALE T8 per-building style
+    style = variant_style(style_for(kind), kind, wx, wy)
     off = max(1, ts // 7)
     target.blit(_shadow(ts), (px + off, py + off))     # grounds the block
     front = rs.front_color(style["wall"])
@@ -433,7 +436,8 @@ def _draw_block(target, kind, px, py, ts, h, wx=0, wy=0) -> None:
     # per-floor windows make the storeys READ (P33.3b); BLD.7 dresses them
     from ui.openings import draw_window, window_shape_for
     from ui import facade_trim as ft
-    shape = window_shape_for(kind)
+    from ui.building_variety import window_shape
+    shape = window_shape(kind, window_shape_for(kind), wx, wy)
     tstyle = ft.trim_style_for(kind)
     ft.draw_corner_trim(target, px, py, ts, h, tstyle)   # cornice + quoins
     for (wx, wy, ww, wh) in wall_windows(px, py, ts, h, storeys):

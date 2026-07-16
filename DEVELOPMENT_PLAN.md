@@ -6034,16 +6034,34 @@ reusable `world/town/` generator; full design in `docs/OAKVALE.md`.
   Fixed the "Oakvale **Town**house" name matching settlement scanners (stables/production/teleport) →
   renamed to "House" + `kind`-skip in stables. Guaranteed a smithy landmark. tests/test_town_
   population.py (7).
-- [ ] **T7 Living countryside** — A* terrain roads + bridges, supporting villages (MST-linked), farm
-  rings worked by farmers, wells/fountains for water supply.
-- [ ] **T8 Building variety & decoration (George 2026-07-16)** — per-building STYLE: tudor half-timber
-  beams, thatch/tile/slate roofs, stone/timber/brick walls, varied window shapes (openings.py) + door
-  styles (facade.py), deterministic per world pos so clones differ; roof-shape variety (mansard/gambrel/
-  cross-gable). Into `data/building_styles.json`.
-- [ ] **T9 Manual review, DEEPDELVE entrance & playtest (George 2026-07-16)** — walk the built town,
-  add detail, plant the Deepdelve SECRET ENTRANCE inside Oakvale (a dungeon to delve from town) + a few
-  in-town adventures (thieves' guild / urchins / cellar-rats / a board quest); then PLAYTEST (scripted
-  headless walkthrough + screenshots) and adapt until it plays well — "adventures right in the town".
+- [x] **T7 Living countryside — DONE.** `world/road_astar.py` — terrain-aware ROAD routing (A* over a
+  cost-field: grass cheap, forest dearer, mountains dear, water crossable-but-costly so a road BRIDGES
+  a river at its narrowest); `find_road_path`/`lay_road` (ROAD on land, BRIDGE over water)/`connect`.
+  `world/town/countryside.py` `build_countryside` plants 3 supporting farming VILLAGES (farmhouses +
+  cottages + a chapel + a well + FARMLAND fields) ringing Oakvale, each roaded back to the nearest town
+  gate (A*, bridging the river), plus farm belts outside the town wall; `populate_villages` seats the
+  Farmers/Chaplains. Wired into `build_oakvale_region` + `demo_setup`. In-engine: 3 villages, ~500
+  farmland tiles, 42 bridge tiles, 21 farmers (scratchpad/oakvale_t7_region.png). tests/test_
+  countryside.py (7).
+- [x] **T8 Building variety & decoration — DONE.** `ui/building_variety.py`: a per-building STYLE
+  picked from a KIND-appropriate palette (humble/trade/civic/sacred classes → covering + wall +
+  window-shape palettes), seeded by the building's WORLD position via a pure integer hash so clones
+  differ but each is stable + in-character (a cottage → thatch + tudor timber, a cathedral → stone +
+  slate + lancet windows). `variant_style` (overrides covering/wall, keeps roof shape) + `window_shape`,
+  wired into `renderer_buildings._draw_block` (seeded wx,wy) + `_draw_footprint` (seeded loc.x,loc.y).
+  Oakvale now reads as a real town — golden thatch, red clay tile, grey slate, brown shingle roofs over
+  timber/stone/brick walls, no two neighbours alike (scratchpad/oakvale_t8_variety.png). tests/test_
+  building_variety.py (7). (Roof-SHAPE variety mansard/gambrel deferred — the material variety carries
+  the look.)
+- [x] **T9 Manual review, DEEPDELVE entrance & playtest — DONE.** Reviewing the built region I found
+  the Deepdelve SECRET ENTRANCE wasn't planting in the big town (its `_secret_site` in `engine/deepdelve
+  .py` required a grass tile with no Location, but the 84×84 Oakvale town MARKER covers every tile) —
+  fixed by widening the search + skipping only building FOOTPRINTS (a big area marker is fine). Now
+  "The Buried Stair" plants 12 tiles from the market-square start, inside the town → search it out and
+  delve the shared 6-floor Deepdelve right from Oakvale (plus 3 wilderness mouths in the countryside).
+  Scripted PLAYTEST passes: player moves, 258 NPCs advance 6 turns without crash, 96 tradeable merchants,
+  the secret reveals + descends 6 floors, exits clean. The in-town thieves/urchins (T6) + the Deepdelve
+  are the "adventures right in the town". (Authored in-town quests can layer on later.)
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

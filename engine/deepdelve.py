@@ -212,7 +212,7 @@ class DeepdelveSystem:
         """A walkable, unoccupied, un-built tile near the village core to
         conceal the trapdoor under — tucked a few tiles off the centre."""
         wmap = self.engine.world.map
-        for r in range(2, 9):
+        for r in range(2, 20):                     # widened for a big dense town
             ring = []
             for dy in range(-r, r + 1):
                 for dx in range(-r, r + 1):
@@ -225,8 +225,12 @@ class DeepdelveSystem:
                         continue                   # plain grass only, no roads
                     if (x, y) in wmap.characters:
                         continue
-                    if self.engine.world.get_location_at(x, y) is not None:
-                        continue                   # not on a building/marker
+                    # a grass tile is never a building; skip only a building
+                    # FOOTPRINT (a big town/village AREA marker is fine — the
+                    # secret should sit in a yard WITHIN the town)
+                    loc = self.engine.world.get_location_at(x, y)
+                    if loc is not None and loc.get_property("kind"):
+                        continue
                     ring.append((x, y))
             if ring:
                 return self.rng.choice(ring)

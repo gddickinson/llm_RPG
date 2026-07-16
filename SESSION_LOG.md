@@ -8748,3 +8748,62 @@ turns with 236 NPCs is fine (no hang). tests/test_town_population.py (7: populat
 mayor, keepers workplace-bound, a smith reads as a blacksmith shop, no stable spam, survives turns).
 population.py 124 lines. Next: T7 living countryside (villages/farms/roads/bridges/wells), then T8
 building variety, T9 Deepdelve entrance + in-town adventures + playtest.
+
+## 2026-07-16 — OAKVALE T7: the living countryside (villages, farms, terrain roads + bridges)
+
+`world/road_astar.py` — terrain-aware ROAD routing (adapted from autonomous_world's road_pathfinder):
+A* over a per-terrain cost-field (grass 1.0, forest 2.4, mountain 12, water 6 — crossable-but-costly so
+a road BRIDGES a river at its narrowest rather than detouring for miles); `find_road_path` (octile-
+heuristic A*, never through a BUILDING), `lay_road` (ROAD on land, BRIDGE over water), `connect`.
+`world/town/countryside.py` `build_countryside(world, center, radius, seed)` rings Oakvale with 3
+supporting farming VILLAGES (each a cluster of farmhouses + cottages + a chapel + a well, with FARMLAND
+fields south of the houses), places broad farm belts just outside the town wall, and roads each village
+back to the NEAREST town gate via `road_astar.connect` (bridging the river as needed); `populate_villages`
+seats the Farmers + a village Chaplain. Wired into `build_oakvale_region` (returns the village list) +
+`demo_setup` (populates them after the town). In-engine: 3 villages (Wheatfield/Millbrook/Greenhollow),
+~500 farmland tiles, 42 bridge tiles, 21 farmers, 258 total NPCs — the town is fed by a real hinterland
+(scratchpad/oakvale_t7_region.png: the walled town, a river with road bridges, farm belts, villages,
+mountains). Also noticed the P19.2 Deepdelve system already seeds its cave mouths + the secret
+Oakvale stair in this region (its `_place_secret` finds the big "Oakvale" town marker) — a head start on
+T9. road_astar.py 98 / countryside.py 163 lines. tests/test_countryside.py (7: A* connects, bridges
+water, routes around mountains, never through buildings; villages/farmland/bridges/farmers in-region).
+Next: T8 building variety (tudor/thatch/tile/windows/doors), T9 Deepdelve entrance + in-town adventures
++ playtest.
+
+## 2026-07-16 — OAKVALE T8: per-building style variety (tudor/thatch/tile/slate)
+
+George: "Buildings should have varied designs and decorations (tudor beams, tiles, thatched roofs,
+various styles of windows and doors)." `ui/building_variety.py` gives every building a per-building
+STYLE picked from a KIND-appropriate palette — buildings group into style CLASSES (humble = homes/
+cottages/farms → thatch/shingle/clay coverings × timber/wood/brick walls for the tudor half-timber
+look; trade = shops/taverns/craft; civic = hall/bank/library/guild → slate/lead/stone × stone/brick;
+sacred = temple/cathedral/chapel → slate/stone × stone) — seeded by the building's WORLD position via a
+pure integer hash (`_hash`, like BLD.8 weathering) so two neighbours differ but each is stable across
+frames and in-character (a cathedral never becomes a thatched hut). `variant_style(base, kind, wx, wy)`
+overrides the base style's covering + wall (roof SHAPE kept), `window_shape` varies the opening (a
+cathedral gets lancet/rose, a home square/arched). Wired into `renderer_buildings._draw_block` (seeded
+wx,wy) + `_draw_footprint` (seeded loc.x,loc.y). Oakvale now reads as a real medieval town — golden
+thatch cottages beside red clay-tile houses beside grey-slate civic halls, timber/stone/brick walls,
+no two neighbours alike (scratchpad/oakvale_t8_variety.png). Pure; building_variety.py 78 lines.
+tests/test_building_variety.py (7: deterministic, clones differ, humble/sacred stay in-palette, roof
+shape preserved, window shape from palette). Roof-SHAPE variety (mansard/gambrel) deferred — the
+material variety carries the look. Next: T9 — verify the Deepdelve secret entrance works IN Oakvale +
+a few in-town adventures + a scripted playtest.
+
+## 2026-07-16 — OAKVALE T9: Deepdelve entrance in town + a scripted playtest
+
+Manual review of the built region turned up the key gap George called out: the Deepdelve SECRET ENTRANCE
+wasn't planting inside the big Oakvale. The P19.2 deepdelve system DOES run in the region (3 wilderness
+mouths + the secret-stair machinery), and `_place_secret` found the "Oakvale" town marker — but
+`_secret_site` required a GRASS tile whose `get_location_at` is None, and the 84×84 town-marker Location
+covers EVERY town tile, so no site was ever found. Fixed `engine/deepdelve.py._secret_site`: widened the
+ring search (2→20) and skip only a building FOOTPRINT (a Location with a `kind`) — a big town/village
+AREA marker is fine, since the secret should sit in a yard WITHIN the town. Now "The Buried Stair"
+plants ~12 tiles from the market-square player start, INSIDE the town → the player wakes in Oakvale,
+follows the rumor, searches out the hidden stair and delves the shared 6-floor Deepdelve right from town
+(the P19.2 wilderness mouths give the other regional entrances). Scripted headless PLAYTEST passes:
+player moves in the square, 258 NPCs advance 6 turns with no crash/hang, 96 tradeable merchants present,
+the secret reveal → enter_dungeon descends the full 6 floors → exit clean. So Oakvale plays as a real
+game setting with adventures right in the town (the T6 street thieves/urchins + the Deepdelve). The
+classic-world deepdelve is unaffected (test_deepdelve 15 green). Next: final full suite + commit the
+T7-T9 stretch; the Oakvale overhaul (T1-T9) is essentially complete.

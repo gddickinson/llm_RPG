@@ -242,7 +242,11 @@ def initialize_demo_world(engine, player_spec=None,
         from world.town.population import populate_town
         try:
             n = populate_town(engine, "Oakvale", seed=7)
-            logger.info(f"Oakvale populated with {n} townsfolk.")
+            from world.town.countryside import populate_villages
+            villages = (getattr(engine, "_oakvale_region", None)
+                        or {}).get("villages", [])
+            n += populate_villages(engine, villages, seed=7)
+            logger.info(f"Oakvale populated with {n} townsfolk + villagers.")
         except Exception as e:
             logger.warning(f"Oakvale population failed: {e}")
     else:

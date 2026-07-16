@@ -52,10 +52,12 @@ class TestPopulation(unittest.TestCase):
         self.assertEqual(_category_for_npc(smiths[0]), "blacksmith")
 
     def test_no_stray_stable_spam(self):
-        # the town buildings must NOT each spawn a settlement stable
+        # the town BUILDINGS must NOT each spawn a settlement stable (that was
+        # ~200 stables); the town + its handful of villages each get one.
         stables = [l for l in self.engine.world.locations
                    if l.get_property("type") == "stable"]
-        self.assertLessEqual(len(stables), 3, "one stable, not one per house")
+        self.assertLessEqual(len(stables), 8,
+                             "one stable per settlement, not one per house")
 
     def test_town_survives_a_few_turns(self):
         # 200+ NPCs shouldn't hang or crash the turn loop
