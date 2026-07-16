@@ -8447,3 +8447,25 @@ Before/after: scratchpad/bld6_tavern_lit.png (three warm pools lighting the tave
 hearth). tests/test_furnish_features.py (+5: torches emit light + are spaced, hearthrug in front of
 the hearth, never on a doorway, deterministic). furnish_features 202 / interiors 432 — under 500.
 Validator clean. Next: BLD.7 (window trim/shutters/bays + quoins/cornice/gutters in facade/roof_shapes).
+
+## 2026-07-15 — GX.1: ranged/miss effects — arrows SEEN in flight + shooter looses the bow
+
+George (mid-buildings-loop burst of requests): "There should be effects for miss/ranged attacks with
+the characters holding the correct weapon (bow for example) and arrows etc seen fired." Root cause:
+shoot_ranged spawned a projectile then called advance_turn, whose turn_pipeline ticked it dt=1.0 and
+RESOLVED it in the same call — so the arrow was never rendered mid-flight (the renderer draws
+projectile_manager.active, but it was already empty). Fix: decouple the VISUAL from the turn-based
+resolution. New ui/projectile_anim.py: enable(engine) sets engine.animate_projectiles=True; frame_
+tick(engine) advances arrows ~0.14 turns/frame (a ~0.3s visible flight) and resolves the hit on
+ARRIVAL. turn_pipeline now skips projectile resolution when animate_projectiles is set (headless /
+turn-based play still resolves instantly — tests, away-mode). The GUI enables it in __init__ and
+calls frame_tick once per rendered frame. combat_effects.on_miss_at(x,y) = a grey "miss" popup when
+a shot goes wide. engine/ranged.shoot_ranged now faces the target (anim.face) + bumps _atk_seq (the
+loose/attack motion) so the shooter is SEEN firing; the correct weapon (bow) already draws via
+char_motion.weapon_kind (reads the worn weapon). Verified: an arrow survives advance_turn and flies
+x=45.8→51 over 7 frames then resolves (goblin 20→9 HP + a damage popup). gui.py kept <500 (498; moved
+the tick to the new module + removed the dead update() shim). tests/test_projectiles.py +2 (animate
+flag defers resolution + the arrow arrives; miss popup). Validator clean.
+George also queued (planned in DEVELOPMENT_PLAN Phase GX + memory): GX.2 bigger teleport dais, GX.3
+building scale-up, GX.4 a large Oakvale church seating 50-100, GX.5 a deep dungeon via a secret
+Oakvale entrance. Next round: GX.2 (teleport dais).

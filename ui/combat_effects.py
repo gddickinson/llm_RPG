@@ -108,6 +108,11 @@ class CombatEffects:
         tx, ty = target.position
         self.spawn_damage_popup(tx, ty, amount, color=(80, 220, 80))
 
+    def on_miss_at(self, x: float, y: float) -> None:
+        """A grey 'miss' popup where a shot went wide (BLD/ranged effects)."""
+        self.damage_popups.append(
+            DamagePopup(x, y - 0.2, "miss", (205, 210, 220), max_age=0.7))
+
     def spawn_damage_popup(self, x: float, y: float, value: int,
                            color: Tuple[int, int, int] = (255, 60, 60)) -> None:
         jx = x + self.rng.uniform(-0.2, 0.2)

@@ -77,6 +77,15 @@ def shoot_ranged(engine, target_name=None, aimed=False) -> str:
 
     proj = engine.projectile_manager.spawn(
         engine.player, target, damage, weapon_type=weapon_type)
+    # face the target + play the loose (bow-arm) animation — the shooter is SEEN
+    # firing the weapon it holds (George: characters holding the correct weapon)
+    try:
+        from engine import anim
+        anim.face(engine.player, target.position)
+        engine.player.metadata["_atk_seq"] = \
+            engine.player.metadata.get("_atk_seq", 0) + 1
+    except Exception:
+        pass
     ammo_label = f" ({weapon.ammo_type} -1)" if ammo_item is not None else ""
     msg = f"You loose a {proj.weapon_type} at {target.name}{ammo_label}."
     engine.memory_manager.add_event(msg)

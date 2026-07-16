@@ -183,7 +183,7 @@ llm_RPG/
 - **`shop.py`** — `ShopManager`; per-merchant catalogs, faction-aware prices, persistence; P12.10: stock-elastic pricing (5%/unit deviation, daily restock heals), regional category factors from `data/settlement_economy.json` (arbitrage), H-key haggle minigame (patience 3/day, graded Persuasion, crit fails cost reputation); M.8b `buy_for`/`sell_for` (a programmatic mirror of the shop-panel transaction over the catalogue — the single buy/sell path the away-agent economy uses).
 - **`effects.py`** — Effective AC / stat / damage bonuses from worn equipment (broken gear contributes 0).
 - **`durability.py`** — Gear wear on uncommon+ weapons/armor; break, repair at forge, `durability_label()`.
-- **`projectiles.py`** — In-flight arrows/bolts + spell projectiles with per-turn ticks.
+- **`projectiles.py`** — In-flight arrows/bolts + spell projectiles. `ProjectileManager.spawn`/`tick`/`_resolve` (hit roll, damage, miss-if-moved). Ticked once per turn in `turn_pipeline` for headless/turn-based play, BUT when a GUI sets `engine.animate_projectiles` the turn tick is skipped and `ui/projectile_anim.py` advances them frame-by-frame so the ARROW IS SEEN in flight (George 2026-07-15). `engine/ranged.shoot_ranged` faces the target + bumps `_atk_seq` (loose motion); the bow draws via `char_motion.weapon_kind`.
 
 ### characters/ — Characters, NPCs, social systems
 

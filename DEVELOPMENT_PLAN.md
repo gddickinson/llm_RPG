@@ -5833,6 +5833,21 @@ water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
     night is playable now (scratchpad/gfx_night_after.png). `test_lighting_and_weather_overlay` +2.
 - [ ] **P40.6 Characters** — richer body shading/outlines/gear (only if needed).
 
+## Phase GX — George's rapid-fire requests (2026-07-15) — see memory `george-requests-queue-2026-07-15`
+
+Interleaved with Phase BLD; process one per round, priority order:
+- [x] **GX.1 Ranged/miss EFFECTS — arrows seen fired + shooter holds the weapon.** `ui/projectile_
+  anim.py` (frame_tick) + `engine.animate_projectiles` (turn_pipeline defers resolution) so a shot
+  FLIES ~0.3s and resolves on arrival; `combat_effects.on_miss_at` (grey "miss" popup); `shoot_
+  ranged` faces the target + bumps `_atk_seq` (loose motion). `tests/test_projectiles.py` +2.
+- [ ] **GX.2 Teleport platforms LARGER + raised dais + easy to see** — the waystone marker render.
+- [ ] **GX.3 Building SCALE-UP (Ultrathink)** — everything too small/cramped; raise interior
+  footprint scaling (`fit_to_footprint` tw/th) + major-building overworld footprints so buildings
+  are roomy (bigger interiors → more/larger functional rooms, more seating).
+- [ ] **GX.4 A large CHURCH in Oakvale seating 50-100** — a big nave (pew_rows) + altar; depends
+  on GX.3. Taverns/other buildings accommodate far more people (falls out of the scale-up).
+- [ ] **GX.5 Deep DUNGEON/CAVE via a secret Oakvale entrance + other regional entrances/exits.**
+
 ## Phase BLD — Buildings elaboration (George, 2026-07-15) — see `docs/BUILDINGS.md`
 
 George (after the P40 graphics + black-tile fix landed): buildings "are still very basic and

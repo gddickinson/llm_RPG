@@ -16,6 +16,7 @@ except ImportError:  # pragma: no cover
 from ui.renderer import MapRenderer
 from ui.hud import HUD
 from ui.input_handler import InputHandler
+from ui import projectile_anim
 
 logger = logging.getLogger("llm_rpg.gui")
 
@@ -59,6 +60,7 @@ class GameGUI:
         if not PYGAME_OK:
             raise RuntimeError("pygame is not installed")
         self.engine = engine
+        projectile_anim.enable(engine)      # arrows animate in flight (George)
         self.width = width
         self.height = height
         self.tile_size = tile_size
@@ -211,12 +213,9 @@ class GameGUI:
                     self.engine.dm_bridge.tick()
                 except Exception:
                     pass
+            projectile_anim.frame_tick(self.engine)   # arrows/bolts in flight
             self._render()
             self.clock.tick(30)
-
-    def update(self) -> None:
-        """Compat shim for terminal-style loops."""
-        pass
 
     def shutdown(self) -> None:
         if self.sound is not None:

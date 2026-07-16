@@ -270,12 +270,16 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Nightly systems error: {e}")
 
-    # Advance in-flight projectiles
+    # Advance in-flight projectiles. When a GUI is animating them frame-by-frame
+    # (`animate_projectiles`), it ticks + resolves them so the ARROW IS SEEN in
+    # flight (George); here we only resolve them in the headless / turn-based
+    # path so a shot still lands without a renderer.
     try:
-        results = self.projectile_manager.tick(dt=1.0)
-        for r in results:
-            if r.message:
-                self.memory_manager.add_event(r.message)
+        if not getattr(self, "animate_projectiles", False):
+            results = self.projectile_manager.tick(dt=1.0)
+            for r in results:
+                if r.message:
+                    self.memory_manager.add_event(r.message)
     except Exception as e:
         logger.debug(f"Projectile tick error: {e}")
 
