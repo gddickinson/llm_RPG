@@ -77,10 +77,7 @@ class TestFacing(unittest.TestCase):
     def test_different_facings_bake_different_sprites(self):
         pygame.init()
         e, w = self._char((1, 0)), self._char((-1, 0))
-        for c in (e, w):
-            c.metadata["_iso_walk_until"] = 0
-            c.metadata["_iso_atk_until"] = 0
-        east = iso_chars.char_sprite(e, 72)
+        east = iso_chars.char_sprite(e, 72)   # both idle (no cur_action)
         west = iso_chars.char_sprite(w, 72)
         self.assertIsNot(east, west, "an east-facer bakes apart from a west")
 
@@ -134,24 +131,44 @@ class TestAnimation(unittest.TestCase):
             iso_chars._pose(rest, "attack", 0.5)[5][0])[:, 1].max()
         self.assertGreater(atk_arm, rest_arm, "the arm arcs up in a strike")
 
-    def test_frame_state_transitions(self):
+    def test_frame_state_reads_cur_action(self):
+        # ISO.11: _frame_state reads the cur_action body_renderer.update_anim sets
+        from ui.body_renderer import update_anim
         c = _Char("hero", "warrior")
         c.position = (3, 3)
+        update_anim(c, 0.05)                        # init → idle
         self.assertEqual(iso_chars._frame_state(c)[0], "idle")
-        c.position = (4, 3)                         # moved
+        c.position = (4, 3); update_anim(c, 0.05)   # moved → walk (tweening)
         self.assertEqual(iso_chars._frame_state(c)[0], "walk")
-        c.metadata["_atk_seq"] = 1                  # struck
+        c.metadata["_atk_seq"] = 1; update_anim(c, 0.05)  # struck → attack
         self.assertEqual(iso_chars._frame_state(c)[0], "attack")
+
+    def test_richer_actions_flow_to_iso(self):
+        # a stance / emote set on the character reaches iso via cur_action
+        from ui.body_renderer import update_anim
+        c = _Char("dancer", "bard"); c.position = (5, 5)
+        c.metadata["_stance"] = "dance"
+        update_anim(c, 0.05)
+        self.assertEqual(iso_chars._frame_state(c)[0], "dance")
 
     def test_action_frames_bake_distinct_sprites(self):
         pygame.init()
-        c = _Char("walker", "guard")
-        c.position = (1, 1)
-        iso_chars._frame_state(c)                   # prime pos
-        c.position = (2, 1)
+        from ui.body_renderer import update_anim
+        c = _Char("walker", "guard"); c.position = (1, 1)
+        update_anim(c, 0.05)
+        c.position = (2, 1); update_anim(c, 0.05)   # walking
         walk = iso_chars.char_sprite(c, 72, 2)
-        # force idle
-        c.metadata["_iso_walk_until"] = 0
-        c.metadata["_iso_atk_until"] = 0
+        for _ in range(8):                          # let the tween expire → idle
+            update_anim(c, 0.05)
         idle = iso_chars.char_sprite(c, 72, 2)
         self.assertIsNot(walk, idle, "walk and idle bake to different frames")
+
+    def test_dance_sit_jump_swim_bake_distinct(self):
+        pygame.init()
+        from ui import iso_skeleton as isk
+        seen = set()
+        for act in ("idle", "dance", "sit", "jump", "swim", "climb"):
+            m = isk.sample_figure(act, 0.3, (150, 150, 165), (90, 60, 40), 0.0)
+            self.assertIsNotNone(m, f"{act} builds a mesh")
+            seen.add(id(m))
+        self.assertEqual(len(seen), 6, "each action is its own mesh")

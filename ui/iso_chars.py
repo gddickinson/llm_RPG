@@ -167,9 +167,23 @@ def move_delta(char):
     return (0, 1)
 
 
-_FRAMES = {"walk": 8, "attack": 6, "idle": 6}          # ISO.6 smoother mocap
-_PERIOD = {"walk": 720, "attack": 460, "idle": 2600}   # ms per cycle
-_WALK_HOLD, _ATTACK_HOLD = 480, 420
+# ISO.11 frames baked per action (a full loop, or the arc of a one-shot) + the
+# ms period of a looping cycle. Any action not here reads as idle.
+_ACT_FRAMES = {"walk": 8, "run": 8, "jog": 8, "idle": 6, "dance": 8, "sit": 4,
+               "sleep": 4, "climb": 8, "talk": 6, "swim": 6, "attack": 6,
+               "jump": 6, "leap": 6, "cheer": 6, "wave": 6, "bow": 5,
+               "cast": 6, "hurt": 4, "stagger": 5, "guard": 4, "crawl": 4,
+               "kick": 6, "argue": 6, "sneak": 8, "stoop": 5, "dodge": 4}
+_LOOP_PERIOD = {"walk": 720, "run": 620, "jog": 760, "idle": 2600,
+                "dance": 1100, "sit": 3000, "sleep": 3000, "climb": 1000,
+                "talk": 1400, "swim": 900, "guard": 2600, "crawl": 1400,
+                "argue": 1400, "sneak": 1000, "stagger": 900}
+_ONESHOT = {"attack", "jump", "leap", "bow", "wave", "cast", "cheer",
+            "stoop", "dodge", "hurt", "kick"}
+
+
+def _frames_of(action) -> int:
+    return _ACT_FRAMES.get(action, 6)
 
 
 def _clock_ms() -> int:
@@ -181,30 +195,31 @@ def _clock_ms() -> int:
 
 
 def _frame_state(char):
-    """ISO.4: (action, frame) — WALK while the character moves tile-to-tile,
-    ATTACK on a fresh strike (a bumped `_atk_seq`), else a breathing IDLE.
-    Transient per-character render state on `metadata` (not saved)."""
+    """ISO.11 (action, frame): read the SAME `cur_action` the top-down renderer
+    computes (`body_renderer.update_anim` — called for iso chars in ISO.8), so
+    iso plays every animation — walk/run, jump, dance, sit, climb, talk, swim,
+    an attack swing — not just walk/idle. A one-shot arcs through its timer; a
+    looping action cycles on the clock (desynced per person)."""
     md = getattr(char, "metadata", None)
     if md is None:
         return "idle", 0
+    anim = md.get("_anim") or {}
+    action = anim.get("cur_action", "idle")
+    if action not in _ACT_FRAMES:
+        action = "idle"                               # unmapped → a calm idle
+    n = _frames_of(action)
+    if action in _ONESHOT:                            # progress through the arc
+        if action == "attack":
+            from ui.char_motion import ATTACK_DUR
+            prog = 1.0 - anim.get("atk_t", 0.0) / max(ATTACK_DUR, 1e-6)
+        else:
+            prog = 1.0 - anim.get("action_t", 0.0) / max(
+                anim.get("action_dur", 0.6), 1e-6)
+        return action, max(0, min(n - 1, int(prog * n)))
     now = _clock_ms()
-    seq = md.get("_atk_seq", 0)                       # strike counter
-    if seq != md.get("_iso_atk_seq", seq):
-        md["_iso_atk_until"] = now + _ATTACK_HOLD
-    md["_iso_atk_seq"] = seq
-    pos = getattr(char, "position", None)
-    if pos is not None and pos != md.get("_iso_pos", pos):
-        md["_iso_walk_until"] = now + _WALK_HOLD
-    md["_iso_pos"] = pos
     off = _stance_of(char) * 400                      # desync folk
-    if now < md.get("_iso_atk_until", 0):
-        act = "attack"
-    elif now < md.get("_iso_walk_until", 0):
-        act = "walk"
-    else:
-        act = "idle"
-    n, per = _FRAMES[act], _PERIOD[act]
-    return act, int(((now + off) / per) * n) % n
+    per = _LOOP_PERIOD.get(action, 1500)
+    return action, int(((now + off) / per) * n) % n
 
 
 def char_sprite(char, size: int, facing=None):
@@ -215,13 +230,14 @@ def char_sprite(char, size: int, facing=None):
     tint, hair = _tint(char), _hair(char)
     action, frame = _frame_state(char)
     build = iso_skeleton.build_of(char)               # ISO.7 silhouette variety
-    key = (tint, hair, size, delta, action, frame, build)
+    seed = _stance_of(char)                           # ISO.11 idle/dance variety
+    key = (tint, hair, size, delta, action, frame, build, seed)
     if key not in _CACHE:
-        phase = frame / _FRAMES[action]
+        phase = frame / _frames_of(action)
         # ISO.6: a real Mixamo-mocap-driven rigged skeleton; if the clip is
         # missing, fall back to the ISO.3/4 procedural box figure.
         mesh = iso_skeleton.sample_figure(action, phase, tint, hair, angle,
-                                          build)
+                                          build, seed)
         cam = iso_skeleton.CAM
         if mesh is None:
             mesh = _figure(tint, hair, angle, _stance_of(char), action, phase)

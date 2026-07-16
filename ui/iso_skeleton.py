@@ -26,9 +26,22 @@ _SH_W = 0.17                    # lateral half-width, shoulders/arms
 _SKIN = (232, 196, 160)
 _LEG = (56, 52, 64)
 
-# the game action → the mocap clip that reads it. ATTACK has no Mixamo sword-
-# swing clip, so it rides the idle base + a procedural weapon-arm ARC overlay.
-_CLIP = {"idle": "idle", "walk": "walk", "run": "run", "attack": "idle"}
+# ISO.11 the game action → the Mixamo mocap clip that reads it (18 clips ship in
+# data/anim/*.json). ATTACK has no sword-swing clip so it rides the idle base + a
+# procedural weapon-arm ARC overlay; SWIM is procedural (see swim_figure).
+_CLIP = {
+    "idle": "idle", "walk": "walk", "jog": "walk", "run": "run",
+    "sneak": "walk", "attack": "idle",
+    "dance": "dance", "sit": "sit", "sleep": "sit", "stoop": "sit",
+    "crawl": "sit", "climb": "climb", "talk": "talk", "wave": "talk",
+    "cast": "talk", "argue": "argue", "guard": "idle", "bow": "nod",
+    "cheer": "hiphop", "jump": "jump", "leap": "jump", "hurt": "stagger",
+    "dodge": "stagger", "stagger": "stagger", "kick": "kick",
+}
+# ISO.11 per-character VARIETY: a seeded idle/dance picks one of the Mixamo
+# variants so a crowd doesn't loop in lockstep.
+_IDLE_VARIANTS = ("idle", "idle2", "idle3")
+_DANCE_VARIANTS = ("dance", "breakdance", "hiphop")
 
 # a camera framing the ~1.6-unit skeleton (tuned in the ISO.6 prototype)
 CAM = dict(cam_pos=(2.1, 2.5, -2.5), look=(0.0, 0.78, 0.0), vfov_deg=30.0)
@@ -37,7 +50,13 @@ _LEGJ = ("_hip", "_knee", "_foot")
 _ARMJ = ("_sh", "_elbow", "_hand")
 
 
-def clip_for(action: str) -> str:
+def clip_for(action: str, seed: int = 0) -> str:
+    """The mocap clip for a game action; a `seed` (per-character) varies the
+    idle/dance so folk don't loop in lockstep (ISO.11)."""
+    if action == "idle":
+        return _IDLE_VARIANTS[seed % 3]
+    if action == "dance":
+        return _DANCE_VARIANTS[seed % 3]
     return _CLIP.get(action, "idle")
 
 
@@ -140,7 +159,12 @@ def figure(pose_norm, tint, hair, angle, build: float = 1.0):
     that swell at BALL joints, real hands & booted feet, a tunic torso in the
     character's colour with a belt, and a shaped head with hair + a face (eyes +
     nose). Faces `angle` radians with the person's `build` (shoulder breadth)."""
-    P = pose3d(pose_norm, angle, build)
+    return _body(pose3d(pose_norm, angle, build), tint, hair, angle)
+
+
+def _body(P, tint, hair, angle):
+    """Build the body mesh from a joint dict `P` (ISO.11 split so a pose can be
+    pitched — e.g. SWIM — before the mesh is laid over it)."""
     tunic = tuple(int(x) for x in tint)
     sleeve = tuple(int(c * 0.9) for c in tunic)
     boot = tuple(int(c * 0.55) for c in _LEG)
@@ -196,11 +220,33 @@ def _attack_overlay(pose, phase):
     return out
 
 
-def sample_figure(action, phase, tint, hair, angle, build: float = 1.0):
-    """The skeleton mesh for `action` at `phase` facing `angle` radians (with the
+def swim_figure(phase, tint, hair, angle, build: float = 1.0):
+    """ISO.11 procedural SWIM (no Mixamo swim clip): the climb clip drives an
+    arm-over-arm STROKE, and the whole body is PITCHED to horizontal about the
+    pelvis and dropped to lie at the water surface — a front crawl."""
+    pose = cm.sample_norm("climb", phase)
+    if pose is None:
+        return None
+    P = pose3d(pose, angle, build)
+    piv = P["pelvis"].copy()
+    c, s = math.cos(math.radians(74)), math.sin(math.radians(74))
+    rot = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])   # pitch fore-aft
+    P = {k: rot @ (v - piv) + piv for k, v in P.items()}
+    lift = 0.28 - min(float(v[1]) for v in P.values())   # lie ~at the surface
+    P = {k: v + np.array([0.0, lift, 0.0]) for k, v in P.items()}
+    try:
+        return _body(P, tint, hair, angle)
+    except Exception:
+        return None
+
+
+def sample_figure(action, phase, tint, hair, angle, build: float = 1.0, seed=0):
+    """The body mesh for `action` at `phase` facing `angle` radians (with the
     person's `build`), or None if the clip is missing (caller falls back to the
-    box figure)."""
-    pose = cm.sample_norm(clip_for(action), phase)
+    box figure). SWIM is procedural; ATTACK rides idle + the swing overlay."""
+    if action == "swim":
+        return swim_figure(phase, tint, hair, angle, build)
+    pose = cm.sample_norm(clip_for(action, seed), phase)
     if pose is None:
         return None
     if action == "attack":

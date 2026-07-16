@@ -66,13 +66,14 @@ class TestFigure(unittest.TestCase):
             self.assertEqual(np.asarray(v).shape[1], 3)
 
     def test_missing_clip_returns_none(self):
-        old = isk._CLIP.get("idle")
-        isk._CLIP["idle"] = "no_such_clip"
+        # walk routes straight through _CLIP (idle/dance use the variant table)
+        old = isk._CLIP.get("walk")
+        isk._CLIP["walk"] = "no_such_clip"
         try:
             self.assertIsNone(
-                isk.sample_figure("idle", 0.0, (1, 1, 1), (1, 1, 1), 2))
+                isk.sample_figure("walk", 0.0, (1, 1, 1), (1, 1, 1), 2))
         finally:
-            isk._CLIP["idle"] = old
+            isk._CLIP["walk"] = old
 
     def test_walk_frames_differ(self):
         a = isk.sample_figure("walk", 0.25, (1,) * 3, (1,) * 3, 2)

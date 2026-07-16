@@ -9045,3 +9045,27 @@ at 64 and a player's chosen 80 sticks across reloads. Verified in-world: at zoom
 distinct little 3D people — faces, class-colour tunics, hands, boots — facing the way they move
 (scratchpad/iso10_scale_80.png, iso10_world_t72.png, iso10_tuned.png). Settings tests updated for the new
 default + cycle order. Full suite green.
+
+## 2026-07-16 — ISO.11: the FULL Mixamo animation library for iso characters
+
+George: "Keep adding more animations and details — fighting, jumping, swimming, dancing, idling etc. use
+and adapt the animations from Mixamo." The iso characters had only ever played walk/run/idle/attack, even
+though the game ships 18 Mixamo clips and the whole top-down action state machine.
+
+The unlock was cheap because the top-down `body_renderer.update_anim` — which ISO.8 already calls for iso
+characters every frame — computes `anim["cur_action"]` from the SAME signals the whole game uses
+(`_emote` one-shots, `_stance` holds, `_atk_seq`, movement). So `iso_chars._frame_state` now just READS
+`cur_action` instead of re-deriving walk/attack: a one-shot (jump/leap/bow/wave/cast/cheer/stoop/dodge/
+hurt/kick/attack) arcs through its `action_t`/`atk_t` timer, and a looping action (walk/run/jog/dance/sit/
+climb/talk/swim/guard/argue/sneak/crawl) cycles on a per-person-desynced clock — with a table of frame
+counts + loop periods per action. `iso_skeleton._CLIP`/`clip_for(action,seed)` map every game action to
+one of the 18 clips (walk/run/dance/sit/climb/talk/nod/argue/stagger/jump/kick/…), and a seeded idle/dance
+picks a VARIANT (idle/idle2/idle3, dance/breakdance/hiphop) so a crowd of townsfolk doesn't idle or dance
+in lockstep. No Mixamo SWIM clip ships, so `swim_figure` is procedural: the climb clip drives an
+arm-over-arm STROKE while the whole body is pitched ~74° to horizontal about the pelvis and dropped to
+lie at the water surface — a convincing front crawl (scratchpad/iso11_swim.png). `figure` split into
+`_body(P,…)` so a pose can be transformed (pitched) before the mesh is laid over it. Verified with an
+all-actions montage on the ISO.10 body (iso11_montage.png) and an in-world pass driving the player through
+each stance/emote (iso11_inworld.png) — dance, sit, climb, talk, jump, swim all flow engine→cur_action→iso.
+Tests: `_frame_state` reads cur_action (driven via update_anim), a stance reaches iso, dance/sit/jump/swim
+bake distinct meshes. Full suite green.

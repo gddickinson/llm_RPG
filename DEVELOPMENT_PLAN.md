@@ -6164,6 +6164,23 @@ rasterizer/camera/SSAA.
   Verified in-world: at zoom 80 the townsfolk read as distinct little 3D people with faces + class-colour
   tunics, facing correctly (scratchpad/iso10_scale_80.png, iso10_tuned.png, iso10_world_t72.png). Full
   suite green.
+- [x] **ISO.11 THE FULL MOCAP LIBRARY (George 2026-07-16) — DONE.** George: "keep adding more animations
+  — fighting, jumping, swimming, dancing, idling etc. use and adapt the Mixamo animations." The iso chars
+  had only played walk/run/idle/attack. Now they play EVERYTHING: `iso_chars._frame_state` reads the same
+  `cur_action` the top-down `body_renderer.update_anim` already computes (it's called for iso chars since
+  ISO.8), so a one-shot (jump/leap/bow/wave/cast/cheer/stoop/dodge/hurt/kick/attack) arcs through its
+  timer and a looping action (walk/run/dance/sit/climb/talk/swim/guard/argue/…) cycles on a per-person-
+  desynced clock. `iso_skeleton._CLIP`/`clip_for(action,seed)` map every action to one of the 18 Mixamo
+  clips, with a seeded idle/dance VARIANT (idle/idle2/idle3, dance/breakdance/hiphop) so a crowd doesn't
+  loop in lockstep. No Mixamo swim clip ships, so `swim_figure` is procedural — the climb clip's
+  arm-over-arm stroke + the whole body pitched to horizontal at the water surface (a front crawl). Figure
+  split into `_body(P,…)` so a pose can be pitched before the mesh is laid. Verified: a montage of all
+  actions renders as the ISO.10 body (scratchpad/iso11_montage.png, iso11_swim.png, iso11_inworld.png).
+  Full suite green.
+- [ ] **ISO.12 CHARACTER VARIETY (George 2026-07-16) — NEXT.** George: "add variety to the iso characters
+  — different body types, different weapons, different clothing and armour." Vary build/height; draw the
+  equipped WEAPON in-hand (sword/axe/bow/staff…, via `char_motion.weapon_kind`); vary clothing/armour
+  (helmet/robe/hood/chestplate/cape) by class + worn gear.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
