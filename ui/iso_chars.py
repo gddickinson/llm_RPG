@@ -64,11 +64,18 @@ def _rot_z_about(verts, a, pivot):
     return (verts - p) @ m.T + p
 
 
-def _figure(tint, hair, facing, stance=1):
-    """ISO.3: an anthropometric stacked-box humanoid — two legs, a tapered
-    torso, hanging ARMS, a proper head — in a seeded CONTRAPPOSTO stance (a
-    lateral weight-shift + a head tilt + one arm carried forward) so folk read
-    as bodies with natural weight, not stiff symmetric mannequins. ~1.6 tall."""
+def _rot_x_about(verts, a, pivot):
+    """Rotate about the x axis through `pivot` — a fore-aft LIMB SWING (legs +
+    arms swing in the walk direction, before facing is applied)."""
+    c, s = math.cos(a), math.sin(a)
+    p = np.array(pivot, float)
+    m = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
+    return (verts - p) @ m.T + p
+
+
+# rest-figure part indices: 0 L-leg 1 R-leg 2 waist 3 chest 4 L-arm 5 R-arm
+# 6 head 7 hair 8 nose
+def _rest_parts(tint, hair, stance):
     lean = (stance - 1) * 0.05                  # weight shift: -0.05 / 0 / +0.05
     tilt = (stance - 1) * 0.10                  # head tilt to match
     fwd = (stance - 1) * 0.05                   # a forward-carried arm
@@ -80,18 +87,58 @@ def _figure(tint, hair, facing, stance=1):
         r3.box(lean, 0.92, 0, 0.46, 0.30, 0.26, tint),        # chest/shoulders
         r3.box(lean - 0.29, 0.62, -fwd, 0.12, 0.54, 0.14, dark),  # left arm
         r3.box(lean + 0.29, 0.62, fwd, 0.12, 0.54, 0.14, dark),   # right arm
-    ]
-    head = [
         r3.box(lean, 1.18, 0, 0.24, 0.24, 0.24, _SKIN),       # head
         r3.box(lean, 1.36, 0, 0.27, 0.10, 0.27, hair),        # hair cap
         r3.box(lean, 1.22, 0.15, 0.09, 0.08, 0.08, _SKIN),    # nose (facing cue)
     ]
     if tilt:
-        head = [(_rot_z_about(v, tilt, (lean, 1.2, 0)), t, c)
-                for v, t, c in head]
-    parts += head
+        for i in (6, 7, 8):
+            parts[i] = (_rot_z_about(parts[i][0], tilt, (lean, 1.2, 0)),
+                        parts[i][1], parts[i][2])
+    return parts
+
+
+def _lift(part, dy):
+    v, t, c = part
+    return (v + np.array([0.0, dy, 0.0]), t, c)
+
+
+def _pose(parts, action, phase):
+    """ISO.4: animate the rest figure — a WALK stride, an ATTACK swing, or a
+    breathing IDLE — at `phase` (0..1). Boxes swing about their hip/shoulder
+    pivots; the upper body bobs."""
+    two_pi = 2.0 * math.pi
+    p = [pp for pp in parts]
+    LH, RH = (-0.10, 0.74, 0.0), (0.10, 0.74, 0.0)   # hip pivots
+    LS, RS = (-0.29, 1.16, 0.0), (0.29, 1.16, 0.0)   # shoulder pivots
+    if action == "walk":
+        sw = math.sin(phase * two_pi) * 0.55
+        bob = abs(math.sin(phase * two_pi * 2)) * 0.04
+        p[0] = (_rot_x_about(parts[0][0], sw, LH), parts[0][1], parts[0][2])
+        p[1] = (_rot_x_about(parts[1][0], -sw, RH), parts[1][1], parts[1][2])
+        p[4] = (_rot_x_about(parts[4][0], -sw * 0.8, LS), parts[4][1], parts[4][2])
+        p[5] = (_rot_x_about(parts[5][0], sw * 0.8, RS), parts[5][1], parts[5][2])
+        for i in (2, 3, 6, 7, 8):
+            p[i] = _lift(parts[i], bob)
+    elif action == "attack":
+        a = math.sin(phase * math.pi)                # 0..1..0
+        p[5] = (_rot_x_about(parts[5][0], -a * 1.5, RS),
+                parts[5][1], parts[5][2])            # weapon arm arcs up/over
+        p[3] = _lift(parts[3], a * 0.02)
+    else:                                            # idle breathing / sway
+        bob = math.sin(phase * two_pi) * 0.018
+        sw = math.sin(phase * two_pi) * 0.06
+        p[4] = (_rot_x_about(parts[4][0], sw, LS), parts[4][1], parts[4][2])
+        p[5] = (_rot_x_about(parts[5][0], -sw, RS), parts[5][1], parts[5][2])
+        for i in (2, 3, 6, 7, 8):
+            p[i] = _lift(parts[i], bob)
+    return p
+
+
+def _figure(tint, hair, facing, stance=1, action="idle", phase=0.0):
+    parts = _pose(_rest_parts(tint, hair, stance), action, phase)
     a = (facing % 4) * (math.pi / 2)
-    return [(_rot_y(v, a), t, c) for v, t, c in parts]
+    return [(_rot_y(np.asarray(v), a), t, c) for v, t, c in parts]
 
 
 def _stance_of(char) -> int:
@@ -113,13 +160,56 @@ def facing_of(char) -> int:
         return 2
 
 
+_FRAMES = {"walk": 6, "attack": 4, "idle": 4}
+_PERIOD = {"walk": 620, "attack": 420, "idle": 2400}   # ms per cycle
+_WALK_HOLD, _ATTACK_HOLD = 480, 420
+
+
+def _clock_ms() -> int:
+    try:
+        import pygame
+        return pygame.time.get_ticks()
+    except Exception:
+        return 0
+
+
+def _frame_state(char):
+    """ISO.4: (action, frame) — WALK while the character moves tile-to-tile,
+    ATTACK on a fresh strike (a bumped `_atk_seq`), else a breathing IDLE.
+    Transient per-character render state on `metadata` (not saved)."""
+    md = getattr(char, "metadata", None)
+    if md is None:
+        return "idle", 0
+    now = _clock_ms()
+    seq = md.get("_atk_seq", 0)                       # strike counter
+    if seq != md.get("_iso_atk_seq", seq):
+        md["_iso_atk_until"] = now + _ATTACK_HOLD
+    md["_iso_atk_seq"] = seq
+    pos = getattr(char, "position", None)
+    if pos is not None and pos != md.get("_iso_pos", pos):
+        md["_iso_walk_until"] = now + _WALK_HOLD
+    md["_iso_pos"] = pos
+    off = _stance_of(char) * 400                      # desync folk
+    if now < md.get("_iso_atk_until", 0):
+        act = "attack"
+    elif now < md.get("_iso_walk_until", 0):
+        act = "walk"
+    else:
+        act = "idle"
+    n, per = _FRAMES[act], _PERIOD[act]
+    return act, int(((now + off) / per) * n) % n
+
+
 def char_sprite(char, size: int, facing=None):
     if facing is None:
         facing = facing_of(char)
     tint, hair = _tint(char), _hair(char)
     stance = _stance_of(char)
-    key = (tint, hair, size, facing % 4, stance)
+    action, frame = _frame_state(char)
+    key = (tint, hair, size, facing % 4, stance, action, frame)
     if key not in _CACHE:
-        _CACHE[key] = r3.bake(_figure(tint, hair, facing, stance), size=size,
-                              **_CHAR_CAM)
+        phase = frame / _FRAMES[action]
+        _CACHE[key] = r3.bake(
+            _figure(tint, hair, facing, stance, action, phase),
+            size=size, **_CHAR_CAM)
     return _CACHE[key]

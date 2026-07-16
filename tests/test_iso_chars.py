@@ -53,3 +53,54 @@ class TestSprite(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestAnimation(unittest.TestCase):
+    def test_walk_pose_moves_the_legs(self):
+        rest = iso_chars._rest_parts((150,) * 3, (90, 60, 40), 1)
+        idle = iso_chars._pose(rest, "idle", 0.0)
+        walk = iso_chars._pose(rest, "walk", 0.25)   # mid-stride
+        # the left leg (index 0) is displaced in the walk pose
+        import numpy as np
+        self.assertGreater(
+            float(np.abs(np.asarray(walk[0][0]) - np.asarray(idle[0][0])).max()),
+            0.05, "the leg strides")
+
+    def test_walk_frames_differ(self):
+        rest = iso_chars._rest_parts((150,) * 3, (90, 60, 40), 1)
+        import numpy as np
+        # the stride EXTREMES (leg forward vs back) — 0.0/0.5 both cross neutral
+        a = np.asarray(iso_chars._pose(rest, "walk", 0.25)[0][0])
+        b = np.asarray(iso_chars._pose(rest, "walk", 0.75)[0][0])
+        self.assertGreater(float(np.abs(a - b).max()), 0.05,
+                           "opposite stride phases differ")
+
+    def test_attack_raises_the_weapon_arm(self):
+        rest = iso_chars._rest_parts((150,) * 3, (90, 60, 40), 1)
+        import numpy as np
+        rest_arm = np.asarray(rest[5][0])[:, 1].max()
+        atk_arm = np.asarray(
+            iso_chars._pose(rest, "attack", 0.5)[5][0])[:, 1].max()
+        self.assertGreater(atk_arm, rest_arm, "the arm arcs up in a strike")
+
+    def test_frame_state_transitions(self):
+        c = _Char("hero", "warrior")
+        c.position = (3, 3)
+        self.assertEqual(iso_chars._frame_state(c)[0], "idle")
+        c.position = (4, 3)                         # moved
+        self.assertEqual(iso_chars._frame_state(c)[0], "walk")
+        c.metadata["_atk_seq"] = 1                  # struck
+        self.assertEqual(iso_chars._frame_state(c)[0], "attack")
+
+    def test_action_frames_bake_distinct_sprites(self):
+        pygame.init()
+        c = _Char("walker", "guard")
+        c.position = (1, 1)
+        iso_chars._frame_state(c)                   # prime pos
+        c.position = (2, 1)
+        walk = iso_chars.char_sprite(c, 72, 2)
+        # force idle
+        c.metadata["_iso_walk_until"] = 0
+        c.metadata["_iso_atk_until"] = 0
+        idle = iso_chars.char_sprite(c, 72, 2)
+        self.assertIsNot(walk, idle, "walk and idle bake to different frames")

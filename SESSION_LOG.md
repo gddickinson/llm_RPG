@@ -8890,3 +8890,24 @@ realistic across terrain + buildings + characters. iso_chars.py 106 / raster3d.p
 chars.py (5: figure has arms+legs+head, stance shifts the body, stance stable per person, sprite
 drawn+cached). Next: ISO.4 (character ANIMATION — a bone/FK puppet + baked walk/attack pose-frames from
 char_mocap), ISO.5 (scale/fidelity polish).
+
+## 2026-07-16 — ISO.4: isometric character ANIMATION (they walk, strike, breathe)
+
+George: "Can the characters be better animated?" The iso figure was a static baked pose. ISO.4 makes it
+MOVE. `ui/iso_chars` refactored into `_rest_parts` (the ISO.3 humanoid) + `_pose(parts, action, phase)`
+which animates it: a WALK stride (the legs swing fore/aft about their hip pivots via a new `_rot_x_about`
+sagittal rotation, the arms counter-swing, the torso bobs twice per stride), an ATTACK swing (the weapon
+arm arcs up and over — `_rot_x_about` the shoulder), and a breathing IDLE (a subtle torso bob + arm sway
+so even standing folk are alive). `_frame_state(char)` chooses the action + frame from a real-time clock
+(`pygame.time.get_ticks`) + transient per-character render state on `metadata`: WALK for a short window
+after the character's tile position changes, ATTACK for a window after a fresh `_atk_seq` strike (bumped
+by combat_system), else IDLE; a per-stance time offset desyncs the crowd so they don't march in lockstep.
+`char_sprite` bakes/caches per (tint,hair,size,facing,stance,action,frame) — the frame count is quantized
+(walk 6 / attack 4 / idle 4) so the cache stays bounded. Procedural (not the 2D-side mocap clips, which
+don't map onto the 3D box puppet) — controllable + reads clearly at box resolution. Rendered
+scratchpad/iso4_anim.png: a legible walk cycle (striding legs, swinging arms) + an attack (arm arcing
+overhead). In-engine: idle→walk on a move→attack on a strike, verified. iso_chars.py 215 lines.
+tests/test_iso_chars.py +5 (walk moves the legs, stride extremes differ, attack raises the arm,
+frame-state transitions idle→walk→attack, action frames bake distinct sprites). Phase ISO now has real
+buildings (ISO.1) + textured tiles (ISO.2) + bodied (ISO.3) + ANIMATED (ISO.4) characters. Remaining:
+ISO.5 (scale/fidelity polish).

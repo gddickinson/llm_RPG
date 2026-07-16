@@ -6093,8 +6093,14 @@ rasterizer/camera/SSAA.
   FILL light (key + fill + ambient) so all baked 3D reads with softer, deeper shading. Figures now
   read as little people with arms + natural weight, not stiff symmetric box-stacks (scratchpad/iso3_
   chars.png + iso3_world.png). tests/test_iso_chars.py (5).
-- [ ] **ISO.4 Character ANIMATION** (movieMaker) — bone hierarchy + FK; bake POSED frames per
-  clip-phase (walk + attack) from `char_mocap`; phase from `metadata["_anim"]`.
+- [x] **ISO.4 Character ANIMATION — DONE.** The iso figure now MOVES. `iso_chars._pose(parts, action,
+  phase)` animates the rest humanoid: a WALK stride (legs swing fore/aft about the hips via
+  `_rot_x_about`, arms counter-swing, the torso bobs), an ATTACK swing (the weapon arm arcs up/over),
+  and a breathing IDLE (subtle bob + arm sway). `_frame_state(char)` picks the action + frame from a
+  real-time clock (`pygame.time.get_ticks`) + transient per-character tracking on `metadata` — WALK
+  while the character moves tile-to-tile, ATTACK on a fresh `_atk_seq` strike, else IDLE; folk desync by
+  stance. `char_sprite` bakes/caches per (…, action, frame). scratchpad/iso4_anim.png: a clear walk
+  cycle (striding legs + swinging arms) + an attack (arm arcing overhead). tests/test_iso_chars.py +5.
 - [ ] **ISO.5 Scale & fidelity polish** — larger bake resolution / tile_size; re-frame the bake camera.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
