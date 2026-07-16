@@ -160,8 +160,8 @@ def facing_of(char) -> int:
         return 2
 
 
-_FRAMES = {"walk": 6, "attack": 4, "idle": 4}
-_PERIOD = {"walk": 620, "attack": 420, "idle": 2400}   # ms per cycle
+_FRAMES = {"walk": 8, "attack": 6, "idle": 6}          # ISO.6 smoother mocap
+_PERIOD = {"walk": 720, "attack": 460, "idle": 2600}   # ms per cycle
 _WALK_HOLD, _ATTACK_HOLD = 480, 420
 
 
@@ -204,12 +204,17 @@ def char_sprite(char, size: int, facing=None):
     if facing is None:
         facing = facing_of(char)
     tint, hair = _tint(char), _hair(char)
-    stance = _stance_of(char)
     action, frame = _frame_state(char)
-    key = (tint, hair, size, facing % 4, stance, action, frame)
+    key = (tint, hair, size, facing % 4, action, frame)
     if key not in _CACHE:
         phase = frame / _FRAMES[action]
-        _CACHE[key] = r3.bake(
-            _figure(tint, hair, facing, stance, action, phase),
-            size=size, **_CHAR_CAM)
+        from ui import iso_skeleton
+        # ISO.6: a real Mixamo-mocap-driven rigged skeleton; if the clip is
+        # missing, fall back to the ISO.3/4 procedural box figure.
+        mesh = iso_skeleton.sample_figure(action, phase, tint, hair, facing)
+        cam = iso_skeleton.CAM
+        if mesh is None:
+            mesh = _figure(tint, hair, facing, _stance_of(char), action, phase)
+            cam = _CHAR_CAM
+        _CACHE[key] = r3.bake(mesh, size=size, **cam)
     return _CACHE[key]

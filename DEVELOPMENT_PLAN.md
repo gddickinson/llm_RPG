@@ -6106,6 +6106,18 @@ rasterizer/camera/SSAA.
   baked iso sprite (buildings/characters/objects); cost is one-time per cache key, steady-state frame
   unchanged (~0.1s, cached blits). scratchpad/iso5_crisp.png. This completes Phase ISO (1-5): the
   isometric world now has real buildings, textured terrain, and bodied + animated characters.
+- [x] **ISO.6 RIGGED SKELETON + Mixamo mocap (George 2026-07-16) — DONE.** The iso characters now use a
+  real jointed SKELETON driven by the game's 18 MIXAMO clips (`data/anim/*.json`), not procedural swings.
+  New `ui/iso_skeleton.py`: `char_mocap.sample_norm(clip,phase)` gives 15-joint 2D side-view mocap →
+  `pose3d` lifts it to 3D (nx→fore-aft depth, ny→height, l_/r_ joints spread laterally for width + facing
+  rotation) → `_bone(a,b,r,c)` lays an oriented box between every connected joint (legs hip→knee→foot,
+  spine pelvis→chest→neck, clavicles + arms shoulder→elbow→hand) + a head + hair. `sample_figure` maps
+  action→clip (walk/run/idle/kick) sampled per phase; `iso_chars.char_sprite` bakes it (box figure as a
+  fallback). A movieMaker research pass CONFIRMED the approach (positions→bone-boxes = their
+  `anatomical_frames`; skip quaternions/FK — strictly simpler for rigid boxes). Real natural gait /
+  knee-bend / arm-swing (scratchpad/iso6_{proto,anim,world}.png). tests/test_iso_skeleton.py (8).
+  (Possible polish: idle contrapposto, sex-driven shoulder width, foot-lock for cross-tile walks — the
+  mocap already reads well without them.)
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

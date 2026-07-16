@@ -8926,3 +8926,30 @@ bad-value fallback). This COMPLETES Phase ISO (docs/ISO_GRAPHICS.md): ISO.1 real
 textured tiles, ISO.3 character bodies (proportions/arms/stance/two-light shading), ISO.4 character
 ANIMATION (walk/attack/idle), ISO.5 fidelity — the isometric world is now markedly more realistic across
 tiles, buildings and animated characters, per George's request.
+
+## 2026-07-16 — ISO.6: rigged SKELETON + Mixamo mocap for iso characters
+
+George: "make the iso characters even more realistic using a rigged skeleton and mixamo animations —
+ultrathink, see movieMaker." The game already ships 18 MIXAMO clips (`data/anim/*.json`, baked from
+Mixamo by tools/bake_mocap.py) as 15-joint 2D SIDE-VIEW `[nx,ny]` keyframes, sampled by
+`char_mocap.sample_norm(clip,phase)`. New `ui/iso_skeleton.py` lifts that into a real jointed 3D
+skeleton: `pose3d` maps each joint's (nx,ny) → (fore-aft depth z = nx·D, height y = ny·H) and spreads
+the left/right joints laterally (`_lat`: hips/legs ±0.11, shoulders/arms ±0.17) for body WIDTH, then
+rotates to the 4-dir facing; `_bone(a,b,r,color)` lays an axis-aligned box ORIENTED along each connected
+joint pair (Gram-Schmidt frame) — legs hip→knee→foot (+ a foot box), spine pelvis→chest→neck, clavicles
+chest→l/r_sh, arms shoulder→elbow→hand — plus a head + hair box. `sample_figure(action,phase,…)` maps
+the game action→a clip (walk→walk, run→run, idle→idle, attack→kick) and builds the mesh; `iso_chars.
+char_sprite` bakes it per (tint,hair,size,facing,action,frame) with the ISO.3/4 box figure as a
+fallback if a clip is missing. So the iso figure is now a rigged skeleton animated by REAL Mixamo mocap
+— natural walk gait with knee-bend + arm counter-swing, a settling idle, a dynamic kick — a dramatic
+lift over the procedural box-swing (scratchpad/iso6_proto.png the walk-cycle prototype, iso6_anim.png
+walk/idle/attack strips, iso6_world.png in-engine). A focused movieMaker research pass (full report in
+the task log) CONFIRMED this is the right approach: positions→bone-boxes is exactly their
+`mixamo_rig.anatomical_frames`, and for rigid boxes I correctly SKIP the quaternion/FK/skinning stack
+(that exists only to drive a proportion-mismatched skinned MESH); my hip half-width is ANSUR-accurate,
+the clips are already in-place (root stripped). Noted-but-not-needed polish: idle contrapposto, sex-
+driven shoulder width, `motion_qc.stride_advance` foot-lock (only for cross-tile walking, not in-place
+bakes). iso_skeleton.py 118 / iso_chars.py 220. tests/test_iso_skeleton.py (8: bone box along a segment
++ any axis, lateral l/r spread, pose3d maps joints, sample from a real clip, missing-clip→None, walk
+frames differ). Frame counts bumped for smoother mocap (walk 8 / idle 6 / attack 6). Toggle iso:
+LLM_RPG_RENDER=iso.
