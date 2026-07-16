@@ -1,0 +1,39 @@
+{
+  "_doc": "OAKVALE T6 town population. Each building KIND spawns a keeper of a [role, character_class]; the keeper's home_location is set to the building NAME so engine/shop._category_for_npc stocks the right wares (a 'Smithy' name → blacksmith) and the P9A.7 presence system seats them indoors. `street_folk` roam the streets (thieves/urchins/vagrants/guards). `max_home_residents` caps how many dwellings get a townsfolk resident (perf). Consumed by world/town/population.py.",
+  "kind_roles": {
+    "shop": ["Shopkeeper", "merchant"],
+    "stall": ["Market Trader", "merchant"],
+    "tavern": ["Tavernkeeper", "merchant"],
+    "inn": ["Innkeeper", "merchant"],
+    "bakery": ["Baker", "merchant"],
+    "smithy": ["Blacksmith", "merchant"],
+    "forge": ["Blacksmith", "merchant"],
+    "armoury": ["Armourer", "merchant"],
+    "temple": ["Priest", "cleric"],
+    "cathedral": ["High Priest", "cleric"],
+    "chapel": ["Chaplain", "cleric"],
+    "shrine": ["Acolyte", "cleric"],
+    "library": ["Scholar", "wizard"],
+    "guildhall": ["Guildmaster", "warrior"],
+    "hall": ["Mayor", "noble"],
+    "bank": ["Banker", "merchant"],
+    "tower": ["Wizard", "wizard"],
+    "mill": ["Miller", "villager"],
+    "sawmill": ["Sawyer", "villager"],
+    "workshop": ["Craftsman", "villager"],
+    "stable": ["Stablemaster", "villager"],
+    "warehouse": ["Warehouse Keeper", "merchant"],
+    "granary": ["Grain Keeper", "villager"],
+    "farmhouse": ["Farmer", "villager"],
+    "storage": ["Storekeeper", "villager"],
+    "home": ["Townsperson", "villager"],
+    "cottage": ["Townsperson", "villager"]
+  },
+  "street_folk": [
+    ["Thief", "rogue", 4],
+    ["Street Urchin", "villager", 6],
+    ["Vagrant", "villager", 3],
+    ["Town Guard", "guard", 8]
+  ],
+  "max_home_residents": 20
+}

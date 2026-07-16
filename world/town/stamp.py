@@ -28,7 +28,7 @@ _KIND_TITLE = {
     "tavern": "Tavern", "inn": "Inn", "smithy": "Smithy", "forge": "Forge",
     "armoury": "Armoury", "shop": "Shop", "bakery": "Bakery",
     "library": "Library", "guildhall": "Guildhall", "temple": "Temple",
-    "chapel": "Chapel", "shrine": "Shrine", "home": "Townhouse",
+    "chapel": "Chapel", "shrine": "Shrine", "home": "House",
     "cottage": "Cottage", "farmhouse": "Farmhouse", "stable": "Stable",
     "warehouse": "Warehouse", "granary": "Granary", "mill": "Mill",
     "sawmill": "Sawmill", "workshop": "Workshop", "tower": "Tower",

@@ -51,7 +51,11 @@ _LANDMARKS: List[Tuple[str, Tuple[str, ...]]] = [
     ("tavern", ("commercial", "market")),
     ("tavern", ("commercial",)),
     ("tavern", ("residential",)),
-    ("armoury", ("craft_metal",)),
+    ("smithy", ("craft_metal", "craft")),
+    ("smithy", ("craft_metal", "craft")),
+    ("armoury", ("craft_metal", "craft")),
+    ("bakery", ("commercial", "craft")),
+    ("shop", ("market", "commercial")),
     ("tower", ("guild", "civic")),
 ]
 

@@ -42,9 +42,12 @@ class StableSystem:
         locs = getattr(self.engine.world, "locations", []) or []
         out, seen = [], set()
         for l in locs:
+            if l.get_property("kind"):        # a town BUILDING, not a settlement
+                continue
             n = (l.name or "").lower()
-            if any(w in n for w in ("village", "hamlet", "town")) \
-                    and "stable" not in n and l.name not in seen:
+            is_settlement = l.get_property("town") or \
+                any(w in n for w in ("village", "hamlet", " town"))
+            if is_settlement and "stable" not in n and l.name not in seen:
                 out.append(l)
                 seen.add(l.name)
         if out:

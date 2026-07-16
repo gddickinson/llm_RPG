@@ -47,7 +47,10 @@ def _category_for_npc(npc) -> str:
     if "tavern" in nid or "innkeeper" in nid or "tavern" in home or \
             "inn" in home:
         return "tavern"
-    if "blacksmith" in nid or "smith" in nid:
+    # blacksmith / armourer / forge — by id OR home (OAKVALE T6: a keeper's
+    # home_location is its workplace name, e.g. "Oakvale Smithy 3")
+    if any(k in nid or k in home
+           for k in ("blacksmith", "smith", "forge", "armoury", "armour")):
         return "blacksmith"
     if "wheelwright" in nid:
         return "wheelwright"

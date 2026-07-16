@@ -8726,3 +8726,25 @@ of many districts, boulevards/ring/radial streets, the market square, a river wi
 west, forest borders, varied roofs, a circular walled minimap. interiors.py 454 / town_region.py 122.
 tests/test_town_region.py (7). Next: T6 role population, then T7 countryside / T8 variety / T9
 Deepdelve+playtest.
+
+## 2026-07-16 — OAKVALE T6: the living town (role population)
+
+`world/town/population.py` `populate_town(engine)` over `data/town/roles.json` makes Oakvale LIVE:
+a keeper of the right calling seats at every service/civic building (shop→Shopkeeper, tavern→
+Tavernkeeper, inn→Innkeeper, smithy/forge→Blacksmith, armoury→Armourer, bakery→Baker, temple→Priest,
+cathedral→High Priest, hall→the MAYOR, guildhall→Guildmaster, bank→Banker, library→Scholar, tower→
+Wizard, mill→Miller, …), a capped share of dwellings gets a Townsperson, and the streets get their
+Thieves/Street Urchins/Vagrants/roaming Town Guards. A keeper's `home_location` is set to its BUILDING
+NAME so `shop._category_for_npc` stocks the right wares AND the P9A.7 presence system seats them INDOORS
+(you meet them when you step inside). Wired into `demo_setup` (the oakvale branch calls it instead of
+the classic preset cast, whose homes don't exist in the region). Result: ~169 townsfolk across 27
+roles, exactly one mayor, a 236-NPC living town (scratchpad/oakvale_t6_populated.png). Fixes: the
+building title "Oakvale **Town**house N" was matching the settlement scanners (stables/production_loop/
+teleport_network all match "town" in a name) → one stable per house + log spam; renamed the title to
+"House" + added a `kind`-skip to `stables._settlements` + a `town`-property match. Made
+`shop._category_for_npc` check `home_location` for smith/forge/armoury (not just the id) so a town smith
+actually sells weapons. Guaranteed a smithy in the landmark pass (George wants blacksmiths). Advancing 3
+turns with 236 NPCs is fine (no hang). tests/test_town_population.py (7: populated, all roles, one
+mayor, keepers workplace-bound, a smith reads as a blacksmith shop, no stable spam, survives turns).
+population.py 124 lines. Next: T7 living countryside (villages/farms/roads/bridges/wells), then T8
+building variety, T9 Deepdelve entrance + in-town adventures + playtest.

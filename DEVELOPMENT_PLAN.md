@@ -6023,8 +6023,17 @@ reusable `world/town/` generator; full design in `docs/OAKVALE.md`.
   town, all 214 non-marker buildings with interiors. Rendered IN-ENGINE: scratchpad/oakvale_t5b_region
   .png — a large living walled town, player in the market square, boulevards/ring/radials, a river with
   bridges, forest borders. tests/test_town_stamp.py (8) + test_town_region.py (7).
-- [ ] **T6 Role population** — every building its keeper/craftsfolk; dwellings→townsfolk; mayor/
-  bankers/guildsmen/thieves/urchins/vagrants; homes↔workplaces.
+- [x] **T6 Role population — DONE.** `world/town/population.py` `populate_town(engine)` over
+  `data/town/roles.json` seats a keeper of the right calling at every service/civic building (shop→
+  shopkeeper, tavern→tavernkeeper, smithy→blacksmith, armoury→armourer, temple→priest, hall→MAYOR,
+  guildhall→guildmaster, bank→banker, library→scholar, tower→wizard), fills a capped share of
+  dwellings with townspeople, and roams the streets with thieves/urchins/vagrants/guards. A keeper's
+  `home_location` = its building NAME → `shop._category_for_npc` stocks the right wares (a smithy sells
+  weapons — `_category_for_npc` now checks `home` for smith/forge/armoury) + the P9A.7 presence seats
+  them INDOORS. Wired into `demo_setup` (oakvale branch). ~169 townsfolk across 27 roles, one mayor.
+  Fixed the "Oakvale **Town**house" name matching settlement scanners (stables/production/teleport) →
+  renamed to "House" + `kind`-skip in stables. Guaranteed a smithy landmark. tests/test_town_
+  population.py (7).
 - [ ] **T7 Living countryside** — A* terrain roads + bridges, supporting villages (MST-linked), farm
   rings worked by farmers, wells/fountains for water supply.
 - [ ] **T8 Building variety & decoration (George 2026-07-16)** — per-building STYLE: tudor half-timber

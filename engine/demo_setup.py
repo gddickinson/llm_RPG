@@ -234,12 +234,23 @@ def initialize_demo_world(engine, player_spec=None,
     except Exception:
         pass
 
-    # NPCs — placed at their home_location (auto-adjusts to world size)
-    npcs = engine.npc_manager.create_simple_npcs()
-    for npc in npcs:
-        npc.inventory = [upgrade_item_string(it) for it in npc.inventory]
-        npc.position = _resolve_npc_spawn(engine, npc)
-        engine.world.map.place_character(npc, *npc.position)
+    # NPCs — placed at their home_location (auto-adjusts to world size).
+    # OAKVALE T6: the large-town region gets its own role-based population
+    # (keepers/townsfolk/street folk) instead of the classic preset cast whose
+    # home locations don't exist in the region.
+    if oakvale:
+        from world.town.population import populate_town
+        try:
+            n = populate_town(engine, "Oakvale", seed=7)
+            logger.info(f"Oakvale populated with {n} townsfolk.")
+        except Exception as e:
+            logger.warning(f"Oakvale population failed: {e}")
+    else:
+        npcs = engine.npc_manager.create_simple_npcs()
+        for npc in npcs:
+            npc.inventory = [upgrade_item_string(it) for it in npc.inventory]
+            npc.position = _resolve_npc_spawn(engine, npc)
+            engine.world.map.place_character(npc, *npc.position)
 
     # Player — at the castle gate (P18.5) or near Oakvale's center
     engine.player = create_default_player(spec=player_spec)
