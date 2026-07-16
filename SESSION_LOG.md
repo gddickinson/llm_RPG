@@ -8590,3 +8590,23 @@ tests/test_facade_trim.py (11: grand-vs-plain style, shutters flank without cove
 lintel-above, cornice rides the eave + None on tiny blocks, quoins climb both corners, span quoins at
 outer corners, headless draws don't crash). No data change; validator unaffected. Next: BLD.8 (roof
 relief — eaves/soffit/ridge caps/dormers + weathering).
+
+## 2026-07-15 — BLD.8: roof relief, depth & weathering (clones differ)
+
+Continued the buildings-polish thread (autonomous loop tick). New `ui/roof_relief.py` (pure geometry
++ thin pygame draws) gives the roofs depth + age: an EAVES/soffit-shadow band (`draw_eaves` — a
+translucent dark band along the wall top + a lit overhang lip, so the roof reads as sitting ON the
+wall, not painted flush), a RIDGE CAP (`draw_ridge_cap` — a bright capping course over a wider shadow),
+gabled DORMERS (`dormer_boxes`/`draw_dormers` — 1-2 little roof-windows on a grand building's front
+slope), and — the headline — DETERMINISTIC WEATHERING: `weathering_spots` scatters moss patches +
+rain-streak stains over a roof, seeded by the building's WORLD position via a pure integer hash (`_hash`
+— no RNG object, so the same building weathers identically every frame with zero flicker, but two
+buildings of the same KIND differ). Wired into `renderer_buildings._draw_block` (seeded `wx,wy`, passed
+down from `draw_buildings`) + `_draw_footprint` (seeded `loc.x,loc.y`; dormers gated to grand non-flat
+roofs via `facade_trim.trim_style_for`). `draw_weathering` saves/restores the caller's clip so blobs
+stay on the roof. Rendered scratchpad/bld8_closeup.png — the Oakvale roofs are moss-flecked with soffit
+depth, each wall segment weathered differently (George's "clones differ"). `renderer_buildings.py`
+431→444 (under 500; the geometry lives in the new module). tests/test_roof_relief.py (11: weathering
+deterministic + clones differ + in-bounds + empty on tiny, soffit band, dormers none-on-narrow/1-2-on-
+wide/on-the-slope, headless draws + clip restored). No data change. This clears the BLD phase
+(BLD.0-8 done). Next: pick the next DEVELOPMENT_PLAN item (Phase 41 iso polish, or a playtest pass).

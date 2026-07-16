@@ -5962,9 +5962,15 @@ ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly 
   fully, a plain home just with shutters + a sill. Wired into `renderer_buildings._draw_block`
   (per-tile) + `_draw_footprint` (span-aware `draw_span_corner_trim`/`span_quoin_blocks`); windows
   now read as shuttered bays on sills (scratchpad/bld7_closeup.png). tests/test_facade_trim.py (11).
-- [ ] **BLD.8 Roof relief, depth & weathering** — eaves overhang + soffit shadow, ridge caps,
-  dormers, material texture depth; build facade via `gfx.supersample` + cache + contact shadow +
-  deterministic weathering (moss/stains) so clones differ.
+- [x] **BLD.8 Roof relief, depth & weathering — DONE.** New `ui/roof_relief.py` (pure geometry +
+  thin draws): an EAVES/soffit-shadow band so the roof visibly overhangs the wall top, a RIDGE CAP
+  (a bright capping course over a wider shadow), simple gabled DORMERS on a grand building's front
+  slope, and deterministic WEATHERING — moss patches + rain-streak stains scattered by the building's
+  WORLD position via a pure integer hash (no RNG, no per-frame flicker), so two buildings of the same
+  kind never look identical (George's "clones differ"). Wired into `renderer_buildings._draw_block`
+  (seeded by `wx,wy`) + `_draw_footprint` (seeded by `loc.x,loc.y`, dormers on grand non-flat roofs)
+  — scratchpad/bld8_closeup.png shows moss-flecked roofs with soffit depth, each wall segment weathered
+  differently. tests/test_roof_relief.py (11).
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

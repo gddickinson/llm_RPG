@@ -296,7 +296,7 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
                 continue
             kind = _kind_at(engine, wx, wy)
             h = block_height(kind, tile_size)      # storey-driven (P33.3b)
-            _draw_block(target, kind, px, py, tile_size, h)
+            _draw_block(target, kind, px, py, tile_size, h, wx, wy)
     try:   # GX.2 teleport waystones as raised glowing daises
         from ui import dais
         dais.draw_all(target, engine, view_rect, cam_x, cam_y, tile_size)
@@ -333,19 +333,26 @@ def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
         if ts >= 12:                               # P40.4 roof tile rows
             for col, a, b in rs.roof_courses(pts, style["covering"], ts):
                 pygame.draw.line(target, col, a, b, 1)
+    fy = py + d - h                                   # top of the front wall
+    from ui import roof_relief as rr              # BLD.8 relief + weathering
+    from ui import facade_trim as ft
+    rr.draw_weathering(
+        target, rr.weathering_spots(loc.x, loc.y, px, py - h, w, d, n=8),
+        (px, py - h, w, d))
+    if style["roof"] != "flat" and ft.trim_style_for(kind)["cornice"]:
+        rr.draw_dormers(target,
+                        rr.dormer_boxes(px, py - h, fy, w, ts), shades, ts)
+    rr.draw_eaves(target, px, fy, w, ts, front)
     if rp["ridge"]:
-        pygame.draw.line(target, shades["ridge"],
-                         rp["ridge"][0], rp["ridge"][1], max(1, ts // 20))
+        rr.draw_ridge_cap(target, rp["ridge"][0], rp["ridge"][1], shades, ts)
     if rp["parapet"]:
         pygame.draw.lines(target, shades["ridge"], True, rp["parapet"], 1)
-    fy = py + d - h                                   # top of the front wall
     storeys = max(1, int(h / max(4, int(ts * FLOOR_FRAC))))
     for i in range(1, storeys):                       # floor bands
         by = fy + round(h * i / storeys)
         pygame.draw.line(target, _scale(front, 0.7), (px, by), (px + w, by), 1)
     ww = max(3, ts // 4)                              # a row of windows/floor
     from ui.openings import draw_window, window_shape_for
-    from ui import facade_trim as ft
     shape = window_shape_for(kind)
     tstyle = ft.trim_style_for(kind)                  # BLD.7 architectural dress
     ft.draw_span_corner_trim(target, px, fy, py + d, w, ts, tstyle)
@@ -382,11 +389,12 @@ def _draw_gate(target, px, py, ts, h, locked: bool = False) -> None:
         pygame.draw.line(target, gs.IRON_HI, a, b, max(1, ts // 22))
 
 
-def _draw_block(target, kind, px, py, ts, h) -> None:
+def _draw_block(target, kind, px, py, ts, h, wx=0, wy=0) -> None:
     """One building tile as a material-styled 2.5D block (P33.3): a drop
     shadow, a wall front in the wall material, a roof of the descriptor's
     SHAPE and COVERING colour, chimneys, storey lines, and (a wall tower) a
-    roof guard."""
+    roof guard. BLD.8 adds eaves/soffit depth, a ridge cap and per-building
+    weathering (seeded by world pos `wx`,`wy`)."""
     import pygame
     from ui import roof_shapes as rs
     style = style_for(kind)
@@ -405,9 +413,14 @@ def _draw_block(target, kind, px, py, ts, h) -> None:
         if ts >= 12:                               # P40.4 roof tile rows
             for col, a, b in rs.roof_courses(pts, style["covering"], ts):
                 pygame.draw.line(target, col, a, b, 1)
+    from ui import roof_relief as rr              # BLD.8 relief + weathering
+    eave_y = py + ts - h
+    rr.draw_weathering(
+        target, rr.weathering_spots(wx, wy, px, py - h, ts, ts),
+        (px, py - h, ts, ts))
+    rr.draw_eaves(target, px, eave_y, ts, ts, front)
     if rp["ridge"]:
-        pygame.draw.line(target, shades["ridge"],
-                         rp["ridge"][0], rp["ridge"][1], 1)
+        rr.draw_ridge_cap(target, rp["ridge"][0], rp["ridge"][1], shades, ts)
     if rp["parapet"]:
         pygame.draw.lines(target, shades["ridge"], True, rp["parapet"], 1)
     storeys = storeys_for(kind)
