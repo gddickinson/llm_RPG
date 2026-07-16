@@ -116,6 +116,9 @@ def _pick_kind(district, buildings, rng):
 
 
 def _place_landmarks(dp, claimed, rng) -> List[BuildingLot]:
+    # the defended core, as a fallback so a landmark is placed even when its
+    # ideal ward type didn't appear this seed (a cathedral is GUARANTEED)
+    inner = [xy for xy in dp.ward_map if dp.ring_at(*xy) == "inner"]
     lots = []
     for kind, prefs in _LANDMARKS:
         w, h = building_size(kind)
@@ -123,9 +126,11 @@ def _place_landmarks(dp, claimed, rng) -> List[BuildingLot]:
         for pref in prefs:
             cands.extend(dp.tiles_of_type(pref))
         if not cands:
+            cands = list(inner)          # place it somewhere in the core
+        if not cands:
             continue
         rng.shuffle(cands)
-        for (cxp, cyp) in cands[:500]:
+        for (cxp, cyp) in cands[:600]:
             x0, y0 = cxp - w // 2, cyp - h // 2
             if _fits(x0, y0, w, h, claimed, dp.cx, dp.cy, dp.radius):
                 _claim(x0, y0, w, h, claimed)

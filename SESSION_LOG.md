@@ -8686,3 +8686,23 @@ buildings); the landmark pass + denser frontage + interior fill fixed it. Pure +
 street/wall, all in-disc, core lots walled, deterministic). Next: T5 — stamp a `TownPlan` onto the real
 world map (streets→ROAD, wall→WALL, gates→ROAD, lots→BUILDING+`Location`) + wire interiors/fortify; and
 the enlarge-in-place vs dedicated-region choice George steers.
+
+## 2026-07-16 — OAKVALE T5a: stamping the town into the engine (it renders in-game!)
+
+`world/town/stamp.py` `stamp_town(world, plan, name)` turns a pure `TownPlan` into real world state:
+`clear_disc` clears the town disc to grass (keeping water so rivers survive as bridges), streets →
+ROAD (WATER → BRIDGE), the core wall → WALL(BUILDING) with its gates left ROAD, and every building lot
+→ a BUILDING footprint + a `Location` carrying its `kind` (+ `type`/`forge` tags + a UNIQUE name so the
+interiors dict — keyed on name — never collides), plus a town-marker `Location` recording the gates +
+towers (so `town_gates`/`fortify`/`tower_defense` can defend it). `renderer_buildings._kind_at` now
+reads an explicit `loc.kind` first (existing Locations unaffected), so a town-generated building draws
+in its per-kind 2.5D style. Fixed a robustness gap — landmarks were skipped when their ideal ward type
+didn't appear that seed; now `_place_landmarks` falls back to the inner core, so a cathedral/hall/
+guildhall/tavern/inn is GUARANTEED (0 missing across 20 seeds). Stamped a radius-30 town onto a real
+GameEngine world and rendered it with the ACTUAL game renderer: scratchpad/oakvale_t5_ingame.png — a
+dense 104-building walled town, the boulevard/ring/radial street network, the market square, 4 gates, 9
+towers, varied roof materials/colours, the player standing in it, the minimap showing a circular walled
+settlement with the river running through. The generator produces a real, playable large town in-engine.
+tests/test_town_stamp.py (8). Next: T5b — wire `stamp_town` into `world_generator` (replace the small
+Oakvale), size the map, build interiors for the town buildings (the enlarge-in-place vs dedicated-region
+choice George steers), then T6 population / T7 countryside / T8 building variety / T9 Deepdelve+playtest.

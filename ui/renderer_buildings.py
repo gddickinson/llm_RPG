@@ -191,6 +191,10 @@ def _kind_at(engine, x: int, y: int):
     # blueprint (it has no interior blueprint, just the marker)
     if (loc.properties or {}).get("wall_tower"):
         return "wall_tower"
+    # OAKVALE T5: a town-generated building carries its KIND explicitly
+    k = (loc.properties or {}).get("kind")
+    if k:
+        return k
     try:
         from world.blueprints import blueprint_for_location
         bp = blueprint_for_location(loc.name)

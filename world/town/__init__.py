@@ -24,7 +24,8 @@ from world.town.streets import StreetPlan, plan_streets
 from world.town.town_wall import CoreWall, build_core_wall
 from world.town.lots import BuildingLot, place_lots
 from world.town.town_gen import TownPlan, plan_town
+from world.town.stamp import stamp_town
 
 __all__ = ["DistrictPlan", "plan_districts", "StreetPlan", "plan_streets",
            "CoreWall", "build_core_wall", "BuildingLot", "place_lots",
-           "TownPlan", "plan_town"]
+           "TownPlan", "plan_town", "stamp_town"]

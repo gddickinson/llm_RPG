@@ -6010,9 +6010,15 @@ reusable `world/town/` generator; full design in `docs/OAKVALE.md`.
   A radius-40 town → **~177 buildings across ~26 KINDs** with every landmark present (scratchpad/
   oakvale_t4_town.png: a dense walled town, civic/temple/market core + residential/craft/farm suburbs).
   tests/test_town_lots.py (9). Next: T5 stamps a `TownPlan` onto the world.
-- [ ] **T5 Integration** — stamp a `TownPlan` onto the world (streets→ROAD, wall→WALL, gates→ROAD,
-  lots→BUILDING+`Location` tagged for interiors/residents); replace small Oakvale with `build_town`;
-  size the map. (The enlarge-in-place vs dedicated-region choice George steers here.)
+- [~] **T5 Integration** — (T5a DONE) `world/town/stamp.py` `stamp_town(world, plan, name)` stamps a
+  `TownPlan` onto the world map: disc cleared to grass (rivers kept), streets→ROAD (WATER→BRIDGE),
+  wall→WALL(BUILDING), gates→ROAD, each lot→BUILDING + a `Location` carrying its `kind` (the 2.5D
+  renderer now reads `loc.kind` in `_kind_at`) + `type`/`forge` tags + a unique name; a town-marker
+  `Location` records gates+towers. Landmarks now GUARANTEED (fall back to the core if their ward is
+  absent — a cathedral always exists). Rendered IN-ENGINE: scratchpad/oakvale_t5_ingame.png — a dense
+  104-building walled town with streets, market square, gates, towers, varied roofs. tests/test_town_
+  stamp.py (8). **(T5b remaining):** wire into `world_generator` (replace small Oakvale), size the map,
+  build interiors for the town buildings — the enlarge-in-place vs dedicated-region choice George steers.
 - [ ] **T6 Role population** — every building its keeper/craftsfolk; dwellings→townsfolk; mayor/
   bankers/guildsmen/thieves/urchins/vagrants; homes↔workplaces.
 - [ ] **T7 Living countryside** — A* terrain roads + bridges, supporting villages (MST-linked), farm
