@@ -5864,7 +5864,8 @@ Interleaved with Phase BLD; process one per round, priority order:
   fills with **114 pews facing an altar** (temple theme, torchlit) — room to seat scores. Arched
   grand door (`facade._ARCHED += cathedral/church`). Taverns/other buildings accommodate far more
   people (falls out of the scale-up).
-- [~] **GX.5 Deep DUNGEON/CAVE via a secret Oakvale entrance + other regional entrances/exits.**
+- [x] **GX.5 Deep DUNGEON/CAVE via a secret Oakvale entrance + other regional entrances/exits — DONE**
+  (5a + 5b below; 5c cross-mouth traversal is an optional stretch).
   - [x] **GX.5a — the DEEP shared dungeon + wilderness mouths — DONE.** `enter_dungeon` now keys
     the dungeon cache on a Location `dungeon_key` (not just its name) + reads `deep_dungeon`/
     `deep_levels`, so several mouths open ONE shared, persistent, DEEP dungeon; `generate_multilevel`
@@ -5873,10 +5874,14 @@ Interleaved with Phase BLD; process one per round, priority order:
     waterside sites far from spawn + spread apart, all sharing `dungeon_key:"deepdelve"` → a 6-floor
     delve; guards + a rumor + per-mouth `[Legend]`; hint bar names the mouth. Persisted (engine_setup
     + save_load). tests/test_deepdelve.py (9).
-  - [ ] **GX.5b — the SECRET Oakvale entrance.** A hidden trapdoor/stair in Oakvale revealed by a
-    search action (no reveal mechanism exists yet — nearest analog is the structures ward-gate), then
-    stamping a CAVE tile with the same `dungeon_key:"deepdelve"` so it opens the SAME complex. Hint-bar
-    cue + a pointer rumor.
+  - [x] **GX.5b — the SECRET Oakvale entrance — DONE.** `DeepdelveSystem` seeds a HIDDEN "The Buried
+    Stair" `Location` a few tiles off the Oakvale core (ordinary ground, `hidden` + `dungeon_key:
+    "deepdelve"`, no CAVE stamp). `secret_near(pos)` (within 1 tile) drives a HIGH-priority hint-bar
+    search cue; the E/G key `reveal_secret()` stamps the CAVE mouth (+ `deepdelve_mouth`) so [TAB]
+    descends into the SAME shared 6-floor Deepdelve. A pointer `[Realm]` rumor + a reveal `[Legend]`
+    beat. Persisted (the secret + revealed state ride the save). Also fixed a real UX bug — the
+    Deepdelve search/descend cues were low-priority and got crowded out of the 3-hint cap by ambient
+    talk/barter in town; promoted them to lead. tests/test_deepdelve.py +6.
   - [ ] **GX.5c (stretch) — true cross-mouth traversal.** Per-mouth up-stairs so you descend one
     mouth and surface at a distant one (a wilderness short-cut), instead of returning to your entry.
 

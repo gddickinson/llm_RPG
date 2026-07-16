@@ -307,6 +307,18 @@ class InputHandler:
                     and tn.platform_at(self.engine.player.position) is not None:
                 self.gui.show_teleport()
                 return True
+            # GX.5b: search out Oakvale's hidden Deepdelve stair where the
+            # ground rings hollow (nothing underfoot to pick up instead)
+            dd = getattr(self.engine, "deepdelve", None)
+            if dd is not None and not self.engine.current_interior \
+                    and dd.secret_near(self.engine.player.position) is not None:
+                try:
+                    underfoot = self.engine.world.get_items_at(
+                        *self.engine.player.position)
+                except Exception:
+                    underfoot = []
+                if not underfoot and dd.reveal_secret():
+                    return True
             if self.engine.current_interior:
                 try:
                     here = self.engine.world.get_items_at(

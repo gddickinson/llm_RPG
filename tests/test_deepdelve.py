@@ -121,5 +121,99 @@ class TestDeepdelveSystem(unittest.TestCase):
         fresh.end_game()
 
 
+class TestDeepdelveSecret(unittest.TestCase):
+    """GX.5b — the SECRET Oakvale stair into the same Deepdelve."""
+
+    def setUp(self):
+        self.engine = GameEngine(
+            llm_provider="heuristic", enable_npc_processes=False)
+        self.engine.start_game()
+        self.dd = self.engine.deepdelve
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def test_secret_seeds_hidden_near_oakvale(self):
+        s = self.dd.secret
+        self.assertIsNotNone(s, "the hidden Oakvale stair is seeded")
+        self.assertFalse(s["revealed"])
+        sx, sy = s["pos"]
+        # Not a cave yet — it reads as ordinary ground until searched.
+        self.assertNotEqual(self.engine.world.map.terrain[sy][sx],
+                            TerrainType.CAVE)
+        loc = self.engine.world.get_location_at(sx, sy)
+        self.assertTrue(loc.get_property("hidden"))
+        self.assertEqual(loc.get_property("dungeon_key"), "deepdelve")
+        self.assertFalse(loc.get_property("deepdelve_mouth"))
+        # Tucked within the village.
+        ov = next((l for l in self.engine.world.locations
+                   if l.name == "Oakvale Village"), None)
+        if ov:
+            ocx, ocy = ov.center()
+            self.assertLessEqual(abs(sx - ocx) + abs(sy - ocy), 10)
+
+    def test_secret_near_only_when_adjacent_and_unrevealed(self):
+        sx, sy = self.dd.secret["pos"]
+        self.assertIsNotNone(self.dd.secret_near((sx, sy)))
+        self.assertIsNotNone(self.dd.secret_near((sx + 1, sy)))
+        self.assertIsNone(self.dd.secret_near((sx + 5, sy)))
+        self.dd.reveal_secret()
+        self.assertIsNone(self.dd.secret_near((sx, sy)),
+                          "no longer 'near' once found")
+
+    def test_reveal_stamps_a_descendable_cave(self):
+        sx, sy = self.dd.secret["pos"]
+        msg = self.dd.reveal_secret()
+        self.assertTrue(msg)
+        self.assertEqual(self.engine.world.map.terrain[sy][sx],
+                         TerrainType.CAVE)
+        loc = self.engine.world.get_location_at(sx, sy)
+        self.assertTrue(loc.get_property("deepdelve_mouth"))
+        self.assertFalse(loc.get_property("hidden"))
+        # Idempotent — searching again does nothing.
+        self.assertIsNone(self.dd.reveal_secret())
+
+    def test_secret_opens_the_shared_deepdelve(self):
+        sx, sy = self.dd.secret["pos"]
+        self.dd.reveal_secret()
+        self.engine.player.position = (sx, sy)
+        msg = self.engine.enter_dungeon()
+        self.assertIn("Deepdelve", msg)
+        self.assertIn("deepdelve", self.engine.dungeons)
+        # Deep — the same 6-floor complex the wilderness mouths open.
+        n, cur = 1, self.engine.current_dungeon
+        while getattr(cur, "level_below", None) is not None:
+            cur = cur.level_below
+            n += 1
+        self.assertGreaterEqual(n, 5)
+
+    def test_search_hint_then_descend_hint(self):
+        from ui.hints import context_hints
+        sx, sy = self.dd.secret["pos"]
+        self.engine.player.position = (sx + 1, sy)
+        self.assertTrue(any("search" in h.lower()
+                            for h in context_hints(self.engine)),
+                        "a cue to search the hollow ground")
+        self.dd.reveal_secret()
+        self.engine.player.position = (sx, sy)
+        self.assertTrue(any("Deepdelve" in h
+                            for h in context_hints(self.engine)),
+                        "once found, a cue to descend")
+
+    def test_secret_persists(self):
+        self.dd.reveal_secret()
+        data = self.dd.to_dict()
+        fresh = GameEngine(llm_provider="heuristic",
+                           enable_npc_processes=False)
+        fresh.start_game()
+        fresh.deepdelve.from_dict(data)
+        self.assertIsNotNone(fresh.deepdelve.secret)
+        self.assertTrue(fresh.deepdelve.secret["revealed"])
+        fresh.end_game()
+
+
 if __name__ == "__main__":
     unittest.main()

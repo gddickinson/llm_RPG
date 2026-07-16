@@ -66,6 +66,28 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    # GX.5 the Deepdelve — its cues lead: finding the secret stair (the sole
+    # discovery mechanism) and descending a mouth must NOT be crowded out of
+    # the capped hint bar by ambient talk/barter prompts when it sits in town.
+    if not getattr(engine, "current_interior", None) and \
+            not getattr(engine, "current_dungeon", None):
+        try:
+            from world.world_map import TerrainType
+            x, y = engine.player.position
+            dd = getattr(engine, "deepdelve", None)
+            if engine.world.map.get_terrain_at(x, y) == TerrainType.CAVE:
+                loc = engine.world.get_location_at(x, y)
+                if loc and loc.get_property("deepdelve_mouth"):
+                    hints.append(
+                        f"[TAB] descend into {loc.name} (the Deepdelve)")
+            elif dd is not None:
+                sec = dd.secret_near((x, y))
+                if sec is not None:
+                    hints.append(
+                        f"[E] search — {sec.get('hint', 'it rings hollow')}")
+        except Exception:
+            pass
+
     # Inside somewhere? Leaving is the dominant hint
     if getattr(engine, "current_interior", None):
         hints.append("[TAB] leave the building")
@@ -223,9 +245,8 @@ def context_hints(engine) -> List[str]:
             terrain = engine.world.map.get_terrain_at(x, y)
             if terrain == TerrainType.CAVE:
                 loc = engine.world.get_location_at(x, y)
-                if loc and loc.get_property("deepdelve_mouth"):
-                    hints.append(f"[TAB] descend into {loc.name} (the Deepdelve)")
-                else:
+                # A Deepdelve mouth's descend cue is added high-priority above.
+                if not (loc and loc.get_property("deepdelve_mouth")):
                     hints.append("[TAB] descend into the cave")
         except Exception:
             pass

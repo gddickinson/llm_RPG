@@ -4,6 +4,13 @@
   "dungeon_name": "The Deepdelve",
   "deep_levels": 6,
   "rumor": "Miners speak of a sunless stair beneath the hills — the old Deepdelve, they say, still runs down and down, and its lower reaches have never been mapped.",
+  "secret": {
+    "name": "The Buried Stair",
+    "near_settlement": "Oakvale",
+    "rumor": "Oakvale's elders half-remember a SEALED stair somewhere within the village itself — a hidden way down into the old Deepdelve, lost for generations. Search the ground where it rings hollow.",
+    "hint": "the ground here rings HOLLOW",
+    "reveal": "Your boot scuffs a flagstone that rings hollow — you pry it up and a worn stair spirals down into the dark. You have found Oakvale's secret way into the Deepdelve!"
+  },
   "mouths": [
     {"name": "Blackroot Cleft", "near": "forest", "legend": "A jagged cleft where blackroot trees claw at a cave mouth breathing cold, still air.", "guards": [{"template": "goblin", "count": 2}]},
     {"name": "The Sunless Stair", "near": "mountain", "legend": "A worn stone stair descending into the mountain's root, its steps slick and lightless.", "guards": [{"template": "wolf", "count": 2}]},

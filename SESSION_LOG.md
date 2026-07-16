@@ -8550,3 +8550,24 @@ far from start, entering yields ≥5 floors, all mouths share ONE dungeon, retur
 persistence). Validator clean; `world_generator.py` had spilled to 594 lines in GX.4 so its extra-
 civic/wilderness passes were shed into `world/worldgen_extras.py` (mixin) to hold the 500-line line.
 Next: GX.5b (the SECRET Oakvale entrance — a searchable trapdoor into the same Deepdelve).
+
+## 2026-07-15 — GX.5b: the SECRET Oakvale entrance (a searchable trapdoor)
+
+The headline of George's dungeon ask, and it completes GX.5. `DeepdelveSystem._place_secret` seeds a
+HIDDEN "The Buried Stair" `Location` a few tiles off the Oakvale core — ordinary ground (NO cave
+stamp, `hidden` + `dungeon_key:"deepdelve"` + `deep_dungeon`), so it reads as nothing until searched
+out. `secret_near(pos)` (player within 1 tile of the unrevealed stair) drives the discovery; the E/G
+key path in `input_handler` calls `reveal_secret()`, which stamps the CAVE mouth (+ `deepdelve_mouth`,
+drops `hidden`) so [TAB] then descends into the SAME shared 6-floor Deepdelve the wilderness mouths
+open (verified: one 'deepdelve' cache entry). A pointer `[Realm]` rumor at seed ("elders half-remember
+a SEALED stair… search where it rings hollow") + a reveal `[Legend]` beat + flavor prose. Persisted
+(the `secret` dict + `revealed` flag ride the save; the CAVE tile rides the world map save). Rendered
+scratchpad/gx5b_secret_hidden.png (adjacent, hidden — the search cue) + gx5b_secret_revealed.png (the
+stair found, [TAB] descend cue leading the hint bar in a busy village). Fixed a REAL UX bug along the
+way: the Deepdelve search + descend cues sat in the low-priority terrain block and got crowded out of
+the 3-hint `MAX_HINTS` cap by ambient talk/barter when the stair sits among NPCs — meaning the sole
+discovery cue could go unseen; promoted both to lead the overworld hints. tests/test_deepdelve.py +6
+(TestDeepdelveSecret: hidden seed near Oakvale, secret_near adjacency, reveal stamps a descendable
+cave + idempotent, opens the shared deepdelve, search→descend hint hand-off, persistence). Validator
+clean. GX.5 complete (5c per-mouth cross-map short-cut is an optional stretch). Next: the queue is
+CLEAR — resume BLD exterior polish (BLD.7 window trim/shutters, BLD.8 roof relief).
