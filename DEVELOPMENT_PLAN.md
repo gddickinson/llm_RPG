@@ -6086,8 +6086,13 @@ rasterizer/camera/SSAA.
   `iso_render.draw_diamond`/`_draw_tile` (+ the terrain name added to the tile payload). The iso ground
   now reads as real terrain (scratchpad/iso2_tiles.png: textured grass/water/farmland vs flat colour).
   tests/test_iso_tiles.py (4).
-- [ ] **ISO.3 Character bodies: proportions + stance + shading** (movieMaker) — anthropometric
-  proportions, seeded contrapposto/relaxed STANCE, two-light shading + per-part colour, 3–4× SSAA.
+- [x] **ISO.3 Character bodies: proportions + stance + shading — DONE.** `ui/iso_chars._figure` is now
+  an anthropometric humanoid — two legs, a tapered torso (waist + shoulders), hanging ARMS, a proper
+  head — in a seeded CONTRAPPOSTO stance (lateral weight-shift + head tilt via `_rot_z_about` + a
+  forward-carried arm; `_stance_of` gives a stable 0-2 per person). `raster3d.render` gained a soft
+  FILL light (key + fill + ambient) so all baked 3D reads with softer, deeper shading. Figures now
+  read as little people with arms + natural weight, not stiff symmetric box-stacks (scratchpad/iso3_
+  chars.png + iso3_world.png). tests/test_iso_chars.py (5).
 - [ ] **ISO.4 Character ANIMATION** (movieMaker) — bone hierarchy + FK; bake POSED frames per
   clip-phase (walk + attack) from `char_mocap`; phase from `metadata["_anim"]`.
 - [ ] **ISO.5 Scale & fidelity polish** — larger bake resolution / tile_size; re-frame the bake camera.

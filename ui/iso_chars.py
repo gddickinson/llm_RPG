@@ -56,16 +56,50 @@ def _rot_y(verts, a):
     return verts @ m.T
 
 
-def _figure(tint, hair, facing):
+def _rot_z_about(verts, a, pivot):
+    """Rotate `verts` by `a` about the z axis through `pivot` (a head tilt)."""
+    c, s = math.cos(a), math.sin(a)
+    p = np.array(pivot, float)
+    m = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
+    return (verts - p) @ m.T + p
+
+
+def _figure(tint, hair, facing, stance=1):
+    """ISO.3: an anthropometric stacked-box humanoid — two legs, a tapered
+    torso, hanging ARMS, a proper head — in a seeded CONTRAPPOSTO stance (a
+    lateral weight-shift + a head tilt + one arm carried forward) so folk read
+    as bodies with natural weight, not stiff symmetric mannequins. ~1.6 tall."""
+    lean = (stance - 1) * 0.05                  # weight shift: -0.05 / 0 / +0.05
+    tilt = (stance - 1) * 0.10                  # head tilt to match
+    fwd = (stance - 1) * 0.05                   # a forward-carried arm
+    dark = tuple(int(v * 0.82) for v in tint)   # shaded limbs read apart
     parts = [
-        r3.box(0, 0.0, 0, 0.34, 0.42, 0.26, _LEG),        # legs
-        r3.box(0, 0.40, 0, 0.44, 0.36, 0.30, tint),       # torso
-        r3.box(0, 0.72, 0, 0.30, 0.26, 0.30, _SKIN),      # head
-        r3.box(0, 0.92, 0, 0.32, 0.12, 0.32, hair),       # hair cap
-        r3.box(0, 0.76, 0.17, 0.10, 0.09, 0.08, _SKIN),   # nose (facing cue)
+        r3.box(-0.10, 0.0, 0, 0.16, 0.74, 0.22, _LEG),        # left leg
+        r3.box(0.10, 0.0, 0, 0.16, 0.74, 0.22, _LEG),         # right leg
+        r3.box(lean * 0.5, 0.70, 0, 0.34, 0.24, 0.24, tint),  # waist
+        r3.box(lean, 0.92, 0, 0.46, 0.30, 0.26, tint),        # chest/shoulders
+        r3.box(lean - 0.29, 0.62, -fwd, 0.12, 0.54, 0.14, dark),  # left arm
+        r3.box(lean + 0.29, 0.62, fwd, 0.12, 0.54, 0.14, dark),   # right arm
     ]
+    head = [
+        r3.box(lean, 1.18, 0, 0.24, 0.24, 0.24, _SKIN),       # head
+        r3.box(lean, 1.36, 0, 0.27, 0.10, 0.27, hair),        # hair cap
+        r3.box(lean, 1.22, 0.15, 0.09, 0.08, 0.08, _SKIN),    # nose (facing cue)
+    ]
+    if tilt:
+        head = [(_rot_z_about(v, tilt, (lean, 1.2, 0)), t, c)
+                for v, t, c in head]
+    parts += head
     a = (facing % 4) * (math.pi / 2)
     return [(_rot_y(v, a), t, c) for v, t, c in parts]
+
+
+def _stance_of(char) -> int:
+    """A stable 0-2 stance (weight-left / neutral / weight-right) per person."""
+    h = 0
+    for ch in (getattr(char, "id", "") or getattr(char, "name", "") or "x"):
+        h = (h * 131 + ord(ch)) & 0x7fffffff
+    return h % 3
 
 
 def facing_of(char) -> int:
@@ -83,8 +117,9 @@ def char_sprite(char, size: int, facing=None):
     if facing is None:
         facing = facing_of(char)
     tint, hair = _tint(char), _hair(char)
-    key = (tint, hair, size, facing % 4)
+    stance = _stance_of(char)
+    key = (tint, hair, size, facing % 4, stance)
     if key not in _CACHE:
-        _CACHE[key] = r3.bake(_figure(tint, hair, facing), size=size,
+        _CACHE[key] = r3.bake(_figure(tint, hair, facing, stance), size=size,
                               **_CHAR_CAM)
     return _CACHE[key]

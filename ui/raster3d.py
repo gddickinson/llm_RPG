@@ -19,6 +19,7 @@ ISO_CAM = (2.6, 3.0, -3.0)
 ISO_LOOK = (0.0, 0.45, 0.0)
 ISO_VFOV = 40.0
 LIGHT_DIR = (-0.5, -1.0, -0.35)
+FILL_DIR = (0.7, -0.25, 0.55)          # ISO.3 a soft fill from the other side
 
 
 def box(cx, cy, cz, w, h, d, color):
@@ -62,6 +63,8 @@ def render(meshes, cam_pos=ISO_CAM, look=ISO_LOOK, up=(0.0, 1.0, 0.0),
     aspect = width / height
     ld = np.array(light_dir, float)
     ld /= (np.linalg.norm(ld) or 1.0)
+    fd = np.array(FILL_DIR, float)                 # ISO.3 soft fill light
+    fd /= (np.linalg.norm(fd) or 1.0)
     for verts, tris, color in meshes:
         verts = np.asarray(verts, float)
         tris = np.asarray(tris)
@@ -79,14 +82,16 @@ def render(meshes, cam_pos=ISO_CAM, look=ISO_LOOK, up=(0.0, 1.0, 0.0),
         nrm[good] /= nl[good][:, None]
         centre = (a + b + c) / 3.0
         facing = np.einsum("ij,ij->i", nrm, cam - centre) > 0
-        lam = np.clip(-(nrm @ ld), 0.25, 1.0)
+        lam = np.clip(-(nrm @ ld), 0.0, 1.0)       # key light
+        lam2 = np.clip(-(nrm @ fd), 0.0, 1.0)      # ISO.3 soft fill light
+        shade = np.clip(0.30 + 0.55 * lam + 0.15 * lam2, 0.0, 1.0)
         valid = good & facing & (zc[tris[:, 0]] > 0.02) \
             & (zc[tris[:, 1]] > 0.02) & (zc[tris[:, 2]] > 0.02)
         col = np.array(color, float)
         for ti in np.nonzero(valid)[0]:
             i, j, k = tris[ti]
             _fill(rgb, mask, zbuf, sx, sy, zc, i, j, k, width, height,
-                  col * (0.32 + 0.68 * lam[ti]))
+                  col * shade[ti])
     return rgb, mask
 
 

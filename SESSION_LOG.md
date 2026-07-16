@@ -8871,3 +8871,22 @@ furrowed farmland, pebbled roads — instead of flat colour diamonds; combined w
 buildings the iso world looks markedly more realistic. iso_tiles.py 56 lines; iso_render.py 493.
 tests/test_iso_tiles.py (4: base-name strip, textured→diamond surface, unknown→None, cached). Next:
 ISO.3 (character proportions + stance + shading — movieMaker), then ISO.4 (character animation).
+
+## 2026-07-16 — ISO.3: richer isometric CHARACTER bodies (proportions, arms, stance, shading)
+
+`ui/iso_chars._figure` — the iso character was 5 stacked boxes (legs/torso/head/hair/nose, NO arms,
+stiff + symmetric). Reworked into an anthropometric humanoid (movieMaker's proportions + stance ideas):
+TWO legs, a tapered torso (a waist box + a wider chest/shoulder box), hanging ARMS (shaded darker so
+they read apart), a proper head + hair + a nose facing-cue — total ~1.6 units tall. A seeded
+CONTRAPPOSTO stance gives natural asymmetric weight: `_stance_of(char)` → a stable 0-2 per person
+(weight-left / neutral / weight-right) driving a lateral body lean + a head TILT (`_rot_z_about` about
+the neck) + one arm carried forward — so folk read as bodies with weight, not identical mannequins.
+Cache key gained `stance` (×3, bounded). `raster3d.render` gained a soft FILL light (`FILL_DIR`): shade
+= 0.30 ambient + 0.55 key + 0.15 fill (was a single key light + 0.25 floor), so EVERY baked 3D object
+(chars + buildings) reads with softer, deeper, less-harsh shading. Rendered scratchpad/iso3_chars.png
+(8 classes — varied torso colours, arms, slight stance leans) + iso3_world.png (the hero as a proper
+little figure among the textured tiles + pitched-roof buildings). The iso world now reads markedly more
+realistic across terrain + buildings + characters. iso_chars.py 106 / raster3d.py 135. tests/test_iso_
+chars.py (5: figure has arms+legs+head, stance shifts the body, stance stable per person, sprite
+drawn+cached). Next: ISO.4 (character ANIMATION — a bone/FK puppet + baked walk/attack pose-frames from
+char_mocap), ISO.5 (scale/fidelity polish).
