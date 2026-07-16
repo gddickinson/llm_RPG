@@ -6118,6 +6118,28 @@ rasterizer/camera/SSAA.
   knee-bend / arm-swing (scratchpad/iso6_{proto,anim,world}.png). tests/test_iso_skeleton.py (8).
   (Possible polish: idle contrapposto, sex-driven shoulder width, foot-lock for cross-tile walks — the
   mocap already reads well without them.)
+- [x] **ISO.7 360° FACING + sword-swing attack (George 2026-07-16) — DONE.** George: "make the iso
+  figures FACE THE DIRECTION THEY MOVE + 360° animations + all the polish." Root cause of the
+  everyone-faces-south bug: `iso_chars.facing_of` compared a `(dx,dy)` TUPLE (from `char_motion.facing`)
+  against STRING dict keys, so it always fell through to south. Fix: `facing_dir(char, n=16)` quantises
+  the `_anim['facing']` movement tuple to 16 evenly-spaced directions (cardinals at 0/4/8/12) and
+  `dir_angle` maps that to radians; `iso_skeleton.pose3d/figure/sample_figure` take an ANGLE and rotate
+  the WHOLE skeleton about the vertical, so a figure turns smoothly through 360°. Attack polish: no Mixamo
+  sword clip ships, so ATTACK now rides the idle base + `_attack_overlay` (arcs the right elbow/hand
+  overhead → a melee SWING) instead of the odd leg-'kick'. Silhouette polish: `iso_skeleton.build_of`
+  gives each person a stable seeded BUILD (slight/average/broad shoulders) so the crowd reads apart —
+  the practical stand-in for the "sex-driven shoulder width" polish idea (Character has no sex field).
+  scratchpad/iso7_{facing,attack,builds}.png, iso8_world.png. tests/test_iso_chars.py TestFacing (+5),
+  tests/test_iso_skeleton.py build tests (+2).
+- [x] **ISO.8 MOVEMENT CONTINUITY (George 2026-07-16) — DONE.** George: "NPC & monster movements are a
+  bit jerky — they wait a long time between tiles. Is this the tick rate? Can they move more
+  continuously?" Two causes fixed: (1) the iso render path NEVER called `body_renderer.update_anim`, so
+  it both left the facing stale AND teleported each character tile-to-tile with no slide — now
+  `iso_render.render_iso` + `iso_zone.render_zone_iso` call `update_anim(char,_DT)` and draw at the
+  FRACTIONAL `_tween_world_pos` (eases the previous tile → current over `TWEEN_DUR=0.16s`), the exact
+  smooth-slide the top-down renderer already had. (2) `config.NPC_IDLE_INTERVAL` (new; 3.0→1.5s), read by
+  `game_engine._npc_turns_due`, so idle NPCs take a turn twice as often (livelier, more continuous ambient
+  movement) while still bounded against log-flood. Full suite green.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

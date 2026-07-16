@@ -34,6 +34,47 @@ class TestFigure(unittest.TestCase):
         self.assertIn(iso_chars._stance_of(c), (0, 1, 2))
 
 
+class TestFacing(unittest.TestCase):
+    """ISO.7 — the figure faces its MOVEMENT direction over a smooth 360°."""
+
+    def _char(self, dxdy):
+        c = _Char("mover", "warrior")
+        c.metadata = {"_anim": {"facing": dxdy}}
+        return c
+
+    def test_cardinals_map_to_evenly_spaced_dirs(self):
+        # north/east/south/west land on the 0/4/8/12 quarter marks of 16
+        self.assertEqual(iso_chars.facing_dir(self._char((0, -1))), 0)
+        self.assertEqual(iso_chars.facing_dir(self._char((1, 0))), 4)
+        self.assertEqual(iso_chars.facing_dir(self._char((0, 1))), 8)
+        self.assertEqual(iso_chars.facing_dir(self._char((-1, 0))), 12)
+
+    def test_diagonals_map_between(self):
+        self.assertEqual(iso_chars.facing_dir(self._char((1, -1))), 2)
+        self.assertEqual(iso_chars.facing_dir(self._char((1, 1))), 6)
+
+    def test_still_faces_the_camera(self):
+        self.assertEqual(iso_chars.facing_dir(self._char((0, 0))), 8)  # south
+        self.assertEqual(iso_chars.facing_dir(_Char("x", "guard")), 8)
+
+    def test_dir_angle_spans_the_circle(self):
+        self.assertAlmostEqual(iso_chars.dir_angle(0), 0.0)
+        import math
+        self.assertAlmostEqual(iso_chars.dir_angle(4), math.pi / 2)
+        self.assertAlmostEqual(iso_chars.dir_angle(8), math.pi)
+
+    def test_different_facings_bake_different_sprites(self):
+        pygame.init()
+        n, s = self._char((0, -1)), self._char((0, 1))
+        # freeze both to idle so only facing differs
+        for c in (n, s):
+            c.metadata["_iso_walk_until"] = 0
+            c.metadata["_iso_atk_until"] = 0
+        north = iso_chars.char_sprite(n, 72)
+        south = iso_chars.char_sprite(s, 72)
+        self.assertIsNot(north, south, "a north-facer bakes apart from a south")
+
+
 class TestSprite(unittest.TestCase):
     def setUp(self):
         pygame.init()

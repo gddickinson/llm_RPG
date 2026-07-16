@@ -190,16 +190,25 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
                 items.append((iso.depth_key(wx, wy, z, 0.9), "scatter",
                               (sp, int(sx), int(sy))))
     # characters (hero + visible NPCs) in the same depth order (layer 2)
-    for char in _visible_chars(engine):
+    from ui.body_renderer import update_anim
+    from ui.iso_actors import DT, tween_world_pos, visible_chars
+    for char in visible_chars(engine):
         cx, cy = char.position
         if not (x0 <= cx < x1 and y0 <= cy < y1):
             continue
         if is_explored is not None and char is not engine.player \
                 and not is_explored(engine, cx, cy):
             continue
+        # ISO.8: advance the anim (writes the movement FACING + the tile-to-tile
+        # TWEEN), then draw at the FRACTIONAL tween position so the step SLIDES
+        # instead of teleporting — the smooth-movement parity the top-down view
+        # already has (George: "movements are a bit jerky, they wait between
+        # tiles"). Height still samples the logical tile.
+        update_anim(char, DT)
+        fx, fy = tween_world_pos(char, cx, cy)
         cz = _HEIGHT.get(_terrain_name(wmap.terrain[cy][cx]), 0.0)
-        sx, sy = iso.world_to_screen(cx, cy, cz, origin)
-        items.append((iso.depth_key(cx, cy, cz, 2), "char",
+        sx, sy = iso.world_to_screen(fx, fy, cz, origin)
+        items.append((iso.depth_key(fx, fy, cz, 2), "char",
                       (char, int(sx), int(sy))))
     # the skilling-pet follower (P41.12), depth-sorted just behind the cast
     try:
@@ -251,22 +260,6 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
     _draw_iso_projectiles(target, engine, iso, origin, wmap, tile_size)
     _draw_iso_reticle(target, engine, iso, origin, wmap, tile_size,
                       x0, x1, y0, y1)
-
-
-def _visible_chars(engine):
-    """Hero + active NPCs the top-down view would show (not wall-hidden)."""
-    out = [engine.player]
-    try:
-        from engine.presence import hidden_by_walls
-    except Exception:
-        hidden_by_walls = None
-    for npc in engine.npc_manager.npcs.values():
-        if not (hasattr(npc, "is_active") and npc.is_active()):
-            continue
-        if hidden_by_walls is not None and hidden_by_walls(engine, npc):
-            continue
-        out.append(npc)
-    return out
 
 
 def _draw_char(target, data, tile_size):

@@ -259,7 +259,7 @@ class GameEngine(GameAPIMixin):
         last_time = getattr(self, "_npc_last_time", 0.0)
         turn_due = (self.turn_counter != last_turn and
                     self.turn_counter % config.NPC_ACTION_INTERVAL == 0)
-        idle_due = (now - last_time) >= 3.0
+        idle_due = (now - last_time) >= config.NPC_IDLE_INTERVAL
         if not (turn_due or idle_due):
             return False
         self._npc_last_turn = self.turn_counter

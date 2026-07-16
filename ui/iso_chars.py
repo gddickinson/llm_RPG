@@ -135,10 +135,9 @@ def _pose(parts, action, phase):
     return p
 
 
-def _figure(tint, hair, facing, stance=1, action="idle", phase=0.0):
+def _figure(tint, hair, angle, stance=1, action="idle", phase=0.0):
     parts = _pose(_rest_parts(tint, hair, stance), action, phase)
-    a = (facing % 4) * (math.pi / 2)
-    return [(_rot_y(np.asarray(v), a), t, c) for v, t, c in parts]
+    return [(_rot_y(np.asarray(v), angle), t, c) for v, t, c in parts]
 
 
 def _stance_of(char) -> int:
@@ -149,15 +148,29 @@ def _stance_of(char) -> int:
     return h % 3
 
 
-def facing_of(char) -> int:
-    """A 0-3 facing from the character's anim state, else 2 (toward camera)."""
-    try:
-        from ui import char_motion
-        anim = (getattr(char, "metadata", {}) or {}).get("_anim", {})
-        f = char_motion.facing(anim)
-        return {"south": 2, "north": 0, "east": 1, "west": 3}.get(f, 2)
-    except Exception:
-        return 2
+N_DIRS = 16                       # ISO.7 baked facings → smooth 360° turning
+
+
+def facing_dir(char, n: int = N_DIRS) -> int:
+    """ISO.7: a 0..n-1 facing INDEX from the character's LAST MOVEMENT direction
+    (the `_anim['facing']` (dx,dy) tuple), quantised to `n` directions so the
+    figure FACES WHERE IT MOVES over a smooth 360° (was hard-wired to south).
+    Defaults to south (toward the camera) when still."""
+    anim = (getattr(char, "metadata", {}) or {}).get("_anim", {})
+    f = anim.get("facing", (0, 1))
+    if isinstance(f, (tuple, list)) and len(f) == 2:
+        dx, dy = f
+    else:
+        dx, dy = 0, 1
+    if dx == 0 and dy == 0:
+        dx, dy = 0, 1                                  # still → face the camera
+    # north=0, east=90°, south=180°, west=270° (matches the world→iso mapping)
+    ang = math.atan2(dx, -dy)
+    return int(round(ang / (2 * math.pi / n))) % n
+
+
+def dir_angle(dir_idx: int, n: int = N_DIRS) -> float:
+    return dir_idx * (2 * math.pi / n)
 
 
 _FRAMES = {"walk": 8, "attack": 6, "idle": 6}          # ISO.6 smoother mocap
@@ -201,20 +214,22 @@ def _frame_state(char):
 
 
 def char_sprite(char, size: int, facing=None):
-    if facing is None:
-        facing = facing_of(char)
+    d = (facing % N_DIRS) if facing is not None else facing_dir(char)
+    angle = dir_angle(d)                              # ISO.7 face where you move
     tint, hair = _tint(char), _hair(char)
     action, frame = _frame_state(char)
-    key = (tint, hair, size, facing % 4, action, frame)
+    from ui import iso_skeleton
+    build = iso_skeleton.build_of(char)               # ISO.7 silhouette variety
+    key = (tint, hair, size, d, action, frame, build)
     if key not in _CACHE:
         phase = frame / _FRAMES[action]
-        from ui import iso_skeleton
         # ISO.6: a real Mixamo-mocap-driven rigged skeleton; if the clip is
         # missing, fall back to the ISO.3/4 procedural box figure.
-        mesh = iso_skeleton.sample_figure(action, phase, tint, hair, facing)
+        mesh = iso_skeleton.sample_figure(action, phase, tint, hair, angle,
+                                          build)
         cam = iso_skeleton.CAM
         if mesh is None:
-            mesh = _figure(tint, hair, facing, _stance_of(char), action, phase)
+            mesh = _figure(tint, hair, angle, _stance_of(char), action, phase)
             cam = _CHAR_CAM
         _CACHE[key] = r3.bake(mesh, size=size, **cam)
     return _CACHE[key]

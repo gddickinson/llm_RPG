@@ -103,11 +103,15 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
         items.append((iso.depth_key(fx, fy, 0.25, 1), "furn",
                       (f.get("name", "?"), int(sx), int(sy))))
 
+    from ui.body_renderer import update_anim
+    from ui.iso_actors import DT, tween_world_pos
     for char, (cx, cy) in _zone_chars(engine, zone):
         if not (0 <= cx < W and 0 <= cy < H) or not _seen(cx, cy):
             continue
-        sx, sy = iso.world_to_screen(cx, cy, 0, origin)
-        items.append((iso.depth_key(cx, cy, 0, 2), "char",
+        update_anim(char, DT)                     # ISO.8 facing + tween indoors
+        fx, fy = tween_world_pos(char, cx, cy)
+        sx, sy = iso.world_to_screen(fx, fy, 0, origin)
+        items.append((iso.depth_key(fx, fy, 0, 2), "char",
                       (char, int(sx), int(sy))))
 
     items.sort(key=lambda t: t[0])

@@ -26,8 +26,9 @@ _SH_W = 0.17                    # lateral half-width, shoulders/arms
 _SKIN = (232, 196, 160)
 _LEG = (56, 52, 64)
 
-# the game action → the mocap clip that reads it
-_CLIP = {"idle": "idle", "walk": "walk", "run": "run", "attack": "kick"}
+# the game action → the mocap clip that reads it. ATTACK has no Mixamo sword-
+# swing clip, so it rides the idle base + a procedural weapon-arm ARC overlay.
+_CLIP = {"idle": "idle", "walk": "walk", "run": "run", "attack": "idle"}
 
 # a camera framing the ~1.6-unit skeleton (tuned in the ISO.6 prototype)
 CAM = dict(cam_pos=(2.1, 2.5, -2.5), look=(0.0, 0.78, 0.0), vfov_deg=30.0)
@@ -40,24 +41,35 @@ def clip_for(action: str) -> str:
     return _CLIP.get(action, "idle")
 
 
-def _lat(j: str) -> float:
+def build_of(char) -> float:
+    """ISO.7 polish: a stable per-person BUILD factor (0.88 slight / 1.0 average
+    / 1.14 broad) seeded off the character id, so folk read apart in the crowd —
+    the practical stand-in for sex-driven shoulder width (Character has no sex
+    field). Scales the shoulder/arm lateral spread."""
+    h = 0
+    for ch in (getattr(char, "id", "") or getattr(char, "name", "") or "x"):
+        h = (h * 131 + ord(ch)) & 0x7fffffff
+    return (0.88, 1.0, 1.14)[h % 3]
+
+
+def _lat(j: str, build: float = 1.0) -> float:
     if j[:2] in ("l_", "r_"):
         side = -1.0 if j.startswith("l_") else 1.0
         if any(j.endswith(s) for s in _LEGJ):
-            return side * _HIP_W
+            return side * _HIP_W * (1.0 + (build - 1.0) * 0.4)   # hips vary less
         if any(j.endswith(s) for s in _ARMJ):
-            return side * _SH_W
+            return side * _SH_W * build                          # shoulders vary
     return 0.0
 
 
-def pose3d(pose_norm, facing) -> dict:
-    """{joint: (x,y,z)} — lateral spread + height + fore-aft depth, rotated to
-    the 4-dir facing."""
-    out = {j: np.array([_lat(j), ny * _H, nx * _D])
+def pose3d(pose_norm, angle, build: float = 1.0) -> dict:
+    """{joint: (x,y,z)} — lateral spread (scaled by the person's `build`) +
+    height + fore-aft depth, rotated by `angle` radians about the vertical
+    (ISO.7 continuous 360° facing)."""
+    out = {j: np.array([_lat(j, build), ny * _H, nx * _D])
            for j, (nx, ny) in pose_norm.items()}
     out["pelvis"] = (out["l_hip"] + out["r_hip"]) / 2.0
-    a = (facing % 4) * (math.pi / 2)
-    c, s = math.cos(a), math.sin(a)
+    c, s = math.cos(angle), math.sin(angle)
     rot = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
     return {k: rot @ v for k, v in out.items()}
 
@@ -82,9 +94,10 @@ def _bone(a, b, r, color):
     return v, t, tuple(int(x) for x in color)
 
 
-def figure(pose_norm, tint, hair, facing):
-    """Build the rigged bone-skeleton mesh from a sampled mocap pose."""
-    P = pose3d(pose_norm, facing)
+def figure(pose_norm, tint, hair, angle, build: float = 1.0):
+    """Build the rigged bone-skeleton mesh from a sampled mocap pose, facing
+    `angle` radians, with the person's `build` (shoulder breadth)."""
+    P = pose3d(pose_norm, angle, build)
     dark = tuple(int(v * 0.82) for v in tint)
     m = []
     for side in ("l_", "r_"):
@@ -106,13 +119,29 @@ def figure(pose_norm, tint, hair, facing):
     return m
 
 
-def sample_figure(action, phase, tint, hair, facing):
-    """The skeleton mesh for `action` at `phase`, or None if the clip is
-    missing (caller falls back to the box figure)."""
+def _attack_overlay(pose, phase):
+    """No Mixamo sword-swing ships, so ATTACK rides the idle base with the weapon
+    (right) arm ARCED overhead then down — a melee swing. Lifts the right
+    elbow/hand (rest ~0.71/0.55 → overhead ~0.9/1.0) + carries them forward."""
+    a = math.sin(phase * math.pi)                     # 0..1..0 over the swing
+    out = dict(pose)
+    for j, up, fwd in (("r_elbow", 0.20, 0.12), ("r_hand", 0.48, 0.24)):
+        if j in out:
+            nx, ny = out[j]
+            out[j] = (nx + a * fwd, ny + a * up)
+    return out
+
+
+def sample_figure(action, phase, tint, hair, angle, build: float = 1.0):
+    """The skeleton mesh for `action` at `phase` facing `angle` radians (with the
+    person's `build`), or None if the clip is missing (caller falls back to the
+    box figure)."""
     pose = cm.sample_norm(clip_for(action), phase)
     if pose is None:
         return None
+    if action == "attack":
+        pose = _attack_overlay(pose, phase)
     try:
-        return figure(pose, tint, hair, facing)
+        return figure(pose, tint, hair, angle, build)
     except Exception:
         return None

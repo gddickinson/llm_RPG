@@ -166,6 +166,14 @@ class TestDiagonalMovement(unittest.TestCase):
                 wmap.remove_character(n)
 
     def _press(self, key):
+        # the world ticks between presses (advance_turn), so a distant NPC can
+        # wander onto a step-target tile; re-clear the immediate ring each time
+        # so the movement key — not a bodyblock — is what we're testing
+        wmap = self.engine.world.map
+        for n in list(self.engine.npc_manager.npcs.values()):
+            if abs(n.position[0] - self.ox) <= 1 and \
+                    abs(n.position[1] - self.oy) <= 1:
+                wmap.remove_character(n)
         self.engine.player.position = (self.ox, self.oy)
         self.handler.handle_event(FakeEvent(key))
         return self.engine.player.position

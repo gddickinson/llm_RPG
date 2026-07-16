@@ -19,6 +19,8 @@ DEFAULT_MAP_HEIGHT = 80
 DEFAULT_VISIBILITY_RANGE = 5
 MAX_HISTORY_ITEMS = 100
 NPC_ACTION_INTERVAL = 5  # How many player turns before NPCs act
+NPC_IDLE_INTERVAL = 1.5  # Seconds between NPC turns while the player idles
+                         # (lower = livelier, more continuous ambient movement)
 GAME_TICK_INTERVAL = 0.1  # Seconds between game ticks
 
 # UI Settings

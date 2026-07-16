@@ -35,6 +35,17 @@ class TestPose(unittest.TestCase):
         self.assertIn("pelvis", P)
         self.assertEqual(len(P["l_hip"]), 3)
 
+    def test_build_widens_the_shoulders(self):
+        # a broad build spreads the shoulder/arm joints wider than a slight one
+        slight = isk._lat("r_sh", 0.88)
+        broad = isk._lat("r_sh", 1.14)
+        self.assertGreater(broad, slight, "broader build = wider shoulders")
+
+    def test_build_is_stable_per_person(self):
+        c = type("C", (), {"id": "bertram"})()
+        self.assertEqual(isk.build_of(c), isk.build_of(c))
+        self.assertIn(isk.build_of(c), (0.88, 1.0, 1.14))
+
 
 class TestFigure(unittest.TestCase):
     def setUp(self):

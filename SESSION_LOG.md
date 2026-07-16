@@ -8953,3 +8953,39 @@ bakes). iso_skeleton.py 118 / iso_chars.py 220. tests/test_iso_skeleton.py (8: b
 + any axis, lateral l/r spread, pose3d maps joints, sample from a real clip, missing-clip→None, walk
 frames differ). Frame counts bumped for smoother mocap (walk 8 / idle 6 / attack 6). Toggle iso:
 LLM_RPG_RENDER=iso.
+
+## 2026-07-16 — ISO.7 + ISO.8: 360° facing, sword-swing, smooth continuous movement
+
+George: "Make the isometric figures FACE THE DIRECTION THEY MOVE — and have 360° animations, then add all
+your listed polish. Also, NPC and monster movements are a bit jerky — they wait a long time between
+tiles. Is this the tick rate? Can they move more continuously?"
+
+**ISO.7 — 360° facing + a real melee swing.** Root-caused the everyone-faces-south bug: `iso_chars.
+facing_of` compared the `(dx,dy)` TUPLE from `char_motion.facing` against a STRING-keyed direction dict,
+so it silently fell through to south for every character. Replaced with `facing_dir(char, n=16)` — it
+quantises the `_anim['facing']` movement tuple to one of 16 evenly-spaced directions (cardinals landing
+exactly on 0/4/8/12) and `dir_angle` maps that to radians. `iso_skeleton.pose3d/figure/sample_figure`
+now take an ANGLE and rotate the whole skeleton about the vertical (a single Y-rotation matrix) instead
+of snapping to 4 baked views, so a figure turns smoothly through the full circle — verified with an
+8-way walk strip (scratchpad/iso7_facing.png) and an in-engine frame where the player, stepped west,
+renders as a west-facing profile while a still NPC faces the camera (scratchpad/iso8_world.png). The
+"add all the polish" ask: no Mixamo SWORD clip ships (the melee action had been mapped to the leg
+'kick', which read wrong), so ATTACK now rides the idle base pose + `_attack_overlay` — it arcs the
+right elbow/hand up and forward over the swing into a proper overhead melee slash (scratchpad/iso7_
+attack.png). And the silhouette-variety polish: `iso_skeleton.build_of(char)` gives each person a stable
+seeded BUILD (0.88 slight / 1.0 average / 1.14 broad) that scales the shoulder spread, so a crowd of iso
+figures reads apart instead of clones — the practical stand-in for the "sex-driven shoulder width" idea
+(Character has no sex field) (scratchpad/iso7_builds.png). tests/test_iso_chars.py grows a TestFacing
+class (cardinals→0/4/8/12, diagonals between, still→camera, dir_angle spans the circle, north vs south
+bake apart); test_iso_skeleton.py adds build tests (broad > slight shoulders, stable per person).
+
+**ISO.8 — continuous movement (the jerkiness).** Two real causes. (1) The iso render path NEVER called
+`body_renderer.update_anim`, which top-down calls every frame — so in iso mode the facing was never
+refreshed AND every character TELEPORTED tile-to-tile with no slide. Fixed by calling
+`update_anim(char,_DT)` in both `iso_render.render_iso` and `iso_zone.render_zone_iso` and drawing each
+figure at the FRACTIONAL `_tween_world_pos(char,cx,cy)` — it eases the previous tile → the current one
+over the same `TWEEN_DUR=0.16s` the top-down renderer uses, so an iso step now SLIDES. (2) The
+"they wait a long time between tiles" cadence: `game_engine._npc_turns_due` ticked idle NPCs on a 3.0s
+wall-clock; extracted that to `config.NPC_IDLE_INTERVAL` and halved it to 1.5s, so ambient NPCs act
+twice as often when the player is standing still — livelier, more continuous — while the anti-flood
+bound stays. Both the top-down and iso views now read smooth. Full suite green; validator clean.
