@@ -5840,7 +5840,13 @@ Interleaved with Phase BLD; process one per round, priority order:
   anim.py` (frame_tick) + `engine.animate_projectiles` (turn_pipeline defers resolution) so a shot
   FLIES ~0.3s and resolves on arrival; `combat_effects.on_miss_at` (grey "miss" popup); `shoot_
   ranged` faces the target + bumps `_atk_seq` (loose motion). `tests/test_projectiles.py` +2.
-- [ ] **GX.2 Teleport platforms LARGER + raised dais + easy to see** — the waystone marker render.
+- [x] **GX.2 Teleport platforms — raised glowing DIAS.** A waystone was an invisible `Location`
+  marker (no tile art). New `ui/dais.py` (pure `dais_tiers`/`rune_circle` + a thin `draw_dais`/
+  `draw_all`): each waystone now renders as a stepped stone DAIS (~1.5 tiles wide, so it reads
+  bigger than the ground) with an arcane cyan RUNE-CIRCLE glowing on top + an upward GLOW beam —
+  unmistakable from a distance. Drawn thinly from `renderer_buildings.draw_buildings` (renderer.py
+  untouched at 499). Before/after: scratchpad/gx2_dais.png. `tests/test_dais.py` (+5). (Top-down;
+  an iso-projected dais is a follow-up.)
 - [ ] **GX.3 Building SCALE-UP (Ultrathink)** — everything too small/cramped; raise interior
   footprint scaling (`fit_to_footprint` tw/th) + major-building overworld footprints so buildings
   are roomy (bigger interiors → more/larger functional rooms, more seating).

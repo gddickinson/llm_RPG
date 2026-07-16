@@ -297,6 +297,11 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
             kind = _kind_at(engine, wx, wy)
             h = block_height(kind, tile_size)      # storey-driven (P33.3b)
             _draw_block(target, kind, px, py, tile_size, h)
+    try:   # GX.2 teleport waystones as raised glowing daises
+        from ui import dais
+        dais.draw_all(target, engine, view_rect, cam_x, cam_y, tile_size)
+    except Exception:
+        pass
 
 
 def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:

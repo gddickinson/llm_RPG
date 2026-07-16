@@ -8469,3 +8469,19 @@ flag defers resolution + the arrow arrives; miss popup). Validator clean.
 George also queued (planned in DEVELOPMENT_PLAN Phase GX + memory): GX.2 bigger teleport dais, GX.3
 building scale-up, GX.4 a large Oakvale church seating 50-100, GX.5 a deep dungeon via a secret
 Oakvale entrance. Next round: GX.2 (teleport dais).
+
+## 2026-07-15 — GX.2: teleport waystones as raised glowing daises
+
+George: "Please make the teleportation platforms larger (on a raised dias?) and easy to see."
+Found the waystones (engine/teleport_network.py) were invisible — a 1x1 Location with a `waystone`
+property and NO tile art at all; only the hint bar signalled one. New ui/dais.py (pure geometry +
+thin pygame draw, headless-testable): dais_tiers (3 stepped ellipse tiers, ~1.5 tiles wide so the
+dais reads BIGGER than the ground, each narrower + higher) + rune_circle (the top ring); draw_dais
+lays a stepped STONE platform + an arcane cyan RUNE circle with spokes on top + a soft radial glow +
+an upward GLOW beam (a gently pulsing phase) so it's visible from a distance; draw_all iterates the
+in-view waystone Locations and draws each. Wired thinly from renderer_buildings.draw_buildings (which
+had line headroom — renderer.py stays 499). Before/after: scratchpad/gx2_dais.png (an invisible tile
+becomes a raised glowing arcane platform beside Oakvale). tests/test_dais.py (+5: tiers stepped,
+dais bigger than a tile, rune on the top tier, draw paints stone+glow, draw_all marks waystones).
+dais.py 100 / renderer_buildings 422 — under 500. Validator clean. (Top-down; an iso-projected dais
+is a follow-up.) Next: GX.3 (building scale-up).
