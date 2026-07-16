@@ -22,6 +22,8 @@
     "well": ["storeroom"]
   },
   "by_kind": {
+    "cathedral": ["nave", "vestry"],
+    "church": ["nave", "vestry"],
     "inn": ["common_room", "bar", "kitchen", "storeroom", "guest_room"],
     "home": ["hearth_room", "bedroom"],
     "house": ["hearth_room", "bedroom"],

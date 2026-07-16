@@ -5856,8 +5856,14 @@ Interleaved with Phase BLD; process one per round, priority order:
   97 interior tests still green (BLD.2/3 already made them size-robust). `tests/test_interiors.py`
   +1. **Remainder GX.3b (deferred):** bump the OVERWORLD footprints of major buildings (needs a
   village re-layout in `world_generator._add_village` — buildings are packed 2 rows apart).
-- [ ] **GX.4 A large CHURCH in Oakvale seating 50-100** — a big nave (pew_rows) + altar; depends
-  on GX.3. Taverns/other buildings accommodate far more people (falls out of the scale-up).
+- [x] **GX.4 A large CHURCH in Oakvale seating 50-100 — DONE.** `world_generator._add_village`
+  plants a 6×5 "Oakvale Cathedral" below the village core (terrain cleared to grass, south door
+  onto open ground, no footprint overlap), tagged `type: "cathedral"`; `building_room_sets.json`
+  by_kind → `[nave, vestry]`; `interiors.build_interiors_for_world` builds it via
+  `make_temple_interior`, which GX.3 scale-up fits to a **26×22 nave** that `furnish_features.pew_rows`
+  fills with **114 pews facing an altar** (temple theme, torchlit) — room to seat scores. Arched
+  grand door (`facade._ARCHED += cathedral/church`). Taverns/other buildings accommodate far more
+  people (falls out of the scale-up).
 - [ ] **GX.5 Deep DUNGEON/CAVE via a secret Oakvale entrance + other regional entrances/exits.**
 
 ## Phase BLD — Buildings elaboration (George, 2026-07-15) — see `docs/BUILDINGS.md`

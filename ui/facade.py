@@ -15,7 +15,8 @@ headless-testable, in the `roof_shapes.py` mould.
 
 _PLANKED = {"smithy", "forge", "barn", "stable", "storeroom", "warehouse",
             "granary", "mill", "sawmill", "lodge", "farmhouse", "dock", "stall"}
-_ARCHED = {"temple", "chapel", "shrine", "library", "tower"}
+_ARCHED = {"temple", "chapel", "shrine", "library", "tower",
+           "cathedral", "church"}
 _DOUBLE = {"hall", "inn", "keep", "castle"}
 
 

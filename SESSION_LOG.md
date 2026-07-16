@@ -8505,3 +8505,23 @@ adjacent floor tiles instead of a now-walled hardcoded tile). tests/test_interio
 footprint yields a bigger interior; a big footprint a much bigger one). Validator clean. Remainder
 GX.3b (deferred, needs a village re-layout): bump the OVERWORLD footprints of major buildings.
 Next: GX.4 (a large Oakvale church seating 50-100 — now feasible with the 22x22 nave).
+
+## 2026-07-15 — GX.4: a large Oakvale CHURCH seating scores (a grand nave)
+
+George: "please build a large church in oakvale with room for seating 50-100 people." Done on top of
+the GX.3 scale-up. `world_generator._add_village` now plants a 6×5 "Oakvale Cathedral" below the
+village core — it first clears the footprint (+ its south door tile) to GRASS so the great door opens
+onto open ground, then `_building(...)` raises it; a collision check confirmed no overlap with the
+tavern/forge/store/temple and it sits within the 120×80 map. `_building`'s type-tag chain tags a
+"cathedral"/"church" name as `type: "cathedral"`; `data/building_room_sets.json` by_kind maps
+cathedral/church → `[nave, vestry]`; and `interiors.build_interiors_for_world` grew a
+cathedral/church branch that builds it via `make_temple_interior` (+ the "cathedral" ltype in the
+default-interior fallback). With GX.3, the 6×5 footprint fits to a **26×22 nave (572 inner tiles)**
+that `furnish_features.pew_rows` fills with **114 pews facing an altar**, pillars down the aisle,
+torchlit in the temple theme (`theme_of("Oakvale Cathedral") == "temple"` via the temple keyword
+'cathedral') — far more than the 50-100 asked. Grand ARCHED door (`facade._ARCHED += cathedral,
+church`). Rendered scratchpad/gx4_cathedral.png (a nave full of pews + central aisle + warm
+torchlight) + gx4_street.png (the arched cathedral door on the Oakvale street). tests/test_interiors.py
++1 (`test_oakvale_cathedral_seats_scores`: the location exists, room_set is [nave, vestry], the
+interior is ≥400 tiles, ≥50 pews + an altar, temple theme, enterable footprint). Validator clean.
+Next: GX.5 (a deep dungeon/cave via a secret Oakvale entrance + regional entrances/exits).

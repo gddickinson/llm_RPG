@@ -397,9 +397,10 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
                 inter = make_forge_interior()
             elif "store" in name_l or "shop" in name_l:
                 inter = make_shop_interior()
-            elif "temple" in name_l or "shrine" in name_l:
-                inter = make_temple_interior()
-            elif ltype in ("tavern", "shop", "temple", "forge"):
+            elif ("temple" in name_l or "shrine" in name_l
+                    or "cathedral" in name_l or "church" in name_l):
+                inter = make_temple_interior()   # GX.4 rescaled to a big nave
+            elif ltype in ("tavern", "shop", "temple", "forge", "cathedral"):
                 inter = make_default_interior(loc.name)
             else:
                 continue

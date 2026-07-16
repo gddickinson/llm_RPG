@@ -43,30 +43,33 @@ class TestTactics(unittest.TestCase):
         except Exception:
             pass
 
+    def _log_since(self, n0):
+        # Only the events THIS action added — a fixed last-N window is too
+        # small once the move-turn also emits encounter/weather/attack noise
+        # that buries the opportunity-attack line (the historic flake).
+        return " ".join(str(e) for e in
+                        self.engine.memory_manager.game_history[n0:])
+
     def test_retreat_provokes_opportunity_attack(self):
-        hp = self.player.hp
+        n0 = len(self.engine.memory_manager.game_history)
         moved = self.engine.move_player(-1, 0)   # step away west
         self.assertTrue(moved)
-        log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-4:])
-        self.assertIn("lashes out", log)
+        self.assertIn("lashes out", self._log_since(n0))
 
     def test_careful_disengage_avoids_the_strike(self):
         t0 = self.engine.world.time
+        n0 = len(self.engine.memory_manager.game_history)
         moved = self.engine.move_player(-1, 0, careful=True)
         self.assertTrue(moved)
-        log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-4:])
-        self.assertNotIn("lashes out", log)
+        self.assertNotIn("lashes out", self._log_since(n0))
         self.assertGreaterEqual(self.engine.world.time - t0, 2,
                                 "care costs extra time")
 
     def test_moving_within_melee_does_not_provoke(self):
         # Step north: wolf is still within 1 (diagonal) — no strike
+        n0 = len(self.engine.memory_manager.game_history)
         self.engine.move_player(0, -1)
-        log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-3:])
-        self.assertNotIn("lashes out", log)
+        self.assertNotIn("lashes out", self._log_since(n0))
 
     def test_shove_pushes_enemy_back(self):
         from engine.tactics import shove
@@ -111,12 +114,11 @@ class TestTactics(unittest.TestCase):
         self.player.inventory += [bow, arrows]
         eq.equip(self.player, bow)
         t0 = self.engine.world.time
+        n0 = len(self.engine.memory_manager.game_history)
         msg = self.engine.shoot_ranged(aimed=True)
         self.assertIn("loose", msg)
         self.assertGreaterEqual(self.engine.world.time - t0, 2)
-        log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-5:])
-        self.assertIn("careful aim", log)
+        self.assertIn("careful aim", self._log_since(n0))
 
 
 if __name__ == "__main__":
