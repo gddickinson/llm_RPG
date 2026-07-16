@@ -8856,3 +8856,18 @@ windows, doors, chimneys, and varied thatch/tile/slate + timber/stone/brick mate
 lift over the old uniform flat grey boxes; a tower genuinely towers with windows up its storeys.
 iso_buildings.py 86 / iso_objects.py 45 lines. tests/test_iso_buildings.py (7) + fixed test_iso_objects
 (the old `_building_mesh` moved). Next: ISO.2 (richer textured tiles), then ISO.3/4 (characters).
+
+## 2026-07-16 — ISO.2: textured isometric TILES (real terrain, not flat diamonds)
+
+`ui/iso_tiles.py` `tile_diamond(name, wx, wy, tw, th)` bakes the SAME rich `tile_variants` terrain
+texture the top-down world uses (grass blades / water ripples / farmland furrows / road pebbles / rock /
+swamp reeds), `smoothscale`s it to the 2:1 diamond footprint and CLIPS it to the diamond shape via a
+per-size alpha mask (`_diamond_mask`), cached per (base-name, variant, tw, th); a terrain with no recipe
+returns None so the caller keeps the flat shaded diamond. `_base_name` strips a trailing variant digit
+('grass2'→'grass'). Wired into `iso_render.draw_diamond` (tries the texture, falls back to the flat
+P41.7 diamond) + `_draw_tile` (unpacks the name) + the tile payload (terrain name added). Result
+(scratchpad/iso2_tiles.png): the iso ground reads as real terrain — textured grass, rippling blue water,
+furrowed farmland, pebbled roads — instead of flat colour diamonds; combined with the ISO.1 pitched-roof
+buildings the iso world looks markedly more realistic. iso_tiles.py 56 lines; iso_render.py 493.
+tests/test_iso_tiles.py (4: base-name strip, textured→diamond surface, unknown→None, cached). Next:
+ISO.3 (character proportions + stance + shading — movieMaker), then ISO.4 (character animation).

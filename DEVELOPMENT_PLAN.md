@@ -6079,8 +6079,13 @@ rasterizer/camera/SSAA.
   `iso_objects.building_sprite(kind,size,covering,wall)`; `iso_render._variant_materials` picks the
   variant per world pos. scratchpad/iso1_{buildings,closeup}.png: real houses vs old flat grey boxes.
   tests/test_iso_buildings.py (7).
-- [ ] **ISO.2 Richer TILES** — `tile_variants` texture (blades/ripples/furrows), animated water,
-  softer inter-terrain shading, ramp-shaded slopes.
+- [x] **ISO.2 Richer TILES — DONE.** `ui/iso_tiles.py` `tile_diamond(name,wx,wy,tw,th)` bakes the rich
+  top-down `tile_variants` terrain TEXTURE (grass blades / water ripples / farmland furrows / road
+  pebbles / rock / swamp reeds — same recipes), squashes it to the 2:1 diamond + CLIPS it to the
+  diamond shape (cached per (name,variant,size); no-recipe → None → flat fallback). Wired into
+  `iso_render.draw_diamond`/`_draw_tile` (+ the terrain name added to the tile payload). The iso ground
+  now reads as real terrain (scratchpad/iso2_tiles.png: textured grass/water/farmland vs flat colour).
+  tests/test_iso_tiles.py (4).
 - [ ] **ISO.3 Character bodies: proportions + stance + shading** (movieMaker) — anthropometric
   proportions, seeded contrapposto/relaxed STANCE, two-light shading + per-part colour, 3–4× SSAA.
 - [ ] **ISO.4 Character ANIMATION** (movieMaker) — bone hierarchy + FK; bake POSED frames per

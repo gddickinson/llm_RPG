@@ -164,7 +164,7 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
                 continue
             items.append((iso.depth_key(wx, wy, z, 0), "tile",
                           (int(sx), int(sy), PALETTE.get(name, (90, 150, 70)),
-                           z, wx, wy)))
+                           z, wx, wy, name)))
             if name in ("forest", "forest2"):
                 items.append((iso.depth_key(wx, wy, z, 1), "obj",
                               (iso_objects.tree_sprite(int(tile_size * 1.5)),
@@ -281,10 +281,18 @@ def _draw_char(target, data, tile_size):
     target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
 
 
-def draw_diamond(target, iso, sx, sy, top, seed=0):
-    """A tile top-face diamond, P41.7 SHADED (top-lit, lower-shade) + a few
-    deterministic texture flecks so the iso ground reads less flat."""
+def draw_diamond(target, iso, sx, sy, top, seed=0, name=None, wx=0, wy=0):
+    """A tile top-face diamond. ISO.2: a real `tile_variants` TEXTURE clipped to
+    the diamond when the terrain has a recipe; else the P41.7 flat shaded
+    diamond + a few deterministic flecks."""
     dia = [(int(a), int(b)) for a, b in iso.diamond(sx, sy)]
+    if name is not None:
+        from ui import iso_tiles
+        tex = iso_tiles.tile_diamond(name, wx, wy, iso.tw, iso.th)
+        if tex is not None:
+            target.blit(tex, (int(sx - iso.tw / 2), int(sy - iso.th / 2)))
+            pygame.draw.polygon(target, _scale(top, 0.68), dia, 1)   # edge
+            return
     t, r, b, l = dia
     pygame.draw.polygon(target, top, dia)
     pygame.draw.polygon(target, _scale(top, 1.07), [t, r, l])   # sky-lit top
@@ -302,11 +310,12 @@ def draw_diamond(target, iso, sx, sy, top, seed=0):
 
 
 def _draw_tile(target, iso, data):
-    sx, sy, top, z, wx, wy = data
+    sx, sy, top, z, wx, wy = data[:6]
+    name = data[6] if len(data) > 6 else None
     for i, face in enumerate(iso.cliff_faces(sx, sy, z)):       # sides first
         pygame.draw.polygon(target, _scale(top, 0.55 if i == 0 else 0.4),
                             [(int(a), int(b)) for a, b in face])
-    draw_diamond(target, iso, sx, sy, top, wx * 131 + wy)
+    draw_diamond(target, iso, sx, sy, top, wx * 131 + wy, name, wx, wy)
 
 
 _SPRITES = {}
