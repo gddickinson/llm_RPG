@@ -135,9 +135,10 @@ lived community with roles — reusing Area A's activity layer for monster roles
   (chief/sentry/guard); the idle-hostile AI (`heuristic._hostile_action`) gained a
   role branch — a SENTRY paces the perimeter (`_patrol_home`), a CHIEF/SHAMAN holds
   the hoard, guards mill — firing only while no prey is in sight (combat untouched).
-- **C2 — Monster day/night schedules.** Per-template `active:"day"|"night"` +
-  `data/monster_activities.json`: nocturnal monsters sleep in the lair by day and
-  hunt/patrol by night. Reuses the ActivitySystem.
+- **C2 — Monster day/night. ✅ DONE.** `data/monsters.json` templates carry
+  `active:"day"|"night"|"always"` (undead/bog/wisp things tagged NIGHT); while no
+  prey is in sight a nocturnal creature lies DORMANT at its den by day (a sleep
+  bubble), a diurnal one by night — survival wakes it. `heuristic._hostile_action`.
 - **C3 — Tribe camps (the marquee). ✅ DONE.** `engine/tribe_camps.py` plants a
   visible camp `Location` per tribe near its territory (seeded like a lair, scaled
   by `strength`), with a **role-tagged cast** — a **chief** at the totem, a
@@ -145,10 +146,19 @@ lived community with roles — reusing Area A's activity layer for monster roles
   leash + role behaviour, tagged `lair:tribe:<tid>` so the pack brain bands them
   when the player closes in. Persists (`engine_setup` + `save_load`).
   *(Remaining: warriors leaving the camp to form the raid party on raid nights.)*
-- **C4 — Non-combat pack life.** A wolf / goblin pack roams, rests, and forages
-  together when it isn't fighting (not just combat coordination).
-- **C5 — Monsters in the ecosystem.** Predatory monsters (wolves, worgs) hunt
-  wildlife (a wolf runs down a deer) — ties Areas B and C together.
+- **C4 — Non-combat pack life.** *(Deferred — already covered in practice: lair/
+  camp packs hold together via the C1 leash + roles, and wildlife packs via B3
+  herding. A distinct roaming-band behaviour adds little over these.)*
+- **C5 — Monsters in the ecosystem.** *(Deferred — architectural friction: the
+  idle-monster AI lives in the pygame-free `heuristic` provider with NO engine
+  handle, so it can't scan the wildlife roster to pick + path to prey; doing it
+  well needs a new per-turn predation hook. Low visible payoff for the cost.)*
+
+Deferred elsewhere with rationale: **A3** farmer field-harvest (farmers are seated
+to "work at village" by class schedule, not routed to FARMLAND tiles — needs a
+profession→field routing pass); **C3** raid-from-camp (the camp sits ≥22 tiles
+from spawn while `_maybe_spill` already spawns the visible raiders AT the target
+settlement near the player — a camp-to-settlement march wouldn't read on-screen).
 
 Fixes: `heuristic.py:317-319` (idle random wander), `lairs.py` (no life),
 `monster_tribes.py` (invisible abstract strength), `schedules.py:9` (no monster
