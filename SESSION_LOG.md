@@ -9491,3 +9491,19 @@ odds climb the longer it goes hungry (a fed one is safe, two lean nights usually
 `data/wildlife.json` gains `active`/`herd` on every species + the wolf + boar `charge`; `check_wildlife`
 validates them. tests/test_wildlife_ethology.py (17). Deferred B5 (herds actively avoiding a predator's area —
 proximity-flee already covers the core). Full suite green.
+
+## 2026-07-17 — LIVING_WORLD Area C (C1): lair home behaviour — George
+
+George: "keep going with Area C." Started the last area (monster & tribe life). The audit found lair
+occupants get a `home_pos` but NOT the `territorial` leash, so a goblin warren SCATTERS — occupants wander
+off and idle until the player arrives, no roles, no community.
+
+**C1 — Lair home behaviour** (`engine/lairs._place_lair` + `heuristic._hostile_action`): every lair occupant
+now gets a `territorial` leash (`HOME_RADIUS`=6, so the warren HOLDS TOGETHER) with `home_pos` = the DEN
+centre, plus a `lair_role` — the lone/last special group is the CHIEF, the rest split into SENTRIES and
+GUARDS (a `role` in the occupant data overrides). The idle-hostile AI gained a role branch (fires only while
+no prey is in sight, so combat is untouched): a SENTRY paces an 8-point ring around the den
+(`_patrol_home`), a CHIEF/SHAMAN holds the hoard, guards mill (the leash already keeps them home). So a lair
+now reads as an OCCUPIED, watched camp instead of scattered wanderers. Measured: occupants stray ≤ ~7 tiles
+from the den over 40 turns (was scattering). tests/test_lairs.py (+5). Next: C3 tribe camps (the marquee —
+a visible camp with chief/warriors/foragers/shaman), reusing this role infrastructure.

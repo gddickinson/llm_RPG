@@ -150,5 +150,79 @@ class TestLairPersistence(unittest.TestCase):
         eng.end_game()
 
 
+class TestLairHomeBehaviour(unittest.TestCase):
+    """LIVING_WORLD C1 — a lair's occupants are LEASHED to the den + given roles,
+    so a warren holds together and reads as an occupied camp (George: do
+    intelligent monsters have activities? do social ones have jobs?)."""
+
+    def setUp(self):
+        self.eng = GameEngine(llm_provider="heuristic",
+                              enable_npc_processes=False)
+        self.eng.start_game()
+        if not self.eng.lairs.lairs:
+            self.eng.lairs.seed()
+        self.lair = self.eng.lairs.lairs[0]
+        self.occ = [self.eng.npc_manager.npcs[i] for i in self.lair["occupants"]
+                    if i in self.eng.npc_manager.npcs]
+
+    def tearDown(self):
+        try:
+            self.eng.end_game()
+        except Exception:
+            pass
+
+    def test_occupants_are_leashed_with_roles(self):
+        for m in self.occ:
+            self.assertEqual(m.metadata["behavior"].get("territorial"), 6,
+                             "a territorial leash (fixes the warren scatter)")
+            self.assertEqual(m.metadata["home_pos"], self.lair["pos"],
+                             "leashed to the den centre")
+            self.assertIn(m.metadata.get("lair_role"),
+                          ("chief", "sentry", "guard", "shaman", "forager"))
+
+    def test_a_lair_has_a_chief_and_sentries(self):
+        roles = {m.metadata.get("lair_role") for m in self.occ}
+        self.assertTrue({"sentry", "guard"} & roles, "someone stands watch")
+
+    def test_the_den_holds_together(self):
+        # drive the occupants many turns with the player far off: none wander away
+        prov = self.eng.llm_interface.provider
+        cx, cy = self.lair["pos"]
+        self.eng.player.position = (cx + 40, cy)
+        ws = {"player_position": self.eng.player.position,
+              "time_of_day": "morning"}
+        maxstray = 0
+        for _ in range(40):
+            for m in self.occ:
+                if m.is_alive():
+                    self.eng.action_router.process(
+                        m, prov.get_npc_action(m, ws, {}, ""))
+            for m in self.occ:
+                maxstray = max(maxstray,
+                               abs(m.position[0] - cx) + abs(m.position[1] - cy))
+        self.assertLessEqual(maxstray, 12, "the den holds — it does not scatter")
+
+    def test_sentry_advances_the_ring_at_a_waypoint(self):
+        # _patrol_home moves toward the current ring waypoint and advances to the
+        # next once reached — waypoint 0 is (home_x + r, home_y)
+        prov = self.eng.llm_interface.provider
+        s = self.occ[0]
+        home = (50, 50)
+        s.metadata["patrol_i"] = 0
+        s.position = (53, 50)                  # standing on waypoint 0 (r=3)
+        act = prov._patrol_home(s, s.metadata, home)
+        self.assertEqual(act["action"], "move")
+        self.assertEqual(s.metadata["patrol_i"], 1, "reached wp0 → next waypoint")
+
+    def test_sentry_paces_toward_a_waypoint(self):
+        prov = self.eng.llm_interface.provider
+        s = self.occ[0]
+        home = (50, 50)
+        s.metadata["patrol_i"] = 0
+        s.position = (50, 50)                  # at the den → move toward wp0 (east)
+        act = prov._patrol_home(s, s.metadata, home)
+        self.assertEqual(act["target"], "east", "walks toward the perimeter")
+
+
 if __name__ == "__main__":
     unittest.main()

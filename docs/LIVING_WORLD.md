@@ -130,10 +130,11 @@ into `world/wildlife_ethology.py` to hold the 500-line line.
 Goal: a goblin warren reads as an occupied camp with sentries; a tribe appears as a
 lived community with roles — reusing Area A's activity layer for monster roles.
 
-- **C1 — Lair home behaviour.** Lair occupants get a `territorial` leash (fix: they
-  don't have it) + roles: **sentries** patrol the lair perimeter, others idle/tend
-  near the hoard, foragers step out and return — none wander off. `engine/lairs.py`
-  (or a thin `engine/lair_life.py`) drives nearby lair occupants.
+- **C1 — Lair home behaviour. ✅ DONE.** Lair occupants get a `territorial` leash
+  (`HOME_RADIUS`=6, `home_pos`=den centre — fixes the warren scatter) + a `lair_role`
+  (chief/sentry/guard); the idle-hostile AI (`heuristic._hostile_action`) gained a
+  role branch — a SENTRY paces the perimeter (`_patrol_home`), a CHIEF/SHAMAN holds
+  the hoard, guards mill — firing only while no prey is in sight (combat untouched).
 - **C2 — Monster day/night schedules.** Per-template `active:"day"|"night"` +
   `data/monster_activities.json`: nocturnal monsters sleep in the lair by day and
   hunt/patrol by night. Reuses the ActivitySystem.

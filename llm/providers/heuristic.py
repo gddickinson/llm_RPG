@@ -224,6 +224,20 @@ class HeuristicProvider(LLMProvider):
             return "east" if dx > 0 else "west"
         return "south" if dy > 0 else "north"
 
+    def _patrol_home(self, character, meta, home):
+        """C1: a lair SENTRY paces an 8-point ring around the den, advancing to
+        the next waypoint as it reaches the last — a visible perimeter watch."""
+        import math
+        r = meta.get("patrol_r", 3)
+        i = meta.get("patrol_i", 0)
+        ang = 2.0 * math.pi * i / 8.0
+        wp = (int(home[0] + r * math.cos(ang)), int(home[1] + r * math.sin(ang)))
+        mypos = tuple(character.position)
+        if abs(mypos[0] - wp[0]) + abs(mypos[1] - wp[1]) <= 1:
+            meta["patrol_i"] = (i + 1) % 8
+        return self._wrap(character, "move", self._dir_between(mypos, wp),
+                          "", "watchful")
+
     def _hostile_action(self, character, world_state, player_in_view):
         meta = getattr(character, "metadata", {}) or {}
         behavior = meta.get("behavior", {})
@@ -255,6 +269,17 @@ class HeuristicProvider(LLMProvider):
                 return self._wrap(character, "move", back,
                                   "(lumbers back toward its lair)",
                                   "sullen")
+
+        # LIVING_WORLD C1: an occupied den — while no prey is in sight a SENTRY
+        # paces the perimeter, a CHIEF/SHAMAN holds the hoard, the rest mill about
+        # (they're already leashed home above), so a lair reads as lived-in
+        role = meta.get("lair_role")
+        if role and home and not player_in_view:
+            if role == "sentry":
+                return self._patrol_home(character, meta, tuple(home))
+            if role in ("chief", "shaman"):
+                return self._wrap(character, "wait", "over the hoard",
+                                  "", "watchful")
 
         # Ambusher: lie motionless until prey comes close
         ambush = behavior.get("ambush", 0)

@@ -28,6 +28,10 @@ logger = logging.getLogger("llm_rpg.lairs")
 MAX_LAIRS = 4
 MIN_DIST_FROM_START = 18       # a dragon is not a starting-meadow encounter
 SEARCH_RADIUS = 6              # rings scanned to seat a lair's occupants
+HOME_RADIUS = 6               # C1: how far a lair's creature strays before it heads home
+# C1 roles when the data doesn't name them: the LEADER (a lone/last special group)
+# holds the den, the rest split into sentries (pace the perimeter) and guards
+_DEFAULT_ROLES = ("sentry", "guard")
 
 # where a lair's creatures can stand (fliers still perch on these)
 WALKABLE = {TerrainType.GRASS, TerrainType.FOREST, TerrainType.ROAD,
@@ -137,8 +141,12 @@ class LairSystem:
         cx, cy = center
         need = sum(g.get("count", 1) for g in spec.get("occupants", []))
         ring = self._free_ring(cx, cy, need)
-        occ_ids, ri = [], 0
-        for grp in spec.get("occupants", []):
+        occ_ids, ri, idx = [], 0, 0
+        groups = spec.get("occupants", [])
+        leader_grp = max(range(len(groups)),          # the strongest = the chief
+                         key=lambda i: groups[i].get("count", 1) == 1) \
+            if groups else -1
+        for gi, grp in enumerate(groups):
             for _ in range(grp.get("count", 1)):
                 if ri >= len(ring):
                     break
@@ -146,7 +154,16 @@ class LairSystem:
                 ri += 1
                 m = build_monster(grp["template"], pos)
                 m.metadata["lair"] = key
-                m.metadata["home_pos"] = list(pos)
+                m.metadata["home_pos"] = [cx, cy]     # C1: leash to the DEN, not spawn
+                # C1: an occupied den — a territorial leash (so a warren never
+                # scatters) + a role that shapes its idle life
+                m.metadata.setdefault("behavior", {})["territorial"] = HOME_RADIUS
+                role = grp.get("role")
+                if role is None:
+                    role = "chief" if gi == leader_grp and grp.get("count", 1) == 1 \
+                        else _DEFAULT_ROLES[idx % len(_DEFAULT_ROLES)]
+                m.metadata["lair_role"] = role
+                idx += 1
                 self.engine.npc_manager.add_npc(m)
                 self.engine.world.map.place_character(m, *pos)
                 occ_ids.append(m.id)
