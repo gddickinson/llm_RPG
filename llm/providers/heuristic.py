@@ -179,7 +179,8 @@ class HeuristicProvider(LLMProvider):
                         _GREETINGS.get(klass, _GREETINGS["villager"]))
                     return self._wrap(character, "greet", "player",
                                       greet, "calm")
-                return self._wrap(character, act, tgt, "", emotion)
+                return self._wrap(character, act, tgt, "", emotion,
+                                  activity=activity)
         except Exception:
             pass
 
@@ -318,7 +319,7 @@ class HeuristicProvider(LLMProvider):
                           self.rng.choice(["north", "south", "east",
                                            "west"]), "", "wary")
 
-    def _wrap(self, character, action, target, dialog, emotion):
+    def _wrap(self, character, action, target, dialog, emotion, activity=""):
         return {
             "action": action,
             "target": target,
@@ -326,6 +327,9 @@ class HeuristicProvider(LLMProvider):
             "thoughts": f"({character.name} acts on instinct.)",
             "emotion": emotion,
             "goal_update": "",
+            # LIVING_WORLD A1: the raw schedule activity rides through so the
+            # ActivitySystem can PERFORM it (hammer/pray/…) on arrival, not loiter
+            "activity": activity,
         }
 
     def _parse_hour(self, world_state: Dict[str, Any]) -> int:

@@ -79,7 +79,7 @@ class ActionRouter:
 
         # Action dispatch
         if action in ("move", "walk", "run", "approach", "go", "patrol"):
-            return self._handle_move(npc, target)
+            return self._handle_move(npc, target, action_data.get("activity", ""))
         if action in ("attack", "fight", "strike", "slash", "stab", "shoot", "cast"):
             return self.engine.combat_system.npc_attack(npc, target, action)
         if action in ("buy", "sell", "trade", "offer", "pay", "gift", "give"):
@@ -126,17 +126,27 @@ class ActionRouter:
 
     # --------------- movement ----------------------------------------
 
-    def _handle_move(self, npc, target: str) -> bool:
+    def _handle_move(self, npc, target: str, activity: str = "") -> bool:
         text = (target or "").lower()
         # A scheduled NPC that has REACHED its location keyword would otherwise
-        # freeze on one tile (the "hangs around too long" George saw). Instead it
-        # MILLS ABOUT the spot — a bounded amble — so idle towns stay in motion.
+        # freeze on one tile (the "hangs around too long" George saw). On arrival
+        # it either PERFORMS its scheduled activity (LIVING_WORLD A1 — a smith
+        # hammers, a cleric prays) or, for a non-work activity, MILLS ABOUT.
         if not any(w in text for w in _DIRECTIONS):
             loc = self._resolve_location_target(npc, text)
             if loc is not None:
                 d2 = (loc[0] - npc.position[0]) ** 2 + \
                      (loc[1] - npc.position[1]) ** 2
+                acts = getattr(self.engine, "activities", None)
+                # A2: a guard patrols a real beat — sticky once started (the beat
+                # ranges past the loiter radius, so re-engage by its route, not d2)
+                if activity == "patrol" and acts is not None and \
+                        (npc.metadata.get("_patrol_center") == list(loc)
+                         or d2 <= LOITER_RADIUS * LOITER_RADIUS):
+                    return acts.patrol_step(npc, loc)
                 if d2 <= LOITER_RADIUS * LOITER_RADIUS:
+                    if activity and acts is not None and acts.is_perform(activity):
+                        return acts.perform(npc, activity)  # A1: hammer/pray/…
                     return self._loiter_step(npc, loc)
         direction = self._interpret_direction(npc, target)
         if direction == (0, 0):
@@ -376,16 +386,21 @@ class ActionRouter:
     # --------------- work --------------------------------------------
 
     def _handle_work(self, npc, target: str, action: str) -> bool:
-        # Crafting: blacksmith forges items
+        # LIVING_WORLD A6: a craft/forge action (LLM backends) produces a good
+        # gated on the worker's real PROFESSION, not the old `klass=="merchant"`;
+        # the heuristic path performs work visibly via the ActivitySystem (A1).
         from items.item_registry import create_item
-        klass = getattr(getattr(npc, "character_class", None), "value", "")
-        if action in ("forge", "craft", "smith") and klass == "merchant":
+        acts = getattr(self.engine, "activities", None)
+        prof = acts.profession_of(npc) if acts is not None else None
+        forge = action in ("forge", "craft", "smith") or prof in ("smith",
+                                                                   "carpenter")
+        if forge:
             forge_targets = {
                 "sword": "sword", "blade": "sword", "weapon": "dagger",
-                "armor": "leather", "shield": "shield",
+                "armor": "leather", "shield": "shield", "dagger": "dagger",
             }
             for keyword, item_id in forge_targets.items():
-                if keyword in target.lower():
+                if keyword in (target or "").lower():
                     item = create_item(item_id)
                     if item:
                         npc.add_item(item)

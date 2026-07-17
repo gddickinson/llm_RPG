@@ -93,6 +93,8 @@ def build_subsystems(engine, llm_model=None,
     self.stables = StableSystem(self)
     from engine.colosseum import ColosseumSystem
     self.colosseum = ColosseumSystem(self)
+    from engine.activities import ActivitySystem   # LIVING_WORLD A1
+    self.activities = ActivitySystem(self)
     from engine.teleport_network import TeleportNetwork
     self.teleport_network = TeleportNetwork(self)
     from engine.adventure_tome import AdventureTome

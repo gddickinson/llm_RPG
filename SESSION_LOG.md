@@ -9400,3 +9400,40 @@ Measured over 4 seeds: of the NPCs near the player, ~38% step each 0.7s tick and
 30 ticks (≈ nobody freezes for good) — a town in constant ambient motion, gliding smoothly (the gap-filling
 tween). tests/test_npc_movement.py: an arrived NPC strolls (moves >15/80, stays ≤ radius) + a compass move is
 NOT loitered. Full suite green.
+
+## 2026-07-17 — LIVING_WORLD Area A: professions ALIVE (A1/A2/A5/A6) — George
+
+George: "start with A1 — build the activity framework and keep going." Built the visible-behaviour layer so
+nearby NPCs PERFORM their role instead of milling. Grounded in the audit + docs/LIVING_WORLD.md.
+
+**A1 — the ActivitySystem** (`engine/activities.py` + `data/activities.json`): when a scheduled NPC has
+REACHED its work location, it PERFORMS the activity — a fitting animation clip + expression + an occasional
+sparse `[Town]` beat — instead of loitering. The clip is resolved by ACTIVITY (pray→kneel, play→dance,
+eat/drink) and, for `work`, refined by the NPC's PROFESSION (its `home_location` building's kind →
+`building_types.profession_of_kind` → smith→hammer, cook→stir, farmer→stoop, woodcutter→axe_chop…), else its
+class (`class_work`: cleric→kneel, wizard→cast…). Reuses the existing `ui/char_clips` library via the
+pygame-free `engine/anim` triggers; nearby-only, heuristic, no per-tick LLM. `schedules.activity_to_action`
+stops flattening (pray/play now ROUTE to their location so they can perform there), the raw activity rides
+through `action_data["activity"]` (heuristic `_wrap`), and `action_router._handle_move` calls `perform` on
+arrival — a non-work activity still strolls (the loiter fallback), so nothing regresses. In the demo world
+Goren the tavernkeeper resolves as a `cook` and visibly stirs a pot.
+
+**A5 — scheduleless classes get day-plans** (`characters/schedules.py`): wizard/rogue/noble/ranger/paladin/
+monk/druid/sorcerer/warlock/artificer/barbarian used to fall to a literal random cardinal walk. Now mapped
+to characterful ARCHETYPE schedules (scholar/devout/wanderer/gentry/shadow) so a wizard studies (cast), a
+noble promenades, a cleric-like devout kneels — targets use keywords that reliably resolve so they never
+freeze.
+
+**A2 — guard patrol routes** (`activities.patrol_step`): a guard on patrol walks a real BEAT — the
+settlement's GATES when it has them (else a ring around the centre), stepping waypoint to waypoint via a BFS
+`squad_tactics.path_step` (routes around buildings), sticky once started so the beat can range past the
+loiter radius. Measured: a guard covers ~13 tiles ranging 8 from centre over 80 ticks (gate-to-gate), where
+before it loitered on the spot.
+
+**A6 — fixed the dead `_handle_work`** (`action_router`): the LLM-path craft/forge handler was mis-gated to
+`klass == "merchant"` (no such smith class) and never reached from the heuristic. Now it forges gated on the
+worker's real PROFESSION (via `activities.profession_of`).
+
+Validator gains `check_activities` (clips are real char_clips clips; professions are known). tests/
+test_activities.py (23): profession→clip resolution, perform-vs-loiter routing, archetype day-plans, the
+patrol beat, the work handler. Full suite green.

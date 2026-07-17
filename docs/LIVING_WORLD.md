@@ -77,24 +77,23 @@ roles) — a monster "forager" is just an activity with a different worksite + a
 Goal: a watched town shows a smith hammering, a farmer harvesting, a guard walking
 a beat, a cleric praying, a bard playing — each tied to its profession + building.
 
-- **A1 — Activity framework + data.** `engine/activities.py` + `data/activities.json`;
-  worksite resolution; perform-at-worksite (anim + emote) replacing loiter for
-  scheduled workers. Un-flatten `schedules.activity_to_action` (keep the verb).
-  *Ships: smiths/cooks/etc. stand at their station and visibly work.*
-- **A2 — Patrol routes.** Guards walk a fixed loop of waypoints (settlement gates /
-  wall perimeter — `fortify` already records gates/towers) instead of loitering.
-- **A3 — Distinct verbs.** Cleric → altar → pray; bard → tavern → perform (tune line
-  + optional small gathered crowd); merchant → tend stall (restock beat); farmer →
-  `farming.FarmManager` plot → harvest (visible, ties to the real crop system).
-- **A4 — Work feeds the economy.** A worker's on-screen `tick_effect` occasionally
-  mints its good into the settlement `store` (bridge to `production_loop`), so
-  per-turn performance and the nightly model agree; larder/price systems already
-  read the store.
-- **A5 — Scheduleless classes.** Give wizard/rogue/noble/ranger/etc. simple
-  class-flavoured day plans (wizard studies at tower/library, rogue works the
-  tavern crowd, noble promenades) via `data/activities.json` — end the random walk.
-- **A6 — Fix `_handle_work`.** Reachable from the heuristic path; gated on the
-  worker's profession (not `klass=="merchant"`); produces the right good.
+- **A1 — Activity framework + data. ✅ DONE.** `engine/activities.py` +
+  `data/activities.json`; perform-at-location (clip + expression + sparse `[Town]`
+  beat) replacing loiter for scheduled workers; `work` refined by profession/class.
+  Un-flattened `schedules.activity_to_action`; the activity rides through
+  `action_data["activity"]`; `action_router._handle_move` performs on arrival.
+- **A2 — Patrol routes. ✅ DONE.** `activities.patrol_step` — a guard walks the
+  settlement's GATES (else a ring) via BFS `squad_tactics.path_step`, sticky.
+- **A3 — Distinct verbs.** *(partial via A1's per-clip performance.)* Remaining:
+  farmer → `farming.FarmManager` plot → visible harvest tied to the crop system;
+  bard → a small gathered crowd; worksite-TILE navigation (path to the anvil).
+- **A4 — Work feeds the economy.** A worker's performance occasionally mints its
+  good into the settlement `store` (bridge to `production_loop`). *(TODO)*
+- **A5 — Scheduleless classes. ✅ DONE.** wizard/rogue/noble/ranger/paladin/monk/
+  druid/sorcerer/warlock/artificer/barbarian → archetype day-plans in
+  `characters/schedules.py` (scholar/devout/wanderer/gentry/shadow). Random walk gone.
+- **A6 — Fix `_handle_work`. ✅ DONE.** Gated on the worker's profession via
+  `activities.profession_of`, not `klass=="merchant"`.
 
 Fixes: `schedules.py:98-113`, `heuristic.py:168-215`, `action_router.py:378-396`.
 

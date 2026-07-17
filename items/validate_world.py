@@ -94,6 +94,43 @@ def check_wildlife() -> List[str]:
     return problems
 
 
+def check_activities() -> List[str]:
+    """activities.json (LIVING_WORLD A1): every referenced animation clip is a
+    real char_clips clip and every profession is a known producer profession."""
+    path = _DATA / "activities.json"
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text())
+    except Exception as e:
+        return [f"activities.json unparseable: {e}"]
+    problems: List[str] = []
+    try:
+        from ui.char_clips import ACTIONS as _CLIPS
+        known = set(_CLIPS.keys())
+    except Exception:
+        known = None
+    for section, label in (("activities", "activity"),
+                           ("professions", "profession"),
+                           ("class_work", "class")):
+        for key, spec in data.get(section, {}).items():
+            clip = spec.get("clip") if isinstance(spec, dict) else None
+            if clip and known is not None and clip not in known:
+                problems.append(
+                    f"activities {label} '{key}': unknown clip '{clip}'")
+    try:
+        from engine.production import all_professions
+        profs = set(all_professions())
+    except Exception:
+        profs = None
+    if profs is not None:
+        for p in data.get("professions", {}):
+            if p not in profs:
+                problems.append(
+                    f"activities profession '{p}': not a known profession")
+    return problems
+
+
 def check_building_styles() -> List[str]:
     """building_styles.json: a known roof shape + covering + wall (P33.3)."""
     path = _DATA / "building_styles.json"
