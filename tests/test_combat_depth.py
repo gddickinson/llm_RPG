@@ -36,6 +36,17 @@ class TestCombatDepth(unittest.TestCase):
                 ch = self.wmap.get_character_at(x, y)
                 if ch is not None:
                     self.wmap.remove_character(ch)
+        # Also purge the NPC MANAGER of anyone in the box: `adjacent_hostiles`
+        # reads the manager, so a world/pack hostile the grid-clear missed (one
+        # not on the spatial index) would linger as a PHANTOM adjacent foe and
+        # steal the primary strike — a rare full-suite flake (an interloping
+        # Bandit stealing a Cleave's primary target).
+        for npc in list(self.engine.npc_manager.npcs.values()):
+            nx, ny = npc.position
+            if (self.ox - 3 <= nx < self.ox + 8
+                    and self.oy - 3 <= ny < self.oy + 4):
+                self.wmap.remove_character(npc)
+                self.engine.npc_manager.remove_npc(npc.id)
         self.wmap.remove_character(self.player)
         self.player.position = (self.ox, self.oy)
         self.wmap.place_character(self.player, self.ox, self.oy)
