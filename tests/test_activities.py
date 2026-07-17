@@ -181,10 +181,18 @@ class TestWorksiteSpread(unittest.TestCase):
                     eng.world.map.remove_character(other)
                 eng.world.map.terrain[y][x] = TerrainType.GRASS
         workers = []
-        for _ in range(4):
+        for i in range(4):
             n = eng.npc_manager.create_random_npc(
                 char_class=CharacterClass.VILLAGER)
+            # A worker's worksite is derived from a hash of its ID; the shared
+            # engine's auto-IDs drift with global-RNG order (an earlier test
+            # advances random → different IDs → occasional worksite COLLISION →
+            # <3 distinct spots, a full-suite flake). Pin distinct IDs that hash
+            # to 4 distinct tiles so the fan-out is deterministic.
+            n.id = f"fanworker_{i}"
             n.metadata["_profession"] = ""
+            n.metadata.pop("_worksite", None)
+            n.metadata.pop("_worksite_center", None)
             eng.world.map.remove_character(n)
             n.position = center
             eng.world.map.place_character(n, *center)
