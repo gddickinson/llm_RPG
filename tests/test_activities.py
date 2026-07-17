@@ -159,6 +159,95 @@ class TestWorkHandler(unittest.TestCase):
         self.assertGreater(len(n.inventory), before, "a smith forges a good")
 
 
+class TestWorksiteSpread(unittest.TestCase):
+    """A3 — workers fan out to personal worksite tiles instead of stacking."""
+
+    def test_workers_fan_out(self):
+        from characters.character_types import CharacterClass
+        eng = _shared_engine()
+        loc = next(l for l in eng.world.locations if "village" in l.name.lower())
+        center = loc.center()
+        workers = []
+        for _ in range(4):
+            n = eng.npc_manager.create_random_npc(
+                char_class=CharacterClass.VILLAGER)
+            n.metadata["_profession"] = ""
+            eng.world.map.remove_character(n)
+            n.position = center
+            eng.world.map.place_character(n, *center)
+            workers.append(n)
+        for _ in range(8):
+            for n in workers:
+                eng.activities.perform(n, "work", center)
+        spots = {tuple(w.position) for w in workers}
+        self.assertGreaterEqual(len(spots), 3, "workers spread out")
+
+
+class TestWorkYield(unittest.TestCase):
+    """A4 — a gatherer's visible work stocks the larder; crafters stay cosmetic."""
+
+    def test_gatherer_stocks_the_store(self):
+        from characters.character_types import CharacterClass
+        from engine.activities import WORK_YIELD_PERIOD
+        eng = _shared_engine()
+        loc = next(l for l in eng.world.locations if "village" in l.name.lower())
+        center = loc.center()
+        miner = eng.npc_manager.create_random_npc(
+            char_class=CharacterClass.VILLAGER)
+        miner.metadata["_profession"] = "miner"
+        eng.world.map.remove_character(miner)
+        miner.position = center
+        eng.world.map.place_character(miner, *center)
+        prod = eng.production
+        s = prod._nearest(prod._settlements(), miner.position)
+        store = prod.store_of(s.name)
+        before = store.get("copper_ore", 0)
+        for _ in range(WORK_YIELD_PERIOD + 2):
+            eng.activities.perform(miner, "work", None)
+        self.assertGreater(store.get("copper_ore", 0), before)
+
+    def test_crafter_mints_nothing(self):
+        from characters.character_types import CharacterClass
+        from engine.activities import WORK_YIELD_PERIOD
+        eng = _shared_engine()
+        loc = next(l for l in eng.world.locations if "village" in l.name.lower())
+        center = loc.center()
+        smith = eng.npc_manager.create_random_npc(
+            char_class=CharacterClass.MERCHANT)
+        smith.metadata["_profession"] = "smith"
+        eng.world.map.remove_character(smith)
+        smith.position = center
+        eng.world.map.place_character(smith, *center)
+        prod = eng.production
+        s = prod._nearest(prod._settlements(), smith.position)
+        store = prod.store_of(s.name)
+        before = store.get("sword", 0)
+        for _ in range(WORK_YIELD_PERIOD + 2):
+            eng.activities.perform(smith, "work", None)
+        self.assertEqual(store.get("sword", 0), before, "no minting from nothing")
+
+
+class TestBardCrowd(unittest.TestCase):
+    """A3 — nearby folk turn to watch a performing bard."""
+
+    def test_watchers_face_the_bard(self):
+        from characters.character_types import CharacterClass
+        eng = _shared_engine()
+        bard = eng.npc_manager.create_random_npc(char_class=CharacterClass.BARD)
+        eng.world.map.remove_character(bard)
+        bard.position = (30, 30)
+        eng.world.map.place_character(bard, 30, 30)
+        watcher = eng.npc_manager.create_random_npc(
+            char_class=CharacterClass.VILLAGER)
+        eng.world.map.remove_character(watcher)
+        watcher.position = (31, 30)
+        eng.world.map.place_character(watcher, 31, 30)
+        watcher.metadata.pop("_face", None)
+        eng.activities.perform(bard, "play", None)
+        self.assertIsNotNone(watcher.metadata.get("_face"),
+                             "a nearby NPC faces the show")
+
+
 _ENGINE = None
 
 
@@ -195,15 +284,19 @@ class TestActivityThroughRouter(unittest.TestCase):
         return c
 
     def test_arrived_worker_performs_not_loiters(self):
+        # A3: the cook first COMMUTES to its personal worksite tile, then stirs —
+        # over a few ticks it ends up performing (not loitering / random-walking)
         goren = self.engine.npc_manager.get_npc("tavernkeeper_01")  # a cook
         self._at_work(goren)
-        goren.metadata.pop("_emote", None)
-        before = goren.position
-        self.engine.action_router.process(
-            goren, {"action": "move", "target": goren.home_location,
-                    "activity": "work"})
-        self.assertEqual(goren.metadata.get("_emote"), "stir")
-        self.assertEqual(goren.position, before, "a worker stays at its station")
+        emote = None
+        for _ in range(8):
+            goren.metadata.pop("_emote", None)
+            self.engine.action_router.process(
+                goren, {"action": "move", "target": goren.home_location,
+                        "activity": "work"})
+            if goren.metadata.get("_emote"):
+                emote = goren.metadata["_emote"]
+        self.assertEqual(emote, "stir", "a cook stirs at its station")
 
     def test_wander_activity_still_loiters(self):
         goren = self.engine.npc_manager.get_npc("tavernkeeper_01")

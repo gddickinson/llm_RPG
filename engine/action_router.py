@@ -146,7 +146,7 @@ class ActionRouter:
                     return acts.patrol_step(npc, loc)
                 if d2 <= LOITER_RADIUS * LOITER_RADIUS:
                     if activity and acts is not None and acts.is_perform(activity):
-                        return acts.perform(npc, activity)  # A1: hammer/pray/…
+                        return acts.perform(npc, activity, loc)  # A1/A3: perform
                     return self._loiter_step(npc, loc)
         direction = self._interpret_direction(npc, target)
         if direction == (0, 0):

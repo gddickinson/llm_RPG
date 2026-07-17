@@ -9437,3 +9437,29 @@ worker's real PROFESSION (via `activities.profession_of`).
 Validator gains `check_activities` (clips are real char_clips clips; professions are known). tests/
 test_activities.py (23): profession→clip resolution, perform-vs-loiter routing, archetype day-plans, the
 patrol beat, the work handler. Full suite green.
+
+## 2026-07-17 — LIVING_WORLD A3/A4: worksite spread, a bard's crowd, work feeds the store
+
+Continued Area A (George: "keep going with A3 and A4").
+
+**A3 worksite SPREAD** (`activities._goto_worksite`/`_worksite_for`): a working NPC now walks to a stable
+per-person tile (centre ± `WORKSITE_SPREAD`=2) at its workplace and works THERE, so a crowd of workers fans
+out across the yard instead of stacking on one point (the crowding that left many "idle" in the earlier
+measurement). `perform` takes the location `center` (threaded from `action_router._handle_move`); it commutes
+via `squad_tactics.greedy_step`, then animates on arrival — but if the ideal tile is unreachable (a wall in
+the way), it SETTLES where it is after `COMMUTE_MAX`=6 steps and works there, so a worker never gets stuck
+sliding forever instead of performing.
+
+**A3 bard AUDIENCE** (`_draw_crowd`): a performing bard turns nearby idle folk to FACE the show (cosmetic —
+they keep their own behaviour), so a tune gathers a little crowd.
+
+**A4 work feeds the store** (`_work_yield`): a GATHERER's visible work (miner/woodcutter/fisher/hunter/
+farmer/forager — those with a `production.primary_raw`) stocks 1 unit of its raw into the nearest
+settlement's `production` store every `WORK_YIELD_PERIOD`=16 performs (capped at STORE_CAP) — so watching a
+miner actually adds ore, and the per-turn performance agrees with the nightly economy. CRAFTERS (smith/cook/
+alchemist — `primary_raw` None) stay cosmetic: no minting finished goods from nothing; the nightly
+`production_loop` still turns the accumulated raws into goods.
+
+tests/test_activities.py grows to 30 (worksite fan-out, gatherer stocks the store, crafter mints nothing,
+bard audience); the A1 arrived-worker test updated for the commute-then-work behaviour. Deferred: farmer
+field-harvest (needs farmers routed to the fields). Full suite green.

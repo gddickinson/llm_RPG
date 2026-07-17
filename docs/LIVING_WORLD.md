@@ -84,11 +84,15 @@ a beat, a cleric praying, a bard playing — each tied to its profession + build
   `action_data["activity"]`; `action_router._handle_move` performs on arrival.
 - **A2 — Patrol routes. ✅ DONE.** `activities.patrol_step` — a guard walks the
   settlement's GATES (else a ring) via BFS `squad_tactics.path_step`, sticky.
-- **A3 — Distinct verbs.** *(partial via A1's per-clip performance.)* Remaining:
-  farmer → `farming.FarmManager` plot → visible harvest tied to the crop system;
-  bard → a small gathered crowd; worksite-TILE navigation (path to the anvil).
-- **A4 — Work feeds the economy.** A worker's performance occasionally mints its
-  good into the settlement `store` (bridge to `production_loop`). *(TODO)*
+- **A3 — Distinct verbs. ✅ MOSTLY.** Per-clip performance (A1) + worksite SPREAD
+  (`_goto_worksite`/`_worksite_for` — workers fan out to a stable personal tile so
+  a crowd doesn't stack on the centre) + a bard's AUDIENCE (`_draw_crowd` — nearby
+  folk face the show). Remaining: farmer → harvest a ripe `FarmManager` plot (needs
+  farmers routed to the FIELDS, not the village centre — a location-routing change).
+- **A4 — Work feeds the economy. ✅ DONE.** A GATHERER's visible work stocks its raw
+  into the settlement `store` (`_work_yield`, rate-limited + capped) — so watching a
+  miner adds ore; crafters stay cosmetic (their `primary_raw` is None → the nightly
+  `production_loop` turns the raws into goods, no minting from nothing).
 - **A5 — Scheduleless classes. ✅ DONE.** wizard/rogue/noble/ranger/paladin/monk/
   druid/sorcerer/warlock/artificer/barbarian → archetype day-plans in
   `characters/schedules.py` (scholar/devout/wanderer/gentry/shadow). Random walk gone.

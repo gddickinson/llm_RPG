@@ -33,6 +33,11 @@ BEAT_CHANCE = 0.4         # ... and then only sometimes, so the log stays sparse
 PATROL_RADIUS = 5         # A2: a guard's beat ring when no gates to walk
 PATROL_POINTS = 8
 
+WORKSITE_SPREAD = 2       # A3: workers fan out to a personal tile ±this at the workplace
+COMMUTE_MAX = 6           # ... but settle & work where they are if it's unreachable
+WORK_YIELD_PERIOD = 16    # A4: a gatherer adds 1 raw to the store every N performs
+CROWD_DIST = 3            # A3: a bard's audience turns to watch within this range
+
 
 class ActivitySystem:
     def __init__(self, engine):
@@ -89,13 +94,18 @@ class ActivitySystem:
         return spec
 
     # ------------------------------------------------------------- act
-    def perform(self, npc, activity: str) -> bool:
-        """Play the activity's animation + expression on `npc` (it stays at its
-        worksite — the clip carries the motion) and occasionally emit a beat.
-        Returns True when it handled the turn (so the caller doesn't loiter)."""
+    def perform(self, npc, activity: str, center=None) -> bool:
+        """Play the activity's animation + expression on `npc` and occasionally
+        emit a beat. Returns True when it handled the turn (so the caller doesn't
+        loiter). A3: for WORK the NPC first walks to a personal WORKSITE tile at
+        the workplace (so a crowd of workers fans out instead of stacking on one
+        spot); A4: a gatherer's work feeds its raw into the settlement store."""
         spec = self.spec_for(npc, activity)
         if not spec:
             return False
+        if activity == "work" and center is not None and \
+                self._goto_worksite(npc, center):
+            return True                       # still commuting to its spot
         try:
             from engine import anim
             anim.emote(npc, spec.get("clip", "stoop"))
@@ -103,8 +113,98 @@ class ActivitySystem:
                 anim.express(npc, spec["expr"])
         except Exception as e:
             logger.debug(f"activity anim failed: {e}")
+        if activity == "work":
+            self._work_yield(npc)             # A4: gatherers stock the larder
+        elif activity == "play":
+            self._draw_crowd(npc)             # A3: a bard gathers an audience
         self._maybe_beat(npc, spec)
         return True
+
+    # ------------------------------------------------------------- worksite (A3)
+    def _goto_worksite(self, npc, center) -> bool:
+        """Walk to a stable per-person tile near the workplace centre; True while
+        still commuting (so a crowd of workers spreads out, not stacks). If the
+        ideal tile can't be reached within COMMUTE_MAX steps (a wall in the way),
+        the worker SETTLES where it is and works — never stuck sliding forever."""
+        meta = getattr(npc, "metadata", None)
+        if meta is None:
+            return False
+        ws = meta.get("_worksite")
+        if ws is None or meta.get("_worksite_center") != list(center):
+            ws = self._worksite_for(npc, center)
+            meta["_worksite"] = ws
+            meta["_worksite_center"] = list(center)
+            meta["_commute"] = 0
+        pos = npc.position
+        if abs(pos[0] - ws[0]) + abs(pos[1] - ws[1]) <= 1:
+            return False                      # arrived (or adjacent) → work here
+        if meta.get("_commute", 0) >= COMMUTE_MAX:     # can't reach it → settle
+            meta["_worksite"] = tuple(pos)
+            return False
+        meta["_commute"] = meta.get("_commute", 0) + 1
+        from engine.squad_tactics import greedy_step
+        before = tuple(pos)
+        greedy_step(self.engine.world.map, npc, tuple(ws))
+        return tuple(npc.position) != before  # moved → still commuting
+
+    @staticmethod
+    def _worksite_for(npc, center):
+        h = 0
+        for ch in (getattr(npc, "id", "") or "x"):
+            h = (h * 131 + ord(ch)) & 0x7fffffff
+        span = 2 * WORKSITE_SPREAD + 1
+        dx = (h % span) - WORKSITE_SPREAD
+        dy = ((h // span) % span) - WORKSITE_SPREAD
+        return (center[0] + dx, center[1] + dy)
+
+    # ------------------------------------------------------------- economy (A4)
+    def _work_yield(self, npc) -> None:
+        """A gatherer's visible work stocks the settlement larder with its raw
+        (so watching a miner adds ore — crafters stay cosmetic, the nightly
+        production loop turns the raws into goods). Rate-limited + capped."""
+        prof = self.profession_of(npc)
+        if not prof:
+            return
+        from engine import production as pr
+        raw = pr.primary_raw(prof)            # None for crafters (smith/cook/…)
+        if not raw:
+            return
+        meta = getattr(npc, "metadata", None)
+        if meta is None:
+            return
+        n = meta.get("_yield_ticks", 0) + 1
+        meta["_yield_ticks"] = n
+        if n % WORK_YIELD_PERIOD != 0:
+            return
+        prod = getattr(self.engine, "production", None)
+        if prod is None:
+            return
+        try:
+            setts = prod._settlements()
+            s = prod._nearest(setts, npc.position) if setts else None
+            if s is None:
+                return
+            from engine.production_loop import STORE_CAP
+            store = prod.store_of(s.name)
+            store[raw] = min(STORE_CAP, store.get(raw, 0) + 1)
+        except Exception as e:
+            logger.debug(f"work yield failed: {e}")
+
+    # ------------------------------------------------------------- crowd (A3)
+    def _draw_crowd(self, npc) -> None:
+        """Nearby idle folk turn to watch a performing bard (cosmetic — they keep
+        their own behaviour, they just face the show)."""
+        try:
+            from engine import anim
+            x, y = npc.position
+            for other in self.engine.npc_manager.npcs.values():
+                if other.id == npc.id or not other.is_active():
+                    continue
+                ox, oy = other.position
+                if abs(ox - x) + abs(oy - y) <= CROWD_DIST:
+                    anim.face(other, (x, y))
+        except Exception as e:
+            logger.debug(f"draw crowd failed: {e}")
 
     # ------------------------------------------------------------- patrol (A2)
     def patrol_step(self, npc, center) -> bool:
