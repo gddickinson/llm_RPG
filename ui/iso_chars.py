@@ -275,6 +275,11 @@ def _frame_state(char):
             prog = 1.0 - anim.get("action_t", 0.0) / max(
                 anim.get("action_dur", 0.6), 1e-6)
         return action, max(0, min(n - 1, int(prog * n)))
+    if action in ("walk", "run", "jog"):
+        # tie the stride to ground speed (`move_phase` advances with the tween in
+        # body_renderer.update_anim) so iso legs cycle at the pace the body glides
+        mp = anim.get("move_phase", 0.0) % 1.0
+        return action, int(mp * n) % n
     now = _clock_ms()
     off = _stance_of(char) * 400                      # desync folk
     per = _LOOP_PERIOD.get(action, 1500)

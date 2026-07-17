@@ -108,7 +108,8 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
     for char, (cx, cy) in _zone_chars(engine, zone):
         if not (0 <= cx < W and 0 <= cy < H) or not _seen(cx, cy):
             continue
-        update_anim(char, DT)                     # ISO.8 facing + tween indoors
+        update_anim(char, DT,                     # ISO.8 facing + tween indoors
+                    is_player=char.id == engine.player.id)
         fx, fy = tween_world_pos(char, cx, cy)
         sx, sy = iso.world_to_screen(fx, fy, 0, origin)
         items.append((iso.depth_key(fx, fy, 0, 2), "char",

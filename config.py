@@ -19,8 +19,13 @@ DEFAULT_MAP_HEIGHT = 80
 DEFAULT_VISIBILITY_RANGE = 5
 MAX_HISTORY_ITEMS = 100
 NPC_ACTION_INTERVAL = 5  # How many player turns before NPCs act
-NPC_IDLE_INTERVAL = 1.5  # Seconds between NPC turns while the player idles
-                         # (lower = livelier, more continuous ambient movement)
+NPC_IDLE_INTERVAL = 0.7  # Seconds between NPC steps while the player idles — a
+                         # natural walk pace (≈0.7s/tile). The renderer STRETCHES
+                         # each NPC's tile-slide to fill this gap (body_renderer
+                         # NPC_TWEEN_MAX), so ambient motion GLIDES continuously
+                         # instead of dart-then-freeze. Cosmetic only: NPC steps
+                         # don't advance the calendar or spawn encounters (that's
+                         # advance_turn, on a player action).
 GAME_TICK_INTERVAL = 0.1  # Seconds between game ticks
 
 # UI Settings

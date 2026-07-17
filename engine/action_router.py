@@ -20,6 +20,14 @@ _DIRECTIONS = {
     "forwards": (0, -1), "backwards": (0, 1),
 }
 
+# When a scheduled NPC has arrived at its location it ambles around it (mills
+# about) rather than freezing, so idle towns keep moving (George). Bounded so it
+# never wanders off its post; an occasional pause keeps the amble natural.
+LOITER_RADIUS = 3
+LOITER_PAUSE_CHANCE = 0.15
+_LOITER_DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1),
+                (1, 1), (-1, -1), (1, -1), (-1, 1)]
+
 
 class ActionRouter:
     """Route LLM-decided actions to the right handler."""
@@ -119,6 +127,17 @@ class ActionRouter:
     # --------------- movement ----------------------------------------
 
     def _handle_move(self, npc, target: str) -> bool:
+        text = (target or "").lower()
+        # A scheduled NPC that has REACHED its location keyword would otherwise
+        # freeze on one tile (the "hangs around too long" George saw). Instead it
+        # MILLS ABOUT the spot — a bounded amble — so idle towns stay in motion.
+        if not any(w in text for w in _DIRECTIONS):
+            loc = self._resolve_location_target(npc, text)
+            if loc is not None:
+                d2 = (loc[0] - npc.position[0]) ** 2 + \
+                     (loc[1] - npc.position[1]) ** 2
+                if d2 <= LOITER_RADIUS * LOITER_RADIUS:
+                    return self._loiter_step(npc, loc)
         direction = self._interpret_direction(npc, target)
         if direction == (0, 0):
             return False
@@ -136,6 +155,58 @@ class ActionRouter:
                     f"{npc.name} takes an alternate path.")
                 return True
         return False
+
+    def _loiter_step(self, npc, center) -> bool:
+        """Stroll toward a wander POINT within LOITER_RADIUS of `center`, picking a
+        fresh one on arrival — so an idle NPC continuously ambles around its spot
+        (directed motion reads far livelier than random adjacent jitter) instead
+        of standing frozen. An occasional pause keeps it natural."""
+        meta = getattr(npc, "metadata", None)
+        if meta is None:
+            return False
+        if random.random() < LOITER_PAUSE_CHANCE:
+            return False                       # a natural pause between strolls
+        pos = npc.position
+        r2 = LOITER_RADIUS * LOITER_RADIUS
+        last = meta.get("_loiter_prev")
+        tgt = meta.get("_loiter_target")
+        # (re)pick when there's no target, we've arrived, or it's a stale point
+        # from another spot (outside this location's loiter area)
+        if not tgt or tuple(pos) == tuple(tgt) or \
+                (tgt[0] - center[0]) ** 2 + (tgt[1] - center[1]) ** 2 > r2:
+            tgt = self._pick_loiter_target(center)
+            meta["_loiter_target"] = tgt
+        # try the directed step toward the wander point first (purposeful stroll),
+        # then ANY in-radius neighbour (robust in crowded/tight spots), never
+        # backtracking onto the tile just left (so it covers ground, not jitters)
+        cands = []
+        if tgt:
+            dx = (tgt[0] > pos[0]) - (tgt[0] < pos[0])
+            dy = (tgt[1] > pos[1]) - (tgt[1] < pos[1])
+            cands = [(dx, dy), (dx, 0), (0, dy)]
+        others = list(_LOITER_DIRS)
+        random.shuffle(others)
+        for sx, sy in cands + others:
+            if (sx, sy) == (0, 0):
+                continue
+            nx, ny = pos[0] + sx, pos[1] + sy
+            if (nx, ny) == last or \
+                    (nx - center[0]) ** 2 + (ny - center[1]) ** 2 > r2:
+                continue
+            if self.engine.world.map.move_character(npc, nx, ny):
+                meta["_loiter_prev"] = tuple(pos)
+                return True
+        meta["_loiter_target"] = None          # blocked → a fresh point next time
+        return False
+
+    @staticmethod
+    def _pick_loiter_target(center):
+        for _ in range(6):
+            ox = random.randint(-LOITER_RADIUS, LOITER_RADIUS)
+            oy = random.randint(-LOITER_RADIUS, LOITER_RADIUS)
+            if (ox or oy) and ox * ox + oy * oy <= LOITER_RADIUS * LOITER_RADIUS:
+                return (center[0] + ox, center[1] + oy)
+        return None
 
     def _interpret_direction(self, npc, target: str) -> Tuple[int, int]:
         text = (target or "").lower()

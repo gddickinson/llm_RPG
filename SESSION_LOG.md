@@ -9349,3 +9349,54 @@ E to stage the next matchup (cycles), or walk off and play on.
 tests/test_arena_menu.py (7): matchups load engine-free, Combat Arena is a title option that opens the
 list, renders without crashing, navigation stays in bounds, Enter returns the pick (with a hero spec),
 Esc returns to the title. Full suite green.
+
+## 2026-07-17 — Continuous NPC motion (no more jerky stop/start) — George
+
+George: "NPCs and characters and monsters move with a jerky stop/start motion, stopping briefly between
+rounds. Can you make their motion more continuous?" Root cause: an NPC steps on the slow world cadence
+(every NPC_IDLE_INTERVAL=1.5s while the player idles) but the sprite slid across a tile in a fixed 0.16s —
+so it DARTED then froze ~1.3s (measured: 77% of frames frozen).
+
+Fix — the slide now STRETCHES to fill the gap. New `ui/char_tween.py` (shared by both renderers):
+`start_slide` sizes each NPC's tile-slide to the measured time since its last step (clamped to
+NPC_TWEEN_MAX=0.85s), so a walking NPC glides tile-to-tile continuously; the actively-controlled hero keeps
+the crisp fixed 0.16s step (`is_player=True`) so input stays responsive. `advance_slide` advances a
+`move_phase` in proportion to ground speed (STRIDE_PER_TILE cycles/tile) so the legs cycle at the glide's
+pace — no fast shuffle over a slow slide. Both `body_renderer.update_anim` (top-down) and the iso path read
+the per-char `tween_dur` (`iso_actors.tween_world_pos`, `body_renderer` slide offset, `iso_chars._frame_state`
+walk/run frames from `move_phase`). `is_player` threaded through the 4 update_anim call sites (renderer world
++ zone, iso_render, iso_zone).
+
+Paired with `config.NPC_IDLE_INTERVAL` 1.5→0.7s (a natural ~0.7s/tile walk, and ≤ the tween cap so the glide
+fills the whole gap) — verified COSMETIC-ONLY: `process_npc_turns` moves NPCs but does NOT advance the
+calendar or spawn encounters (that's `advance_turn`, on a player action), so faster ambient stepping has no
+gameplay impact. Result: a realistic stand-then-walk is 0% frozen (was 77%), gliding every frame at a steady
+pace. Split the motion math into `char_tween` to hold `body_renderer`/`renderer` under the 500-line line.
+tests/test_char_tween.py (10): the slide fills/caps the gap, the player stays crisp, a short gap never dips
+below the base, the stride advances with ground speed, and the iso tween uses the per-char duration. Full
+suite green.
+
+## 2026-07-17 — Idle NPCs mill about (they stop freezing on their tile) — George
+
+George (follow-up to the continuous-motion fix): "when the player isn't doing anything the NPCs & monsters
+still spend most of their time not moving — they move to a tile and hang around too long. Tick rate?"
+
+Two causes: (1) the tick/round rate — already lowered NPC_IDLE_INTERVAL 1.5→0.7s so NPCs ACT ~1.4×/sec; and
+(2) the real one — the AI DECIDES to stand still once arrived. Most schedule activities map (via
+`schedules.activity_to_action`) to `("move", <location>)`, and `action_router._interpret_direction` returns
+(0,0) — "if already at the target, don't move" — so scheduled NPCs converge on their spot and FREEZE.
+
+Fix: an arrived NPC now STROLLS around its location instead of freezing. `action_router._handle_move`: when
+the target resolves to a LOCATION and the NPC is within `LOITER_RADIUS`(3) of it, `_loiter_step` picks a
+wander POINT within the area and walks toward it (directed motion — reads far livelier than random adjacent
+jitter), picking a fresh point on arrival; it falls back to ANY in-radius neighbour when the directed step is
+blocked (robust in crowded/tight spots) and never backtracks onto the tile just left, with a small
+`LOITER_PAUSE_CHANCE`(0.15) so it occasionally stops. Direction moves (a guard's N/S/E/W patrol) and
+toward-target approaches are untouched — loiter is location-arrival-only. Silent (no event-log spam).
+
+Investigation clarified the two levers: the tick rate (only NPCs within `effective_visibility()*2` of the
+player are processed — 90% of them DECIDE to move, at the morning hour) and the arrival-freeze (now fixed).
+Measured over 4 seeds: of the NPCs near the player, ~38% step each 0.7s tick and 98% move at least once over
+30 ticks (≈ nobody freezes for good) — a town in constant ambient motion, gliding smoothly (the gap-filling
+tween). tests/test_npc_movement.py: an arrived NPC strolls (moves >15/80, stays ≤ radius) + a compass move is
+NOT loitered. Full suite green.

@@ -21,8 +21,9 @@ def tween_world_pos(char, cx, cy):
     from ui.body_renderer import TWEEN_DUR
     t = anim.get("tween_t", 0.0)
     fr = anim.get("tween_from")
-    if t > 0 and fr and TWEEN_DUR > 0:
-        k = t / TWEEN_DUR                          # 1 at the step, 0 at arrival
+    dur = anim.get("tween_dur", TWEEN_DUR) or TWEEN_DUR
+    if t > 0 and fr and dur > 0:
+        k = t / dur                                # 1 at the step, 0 at arrival
         return cx + fr[0] * k, cy + fr[1] * k
     return float(cx), float(cy)
 

@@ -160,16 +160,23 @@ def _ensure_anim(char) -> dict:
     return anim
 
 
-TWEEN_DUR = 0.16           # seconds to slide from the old tile to the new one
+# continuous tile-to-tile motion lives in char_tween (shared with the iso path);
+# re-exported here for back-compat (iso_actors imports TWEEN_DUR from body_renderer)
+from ui.char_tween import (TWEEN_DUR, NPC_TWEEN_MAX, STRIDE_PER_TILE,  # noqa: F401
+                           start_slide as _start_slide,
+                           advance_slide as _advance_slide)
 CHAR_H_FRAC = 1.5          # a character stands this many tiles tall (overflows up)
 
 
-def update_anim(char, dt: float) -> None:
+def update_anim(char, dt: float, is_player: bool = False) -> None:
     """Advance walk/idle phases, facing, the tile-to-tile TWEEN, and the strike
     timer (P33.4b). The tween is what makes the walk cycle VISIBLE — a turn-based
-    step teleports tiles, so we slide the sprite across and play the walk."""
+    step teleports tiles, so we slide the sprite across and play the walk. An
+    NPC's slide fills the gap since its last step (continuous ambient motion); the
+    player keeps the crisp fixed `TWEEN_DUR` so input stays responsive."""
     from ui import char_motion
     anim = _ensure_anim(char)
+    anim["since_move"] = anim.get("since_move", 0.0) + dt
     prev = anim["prev_pos"]
     cur = tuple(char.position)
     if prev != cur:                        # a step: start a slide from prev→cur
@@ -177,8 +184,7 @@ def update_anim(char, dt: float) -> None:
         from ui.char_pose3d import facing_from_delta
         anim["face_target"] = facing_from_delta(cur[0] - prev[0],
                                                 cur[1] - prev[1])
-        anim["tween_from"] = (prev[0] - cur[0], prev[1] - cur[1])
-        anim["tween_t"] = TWEEN_DUR
+        _start_slide(anim, prev, cur, is_player)
     anim["prev_pos"] = cur
     # ease the continuous facing angle toward the heading (P34.14) — the cast
     # TURNS to face any of 360° instead of snapping to 4 views
@@ -190,8 +196,7 @@ def update_anim(char, dt: float) -> None:
     tweening = anim.get("tween_t", 0.0) > 0
     anim["moving"] = tweening
     if tweening:
-        anim["walk_phase"] = (anim["walk_phase"] + dt * 20.0) % math.tau
-        anim["tween_t"] = max(0.0, anim["tween_t"] - dt)
+        _advance_slide(anim, dt)           # stride + tween timers a frame
     else:
         anim["walk_phase"] *= 0.85
         anim["idle_phase"] = (anim["idle_phase"]
@@ -306,8 +311,9 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     if tw > 0:
         from ui.animation import smoothstep
         fdx, fdy = anim.get("tween_from", (0, 0))
+        dur = anim.get("tween_dur", TWEEN_DUR) or TWEEN_DUR
         # ease the slide (slow-in/out) instead of a linear crawl (P34.1)
-        frac = 1.0 - smoothstep(1.0 - tw / TWEEN_DUR)
+        frac = 1.0 - smoothstep(1.0 - tw / dur)
         ox, oy = fdx * tile_size * frac, fdy * tile_size * frac
     feet_x = sx + tile_size / 2 + ox
     feet_y = sy + tile_size - 2 + oy
@@ -347,8 +353,13 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     # capture); everything else stays the procedural pose below.
     mclip, mp = loco, None
     if loco:
-        mp = (anim.get("clock", 0.0) * char_mocap.RATE.get(loco, 1.0)
-              * gait["cadence"])
+        if action in ("walk", "run", "jog"):
+            # tie the stride to ground speed (`move_phase` advances with the
+            # tween) so the walk cycle flows with the glide, not a fixed clock
+            mp = anim.get("move_phase", 0.0) * gait["cadence"]
+        else:
+            mp = (anim.get("clock", 0.0) * char_mocap.RATE.get(loco, 1.0)
+                  * gait["cadence"])
     else:
         cm = char_mocap.combat_mocap(action, anim, weapon, attack)
         if cm:

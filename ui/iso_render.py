@@ -200,7 +200,7 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
         # instead of teleporting — the smooth-movement parity the top-down view
         # already has (George: "movements are a bit jerky, they wait between
         # tiles"). Height still samples the logical tile.
-        update_anim(char, DT)
+        update_anim(char, DT, is_player=char.id == engine.player.id)
         fx, fy = tween_world_pos(char, cx, cy)
         cz = _HEIGHT.get(_terrain_name(wmap.terrain[cy][cx]), 0.0)
         sx, sy = iso.world_to_screen(fx, fy, cz, origin)

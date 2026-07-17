@@ -186,7 +186,7 @@ class MapRenderer:
             cx, cy = char.position
             if not (cam_x <= cx < cam_x + cols and cam_y <= cy < cam_y + rows):
                 continue
-            update_anim(char, 1.0 / 30.0)
+            update_anim(char, 1.0 / 30.0, is_player=char.id == engine.player.id)
             sx = view_rect.x + (cx - cam_x) * self.tile_size
             sy = view_rect.y + (cy - cam_y) * self.tile_size
             # heroes draw as heroes; an NPC glimpsed through a window is glazed
@@ -448,7 +448,7 @@ class MapRenderer:
             if visible is not None and (cx, cy) not in visible and \
                     char.id != engine.player.id:
                 continue
-            update_anim(char, 1.0 / 30.0)
+            update_anim(char, 1.0 / 30.0, is_player=char.id == engine.player.id)
             draw_body_crisp(target, char,
                       view_rect.x + (cx - cam_x) * self.tile_size,
                       view_rect.y + (cy - cam_y) * self.tile_size,
