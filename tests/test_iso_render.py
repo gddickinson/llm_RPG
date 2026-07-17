@@ -226,6 +226,21 @@ class TestBuildingFootprints(unittest.TestCase):
                       if surf.get_at((x, y))[:3] != (0, 0, 0))
         self.assertGreater(painted, 30, "a spanning building should paint")
 
+    def test_the_door_paints_a_light_frame(self):
+        # ISO.16b: a clearly-FRAMED entrance door (George: no door icons)
+        from ui import iso_structures
+        from ui.iso import IsoProjection
+        iso = IsoProjection(96, 48, 24)
+        surf = pygame.Surface((260, 220))
+        surf.fill((30, 34, 42))
+        iso_structures.draw_building(surf, iso, (130, 90),
+                                     (0, 0, 1, 1, "home"), "clay", "timber",
+                                     "open")
+        lintel = iso_structures._LINTEL
+        framed = sum(1 for x in range(0, 260, 2) for y in range(0, 220, 2)
+                     if surf.get_at((x, y))[:3] == lintel)
+        self.assertGreater(framed, 6, "the door frame (lintel) should show")
+
 
 class TestIsoOverlayHelpers(unittest.TestCase):
     @classmethod

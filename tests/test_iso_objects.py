@@ -73,7 +73,7 @@ class TestPlacement(unittest.TestCase):
         infos = iso_structures.building_infos(self.engine)
         self.assertTrue(infos, "the world's buildings should have footprints")
         wm = self.engine.world.map
-        for x0, y0, x1, y1, kind in infos:
+        for x0, y0, x1, y1, kind, *_ in infos:
             self.assertIsInstance(kind, str)
             self.assertTrue(0 <= x0 <= x1 < wm.width)
             self.assertTrue(0 <= y0 <= y1 < wm.height)

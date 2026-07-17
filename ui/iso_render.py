@@ -234,14 +234,16 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
     # ISO.15 footprint-spanning building boxes, keyed on the FRONT tile so they
     # occlude what's behind and are occluded by what's in front (explored-gated)
     for info in binfos:
-        bx0, by0, bx1, by1, kind = info
+        bx0, by0, bx1, by1, kind = info[:5]
+        name = info[5] if len(info) > 5 else ""
         if bx1 < x0 or bx0 > x1 or by1 < y0 or by0 > y1:
             continue
         if is_explored is not None and not is_explored(engine, bx0, by0):
             continue
         cov, wl = _variant_materials(kind, bx0, by0)
+        door_st = iso_structures.door_state(engine, name)
         items.append((iso.depth_key(bx1, by1, 1.5, 1.3), "building",
-                      (info, cov, wl)))
+                      (info, cov, wl, door_st)))
     items.sort(key=lambda t: t[0])
 
     for _, tag, data in items:
@@ -260,8 +262,9 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
         elif tag == "obj":
             _blit_object(target, data)
         elif tag == "building":
-            info, cov, wl = data
-            iso_structures.draw_building(target, iso, origin, info, cov, wl)
+            info, cov, wl, door_st = data
+            iso_structures.draw_building(target, iso, origin, info, cov, wl,
+                                         door_st)
         else:
             _draw_char(target, data, tile_size)
 

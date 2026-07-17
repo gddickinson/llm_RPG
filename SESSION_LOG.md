@@ -9213,3 +9213,15 @@ scratchpad/iso16_newanims.png, iso16_combat_wired.png (sword swings + hurt recoi
 tests: swim faces its heading + sword uses the mocap + the new clips load (test_iso_skeleton), furrows
 paint green (test_iso_render), a downed char lies (test_iso_chars). Full suite green.
 
+## 2026-07-16 — iso building DOORS restored (George)
+
+George: "the buildings no longer have any door icons." A regression from ISO.15: the footprint-spanning
+building drew a door, but it was a small dark quad the same tone as the shadowed wall AND the low, dominant
+roof swallowed the short front wall, so the door didn't read. Fix: taller walls (`_STOREY_Z` 0.62→0.74) +
+lower roofs (less overhang), and a clearly-FRAMED entrance door — a light stone lintel/jambs around a
+panel coloured by the lock STATE (open/closed/locked/broken, from `door_manager` via the top-down
+`DOOR_STATE_COLORS`) with a knob — so an enterable door reads at a glance, like the top-down glyph.
+`building_infos` now carries the loc name, `iso_structures.door_state(engine,name)` fetches the state, and
+`iso_render` threads it into `draw_building`. scratchpad/door_fixed.png, bldg_doors.png. tests: the door
+frame paints (test_iso_render). Full suite green.
+
