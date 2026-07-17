@@ -367,6 +367,15 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Anim state error: {e}")
 
+    # I1 — the cast SHARES social interactions: two adjacent friendly (or
+    # feuding) neighbours embrace / shake hands / kiss / square up, so the
+    # social graph becomes visible in the world
+    try:
+        from engine import interactions
+        interactions.update_social(self)
+    except Exception as e:
+        logger.debug(f"Social interaction error: {e}")
+
     # Catch your breath — sprint stamina recovers each turn you're not sprinting
     try:
         from engine import stamina

@@ -79,6 +79,10 @@ CLASS_WEAPON = {
     "merchant": None, "villager": None, "bard": "dagger", "monster": None,
 }
 
+# I1 social-contact clips that busy both hands — no weapon/shield is brandished
+# through them (an embrace / clasp / kiss reads wrong with a raised sword).
+_EMPTY_HANDED = {"handshake", "hug", "kiss"}
+
 HAIR_PALETTE = [(58, 40, 26), (30, 26, 24), (120, 90, 52), (150, 122, 74),
                 (162, 162, 168), (110, 62, 36), (92, 74, 58)]
 
@@ -323,6 +327,10 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     from ui import char_clips, char_style, char_pose3d, char_mocap, char_injury
     action = anim.get("cur_action", "idle")
     weapon = char_motion.weapon_kind(char)
+    # I1: a warm social-contact clip busies BOTH hands (an embrace, a clasp, a
+    # kiss) — don't brandish a weapon or shield through it, or a hug reads as a
+    # sword raised.  A square-up (taunt) keeps its arms, so it stays armed.
+    bare_hands = action in _EMPTY_HANDED
     inj = char_injury.injury_state(char)          # P34.17 injuries show
     if inj["down"]:                               # unconscious / dying → lie downed
         action = "lie"
@@ -445,7 +453,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     if klass.lower() in bp.ROBE_CLASSES:         # R5: a robe hangs over the legs
         bp.draw_robe(surface, pose, torso, max(3, int(H * 0.05)))
     bp.draw_arm(surface, pose, far, _darken(torso, 26), _darken(skin, 26), arm_w)
-    if char_motion.has_shield(char):
+    if char_motion.has_shield(char) and not bare_hands:
         bp.draw_shield(surface, pose, (120, 110, 95), (88, 76, 60),
                        max(2, int(H * 0.13)))
     bp.draw_torso(surface, pose, torso, belt)
@@ -454,7 +462,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     bp.draw_head(surface, pose, skin, hair, race, face_visible, neck_w,
                  pose.get("profile", 0), expr, anim.get("blinking", False),
                  sec.get("look", (0.0, 0.0)))
-    if weapon:                                   # resolved above (P34.11)
+    if weapon and not bare_hands:                # resolved above (P34.11)
         bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)
     char_flow.draw_front(surface, anim, pose, sx, sy, tile_size, atk_t, weapon)
 
