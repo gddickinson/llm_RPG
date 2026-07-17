@@ -319,6 +319,9 @@ def _draw_tile(target, iso, data):
         pygame.draw.polygon(target, _scale(top, 0.55 if i == 0 else 0.4),
                             [(int(a), int(b)) for a, b in face])
     draw_diamond(target, iso, sx, sy, top, wx * 131 + wy, name, wx, wy)
+    if name in ("farmland", "farmland2"):          # ISO.16 furrowed crop rows
+        from ui import iso_tiles
+        iso_tiles.draw_furrows(target, iso, sx, sy, wx, wy)
 
 
 _SPRITES = {}

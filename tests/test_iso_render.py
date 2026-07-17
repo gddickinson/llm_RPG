@@ -202,6 +202,18 @@ class TestBuildingFootprints(unittest.TestCase):
         self.assertIn((5, 6), tiles)
         self.assertIn((7, 7), tiles)
 
+    def test_furrows_paint_green_crop_rows(self):
+        # ISO.16: farmland reads as furrowed crops (green/gold rows)
+        from ui import iso_tiles
+        from ui.iso import IsoProjection
+        iso = IsoProjection(80, 40, 20)
+        surf = pygame.Surface((160, 120))
+        surf.fill((124, 92, 56))                     # the dirt base
+        iso_tiles.draw_furrows(surf, iso, 80, 60, 3, 4)
+        greenish = sum(1 for x in range(30, 130, 3) for y in range(30, 90, 3)
+                       if surf.get_at((x, y))[1] > surf.get_at((x, y))[0] + 10)
+        self.assertGreater(greenish, 8, "crop rows should add green over dirt")
+
     def test_draw_building_paints_walls_and_roof(self):
         from ui import iso_structures
         from ui.iso import IsoProjection

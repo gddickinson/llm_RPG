@@ -108,10 +108,18 @@ class TestSprite(unittest.TestCase):
 
     def test_sprite_drawn_and_cached_with_stance(self):
         c = _Char("aldric", "warrior")
-        s1 = iso_chars.char_sprite(c, 72, 2)
-        self.assertIsInstance(s1, pygame.Surface)
-        self.assertGreater(pygame.mask.from_surface(s1).count(), 40)
-        self.assertIs(s1, iso_chars.char_sprite(c, 72, 2), "cached")
+        # freeze the animation clock so both calls resolve the same frame (the
+        # cache key includes the clock-derived frame; wall-clock drift between
+        # the two calls otherwise flakes this "is cached" check)
+        orig = iso_chars._clock_ms
+        iso_chars._clock_ms = lambda: 1000
+        try:
+            s1 = iso_chars.char_sprite(c, 72, 2)
+            self.assertIsInstance(s1, pygame.Surface)
+            self.assertGreater(pygame.mask.from_surface(s1).count(), 40)
+            self.assertIs(s1, iso_chars.char_sprite(c, 72, 2), "cached")
+        finally:
+            iso_chars._clock_ms = orig
 
     def test_taller_than_a_single_tile(self):
         c = _Char("x", "merchant")
@@ -177,6 +185,12 @@ class TestAnimation(unittest.TestCase):
         seen = {iso_chars._ambient_idle(c) for _ in range(6)}
         self.assertTrue(seen <= {"idle", "look", "bored"},
                         "ambient idle stays calm")
+
+    def test_a_downed_character_lies_down(self):
+        # ISO.16: a dying/unconscious character shows the death (prone) pose
+        c = _Char("fallen", "warrior"); c.position = (2, 2)
+        c.metadata["dying"] = 2
+        self.assertEqual(iso_chars._frame_state(c)[0], "die")
 
     def test_action_frames_bake_distinct_sprites(self):
         pygame.init()

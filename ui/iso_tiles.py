@@ -54,3 +54,33 @@ def tile_diamond(name: str, wx: int, wy: int, tw: int, th: int):
               special_flags=pygame.BLEND_RGBA_MULT)
     _CACHE[key] = surf
     return surf
+
+
+# ISO.16 crop palettes by growth mood, chosen per-tile so a field varies
+_CROPS = [((92, 138, 60), (150, 116, 74)),      # young green
+          ((104, 150, 58), (150, 116, 74)),     # growing
+          ((170, 160, 74), (156, 120, 74)),     # ripening gold
+          ((196, 178, 84), (160, 124, 78))]     # mature wheat
+
+
+def draw_furrows(target, iso, sx, sy, wx, wy, rows=5):
+    """ISO.16 draw FURROWED CROP rows on a farmland tile — parallel green/gold
+    crop rows in dirt furrows, running along an iso axis and CONTINUOUS across
+    neighbouring farm tiles, so a field reads as cultivated (George)."""
+    hw, hh = iso.tw / 2.0, iso.th / 2.0
+    crop, ridge = _CROPS[(wx * 7 + wy * 13) % len(_CROPS)]
+
+    def S(fu, fv):
+        return (sx + (fu - fv) * hw, sy - hh + (fu + fv) * hh)
+
+    half = 0.32 / rows                            # crop-row half-thickness (v)
+    for i in range(rows):
+        v = (i + 0.5) / rows
+        band = [S(0.02, v - half), S(0.98, v - half),
+                S(0.98, v + half), S(0.02, v + half)]
+        pygame.draw.polygon(target, crop,
+                            [(int(a), int(b)) for a, b in band])
+        # a lit ridge along the row's up-slope edge → a hint of 3D furrow
+        a, b = S(0.02, v - half), S(0.98, v - half)
+        pygame.draw.line(target, ridge, (int(a[0]), int(a[1])),
+                         (int(b[0]), int(b[1])), 1)

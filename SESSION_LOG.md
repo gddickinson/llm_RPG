@@ -9179,3 +9179,37 @@ at 96): a 2x2 cottage, a 6x5 hall, a stone watchtower each fill their tiles with
 roof, sitting on the grass. tests: footprint tiles cover the rect + the draw paints walls+roof
 (test_iso_render TestBuildingFootprints), building_infos exposes footprints (test_iso_objects). Full suite green.
 
+## 2026-07-16 — ISO.16: swim facing fix, furrowed farmland, more Mixamo captures
+
+George: "the iso characters don't face the right way when swimming — check all animation directions. Make
+farmland read as furrowed crops. Add more animations, running?"
+
+**Swim facing bug.** `swim_figure` pitched the body to horizontal about the world-X axis AFTER `pose3d`
+had already applied the facing rotation — so the pitch always tilted the head toward a FIXED world
+direction and the swimmer lay the same way no matter which way it swam (all 8 directions pointed head
+up-left — scratchpad/iso16_swim_before.png). Fixed by reordering: build the pose at facing 0, PITCH it
+face-down (head → +z), THEN YAW by the facing angle about the vertical, so the head points the swim
+heading. All 8 now point head-first at their movement arrow (iso16_swim_after.png).
+
+**Direction audit.** Rendered every action × the four cardinal headings (iso16_dir_audit.png). walk/run/
+dance/sit/climb/talk/jab/attack all already face correctly — the ISO.9 calibration rotates the whole body
+by the heading-derived angle, so any `figure(pose, angle)` faces right; swim was the only one that added a
+second transform out of order. No other fixes needed.
+
+**Furrowed farmland.** In iso a farm field was a flat dirt diamond (the subtle tile_variants furrow texture
+didn't read at scale). `iso_tiles.draw_furrows` now overlays parallel CROP rows — green (young) to gold
+(ripening), chosen per tile so a field varies, running along an iso axis and continuous across neighbours,
+with a lit ridge on each row for a hint of 3D furrow. `iso_render._draw_tile` calls it on farmland
+(farm_synth.png — a patchwork of green + gold rows).
+
+**More Mixamo captures.** Baked 5 more via the Blender dump → bake_mocap pipeline (data/anim now 37): real
+SWORD swings `sword_attack` + `sword_attack2` (from the Sword and Shield Pack) which `attack_figure` uses
+for sword/axe/mace, alternating by strike style, so a knight swings real mocap while a spear/staff keeps
+the procedural thrust; `spellcast` (the sword-and-shield casting) for the `cast` emote a caster fires in
+combat_system; `hit` (Hit To Body) for the `hurt` emote combat fires on a struck defender — a real recoil;
+and `die` (Flying Back Death) for a downed body, which `iso_chars._frame_state` now shows (its final prone
+frame) when `char_injury.injury_state` reports the character down. Running already shipped (the run clip).
+scratchpad/iso16_newanims.png, iso16_combat_wired.png (sword swings + hurt recoil + a wizard casting).
+tests: swim faces its heading + sword uses the mocap + the new clips load (test_iso_skeleton), furrows
+paint green (test_iso_render), a downed char lies (test_iso_chars). Full suite green.
+

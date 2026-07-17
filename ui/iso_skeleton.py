@@ -34,21 +34,25 @@ _CLIP = {
     "sneak": "walk", "attack": "idle",
     "dance": "dance", "sit": "sit", "sleep": "sit", "stoop": "sit",
     "crawl": "sit", "climb": "climb", "talk": "talk",
-    "cast": "talk", "argue": "argue", "bow": "nod",
-    "cheer": "hiphop", "jump": "jump", "leap": "jump", "hurt": "stagger",
+    "cast": "spellcast", "argue": "argue", "bow": "nod",
+    "cheer": "hiphop", "jump": "jump", "leap": "jump", "hurt": "hit",
     "dodge": "stagger", "stagger": "stagger", "kick": "kick",
     # ISO.13 ambient gestures (the P34.4 idle-life fidgets) so idle folk LIVE —
     # ISO.14 now routes them to their OWN Mixamo captures where one fits
     "shrug": "ask", "ponder": "bored", "yawn": "bored", "stretch": "climb",
     "reach": "climb", "salute": "acknowledge", "beckon": "beckon",
     "facepalm": "bored", "clap": "argue", "laugh": "silly", "point": "point",
-    "nod": "nod", "kneel": "pray", "winded": "stagger", "cast_point": "talk",
-    "cast_staff": "talk", "wave": "beckon", "guard": "fight_idle",
+    "nod": "nod", "kneel": "pray", "winded": "stagger",
+    "cast_point": "spellcast", "cast_staff": "spellcast", "wave": "beckon",
+    "guard": "fight_idle",
     # ISO.14 the newly-baked combat + gesture captures (self-mapped)
     "fight_idle": "fight_idle", "jab": "jab", "block": "block",
     "charge": "charge", "stab": "stab", "acknowledge": "acknowledge",
     "ask": "ask", "bored": "bored", "look": "look", "pray": "pray",
     "no": "no", "silly": "silly",
+    # ISO.16 real sword combat, a hit reaction, a cast, a death fall
+    "hit": "hit", "spellcast": "spellcast", "sword_attack": "sword_attack",
+    "sword_attack2": "sword_attack2", "die": "die", "lie": "die",
 }
 # ISO.11 per-character VARIETY: a seeded idle/dance picks one of the Mixamo
 # variants so a crowd doesn't loop in lockstep.
@@ -241,7 +245,14 @@ def attack_figure(phase, style, tint, hair, angle, build, kit):
     procedural 3D `style` swing (overhead / slash / thrust), which suits a blade
     (the weapon at r_hand follows the arm)."""
     weapon = kit[0] if kit else None
-    clip = "stab" if weapon == "dagger" else ("jab" if not weapon else None)
+    if weapon == "dagger":
+        clip = "stab"
+    elif not weapon:
+        clip = "jab"
+    elif weapon in ("sword", "axe", "mace"):          # ISO.16 real sword swings,
+        clip = "sword_attack2" if style == "slash" else "sword_attack"  # varied
+    else:                                             # spear/staff → the thrust
+        clip = None
     if clip:
         pose = cm.sample_norm(clip, phase)
         if pose is not None:
@@ -299,17 +310,21 @@ def _body(P, tint, hair, angle):
 
 def swim_figure(phase, tint, hair, angle, build: float = 1.0, kit=None):
     """ISO.11 procedural SWIM (no Mixamo swim clip): the climb clip drives an
-    arm-over-arm STROKE, and the whole body is PITCHED to horizontal about the
-    pelvis and dropped to lie at the water surface — a front crawl. Headgear
-    rides along; a weapon/shield is stowed while swimming."""
+    arm-over-arm STROKE, and the whole body is PITCHED to horizontal then YAWED
+    to the swim heading — a front crawl that FACES where it moves (ISO.16 fix:
+    the old order pitched AFTER the facing, so the swimmer always lay the same
+    way whatever the heading). Headgear rides along; the weapon is stowed."""
     pose = cm.sample_norm("climb", phase)
     if pose is None:
         return None
-    P = pose3d(pose, angle, build)
+    P = pose3d(pose, 0.0, build)                          # stand, forward = +z
     piv = P["pelvis"].copy()
     c, s = math.cos(math.radians(74)), math.sin(math.radians(74))
-    rot = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])   # pitch fore-aft
-    P = {k: rot @ (v - piv) + piv for k, v in P.items()}
+    pitch = np.array([[1, 0, 0], [0, c, -s], [0, s, c]])  # head → +z (face-down)
+    P = {k: pitch @ (v - piv) + piv for k, v in P.items()}
+    cy, sy = math.cos(angle), math.sin(angle)
+    yaw = np.array([[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]])  # head → swim heading
+    P = {k: yaw @ (v - piv) + piv for k, v in P.items()}
     lift = 0.28 - min(float(v[1]) for v in P.values())   # lie ~at the surface
     P = {k: v + np.array([0.0, lift, 0.0]) for k, v in P.items()}
     try:

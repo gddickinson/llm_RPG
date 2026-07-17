@@ -182,7 +182,9 @@ _ACT_FRAMES = {"walk": 12, "run": 12, "jog": 12, "idle": 8, "dance": 10,
                # ISO.14 the new combat + gesture captures
                "fight_idle": 10, "jab": 8, "block": 7, "charge": 8, "stab": 8,
                "acknowledge": 8, "ask": 8, "bored": 10, "look": 10, "pray": 10,
-               "no": 7, "silly": 12}
+               "no": 7, "silly": 12,
+               # ISO.16 real sword combat / hit / cast / death
+               "hit": 6, "spellcast": 9, "die": 9}
 _LOOP_PERIOD = {"walk": 720, "run": 620, "jog": 760, "idle": 2600,
                 "dance": 1100, "sit": 3000, "sleep": 3000, "climb": 1000,
                 "talk": 1400, "swim": 900, "guard": 900, "crawl": 1400,
@@ -194,7 +196,7 @@ _ONESHOT = {"attack", "jump", "leap", "bow", "wave", "cast", "cheer",
             "stretch", "reach", "salute", "beckon", "facepalm", "clap",
             "laugh", "point", "nod", "kneel", "winded", "cast_point",
             "cast_staff", "jab", "block", "charge", "stab", "acknowledge",
-            "ask", "no"}
+            "ask", "no", "die"}
 # ISO.14 calm ambient GESTURES an idle character drifts into now and then (a
 # glance around, a bored shift) so a standing crowd looks ALIVE — cosmetic,
 # render-only, both LOOPS.
@@ -232,6 +234,12 @@ def _frame_state(char):
     md = getattr(char, "metadata", None)
     if md is None:
         return "idle", 0
+    try:                                              # ISO.16 a downed body LIES
+        from ui.char_injury import injury_state
+        if injury_state(char).get("down"):
+            return "die", _frames_of("die") - 1       # the last frame = prone
+    except Exception:
+        pass
     anim = md.get("_anim") or {}
     action = anim.get("cur_action", "idle")
     if action not in _ACT_FRAMES:

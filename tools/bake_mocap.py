@@ -110,6 +110,12 @@ CLIPS = [
     ("Praying", "pray", True, 18),
     ("No", "no", False, 14),
     ("Silly Dancing", "silly", True, 24),
+    # ISO.16 — real sword combat, a hit reaction, a cast, a death fall
+    ("sword and shield attack", "sword_attack", False, 18),
+    ("sword and shield attack 2", "sword_attack2", False, 18),
+    ("sword and shield casting", "spellcast", False, 20),
+    ("Hit To Body", "hit", False, 14),
+    ("Flying Back Death", "die", False, 18),
 ]
 
 

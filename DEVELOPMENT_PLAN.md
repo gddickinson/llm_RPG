@@ -6229,6 +6229,20 @@ rasterizer/camera/SSAA.
   + one building box each (front-tile keyed), retiring the baked-sprite path + the `_building_anchors`
   helper. scratchpad/bldg_fixed.png, bldg_zoom.png. tests: footprint tiles cover the rect, draw paints
   walls+roof (test_iso_render), building_infos exposes footprints (test_iso_objects). Full suite green.
+- [x] **ISO.16 SWIM FACING FIX + FURROWED FARMLAND + MORE MIXAMO (George 2026-07-16) — DONE.** George:
+  "iso characters don't face the right way when swimming; check all animation directions; make farmland
+  read as furrowed crops; add more animations." (1) SWIM: the pitch-to-horizontal ran AFTER the facing
+  rotation, so a swimmer lay the SAME way whatever the heading — fixed by pitching at facing 0 then YAWING
+  to the heading (now head-first in the swim direction). A full action×direction audit confirmed every
+  other action (walk/run/dance/sit/climb/talk/jab/attack) already faces correctly via the ISO.9
+  calibration. (2) FARMLAND: `iso_tiles.draw_furrows` overlays green/gold CROP rows (varied per tile,
+  continuous across a field) on each farmland diamond so it reads as cultivated crops, not flat dirt.
+  (3) MORE MIXAMO: baked 5 more captures via the Blender pipeline — real SWORD swings (sword_attack +
+  sword_attack2, used for sword/axe/mace, alternating by strike style), a `spellcast` (the `cast` emote a
+  caster fires), a `hit` recoil (the `hurt` emote combat fires on a struck body), and a `die` fall (a
+  downed/dying body now LIES via an injury check). data/anim now 37 clips. scratchpad/iso16_swim_after.png,
+  iso16_dir_audit.png, farm_synth.png, iso16_combat_wired.png. tests: swim faces its heading, sword uses
+  the mocap, new clips load, furrows paint green, a downed char lies. Full suite green.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

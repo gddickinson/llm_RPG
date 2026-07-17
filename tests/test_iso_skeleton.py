@@ -120,10 +120,35 @@ class TestBakedClips(unittest.TestCase):
     def test_new_clips_load(self):
         for name in ("fight_idle", "jab", "block", "charge", "stab",
                      "acknowledge", "point", "ask", "beckon", "bored",
-                     "look", "pray", "no", "silly"):
+                     "look", "pray", "no", "silly",
+                     "sword_attack", "sword_attack2", "spellcast", "hit", "die"):
             pose = isk.cm.sample_norm(name, 0.4)
             self.assertIsNotNone(pose, f"{name} clip is baked + loads")
             self.assertIn("r_hand", pose)
+
+    def test_a_sword_uses_the_real_swing_clip(self):
+        # a sword attack rides the Mixamo sword mocap, not the procedural swing
+        tint, hair = (150, 150, 165), (90, 60, 40)
+        sword = isk.attack_figure(0.5, "overhead", tint, hair, 0.0, 1.0,
+                                  ("sword", None, False, 1.0))
+        # the reference: the same mocap directly
+        ref = isk.figure(isk.cm.sample_norm("sword_attack", 0.5), tint, hair, 0.0)
+        import numpy as np
+        # the leg-bone vertex set should match the mocap (proc swing wouldn't)
+        self.assertLess(
+            float(np.abs(np.asarray(sword[0][0]) - np.asarray(ref[0][0])).max()),
+            0.01, "sword attack plays the mocap clip")
+
+    def test_swim_faces_its_heading(self):
+        # ISO.16 fix: swimming E vs W puts the head/body in different places
+        import numpy as np
+        e = isk.swim_figure(0.3, (150,) * 3, (90, 60, 40), isk.angle_for_delta(1, 0))
+        w = isk.swim_figure(0.3, (150,) * 3, (90, 60, 40), isk.angle_for_delta(-1, 0))
+        # the head bone (last balls) sits elsewhere for opposite headings
+        eh = np.asarray(e[-1][0]).mean(axis=0)
+        wh = np.asarray(w[-1][0]).mean(axis=0)
+        self.assertGreater(float(np.linalg.norm(eh - wh)), 0.2,
+                           "the swimmer turns to its heading, not a fixed way")
 
     def test_weapon_picks_the_combat_clip(self):
         # unarmed → a jab, a dagger → a stab, a sword → the procedural swing
