@@ -224,5 +224,58 @@ class TestLairHomeBehaviour(unittest.TestCase):
         self.assertEqual(act["target"], "east", "walks toward the perimeter")
 
 
+class TestMonsterDayNight(unittest.TestCase):
+    """LIVING_WORLD C2 — a nocturnal creature lies DORMANT at its den by day and
+    stirs by night (George: should monsters sleep?)."""
+
+    def setUp(self):
+        self.eng = GameEngine(llm_provider="heuristic",
+                              enable_npc_processes=False)
+        self.eng.start_game()
+        self.prov = self.eng.llm_interface.provider
+
+    def tearDown(self):
+        try:
+            self.eng.end_game()
+        except Exception:
+            pass
+
+    def _nocturnal(self):
+        from world.monsters import build_monster
+        m = build_monster("restless_bones", (30, 30))
+        m.metadata["home_pos"] = [30, 30]
+        m.metadata["lair_role"] = "sentry"
+        self.assertEqual(m.metadata["active"], "night")
+        return m
+
+    def test_nocturnal_is_dormant_by_day(self):
+        m = self._nocturnal()
+        act = self.prov._hostile_action(m, {"time_of_day": "morning"}, False)
+        self.assertEqual(act["action"], "wait")
+        self.assertTrue(m.metadata.get("asleep"))
+        self.assertEqual(m.metadata.get("_bubble"), "sleep")
+
+    def test_nocturnal_is_active_by_night(self):
+        m = self._nocturnal()
+        act = self.prov._hostile_action(m, {"time_of_day": "night"}, False)
+        self.assertEqual(act["action"], "move", "it patrols at night")
+        self.assertFalse(m.metadata.get("asleep"))
+
+    def test_survival_wakes_a_dormant_monster(self):
+        m = self._nocturnal()
+        # with the player in view even by day it engages, not sleeps
+        act = self.prov._hostile_action(
+            m, {"time_of_day": "morning", "player_position": (31, 30)}, True)
+        self.assertNotEqual(act.get("target"), "dormant in its lair")
+
+    def test_always_active_monster_never_sleeps(self):
+        from world.monsters import build_monster
+        g = build_monster("goblin", (40, 40))       # active defaults to 'always'
+        g.metadata["home_pos"] = [40, 40]
+        g.metadata["lair_role"] = "guard"
+        self.prov._hostile_action(g, {"time_of_day": "night"}, False)
+        self.assertFalse(g.metadata.get("asleep"))
+
+
 if __name__ == "__main__":
     unittest.main()

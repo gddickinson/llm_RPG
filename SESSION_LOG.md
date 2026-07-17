@@ -9527,3 +9527,25 @@ test_tribe_camps.py (7) + a full save/load round-trip. Full suite green.
 
 Area C now has C1 (lair home behaviour) + C3 (tribe camps). Remaining/optional: C2 (monster day/night —
 reuse Area B), C4 (packs roam together off-combat), C5 (monsters hunt wildlife — ties B↔C).
+
+## 2026-07-17 — LIVING_WORLD Area C (C2) + flaky-test fixes — George
+
+George: "complete leftovers and fix flaky tests."
+
+**C2 — monster day/night** (`world/monsters.build_monster` + `heuristic._hostile_action`): a monster
+template carries `active: day|night|always` (undead/bog/wisp things — restless_bones, grave_touched,
+marsh_wisp, bog_lurker, bog_goblin(+champion), drowned_guardian, vaelzhur_lich, wisp_queen — tagged NIGHT).
+While no prey is in sight and it's at its den, a NOCTURNAL creature lies DORMANT by day (a `wait` + a sleep
+bubble), a diurnal one by night; survival still wakes it (the flee/attack branches run first) and an
+`always`-active monster never sleeps. So an undead lair is quiet by day and astir by night. tests/
+test_lairs.py TestMonsterDayNight (+4).
+
+**Flaky-test fixes** (George's suite occasionally fails on a DIFFERENT test each full run — global-`random`
+order pollution): (1) `test_companion_depth.test_holding_companions_do_not_follow` — the preset's HP can roll
+low, tripping M.10b self-preservation (a badly-hurt companion breaks off even on HOLD), so the "held ground
+is held" assertion flaked; pinned the companion to full HP (the test is about order obedience). Verified 0
+failures across 12 seeds. (2) `test_iso_chars.test_frame_state_reads_cur_action` — an idle char drifts
+through ambient gestures (look/bored) on a WALL-CLOCK timer (ISO.14), so the `== "idle"` assertion flaked
+~⅓ of the time; froze `_clock_ms` to 0 (ambient slot = idle). (Earlier this arc also fixed the agent_ammo
+assertion + the colosseum duel STALL.) The other CLAUDE.md-listed candidates (test_tactics/conditions/
+input_bindings/encounters) pass 5× in isolation.

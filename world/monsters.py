@@ -115,6 +115,7 @@ def build_monster(template_id: str, position: Tuple[int, int]):
         metadata={"behavior": behavior,
                   "home_pos": list(position),
                   "speed": spec.get("speed", 1.0),
-                  "natural_damage": spec.get("natural_damage", 0)},
+                  "natural_damage": spec.get("natural_damage", 0),
+                  "active": spec.get("active", "always")},   # C2 day/night
         **stats,
     )

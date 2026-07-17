@@ -270,6 +270,19 @@ class HeuristicProvider(LLMProvider):
                                   "(lumbers back toward its lair)",
                                   "sullen")
 
+        # LIVING_WORLD C2: a nocturnal creature (undead / bog things / wisps) lies
+        # DORMANT at its den by day, a diurnal one by night, while no prey is about
+        # — survival still wakes it (the flee/attack branches ran first).
+        active = meta.get("active")
+        if active in ("day", "night") and home and not player_in_view:
+            night = (world_state or {}).get("time_of_day") == "night"
+            if (night if active == "day" else not night):
+                meta["asleep"] = True
+                meta["_bubble"] = "sleep"
+                return self._wrap(character, "wait", "dormant in its lair",
+                                  "", "dormant")
+        meta.pop("asleep", None)
+
         # LIVING_WORLD C1: an occupied den — while no prey is in sight a SENTRY
         # paces the perimeter, a CHIEF/SHAMAN holds the hoard, the rest mill about
         # (they're already leashed home above), so a lair reads as lived-in

@@ -162,14 +162,22 @@ class TestAnimation(unittest.TestCase):
     def test_frame_state_reads_cur_action(self):
         # ISO.11: _frame_state reads the cur_action body_renderer.update_anim sets
         from ui.body_renderer import update_anim
-        c = _Char("hero", "warrior")
-        c.position = (3, 3)
-        update_anim(c, 0.05)                        # init → idle
-        self.assertEqual(iso_chars._frame_state(c)[0], "idle")
-        c.position = (4, 3); update_anim(c, 0.05)   # moved → walk (tweening)
-        self.assertEqual(iso_chars._frame_state(c)[0], "walk")
-        c.metadata["_atk_seq"] = 1; update_anim(c, 0.05)  # struck → attack
-        self.assertEqual(iso_chars._frame_state(c)[0], "attack")
+        # freeze the clock: an idle char drifts through ambient gestures (look/
+        # bored) on a wall-clock timer (ISO.14) — at t=0 the ambient slot is idle,
+        # so the idle assertion is stable instead of a wall-clock flake
+        orig = iso_chars._clock_ms
+        iso_chars._clock_ms = lambda: 0
+        try:
+            c = _Char("hero", "warrior")
+            c.position = (3, 3)
+            update_anim(c, 0.05)                        # init → idle
+            self.assertEqual(iso_chars._frame_state(c)[0], "idle")
+            c.position = (4, 3); update_anim(c, 0.05)   # moved → walk (tweening)
+            self.assertEqual(iso_chars._frame_state(c)[0], "walk")
+            c.metadata["_atk_seq"] = 1; update_anim(c, 0.05)  # struck → attack
+            self.assertEqual(iso_chars._frame_state(c)[0], "attack")
+        finally:
+            iso_chars._clock_ms = orig
 
     def test_richer_actions_flow_to_iso(self):
         # a stance / emote set on the character reaches iso via cur_action
