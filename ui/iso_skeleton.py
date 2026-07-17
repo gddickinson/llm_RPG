@@ -59,6 +59,16 @@ _CLIP = {
     "elbow": "elbow", "block": "shield_block", "shield_block": "shield_block",
     "crouch_block": "crouch_block", "dodge": "roll", "roll": "roll",
     "hit_head": "hit_head", "hit_back": "hit_back", "hit_legs": "hit_legs",
+    # COMBAT.2 the lively expansion (self-mapped): more cuts/kicks/sweeps,
+    # flourishes, wrestling/throws/knockdowns, archery, a jump
+    "sword_slash2": "sword_slash2", "sword_slash3": "sword_slash3",
+    "sword_kick": "sword_kick", "jump_attack": "jump_attack",
+    "flourish": "flourish", "block2": "block2", "shield_bash": "shield_bash",
+    "axe_chop": "axe_chop", "axe_spin": "axe_spin", "drop_kick": "drop_kick",
+    "low_kick": "low_kick", "spin_kick": "spin_kick", "sweep": "sweep",
+    "spin_combo": "spin_combo", "dive_roll": "dive_roll", "weave": "weave",
+    "throw": "throw", "thrown": "thrown", "shoved": "shoved",
+    "bow_draw": "bow_draw", "bow_loose": "bow_loose", "hop": "hop",
 }
 # ISO.11 per-character VARIETY: a seeded idle/dance picks one of the Mixamo
 # variants so a crowd doesn't loop in lockstep.
@@ -245,12 +255,16 @@ def _swing_arm(P, style, phase, angle):
     return P
 
 
-# COMBAT.1 a fighter ROTATES through a repertoire strike-to-strike (`seq`), so a
-# melee is never the same blow twice — real Mixamo swings for a blade, boxing
-# blows unarmed, a dagger stab; a spear/staff keeps the procedural thrust.
-_BLADE_POOL = ("sword_attack", "sword_attack2", "sword_attack3",
-               "sword_attack4", "sword_slash")
-_FIST_POOL = ("jab", "hook", "lead_jab", "elbow")
+# COMBAT.1/2 a fighter ROTATES a rich repertoire strike-to-strike (`seq`) so a
+# melee is never the same blow twice — sword cuts/slashes/kicks/flourishes for a
+# blade, axe chops/spins for an axe, boxing + capoeira blows unarmed, a dagger
+# stab; a spear/staff keeps the procedural thrust.
+_BLADE_POOL = ("sword_attack", "sword_attack2", "sword_attack3", "sword_attack4",
+               "sword_slash", "sword_slash2", "sword_slash3", "sword_kick",
+               "flourish")
+_AXE_POOL = ("axe_chop", "axe_spin", "sword_attack", "sword_slash2")
+_FIST_POOL = ("jab", "hook", "lead_jab", "elbow", "low_kick", "spin_kick",
+              "drop_kick", "sweep")
 
 
 def attack_figure(phase, style, tint, hair, angle, build, kit, seq=0):
@@ -261,7 +275,9 @@ def attack_figure(phase, style, tint, hair, angle, build, kit, seq=0):
         clip = "stab"
     elif not weapon:
         clip = _FIST_POOL[seq % len(_FIST_POOL)]
-    elif weapon in ("sword", "axe", "mace"):
+    elif weapon == "axe":
+        clip = _AXE_POOL[seq % len(_AXE_POOL)]
+    elif weapon in ("sword", "mace"):
         clip = _BLADE_POOL[seq % len(_BLADE_POOL)]
     else:                                             # spear/staff → the thrust
         clip = None

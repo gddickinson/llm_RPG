@@ -188,7 +188,16 @@ _ACT_FRAMES = {"walk": 12, "run": 12, "jog": 12, "idle": 8, "dance": 10,
                # COMBAT.1 the attack + DEFENCE repertoire
                "block": 7, "shield_block": 7, "crouch_block": 7, "dodge": 8,
                "roll": 8, "hook": 8, "lead_jab": 7, "elbow": 8,
-               "hit_head": 6, "hit_back": 7, "hit_legs": 6}
+               "hit_head": 6, "hit_back": 7, "hit_legs": 6,
+               # COMBAT.2 the lively expansion — extra cuts/kicks/sweeps,
+               # flourishes, wrestling/throws/knockdowns, archery, a jump
+               "sword_slash2": 10, "sword_slash3": 10, "sword_kick": 9,
+               "jump_attack": 11, "flourish": 12, "block2": 8,
+               "axe_chop": 10, "axe_spin": 11, "shield_bash": 8,
+               "drop_kick": 11, "low_kick": 10, "spin_kick": 11, "sweep": 11,
+               "spin_combo": 12, "dive_roll": 11, "weave": 8, "throw": 11,
+               "thrown": 11, "shoved": 8, "bow_draw": 10, "bow_loose": 8,
+               "hop": 9}
 _LOOP_PERIOD = {"walk": 720, "run": 620, "jog": 760, "idle": 2600,
                 "dance": 1100, "sit": 3000, "sleep": 3000, "climb": 1000,
                 "talk": 1400, "swim": 900, "guard": 900, "crawl": 1400,
@@ -201,7 +210,13 @@ _ONESHOT = {"attack", "jump", "leap", "bow", "wave", "cast", "cheer",
             "laugh", "point", "nod", "kneel", "winded", "cast_point",
             "cast_staff", "jab", "block", "charge", "stab", "acknowledge",
             "ask", "no", "die", "shield_block", "crouch_block", "dodge", "roll",
-            "hook", "lead_jab", "elbow", "hit_head", "hit_back", "hit_legs"}
+            "hook", "lead_jab", "elbow", "hit_head", "hit_back", "hit_legs",
+            # COMBAT.2 the lively expansion — all play once when fired
+            "sword_slash2", "sword_slash3", "sword_kick", "jump_attack",
+            "flourish", "block2", "axe_chop", "axe_spin", "shield_bash",
+            "drop_kick", "low_kick", "spin_kick", "sweep", "spin_combo",
+            "dive_roll", "weave", "throw", "thrown", "shoved", "bow_draw",
+            "bow_loose", "hop"}
 # ISO.14 calm ambient GESTURES an idle character drifts into now and then (a
 # glance around, a bored shift) so a standing crowd looks ALIVE — cosmetic,
 # render-only, both LOOPS.

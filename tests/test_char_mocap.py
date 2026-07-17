@@ -98,5 +98,44 @@ class TestCombatMocap(unittest.TestCase):
         self.assertLess(early, late, "the hit reaction plays forward in time")
 
 
+class TestCombat2(unittest.TestCase):
+    """COMBAT.2 — the lively expansion: a richer repertoire, axe pool, and the
+    standalone showcase moves (throws/knockdowns/kicks/archery)."""
+
+    def test_expanded_sword_repertoire(self):
+        clips = {mc.attack_clip("sword", s) for s in range(9)}
+        # cuts + slashes + a kick + a flourish — a broad, varied sword repertoire
+        self.assertGreaterEqual(len(clips), 8)
+        self.assertIn("sword_kick", clips)
+        self.assertIn("flourish", clips)
+
+    def test_axe_has_its_own_repertoire(self):
+        clips = {mc.attack_clip("axe", s) for s in range(4)}
+        self.assertIn("axe_chop", clips)
+        self.assertIn("axe_spin", clips)
+
+    def test_unarmed_mixes_boxing_and_kicks(self):
+        clips = {mc.attack_clip(None, s) for s in range(8)}
+        self.assertTrue({"jab", "hook"} & clips, "boxing blows")
+        self.assertTrue({"low_kick", "spin_kick", "drop_kick", "sweep"} & clips,
+                        "capoeira kicks/sweeps")
+
+    def test_standalone_showcase_moves_play_their_capture(self):
+        for a in ("throw", "thrown", "shoved", "sweep", "drop_kick",
+                  "spin_combo", "dive_roll", "weave", "block2", "shield_bash",
+                  "bow_draw", "bow_loose"):
+            r = mc.combat_mocap(a, {"action_dur": 0.6, "action_t": 0.3},
+                                "sword", 0.5)
+            self.assertIsNotNone(r, f"{a} routes to a combat clip")
+            self.assertEqual(r[0], a, f"{a} plays its own capture")
+
+    def test_showcase_clips_are_registered_one_shots(self):
+        from ui import char_clips
+        for a in ("throw", "thrown", "shoved", "sweep", "drop_kick",
+                  "spin_combo", "dive_roll", "weave", "flourish", "block2",
+                  "shield_bash", "bow_draw", "bow_loose", "hop"):
+            self.assertTrue(char_clips.is_one_shot(a), f"{a} is a one-shot")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -31,6 +31,15 @@ ACTIONS = {
     "handshake": (True, 1.2), "hug": (True, 1.4), "kiss": (True, 1.3),
     "wrestle": (True, 1.6), "throw": (True, 0.7), "tumble": (True, 0.9),
     "knockdown": (True, 1.6),
+    # COMBAT.2 the lively expansion — snappy one-shots (mocap supplies the pose)
+    "block2": (True, 0.6), "shield_bash": (True, 0.5), "drop_kick": (True, 0.7),
+    "low_kick": (True, 0.5), "spin_kick": (True, 0.6), "sweep": (True, 0.6),
+    "spin_combo": (True, 0.9), "dive_roll": (True, 0.8), "weave": (True, 0.5),
+    "thrown": (True, 0.9), "shoved": (True, 0.5), "bow_draw": (True, 0.7),
+    "bow_loose": (True, 0.4), "hop": (True, 0.6), "flourish": (True, 0.9),
+    "sword_kick": (True, 0.5), "jump_attack": (True, 0.7),
+    "axe_chop": (True, 0.5), "axe_spin": (True, 0.7),
+    "sword_slash2": (True, 0.4), "sword_slash3": (True, 0.4),
 }
 
 

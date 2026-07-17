@@ -34,14 +34,28 @@ ACTION_CLIP = {
     "hook": "hook", "lead_jab": "lead_jab", "elbow": "elbow",
     "spellcast": "spellcast", "cast": "spellcast", "charge": "charge",
     "die": "die",
+    # COMBAT.2 the lively expansion (self-mapped): defence, wrestling/throws,
+    # knockdowns, archery, dives — all play the real capture when fired
+    "block2": "block2", "shield_bash": "shield_bash", "drop_kick": "drop_kick",
+    "low_kick": "low_kick", "spin_kick": "spin_kick", "sweep": "sweep",
+    "spin_combo": "spin_combo", "dive_roll": "dive_roll", "weave": "weave",
+    "throw": "throw", "thrown": "thrown", "shoved": "shoved",
+    "bow_draw": "bow_draw", "bow_loose": "bow_loose", "hop": "hop",
+    "flourish": "flourish", "sword_kick": "sword_kick",
+    "jump_attack": "jump_attack", "axe_chop": "axe_chop", "axe_spin": "axe_spin",
 }
 
 
-# COMBAT.1 the attack repertoire a fighter rotates through per strike (`seq`),
-# by weapon — shared with the iso path's pools.
+# COMBAT.1/2 the attack repertoire a fighter rotates through per strike (`seq`),
+# by weapon — shared with the iso path's pools. COMBAT.2 fills them out with more
+# cuts/slashes/kicks/flourishes (blade), axe chops/spins (axe), capoeira kicks +
+# boxing (unarmed).
 _BLADE = ("sword_attack", "sword_attack2", "sword_attack3", "sword_attack4",
-          "sword_slash")
-_FIST = ("jab", "hook", "lead_jab", "elbow")
+          "sword_slash", "sword_slash2", "sword_slash3", "sword_kick",
+          "flourish")
+_AXE = ("axe_chop", "axe_spin", "sword_attack", "sword_slash2")
+_FIST = ("jab", "hook", "lead_jab", "elbow", "low_kick", "spin_kick",
+         "drop_kick", "sweep")
 
 
 def attack_clip(weapon, seq):
@@ -51,7 +65,9 @@ def attack_clip(weapon, seq):
         name = "stab"
     elif not weapon:
         name = _FIST[seq % len(_FIST)]
-    elif weapon in ("sword", "axe", "mace"):
+    elif weapon == "axe":
+        name = _AXE[seq % len(_AXE)]
+    elif weapon in ("sword", "mace"):
         name = _BLADE[seq % len(_BLADE)]
     else:
         return None
@@ -62,7 +78,12 @@ def attack_clip(weapon, seq):
 _COMBAT = frozenset({
     "attack", "block", "crouch_block", "dodge", "roll", "hit", "hurt",
     "hit_head", "hit_back", "hit_legs", "kick", "stab", "jab", "hook",
-    "lead_jab", "elbow", "spellcast", "cast", "charge", "die"})
+    "lead_jab", "elbow", "spellcast", "cast", "charge", "die",
+    # COMBAT.2 the lively expansion
+    "block2", "shield_bash", "drop_kick", "low_kick", "spin_kick", "sweep",
+    "spin_combo", "dive_roll", "weave", "throw", "thrown", "shoved",
+    "bow_draw", "bow_loose", "hop", "flourish", "sword_kick", "jump_attack",
+    "axe_chop", "axe_spin"})
 
 
 def combat_mocap(action, anim, weapon, attack_progress):

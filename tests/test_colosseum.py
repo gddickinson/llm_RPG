@@ -81,6 +81,37 @@ class TestColosseum(unittest.TestCase):
         self.col.from_dict(d)
         self.assertIsNotNone(self.col.arena)
 
+    def test_showcase_pools_are_registered_one_shots(self):
+        # COMBAT.2: every defence + showcase beat the arena fires is a real,
+        # registered one-shot the renderer can play
+        from engine import colosseum as col
+        from ui import char_clips
+        for a in col._DEFENCE + col._SHOWCASE:
+            self.assertTrue(char_clips.is_one_shot(a),
+                            f"{a} is a registered one-shot")
+
+    def test_a_live_bout_auto_advances_at_pace(self):
+        # COMBAT.2 speed-up: colosseum_tick advances the world while a fight is
+        # live (so a spectator sees it run), and stops once it's over
+        from ui.away_mode import colosseum_tick, COLOSSEUM_FRAMES
+        self.col.stage("warrior_duel")
+
+        class _Gui:
+            engine = self.engine
+        g = _Gui()
+        t0 = self.engine.turn_counter
+        for _ in range(COLOSSEUM_FRAMES):
+            colosseum_tick(g)
+        self.assertGreater(self.engine.turn_counter, t0,
+                           "a live bout ticks the world forward")
+        self.col.clear()
+        # inactive → no auto-advance
+        t1 = self.engine.turn_counter
+        for _ in range(COLOSSEUM_FRAMES * 2):
+            colosseum_tick(g)
+        self.assertEqual(self.engine.turn_counter, t1,
+                         "no arena fight → no auto-advance")
+
     def test_fighters_skip_the_ambient_ai(self):
         # a staged fighter is ignored by the pursuit eligibility (the arena
         # drives them, not the systems that chase the player)

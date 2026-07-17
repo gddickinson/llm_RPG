@@ -26,6 +26,14 @@ logger = logging.getLogger("llm_rpg.colosseum")
 _RANGED = {"ranger", "archer"}
 _CASTER = {"wizard", "sorcerer", "warlock", "druid"}
 
+# COMBAT.2 cosmetic SHOWCASE beats — an adjacent melee fighter occasionally
+# throws in a defensive move or a flashy attack (deterministic, one-shot emotes
+# the renderer plays) so the arena reads as a lively brawl, not a trade of swings
+_DEFENCE = ("dodge", "block", "crouch_block", "block2", "weave", "shield_bash",
+            "dive_roll")
+_SHOWCASE = ("flourish", "spin_combo", "sweep", "drop_kick", "spin_kick",
+             "low_kick", "sword_kick", "jump_attack")
+
 
 def is_fighter(char) -> bool:
     """True for a character currently staged in the arena (the ordinary AI, the
@@ -250,18 +258,32 @@ class ColosseumSystem:
         dx = enemy.position[0] - f.position[0]
         dy = enemy.position[1] - f.position[1]
         adj = dx * dx + dy * dy <= 3
-        # a melee fighter occasionally raises a GUARD or DODGES instead of
-        # striking — a defensive beat (deterministic, ~1 in 6 turns) so the
-        # block / crouch-block / dodge animations show in a real bout
-        if adj and klass not in _CASTER and klass not in _RANGED and \
-                (hash(f.id) + self.engine.turn_counter) % 6 == 0:
-            h = hash(f.id) // 6
-            f.metadata["_emote"] = ("dodge", "block", "crouch_block")[h % 3]
-            return
+        melee = klass not in _CASTER and klass not in _RANGED
+        # COMBAT.2 an adjacent melee fighter mixes in showcase beats (all cosmetic
+        # one-shot emotes the renderer plays) so the bout stays lively:
+        if adj and melee:
+            tick = hash(f.id) + self.engine.turn_counter
+            # a wrestling THROW — the fighter heaves, the foe is knocked down
+            if tick % 13 == 0:
+                f.metadata["_emote"] = "throw"
+                enemy.metadata["_emote"] = "thrown"
+                return
+            # a defensive beat — block / dodge / weave / shield-bash / roll
+            if tick % 6 == 0:
+                f.metadata["_emote"] = _DEFENCE[(hash(f.id) // 6) % len(_DEFENCE)]
+                return
+            # a flashy offensive flourish — a spin, a sweep, a leaping kick
+            if tick % 7 == 0:
+                f.metadata["_emote"] = _SHOWCASE[(hash(f.id) // 7)
+                                                 % len(_SHOWCASE)]
+                return
         if klass in _CASTER and self._has_mana(f):
             action = "cast"
         elif klass in _RANGED:
             action = "shoot"
+            # an archer draws before the loose now and then (cosmetic)
+            if (hash(f.id) + self.engine.turn_counter) % 4 == 0:
+                f.metadata["_emote"] = "bow_draw"
         else:
             action = "attack"
         try:

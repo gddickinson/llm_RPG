@@ -9295,3 +9295,36 @@ tests: attack_clip rotates the repertoire + combat_mocap picks the defence clips
 its duration (test_char_mocap); the iso attack rotates strike-to-strike + every defence move builds a mesh
 (test_iso_skeleton). Full suite green.
 
+
+## 2026-07-16 — COMBAT.2: the lively repertoire + a natural-pace arena
+
+George: "What more can you add — shield blows, different shield blocks, rolls, jumps, sword-fighting, cuts,
+jabs, flourishes, punches, blocks, wrestling, throws, knock-downs, different ranged weapons, slides,
+sweeps. Keep going to make it as lively and entertaining as possible. Can you speed up the action so it
+feels more natural?"
+
+Baked 22 more Mixamo captures through the Blender→bake_mocap pipeline (data/anim now 71): more sword cuts
+(sword_slash2/3), a sword_kick, a leaping jump_attack, a flourish; axe moves (axe_chop, axe_spin); a body-
+block (shield_bash) + a second block (block2); capoeira kicks & sweeps (drop_kick, low_kick, spin_kick,
+sweep, spin_combo); a dive_roll + a weave; wrestling (throw / thrown / shoved); archery (bow_draw,
+bow_loose); and a hop. All render cleanly in the iso camera (combat2_iso.png) and through the 2D pose path.
+
+Wiring — both renderers now draw from the fuller pools. iso `_BLADE_POOL` grows to 9 sword swings (cuts +
+slashes + kick + flourish), a new `_AXE_POOL` gives an axe its own chops/spins, `_FIST_POOL` grows to 8
+(boxing + capoeira kicks/sweeps); `attack_figure` routes by weapon. All 22 standalone moves are registered
+in `iso_skeleton._CLIP` + `iso_chars._ACT_FRAMES`/`_ONESHOT`, and mirrored in `char_mocap._BLADE`/`_AXE`/
+`_FIST` + `ACTION_CLIP` + `_COMBAT` and `char_clips.ACTIONS` (one-shot durations) so the 2D renderer plays
+them too. So a melee bout now cycles nine sword swings, an axe its own moves, a bare fist boxing + kicks —
+never the same blow twice.
+
+The arena shows the new moves: the colosseum AI mixes cosmetic showcase beats into an adjacent melee — a
+wrestling THROW (fighter heaves, foe is knocked down), a defensive beat (dodge/block/crouch-block/block2/
+weave/shield-bash/roll), or a flashy flourish (spin/sweep/leaping kick); an archer draws before the loose.
+
+Speed-up — a live Colosseum bout otherwise only ticked on a player action or the slow ~1.5s ambient-NPC
+interval, so it crawled when spectating. New `away_mode.colosseum_tick(gui)` auto-advances the world ~6
+ticks/sec while `colosseum.active` (independent of the away-hero heartbeat), called from the gui loop — the
+fight now plays at a natural, watchable pace. tests: the expanded sword/axe/unarmed repertoires + every
+standalone showcase move routes to its capture + is a registered one-shot (test_char_mocap TestCombat2);
+the arena's defence/showcase pools are registered one-shots + a live bout auto-advances then stops
+(test_colosseum). Full suite green.

@@ -115,6 +115,27 @@ def heartbeat(gui) -> None:
         pass
 
 
+COLOSSEUM_FRAMES = 5        # ~6 world ticks/sec while an arena fight is live
+
+
+def colosseum_tick(gui) -> None:
+    """COMBAT.2 speed-up: while a Colosseum fight is LIVE, auto-advance the world
+    on a fast cadence so the bout plays at a natural, watchable pace (the arena
+    otherwise only ticks on a player action or the slow ambient-NPC interval, so
+    it crawls). Independent of the away-hero heartbeat."""
+    try:
+        col = getattr(gui.engine, "colosseum", None)
+        if col is None or not getattr(col, "active", False):
+            gui._col_hb = 0
+            return
+        gui._col_hb = getattr(gui, "_col_hb", 0) + 1
+        if gui._col_hb >= COLOSSEUM_FRAMES:
+            gui._col_hb = 0
+            gui.engine.advance_turn()
+    except Exception:
+        pass
+
+
 def spectator_lines(engine):
     """A few lines on what the driven hero is up to RIGHT NOW — its aim,
     bearing, standing and band — for the M.9c spectator panel, so watching

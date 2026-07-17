@@ -194,8 +194,9 @@ class GameGUI:
                     input_actions.auto_walk(self.input_handler)
                 except Exception as e:
                     logger.debug(f"auto-walk error: {e}")
-            from ui.away_mode import heartbeat
+            from ui.away_mode import heartbeat, colosseum_tick
             heartbeat(self)               # M.3 tick the world while away
+            colosseum_tick(self)          # COMBAT.2 run a live arena bout at pace
             # Drive NPC processes only while alive
             if self.mode != "death":
                 try:
