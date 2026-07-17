@@ -9463,3 +9463,31 @@ alchemist — `primary_raw` None) stay cosmetic: no minting finished goods from 
 tests/test_activities.py grows to 30 (worksite fan-out, gatherer stocks the store, crafter mints nothing,
 bard audience); the A1 arrived-worker test updated for the commute-then-work behaviour. Deferred: farmer
 field-harvest (needs farmers routed to the fields). Full suite green.
+
+## 2026-07-17 — LIVING_WORLD Area B: wildlife ETHOLOGY (B1–B4) — George
+
+George: "keep going with Area B." Animals now live a real day instead of the old 50/50 stand-or-random-step
+wander. New `world/wildlife_ethology.py` (pure over the animal metadata + `WildlifeSystem` map helpers);
+`wildlife._act` calls `live()` after its survival/hunt checks; `wildlife.py` stays under 500 by the split.
+
+**B1 day/night** — each species has an `active` day|night. A DIURNAL animal (deer/rabbit/pheasant) BEDS DOWN
+at night (stops, a sleep bubble); a NOCTURNAL one (boar/fox/wolf) rests by day and roams at night. Survival
+still overrides — an approaching player/predator STARTLES it awake and it flees (the flee checks run first).
+`_pick_for` reweights spawns toward the species active now, so the wild shifts day↔night (a resting one still
+turns up occasionally, asleep in the field).
+
+**B2 graze & thirst** — a grazer moves toward its DIET terrain (graze→grass/forest, root→swamp/forest) and
+FEEDS in place (a grazing pause, hunger reset) on a hunger drive; any animal SEEKS and DRINKS at WATER on a
+thirst drive — replacing the random wander with purposeful feeding.
+
+**B3 herding** — herd species (`herd:true` — deer/rabbit/pheasant + the wolf PACK) drift together via
+boids-lite cohesion + separation (`_herd_vector`), so a herd moves as one; solitary species free-amble.
+
+**B4 richer predators** — a new **wolf** pack predator (hunts deer/rabbit, nocturnal, flocks); a **cornered
+boar CHARGES** the player (`_charge`/`_can_flee` — the data's old promise, real damage floored at 1 HP so it's
+a scare not a kill, on a `CHARGE_COOLDOWN`); and a predator **hunger meter** (`pred_hunger`) so nightly starve
+odds climb the longer it goes hungry (a fed one is safe, two lean nights usually fatal) instead of a coin-flip.
+
+`data/wildlife.json` gains `active`/`herd` on every species + the wolf + boar `charge`; `check_wildlife`
+validates them. tests/test_wildlife_ethology.py (17). Deferred B5 (herds actively avoiding a predator's area —
+proximity-flee already covers the core). Full suite green.

@@ -91,6 +91,10 @@ def check_wildlife() -> List[str]:
         for prey in spec.get("preys_on", []):
             if prey not in roster:
                 problems.append(f"wildlife {sid}: preys_on unknown '{prey}'")
+        if spec.get("active", "day") not in ("day", "night"):    # B1
+            problems.append(f"wildlife {sid}: active must be day|night")
+        if "herd" in spec and not isinstance(spec["herd"], bool):  # B3
+            problems.append(f"wildlife {sid}: herd must be true|false")
     return problems
 
 

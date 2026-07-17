@@ -107,23 +107,23 @@ Goal: animals sleep, graze toward real food/water, and move as herds — buildin
 the working fox/rabbit loop. Split new logic into `world/wildlife_ethology.py`
 (`wildlife.py` is ~430 lines).
 
-- **B1 — Day/night rhythm.** Read `world.get_time_of_day()`: diurnal prey bed down
-  (sleep pose) at a "bed" tile at night; nocturnal species (owl/fox) go active at
-  night. `data/wildlife.json` gains `active:"day"|"night"`.
-- **B2 — Real grazing & thirst.** A `graze/root` animal moves toward its **diet
-  terrain** (grass/forest/swamp) and **feeds** (pause + graze anim) on a hunger
-  drive; seeks and drinks at **water** tiles. Replaces the 50/50 random wander.
-- **B3 — Herding / flocking.** Herd species (deer) move cohesively — boids-lite
-  cohesion/alignment/separation within a radius — so a herd drifts together.
-- **B4 — Richer predators.** Add **wolf** (pack predator) hunting deer
-  cooperatively (reuse `monster_packs`-style focus); hunger meters (not binary
-  fed/starve); predators drink too; **boar charge/retaliate** when cornered
-  (the data already promises it — `wildlife.json:36`).
-- **B5 — Ecosystem coupling.** Predators thin herds visibly; herds seek safer
-  terrain when a predator is near; ties into the existing larder/shortage hooks.
+- **B1 — Day/night rhythm. ✅ DONE.** `active:"day"|"night"` per species; diurnal
+  animals BED DOWN at night (stop + sleep bubble), nocturnal roam at night;
+  `_pick_for` reweights spawns toward the active species; survival overrides rest.
+- **B2 — Real grazing & thirst. ✅ DONE.** A grazer moves toward its diet terrain
+  and FEEDS in place on a hunger drive; any animal SEEKS + DRINKS at water on a
+  thirst drive (`wildlife_ethology._feed`/`_seek_water`). Random wander gone.
+- **B3 — Herding / flocking. ✅ DONE.** `herd:true` species drift together via
+  boids-lite cohesion + separation (`_herd_vector`); solitary species free-amble.
+- **B4 — Richer predators. ✅ DONE.** A **wolf** pack predator (hunts deer/rabbit,
+  nocturnal, flocks); a **cornered boar CHARGES** (`_charge`/`_can_flee`, damage
+  floored at 1 HP, cooldown); a predator **hunger meter** (`pred_hunger`) so nightly
+  starve odds climb with hunger. *(Remaining: cooperative pack focus like `monster_packs`.)*
+- **B5 — Ecosystem coupling.** *(Core covered — predators thin herds via kills, prey
+  flee a predator's proximity.)* Remaining: herds actively avoiding a predator's area.
 
-Fixes: `world/wildlife.py:199-215` (fake graze), `:195-196` (off-screen freeze),
-missing day/night everywhere.
+Fixed: `world/wildlife.py` fake graze + missing day/night; split the new behaviour
+into `world/wildlife_ethology.py` to hold the 500-line line.
 
 ## 6. Area C — Monster & Tribe Life
 

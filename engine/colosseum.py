@@ -26,6 +26,11 @@ logger = logging.getLogger("llm_rpg.colosseum")
 _RANGED = {"ranger", "archer"}
 _CASTER = {"wizard", "sorcerer", "warlock", "druid"}
 
+# a bout ALWAYS ends: if neither side is wiped by this many ticks it's decided on
+# remaining HP (a stall-breaker — a duel occasionally deadlocks otherwise; normal
+# bouts finish in well under 40 ticks)
+MAX_ARENA_TICKS = 200
+
 # COMBAT.2 cosmetic SHOWCASE beats — an adjacent melee fighter occasionally
 # throws in a defensive move or a flashy attack (deterministic, one-shot emotes
 # the renderer plays) so the arena reads as a lively brawl, not a trade of swings
@@ -167,6 +172,7 @@ class ColosseumSystem:
         self._spawn_team(m.get("team_b", []), 1, b_col, y0, y1, level)
         self.active = True
         self.result = None
+        self._ticks = 0
         self._last = preset_id
         self.matchup_name = m.get("name", preset_id)
         self.engine.memory_manager.add_event(
@@ -240,6 +246,7 @@ class ColosseumSystem:
         nearest enemy (the real combat_system). Called from the turn pipeline."""
         if not self.active:
             return
+        self._ticks = getattr(self, "_ticks", 0) + 1
         fighters = [self.engine.npc_manager.npcs.get(fid)
                     for fid in self.fighter_ids]
         living = [f for f in fighters if f is not None and f.is_alive()]
@@ -252,6 +259,8 @@ class ColosseumSystem:
             self._act(f, enemy)
         if self.over:
             self._finish()
+        elif self._ticks >= MAX_ARENA_TICKS:   # stall-breaker — decide on HP
+            self._finish(stalled=True)
 
     def _act(self, f, enemy):
         klass = getattr(getattr(f, "character_class", None), "value", "")
@@ -329,12 +338,23 @@ class ColosseumSystem:
         return "team_a" if a and not b else "team_b" if b and not a \
             else "draw" if not a and not b else None
 
-    def _finish(self):
+    def _hp_leader(self) -> str:
+        """Decide a STALLED bout (both sides still standing) on remaining HP."""
+        hp = {0: 0, 1: 0}
+        for fid in self.fighter_ids:
+            f = self.engine.npc_manager.npcs.get(fid)
+            if f is not None and f.is_alive():
+                hp[(f.metadata or {}).get("arena_team")] = \
+                    hp.get((f.metadata or {}).get("arena_team"), 0) + f.hp
+        return "team_a" if hp[0] > hp[1] else "team_b" if hp[1] > hp[0] else "draw"
+
+    def _finish(self, stalled=False):
         self.active = False
-        self.result = self.winner()
+        self.result = self.winner() or (self._hp_leader() if stalled else "draw")
         side = {"team_a": "Team A", "team_b": "Team B"}.get(self.result, "No one")
+        tail = " (on points)" if stalled else ""
         self.engine.memory_manager.add_event(
-            f"[Arena] {side} wins the {self.matchup_name}!")
+            f"[Arena] {side} wins the {self.matchup_name}!{tail}")
 
     def clear(self):
         """Remove any staged fighters and reset the arena for a fresh matchup."""
