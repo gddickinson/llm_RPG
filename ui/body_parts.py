@@ -71,6 +71,34 @@ def draw_legs(surface, pose, pants, boots, w):
                             (fx - w, fy - max(1, w // 2), w * 2, w))
 
 
+# R5: classes that wear a robe/gown — the legs read as a hanging SKIRT, not pants
+ROBE_CLASSES = {"wizard", "sorcerer", "warlock", "cleric", "druid", "monk",
+                "necromancer", "priest"}
+
+
+def draw_robe(surface, pose, color, w):
+    """R5: a flared, shaded SKIRT from the hips to the ankles — a robe reads as
+    hanging cloth (lit flank, shadow flank, a dark hem, a couple of folds) that
+    sways a little with the feet, instead of bare legs."""
+    import pygame
+    lh, rh = pose["l_hip"], pose["r_hip"]
+    lf, rf = pose["l_foot"], pose["r_foot"]
+    hem_y = max(lf[1], rf[1])
+    flare = abs(rh[0] - lh[0]) * 0.6 + w
+    hemL = (min(lf[0], lh[0]) - flare, hem_y)
+    hemR = (max(rf[0], rh[0]) + flare, hem_y)
+    pts = [_pt(lh), _pt(hemL), _pt(hemR), _pt(rh)]
+    pygame.draw.polygon(surface, color, pts)
+    pygame.draw.line(surface, _lighten(color, 26), _pt(lh), _pt(hemL), max(2, w))
+    pygame.draw.line(surface, _dark(color, 34), _pt(rh), _pt(hemR), max(2, w))
+    pygame.draw.line(surface, _dark(color, 30), _pt(hemL), _pt(hemR),
+                     max(2, w // 2 + 1))
+    for t in (0.34, 0.66):                              # fold lines
+        top = (lh[0] + (rh[0] - lh[0]) * t, lh[1])
+        bot = (hemL[0] + (hemR[0] - hemL[0]) * t, hem_y)
+        pygame.draw.line(surface, _dark(color, 22), _pt(top), _pt(bot), 1)
+
+
 def draw_torso(surface, pose, color, belt):
     import pygame
     lh, rh = pose["l_hip"], pose["r_hip"]
@@ -259,7 +287,9 @@ def draw_shield(surface, pose, face, rim, r):
 
 
 def draw_weapon(surface, weapon, pose, length, w):
-    """Draw the weapon from the RIGHT hand, aligned along the forearm."""
+    """Draw the weapon from the RIGHT hand, aligned along the forearm. R4: metal
+    reads two-tone (a lit edge over a shadowed spine), a blade has a grip + pommel,
+    and a staff's orb is a glowing bead — not a flat floating dot."""
     import pygame
     hand = pose["r_hand"]
     elbow = pose["r_elbow"]
@@ -267,43 +297,63 @@ def draw_weapon(surface, weapon, pose, length, w):
     d = math.hypot(dx, dy) or 1.0
     ux, uy = dx / d, dy / d                      # forearm direction (out of hand)
     hx, hy = _pt(hand)
-    tip = (int(hand[0] + ux * length), int(hand[1] + uy * length))
     px, py = -uy, ux                             # perpendicular
-    steel, wood = (222, 224, 232), (140, 100, 62)
+    if px * _LIGHT[0] + py * _LIGHT[1] < 0:      # ... pointed toward the light
+        px, py = -px, -py
+    tip = (int(hand[0] + ux * length), int(hand[1] + uy * length))
+    steel, wood = (196, 200, 210), (140, 100, 62)
     if weapon in ("sword", "dagger"):
         blade = length if weapon == "sword" else length * 0.55
         tip = (int(hand[0] + ux * blade), int(hand[1] + uy * blade))
-        pygame.draw.line(surface, steel, (hx, hy), tip, max(2, w))
-        g = int(length * 0.18)
-        pygame.draw.line(surface, (120, 90, 55),
-                         (hx - int(px * g), hy - int(py * g)),
-                         (hx + int(px * g), hy + int(py * g)), max(2, w))
+        bw = max(2, w)
+        pygame.draw.line(surface, _dark(steel, 62), (hx, hy), tip, bw)     # spine
+        e = bw * 0.34
+        pygame.draw.line(surface, _lighten(steel, 40),                     # lit edge
+                         _pt((hx + px * e, hy + py * e)),
+                         _pt((tip[0] + px * e, tip[1] + py * e)),
+                         max(1, int(bw * 0.42)))
+        g = int(blade * 0.18)
+        pygame.draw.line(surface, (118, 92, 56),                           # crossguard
+                         _pt((hx - px * g, hy - py * g)),
+                         _pt((hx + px * g, hy + py * g)), max(2, bw))
+        pygame.draw.circle(surface, (150, 116, 60), (hx, hy), max(2, int(bw * 0.7)))
+        pygame.draw.circle(surface, (206, 172, 98), (hx, hy), max(1, int(bw * 0.34)))
     elif weapon == "axe":
         pygame.draw.line(surface, wood, (hx, hy), tip, max(2, w))
         b = int(length * 0.30)
-        pygame.draw.polygon(surface, (205, 208, 214), [
-            tip, (int(tip[0] + px * b), int(tip[1] + py * b)),
-            (int(tip[0] - ux * b), int(tip[1] - uy * b))])
+        head = [tip, _pt((tip[0] + px * b, tip[1] + py * b)),
+                _pt((tip[0] - ux * b, tip[1] - uy * b))]
+        pygame.draw.polygon(surface, steel, head)
+        pygame.draw.polygon(surface, _lighten(steel, 34), head, 1)         # lit rim
     elif weapon == "mace":
         pygame.draw.line(surface, wood, (hx, hy), tip, max(2, w))
-        pygame.draw.circle(surface, (188, 190, 200), tip, max(2, int(length * 0.2)))
+        r = max(2, int(length * 0.2))
+        pygame.draw.circle(surface, _dark(steel, 34), tip, r)
+        pygame.draw.circle(surface, _lighten(steel, 36),
+                           _pt((tip[0] + px * r * 0.4, tip[1] + py * r * 0.4)),
+                           max(1, int(r * 0.55)))                           # highlight
     elif weapon == "spear":
         tip = (int(hand[0] + ux * length * 1.4), int(hand[1] + uy * length * 1.4))
         pygame.draw.line(surface, wood, (hx, hy), tip, max(2, w))
-        pygame.draw.polygon(surface, steel, [
-            tip, (int(tip[0] - ux * 5 + px * 3), int(tip[1] - uy * 5 + py * 3)),
-            (int(tip[0] - ux * 5 - px * 3), int(tip[1] - uy * 5 - py * 3))])
+        head = [tip, _pt((tip[0] - ux * 5 + px * 3, tip[1] - uy * 5 + py * 3)),
+                _pt((tip[0] - ux * 5 - px * 3, tip[1] - uy * 5 - py * 3))]
+        pygame.draw.polygon(surface, steel, head)
+        pygame.draw.polygon(surface, _lighten(steel, 34), head, 1)
     elif weapon == "staff":
         tip = (int(hand[0] + ux * length * 1.2), int(hand[1] + uy * length * 1.2))
         pygame.draw.line(surface, (120, 86, 52), (hx, hy), tip, max(2, w))
-        pygame.draw.circle(surface, (120, 190, 255), tip, max(2, int(length * 0.16)))
+        # a GLOWING bead: a faint aura → a bright core, so it reads magical + fixed
+        for rr, cc in ((max(2, int(length * 0.26)), (48, 96, 176)),
+                       (max(2, int(length * 0.17)), (108, 172, 250)),
+                       (max(1, int(length * 0.09)), (224, 244, 255))):
+            pygame.draw.circle(surface, cc, tip, rr)
     elif weapon == "bow":
         r = max(3, int(length * 0.42))
         base = math.atan2(uy, ux)
         rect = (hx - r, hy - r, r * 2, r * 2)
-        pygame.draw.arc(surface, (150, 100, 55), rect,
-                        base - 1.1, base + 1.1, max(2, w))
-        # bowstring across the arc's ends
+        pygame.draw.arc(surface, (120, 82, 44), rect, base - 1.1, base + 1.1, max(2, w))
+        pygame.draw.arc(surface, (176, 128, 74), rect, base - 1.1, base + 1.1,
+                        max(1, w // 2))                                     # lit belly
         p1 = (hx + int(r * math.cos(base - 1.1)), hy + int(r * math.sin(base - 1.1)))
         p2 = (hx + int(r * math.cos(base + 1.1)), hy + int(r * math.sin(base + 1.1)))
         pygame.draw.line(surface, (225, 220, 195), p1, p2, 1)

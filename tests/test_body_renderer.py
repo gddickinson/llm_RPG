@@ -155,6 +155,48 @@ class TestFormShading(unittest.TestCase):
         self.assertGreaterEqual(len(shades), 3,
                                 "a dark side, a lit core, and a highlight")
 
+    def test_a_blade_is_two_tone_metal(self):
+        from ui import body_parts as bp
+        pose = {"r_hand": (20, 40), "r_elbow": (20, 60)}   # blade points up
+        surf = pygame.Surface((60, 60))
+        surf.fill((0, 0, 0))
+        bp.draw_weapon(surf, "sword", pose, 30, 5)
+        arr = pygame.surfarray.array3d(surf)
+        lum = arr.reshape(-1, 3).max(axis=1)
+        lit = lum[lum > 0]
+        self.assertGreater(int(lit.max()), 190, "a lit blade edge")
+        self.assertLess(int(lit.min()), 150, "a shadowed spine / grip")
+
+    def test_robed_classes_wear_a_robe(self):
+        from ui import body_parts as bp
+        self.assertIn("wizard", bp.ROBE_CLASSES)
+        self.assertIn("cleric", bp.ROBE_CLASSES)
+        self.assertNotIn("warrior", bp.ROBE_CLASSES)
+
+    def test_a_robe_is_a_filled_flared_skirt(self):
+        from ui import body_parts as bp
+        pose = {"l_hip": (44, 60), "r_hip": (56, 60),
+                "l_foot": (46, 110), "r_foot": (54, 110)}
+        surf = pygame.Surface((120, 130))
+        surf.fill((0, 0, 0))
+        bp.draw_robe(surf, pose, (90, 60, 140), 6)
+        arr = pygame.surfarray.array3d(surf)
+        painted = (arr.reshape(-1, 3).max(axis=1) > 0)
+        # the hem is wider than the hips → the skirt flares (fills a broad band low)
+        low = pygame.surfarray.array3d(surf)[:, 108]
+        hem_px = int((low.max(axis=1) > 0).sum())
+        self.assertGreater(hem_px, 12, "the hem flares wider than the hips")
+        self.assertGreater(int(painted.sum()), 200, "a filled skirt")
+
+    def test_staff_orb_glows(self):
+        from ui import body_parts as bp
+        pose = {"r_hand": (30, 30), "r_elbow": (30, 55)}
+        surf = pygame.Surface((60, 60))
+        surf.fill((0, 0, 0))
+        bp.draw_weapon(surf, "staff", pose, 24, 4)
+        arr = pygame.surfarray.array3d(surf)
+        self.assertGreater(int(arr[..., 2].max()), 230, "a bright glowing core")
+
     def test_the_head_is_a_shaded_sphere(self):
         # a drawn head has a highlight lighter than its skin and a shaded side
         c = _new_char()

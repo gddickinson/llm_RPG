@@ -39,12 +39,14 @@ drawing (2D shading vs iso shading).
   roughly constant while the swing foot moves (~1.5px/frame residual over a 64px
   tile) — the `char_tween.move_phase` tied to ground speed already plants feet.
   Only a minor residual slide remains; low priority. *(deferred)*
-- **R4 — Weapons & gear fidelity. ⏳ NEXT.** (Head size KEPT — George: "ok for
-  now".) Give 2D weapons FORM shading — a lit blade edge + a shadowed spine, a
-  proper grip/pommel — and fix the staff so its orb reads as an attached magical
-  GLOW, not a floating dot.
-- **R5 — Cloth volume.** Robes/cloaks/tunics read as CLOTH — a shaded skirt/hem with
-  folds that sways with `char_flow`, not a flat rectangle (2D + iso).
+- **R4 — Weapons & gear fidelity. ✅ DONE.** (Head size KEPT.) 2D weapons read as
+  shaded metal — a lit blade edge over a shadowed spine, a grip + gold pommel on a
+  sword, lit rims on axe/spear/mace heads; the staff's orb is now a glowing BEAD
+  (aura → bright core), not a flat floating dot. `body_parts.draw_weapon`.
+- **R5 — Cloth volume (2D). ✅ DONE.** Robed classes (`ROBE_CLASSES` — wizard/
+  cleric/druid/…) wear a flared, folded, shaded SKIRT (`body_parts.draw_robe`) that
+  hangs over the legs and sways with the feet — they read as mages/priests, not
+  stick-legs. *(iso robes deferred — the iso legs already read as shaded 3D.)*
 - **R6 — Ground shadows & grounding.** A directional, pose-shaped contact shadow
   (2D), and stronger contact shadows/occlusion where a figure meets the ground.
 

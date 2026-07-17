@@ -442,6 +442,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     far = "l" if depth.get("l_sh", 0.0) <= depth.get("r_sh", 0.0) else "r"
     near = "r" if far == "l" else "l"
     bp.draw_legs(surface, pose, pants, boots, leg_w)
+    if klass.lower() in bp.ROBE_CLASSES:         # R5: a robe hangs over the legs
+        bp.draw_robe(surface, pose, torso, max(3, int(H * 0.05)))
     bp.draw_arm(surface, pose, far, _darken(torso, 26), _darken(skin, 26), arm_w)
     if char_motion.has_shield(char):
         bp.draw_shield(surface, pose, (120, 110, 95), (88, 76, 60),

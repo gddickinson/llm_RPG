@@ -142,6 +142,15 @@ class TestDegreesInSystems(unittest.TestCase):
         self.wmap.remove_character(self.player)
         self.player.position = (self.ox, self.oy)
         self.wmap.place_character(self.player, self.ox, self.oy)
+        # This test is about the shove DISTANCE, not the turn it triggers. Two
+        # things otherwise make the final position non-deterministic across the
+        # full suite: (1) the default player's class → STR mod varies with RNG
+        # order (shifting the crit margin between a 1- and 2-tile shove); (2) shove
+        # ends with advance_turn(), whose world tick can move the freshly-shoved
+        # brute (e.g. a wolf now HUNTS wildlife, LIVING_WORLD C5). Pin the STR and
+        # isolate the push from the incidental tick.
+        self.player.strength = 16
+        self.engine.advance_turn = lambda *a, **k: None
         shove(self.engine, rng=_SeqRng([20, 1]))
         self.assertEqual(brute.position, (self.ox + 3, self.oy),
                          "a crit shove is two tiles, not one")
