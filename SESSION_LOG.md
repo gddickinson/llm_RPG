@@ -9328,3 +9328,24 @@ fight now plays at a natural, watchable pace. tests: the expanded sword/axe/unar
 standalone showcase move routes to its capture + is a registered one-shot (test_char_mocap TestCombat2);
 the arena's defence/showcase pools are registered one-shots + a live bout auto-advances then stops
 (test_colosseum). Full suite green.
+
+## 2026-07-17 — Combat Arena as a start-menu item (George)
+
+George: "How do I play in the combat arena — can you add it as a startup menu item?" The colosseum was
+only reachable via the `--colosseum` CLI flag or by walking to the arena gate in-game and pressing E; now
+it's a first-class title-screen option.
+
+`engine/colosseum.list_matchups()` — an engine-free `[(id,name,desc)]` (mirrors `battle_scenario.
+list_scenarios`) so the menu can list the fights before a world is built. `ui/start_menu.py`: a new "Combat
+Arena" TITLE_OPTION opens an `arena_menu` state — a keyboard-navigable list of the 8 matchups (Warriors'
+Duel, Mages' Duel, Shields vs Bows, Beast Brawl, Gladiators vs the Troll, Guards vs Bandits…) with the
+selected one's blurb; Enter returns `{"action":"arena","matchup":<id>,"spec":<default hero>,"start":
+"default"}`. `main.py` handles the new action like "new" (default world + a quick-start hero) then
+`engine.enter_colosseum(matchup)` seats the player as a spectator at the gate and stages the fight — the
+COMBAT.2 `colosseum_tick` runs it at a natural pace. The `--colosseum` flag now shares the same
+`arena_matchup` path. Once a bout ends the player stands at the arena gate in a normal world and can press
+E to stage the next matchup (cycles), or walk off and play on.
+
+tests/test_arena_menu.py (7): matchups load engine-free, Combat Arena is a title option that opens the
+list, renders without crashing, navigation stays in bounds, Enter returns the pick (with a hero spec),
+Esc returns to the title. Full suite green.

@@ -96,6 +96,9 @@ def main() -> int:
     player_spec = None
     world_kind = "default"
     load_save_name = args.load
+    arena_matchup = None                  # a Combat Arena matchup to stage
+    if args.colosseum:                    # --colosseum flag pre-selects one
+        arena_matchup = args.colosseum
     if args.ui == "gui" and has_pygame and not args.no_menu \
             and not args.load:
         try:
@@ -114,9 +117,11 @@ def main() -> int:
                 return 0
             if choice["action"] == "load":
                 load_save_name = choice["save_name"]
-            elif choice["action"] == "new":
+            elif choice["action"] in ("new", "arena"):
                 player_spec = choice.get("spec")
                 world_kind = choice.get("start", "default")
+                if choice["action"] == "arena":   # stage the picked matchup
+                    arena_matchup = choice.get("matchup")
         except Exception as e:
             logger.warning(f"Start menu failed, skipping: {e}")
 
@@ -146,12 +151,12 @@ def main() -> int:
         else:
             logger.warning(f"Could not load save: {load_save_name}")
 
-    # --colosseum: seat the player as a spectator at the arena gate and stage
-    # a matchup, for testing combat + its graphics
-    if args.colosseum:
+    # Combat Arena (menu / --colosseum): seat the player as a spectator at the
+    # arena gate and stage a matchup, for watching combat + its graphics
+    if arena_matchup:
         try:
-            engine.enter_colosseum(args.colosseum)
-            logger.info(f"Colosseum: staged {args.colosseum}")
+            engine.enter_colosseum(arena_matchup)
+            logger.info(f"Colosseum: staged {arena_matchup}")
         except Exception as e:
             logger.warning(f"Colosseum start failed: {e}")
 

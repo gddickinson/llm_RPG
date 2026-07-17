@@ -369,6 +369,13 @@ def _load():
         return {"arena": {"width": 18, "height": 12}, "matchups": []}
 
 
+def list_matchups():
+    """[(id, name, desc)] for the start-menu Combat Arena pick (engine-free, so
+    the menu can list the fights before a world is built)."""
+    return [(m["id"], m.get("name", m["id"]), m.get("desc", ""))
+            for m in _load().get("matchups", [])]
+
+
 _MONSTER_IDS = None
 
 
