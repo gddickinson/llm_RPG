@@ -342,10 +342,19 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     # P34.15 LOCOMOTION plays baked MOCAP through the depth model (real stride/timing
     # at any facing); everything else is the procedural pose + its action clip.
     loco = char_mocap.clip_for(action) if action in ("walk", "run", "idle") else None
+    # COMBAT.1 the 2D renderer plays the real combat + DEFENCE mocap too (an
+    # attack rotates the weapon's repertoire, a block/dodge/hit plays its
+    # capture); everything else stays the procedural pose below.
+    mclip, mp = loco, None
     if loco:
         mp = (anim.get("clock", 0.0) * char_mocap.RATE.get(loco, 1.0)
               * gait["cadence"])
-        pose = char_pose3d.pose3d_mocap(feet_x, feet_y, H, loco, mp, face_deg,
+    else:
+        cm = char_mocap.combat_mocap(action, anim, weapon, attack)
+        if cm:
+            mclip, mp = cm
+    if mclip:
+        pose = char_pose3d.pose3d_mocap(feet_x, feet_y, H, mclip, mp, face_deg,
                                         build, pgait, spine)
         facing = pose["facing"]
     else:
@@ -458,43 +467,6 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
 SSAA_SCALE = 2                 # P34.7 oversample factor for crisp, anti-aliased art
 
 
-def draw_body_crisp(surface, char, sx: int, sy: int, tile_size: int,
-                    is_player: bool = False) -> None:
-    """P34.7 beauty pass: render the character onto a `SSAA_SCALE`× oversampled
-    scratch surface and `smoothscale` it down, so the curvy limbs read smooth and
-    anti-aliased instead of jagged pixel steps. Falls back to a direct draw when
-    oversampling is off. The logical grid + all animation are unchanged."""
-    n = SSAA_SCALE
-    if not PYGAME_OK or n <= 1:
-        return draw_body(surface, char, sx, sy, tile_size, is_player)
-    pad_x = tile_size                     # room for arms / weapon to the sides
-    pad_up = tile_size * 2                 # the body overflows ~1.5 tiles upward
-    w, h = tile_size + pad_x * 2, tile_size + pad_up
-    scratch = pygame.Surface((w * n, h * n), pygame.SRCALPHA)
-    draw_body(scratch, char, pad_x * n, pad_up * n, tile_size * n, is_player)
-    small = pygame.transform.smoothscale(scratch, (w, h))
-    surface.blit(small, (int(sx - pad_x), int(sy - pad_up)))
-
-
-def draw_glimpsed(surface, char, sx: int, sy: int, tile_size: int,
-                  is_player: bool = False) -> None:
-    """Draw a character SEEN THROUGH A WINDOW (P14.2) — dimmed and behind a
-    faint pane — so an NPC glimpsed inside a building reads as indoors rather
-    than standing on top of the wall. Reuses `draw_body` on a taller scratch
-    surface (the body overflows the tile), then glazes it."""
-    if not PYGAME_OK:
-        return
-    pad = tile_size                          # room for the overflowing body
-    glass = pygame.Surface((tile_size, tile_size + pad), pygame.SRCALPHA)
-    draw_body(glass, char, 0, pad, tile_size)
-    glass.fill((255, 255, 255, 135), special_flags=pygame.BLEND_RGBA_MULT)
-    surface.blit(glass, (sx, sy - pad))
-    pane = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
-    pygame.draw.rect(pane, (140, 170, 205, 70), pane.get_rect(),
-                     max(1, tile_size // 16))
-    surface.blit(pane, (sx, sy))
-
-
 def _draw_corpse(surface, char, sx: int, sy: int, tile_size: int) -> None:
     cx = sx + tile_size // 2
     cy = sy + tile_size // 2 + 2
@@ -504,27 +476,7 @@ def _draw_corpse(surface, char, sx: int, sy: int, tile_size: int) -> None:
     pygame.draw.ellipse(surface, (50, 10, 10), (cx - w // 2, cy, w, h), 1)
 
 
-# ---------------------------------------------------------------------- projectile sprite
-
-def draw_projectile(surface, kind: str, sx: int, sy: int,
-                    tile_size: int) -> None:
-    """Draw an in-flight projectile sprite (called by the map renderer)."""
-    if not PYGAME_OK:
-        return
-    cx = sx + tile_size // 2
-    cy = sy + tile_size // 2
-    if kind == "arrow":
-        pygame.draw.line(surface, (200, 170, 110),
-                         (cx - 4, cy), (cx + 4, cy), 2)
-        pygame.draw.polygon(surface, (220, 220, 230),
-                            [(cx + 4, cy - 2), (cx + 7, cy), (cx + 4, cy + 2)])
-    elif kind == "bolt":
-        pygame.draw.line(surface, (160, 160, 170),
-                         (cx - 3, cy), (cx + 5, cy), 3)
-    elif kind == "stone":
-        pygame.draw.circle(surface, (140, 130, 120), (cx, cy), 3)
-    elif kind == "spell":
-        pygame.draw.circle(surface, (200, 160, 255), (cx, cy), 4)
-        pygame.draw.circle(surface, (255, 220, 255), (cx, cy), 2)
-    else:
-        pygame.draw.circle(surface, (240, 240, 200), (cx, cy), 3)
+# draw_body_crisp / draw_glimpsed / draw_projectile moved to ui/body_draw.py
+# (500-line line); re-exported here so existing imports keep working.
+from ui.body_draw import (draw_body_crisp, draw_glimpsed,   # noqa: E402,F401
+                          draw_projectile)

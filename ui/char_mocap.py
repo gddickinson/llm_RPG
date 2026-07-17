@@ -27,7 +27,62 @@ ACTION_CLIP = {
     "walk": "walk", "run": "run", "flip": "jump",
     "sit": "sit", "sleep": "sit", "dance": "dance", "climb": "climb",
     "idle": "idle", "talk": "talk", "wave": "talk", "stagger": "stagger",
+    # COMBAT.1 the 2D renderer plays the real combat + defence mocap too
+    "block": "shield_block", "crouch_block": "crouch_block", "dodge": "roll",
+    "hit": "hit", "hurt": "hit", "hit_head": "hit_head", "hit_back": "hit_back",
+    "hit_legs": "hit_legs", "kick": "kick", "stab": "stab", "jab": "jab",
+    "hook": "hook", "lead_jab": "lead_jab", "elbow": "elbow",
+    "spellcast": "spellcast", "cast": "spellcast", "charge": "charge",
+    "die": "die",
 }
+
+
+# COMBAT.1 the attack repertoire a fighter rotates through per strike (`seq`),
+# by weapon — shared with the iso path's pools.
+_BLADE = ("sword_attack", "sword_attack2", "sword_attack3", "sword_attack4",
+          "sword_slash")
+_FIST = ("jab", "hook", "lead_jab", "elbow")
+
+
+def attack_clip(weapon, seq):
+    """The melee-attack mocap clip for a weapon at strike `seq` (rotates the
+    repertoire), or None for a polearm (→ the procedural swing)."""
+    if weapon == "dagger":
+        name = "stab"
+    elif not weapon:
+        name = _FIST[seq % len(_FIST)]
+    elif weapon in ("sword", "axe", "mace"):
+        name = _BLADE[seq % len(_BLADE)]
+    else:
+        return None
+    return name if _load(name) else None
+
+
+# the actions the 2D renderer plays from real combat mocap (not procedural)
+_COMBAT = frozenset({
+    "attack", "block", "crouch_block", "dodge", "roll", "hit", "hurt",
+    "hit_head", "hit_back", "hit_legs", "kick", "stab", "jab", "hook",
+    "lead_jab", "elbow", "spellcast", "cast", "charge", "die"})
+
+
+def combat_mocap(action, anim, weapon, attack_progress):
+    """(clip, phase) for a 2D COMBAT action, or None if it isn't one. An ATTACK
+    rotates the weapon's repertoire by strike seq (phase = the strike progress);
+    a one-shot block/dodge/hit plays 0→1 over its duration; a guard idle loops."""
+    if action not in _COMBAT:
+        return None
+    anim = anim or {}
+    if action == "attack":
+        clip = attack_clip(weapon, int(anim.get("atk_seen", 0) or 0))
+        return (clip, attack_progress) if clip else None
+    clip = clip_for(action)
+    if not clip:
+        return None
+    if is_loop(clip):
+        return clip, anim.get("clock", 0.0) * 0.9
+    dur = anim.get("action_dur")
+    return clip, ((1.0 - anim.get("action_t", 0.0) / dur) if dur
+                  else anim.get("clock", 0.0))
 # cycle rate (loops/sec) driving a looping clip off the anim clock
 RATE = {"walk": 2.6, "run": 3.6, "idle": 0.45, "talk": 0.8, "dance": 1.1,
         "climb": 1.4, "stagger": 2.0}

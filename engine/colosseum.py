@@ -247,6 +247,17 @@ class ColosseumSystem:
 
     def _act(self, f, enemy):
         klass = getattr(getattr(f, "character_class", None), "value", "")
+        dx = enemy.position[0] - f.position[0]
+        dy = enemy.position[1] - f.position[1]
+        adj = dx * dx + dy * dy <= 3
+        # a melee fighter occasionally raises a GUARD or DODGES instead of
+        # striking — a defensive beat (deterministic, ~1 in 6 turns) so the
+        # block / crouch-block / dodge animations show in a real bout
+        if adj and klass not in _CASTER and klass not in _RANGED and \
+                (hash(f.id) + self.engine.turn_counter) % 6 == 0:
+            h = hash(f.id) // 6
+            f.metadata["_emote"] = ("dodge", "block", "crouch_block")[h % 3]
+            return
         if klass in _CASTER and self._has_mana(f):
             action = "cast"
         elif klass in _RANGED:

@@ -184,7 +184,11 @@ _ACT_FRAMES = {"walk": 12, "run": 12, "jog": 12, "idle": 8, "dance": 10,
                "acknowledge": 8, "ask": 8, "bored": 10, "look": 10, "pray": 10,
                "no": 7, "silly": 12,
                # ISO.16 real sword combat / hit / cast / death
-               "hit": 6, "spellcast": 9, "die": 9}
+               "hit": 6, "spellcast": 9, "die": 9,
+               # COMBAT.1 the attack + DEFENCE repertoire
+               "block": 7, "shield_block": 7, "crouch_block": 7, "dodge": 8,
+               "roll": 8, "hook": 8, "lead_jab": 7, "elbow": 8,
+               "hit_head": 6, "hit_back": 7, "hit_legs": 6}
 _LOOP_PERIOD = {"walk": 720, "run": 620, "jog": 760, "idle": 2600,
                 "dance": 1100, "sit": 3000, "sleep": 3000, "climb": 1000,
                 "talk": 1400, "swim": 900, "guard": 900, "crawl": 1400,
@@ -196,7 +200,8 @@ _ONESHOT = {"attack", "jump", "leap", "bow", "wave", "cast", "cheer",
             "stretch", "reach", "salute", "beckon", "facepalm", "clap",
             "laugh", "point", "nod", "kneel", "winded", "cast_point",
             "cast_staff", "jab", "block", "charge", "stab", "acknowledge",
-            "ask", "no", "die"}
+            "ask", "no", "die", "shield_block", "crouch_block", "dodge", "roll",
+            "hook", "lead_jab", "elbow", "hit_head", "hit_back", "hit_legs"}
 # ISO.14 calm ambient GESTURES an idle character drifts into now and then (a
 # glance around, a bored shift) so a standing crowd looks ALIVE — cosmetic,
 # render-only, both LOOPS.
@@ -305,17 +310,18 @@ def char_sprite(char, size: int, facing=None):
     build = iso_skeleton.build_of(char)               # ISO.7 silhouette variety
     seed = _stance_of(char)                            # ISO.11 idle/dance variety
     kit = kit_of(char)                                 # ISO.12 weapon/armour/body
-    style = None
-    if action == "attack":                             # ISO.13 varied strikes
+    style, seq = None, 0
+    if action == "attack":                             # ISO.13/COMBAT.1 strikes
         anim = (getattr(char, "metadata", {}) or {}).get("_anim", {})
         style = anim.get("atk_style", "overhead")
-    key = (tint, hair, size, delta, action, frame, build, seed, kit, style)
+        seq = int(anim.get("atk_seen", 0) or 0)        # rotate the repertoire
+    key = (tint, hair, size, delta, action, frame, build, seed, kit, style, seq)
     if key not in _CACHE:
         phase = frame / _frames_of(action)
         # ISO.6: a real Mixamo-mocap-driven rigged skeleton; if the clip is
         # missing, fall back to the ISO.3/4 procedural box figure.
         mesh = iso_skeleton.sample_figure(action, phase, tint, hair, angle,
-                                          build, seed, kit, style)
+                                          build, seed, kit, style, seq)
         cam = iso_skeleton.CAM
         if mesh is None:
             mesh = _figure(tint, hair, angle, _stance_of(char), action, phase)

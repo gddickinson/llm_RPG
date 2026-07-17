@@ -36,7 +36,7 @@ _CLIP = {
     "crawl": "sit", "climb": "climb", "talk": "talk",
     "cast": "spellcast", "argue": "argue", "bow": "nod",
     "cheer": "hiphop", "jump": "jump", "leap": "jump", "hurt": "hit",
-    "dodge": "stagger", "stagger": "stagger", "kick": "kick",
+    "stagger": "stagger", "kick": "kick",
     # ISO.13 ambient gestures (the P34.4 idle-life fidgets) so idle folk LIVE —
     # ISO.14 now routes them to their OWN Mixamo captures where one fits
     "shrug": "ask", "ponder": "bored", "yawn": "bored", "stretch": "climb",
@@ -46,13 +46,19 @@ _CLIP = {
     "cast_point": "spellcast", "cast_staff": "spellcast", "wave": "beckon",
     "guard": "fight_idle",
     # ISO.14 the newly-baked combat + gesture captures (self-mapped)
-    "fight_idle": "fight_idle", "jab": "jab", "block": "block",
+    "fight_idle": "fight_idle", "jab": "jab",
     "charge": "charge", "stab": "stab", "acknowledge": "acknowledge",
     "ask": "ask", "bored": "bored", "look": "look", "pray": "pray",
     "no": "no", "silly": "silly",
     # ISO.16 real sword combat, a hit reaction, a cast, a death fall
     "hit": "hit", "spellcast": "spellcast", "sword_attack": "sword_attack",
     "sword_attack2": "sword_attack2", "die": "die", "lie": "die",
+    # COMBAT.1 the full attack + DEFENCE repertoire (self-mapped)
+    "sword_attack3": "sword_attack3", "sword_attack4": "sword_attack4",
+    "sword_slash": "sword_slash", "hook": "hook", "lead_jab": "lead_jab",
+    "elbow": "elbow", "block": "shield_block", "shield_block": "shield_block",
+    "crouch_block": "crouch_block", "dodge": "roll", "roll": "roll",
+    "hit_head": "hit_head", "hit_back": "hit_back", "hit_legs": "hit_legs",
 }
 # ISO.11 per-character VARIETY: a seeded idle/dance picks one of the Mixamo
 # variants so a crowd doesn't loop in lockstep.
@@ -239,18 +245,24 @@ def _swing_arm(P, style, phase, angle):
     return P
 
 
-def attack_figure(phase, style, tint, hair, angle, build, kit):
-    """The figure mid-STRIKE. ISO.14 uses a real Mixamo combat clip where one
-    fits the weapon — a fist JAB unarmed, a dagger STAB — else the ISO.13
-    procedural 3D `style` swing (overhead / slash / thrust), which suits a blade
-    (the weapon at r_hand follows the arm)."""
+# COMBAT.1 a fighter ROTATES through a repertoire strike-to-strike (`seq`), so a
+# melee is never the same blow twice — real Mixamo swings for a blade, boxing
+# blows unarmed, a dagger stab; a spear/staff keeps the procedural thrust.
+_BLADE_POOL = ("sword_attack", "sword_attack2", "sword_attack3",
+               "sword_attack4", "sword_slash")
+_FIST_POOL = ("jab", "hook", "lead_jab", "elbow")
+
+
+def attack_figure(phase, style, tint, hair, angle, build, kit, seq=0):
+    """The figure mid-STRIKE — a Mixamo combat clip from the weapon's repertoire
+    (rotating by `seq`), else the ISO.13 procedural `style` swing for a polearm."""
     weapon = kit[0] if kit else None
     if weapon == "dagger":
         clip = "stab"
     elif not weapon:
-        clip = "jab"
-    elif weapon in ("sword", "axe", "mace"):          # ISO.16 real sword swings,
-        clip = "sword_attack2" if style == "slash" else "sword_attack"  # varied
+        clip = _FIST_POOL[seq % len(_FIST_POOL)]
+    elif weapon in ("sword", "axe", "mace"):
+        clip = _BLADE_POOL[seq % len(_BLADE_POOL)]
     else:                                             # spear/staff → the thrust
         clip = None
     if clip:
@@ -340,15 +352,16 @@ def swim_figure(phase, tint, hair, angle, build: float = 1.0, kit=None):
 
 
 def sample_figure(action, phase, tint, hair, angle, build: float = 1.0, seed=0,
-                  kit=None, style=None):
+                  kit=None, style=None, seq=0):
     """The body mesh for `action` at `phase` facing `angle` radians (with the
     person's `build` + worn `kit`), or None if the clip is missing (caller falls
-    back to the box figure). SWIM is procedural; ATTACK is a 3D `style` swing."""
+    back to the box figure). SWIM is procedural; ATTACK rotates the repertoire."""
     if action == "swim":
         return swim_figure(phase, tint, hair, angle, build, kit)
     if action == "attack":
         try:
-            return attack_figure(phase, style, tint, hair, angle, build, kit)
+            return attack_figure(phase, style, tint, hair, angle, build, kit,
+                                 seq)
         except Exception:
             return None
     pose = cm.sample_norm(clip_for(action, seed), phase)

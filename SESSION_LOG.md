@@ -9263,3 +9263,35 @@ suite green. This gives George exactly the ask — a simple, repeatable arena to
 combat + its graphics actually work. (Left for later: an overlay pick-a-fight menu + spectator HUD, and
 hooking the P17 tactical battle simulator in as a second colosseum mode.)
 
+## 2026-07-16 — COMBAT.1: a full attack + defence repertoire, both 2D and iso
+
+George: "add as many combat attacks and defence moves to the animations as possible both 2D and
+isometric." Baked 12 more Mixamo captures through the Blender→bake_mocap pipeline (data/anim now 49):
+three more sword swings (sword_attack3/4, sword_slash from the Sword and Shield Pack), boxing blows (hook,
+lead_jab, elbow), DEFENCES (sword-and-shield block → shield_block, crouch_block, Falling To Roll → a dodge
+roll), and directional hit reactions (Hit To Head/Back/Legs → hit_head/back/legs).
+
+ISO: a fighter now ROTATES through its weapon's whole repertoire strike-to-strike. `iso_skeleton._BLADE_
+POOL` (sword_attack, _attack2/3/4, _slash) + `_FIST_POOL` (jab, hook, lead_jab, elbow) — `attack_figure`
+picks the clip by `seq` (the strike counter the combat system already bumps and `update_anim` exposes as
+atk_seen), so five distinct sword swings cycle for a blade, four boxing blows for a bare fist, a dagger
+stab, and the ISO.13 procedural thrust for a polearm. The block / crouch-block / dodge-roll / hit-head/
+back/legs are registered in `_CLIP` + the frame/one-shot maps, so they play when fired (combat_iso_
+rotation.png shows all five swings + the defences).
+
+2D: the top-down renderer had done attacks PROCEDURALLY (char_clips overhead/slash/thrust). Now
+`char_mocap.attack_clip(weapon, seq)` + `combat_mocap(action, anim, weapon, progress)` feed the real Mixamo
+combat, and `body_renderer` plays it: an attack rotates the repertoire, a block/crouch-block/dodge/hit-
+reaction plays its capture (over its one-shot duration), a guard idle loops — the same rich combat the iso
+view has, for the primary sideways combat facing (combat_2d.png). The combat one-shots (block/crouch_block/
+hit_head/…/hook/elbow/roll) were registered in char_clips.ACTIONS so the action state machine actually
+starts them.
+
+To make the DEFENCES visible in a real fight, the colosseum AI now fires an occasional guard/dodge/crouch-
+block (deterministic, ~1 in 6 melee turns) instead of striking. And to hold the 500-line line after the
+additions, split `ui/body_draw.py` off `body_renderer` (the SSAA beauty pass, the glimpsed-through-a-window
+glaze, the projectile sprite — re-exported for back-compat), taking body_renderer from 539 back to 482.
+tests: attack_clip rotates the repertoire + combat_mocap picks the defence clips + a hit progresses over
+its duration (test_char_mocap); the iso attack rotates strike-to-strike + every defence move builds a mesh
+(test_iso_skeleton). Full suite green.
+

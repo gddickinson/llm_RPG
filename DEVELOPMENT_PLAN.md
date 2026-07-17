@@ -6266,6 +6266,26 @@ presets + tactical AI) and built a focused version on llm_RPG's own combat.
   tests/test_colosseum.py (8). Full suite green. (Remainder: an overlay pick-a-fight MENU + a spectator
   HUD/betting; wiring the P17 tactical battle simulator as a colosseum mode.)
 
+## Phase COMBAT — as many attacks + defence moves as possible (George 2026-07-16)
+
+George: "add as many combat attacks and defence moves to the animations as possible, both 2D and
+isometric." Baked 12 more Mixamo captures via the Blender pipeline (data/anim now 49 clips) and wired them
+into BOTH renderers.
+
+- [x] **COMBAT.1 — DONE.** New captures: 3 more sword swings (sword_attack3/4, sword_slash), boxing blows
+  (hook, lead_jab, elbow), DEFENCES (shield_block, crouch_block, a dodge roll), and hit reactions
+  (hit_head, hit_back, hit_legs). ISO: `iso_skeleton._BLADE_POOL`/`_FIST_POOL` — `attack_figure` ROTATES
+  the weapon's repertoire strike-to-strike (`seq`, read from the combat strike counter), so a melee is
+  never the same blow twice (5 sword swings for a blade, 4 boxing blows unarmed, a dagger stab, a
+  procedural thrust for polearms); block/crouch-block/dodge/hit variants registered in `_CLIP` + the frame
+  maps. 2D: `char_mocap.attack_clip`/`combat_mocap` + `body_renderer` now play the SAME real combat +
+  defence mocap in the top-down view (previously procedural-only) — attacks rotate, blocks/dodges/hits play
+  their captures. The colosseum AI fires an occasional GUARD/dodge so the defences show in a bout. Split
+  `body_draw.py` off `body_renderer` (SSAA/glimpse/projectile) to hold the 500-line line.
+  scratchpad/combat_moves.png, combat_iso_rotation.png, combat_2d.png. tests: attack_clip rotates +
+  combat_mocap picks defences (test_char_mocap), iso attack rotates + the defence moves build
+  (test_iso_skeleton). Full suite green.
+
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
 George chose the "full isometric 3D-look world" for the "more 3D like movieMaker" ask.

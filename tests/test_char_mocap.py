@@ -72,5 +72,31 @@ class TestPoser(unittest.TestCase):
         self.assertNotEqual(a["l_foot"], mid["l_foot"])
 
 
+class TestCombatMocap(unittest.TestCase):
+    """COMBAT.1 — the attack repertoire + combat/defence clip selection."""
+
+    def test_attack_rotates_the_weapon_repertoire(self):
+        # a sword rotates through several distinct swing clips strike to strike
+        clips = {mc.attack_clip("sword", s) for s in range(5)}
+        self.assertGreaterEqual(len(clips), 4, "a sword has a varied repertoire")
+        # a dagger always stabs, a polearm has no mocap (→ procedural swing)
+        self.assertEqual(mc.attack_clip("dagger", 3), "stab")
+        self.assertIsNone(mc.attack_clip("spear", 0))
+
+    def test_combat_mocap_picks_defence_clips(self):
+        self.assertEqual(mc.combat_mocap("block", {}, "sword", 0.5)[0],
+                         "shield_block")
+        self.assertEqual(mc.combat_mocap("dodge", {}, None, 0.5)[0], "roll")
+        # a non-combat action isn't combat mocap
+        self.assertIsNone(mc.combat_mocap("dance", {}, None, 0.5))
+
+    def test_a_one_shot_hit_progresses_over_its_duration(self):
+        early = mc.combat_mocap("hit_head",
+                                {"action_dur": 0.5, "action_t": 0.5}, None, 0)[1]
+        late = mc.combat_mocap("hit_head",
+                               {"action_dur": 0.5, "action_t": 0.05}, None, 0)[1]
+        self.assertLess(early, late, "the hit reaction plays forward in time")
+
+
 if __name__ == "__main__":
     unittest.main()

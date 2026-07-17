@@ -116,6 +116,19 @@ CLIPS = [
     ("sword and shield casting", "spellcast", False, 20),
     ("Hit To Body", "hit", False, 14),
     ("Flying Back Death", "die", False, 18),
+    # COMBAT.1 — a full attack + defence repertoire (George: as many as possible)
+    ("sword and shield attack 3", "sword_attack3", False, 18),
+    ("sword and shield attack 4", "sword_attack4", False, 18),
+    ("sword and shield slash", "sword_slash", False, 18),
+    ("sword and shield block", "shield_block", False, 14),
+    ("sword and shield crouch block", "crouch_block", False, 14),
+    ("Hook", "hook", False, 16),
+    ("Lead Jab", "lead_jab", False, 14),
+    ("Illegal Elbow Punch", "elbow", False, 16),
+    ("Falling To Roll", "roll", False, 20),
+    ("Hit To Head", "hit_head", False, 14),
+    ("Hit On The Back", "hit_back", False, 16),
+    ("Hit On Legs", "hit_legs", False, 14),
 ]
 
 

@@ -113,6 +113,24 @@ class TestCombatMoves(unittest.TestCase):
         self.assertIsNotNone(m)
         self.assertGreater(len(m), 20, "a full body + a sword")
 
+    def test_attack_rotates_the_repertoire(self):
+        # COMBAT.1: consecutive strikes (seq) play DIFFERENT sword swings
+        import numpy as np
+        kit = ("sword", None, False, 1.0)
+        a = isk.sample_figure("attack", 0.5, (1,) * 3, (1,) * 3, 0.0, 1.0, 0,
+                              kit, "overhead", 0)
+        b = isk.sample_figure("attack", 0.5, (1,) * 3, (1,) * 3, 0.0, 1.0, 0,
+                              kit, "overhead", 1)
+        self.assertGreater(
+            float(np.abs(np.asarray(a[0][0]) - np.asarray(b[0][0])).max()),
+            0.02, "strike 0 and strike 1 are different swings")
+
+    def test_defence_moves_build(self):
+        for act in ("block", "crouch_block", "dodge", "hit_head", "hit_back",
+                    "hit_legs", "hook", "lead_jab", "elbow"):
+            m = isk.sample_figure(act, 0.4, (150, 150, 165), (90, 60, 40), 0.0)
+            self.assertIsNotNone(m, f"{act} builds a mesh")
+
 
 class TestBakedClips(unittest.TestCase):
     """ISO.14 — the extra Mixamo captures baked into data/anim."""
