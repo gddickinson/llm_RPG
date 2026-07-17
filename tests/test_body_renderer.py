@@ -138,5 +138,34 @@ class TestBodyRenderer(unittest.TestCase):
             self.assertIn(klass, CLASS_WEAPON)
 
 
+class TestFormShading(unittest.TestCase):
+    """ANIM_REALISM R1 — 2D body parts read as ROUNDED forms (a directional key
+    light gives each limb a dark side, a lit core, and a highlight edge)."""
+
+    def _shades_across(self, surf, x, y0, y1):
+        arr = pygame.surfarray.array3d(surf)
+        return {tuple(c) for c in arr[x, y0:y1].tolist() if tuple(c) != (0, 0, 0)}
+
+    def test_a_limb_is_a_shaded_cylinder(self):
+        from ui import body_parts as bp
+        surf = pygame.Surface((80, 40))
+        surf.fill((0, 0, 0))
+        bp._limb(surf, (10, 20), (70, 20), (120, 90, 60), 14)
+        shades = self._shades_across(surf, 40, 10, 30)
+        self.assertGreaterEqual(len(shades), 3,
+                                "a dark side, a lit core, and a highlight")
+
+    def test_the_head_is_a_shaded_sphere(self):
+        # a drawn head has a highlight lighter than its skin and a shaded side
+        c = _new_char()
+        c.metadata.setdefault("_anim", _ensure_anim(c))["face_cur"] = 0
+        surf = pygame.Surface((120, 200))
+        surf.fill((0, 0, 0))
+        draw_body(surf, c, 40, 60, 48, is_player=True)
+        arr = pygame.surfarray.array3d(surf)
+        bright = int(arr.reshape(-1, 3).max(axis=1).max())
+        self.assertGreater(bright, 180, "a lit highlight is present")
+
+
 if __name__ == "__main__":
     unittest.main()

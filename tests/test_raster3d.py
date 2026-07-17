@@ -110,3 +110,22 @@ class TestSSAA(unittest.TestCase):
                 os.environ.pop("LLM_RPG_ISO_SS", None)
             else:
                 os.environ["LLM_RPG_ISO_SS"] = old
+
+
+class TestShadingRichness(unittest.TestCase):
+    """ANIM_REALISM R2 — richer iso shading: AO undersides + a rim highlight give
+    a baked form a wide tonal range (not a flat matte fill)."""
+
+    def test_a_ball_spans_shadow_to_rim(self):
+        import numpy as np
+        from ui import raster3d as r3
+        mesh = r3.ball((0.0, 0.5, 0.0), 0.45, (150, 150, 160), seg=10)
+        rgb, mask = r3.render([mesh], width=96, height=96)
+        lit = rgb[mask]
+        self.assertGreater(len(lit), 50, "the ball rendered")
+        lum = lit.max(axis=1)
+        # a shaded sphere has genuinely dark (AO/terminator) and bright (rim/key)
+        # regions — a wide spread, not one matte tone
+        self.assertLess(int(lum.min()), 90, "a dark shadow/AO side")
+        self.assertGreater(int(lum.max()), 170, "a bright key/rim highlight")
+        self.assertGreater(int(lum.max()) - int(lum.min()), 100, "wide tonal range")

@@ -8,6 +8,11 @@ stays orchestration and every file holds under 500 lines.
 
 import math
 
+# R1 realism: a screen-space KEY LIGHT from the top-left. Every body part is shaded
+# as a rounded form against it — a dark side away from the light, a lit core, and a
+# bright edge toward it — so limbs read as cylinders and the head as a sphere.
+_LIGHT = (-0.72, -0.69)
+
 
 def _pt(p):
     return (int(round(p[0])), int(round(p[1])))
@@ -17,11 +22,34 @@ def _dark(c, a=40):
     return tuple(max(0, x - a) for x in c[:3])
 
 
+def _lighten(c, a=45):
+    return tuple(min(255, x + a) for x in c[:3])
+
+
 def _limb(surface, p0, p1, color, w):
+    """R1: a SHADED CYLINDER — a full-width dark underside, the core shifted toward
+    the light (leaving a shadow rim), and a bright highlight stripe on the lit edge.
+    A limb reads round, not a flat stick."""
     import pygame
     a, b = _pt(p0), _pt(p1)
-    pygame.draw.line(surface, color, a, b, max(1, w))
-    pygame.draw.circle(surface, color, b, max(1, w // 2))
+    w = max(2, int(w))
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    L = math.hypot(dx, dy) or 1.0
+    px, py = -dy / L, dx / L                        # perpendicular to the limb
+    if px * _LIGHT[0] + py * _LIGHT[1] < 0:         # point it toward the light
+        px, py = -px, -py
+    off = w * 0.30
+    pygame.draw.line(surface, _dark(color, 46), a, b, w)     # 1) dark underside
+    pygame.draw.circle(surface, _dark(color, 46), b, max(1, w // 2))
+    ca = _pt((a[0] + px * off * 0.45, a[1] + py * off * 0.45))
+    cb = _pt((b[0] + px * off * 0.45, b[1] + py * off * 0.45))
+    cw = max(1, int(w * 0.80))
+    pygame.draw.line(surface, color, ca, cb, cw)            # 2) lit core
+    pygame.draw.circle(surface, color, cb, max(1, cw // 2))
+    ha = _pt((a[0] + px * off, a[1] + py * off))
+    hb = _pt((b[0] + px * off, b[1] + py * off))
+    pygame.draw.line(surface, _lighten(color, 42), ha, hb,  # 3) highlight stripe
+                     max(1, int(w * 0.32)))
 
 
 def _bow(p0, pj, p1, amt):
@@ -55,7 +83,12 @@ def draw_torso(surface, pose, color, belt):
     right = (max(rh[0], rs[0]) + bulge, my)
     pts = [_pt(lh), _pt(left), _pt(ls), _pt(rs), _pt(right), _pt(rh)]
     pygame.draw.polygon(surface, color, pts)
-    pygame.draw.polygon(surface, _dark(color, 55), pts, 1)
+    # R1 form: the lit (screen-left) flank catches light, the far flank falls to
+    # shadow — the barrel reads round; a dark rim seats it
+    th = max(2, int(abs(lh[1] - ls[1]) * 0.32))
+    pygame.draw.line(surface, _lighten(color, 30), _pt(left), _pt(ls), th)
+    pygame.draw.line(surface, _dark(color, 34), _pt(right), _pt(rs), th)
+    pygame.draw.polygon(surface, _dark(color, 62), pts, 1)
     pygame.draw.line(surface, belt, _pt(lh), _pt(rh), max(2, int(bulge)))
 
 
@@ -79,8 +112,14 @@ def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
     hx, hy = _pt(pose["head"])
     r = pose["head_r"]
     pygame.draw.line(surface, skin, _pt(pose["neck"]), (hx, hy), max(2, neck_w))
-    pygame.draw.circle(surface, skin, (hx, hy), r)
-    pygame.draw.circle(surface, _dark(skin, 55), (hx, hy), r, 1)
+    # R1 spherical head: a dark base, the core shifted toward the light (leaving a
+    # shadow crescent), and a highlight — so the head reads as a ball, not a disc
+    pygame.draw.circle(surface, _dark(skin, 42), (hx, hy), r)
+    pygame.draw.circle(surface, skin,
+                       (hx - int(r * 0.15), hy - int(r * 0.15)), max(1, int(r * 0.90)))
+    pygame.draw.circle(surface, _lighten(skin, 40),
+                       (hx - int(r * 0.34), hy - int(r * 0.36)), max(1, int(r * 0.32)))
+    pygame.draw.circle(surface, _dark(skin, 62), (hx, hy), r, 1)
     if race in ("elf", "half-elf"):
         for s in (-1, 1):
             pygame.draw.polygon(surface, skin, [
@@ -93,8 +132,10 @@ def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
     if not face_visible:
         pygame.draw.circle(surface, hair, (hx, hy), r)      # back of the head
         return
-    # hair cap on top; the lower face stays skin
+    # hair cap on top; the lower face stays skin (R1: a lit sheen on the crown)
     pygame.draw.circle(surface, hair, (hx, hy - max(1, r // 2)), r)
+    pygame.draw.circle(surface, _lighten(hair, 34),
+                       (hx - int(r * 0.30), hy - int(r * 0.55)), max(1, int(r * 0.30)))
     if profile:
         pygame.draw.circle(surface, skin,
                            (hx + profile * (r // 3), hy + r // 3),

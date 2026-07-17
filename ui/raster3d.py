@@ -129,14 +129,24 @@ def render(meshes, cam_pos=ISO_CAM, look=ISO_LOOK, up=(0.0, 1.0, 0.0),
         facing = np.einsum("ij,ij->i", nrm, cam - centre) > 0
         lam = np.clip(-(nrm @ ld), 0.0, 1.0)       # key light
         lam2 = np.clip(-(nrm @ fd), 0.0, 1.0)      # ISO.3 soft fill light
-        shade = np.clip(0.30 + 0.55 * lam + 0.15 * lam2, 0.0, 1.0)
+        # ANIM_REALISM R2: richer shading so the figure pops — more key contrast +
+        # AMBIENT OCCLUSION (down-facing undersides sink to shadow) + a white RIM on
+        # the silhouette edge (a back-light kicker that lifts the form off the bg).
+        view = cam - centre
+        view /= (np.linalg.norm(view, axis=1, keepdims=True) + 1e-9)
+        rim = np.clip(1.0 - np.abs(np.einsum("ij,ij->i", nrm, view)),
+                      0.0, 1.0) ** 3
+        ao = 0.72 + 0.28 * np.clip(nrm[:, 1], 0.0, 1.0)
+        base = np.clip((0.22 + 0.74 * lam + 0.12 * lam2) * ao, 0.0, 1.05)
+        col = np.array(color, float)
+        tri_rgb = np.clip(col[None, :] * base[:, None] + (rim * 60.0)[:, None],
+                          0.0, 255.0)
         valid = good & facing & (zc[tris[:, 0]] > 0.02) \
             & (zc[tris[:, 1]] > 0.02) & (zc[tris[:, 2]] > 0.02)
-        col = np.array(color, float)
         for ti in np.nonzero(valid)[0]:
             i, j, k = tris[ti]
             _fill(rgb, mask, zbuf, sx, sy, zc, i, j, k, width, height,
-                  col * shade[ti])
+                  tri_rgb[ti])
     return rgb, mask
 
 
