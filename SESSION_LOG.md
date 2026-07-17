@@ -9225,3 +9225,41 @@ panel coloured by the lock STATE (open/closed/locked/broken, from `door_manager`
 `iso_render` threads it into `draw_building`. scratchpad/door_fixed.png, bldg_doors.png. tests: the door
 frame paints (test_iso_render). Full suite green.
 
+## 2026-07-16 — the COLOSSEUM: a combat-testing arena
+
+George: "a battle colosseum for staging combat between two or more opponents (like autonomous_world) — a
+simple environment for testing combat, particularly combat graphics and seeing how well they work,
+including the battle tactics in the battle simulator." I researched autonomous_world's colosseum (a rich
+suite — arena terrain, duel/team/beast presets, boids+influence-map tactical AI) and built a focused
+version on llm_RPG's OWN combat, so it exercises the real pipeline + the character graphics I've been
+building.
+
+`engine/colosseum.py` (`ColosseumSystem`) over `data/colosseum.json`. `seed()` plants a walled sand ring —
+a ROAD floor inside a BUILDING-wall ring with one gate — and a `Colosseum` Location near the player start.
+`stage(preset)` spawns two TEAMS of real game Characters at opposite ends: a class name becomes a fresh NPC
+(create_random_npc), a monster template becomes a build_monster, each buffed a little (×1.4 HP + level) so
+the bout lasts long enough to watch, and tagged `metadata['arena_fighter']`. `run_turn()` — called from the
+turn pipeline every tick while a fight is active — drives every living fighter to close on and strike the
+NEAREST enemy through the real `combat_system.npc_attack` (rangers shoot, casters cast, everyone else swings
+a blade), so the fight uses the same d20 combat, the same positional handling, and the same character
+GRAPHICS: the attack swings (ISO.13/16 sword/jab/stab mocap), the hurt recoils, the deaths, and the ISO.12
+per-class weapon/armour variety all play out in a real melee (scratchpad/colosseum_showcase.png — a mixed
+skirmish of warriors/rangers/a casting wizard/a paladin, blood pools and all). `over`/`winner`/`_finish`
+end the bout on a wipeout with an `[Arena]` beat.
+
+Entry: `enter(matchup)` seats the player as a SPECTATOR at the arena gate (revealing the ring) and stages a
+fight — reached by the new `--colosseum [matchup]` CLI flag (a one-command combat-graphics test bench) and
+by the E-key at the gate, which cycles through the matchups (a hint-bar cue advertises it). Eight presets:
+Warriors' Duel, Paladin vs Rogue, Mages' Duel, Shields vs Bows, Mixed Skirmish, Beast Brawl, Gladiators vs
+the Troll, Guards vs Bandits — every one resolves in ~15-35 turns.
+
+Integration: the arena combatants are skipped by the ambient NPC AI (`process_npc_turns`), pursuit,
+aggression and `npc_conflict` (via `metadata['arena_fighter']` / `is_fighter`), so only the colosseum
+drives them — they never march off to fight the spectator. Wired into engine_setup (create + seed),
+turn_pipeline (run_turn), save_load (the arena rect persists; a live fight is transient). tests/test_
+colosseum.py (8): seeded at startup, two teams spawn, a duel + a team battle resolve to a winner, clear
+removes the fighters, enter seats the spectator, the arena persists, a fighter is skipped by pursuit. Full
+suite green. This gives George exactly the ask — a simple, repeatable arena to stage a fight and watch the
+combat + its graphics actually work. (Left for later: an overlay pick-a-fight menu + spectator HUD, and
+hooking the P17 tactical battle simulator in as a second colosseum mode.)
+

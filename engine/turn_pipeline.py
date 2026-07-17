@@ -324,6 +324,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Aggression error: {e}")
 
+    # the COLOSSEUM drives a staged fight every tick (combat-testing arena)
+    try:
+        if getattr(self, "colosseum", None) and self.colosseum.active:
+            self.colosseum.run_turn()
+    except Exception as e:
+        logger.debug(f"Colosseum error: {e}")
+
     # Neutral wildlife graze, wander and flee (P32.3) — the living wild
     try:
         self.wildlife.update()

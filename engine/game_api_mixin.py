@@ -372,6 +372,12 @@ class GameAPIMixin:
             mod = 1.0
         return max(2, round(base * mod))
 
+    def enter_colosseum(self, matchup=None) -> bool:
+        """Seat the player as a spectator + stage a colosseum matchup (the
+        combat-testing arena) — the --colosseum flag + the E-key at the gate."""
+        col = getattr(self, "colosseum", None)
+        return bool(col and col.enter(matchup))
+
     def enter_dungeon(self) -> str:
         from world.world_map import TerrainType
         from world.dungeon import generate_dungeon, populate_dungeon

@@ -101,6 +101,8 @@ class PursuitSystem:
         meta = getattr(npc, "metadata", {}) or {}
         if meta.get("player_char") or meta.get("adventurer"):
             return False
+        if meta.get("arena_fighter"):        # the colosseum drives these
+            return False
         # freshly shoved this turn — staggered, doesn't step back at you (a
         # one-turn skip so a knockback isn't instantly undone by pursuit)
         if meta.pop("shoved", None):

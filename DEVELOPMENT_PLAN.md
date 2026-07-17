@@ -6244,6 +6244,28 @@ rasterizer/camera/SSAA.
   iso16_dir_audit.png, farm_synth.png, iso16_combat_wired.png. tests: swim faces its heading, sword uses
   the mocap, new clips load, furrows paint green, a downed char lies. Full suite green.
 
+## Phase COL — the Colosseum (combat-testing arena, George 2026-07-16)
+
+George: "a battle colosseum for staging combat between two or more opponents (like autonomous_world) — a
+simple environment for testing combat, particularly combat graphics and seeing how well they work,
+including the battle tactics." Researched autonomous_world's colosseum (arena terrain + duel/team/beast
+presets + tactical AI) and built a focused version on llm_RPG's own combat.
+
+- [x] **COL.1 ColosseumSystem — DONE.** `engine/colosseum.py` + `data/colosseum.json`. `seed()` plants a
+  walled sand ring (ROAD floor + BUILDING wall + a gate) with a `Colosseum` Location near spawn;
+  `stage(preset)`/`stage_next` spawn two TEAMS of real Characters (class→NPC, monster template→build_monster,
+  buffed, tagged `arena_fighter`) at opposite ends; `run_turn()` (from the turn pipeline when active) drives
+  every fighter to close on + strike the nearest enemy via the real `combat_system.npc_attack` (rangers
+  shoot, casters cast, else melee), so the fight runs the FULL combat pipeline + the character GRAPHICS
+  (attack swings, hurt recoils, deaths, the ISO.12 class/weapon variety); `over`/`winner`/`_finish` end on a
+  wipeout. `enter(matchup)` seats the player as a SPECTATOR + stages — the `--colosseum [matchup]` flag and
+  the E-key at the arena gate (+ a hint). Fighters are skipped by the ambient AI / pursuit / aggression /
+  npc_conflict. Wired into engine_setup (seed) + turn_pipeline (run_turn) + save_load (arena persists).
+  8 presets (duels, mage duel, melee-vs-ranged, mixed skirmish, beast brawl, gladiators-vs-troll,
+  guards-vs-bandits) — all resolve in ~15-35 turns. scratchpad/colosseum_showcase.png, colosseum_iso.png.
+  tests/test_colosseum.py (8). Full suite green. (Remainder: an overlay pick-a-fight MENU + a spectator
+  HUD/betting; wiring the P17 tactical battle simulator as a colosseum mode.)
+
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 
 George chose the "full isometric 3D-look world" for the "more 3D like movieMaker" ask.

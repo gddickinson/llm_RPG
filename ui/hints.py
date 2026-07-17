@@ -49,6 +49,16 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    # The combat-testing colosseum — stage a fight at the arena gate
+    try:
+        col = getattr(engine, "colosseum", None)
+        if col is not None and not engine.current_interior \
+                and col.at_entrance((x, y)):
+            hints.append("[Arena] the bout rages — [E] a new matchup"
+                         if col.active else "[E] stage a colosseum matchup")
+    except Exception:
+        pass
+
     # Unclaimed bloodstain — your loot is out there (soulslike)
     try:
         from engine.checkpoint import bloodstain_pos

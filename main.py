@@ -72,6 +72,10 @@ def parse_args():
                    help="Start on Tutorial Island (learn every system)")
     p.add_argument("--no-menu", action="store_true",
                    help="Skip the start menu and go straight to the game")
+    p.add_argument("--colosseum", nargs="?", const="skirmish", default=None,
+                   metavar="MATCHUP",
+                   help="Jump into the combat-testing colosseum (a matchup id, "
+                        "e.g. melee_vs_ranged; default 'skirmish')")
     p.add_argument("--debug", action="store_true",
                    help="Enable debug logging")
     return p.parse_args()
@@ -141,6 +145,15 @@ def main() -> int:
             logger.info(f"Loaded save: {load_save_name}")
         else:
             logger.warning(f"Could not load save: {load_save_name}")
+
+    # --colosseum: seat the player as a spectator at the arena gate and stage
+    # a matchup, for testing combat + its graphics
+    if args.colosseum:
+        try:
+            engine.enter_colosseum(args.colosseum)
+            logger.info(f"Colosseum: staged {args.colosseum}")
+        except Exception as e:
+            logger.warning(f"Colosseum start failed: {e}")
 
     # UI selection
     if args.ui == "gui":

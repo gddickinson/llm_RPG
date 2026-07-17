@@ -91,6 +91,8 @@ def build_subsystems(engine, llm_model=None,
     self.guildhalls = GuildHallSystem(self)
     from engine.stables import StableSystem
     self.stables = StableSystem(self)
+    from engine.colosseum import ColosseumSystem
+    self.colosseum = ColosseumSystem(self)
     from engine.teleport_network import TeleportNetwork
     self.teleport_network = TeleportNetwork(self)
     from engine.adventure_tome import AdventureTome
@@ -229,6 +231,7 @@ def seed_world(engine) -> None:
         ("Deepdelve", lambda: self.deepdelve.seed()),   # GX.5
         ("Guild halls", lambda: self.guildhalls.seed()),  # M.7b
         ("Stables", lambda: self.stables.seed()),        # P28.2d mounts
+        ("Colosseum", lambda: self.colosseum.seed()),    # combat testing arena
         ("Teleport network", lambda: self.teleport_network.seed()),  # P28.1a
         ("Sunken Tome adventure", lambda: self.adventure_tome.seed()),  # P38
         ("Adventurers", lambda: self.adventurers.seed()),  # P-M.6

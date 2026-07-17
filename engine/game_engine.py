@@ -301,6 +301,10 @@ class GameEngine(GameAPIMixin):
             # the ambient hostile/social AI
             if meta.get("wildlife"):
                 continue
+            # arena combatants are driven by the ColosseumSystem, not the
+            # ambient AI (which would march them off to fight the spectator)
+            if meta.get("arena_fighter"):
+                continue
             # P37.6b: a hostile that already bit via the per-turn AggressionSystem
             # this turn doesn't also swing here (no double attack)
             if meta.get("_aggro_turn") == self.turn_counter:
@@ -376,6 +380,10 @@ class GameEngine(GameAPIMixin):
             # neutral wildlife are driven by the WildlifeSystem (P32.3), never
             # the ambient hostile/social AI
             if meta.get("wildlife"):
+                continue
+            # arena combatants are driven by the ColosseumSystem, not the
+            # ambient AI (which would march them off to fight the spectator)
+            if meta.get("arena_fighter"):
                 continue
             # P37.6b: a hostile that already bit via the per-turn AggressionSystem
             # this turn doesn't also swing here (no double attack)

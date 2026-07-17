@@ -307,6 +307,11 @@ class InputHandler:
                     and tn.platform_at(self.engine.player.position) is not None:
                 self.gui.show_teleport()
                 return True
+            col = getattr(self.engine, "colosseum", None)   # combat-test arena
+            if col is not None and not self.engine.current_interior \
+                    and col.at_entrance(self.engine.player.position):
+                col.enter()                       # stage the next matchup
+                return True
             # GX.5b: search out Oakvale's hidden Deepdelve stair where the
             # ground rings hollow (nothing underfoot to pick up instead)
             dd = getattr(self.engine, "deepdelve", None)
