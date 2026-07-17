@@ -46,7 +46,9 @@ drawing (2D shading vs iso shading).
 - **R5 — Cloth volume (2D). ✅ DONE.** Robed classes (`ROBE_CLASSES` — wizard/
   cleric/druid/…) wear a flared, folded, shaded SKIRT (`body_parts.draw_robe`) that
   hangs over the legs and sways with the feet — they read as mages/priests, not
-  stick-legs. *(iso robes deferred — the iso legs already read as shaded 3D.)*
+  stick-legs. **R5b iso robes ✅** — the iso kit gains a `robed` flag and
+  `iso_skeleton._robe_mesh` adds a flared SKIRT frustum (a cone widening downward)
+  for robed classes, so the iso wizard/cleric/druid wear a gown too (parity).
 - **R6 — Ground shadows & grounding.** A directional, pose-shaped contact shadow
   (2D), and stronger contact shadows/occlusion where a figure meets the ground.
 

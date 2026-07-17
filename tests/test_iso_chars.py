@@ -96,9 +96,10 @@ class TestSprite(unittest.TestCase):
 
     def test_kit_is_hashable_with_body_height(self):
         kit = iso_chars.kit_of(_Char("f", "guard"))
-        self.assertEqual(len(kit), 4, "(weapon, head, shield, height)")
+        self.assertEqual(len(kit), 5, "(weapon, head, shield, height, robed)")
         self.assertIsInstance(hash(kit), int, "cache-key hashable")
         self.assertIn(kit[3], (0.92, 1.0, 1.08), "a seeded body height")
+        self.assertFalse(kit[4], "a guard is not robed")
 
     def test_gear_changes_the_sprite(self):
         # a helmeted warrior bakes apart from a bare merchant

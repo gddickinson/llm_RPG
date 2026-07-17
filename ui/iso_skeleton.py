@@ -206,10 +206,24 @@ def _apply_height(P, kit):
 def _build(P, tint, hair, angle, kit):
     """Body mesh + worn gear from a (possibly transformed) joint dict `P`."""
     m = _body(P, tint, hair, angle)
+    if kit and len(kit) > 4 and kit[4]:                  # R5 a robe over the legs
+        m += _robe_mesh(P, tint)
     if kit and any(kit[:3]):                              # ISO.12 worn gear
         from ui import iso_gear
         m += iso_gear.accessories(P, angle, kit)
     return m
+
+
+def _robe_mesh(P, tint):
+    """R5: a flared SKIRT frustum from the waist to the ankles (a cone widening
+    downward) in the robe colour — a robed iso figure reads as a gown, not legs."""
+    robe = tuple(int(x) for x in tint)
+    pel = P["pelvis"]
+    lf, rf = P["l_foot"], P["r_foot"]
+    hem = np.array([(lf[0] + rf[0]) / 2.0, min(lf[1], rf[1]) + 0.03,
+                    (lf[2] + rf[2]) / 2.0])
+    waist = np.array([pel[0], pel[1] - 0.02, pel[2]])
+    return [r3.taper(waist, hem, 0.12, 0.24, robe, seg=9)]
 
 
 def figure(pose_norm, tint, hair, angle, build: float = 1.0, kit=None):

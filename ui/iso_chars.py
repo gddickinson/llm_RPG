@@ -306,10 +306,10 @@ def _headgear_for(char):
 
 
 def kit_of(char):
-    """ISO.12 the worn GEAR as a hashable tuple (weapon, head, shield, height):
-    the equipped weapon KIND, class headgear, a shield flag, and the body-type
-    height — so a warrior reads a helmet + sword + shield, a wizard a hat + staff,
-    a ranger a hood + bow."""
+    """ISO.12 the worn GEAR as a hashable tuple (weapon, head, shield, height,
+    robed): the equipped weapon KIND, class headgear, a shield flag, the body-type
+    height, and (R5) whether the class wears a ROBE — so a warrior reads a helmet +
+    sword + shield, a wizard a hat + staff + robe, a ranger a hood + bow."""
     from ui import char_motion, iso_skeleton
     try:
         weapon = char_motion.weapon_kind(char)
@@ -317,7 +317,10 @@ def kit_of(char):
     except Exception:
         weapon, shield = None, False
     height = iso_skeleton.body_of(char)[1]
-    return (weapon, _headgear_for(char), bool(shield), height)
+    from ui import body_parts
+    klass = getattr(getattr(char, "character_class", None), "value", "")
+    return (weapon, _headgear_for(char), bool(shield), height,
+            klass in body_parts.ROBE_CLASSES)
 
 
 def char_sprite(char, size: int, facing=None):

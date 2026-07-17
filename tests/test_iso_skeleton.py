@@ -185,3 +185,24 @@ class TestBakedClips(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestRobe(unittest.TestCase):
+    """ANIM_REALISM R5b — a robed iso figure wears a skirt frustum (parity with
+    the 2D robe); a non-robed one does not."""
+
+    def test_robe_adds_a_skirt_mesh(self):
+        pose = isk.cm.sample_norm("idle", 0.3)
+        plain = isk.figure(pose, (120, 90, 150), (60, 40, 30), 0.0, 1.0,
+                           ("staff", "hat", False, 1.0, False))
+        robed = isk.figure(pose, (120, 90, 150), (60, 40, 30), 0.0, 1.0,
+                           ("staff", "hat", False, 1.0, True))
+        self.assertGreater(len(robed), len(plain), "the robe adds a skirt mesh")
+
+    def test_kit_of_marks_robed_classes(self):
+        from ui import iso_chars
+        c = type("C", (), {"character_class": type("K", (), {"value": "wizard"})(),
+                           "metadata": {}, "id": "w", "hair": "hair_brown"})()
+        kit = iso_chars.kit_of(c)
+        self.assertEqual(len(kit), 5)
+        self.assertTrue(kit[4], "a wizard is robed")
