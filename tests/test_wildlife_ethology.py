@@ -170,6 +170,42 @@ class TestEthology(unittest.TestCase):
         self.assertFalse(deer.metadata.get("asleep"), "startled awake")
         self.assertNotEqual(deer.position, before, "flees the player")
 
+    def test_c5_predator_monster_hunts_wildlife(self):
+        from world.monsters import build_monster
+        # a wolf MONSTER preys on deer; keep the player off to the side so the
+        # wolf isn't busy fighting the hero
+        self.engine.player.position = (16, 25)
+        deer = self._animal("deer", (20, 20))
+        wolf = build_monster("wolf", (20, 24))
+        self.assertIn("deer", wolf.metadata["preys_on"])
+        self.engine.npc_manager.add_npc(wolf)
+        self.wmap.remove_character(wolf)
+        wolf.position = (20, 24)
+        self.wmap.place_character(wolf, 20, 24)
+        killed = False
+        for _ in range(12):
+            self.engine.turn_counter += 1
+            self.sys.run_turn()
+            if not deer.is_alive() or deer.id not in self.engine.npc_manager.npcs:
+                killed = True
+                break
+        self.assertTrue(killed, "the wolf runs down the deer")
+
+    def test_c5_non_predator_monster_ignores_wildlife(self):
+        from world.monsters import build_monster
+        from world import wildlife_ethology as eth
+        self.engine.player.position = (16, 25)
+        deer = self._animal("deer", (20, 20))
+        goblin = build_monster("goblin", (20, 22))   # no preys_on
+        self.engine.npc_manager.add_npc(goblin)
+        self.wmap.remove_character(goblin)
+        goblin.position = (20, 22)
+        self.wmap.place_character(goblin, 20, 22)
+        before = goblin.position
+        eth.monster_predation(self.sys, self.engine.player.position)
+        self.assertEqual(goblin.position, before, "a goblin doesn't hunt deer")
+        self.assertTrue(deer.is_alive())
+
 
 if __name__ == "__main__":
     unittest.main()

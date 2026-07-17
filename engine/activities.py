@@ -176,6 +176,10 @@ class ActivitySystem:
         meta["_yield_ticks"] = n
         if n % WORK_YIELD_PERIOD != 0:
             return
+        self._store_add(npc, raw, 1)
+
+    def _store_add(self, npc, item, n) -> None:
+        """Add `n` of a good to the nearest settlement's production store (capped)."""
         prod = getattr(self.engine, "production", None)
         if prod is None:
             return
@@ -186,9 +190,60 @@ class ActivitySystem:
                 return
             from engine.production_loop import STORE_CAP
             store = prod.store_of(s.name)
-            store[raw] = min(STORE_CAP, store.get(raw, 0) + 1)
+            store[item] = min(STORE_CAP, store.get(item, 0) + n)
         except Exception as e:
-            logger.debug(f"work yield failed: {e}")
+            logger.debug(f"store add failed: {e}")
+
+    # ------------------------------------------------------------- farming (A3)
+    def farm_step(self, npc) -> bool:
+        """A3: a FARMER walks to the FIELDS and works the soil there — reaping a
+        ripe plot when one stands — instead of milling at the village square.
+        Returns True when it handled the turn (only for a farmer with fields)."""
+        if self.profession_of(npc) != "farmer":
+            return False
+        fm = getattr(self.engine, "farm_manager", None)
+        if fm is None or not getattr(fm, "plots", None):
+            return False
+        field = self._nearest_field(npc, fm)
+        if field is None:
+            return False
+        pos = npc.position
+        if abs(pos[0] - field[0]) + abs(pos[1] - field[1]) <= 1:
+            try:
+                from engine import anim
+                anim.emote(npc, "stoop")               # work the soil
+            except Exception:
+                pass
+            self._farmer_harvest(npc, fm)
+            self._maybe_beat(npc, {"beat": "works the fields", "period": 12})
+            return True
+        from engine.squad_tactics import greedy_step
+        greedy_step(self.engine.world.map, npc, tuple(field))
+        return True
+
+    @staticmethod
+    def _nearest_field(npc, fm):
+        x, y = npc.position
+        best, bd, ripe, rd = None, 1e18, None, 1e18
+        for (px, py), plot in fm.plots.items():
+            d = (px - x) ** 2 + (py - y) ** 2
+            if d < bd:
+                best, bd = (px, py), d
+            if plot.get("state") == "mature" and d < rd:
+                ripe, rd = (px, py), d
+        return ripe or best                            # head for a ripe plot first
+
+    def _farmer_harvest(self, npc, fm) -> None:
+        x, y = npc.position
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                plot = fm.plots.get((x + dx, y + dy))
+                if plot and plot.get("state") == "mature":
+                    plot["state"] = "harvested"
+                    self._store_add(npc, "wheat_sheaf", 2)
+                    self.engine.memory_manager.add_event(
+                        f"[Town] {npc.name} reaps the ripe fields.")
+                    return
 
     # ------------------------------------------------------------- crowd (A3)
     def _draw_crowd(self, npc) -> None:

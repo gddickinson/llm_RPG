@@ -127,17 +127,17 @@ class ActionRouter:
     # --------------- movement ----------------------------------------
 
     def _handle_move(self, npc, target: str, activity: str = "") -> bool:
+        acts = getattr(self.engine, "activities", None)
+        if activity == "work" and acts is not None and acts.farm_step(npc):
+            return True                        # A3: a FARMER works the FIELDS
         text = (target or "").lower()
-        # A scheduled NPC that has REACHED its location keyword would otherwise
-        # freeze on one tile (the "hangs around too long" George saw). On arrival
-        # it either PERFORMS its scheduled activity (LIVING_WORLD A1 — a smith
-        # hammers, a cleric prays) or, for a non-work activity, MILLS ABOUT.
+        # An arrived NPC PERFORMS its scheduled activity (A1: a smith hammers, a
+        # cleric prays) or, for a non-work activity, MILLS ABOUT its spot.
         if not any(w in text for w in _DIRECTIONS):
             loc = self._resolve_location_target(npc, text)
             if loc is not None:
                 d2 = (loc[0] - npc.position[0]) ** 2 + \
                      (loc[1] - npc.position[1]) ** 2
-                acts = getattr(self.engine, "activities", None)
                 # A2: a guard patrols a real beat — sticky once started (the beat
                 # ranges past the loiter radius, so re-engage by its route, not d2)
                 if activity == "patrol" and acts is not None and \

@@ -164,9 +164,22 @@ class TestWorksiteSpread(unittest.TestCase):
 
     def test_workers_fan_out(self):
         from characters.character_types import CharacterClass
+        from world.world_map import TerrainType
         eng = _shared_engine()
         loc = next(l for l in eng.world.locations if "village" in l.name.lower())
         center = loc.center()
+        # clear the work area — the shared engine accumulates NPCs across tests,
+        # which would otherwise crowd the worksite and block the fan-out
+        for dy in range(-3, 4):
+            for dx in range(-3, 4):
+                x, y = center[0] + dx, center[1] + dy
+                if not (0 <= x < eng.world.map.width
+                        and 0 <= y < eng.world.map.height):
+                    continue
+                other = eng.world.map.get_character_at(x, y)
+                if other is not None and other is not eng.player:
+                    eng.world.map.remove_character(other)
+                eng.world.map.terrain[y][x] = TerrainType.GRASS
         workers = []
         for _ in range(4):
             n = eng.npc_manager.create_random_npc(
@@ -225,6 +238,44 @@ class TestWorkYield(unittest.TestCase):
         for _ in range(WORK_YIELD_PERIOD + 2):
             eng.activities.perform(smith, "work", None)
         self.assertEqual(store.get("sword", 0), before, "no minting from nothing")
+
+
+class TestFarmerFields(unittest.TestCase):
+    """A3 — a farmer walks to the FIELDS and reaps a ripe plot (George)."""
+
+    def test_farmer_walks_to_the_field_and_reaps(self):
+        from characters.character_types import CharacterClass
+        eng = _shared_engine()
+        fm = eng.farm_manager
+        fm.ensure_plots()
+        if not fm.plots:
+            self.skipTest("no farm plots in this world")
+        fpos = next(iter(fm.plots))
+        fm.plots[fpos]["state"] = "mature"
+        farmer = eng.npc_manager.create_random_npc(
+            char_class=CharacterClass.VILLAGER)
+        farmer.metadata["_profession"] = "farmer"
+        eng.world.map.remove_character(farmer)
+        farmer.position = (fpos[0] + 4, fpos[1])
+        eng.world.map.place_character(farmer, *farmer.position)
+        reaped = False
+        for _ in range(20):
+            eng.action_router.process(
+                farmer, {"action": "move", "target": "village",
+                         "activity": "work"})
+            if fm.plots[fpos]["state"] == "harvested":
+                reaped = True
+                break
+        self.assertTrue(reaped, "the farmer works the fields")
+
+    def test_non_farmer_does_not_field_route(self):
+        from characters.character_types import CharacterClass
+        eng = _shared_engine()
+        smith = eng.npc_manager.create_random_npc(
+            char_class=CharacterClass.MERCHANT)
+        smith.metadata["_profession"] = "smith"
+        self.assertFalse(eng.activities.farm_step(smith),
+                         "only a farmer works the fields")
 
 
 class TestBardCrowd(unittest.TestCase):

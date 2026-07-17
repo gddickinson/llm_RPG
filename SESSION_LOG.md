@@ -9549,3 +9549,29 @@ through ambient gestures (look/bored) on a WALL-CLOCK timer (ISO.14), so the `==
 ~⅓ of the time; froze `_clock_ms` to 0 (ambient slot = idle). (Earlier this arc also fixed the agent_ammo
 assertion + the colosseum duel STALL.) The other CLAUDE.md-listed candidates (test_tactics/conditions/
 input_bindings/encounters) pass 5× in isolation.
+
+## 2026-07-17 — LIVING_WORLD leftovers: C5 monsters-hunt-wildlife, A3 farmer-fields, C3 raid-from-camp
+
+George: "go ahead with C5 then A3 and C3." Built the deferred leftovers with the infrastructure each needed.
+
+**C5 — monsters hunt wildlife** (`world/wildlife_ethology.monster_predation`, called from `WildlifeSystem.
+run_turn`): predatory MONSTERS (`preys_on` in data/monsters.json — the wolf hunts deer/rabbit, the bog lurker
+deer/boar) that aren't busy with the player run down the nearest wildlife they eat, joining the food web.
+The idle-monster AI lives in the pygame-free heuristic provider with no engine handle, so the hunt runs from
+the WildlifeSystem (which has the roster + engine + runs BEFORE process_npc_turns) and sets `_aggro_turn` so
+the ambient AI doesn't also move the hunter that turn — no double-drive. Split into wildlife_ethology to hold
+wildlife.py under 500. tests/test_wildlife_ethology.py (+2).
+
+**A3 — farmer field-harvest** (`activities.farm_step`, `action_router._handle_move`): a FARMER now walks to
+the FIELDS (nearest `farm_manager` FARMLAND plot, a ripe one first) and works the soil there — reaping a
+mature plot into the settlement store with a `[Town]` beat — instead of milling at the village square. Routed
+at the top of `_handle_move` (a farmer's "work" delegates to `farm_step`); `_store_add` refactored out of
+`_work_yield` and shared. tests/test_activities.py (+2). Fixed a shared-engine crowding flake the new tests
+exposed (test_workers_fan_out now clears its work area).
+
+**C3 — raid-from-camp** (`tribe_camps.living_warriors`/`camp_name`/`has_camp` + `monster_tribes`): a raid is
+now the CAMP'S warband — the `[Realm]` beat credits the camp ("The warband of The Gorge Goblins swarms out to
+raid …!"), and `_maybe_spill` draws the raid party from the camp's LIVING warriors, so a camp you scouted +
+thinned sends fewer raiders and a WIPED camp sends NONE. (Killing camp members already beats the tribe back
+via the `tribe` tag → `on_defeat`; this makes the tie direct + visible.) tests/test_tribe_camps.py (+2).
+Full suite green. LIVING_WORLD (Areas A/B/C) is now COMPLETE — every planned phase built.

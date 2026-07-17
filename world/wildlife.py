@@ -212,6 +212,8 @@ class WildlifeSystem:
             if ppos and self._cheb(animal.position, ppos) > SIGHT_RADIUS:
                 continue                        # off-screen animals idle (cheap)
             self._act(animal, ppos, night)
+        from world import wildlife_ethology as eth
+        eth.monster_predation(self, ppos)       # C5: predator MONSTERS hunt the herd
 
     def _act(self, animal, ppos, night=False) -> None:
         meta = animal.metadata

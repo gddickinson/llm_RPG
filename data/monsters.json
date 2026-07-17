@@ -22,7 +22,11 @@
       "strength": 12,
       "dexterity": 13
     },
-    "natural_damage": 4
+    "natural_damage": 4,
+    "preys_on": [
+      "deer",
+      "rabbit"
+    ]
   },
   "bandit": {
     "name": "Bandit",
@@ -115,7 +119,11 @@
     },
     "speed": 0.7,
     "natural_damage": 7,
-    "active": "night"
+    "active": "night",
+    "preys_on": [
+      "deer",
+      "boar"
+    ]
   },
   "marsh_wisp": {
     "name": "Marsh Wisp",

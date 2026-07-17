@@ -87,6 +87,46 @@ class TestTribeCamps(unittest.TestCase):
                                abs(m.position[0] - cx) + abs(m.position[1] - cy))
         self.assertLessEqual(maxstray, 14, "the camp does not scatter")
 
+    def test_c3_raid_is_credited_to_the_camp(self):
+        T = self.engine.monster_tribes
+        tid = self.tc.camps[0]["tid"]
+        sett = T._target_settlement()
+        if sett is None:
+            self.skipTest("no settlement")
+        cx, cy = sett.center()
+        self.engine.world.map.remove_character(self.engine.player)
+        self.engine.player.position = (cx + 2, cy)
+        self.engine.world.map.place_character(self.engine.player, cx + 2, cy)
+        T.strength[tid] = 90
+        T._raid(tid, T._tribes()[tid])
+        recent = " ".join(self.engine.memory_manager.get_recent_history(6))
+        self.assertIn("warband of " + self.tc.camp_name(tid), recent)
+
+    def test_c3_a_wiped_camp_sends_no_raiders(self):
+        T = self.engine.monster_tribes
+        tid = self.tc.camps[-1]["tid"]
+        for m in self.tc.roster(tid):
+            if (m.metadata or {}).get("lair_role") in ("chief", "sentry", "guard"):
+                m.hp = 0
+                m.status = "defeated"
+        self.assertEqual(self.tc.living_warriors(tid), 0)
+        sett = T._target_settlement()
+        if sett is None:
+            self.skipTest("no settlement")
+        cx, cy = sett.center()
+        self.engine.world.map.remove_character(self.engine.player)
+        self.engine.player.position = (cx + 2, cy)
+        self.engine.world.map.place_character(self.engine.player, cx + 2, cy)
+        before = len([n for n in self.engine.npc_manager.npcs.values()
+                      if (n.metadata or {}).get("tribe") == tid
+                      and not (n.metadata or {}).get("camp_member")])
+        T.strength[tid] = 90
+        T._maybe_spill(tid, T._tribes()[tid], sett)
+        after = len([n for n in self.engine.npc_manager.npcs.values()
+                     if (n.metadata or {}).get("tribe") == tid
+                     and not (n.metadata or {}).get("camp_member")])
+        self.assertEqual(after, before, "no warriors left to march")
+
     def test_persist_round_trip(self):
         d = self.tc.to_dict()
         fresh = TribeCampSystem(self.engine)

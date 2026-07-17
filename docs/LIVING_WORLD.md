@@ -146,19 +146,19 @@ lived community with roles — reusing Area A's activity layer for monster roles
   leash + role behaviour, tagged `lair:tribe:<tid>` so the pack brain bands them
   when the player closes in. Persists (`engine_setup` + `save_load`).
   *(Remaining: warriors leaving the camp to form the raid party on raid nights.)*
-- **C4 — Non-combat pack life.** *(Deferred — already covered in practice: lair/
-  camp packs hold together via the C1 leash + roles, and wildlife packs via B3
-  herding. A distinct roaming-band behaviour adds little over these.)*
-- **C5 — Monsters in the ecosystem.** *(Deferred — architectural friction: the
-  idle-monster AI lives in the pygame-free `heuristic` provider with NO engine
-  handle, so it can't scan the wildlife roster to pick + path to prey; doing it
-  well needs a new per-turn predation hook. Low visible payoff for the cost.)*
+- **C4 — Non-combat pack life.** *(Covered in practice: lair/camp packs hold
+  together via the C1 leash + roles, and wildlife packs via B3 herding.)*
+- **C5 — Monsters in the ecosystem. ✅ DONE.** `wildlife_ethology.monster_predation`
+  (run from `WildlifeSystem.run_turn`, which HAS the engine handle the provider
+  lacks): a predatory MONSTER (`preys_on` — wolf/bog-lurker) that isn't busy with
+  the player runs down the nearest wildlife it eats, setting `_aggro_turn` so the
+  ambient AI doesn't double-drive it.
 
-Deferred elsewhere with rationale: **A3** farmer field-harvest (farmers are seated
-to "work at village" by class schedule, not routed to FARMLAND tiles — needs a
-profession→field routing pass); **C3** raid-from-camp (the camp sits ≥22 tiles
-from spawn while `_maybe_spill` already spawns the visible raiders AT the target
-settlement near the player — a camp-to-settlement march wouldn't read on-screen).
+Also DONE: **A3** farmer field-harvest (`activities.farm_step` — a farmer walks to
+the nearest FARMLAND plot and reaps a ripe one into the store; routed at the top of
+`_handle_move`); **C3** raid-from-camp (the raid beat credits the camp and
+`monster_tribes._maybe_spill` draws the party from the camp's LIVING warriors — a
+thinned camp sends fewer, a wiped one sends none). **All phases of Areas A/B/C built.**
 
 Fixes: `heuristic.py:317-319` (idle random wander), `lairs.py` (no life),
 `monster_tribes.py` (invisible abstract strength), `schedules.py:9` (no monster

@@ -189,6 +189,30 @@ class TribeCampSystem:
                 return c
         return None
 
+    def has_camp(self, tid: str) -> bool:
+        return any(c["tid"] == tid for c in self.camps)
+
+    def camp_name(self, tid: str) -> Optional[str]:
+        for c in self.camps:
+            if c["tid"] == tid:
+                return c["name"]
+        return None
+
+    def living_warriors(self, tid: str) -> int:
+        """C3: how many of a camp's fighters still stand — a raid draws its
+        warband from here, so a scouted-and-thinned camp sends fewer raiders."""
+        fighters = ("chief", "sentry", "guard")
+        n = 0
+        for c in self.camps:
+            if c["tid"] != tid:
+                continue
+            for i in c["members"]:
+                m = self.engine.npc_manager.npcs.get(i)
+                if m and m.is_alive() and \
+                        (m.metadata or {}).get("lair_role") in fighters:
+                    n += 1
+        return n
+
     # ---------------------------------------------------------------- persist
     def to_dict(self) -> dict:
         return {"seeded": self._seeded, "camps": self.camps}

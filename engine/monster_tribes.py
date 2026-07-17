@@ -81,8 +81,14 @@ class MonsterTribeSystem:
         drained = self._drain(target)
         self.strength[tid] = max(0, self.strength[tid] - spec.get("raid_cost", 15))
         terrain = spec.get("terrain", "wilds")
-        line = (f"[Realm] {spec['name']} swarm out of the {terrain} "
-                f"to raid {name}!")
+        # C3: credit the tribe's CAMP — the raid is its warband marching out
+        camp = None
+        tc = getattr(self.engine, "tribe_camps", None)
+        if tc is not None:
+            camp = tc.camp_name(tid)
+        line = (f"[Realm] The warband of {camp} swarms out to raid {name}!"
+                if camp else
+                f"[Realm] {spec['name']} swarm out of the {terrain} to raid {name}!")
         self.engine.memory_manager.add_event(line)
         if drained:
             self.engine.memory_manager.add_event(
@@ -128,6 +134,14 @@ class MonsterTribeSystem:
         wmap = self.engine.world.map
         count = 2 + (1 if self.strength[tid] >= spec.get("raid_threshold", 55)
                      + 20 else 0)
+        # C3: the raiders ARE the camp's warband — a camp you scouted + thinned
+        # sends fewer (a WIPED camp sends none: no warriors left to march)
+        tc = getattr(self.engine, "tribe_camps", None)
+        if tc is not None and tc.has_camp(tid):
+            warriors = tc.living_warriors(tid)
+            if warriors <= 0:
+                return
+            count = min(count, warriors)
         spots = self._free_spots(px, py, count + 1)
         templates = [spec.get("raider", "goblin")] * count
         if self.strength[tid] >= spec.get("raid_threshold", 55) + 20:

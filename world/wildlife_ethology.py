@@ -187,3 +187,41 @@ def _step_to(sys, animal, target) -> bool:
             sys.engine.world.map.move_character(animal, x + mvx, y + mvy)
             return True
     return False
+
+
+# ------------------------------------------------------------- C5 predation
+def monster_predation(sys, ppos) -> None:
+    """A predatory MONSTER (a wolf, a bog lurker — `preys_on` in
+    data/monsters.json) that isn't busy with the player runs down the nearest
+    wildlife it eats — the world's predators join the food web. Sets `_aggro_turn`
+    so the ambient AI doesn't also move it this turn (wildlife runs before
+    `process_npc_turns`). Called from `WildlifeSystem.run_turn`."""
+    if ppos is None:
+        return
+    from world.wildlife import SIGHT_RADIUS
+    prey = [a for a in sys._animals()
+            if sys._cheb(a.position, ppos) <= SIGHT_RADIUS]
+    if not prey:
+        return
+    turn = getattr(sys.engine, "turn_counter", 0)
+    for m in list(sys.engine.npc_manager.npcs.values()):
+        meta = m.metadata or {}
+        if not meta.get("preys_on") or meta.get("wildlife") or not m.is_alive():
+            continue
+        d_player = sys._cheb(m.position, ppos)
+        if d_player > SIGHT_RADIUS or d_player <= 2:     # far off, or on the hero
+            continue
+        target, td = None, SIGHT_RADIUS + 1
+        for a in prey:
+            if (a.metadata or {}).get("species") in meta["preys_on"] and \
+                    a.is_alive():
+                d = sys._cheb(m.position, a.position)
+                if d < td:
+                    target, td = a, d
+        if target is None:
+            continue
+        if td <= 1:
+            sys._make_kill(m, target)
+        else:
+            sys._step_toward(m, target.position)
+        meta["_aggro_turn"] = turn                        # skip the ambient AI
