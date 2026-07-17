@@ -30,6 +30,10 @@ class _Char:
         self.relationships[other] = max(
             -100, min(100, self.relationships.get(other, 0) + delta))
 
+    def add_memory(self, event, importance=1):
+        self.memories = getattr(self, "memories", [])
+        self.memories.append(event)
+
 
 class _MM:
     def __init__(self):
@@ -179,6 +183,47 @@ class TestUpdateSocial(unittest.TestCase):
         eng = _Engine([a, b])
         interactions.update_social(eng, chance=1.0)
         self.assertNotIn("_emote", b.metadata)
+
+
+class TestPlayerSocial(unittest.TestCase):
+    """I2 — the player offers an adjacent NPC a warm gesture from the menu."""
+
+    def _eng_npc(self, rel=0, romance=None, partner=False):
+        npc = _Char("npc", "Bess", (6, 5))
+        eng = _Engine([npc])                 # eng.player has id "player"
+        npc.modify_relationship("player", rel)
+        if romance:
+            npc.metadata["romance"] = romance
+        if partner:
+            npc.metadata["partner"] = "player"
+        return eng, npc
+
+    def test_stranger_offers_a_handshake(self):
+        eng, npc = self._eng_npc(rel=0)
+        opt = interactions.player_social_option(eng, npc)
+        self.assertEqual(opt[0], "handshake")
+        self.assertIn("Bess", opt[1])
+
+    def test_friend_offers_an_embrace(self):
+        eng, npc = self._eng_npc(rel=45)
+        self.assertEqual(interactions.player_social_option(eng, npc)[0], "hug")
+
+    def test_sweetheart_offers_a_kiss(self):
+        eng, npc = self._eng_npc(romance="sweetheart")
+        self.assertEqual(interactions.player_social_option(eng, npc)[0], "kiss")
+
+    def test_cold_npc_offers_nothing(self):
+        eng, npc = self._eng_npc(rel=-10)
+        self.assertIsNone(interactions.player_social_option(eng, npc))
+
+    def test_player_social_plays_warms_and_replies(self):
+        eng, npc = self._eng_npc(rel=45)
+        reply = interactions.player_social(eng, npc, "hug")
+        self.assertEqual(eng.player.metadata.get("_emote"), "hug")
+        self.assertEqual(npc.metadata.get("_emote"), "hug")
+        self.assertGreater(npc.get_relationship("player"), 45)  # bond warmed
+        self.assertIn("Bess", reply)
+        self.assertTrue(getattr(npc, "memories", []))           # fond memory
 
 
 if __name__ == "__main__":

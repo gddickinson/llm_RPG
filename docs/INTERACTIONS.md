@@ -39,10 +39,14 @@ grapples. That's this feature.
   `body_renderer`) draws NO weapon/shield, so a hug/kiss/handshake doesn't read as
   a raised sword (a square-up keeps its weapon). Tests: `tests/test_interactions.py`
   (17). Iso parity gap remains: the social clips fall back to idle in iso.
-- **I2 — Player social interactions.** The player can GREET / EMBRACE / KISS an
-  adjacent NPC (via the conversation quick-pick + a key), gated by relationship
-  (a kiss needs a sweetheart — ties to romance; a hug needs a friend), each a warm
-  memory + a regard/affinity bump. More contact with the cast you care about.
+- **I2 — Player social interactions. ✅ DONE.** The conversation quick-pick offers
+  a warm gesture by your standing (`interactions.player_social_option`): a
+  sweetheart may be KISSED, a friend (regard ≥ 40 / social-friend) EMBRACED, a
+  friendly acquaintance's hand CLASPED; a cold/hostile NPC offers nothing.
+  Choosing it (`dialog_menu` → `interactions.player_social`) plays the coordinated
+  clip, warms the bond a touch more than an ambient beat, leaves the NPC a fond
+  memory, and returns their reply. Tests: `tests/test_interactions.py`
+  (`TestPlayerSocial`).
 - **I3 — Combat grapple & throw. (more contact when fighting)** `tactics.grapple`
   (a STR-vs-STR clinch with an adjacent foe — win → the foe is GRABBED/off-guard or
   goes PRONE, both play `wrestle`) and `tactics.throw` (hurl a grabbed/adjacent foe

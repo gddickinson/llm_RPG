@@ -151,3 +151,52 @@ def update_social(engine, rng=None, chance=0.02):
                 done.add(a.id)
                 done.add(b.id)
                 break
+
+
+# ---------------------------------------------------------------- I2: the player
+# The player can offer an adjacent NPC a warm gesture from the conversation menu
+# (a greeting, an embrace, a kiss), gated by how the NPC regards them + romance.
+_ROMANCE_STAGES = ("sweetheart", "betrothed", "married")
+_PLAYER_REPLY = {
+    "kiss": "{n} melts into your kiss.",
+    "hug": "{n} returns your embrace warmly.",
+    "handshake": "{n} clasps your hand firmly.",
+}
+# a gesture the player OFFERS warms the bond a touch more than an ambient beat
+_PLAYER_BONUS = {"kiss": 4, "hug": 3, "handshake": 2}
+
+
+def player_social_option(engine, npc):
+    """The warmest social gesture the player may offer this adjacent NPC, as
+    (kind, menu-label) — or None for a cold / hostile one. A sweetheart may be
+    kissed, a friend embraced, a friendly acquaintance's hand clasped."""
+    try:
+        p = engine.player
+        m = npc.metadata or {}
+        if _partnered(p, npc) or m.get("romance") in _ROMANCE_STAGES:
+            return ("kiss", f"Kiss {npc.name}")
+        rel = npc.get_relationship(p.id)
+        if rel >= 40 or (m.get("social") or {}).get(f"friend:{p.id}"):
+            return ("hug", f"Embrace {npc.name}")
+        if rel >= 0:
+            return ("handshake", f"Shake {npc.name}'s hand")
+    except Exception:
+        pass
+    return None
+
+
+def player_social(engine, npc, kind):
+    """The player offers `kind` to `npc`: play the coordinated interaction, warm
+    the bond a little more than an ambient beat + leave the NPC a fond memory,
+    and return the NPC's reply line for the dialog."""
+    p = engine.player
+    perform_social(engine, p, npc, kind)
+    try:
+        npc.modify_relationship(p.id, _PLAYER_BONUS.get(kind, 1))
+    except Exception:
+        pass
+    try:
+        npc.add_memory(f"{p.name} shared a {kind} with me.", importance=4)
+    except Exception:
+        pass
+    return _PLAYER_REPLY.get(kind, "...").format(n=npc.name)

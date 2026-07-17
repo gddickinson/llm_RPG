@@ -70,4 +70,10 @@ def menu(engine, npc) -> List[dict]:
     if _secrets.unlocked_secrets(engine, npc):
         items.append({"kind": "secret",
                       "label": "Press them — what aren't they saying?"})
+    # PUX.6 / I2 a warm gesture — greet / embrace / kiss by your standing
+    from engine import interactions
+    social = interactions.player_social_option(engine, npc)
+    if social:
+        items.append({"kind": "social", "label": social[1],
+                      "social": social[0]})
     return items
