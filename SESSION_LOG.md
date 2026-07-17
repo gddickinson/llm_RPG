@@ -9507,3 +9507,23 @@ no prey is in sight, so combat is untouched): a SENTRY paces an 8-point ring aro
 now reads as an OCCUPIED, watched camp instead of scattered wanderers. Measured: occupants stray ≤ ~7 tiles
 from the den over 40 turns (was scattering). tests/test_lairs.py (+5). Next: C3 tribe camps (the marquee —
 a visible camp with chief/warriors/foragers/shaman), reusing this role infrastructure.
+
+## 2026-07-17 — LIVING_WORLD Area C (C3): visible TRIBE CAMPS (the marquee) — George
+
+The audit's biggest gap: a monster tribe was an ABSTRACT `strength` int that raided nightly and only ever
+spilled a combat raid-party — you never met the tribe "at home", no roles, no community.
+
+**C3 — Tribe camps** (`engine/tribe_camps.py`): `seed()` plants a visible CAMP for each tribe near its
+territory (forest/swamp/mountain affinity, ≥22 tiles from spawn, spaced apart), seated with a role-tagged
+CAST scaled by the tribe's strength — a CHIEF (the champion template) at the totem, a SHAMAN, a FORAGER, and
+a band of WARRIORS split into SENTRIES + GUARDS (2 + strength//25, capped at MAX_WARRIORS). Members reuse the
+C1 lair infrastructure — a `territorial` leash to the camp centre + a `lair_role` → the idle-hostile AI paces
+the sentries / holds the chief, so the camp HOLDS TOGETHER and reads as a lived community; they're tagged
+`lair:tribe:<tid>` so the P19.3 pack brain bands them under their champion when the player closes in. A
+`tribe_camp` `Location` marks each camp on the map (findable). Registered in `engine_setup` (create + seed
+after Lairs) + `save_load` (persists, `to_dict`/`from_dict`); the demo world plants 3 (Gorge Goblins / Crag
+Trolls / Reedmarsh Warren) with 5-6 members each, holding within ~8 tiles of the totem. tests/
+test_tribe_camps.py (7) + a full save/load round-trip. Full suite green.
+
+Area C now has C1 (lair home behaviour) + C3 (tribe camps). Remaining/optional: C2 (monster day/night —
+reuse Area B), C4 (packs roam together off-combat), C5 (monsters hunt wildlife — ties B↔C).

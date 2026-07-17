@@ -105,6 +105,8 @@ def build_subsystems(engine, llm_model=None,
     self.monster_packs = MonsterPackSystem(self)
     from engine.monster_tribes import MonsterTribeSystem
     self.monster_tribes = MonsterTribeSystem(self)
+    from engine.tribe_camps import TribeCampSystem   # LIVING_WORLD C3
+    self.tribe_camps = TribeCampSystem(self)
     from engine.nemesis import NemesisSystem
     self.nemesis = NemesisSystem(self)
     from engine.ambitions import AmbitionSystem
@@ -230,6 +232,7 @@ def seed_world(engine) -> None:
         ("Resource nodes", lambda: self.resource_nodes.seed()),
         ("Structures", lambda: self.structures.build()),
         ("Lairs", lambda: self.lairs.seed()),           # P19.2
+        ("Tribe camps", lambda: self.tribe_camps.seed()),  # LIVING_WORLD C3
         ("Deepdelve", lambda: self.deepdelve.seed()),   # GX.5
         ("Guild halls", lambda: self.guildhalls.seed()),  # M.7b
         ("Stables", lambda: self.stables.seed()),        # P28.2d mounts

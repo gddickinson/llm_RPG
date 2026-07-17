@@ -138,12 +138,13 @@ lived community with roles — reusing Area A's activity layer for monster roles
 - **C2 — Monster day/night schedules.** Per-template `active:"day"|"night"` +
   `data/monster_activities.json`: nocturnal monsters sleep in the lair by day and
   hunt/patrol by night. Reuses the ActivitySystem.
-- **C3 — Tribe camps (the big one).** A visible **tribe camp** `Location` near the
-  player (seeded like a lair), with **role-tagged members** — a **chief** at the
-  totem, **warriors** on patrol, **foragers** gathering nearby and hauling back, a
-  **shaman** at a fire/totem. Camp size + composition scale with the tribe's
-  `strength`; on raid nights the warriors *leave the camp* to form the raid party
-  (bridging the abstract `monster_tribes` sim to a lived place). `engine/tribe_camps.py`.
+- **C3 — Tribe camps (the marquee). ✅ DONE.** `engine/tribe_camps.py` plants a
+  visible camp `Location` per tribe near its territory (seeded like a lair, scaled
+  by `strength`), with a **role-tagged cast** — a **chief** at the totem, a
+  **shaman**, a **forager**, and **warriors** (sentries/guards) — reusing the C1
+  leash + role behaviour, tagged `lair:tribe:<tid>` so the pack brain bands them
+  when the player closes in. Persists (`engine_setup` + `save_load`).
+  *(Remaining: warriors leaving the camp to form the raid party on raid nights.)*
 - **C4 — Non-combat pack life.** A wolf / goblin pack roams, rests, and forages
   together when it isn't fighting (not just combat coordination).
 - **C5 — Monsters in the ecosystem.** Predatory monsters (wolves, worgs) hunt

@@ -45,8 +45,11 @@ class _Base(unittest.TestCase):
         self.engine.world.map.place_character(self.engine.player, cx + dx, cy)
 
     def _tribe_raiders(self, tid="gorge_goblins"):
+        # a RAID-spilled raider — not a seated tribe-camp resident (C3), which
+        # shares the `tribe` tag but is a permanent camp member, not a raid party
         return [n for n in self.engine.npc_manager.npcs.values()
-                if (n.metadata or {}).get("tribe") == tid and n.is_active()]
+                if (n.metadata or {}).get("tribe") == tid and n.is_active()
+                and not (n.metadata or {}).get("camp_member")]
 
 
 class TestTribeGrowth(_Base):
