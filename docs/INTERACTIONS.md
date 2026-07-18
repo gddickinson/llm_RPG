@@ -66,6 +66,15 @@ grapples. That's this feature.
   `test_tactics.TestGrappleThrow`. So you can now wrestle a foe down and hurl it —
   physical contact mid-fight, not just swings at range.
 
+- **I5 — Combat contact for the whole world. ✅ DONE.** A decisive melee CRIT (in
+  `combat_system._resolve`) that fells or nearly fells a non-player foe now drives
+  it to the ground — `anim.interact(attacker, defender, "knockdown")`: the attacker
+  follows through, the struck body FALLS. This fires for the player's kills AND for
+  NPC-vs-NPC clashes (the same resolver runs both), so fights everywhere read as
+  physical, not just swings at range. Cosmetic (emotes only), tightly gated to a
+  crit + a low/dead non-player defender so it always reads as a real beatdown.
+  Tests: `test_combat.TestCombatContact`.
+
 ## Constraints
 
 - Reuse `anim.interact` + the existing clips; pure/thin; files < 500 lines.

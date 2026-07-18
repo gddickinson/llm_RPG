@@ -211,6 +211,18 @@ class CombatSystem:
             char_motion.emote(defender, "hurt")
         except Exception:
             pass
+        try:   # I5: a decisive melee CRIT drives a foe to the ground — physical
+            # contact in every fight (the player's kills AND NPC-vs-NPC clashes),
+            # not just swings. Cosmetic; gated to a crit that fells or nearly
+            # fells a non-player defender, so it always reads as a real beatdown.
+            if (action_type == "attack" and natural_crit
+                    and defender is not self.engine.player):
+                frac = defender.hp / max(1, getattr(defender, "max_hp", 1))
+                if (not defender.is_alive()) or frac <= 0.3:
+                    from engine import anim
+                    anim.interact(attacker, defender, "knockdown")
+        except Exception:
+            pass
         try:   # damage forces the keep-it check (P12.7)
             from engine.combat_depth import concentration_check
             concentration_check(self.engine, defender, damage)
