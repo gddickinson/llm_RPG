@@ -83,8 +83,10 @@ class TestQuestCapabilities(unittest.TestCase):
         self.assertEqual(quest.status, QuestStatus.COMPLETED)
         ids = [getattr(i, "id", "") for i in self.player.inventory]
         self.assertNotIn("iron_bar", ids, "delivered item consumed")
+        # scan the FULL history, not a tail window — ambient beats (a tower
+        # alarm, an NPC greeting) can flood the last few events in a full run
         log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-6:])
+                       self.engine.memory_manager.game_history)
         self.assertIn("hand over", log)
 
     def test_legacy_deliver_sword_quest_now_completable(self):

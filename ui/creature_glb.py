@@ -32,6 +32,23 @@ SPECIES_GLB = {
     "war_horse": "horse", "mule": "donkey",
 }
 
+# on-screen RENDER size as a multiple of the tile — a real beast is scaled to the
+# ~1.5-tile characters (George: "many animals look too small — they should take up
+# multiple tiles"): a horse/ox towers over a person, a fox is knee-high. Keyed on
+# the resolved GLB species key (so a mustang→horse, an aurochs→cow inherit it).
+SPECIES_SCALE = {
+    "fox": 2.2, "wolf": 2.5, "dog": 2.3, "husky": 2.4, "sheep": 2.4,
+    "pig": 2.5, "boar": 2.5, "deer": 2.8, "horse": 3.1, "war_horse": 3.2,
+    "cow": 3.0, "bull": 3.2, "donkey": 2.6, "mule": 2.5, "shark": 2.7,
+}
+_DEFAULT_SCALE = 2.5
+
+
+def scale_for(char_or_key):
+    """The render size (tile multiple) for a creature or a GLB species key."""
+    key = char_or_key if isinstance(char_or_key, str) else species_of(char_or_key)
+    return SPECIES_SCALE.get(key, _DEFAULT_SCALE)
+
 
 def _acc(g, blob, i):
     a = g.accessors[i]

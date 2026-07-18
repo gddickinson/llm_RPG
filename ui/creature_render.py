@@ -84,9 +84,9 @@ def draw_creature(surface, char, sx, sy, tile_size, plan, is_player=False):
                          _anim(char).get("clock", 0.0))
 
 
-# a baked GLB model is framed ~1.7 tiles tall; the iso bake leaves ground below
-# the feet, so drop it `_FOOT_GAP` of the frame to seat the animal on the tile.
-_MODEL_SCALE = 1.7
+# a baked GLB model frames the animal at a per-species tile multiple
+# (`creature_glb.scale_for`); the iso bake leaves ground below the feet, so drop
+# it `_FOOT_GAP` of the frame to seat the animal on the tile.
 _FOOT_GAP = 0.16
 
 
@@ -98,8 +98,10 @@ def _draw_model(surface, char, sx, sy, tile_size):
         return False
     face = _anim(char).get("facing", (0, 1))
     face_east = isinstance(face, (tuple, list)) and face[0] > 0
-    frame = int(tile_size * _MODEL_SCALE)
-    spr = creature_glb.sprite_for_char(char, frame, face_east=face_east)
+    frame = int(tile_size * creature_glb.scale_for(char))
+    from ui import creature_anim                     # #9b an ANIMATED clip frame
+    spr = (creature_anim.animated_sprite(char, frame, face_east=face_east)
+           or creature_glb.sprite_for_char(char, frame, face_east=face_east))
     if spr is None:
         return False
     cx = sx + tile_size / 2.0

@@ -36,10 +36,11 @@ def beast_sprite(char, tile_size):
     from ui import creature_pose
     if creature_pose.body_plan(char) == "humanoid":
         return None
-    from ui import creature_glb, iso_chars
+    from ui import creature_anim, creature_glb, iso_chars
     face_east = iso_chars.move_delta(char)[0] > 0
-    return creature_glb.sprite_for_char(char, int(tile_size * 1.5),
-                                        face_east=face_east)
+    size = int(tile_size * creature_glb.scale_for(char))
+    return (creature_anim.animated_sprite(char, size, face_east=face_east)   # #9b
+            or creature_glb.sprite_for_char(char, size, face_east=face_east))
 
 
 def draw_actor(target, char, sx, sy, tile_size):

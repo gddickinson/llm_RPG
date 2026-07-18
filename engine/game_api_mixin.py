@@ -430,8 +430,14 @@ class GameAPIMixin:
             deep = bool(loc and loc.get_property("deep_dungeon"))
             disp = ((loc.get_property("dungeon_name") if loc else None)
                     or f"{name} (Depths)")
+            # a STABLE seed from the name (zlib.crc32, not the process-random
+            # hash()) so a named dungeon generates the SAME layout every session
+            # — the Deepdelve is one consistent place, and dungeon tests don't
+            # flake on a per-process hash
+            import zlib
             dungeon = generate_multilevel(
-                name=disp, seed=hash(name) & 0xFFFFFFFF, engine=self,
+                name=disp, seed=zlib.crc32(name.encode()) & 0xFFFFFFFF,
+                engine=self,
                 depth=(loc.get_property("deep_levels", 5) if deep else None))
             self.dungeons[name] = dungeon
         self.current_dungeon = self.dungeons[name]

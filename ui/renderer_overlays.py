@@ -29,7 +29,7 @@ def draw_mount(target, kind: str, x: int, y: int, ts: int) -> None:
     silhouette. `x, y` is the tile's top-left; the beast stands in its lower half."""
     try:
         from ui import creature_glb
-        spr = creature_glb.sprite(kind, int(ts * 1.5))
+        spr = creature_glb.sprite(kind, int(ts * creature_glb.scale_for(kind)))
         if spr is not None:
             w, h = spr.get_size()
             cx = x + ts // 2

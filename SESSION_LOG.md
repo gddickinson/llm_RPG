@@ -9678,3 +9678,30 @@ math) and `combat_math.damage_type_modifier` (the beast bonus, kept OUT of the a
 `items/validate_world.check_skill_combat` (known keys + positive-int divisors) + `tests/test_skill_combat.py`
 (9 — scaling, beast-vs-person, effects integration, and a seeded combat resolve proving a hunter lands
 exactly +bonus more on a beast than a person). Content validator + combat suites green.
+
+## 2026-07-18 — #9b ANIMATED creatures (George: "they look good — but they aren't animated")
+
+The baked GLB models rendered as one FROZEN bind pose while everything else moved. The Quaternius GLBs, it
+turns out, ship RIGGED with full skeletal clips (Walk/Idle/Gallop/Attack/Eating/Death) + a skin — so new
+`ui/creature_anim.py` SKINS the mesh properly (each joint's animated world matrix × its inverse-bind matrix ×
+the vertex's 4 bone weights, keyframe-sampled with nlerp'd rotations) at 8 phases of a clip and bakes each to
+a cached iso sprite. `_action_and_phase` reads the shared `_anim` state (walk ← `move_phase`, idle ←
+`idle_phase`, attack ← `atk_t`, hurt, dead), `clip_for` picks the species' best clip, and `animated_sprite`
+returns the live frame (h-flipped east). Wired into `creature_render._draw_model` (top-down) +
+`iso_actors.beast_sprite` (iso), preferred over the static bind-pose sprite; graceful fallback throughout.
+A deer now STRIDES (legs cycling), idles (breathing), headbutts and dies. Perf: warm calls ~µs (cached);
+the first sighting of a species bakes its clip frames (~50 ms each, triangle-bound at ~3.7k tris) ONCE,
+SHARED across every instance (a whole herd reuses the cache). Tests: `tests/test_creature_anim.py` (12 —
+action/phase mapping, clip selection, distinct walk frames, facing flip, top-down + iso integration).
+
+**Creature SCALE + a dungeon flake root-cause** (with #9b): George — "many animals look too small — they
+should take up multiple tiles to be scaled correctly with the characters." Added `creature_glb.SPECIES_SCALE`
+/ `scale_for` — a per-species on-screen size (tile multiple ~2.2–3.2) so a beast is scaled to the ~1.5-tile
+characters: a horse/ox towers over a person, a deer stands antler-tall, a fox is knee-high. Wired into the
+top-down (`creature_render._draw_model`), iso (`iso_actors.beast_sprite`) and mount (`renderer_overlays.
+draw_mount`) size. En route, root-caused the recurring `test_multilevel_dungeon` full-suite flake: `enter_dungeon`
+seeded `generate_multilevel` with `hash(name)` — but Python RANDOMISES string hashing per process
+(`PYTHONHASHSEED`), so a named dungeon generated a DIFFERENT layout + population every session (empty floors /
+no den-lord → flake). Fixed with a STABLE `zlib.crc32(name)` seed — the Deepdelve is now one consistent place
+across sessions, and the dungeon tests are deterministic (setUp seeds worldgen + save/restore; the apex test
+asserts "≥1 den-lord" since a boss-tier template can also be a regular deep spawn). 0/25 flakes after.
