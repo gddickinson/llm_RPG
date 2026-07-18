@@ -140,6 +140,17 @@ def can_mutate(engine, x: int, y: int, to_t, means: str,
         return False, f"no {means} way to {rule.get('verb', 'do that')}"
     if protected(engine, x, y):
         return False, "that ground is protected"
+    # magical WARD: only a caster at least as powerful as the creator may alter a
+    # magically-shaped tile; mundane labour can't touch a magic ward at all
+    wards = getattr(engine, "wards", None)
+    if wards is not None and actor is not None:
+        wp = wards.power_at(x, y)
+        if wp > 0:
+            if means != "magic":
+                return False, "warded by magic — mundane tools can't touch it"
+            from engine.wards import caster_power
+            if caster_power(actor) < wp:
+                return False, "warded by a greater power"
     if wmap.characters.get((x, y)) is not None and \
             _tname(to_t) in ("water", "mountain", "building"):
         return False, "something is standing there"
@@ -166,6 +177,15 @@ def mutate(engine, x: int, y: int, to_t, means: str, actor=None,
             _give(actor, iid, qty)
     tt = to_t if isinstance(to_t, TerrainType) else TerrainType(_tname(to_t))
     engine.world.map.set_terrain(x, y, tt)
+    # stamp / lift the ward: MAGIC leaves a ward of the caster's power; mundane
+    # LABOUR (or the system) leaves plain, unwarded ground
+    wards = getattr(engine, "wards", None)
+    if wards is not None:
+        if means == "magic" and actor is not None:
+            from engine.wards import caster_power
+            wards.set(x, y, caster_power(actor))
+        else:
+            wards.clear(x, y)
     verb = rule.get("verb", "reshape the land")
     who = getattr(actor, "name", None)
     msg = (f"{who} works the ground to {verb} at ({x},{y})." if who

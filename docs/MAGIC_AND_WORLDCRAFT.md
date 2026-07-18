@@ -304,6 +304,14 @@ M1–M6 then build on this: M2 spells set `world_effect:{worldcraft:{to,...}}`; 
 workers/masons call `worldcraft.mutate(...,means="labor")`; M5's planner commits a
 plan as a batch of `mutate` calls; all obey ONE ruleset.
 
+## Ward layer (George, added mid-build)
+
+Magical **protection by power** — `engine/wards.py`: a magic mutation stamps a
+tile (and an enchant stamps an item) with the creator's `caster_power` (level +
+INT/WIS mod); only a caster ≥ that power may alter it, and mundane labour can't
+touch a magic ward at all. Woven into `worldcraft.mutate`/`can_mutate` and
+`items/enchanting`; persisted. **DONE** (`tests/test_wards.py`).
+
 ## Open design questions (resolve during M0/M1)
 
 - Caster resource model: keep the single **mana** pool, or add **prepared

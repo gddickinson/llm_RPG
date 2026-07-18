@@ -204,6 +204,8 @@ def build_subsystems(engine, llm_model=None,
     self.structures = StructureBuilder(self)
     from engine.tile_damage import TileDamage
     self.tile_damage = TileDamage(self)
+    from engine.wards import WardSystem          # magical protection by power
+    self.wards = WardSystem(self)
     from engine.surfaces import SurfaceLayer
     self.surfaces_layer = SurfaceLayer(self)
     from engine.flood import FloodSystem

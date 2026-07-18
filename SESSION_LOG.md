@@ -9845,3 +9845,17 @@ meaningful; a skilled, equipped, supplied one can. The build-tool palette droppe
 brushes (now 5 labour brushes: Level/Clear, Till, Road, Wall, Demolish). Workers (construction, actor=None)
 still repair towns; spells still shape the world via the magic rules. Updated `test_input_bindings` (B off a
 merchant now opens the build tool) + the worldcraft/build tests for the new gates.
+
+## 2026-07-18 — Magical PROTECTION by power (George)
+
+George: "magically-protected terrain tiles, and buildings and objects (weapons, equipment, magical items)
+that can't be altered by spellcasters unless they are more powerful than the creator." New `engine/wards.py`:
+`caster_power(char)` = level + the better of the INT/WIS modifier; `WardSystem` is a sparse `{(x,y): power}`
+layer. `worldcraft.mutate` STAMPS a tile with the caster's power on a MAGIC mutation and `can_mutate` consults
+it before another — a weaker caster's magic is refused ("warded by a greater power") and ALL mundane labour is
+refused ("mundane tools can't touch it"); only a caster at least as powerful as the creator may alter it
+(`actor=None` system/DM bypasses, so towns still rebuild). The same power gate protects ENCHANTED ITEMS:
+`enchant` stamps `metadata["ward_power"]` with the enchanter's power, and `can_enchant` refuses a weaker mage
+re-working a mightier one's item ("warded by a mightier enchanter"). Registered in engine_setup + save_load
+(persists — verified by a save/load test). Emergent in the living world: ambient NPC casters ward their
+creations, so a hedge-wizard can't undo an archmage's wall. Tests: `test_wards.py` (13). Next: M6 blueprints.

@@ -100,6 +100,13 @@ def can_enchant(engine, item, eid: str) -> Tuple[bool, str]:
     for iid, need in (ench.get("reagents") or {}).items():
         if _count(engine.player, iid) < need:
             return False, f"needs {need}× {iid.replace('_', ' ')}"
+    # magical protection: only an enchanter at least as powerful as the one who
+    # last imbued this item may add to / re-work it (George)
+    existing = (getattr(item, "metadata", None) or {}).get("ward_power", 0)
+    if existing:
+        from engine.wards import caster_power
+        if caster_power(engine.player) < existing:
+            return False, "warded by a mightier enchanter"
     return True, ""
 
 
@@ -126,6 +133,12 @@ def enchant(engine, item, eid: str) -> Tuple[bool, str]:
     meta = dict(getattr(item, "metadata", None) or {})
     meta.setdefault("enchantments", [])
     meta["enchantments"] = list(meta["enchantments"]) + [eid]
+    try:   # stamp the enchanter's power — weaker mages can't re-work it later
+        from engine.wards import caster_power
+        meta["ward_power"] = max(meta.get("ward_power", 0),
+                                 caster_power(engine.player))
+    except Exception:
+        pass
     item.metadata = meta
     item.stackable = False
     # name + rarity
