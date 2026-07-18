@@ -108,12 +108,21 @@ def effective_ac(character) -> int:
     armor = total_armor_value(character)
     bonus_armor = _gather_bonuses(character).get("armor", 0)
     bonus_dodge = _gather_bonuses(character).get("dodge", 0)
-    return 10 + dex_mod + armor + bonus_armor + bonus_dodge
+    skill_ac = _skill_combat_ac(character)          # T4.4 smithing + agility
+    return 10 + dex_mod + armor + bonus_armor + bonus_dodge + skill_ac
 
 
 def effective_weapon_damage_bonus(character) -> int:
-    """Extra damage from item enchantments (e.g. flaming sword +3)."""
-    return _gather_bonuses(character).get("damage", 0)
+    """Extra damage from item enchantments (e.g. flaming sword +3) plus a
+    smith's well-kept edge (T4.4 smithing)."""
+    from engine import skill_combat
+    return (_gather_bonuses(character).get("damage", 0)
+            + skill_combat.weapon_damage_bonus(character))
+
+
+def _skill_combat_ac(character) -> int:
+    from engine import skill_combat
+    return skill_combat.armor_ac_bonus(character)
 
 
 def list_equipment_bonuses(character) -> Dict[str, int]:

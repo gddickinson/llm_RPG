@@ -9663,3 +9663,18 @@ non-humanoid body plans, feet-anchored + facing-flipped) for beasts, else the hu
 silhouette; `ui/renderer_overlays.draw_mount` now blits the baked Quaternius GLB model where one exists
 (horse/war-horse→horse, mule/donkey→donkey), feet-anchored, else the procedural fallback (elephant,
 magic-carpet). Shared by the top-down + iso mount draw. Tests: `test_creature_glb.TestMountModels`.
+
+## 2026-07-18 — T4.4 skills feed combat power — GAME_REVIEW roadmap
+
+The review's T4.4: the 12-skill lattice gated only gathering/traversal — no path from "L40 smith" to
+"stronger in a fight". New `engine/skill_combat.py` (pure, data-driven over each skill's optional `combat`
+block in `data/skills.json`): **smithing** hones your gear (+weapon damage, +AC — a keen edge + sound
+armour), **agility** makes you harder to hit (+dodge AC), **hunting** fells beasts harder (+damage vs a
+monster/animal quarry). Each tie is `+1 per N skill levels` (smithing 12/16, agility 12, hunting 10 → a
+modest handful of points at the L50 cap, so power still leans on gear + companions per the P37.5 rebalance).
+Wired into `effects.effective_ac` + `effective_weapon_damage_bonus` (so it flows through the existing combat
+math) and `combat_math.damage_type_modifier` (the beast bonus, kept OUT of the already-500-line
+`combat_system`). Surfaced on the character sheet (`skill_combat.combat_summary`). Validated by
+`items/validate_world.check_skill_combat` (known keys + positive-int divisors) + `tests/test_skill_combat.py`
+(9 — scaling, beast-vs-person, effects integration, and a seeded combat resolve proving a hunter lands
+exactly +bonus more on a beast than a person). Content validator + combat suites green.

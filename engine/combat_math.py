@@ -2,12 +2,24 @@
 
 Damage-type matchups — the little rock-paper-scissors that makes the
 right weapon matter: silver bites trolls and monsters, holy sears the
-wicked, fire denies a troll its regeneration.
+wicked, fire denies a troll its regeneration — plus a hunter's skilled
+edge against beasts (T4.4).
 """
 
 
 def damage_type_modifier(attacker, defender, damage: int) -> int:
-    """Silver vs trolls/undead, holy vs the wicked, fire vs trolls."""
+    """Silver vs trolls/undead, holy vs the wicked, fire vs trolls, then a
+    hunter's flat bonus vs a beast (T4.4 skills feed combat power)."""
+    damage = _type_multiplier(attacker, defender, damage)
+    try:
+        from engine.skill_combat import beast_damage_bonus
+        damage += beast_damage_bonus(attacker, defender)
+    except Exception:
+        pass
+    return damage
+
+
+def _type_multiplier(attacker, defender, damage: int) -> int:
     try:
         from characters.equipment import equipped_weapon
         w = equipped_weapon(attacker)

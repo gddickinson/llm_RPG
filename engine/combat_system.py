@@ -201,7 +201,8 @@ class CombatSystem:
         if natural_crit:
             damage *= 2
 
-        # Damage-type vs target weakness (e.g. silver vs trolls)
+        # Damage-type vs target weakness (silver vs trolls) + a hunter's edge
+        # vs beasts (T4.4) — both fold into damage_type_modifier
         from engine.combat_math import damage_type_modifier
         damage = damage_type_modifier(attacker, defender, damage)
 

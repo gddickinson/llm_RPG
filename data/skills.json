@@ -17,7 +17,11 @@
   },
   "smithing": {
     "name": "Smithing",
-    "description": "Smelt ore and forge weapons and armor at a forge."
+    "description": "Smelt ore and forge weapons and armor at a forge.",
+    "combat": {
+      "weapon_damage_per": 12,
+      "armor_ac_per": 16
+    }
   },
   "alchemy": {
     "name": "Alchemy",
@@ -29,7 +33,10 @@
   },
   "agility": {
     "name": "Agility",
-    "description": "Move fast and far; unlocks shortcuts across the land."
+    "description": "Move fast and far; unlocks shortcuts across the land.",
+    "combat": {
+      "dodge_ac_per": 12
+    }
   },
   "swimming": {
     "name": "Swimming",
@@ -41,7 +48,10 @@
   },
   "hunting": {
     "name": "Hunting",
-    "description": "Track and fell wild beasts; the wilds yield to a hunter."
+    "description": "Track and fell wild beasts; the wilds yield to a hunter.",
+    "combat": {
+      "beast_damage_per": 10
+    }
   },
   "carpentry": {
     "name": "Carpentry",

@@ -10,6 +10,37 @@ from typing import List
 _DATA = Path(__file__).resolve().parent.parent / "data"
 
 
+_COMBAT_KEYS = {"weapon_damage_per", "armor_ac_per", "dodge_ac_per",
+                "beast_damage_per"}
+
+
+def check_skill_combat() -> List[str]:
+    """skills.json (T4.4): an optional `combat` block uses known keys and
+    positive-int `per` divisors (a bad tie would silently give no bonus)."""
+    path = _DATA / "skills.json"
+    if not path.exists():
+        return []
+    try:
+        skills = json.loads(path.read_text())
+    except Exception as e:
+        return [f"skills.json unparseable: {e}"]
+    problems: List[str] = []
+    for sid, spec in skills.items():
+        cfg = (spec or {}).get("combat")
+        if cfg is None:
+            continue
+        if not isinstance(cfg, dict):
+            problems.append(f"skill {sid}: combat must be an object")
+            continue
+        for key, val in cfg.items():
+            if key not in _COMBAT_KEYS:
+                problems.append(f"skill {sid}: unknown combat key '{key}'")
+            elif not isinstance(val, int) or val <= 0:
+                problems.append(f"skill {sid}: combat '{key}' must be a "
+                                f"positive int, got {val!r}")
+    return problems
+
+
 def check_adventurers() -> List[str]:
     """adventurers.json: valid class/race and resolvable kit (P-M.6)."""
     path = _DATA / "adventurers.json"

@@ -459,6 +459,8 @@ class GameGUI:
             for line in skill_summary(p):
                 lines.append(f"  {line}")
             lines.append(f"  {'Total':<14} {total_skill_level(p):>3}")
+            from engine.skill_combat import combat_summary       # T4.4
+            lines += [f"  {t}" for t in combat_summary(p)]
         except Exception:
             lines.append("  (unavailable)")
         lines += ["", "Goals:"] + [f"  * {g}" for g in p.goals]
