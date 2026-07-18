@@ -52,5 +52,68 @@
     "metadata": {
       "armor_set": "iron"
     }
+  },
+  "brigandine": {
+    "id": "brigandine",
+    "name": "Brigandine",
+    "item_type": "armor",
+    "value": 150,
+    "rarity": "uncommon",
+    "description": "Riveted steel plates sewn inside a stout leather coat — flexible and tough.",
+    "armor": 5
+  },
+  "banded_mail": {
+    "id": "banded_mail",
+    "name": "Banded Mail",
+    "item_type": "armor",
+    "value": 170,
+    "rarity": "uncommon",
+    "description": "Overlapping steel bands over a mail hauberk — a veteran soldier's standard.",
+    "armor": 5,
+    "metadata": {
+      "armor_set": "steel"
+    }
+  },
+  "fortified_plate": {
+    "id": "fortified_plate",
+    "name": "Fortified Plate",
+    "item_type": "armor",
+    "value": 480,
+    "rarity": "rare",
+    "description": "Full plate reforged with reinforcing ribs, proof against all but the heaviest blows.",
+    "armor": 8,
+    "metadata": {
+      "armor_set": "steel"
+    }
+  },
+  "dragonscale_mail": {
+    "id": "dragonscale_mail",
+    "name": "Dragonscale Mail",
+    "item_type": "armor",
+    "value": 1400,
+    "rarity": "epic",
+    "description": "A hauberk of overlapping wyrm-scales — nigh impervious, and warm against the cold of the deep.",
+    "armor": 10
+  },
+  "aegis_of_dawn": {
+    "id": "aegis_of_dawn",
+    "name": "Aegis of Dawn",
+    "item_type": "armor",
+    "value": 3200,
+    "rarity": "legendary",
+    "description": "Radiant plate said to have turned an Elder Wyrm's breath. It glows faintly at the approach of evil.",
+    "armor": 12
+  },
+  "steel_shield": {
+    "id": "steel_shield",
+    "name": "Steel Shield",
+    "item_type": "shield",
+    "value": 130,
+    "rarity": "rare",
+    "description": "A heavy kite of forged steel; it turns a blade with a bright ring.",
+    "armor": 4,
+    "metadata": {
+      "armor_set": "steel"
+    }
   }
 }

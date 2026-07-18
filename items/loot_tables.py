@@ -93,6 +93,19 @@ DEFAULT_LOOT = [
     ("personal_items", 1),
 ]
 
+# T1.1b level-scaled gear tiers — a strong / elite / boss foe has a chance to also
+# drop a quality item from the tier its level warrants, so beating hard things is
+# the loot-chase reward (the "power from gear" axis the steep-ish curve assumes).
+TIER_LOOT = {
+    "uncommon": [("chainmail", 3), ("brigandine", 3), ("banded_mail", 3),
+                 ("iron_shield", 2)],
+    "rare": [("plate", 3), ("fortified_plate", 3), ("steel_shield", 2),
+             ("guardian_halberd", 1)],
+    "epic": [("dragonscale_mail", 2), ("sunderer", 2), ("titans_maul", 2),
+             ("stormcaller_bow", 2)],
+    "legendary": [("aegis_of_dawn", 1), ("doombringer", 1)],
+}
+
 
 def _weighted_choice(table, rng):
     total = sum(w for _, w in table)
@@ -105,6 +118,27 @@ def _weighted_choice(table, rng):
         if upto >= pick:
             return item_id
     return table[-1][0]
+
+
+def _bonus_gear(character, rng):
+    """T1.1b: a chance for a strong/elite/boss foe to drop a QUALITY gear item from
+    a tier scaled by its effective level. Returns an Item or None."""
+    level = getattr(character, "level", 1) or 1
+    meta = getattr(character, "metadata", None) or {}
+    elite = bool(meta.get("elite") or meta.get("boss") or meta.get("nemesis_id"))
+    eff = level + (4 if elite else 0)
+    if rng.random() > min(0.55, 0.03 * eff):        # scarce, scaling with power
+        return None
+    if eff >= 12:
+        tier = rng.choice(("epic", "epic", "legendary", "rare"))
+    elif eff >= 8:
+        tier = rng.choice(("rare", "rare", "epic"))
+    elif eff >= 4:
+        tier = rng.choice(("uncommon", "rare"))
+    else:
+        tier = "uncommon"
+    item_id = _weighted_choice(TIER_LOOT.get(tier, []), rng)
+    return create_item(item_id) if item_id else None
 
 
 def generate_loot(character: Any, rng: random.Random = None,
@@ -145,5 +179,9 @@ def generate_loot(character: Any, rng: random.Random = None,
         item = create_item(item_id)
         if item:
             drops.append(item)
+
+    bonus = _bonus_gear(character, rng)             # T1.1b quality gear drop
+    if bonus is not None:
+        drops.append(bonus)
 
     return drops

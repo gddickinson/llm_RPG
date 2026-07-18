@@ -221,5 +221,71 @@
     "weapon_kind": "melee",
     "damage_kind": "slash",
     "description": "A serviceable sword of smelted bronze."
+  },
+  "sunderer": {
+    "id": "sunderer",
+    "name": "The Sunderer",
+    "item_type": "weapon",
+    "value": 900,
+    "rarity": "epic",
+    "description": "A great two-handed axe whose edge never dulls; it splits shields and the ranks behind them.",
+    "damage": 11,
+    "weapon_kind": "melee",
+    "damage_kind": "slash",
+    "two_handed": true,
+    "use_effect": {
+      "weapon_action": "cleave"
+    },
+    "equip_bonuses": {
+      "damage": 1
+    }
+  },
+  "titans_maul": {
+    "id": "titans_maul",
+    "name": "Titan's Maul",
+    "item_type": "weapon",
+    "value": 1000,
+    "rarity": "epic",
+    "description": "A colossal warhammer that lands like a falling tower — few keep their feet under it.",
+    "damage": 12,
+    "weapon_kind": "melee",
+    "damage_kind": "blunt",
+    "two_handed": true,
+    "use_effect": {
+      "weapon_action": "topple"
+    }
+  },
+  "stormcaller_bow": {
+    "id": "stormcaller_bow",
+    "name": "Stormcaller Longbow",
+    "item_type": "weapon",
+    "value": 950,
+    "rarity": "epic",
+    "description": "A yew longbow strung with sky-sinew; its arrows fly farther and truer than any mortal draw should allow.",
+    "damage": 9,
+    "weapon_kind": "ranged",
+    "damage_kind": "pierce",
+    "two_handed": true,
+    "metadata": {
+      "range_factor": 1.3
+    },
+    "equip_bonuses": {
+      "dexterity": 1
+    }
+  },
+  "doombringer": {
+    "id": "doombringer",
+    "name": "Doombringer",
+    "item_type": "weapon",
+    "value": 3000,
+    "rarity": "legendary",
+    "description": "A black blade forged for wyrm-slaying, humming with a hunger for the ancient and the vast.",
+    "damage": 14,
+    "weapon_kind": "melee",
+    "damage_kind": "slash",
+    "equip_bonuses": {
+      "damage": 2,
+      "strength": 1
+    }
   }
 }
