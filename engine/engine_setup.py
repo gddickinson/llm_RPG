@@ -120,6 +120,8 @@ def build_subsystems(engine, llm_model=None,
     from engine.chronicle import Chronicle
     self.chronicle = Chronicle(self)
     self.memory_manager.add_observer(self.chronicle.record)
+    from engine import world_memory        # T2.1 NPCs ingest world beats
+    self.memory_manager.add_observer(world_memory.make_observer(self))
     from engine.romance import RomanceSystem
     self.romance = RomanceSystem(self)
     self.dm = DMApi(self)

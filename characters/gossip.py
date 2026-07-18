@@ -83,6 +83,18 @@ def gossip_for(npc, engine, max_lines: int = 1) -> List[str]:
             max_lines=1, rng=rng)
         lines.extend(recent)
 
+    # T2.1: a world beat this NPC has HEARD (a war, a shortage, a legend) — the
+    # simulation now reaches the villager's mouth, not just the event log
+    if len(lines) < max_lines:
+        try:
+            from engine.world_memory import recent_world_beat
+            beat = recent_world_beat(npc, rng)
+            if beat and rng.random() < 0.5:
+                spoken = beat.split("] ", 1)[-1] if "] " in beat else beat
+                lines.append(f"Have you heard? {spoken}")
+        except Exception:
+            pass
+
     # Fresh news first: overnight director rumors
     if len(lines) < max_lines:
         try:
