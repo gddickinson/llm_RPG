@@ -504,10 +504,17 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     neck_w = max(2, int(H * 0.06))
     face_visible = pose.get("face_visible", facing[1] >= 0)
 
-    # P34.5 flow: a billowing cloak + swaying hair BEHIND the body
+    # P34.5 flow: a billowing cloak + swaying hair BEHIND the body. H7: a heavy
+    # class flies a distinct heroic CAPE (crimson) rather than a muddy darkened-
+    # armour cloak; robed/light classes keep a cloak toned from their garment.
     from ui import char_flow
-    cloak_color = (_darken(torso, 55) if klass.lower() in char_flow.CLOAK_CLASSES
-                   else None)
+    kl_ = klass.lower()
+    if kl_ in bp.ARMOR_CLASSES:
+        cloak_color = (132, 32, 36)
+    elif kl_ in char_flow.CLOAK_CLASSES:
+        cloak_color = _darken(torso, 55)
+    else:
+        cloak_color = None
     char_flow.draw_back(surface, char, anim, pose, sx, sy, tile_size, H, hair,
                         cloak_color)
 

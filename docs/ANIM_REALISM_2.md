@@ -139,8 +139,12 @@ readability and takes on the ambitious lighting unification.
   alongside each 2D sprite and light it by the world (day/night, torch, forge,
   wisp) so 2D characters react to lighting like the iso world does — the unifying
   capstone; likely several sub-rounds.
-- **H7 — Cloth & hair richness.** Capes for cloaked classes, stronger cloak/hem
-  sway, hair flow — build on `char_flow`.
+- **H7 — Cloth richness. ✅ DONE (2D).** Heavy martial classes (warrior/knight/
+  fighter/barbarian) now fly a heroic CRIMSON cape (added to `char_flow.CLOAK_CLASSES`,
+  given a distinct crimson colour in `body_renderer` instead of a muddy
+  darkened-armour cloak); robed/light classes keep a garment-toned cloak. All ride
+  the existing `char_flow` verlet sway. Render `h7_cape.png`. Tests:
+  `test_body_renderer.test_martial_classes_fly_a_cape`.
 
 Order = close-the-gap first (H1), then readability (H2), then depth (H3–H5), then
 the ambitious lighting (H6) and polish (H7).

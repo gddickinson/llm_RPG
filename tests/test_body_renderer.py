@@ -237,6 +237,11 @@ class TestActionAndAnatomy(unittest.TestCase):
         self.assertGreater(cm.attack_lunge(cm.ATTACK_DUR * 0.5), 0.9)  # peak drive
         self.assertEqual(cm.attack_lunge(0.0), 0.0)                    # at rest
 
+    def test_martial_classes_fly_a_cape(self):
+        from ui import char_flow
+        for cls in ("warrior", "knight", "fighter", "barbarian"):
+            self.assertIn(cls, char_flow.CLOAK_CLASSES, f"{cls} wears a cape (H7)")
+
     def test_hairstyles_vary_across_a_crowd(self):
         from ui.body_renderer import _hair_style
         styles = {_hair_style(type("C", (), {"id": f"npc_{i}"})())
