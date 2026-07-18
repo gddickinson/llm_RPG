@@ -237,6 +237,13 @@ class TestActionAndAnatomy(unittest.TestCase):
         self.assertGreater(cm.attack_lunge(cm.ATTACK_DUR * 0.5), 0.9)  # peak drive
         self.assertEqual(cm.attack_lunge(0.0), 0.0)                    # at rest
 
+    def test_hairstyles_vary_across_a_crowd(self):
+        from ui.body_renderer import _hair_style
+        styles = {_hair_style(type("C", (), {"id": f"npc_{i}"})())
+                  for i in range(48)}
+        self.assertGreaterEqual(len(styles), 3, "H4 a crowd shows varied hair")
+        self.assertTrue(styles <= {"short", "long", "bun", "bald"})
+
     def test_cast_glow_is_bright(self):
         from ui.body_renderer import _cast_glow
         surf = pygame.Surface((100, 100))

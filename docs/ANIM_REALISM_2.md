@@ -124,8 +124,12 @@ readability and takes on the ambitious lighting unification.
 - **H3 — Equipment-driven appearance (MED, both).** Render the ACTUAL worn gear —
   helmet kind, armor tier, a cape, the specific shield/pack — from the equipment
   data, not just a class default, so upgrades show on the body. Shared 2D + iso.
-- **H4 — Population variety (MED).** Wider skin tones, hairstyles + hair colour, and
-  body types so a crowd reads as individuals, not clones.
+- **H4 — Population variety. ✅ DONE (2D).** A per-person HAIRSTYLE (short / long /
+  bun / bald, short weighted common) seeded off the id by a spreading hash and
+  decorrelated from the hair-colour hash, drawn in `body_parts.draw_head`
+  (`_hair_style` in `body_renderer`). With the existing race/skin/build/colour
+  variety, a crowd now reads as individuals. Render `h4_variety.png`. Tests:
+  `test_body_renderer.test_hairstyles_vary_across_a_crowd`.
 - **H5 — Status on the body. ✅ DONE (2D).** `char_fx.draw_status` (wired into
   `draw_effects`) overlays a soft cue per active magical condition: BLESSED → a
   golden body-hugging halo RING, POISONED → rising green wisps, CURSED → a dark

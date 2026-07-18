@@ -181,7 +181,7 @@ def draw_hood(surface, pose, color, w):
 
 
 def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
-              expr="neutral", blink=False, look=(0.0, 0.0)):
+              expr="neutral", blink=False, look=(0.0, 0.0), hair_style="short"):
     import pygame
     hx, hy = _pt(pose["head"])
     r = pose["head_r"]
@@ -207,9 +207,21 @@ def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
         pygame.draw.circle(surface, hair, (hx, hy), r)      # back of the head
         return
     # hair cap on top; the lower face stays skin (R1: a lit sheen on the crown)
-    pygame.draw.circle(surface, hair, (hx, hy - max(1, r // 2)), r)
-    pygame.draw.circle(surface, _lighten(hair, 34),
-                       (hx - int(r * 0.30), hy - int(r * 0.55)), max(1, int(r * 0.30)))
+    if hair_style == "bald":                         # a bare crown (redraw skin)
+        pygame.draw.circle(surface, skin, (hx, hy - max(1, r // 2)), r)
+    else:
+        if hair_style == "long":                     # H4 hair falls past the neck
+            pygame.draw.ellipse(surface, hair,
+                                (hx - r, hy - r // 3, r * 2, int(r * 2.3)))
+        pygame.draw.circle(surface, hair, (hx, hy - max(1, r // 2)), r)
+        pygame.draw.circle(surface, _lighten(hair, 34),
+                           (hx - int(r * 0.30), hy - int(r * 0.55)),
+                           max(1, int(r * 0.30)))
+        if hair_style == "bun":                      # H4 a topknot
+            pygame.draw.circle(surface, hair, (hx, hy - r - r // 3),
+                               max(2, int(r * 0.5)))
+            pygame.draw.circle(surface, _lighten(hair, 30),
+                               (hx - r // 6, hy - r - r // 2), max(1, r // 4))
     if profile:
         pygame.draw.circle(surface, skin,
                            (hx + profile * (r // 3), hy + r // 3),

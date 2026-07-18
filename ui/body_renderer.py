@@ -125,6 +125,18 @@ def _hair_color(char):
     return HAIR_PALETTE[h % len(HAIR_PALETTE)]
 
 
+# H4 population variety — a per-person HAIRSTYLE (short weighted common), seeded
+# off the id but decorrelated from the hair-colour hash so both vary independently
+_HAIR_STYLES = ("short", "short", "short", "long", "bun", "bald")
+
+
+def _hair_style(char):
+    h = 0                                        # a spreading hash (sum clusters)
+    for c in str(getattr(char, "id", "x")):
+        h = (h * 131 + ord(c)) & 0x7fffffff
+    return _HAIR_STYLES[h % len(_HAIR_STYLES)]
+
+
 # P33.6a per-character BUILD — diverse, slightly cartoonish silhouettes
 _BUILDS = [
     {"shoulder": 1.0, "hip": 1.0, "head": 1.0, "girth": 1.0, "h": 1.0},    # average
@@ -522,7 +534,7 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     expr = mood                    # resolved above (fleeting action face / mood)
     bp.draw_head(surface, pose, skin, hair, race, face_visible, neck_w,
                  pose.get("profile", 0), expr, anim.get("blinking", False),
-                 sec.get("look", (0.0, 0.0)))
+                 sec.get("look", (0.0, 0.0)), _hair_style(char))
     if weapon and not bare_hands:                # resolved above (P34.11)
         bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)
     if action in ("cast", "cast_point", "cast_staff"):   # H2 arcane channel
