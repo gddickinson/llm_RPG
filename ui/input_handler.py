@@ -148,6 +148,15 @@ class InputHandler:
                 return self.gui.crafting_panel.handle_key(event)
             return True
 
+        # Build / terraform planner (M5)
+        if self.gui.mode == "build":
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.gui.mode = "play"
+                return True
+            if self.gui.build_planner is not None:
+                return self.gui.build_planner.handle_key(event)
+            return True
+
         if event.type != pygame.KEYDOWN:
             return False
 
@@ -253,8 +262,17 @@ class InputHandler:
                 1 if k == pygame.K_RIGHTBRACKET else -1)
             return True
 
-        if k == pygame.K_b:   # barter (S is shadowed by move-down)
-            input_actions.open_shop(self)
+        if k == pygame.K_b:   # barter by a merchant, else the build/terraform tool
+            try:
+                from engine.shop import merchants_near
+                near = merchants_near(self.engine, self.engine.player,
+                                      radius=2.0)
+            except Exception:
+                near = None
+            if near:
+                input_actions.open_shop(self)
+            else:
+                self.gui.show_build_planner()
             return True
 
         if k == pygame.K_k:   # crafting overlay

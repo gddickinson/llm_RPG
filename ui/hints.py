@@ -155,6 +155,16 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    try:   # M5 the build/terraform tool — outdoors, away from a merchant (B there
+        # barters). Low priority: shows only when the hint bar has room.
+        if not getattr(engine, "current_interior", None) \
+                and not getattr(engine, "current_dungeon", None):
+            from engine.shop import merchants_near
+            if not merchants_near(engine, player, radius=2.0):
+                hints.append("[B] build & terraform the land")
+    except Exception:
+        pass
+
     try:   # a shut town gate nearby (P31.1d/P37) — never a prison
         tg = getattr(engine, "town_gates", None)
         if tg is not None and not getattr(engine, "current_interior", None):

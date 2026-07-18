@@ -82,6 +82,7 @@ class GameGUI:
         self.crafting_panel = None
         self.spell_panel = None
         self.settings_panel = None
+        self.build_planner = None      # M5 build/terraform tool
 
         # Init pygame
         pygame.init()
@@ -277,6 +278,12 @@ class GameGUI:
         if self.mode == "shop" and self.shop_panel is not None:
             self.shop_panel.draw(self.screen, self.screen.get_rect())
 
+        if self.mode == "build" and self.build_planner is not None:
+            try:
+                self.build_planner.draw(self.screen, self.layout["map"],
+                                        self.renderer.tile_size)
+            except Exception:
+                pass
         if self.mode == "crafting" and self.crafting_panel is not None:
             self.crafting_panel.draw(self.screen, self.screen.get_rect())
 
@@ -342,6 +349,10 @@ class GameGUI:
         if self.crafting_panel is None:
             self.crafting_panel = CraftingPanel(self.engine)
         self.mode = "crafting"
+
+    def show_build_planner(self) -> None:
+        from ui.build_planner import open_planner   # M5 build/terraform tool
+        open_planner(self)
 
     def show_spellbook(self) -> None:
         from ui.spell_panel import SpellPanel

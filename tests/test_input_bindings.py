@@ -35,6 +35,7 @@ class FakeGUI:
         self.inventory_panel = None
         self.shop_panel = None
         self.show_shop = MagicMock()
+        self.show_build_planner = MagicMock()   # M5: B off a merchant = build
         self.show_inventory = MagicMock()
         self.show_quests = MagicMock()
         self.show_character_sheet = MagicMock()
@@ -122,6 +123,8 @@ class TestShopBinding(unittest.TestCase):
                 npc.position = (50, 50)
         self.handler.handle_event(FakeEvent(pygame.K_b))
         self.gui.show_shop.assert_not_called()
+        # M5: away from a merchant, B opens the build/terraform tool instead
+        self.gui.show_build_planner.assert_called_once()
 
 
 class TestDiagonalMovement(unittest.TestCase):

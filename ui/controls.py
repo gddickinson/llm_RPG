@@ -46,7 +46,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
     ]),
     ("PEOPLE & WORLD", [
         ("T", "talk (/persuade /intimidate…)"),
-        ("B", "barter with a merchant"),
+        ("B", "barter · BUILD on open ground"),
         ("G / E", "pick up · use furniture · dig"),
         ("SHIFT + G", "carry a downed body"),
         ("Z", "forage herbs / harvest crops"),

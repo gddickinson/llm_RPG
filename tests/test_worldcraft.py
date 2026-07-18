@@ -75,15 +75,17 @@ class TestMutate(_Base):
         self.assertIn("no labor", why)
 
     def test_labor_consumes_resources(self):
+        from engine.skill_progression import add_skill_xp, total_xp_for_level
+        add_skill_xp(self.p, "carpentry", total_xp_for_level(4))  # raise_wall needs 3
         x, y = self._grass()
         ok, why = wc.can_mutate(self.engine, x, y, "building", "labor",
                                 actor=self.p)
         self.assertFalse(ok, "no stone yet")
-        self.p.add_item(create_item("stone", quantity=3))
+        self.p.add_item(create_item("stone", quantity=4))
         ok, _ = wc.mutate(self.engine, x, y, "building", "labor", actor=self.p)
         self.assertTrue(ok)
         self.assertEqual(self.wmap.get_terrain_at(x, y), TerrainType.BUILDING)
-        self.assertEqual(wc._count(self.p, "stone"), 1)   # 2 consumed
+        self.assertEqual(wc._count(self.p, "stone"), 1)   # 3 consumed
 
     def test_labor_yields_byproduct(self):
         # clear a forest tile with an axe → grass + logs

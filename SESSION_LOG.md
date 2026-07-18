@@ -9818,3 +9818,30 @@ building kind in `data/production.json`/`building_types.json`, and reagents (arc
 /…) + the craftable magic items (amulet_of_warding, mage_ring) added to the wizard shop catalogue so the player
 can actually BUY reagents and magic gear. Tests: `test_construction.py` (5). Next: M5 the player build/terraform
 planner UI, then M6 the cross-game blueprint library.
+
+## 2026-07-18 — M5 the player BUILD / TERRAFORM planner
+
+George wanted "specialized pop-up windows that allow them to plan and implement their changes to the world,
+which persist." `ui/build_planner.py`: a cursor moves over the ground near the hero (within REACH), the player
+paints tiles from a brush palette (level / till farmland / plant forest / lay road / raise wall / dig water /
+demolish) into a PLAN shown as translucent GHOSTS over the still-rendered live map (the GUI draws the world in
+every mode, so it reads as an in-world editor, not a modal box); pressing C COMMITS the whole plan through the
+M0 `worldcraft` ruleset — so every placement obeys the SAME skill/tool/resource/protected-ground rules a mason
+does (a wall costs 2 stone, you can't build on yourself or on the town), and the result persists for free (map
+snapshot). `open_planner(gui)` (outdoors-only) + a `gui.mode="build"` panel (cursor/brush/place/erase/commit +
+a ghost/cursor/HUD draw with a live validity tint). Opened by the `B` key on open ground (context-sensitive:
+barter when a merchant is near, build otherwise); documented in the controls help + a low-priority hint-bar cue.
+Tests: `test_build_planner.py` (5). Next: M6 the cross-game blueprint library (save a design, reload it in any
+game).
+
+**M5 gating fix** (George playtest: "the hero terraforms with no equipment/skill/magic, and grows instant
+forest by hand"): the M0 mutation rules had 5 ungated labor entries. Fixed `data/worldcraft/mutations.json` —
+(1) INSTANT CREATION from nothing is now MAGIC-ONLY (plant_forest, flood_tile/water, scorch_earth lost their
+labor blocks — you grow a woodland with Plant Growth, not a shovel); (2) every remaining labor mutation now
+requires a TOOL and/or a min SKILL LEVEL and/or MATERIALS (clear_forest: axe+woodcutting; level_mountain:
+pickaxe+mining5+stone; raise_wall: carpentry3+3stone; demolish/clear_rubble: pickaxe+carpentry; pave_road/
+bridge/drain: carpentry+stone/logs). So a fresh hero (all skills level 1, no tools) can build nothing
+meaningful; a skilled, equipped, supplied one can. The build-tool palette dropped the magic-only Forest/Water
+brushes (now 5 labour brushes: Level/Clear, Till, Road, Wall, Demolish). Workers (construction, actor=None)
+still repair towns; spells still shape the world via the magic rules. Updated `test_input_bindings` (B off a
+merchant now opens the build tool) + the worldcraft/build tests for the new gates.

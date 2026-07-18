@@ -349,7 +349,11 @@ plan as a batch of `mutate` calls; all obey ONE ruleset.
   `sanctum` building kind + reagents/magic-items buyable at the wizard shop bring
   magic into the economy. `tests/test_construction.py`. (Future: masons stamp NEW
   buildings; a dedicated Mage-guild store keyed on hall_id.)
-- [ ] M5 Player build/terraform tool
+- [~] M5 Player build/terraform tool — **DONE**: `ui/build_planner.py` — a cursor
+  paints tiles from a brush palette into a PLAN (ghost preview over the live map),
+  then COMMITS through worldcraft (skill/resource/protected gated); opened by `B`
+  on open ground. `tests/test_build_planner.py`. (Future: mouse click-to-place;
+  placing whole multi-tile STRUCTURES, not just terrain.)
 - [ ] M6 Blueprint library
 
 _Research launched 2026-07-18; plan drafted; substrate sections pending agent
