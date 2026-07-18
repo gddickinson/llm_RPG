@@ -40,6 +40,31 @@ def finale_id(engine):
     return None
 
 
+def main_quest_line(engine):
+    """T3.2: a single HUD line pinning the campaign's CURRENT state, or None. The
+    5-act main line used to be completely un-surfaced — you had to bump into the
+    tower wizard to learn it existed. This gives the player a persistent goal."""
+    try:
+        if is_won(engine):
+            return "★ MAIN: The Elder Wyrm is slain — the age is won."
+        qm = engine.quest_manager
+        # an active main quest → pin it with its live objective
+        for q in qm.active():
+            if q.metadata.get("main"):
+                obj = next((o for o in q.objectives if not o.is_complete()), None)
+                tail = f" — {obj.description}" if obj else ""
+                return f"★ MAIN: {q.title}{tail}"
+        # not yet on the path (or between chapters) → point to the giver
+        for qid in main_line(engine):
+            q = qm.get(qid)
+            if q is None or q.status.name in ("AVAILABLE",):
+                return ("★ MAIN: Seek Alzara the wizard at her tower — "
+                        "the wilds stir with an unnatural menace.")
+    except Exception:
+        pass
+    return None
+
+
 def is_won(engine) -> bool:
     return bool(_flags(engine).get("campaign_won"))
 

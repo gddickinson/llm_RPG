@@ -268,11 +268,20 @@ class HUD:
             return
         active = engine.quest_manager.active()
         completed = engine.quest_manager.completed()
-        if not active and not completed:
-            self._draw_lines(target, ["No quests."], rect, 8)
-            return
         lines = []
+        try:   # T3.2 pin the campaign's main quest / lead at the top
+            from engine.campaign import main_quest_line
+            ml = main_quest_line(engine)
+            if ml:
+                lines.append(ml)
+        except Exception:
+            pass
+        if not lines and not active and not completed:
+            self._draw_lines(target, ["No quests yet."], rect, 8)
+            return
         for q in active[:3]:
+            if q.metadata.get("main"):     # already pinned above
+                continue
             lines.append(f"* {q.title}")
             for obj in q.objectives:
                 mark = "[X]" if obj.is_complete() else "[ ]"

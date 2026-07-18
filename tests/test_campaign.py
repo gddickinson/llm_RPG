@@ -66,6 +66,16 @@ class TestSpine(_Base):
         self.assertEqual(campaign.finale_id(self.engine),
                          "main_5_the_reckoning")
 
+    def test_main_quest_line_leads_then_pins(self):
+        # T3.2: the HUD line points to the giver until accepted, then pins the
+        # active main quest + its objective
+        lead = campaign.main_quest_line(self.engine)
+        self.assertIn("Alzara", lead, "a fresh game leads to the wizard")
+        self.engine.accept_quest("main_1_the_stirring")
+        pinned = campaign.main_quest_line(self.engine)
+        self.assertIn("MAIN", pinned)
+        self.assertIn("Stirring", pinned, "an accepted main quest is pinned")
+
     def test_slaying_the_wyrm_completes_the_finale(self):
         fin = create_quest("main_5_the_reckoning")
         fin.status = QuestStatus.ACTIVE
