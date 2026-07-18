@@ -150,6 +150,36 @@ def draw_arm(surface, pose, side, sleeve, skin, w):
                        (hx - max(1, hr // 3), hy - max(1, hr // 3)), max(1, hr // 2))
 
 
+# G5: gear layers keyed off class — heavy fighters get shoulder plates, skulkers
+# a hood; casters already wear the R5 robe.
+ARMOR_CLASSES = {"warrior", "paladin", "guard", "knight", "fighter",
+                 "barbarian"}
+HOOD_CLASSES = {"rogue", "ranger", "assassin", "thief", "druid", "warlock"}
+
+
+def draw_pauldrons(surface, pose, metal, w):
+    """G5: armored shoulder caps that catch the light (heavy classes)."""
+    import pygame
+    for s in ("l_sh", "r_sh"):
+        sx_, sy_ = _pt(pose[s])
+        rect = (sx_ - w, sy_ - max(1, w // 2), w * 2, w + 1)
+        pygame.draw.ellipse(surface, metal, rect)
+        pygame.draw.ellipse(surface, _lighten(metal, 34), rect, 1)
+
+
+def draw_hood(surface, pose, color, w):
+    """G5: a cloth cowl framing the head (skulker classes). Drawn BEFORE the head
+    so the face sits inside it."""
+    import pygame
+    hx, hy = _pt(pose["head"])
+    hr = int(max(w, pose.get("head_r", w)) * 1.34)
+    pygame.draw.circle(surface, color, (hx, hy - hr // 4), hr)
+    pygame.draw.circle(surface, _lighten(color, 16), (hx, hy - hr // 4), hr, 1)
+    pygame.draw.polygon(surface, color, [(hx - hr // 2, hy - hr // 2),
+                                         (hx + hr // 2, hy - hr // 2),
+                                         (hx, hy - hr - hr // 3)])  # a hood peak
+
+
 def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
               expr="neutral", blink=False, look=(0.0, 0.0)):
     import pygame

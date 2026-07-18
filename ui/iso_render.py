@@ -202,6 +202,16 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
         # tiles"). Height still samples the logical tile.
         update_anim(char, DT, is_player=char.id == engine.player.id)
         fx, fy = tween_world_pos(char, cx, cy)
+        # G6: a strike LUNGES the figure toward its facing in iso too (parity with
+        # the top-down G3) — projected through world_to_screen so it reads in iso
+        canim = (getattr(char, "metadata", None) or {}).get("_anim") or {}
+        atk_t = canim.get("atk_t", 0.0)
+        if atk_t > 0:
+            from ui import char_motion
+            lf = char_motion.attack_lunge(atk_t) * 0.38
+            fdx, fdy = char_motion.facing(canim)
+            fx += fdx * lf
+            fy += fdy * lf
         cz = _HEIGHT.get(_terrain_name(wmap.terrain[cy][cx]), 0.0)
         sx, sy = iso.world_to_screen(fx, fy, cz, origin)
         items.append((iso.depth_key(fx, fy, cz, 2), "char",

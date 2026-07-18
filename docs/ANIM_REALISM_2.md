@@ -88,8 +88,16 @@ Ordered by perceived-quality-per-effort.
   rounded HAND + lit knuckle; `draw_legs` draws a directional BOOT whose toe points
   the facing (a clear silhouette cue). Render `audit_2d.png`. Tests:
   `test_body_renderer.TestActionAndAnatomy`.
-- **G5 — Gear & cloth.** Armor plates / hoods / capes / robe trim; equipment layering.
-- **G6 — (ambitious) Dynamic 2D lighting via baked normal maps.**
+- **G5 — Gear detail. ✅ DONE (2D).** `body_parts.draw_pauldrons` (armored shoulder
+  plates for warrior/paladin/guard/knight/fighter/barbarian) + `draw_hood` (a cowl
+  for rogue/ranger/assassin/druid/warlock), wired in `body_renderer` by class;
+  casters keep the R5 robe. Tests: `test_body_renderer.TestGear`.
+- **G6 — Iso action readability. ✅ DONE.** The strike LUNGE reaches the iso view
+  (`iso_render` shifts the figure toward its facing in world space during a strike,
+  projected through `world_to_screen`) — parity with G3 (the swing already plays
+  via `attack_figure`).
+- **(deferred → further plan) Dynamic 2D lighting via baked normal maps** — a large
+  multi-round feature; opens the "H-series" of further improvements.
 
 G1 + G2 alone transform the read (a face that isn't two black holes; iso figures
 that aren't murky). Same discipline as R1–R6: pure/thin, cached, headless-tested,

@@ -258,6 +258,26 @@ class TestActionAndAnatomy(unittest.TestCase):
         self.assertGreater(rmax, cmax, "a right-facing boot's toe reaches right")
 
 
+class TestGear(unittest.TestCase):
+    """G5 — class gear: armored shoulder plates, skulker hoods."""
+
+    def test_class_gear_sets(self):
+        from ui import body_parts as bp
+        self.assertIn("warrior", bp.ARMOR_CLASSES)
+        self.assertIn("rogue", bp.HOOD_CLASSES)
+        self.assertNotIn("wizard", bp.ARMOR_CLASSES)   # robed, not plated
+
+    def test_pauldrons_and_hood_draw(self):
+        from ui import body_parts as bp
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+        pose = {"l_sh": (38, 40), "r_sh": (62, 40),
+                "head": (50, 30), "head_r": 8}
+        bp.draw_pauldrons(surf, pose, (185, 188, 196), 7)
+        bp.draw_hood(surf, pose, (40, 44, 40), 8)
+        self.assertGreater(pygame.mask.from_surface(surf, 8).count(), 20)
+
+
 class TestGroundShadow(unittest.TestCase):
     """ANIM_REALISM R6 — a soft contact shadow grounds a figure and SHRINKS as it
     lifts off the ground (airborne reads)."""
