@@ -31,6 +31,15 @@ class TestTactics(unittest.TestCase):
         self.engine.world.map.remove_character(self.player)
         self.player.position = spot
         self.engine.world.map.place_character(self.player, *spot)
+        # Clear any WORLD npc near the spot: adjacent_hostiles reads the NPC
+        # MANAGER, so a wandering interloper (e.g. a goblin) would steal the shove
+        # target or block the push tile — a full-suite flake, same class as the
+        # cleave phantom-foe one (test_combat_depth).
+        for n in list(self.engine.npc_manager.npcs.values()):
+            if (abs(n.position[0] - spot[0]) <= 3
+                    and abs(n.position[1] - spot[1]) <= 3):
+                self.engine.world.map.remove_character(n)
+                self.engine.npc_manager.remove_npc(n.id)
         # A wolf adjacent to the east
         self.wolf = build_monster("wolf", (spot[0] + 1, spot[1]))
         self.engine.npc_manager.add_npc(self.wolf)
