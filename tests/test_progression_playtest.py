@@ -119,15 +119,17 @@ class TestProgressionPlaytest(unittest.TestCase):
 
     # ---- the levers ------------------------------------------------------
 
-    def test_leveling_is_a_slow_climb(self):
-        # P37.6 (George: 10x XP/level) — reaching L2 takes many same-level kills.
+    def test_leveling_is_a_slow_but_reachable_climb(self):
+        # T0.1: reaching L2 is a HANDFUL of same-level kills (~8) — slow but not a
+        # wall. The P37.6 overshoot (COEFF 1500 → ~75 kills for L2) made the
+        # ~10k-XP questbook top out at level 2 and the L12/L16 finale unreachable;
+        # it was reverted to COEFF=150.
         from engine.leveling import xp_threshold
-        need = xp_threshold(2)                 # XP for level 2 (3000)
+        need = xp_threshold(2)                  # XP for level 2 (300)
         award = 25 + 15 * 1                     # kill award vs a level-1 foe (40)
-        kills = -(-need // award)               # ceil → ~75
-        self.assertGreaterEqual(
-            kills, 40,
-            "reaching level 2 should be a long, deliberate climb")
+        kills = -(-need // award)               # ceil → ~8
+        self.assertGreaterEqual(kills, 5, "L2 shouldn't be instant")
+        self.assertLessEqual(kills, 15, "L2 shouldn't be a grind wall")
 
     def test_gear_reduces_damage_taken(self):
         _, bare_hp = self._survey((), ["wolf"])
