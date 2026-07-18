@@ -6,8 +6,14 @@
     "value": 320,
     "rarity": "rare",
     "description": "A silver ring set with a bead of never-drying seawater. Worn, the deep parts around you — you swim like an otter and hold your breath far longer.",
-    "equip_bonuses": {"swim": 3, "climb": 1},
-    "metadata": {"artifact": true, "long_breath": true}
+    "equip_bonuses": {
+      "swim": 3,
+      "climb": 1
+    },
+    "metadata": {
+      "artifact": true,
+      "long_breath": true
+    }
   },
   "ring_strength": {
     "id": "ring_strength",
@@ -149,5 +155,30 @@
     "metadata": {
       "teleport_access": true
     }
+  },
+  "amulet_of_warding": {
+    "id": "amulet_of_warding",
+    "name": "Amulet of Warding",
+    "item_type": "amulet",
+    "value": 180,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "armor": 1,
+      "max_hp": 6
+    },
+    "description": "A rune-etched amulet that turns aside harm."
+  },
+  "mage_ring": {
+    "id": "mage_ring",
+    "name": "Ring of the Magi",
+    "item_type": "ring",
+    "value": 200,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "max_mana": 6,
+      "mana_regen": 1,
+      "intelligence": 1
+    },
+    "description": "A silver band humming with arcane power."
   }
 }

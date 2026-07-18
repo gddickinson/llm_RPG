@@ -48,7 +48,7 @@ def validate_all() -> List[str]:
     from items.validate_world import (check_adventurers, check_guildhalls,
                                        check_wildlife, check_building_styles,
                                        check_activities, check_skill_combat,
-                                       check_worldcraft)
+                                       check_worldcraft, check_enchantments)
     problems += check_adventurers()
     problems += check_guildhalls()
     problems += check_wildlife()
@@ -56,6 +56,7 @@ def validate_all() -> List[str]:
     problems += check_activities()
     problems += check_skill_combat()
     problems += check_worldcraft()
+    problems += check_enchantments()
     return problems
 
 

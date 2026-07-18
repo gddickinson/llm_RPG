@@ -1,0 +1,60 @@
+{
+  "flametongue": {
+    "name": "Flametongue", "prefix": "Flaming",
+    "skill": "enchanting", "min_skill": 3, "station": "forge",
+    "applies_to": ["weapon"], "reagents": {"arcane_dust": 2, "ember_core": 1},
+    "damage_kind": "fire", "bonuses": {"damage": 2},
+    "description": "Wreathe a weapon in flame — it deals fire damage."
+  },
+  "frostbrand": {
+    "name": "Frostbrand", "prefix": "Frozen",
+    "skill": "enchanting", "min_skill": 3, "station": "forge",
+    "applies_to": ["weapon"], "reagents": {"arcane_dust": 2, "frost_shard": 1},
+    "damage_kind": "frost", "bonuses": {"damage": 2},
+    "description": "Sheathe a weapon in biting cold."
+  },
+  "keen_edge": {
+    "name": "Keen Edge", "prefix": "Keen",
+    "skill": "enchanting", "min_skill": 1, "station": "forge",
+    "applies_to": ["weapon"], "reagents": {"arcane_dust": 2},
+    "bonuses": {"damage": 1},
+    "description": "Hone a weapon to an unnatural sharpness (+1 damage)."
+  },
+  "vampiric": {
+    "name": "Vampiric", "prefix": "Vampiric",
+    "skill": "enchanting", "min_skill": 8, "station": "forge",
+    "applies_to": ["weapon"], "reagents": {"arcane_dust": 3, "shadow_essence": 2},
+    "damage_kind": "necrotic", "bonuses": {"damage": 3},
+    "description": "A blade that hungers, dealing necrotic wounds."
+  },
+  "holy_blessing": {
+    "name": "Holy Blessing", "prefix": "Blessed",
+    "skill": "enchanting", "min_skill": 5, "station": "forge",
+    "applies_to": ["weapon"], "reagents": {"arcane_dust": 2, "radiant_mote": 1},
+    "damage_kind": "holy", "bonuses": {"damage": 2},
+    "description": "Sanctify a weapon to sear the wicked."
+  },
+  "warding": {
+    "name": "Warding", "prefix": "Warded",
+    "skill": "enchanting", "min_skill": 4, "station": "forge",
+    "applies_to": ["armor", "shield"], "reagents": {"arcane_dust": 2, "mana_crystal": 1},
+    "bonuses": {"armor": 1},
+    "description": "Reinforce armour with a protective ward (+1 AC)."
+  },
+  "of_vitality": {
+    "name": "of Vitality", "suffix": "of Vitality",
+    "skill": "enchanting", "min_skill": 4, "station": "forge",
+    "applies_to": ["armor", "amulet", "ring"],
+    "reagents": {"arcane_dust": 2, "vital_root": 2},
+    "bonuses": {"max_hp": 6},
+    "description": "Bind a spark of life into worn gear (+6 max HP)."
+  },
+  "of_the_magi": {
+    "name": "of the Magi", "suffix": "of the Magi",
+    "skill": "enchanting", "min_skill": 6, "station": "forge",
+    "applies_to": ["amulet", "ring", "armor"],
+    "reagents": {"arcane_dust": 3, "mana_crystal": 2},
+    "bonuses": {"max_mana": 5, "mana_regen": 1},
+    "description": "Weave arcane power into worn gear (+5 mana, +1 mana regen)."
+  }
+}

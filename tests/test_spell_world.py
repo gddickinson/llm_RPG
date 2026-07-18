@@ -167,5 +167,90 @@ class TestDamagePlusWorld(_Base):
                         "firestorm should ignite the struck ground")
 
 
+class TestAmbientCasters(unittest.TestCase):
+    """George: NPCs + away-heroes should cast world-altering spells too."""
+
+    def setUp(self):
+        self.engine = GameEngine(llm_provider="heuristic",
+                                 enable_npc_processes=False)
+        self.engine.start_game()
+        self.wmap = self.engine.world.map
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def _cluster(self):
+        for y in range(1, self.wmap.height - 1):
+            for x in range(1, self.wmap.width - 1):
+                c = (x, y)
+                nbrs = [(x + dx, y + dy)
+                        for dx, dy in ((0, 1), (1, 0), (0, -1), (-1, 0))]
+                if all(self.wmap.get_terrain_at(*t) == TerrainType.GRASS
+                       and not wc.protected(self.engine, *t)
+                       for t in [c] + nbrs) and c not in self.wmap.characters:
+                    return c, nbrs
+        self.skipTest("no grass cluster")
+
+    def _caster(self, cls):
+        npc = self.engine.npc_manager.create_random_npc("villager")
+        npc.character_class = cls
+        npc.metadata = {}
+        return npc
+
+    def test_npc_druid_grows_a_forest(self):
+        npc = self._caster(CharacterClass.DRUID)
+        spot, nbrs = self._cluster()
+        npc.position = spot
+        self.wmap.place_character(npc, *spot)
+        msg = spell_world.ambient_shape(self.engine, npc)
+        self.assertIsNotNone(msg)
+        self.assertTrue(any(self.wmap.get_terrain_at(*t) == TerrainType.FOREST
+                            for t in nbrs), "a druid grows a woodland")
+
+    def test_npc_wizard_raises_a_wall(self):
+        npc = self._caster(CharacterClass.WIZARD)
+        spot, nbrs = self._cluster()
+        npc.position = spot
+        self.wmap.place_character(npc, *spot)
+        spell_world.ambient_shape(self.engine, npc)
+        self.assertTrue(any(self.wmap.get_terrain_at(*t) == TerrainType.BUILDING
+                            for t in nbrs))
+
+    def test_innate_grant_for_npc(self):
+        npc = self._caster(CharacterClass.DRUID)
+        spot, _ = self._cluster()
+        npc.position = spot
+        self.wmap.place_character(npc, *spot)
+        self.assertEqual(npc.metadata.get("spells_known", []), [])
+        spell_world.ambient_shape(self.engine, npc)
+        # cast granted the spell innately
+        self.assertTrue(npc.metadata.get("spells_known"),
+                        "an NPC gains the world spell it wields")
+
+    def test_non_caster_does_nothing(self):
+        npc = self._caster(CharacterClass.WARRIOR)
+        spot, nbrs = self._cluster()
+        npc.position = spot
+        self.wmap.place_character(npc, *spot)
+        self.assertIsNone(spell_world.ambient_shape(self.engine, npc))
+        self.assertTrue(all(self.wmap.get_terrain_at(*t) == TerrainType.GRASS
+                            for t in nbrs))
+
+    def test_caster_in_a_zone_is_blocked(self):
+        npc = self._caster(CharacterClass.DRUID)
+        npc.metadata["zone"] = "Some Crypt"       # a dungeon native
+        spot, _ = self._cluster()
+        npc.position = spot
+        self.wmap.place_character(npc, *spot)
+        self.assertIsNone(spell_world.ambient_shape(self.engine, npc))
+
+    def test_ambient_run_is_safe(self):
+        from engine import ambient_magic
+        ambient_magic.run(self.engine)          # never raises
+
+
 if __name__ == "__main__":
     unittest.main()

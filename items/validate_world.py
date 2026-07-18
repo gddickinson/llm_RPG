@@ -79,6 +79,41 @@ def check_worldcraft() -> List[str]:
     return problems
 
 
+def check_enchantments() -> List[str]:
+    """enchantments.json (M3): valid item types, resolvable reagents + skill, and
+    a bonuses/damage_kind/use_effect payload."""
+    path = _DATA / "enchantments.json"
+    if not path.exists():
+        return []
+    try:
+        ench = json.loads(path.read_text())
+    except Exception as e:
+        return [f"enchantments.json unparseable: {e}"]
+    from items.item_registry import create_item
+    valid_types = {"weapon", "armor", "shield", "ring", "amulet", "boots"}
+    try:
+        from engine.skill_progression import all_skill_ids
+        skills = set(all_skill_ids())
+    except Exception:
+        skills = None
+    problems: List[str] = []
+    for eid, spec in ench.items():
+        for t in (spec.get("applies_to") or []):
+            if t not in valid_types:
+                problems.append(f"enchant {eid}: bad applies_to '{t}'")
+        if not spec.get("applies_to"):
+            problems.append(f"enchant {eid}: needs applies_to")
+        sk = spec.get("skill", "enchanting")
+        if skills is not None and sk not in skills:
+            problems.append(f"enchant {eid}: unknown skill '{sk}'")
+        for iid in (spec.get("reagents") or {}):
+            if create_item(iid) is None:
+                problems.append(f"enchant {eid}: unknown reagent '{iid}'")
+        if not any(spec.get(k) for k in ("bonuses", "damage_kind", "use_effect")):
+            problems.append(f"enchant {eid}: does nothing (no bonuses/kind/use)")
+    return problems
+
+
 def check_adventurers() -> List[str]:
     """adventurers.json: valid class/race and resolvable kit (P-M.6)."""
     path = _DATA / "adventurers.json"

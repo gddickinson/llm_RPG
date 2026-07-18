@@ -333,7 +333,13 @@ plan as a batch of `mutate` calls; all obey ONE ruleset.
   Earthquake, Firestorm); pure world spells target the faced tile, overworld only,
   protected ground resists. `tests/test_spell_world.py`. (Future polish: fold the
   legacy hardcoded fireball/shock into `world_effect`; reticle tile-targeting.)
-- [ ] M3 Magic-item crafting + imbuing
+- [~] M3 Magic-item crafting + imbuing — **DONE**: `items/enchanting.py` +
+  `data/enchantments.json` (in-place imbue: 8 enchantments over
+  equip_bonuses/damage_kind/metadata, gated on forge + `enchanting` skill +
+  reagents); `min_skill` on recipes for tiered magic crafting; reagent items
+  + craftable magic items (amulet_of_warding, mage_ring) + magic recipes; K-panel
+  enchant rows. `tests/test_enchanting.py`. (Future: a dedicated enchanting-table
+  station + wands/charged foci in M4's guild content.)
 - [ ] M4 Guilds + worker build economy
 - [ ] M5 Player build/terraform tool
 - [ ] M6 Blueprint library

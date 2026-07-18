@@ -9773,3 +9773,34 @@ pool → grass), Wall of Stone (raise a wall), Plant Growth (grow forest), Conju
 scorched), Disintegrate (wall → rubble), Earthquake (tile_damage siege ring), Firestorm (area damage + raze +
 ignite). Catalogue 43→51. Wired into `spells.cast` (two hooks); `spell_world.py` kept separate to hold the
 500-line line. Tests: `tests/test_spell_world.py` (9). Next: M3 magic-item crafting + imbuing.
+
+## 2026-07-18 — M3 Magic-item crafting + IMBUING
+
+The recipe system makes a fresh item and only consumes the base, so it can't "make THIS sword flaming" —
+enchanting is the one new mechanic. `items/enchanting.py` over `data/enchantments.json` (8 enchantments):
+`enchant(engine,item,eid)` merges an enchantment's deltas straight into the item INSTANCE — `equip_bonuses`
+(summed by `effects._gather_bonuses` → combat/AC), `damage_kind`, `use_effect`, a name prefix/suffix, a
+rarity bump, and a `metadata["enchantments"]` provenance tag — so the enchanted item is simply stronger and
+persists for FREE (`Item.to_dict/from_dict` already round-trips every field; verified by a save/load test).
+`can_enchant` gates on the item type, a forge station, the new 13th skill `enchanting`, and reagents
+(`arcane_dust`/`mana_crystal`/`ember_core`/`frost_shard`/`shadow_essence`/`radiant_mote`/`vital_root`, added to
+materials). Flametongue/Frostbrand/Keen Edge/Vampiric/Holy/Warding/of Vitality/of the Magi. Reachable via the
+K-crafting panel's new ENCHANT rows (enchant worn gear). Also: `min_skill` on recipes for TIERED magic crafting;
+craftable magic items (amulet_of_warding, mage_ring) + magic recipes (refine mana_crystal, scribe a fireball
+scroll). Validator `check_enchantments`. Tests: `tests/test_enchanting.py` (16). Next: M4 guilds + worker build
+economy.
+
+## 2026-07-18 — M2b world-altering spells for NPCs + away-heroes (George)
+
+George: "NPCs and away-heroes should be able to cast world-altering spells." M2 made them player-only; this
+opens them up. Fixed the overworld guard to be CASTER-relative (`spell_world._caster_in_zone` — an NPC casts
+in the open even while the player is in a dungeon; before, `active_zone()` read the player's zone and wrongly
+blocked it). New `spell_world.world_spells_for(caster)` (its KNOWN world spells, else its class's INNATE ones)
++ `ambient_shape(engine,caster)` (picks a fitting adjacent overworld tile via `worldcraft.can_mutate`, grants
+an NPC the spell + funds one cast, faces the tile, casts through the real `SpellSystem`). New
+`engine/ambient_magic.py` `run(engine)` (turn-pipeline, deterministic time-throttle + rare RNG roll only when a
+caster is near) lets a nearby druid grow a woodland / warlock blight the ground / mage raise a wall — the world
+visibly shaped by others, protected-ground-safe (worldcraft refuses typed-POI tiles), skipping indoor/mid-fight
+casters. Away-heroes are driven NPCs, so the same path covers them. Also folded in the M3 fix: the new 13th
+`enchanting` skill needed a skilling pet (Glimmer, a wisp familiar) in `data/pets.json`. Tests:
+`test_spell_world.TestAmbientCasters` (6). Full suite green.

@@ -22,6 +22,7 @@ class Recipe:
     gold_cost: int = 0
     required_property: Optional[str] = None  # e.g. "forge" -- location-keyed
     skill: str = "alchemy"  # which skill this recipe trains
+    min_skill: int = 0      # M3: minimum level in `skill` to craft (tiered magic)
 
     def output_name(self) -> str:
         item = ITEM_REGISTRY.get(self.output_id)
@@ -41,6 +42,7 @@ def _build_recipes() -> Dict[str, Recipe]:
             gold_cost=entry.get("gold_cost", 0),
             required_property=entry.get("required_property"),
             skill=entry.get("skill", "alchemy"),
+            min_skill=entry.get("min_skill", 0),
         )
     return out
 
@@ -102,6 +104,13 @@ def can_craft(player, output_id: str,
         props = location_properties or {}
         if not props.get(recipe.required_property):
             return f"You need to be at a {recipe.required_property} to craft this."
+    if recipe.min_skill:                          # M3 tiered magic crafting
+        try:
+            from engine.skill_progression import get_skill_level
+            if get_skill_level(player, recipe.skill) < recipe.min_skill:
+                return f"You need {recipe.skill} {recipe.min_skill}."
+        except Exception:
+            pass
     return ""
 
 

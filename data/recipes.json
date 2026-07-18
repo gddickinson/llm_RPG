@@ -103,5 +103,46 @@
     },
     "gold_cost": 3,
     "skill": "alchemy"
+  },
+  "mana_crystal": {
+    "output_id": "mana_crystal",
+    "ingredients": {
+      "arcane_dust": 4
+    },
+    "skill": "enchanting",
+    "min_skill": 4,
+    "required_property": "forge"
+  },
+  "scroll_fireball": {
+    "output_id": "scroll_fireball",
+    "ingredients": {
+      "arcane_dust": 2,
+      "ember_core": 1
+    },
+    "skill": "enchanting",
+    "min_skill": 3,
+    "required_property": "forge"
+  },
+  "amulet_of_warding": {
+    "output_id": "amulet_of_warding",
+    "ingredients": {
+      "arcane_dust": 3,
+      "mana_crystal": 1
+    },
+    "gold_cost": 40,
+    "skill": "enchanting",
+    "min_skill": 5,
+    "required_property": "forge"
+  },
+  "mage_ring": {
+    "output_id": "mage_ring",
+    "ingredients": {
+      "arcane_dust": 3,
+      "mana_crystal": 2
+    },
+    "gold_cost": 60,
+    "skill": "enchanting",
+    "min_skill": 6,
+    "required_property": "forge"
   }
 }

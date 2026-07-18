@@ -337,6 +337,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Wildlife error: {e}")
 
+    # M2b: a nearby caster NPC / away-hero occasionally reshapes the wilderness
+    try:
+        from engine import ambient_magic
+        ambient_magic.run(self)
+    except Exception as e:
+        logger.debug(f"Ambient magic error: {e}")
+
     # Tower guards loose arrows at attackers at the walls (P31.1c)
     try:
         self.tower_defense.update()

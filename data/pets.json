@@ -118,5 +118,15 @@
       60
     ],
     "description": "A busy beaver that gnaws spare pegs into shape."
+  },
+  "enchanting": {
+    "kind": "wisp familiar",
+    "name": "Glimmer",
+    "color": [
+      170,
+      150,
+      240
+    ],
+    "description": "A tiny arcane wisp that trails glowing motes as it drifts behind you."
   }
 }

@@ -56,5 +56,9 @@
   "carpentry": {
     "name": "Carpentry",
     "description": "Raise beams and shore up walls; timber and stone made whole."
+  },
+  "enchanting": {
+    "name": "Enchanting",
+    "description": "Imbue items with magical power and craft enchanted gear at a forge or rune table."
   }
 }
