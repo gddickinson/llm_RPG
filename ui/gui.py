@@ -363,6 +363,11 @@ class GameGUI:
             lines += self.engine.chronicle.lines()
         except Exception:
             pass
+        try:   # T2.3 the live State of the Realm (faction/tribe/nemesis state)
+            from engine import realm_digest
+            lines += realm_digest.lines(self.engine)
+        except Exception:
+            pass
         try:   # the ending, once the age is won (P21.2)
             from engine.campaign import is_won, summary
             if is_won(self.engine):

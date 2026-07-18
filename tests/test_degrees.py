@@ -71,6 +71,16 @@ class TestDegreesInSystems(unittest.TestCase):
                 ch = self.wmap.get_character_at(x, y)
                 if ch is not None:
                     self.wmap.remove_character(ch)
+        # Also purge the NPC MANAGER of anyone in the box: adjacent_hostiles reads
+        # the manager, so a phantom/world foe the grid-clear missed would steal a
+        # shove's target or block the push lane (a full-suite flake, same class as
+        # the cleave one).
+        for n in list(self.engine.npc_manager.npcs.values()):
+            nx, ny = n.position
+            if (self.ox - 3 <= nx <= self.ox + 5
+                    and self.oy - 3 <= ny <= self.oy + 3):
+                self.wmap.remove_character(n)
+                self.engine.npc_manager.remove_npc(n.id)
 
     def tearDown(self):
         try:
