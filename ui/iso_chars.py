@@ -327,7 +327,8 @@ def kit_of(char):
     height = iso_skeleton.body_of(char)[1]
     klass = getattr(getattr(char, "character_class", None), "value", "")
     return (weapon, _headgear_for(char), bool(shield), height,
-            klass in body_parts.ROBE_CLASSES)
+            klass in body_parts.ROBE_CLASSES,
+            klass in body_parts.ARMOR_CLASSES)      # H1 iso pauldrons
 
 
 def char_sprite(char, size: int, facing=None):

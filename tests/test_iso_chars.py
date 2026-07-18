@@ -96,10 +96,12 @@ class TestSprite(unittest.TestCase):
 
     def test_kit_is_hashable_with_body_height(self):
         kit = iso_chars.kit_of(_Char("f", "guard"))
-        self.assertEqual(len(kit), 5, "(weapon, head, shield, height, robed)")
+        self.assertEqual(len(kit), 6,
+                         "(weapon, head, shield, height, robed, pauldrons)")
         self.assertIsInstance(hash(kit), int, "cache-key hashable")
         self.assertIn(kit[3], (0.92, 1.0, 1.08), "a seeded body height")
         self.assertFalse(kit[4], "a guard is not robed")
+        self.assertTrue(kit[5], "a guard is armored → pauldrons")
 
     def test_gear_changes_the_sprite(self):
         # a helmeted warrior bakes apart from a bare merchant
@@ -142,6 +144,16 @@ class TestInteractionParity(unittest.TestCase):
                     "knockdown", "taunt"):
             self.assertNotEqual(isk.clip_for(act), "idle",
                                 f"{act} should play a real iso clip")
+
+    def test_iso_pauldrons_for_armored_classes(self):
+        # H1: an armored kit adds shoulder-plate meshes (iso parity with G5)
+        import numpy as np
+        from ui import iso_gear
+        P = {"l_sh": np.array([-0.2, 1.2, 0.0]),
+             "r_sh": np.array([0.2, 1.2, 0.0])}
+        self.assertEqual(len(iso_gear.pauldron_mesh(P)), 2, "a plate per shoulder")
+        self.assertTrue(iso_chars.kit_of(_Char("w", "warrior"))[5])
+        self.assertFalse(iso_chars.kit_of(_Char("m", "merchant"))[5])
 
     def test_social_clip_drops_the_weapon(self):
         c = _Char("brawler", "warrior")

@@ -109,11 +109,13 @@ The G-series pushed the 2D well ahead (expressive faces, lunging attacks, hands,
 boots, gear); the ISO now lags. The H-series closes that gap, then finishes action
 readability and takes on the ambitious lighting unification.
 
-- **H1 — Iso parity pass (HIGH).** Bring the baked iso figure up to the new 2D
-  detail: a clearer iso FACE driven by the same expression params (G1 parity), iso
-  HANDS + directional BOOTS (G4 parity), and iso GEAR — pauldrons / hoods (G5
-  parity). The iso `figure()` mesh + `iso_gear` grow these; expression feeds the
-  baked head. (Closing the 2D↔iso gap is the biggest remaining win.)
+- **H1 — Iso gear parity. ✅ DONE.** The iso figure already had hands, booted feet,
+  eyes + a nose and a hood (rogue/ranger head→hood); the gap was armored SHOULDER
+  PLATES. `iso_gear.pauldron_mesh` adds a steel cap per shoulder for armored
+  classes, wired through the kit (now 6-tuple, `iso_chars.kit_of` sets the flag
+  from `body_parts.ARMOR_CLASSES`) → `accessories`. An iso warrior now reads plated
+  (G5 parity). Render `audit_iso.png`. Tests: `test_iso_chars`. (Iso FACE
+  expression — re-baking the head per mood — deferred to a later pass.)
 - **H2 — Cast & shoot readability (MED, both).** G3 nailed the melee strike; make a
   CAST read (a wind-up channel → a forward release, a glow at the hands) and a
   SHOOT read (a clear nock → draw → loose) from any facing.

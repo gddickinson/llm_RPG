@@ -214,7 +214,7 @@ def _build(P, tint, hair, angle, kit):
     m = _body(P, tint, hair, angle)
     if kit and len(kit) > 4 and kit[4]:                  # R5 a robe over the legs
         m += _robe_mesh(P, tint)
-    if kit and any(kit[:3]):                              # ISO.12 worn gear
+    if kit and (any(kit[:3]) or (len(kit) > 5 and kit[5])):  # worn gear / plates
         from ui import iso_gear
         m += iso_gear.accessories(P, angle, kit)
     return m

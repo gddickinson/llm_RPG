@@ -204,5 +204,6 @@ class TestRobe(unittest.TestCase):
         c = type("C", (), {"character_class": type("K", (), {"value": "wizard"})(),
                            "metadata": {}, "id": "w", "hair": "hair_brown"})()
         kit = iso_chars.kit_of(c)
-        self.assertEqual(len(kit), 5)
+        self.assertEqual(len(kit), 6)
         self.assertTrue(kit[4], "a wizard is robed")
+        self.assertFalse(kit[5], "a wizard is not armored (no pauldrons)")

@@ -104,6 +104,16 @@ def shield_mesh(lhand, fwd):
             r3.ball(lh + fwd * 0.03, 0.03, _GOLD, 5)]
 
 
+def pauldron_mesh(P):
+    """H1: armored shoulder plates (heavy classes) — a steel cap on each shoulder
+    (iso parity with the top-down G5 pauldrons)."""
+    m = []
+    for s in ("l_sh", "r_sh"):
+        sh = np.asarray(P[s], float)
+        m.append(r3.ball(sh + np.array([0.0, 0.035, 0.0]), 0.078, _STEEL, 6))
+    return m
+
+
 def accessories(P, angle, kit):
     """Assemble the worn gear for the pose `P` from a `kit` tuple
     (weapon, head, shield, height)."""
@@ -118,4 +128,6 @@ def accessories(P, angle, kit):
         m += shield_mesh(P["l_hand"], fwd)
     if head:
         m += headgear_mesh(head, P["head"] + np.array([0.0, -0.01, 0.0]), fwd)
+    if len(kit) > 5 and kit[5]:                  # H1 armored shoulder plates
+        m += pauldron_mesh(P)
     return m
