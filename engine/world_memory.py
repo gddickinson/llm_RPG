@@ -9,8 +9,6 @@ in dialog (the prompt reads their memories), gossip about it, and reflect on it
 overnight. Cheap: fires only on the tagged beats, seeds a capped handful of NPCs.
 """
 
-import random
-
 # the beat prefixes worth spreading (the consequential world/social news)
 _SPREAD = ("[Realm]", "[Legend]", "[Overnight]", "[Town]", "[Board]")
 _NEAR = 4                 # NPCs nearest the player who 'hear' a beat
@@ -34,9 +32,11 @@ def make_observer(engine):
                 key=lambda n: abs(n.position[0] - px) + abs(n.position[1] - py)
             )[:_NEAR]
             heard = list(near)
+            # a couple elsewhere hear it too — a DETERMINISTIC pick (not
+            # random.sample) so the observer never consumes the GLOBAL rng stream
+            # and pollutes downstream tests (the B2 flake class)
             pool = [n for n in npcs if n not in near]
-            if pool:
-                heard += random.sample(pool, min(_FAR, len(pool)))
+            heard += pool[:_FAR]
             for n in heard:
                 _remember(n, text)
         except Exception:
@@ -62,4 +62,6 @@ def recent_world_beat(npc, rng=None):
     beats = (getattr(npc, "metadata", None) or {}).get("_world_beats") or []
     if not beats:
         return None
-    return (rng or random).choice(beats)
+    if rng is None:
+        import random as rng
+    return rng.choice(beats)

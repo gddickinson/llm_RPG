@@ -126,9 +126,25 @@ class ShopManager:
                 items.append(item)
         cat.items = items
         self._stock_from_surplus(cat, npc)     # P16.2c local produce
+        # T2.5 a realised ambition shows on the shelf: a MASTER crafter forges a
+        # masterwork, a PROSPERED merchant carries a fatter purse
+        try:
+            from engine.ambition_effects import masterwork_item
+            mw = masterwork_item(npc, category)
+            if mw and not any(getattr(i, "id", None) == mw for i in cat.items):
+                it = create_item(mw)
+                if it:
+                    cat.items.append(it)
+        except Exception:
+            pass
         cat.last_refreshed_minute = self.engine.world.time
         # Buying budget scales with the shop's wares; refills each restock
         cat.gold = 100 + sum(it.value for it in cat.items) // 4
+        try:
+            from engine.ambition_effects import shop_gold_bonus
+            cat.gold += shop_gold_bonus(npc)
+        except Exception:
+            pass
 
     def _stock_from_surplus(self, cat: ShopCatalog, npc) -> None:
         """P16.2c: the local settlement's production SURPLUS reaches the
