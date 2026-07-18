@@ -275,6 +275,36 @@ def _update_action(char, anim, dt):
         anim["cur_action"] = "idle"
 
 
+def _draw_ground_shadow(surface, pose, feet_x, feet_y, H) -> None:
+    """R6 — a soft contact shadow on the ground under the feet: directional (cast
+    down-right, away from the top-left key light), pose-shaped (wider on a spread
+    stance) and height-aware (it SHRINKS + fades as the body lifts off the ground
+    on a jump or a launch, so airborne reads). Concentric fading ellipses on one
+    small SRCALPHA surface → soft edge, one blit."""
+    lf, rf = pose.get("l_foot"), pose.get("r_foot")
+    if lf and rf:
+        spread = abs(lf[0] - rf[0])
+        pfy = (lf[1] + rf[1]) * 0.5
+    else:
+        spread, pfy = 0.0, feet_y
+    lift = feet_y - pfy if feet_y > pfy else 0.0        # airborne height
+    scale = max(0.4, 1.0 - lift / (H * 1.3)) if H else 1.0
+    ew = max(4, int((H * 0.30 + spread * 0.7) * scale))
+    eh = max(2, int(ew * 0.42))
+    sh = pygame.Surface((ew, eh), pygame.SRCALPHA)
+    base_a = int(96 * scale)
+    rings = 4
+    for i in range(rings, 0, -1):
+        f = i / rings                                   # 1 = outer/faint … dark
+        a = max(0, int(base_a * (1.0 - f) ** 1.05) + 6)
+        rw, rh = ew * f, eh * f
+        pygame.draw.ellipse(sh, (0, 0, 0, a),
+                            ((ew - rw) * 0.5, (eh - rh) * 0.5, rw, rh))
+    cx = feet_x + H * 0.05                               # down-right of the feet
+    cy = feet_y + H * 0.02
+    surface.blit(sh, (int(cx - ew * 0.5), int(cy - eh * 0.5)))
+
+
 # ---------------------------------------------------------------------- main draw
 
 def draw_body(surface, char, sx: int, sy: int, tile_size: int,
@@ -397,12 +427,10 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
         if inj["arm"]:
             char_injury.apply_arm(pose, inj["arm"], H)
 
-    # shadow on the ground, under the feet (not the tweened body)
-    shw = max(4, int(H * 0.26))
-    shadow = pygame.Surface((shw, max(2, shw // 2)), pygame.SRCALPHA)
-    pygame.draw.ellipse(shadow, (0, 0, 0, 95), shadow.get_rect())
-    surface.blit(shadow, (int(sx + tile_size / 2 - shw / 2),
-                          int(sy + tile_size - shw / 2 - 1)))
+    # R6 grounding — a soft, directional, pose-shaped contact shadow under the
+    # feet (cast down-right from the top-left key light; wider on a spread stance;
+    # SHRINKS + fades as the body lifts off the ground on a jump / a launch)
+    _draw_ground_shadow(surface, pose, feet_x, feet_y, H)
 
     # P34.3 secondary motion in BODY-LOCAL space: the head lags the body and the
     # weapon tip whips behind a swing (follow-through / settle). The spring works

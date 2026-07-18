@@ -49,8 +49,12 @@ drawing (2D shading vs iso shading).
   stick-legs. **R5b iso robes ✅** — the iso kit gains a `robed` flag and
   `iso_skeleton._robe_mesh` adds a flared SKIRT frustum (a cone widening downward)
   for robed classes, so the iso wizard/cleric/druid wear a gown too (parity).
-- **R6 — Ground shadows & grounding.** A directional, pose-shaped contact shadow
-  (2D), and stronger contact shadows/occlusion where a figure meets the ground.
+- **R6 — Ground shadows & grounding. ✅ DONE.** `body_renderer._draw_ground_shadow`
+  replaces the flat black ellipse with a SOFT contact shadow (concentric fading
+  ellipses) that is DIRECTIONAL (cast down-right, away from the top-left key
+  light), POSE-SHAPED (wider on a spread stance — a stride/lunge), and
+  HEIGHT-AWARE (it SHRINKS + fades as the feet lift off the ground on a jump or a
+  launch, so airborne reads). Tests: `test_body_renderer.TestGroundShadow`.
 
 Order = impact-first. R1 & R2 (shading) are the biggest realism-per-line; R3 (foot
 plant) is the biggest animation-realism win. R4-R6 refine.

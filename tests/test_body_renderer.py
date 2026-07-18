@@ -209,5 +209,30 @@ class TestFormShading(unittest.TestCase):
         self.assertGreater(bright, 180, "a lit highlight is present")
 
 
+class TestGroundShadow(unittest.TestCase):
+    """ANIM_REALISM R6 — a soft contact shadow grounds a figure and SHRINKS as it
+    lifts off the ground (airborne reads)."""
+
+    def _footprint(self, pose, fx, fy, H):
+        from ui.body_renderer import _draw_ground_shadow
+        surf = pygame.Surface((360, 360), pygame.SRCALPHA)
+        _draw_ground_shadow(surf, pose, fx, fy, H)
+        # the shadow is deliberately soft (low alpha) — count with a low threshold
+        return pygame.mask.from_surface(surf, 5).count()
+
+    def test_a_grounded_figure_casts_a_shadow(self):
+        fx, fy, H = 180, 240, 100
+        pose = {"l_foot": (fx - 10, fy), "r_foot": (fx + 10, fy)}
+        self.assertGreater(self._footprint(pose, fx, fy, H), 0)
+
+    def test_airborne_shadow_shrinks(self):
+        fx, fy, H = 180, 240, 100
+        grounded = {"l_foot": (fx - 10, fy), "r_foot": (fx + 10, fy)}
+        airborne = {"l_foot": (fx - 6, fy - 80), "r_foot": (fx + 6, fy - 80)}
+        g = self._footprint(grounded, fx, fy, H)
+        a = self._footprint(airborne, fx, fy, H)
+        self.assertLess(a, g, "an airborne figure's contact shadow shrinks")
+
+
 if __name__ == "__main__":
     unittest.main()
