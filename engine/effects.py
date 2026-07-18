@@ -40,6 +40,12 @@ def _gather_bonuses(character) -> Dict[str, int]:
         bonus = getattr(it, "equip_bonuses", None) or {}
         for key, val in bonus.items():
             out[key] = out.get(key, 0) + int(val)
+    try:                                 # T1.2 perk bonuses fold into the same
+        from engine.perks import perk_bonuses   # aggregation → AC/damage/stats/HP
+        for key, val in perk_bonuses(character).items():
+            out[key] = out.get(key, 0) + int(val)
+    except Exception:
+        pass
     return out
 
 

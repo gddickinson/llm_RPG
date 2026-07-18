@@ -1,0 +1,75 @@
+{
+  "toughness": {
+    "name": "Toughness",
+    "desc": "Hard living. +8 max HP.",
+    "bonuses": {"max_hp": 8}
+  },
+  "vitality": {
+    "name": "Vitality",
+    "desc": "A deep well of stamina. +14 max HP.",
+    "bonuses": {"max_hp": 14}
+  },
+  "brawler": {
+    "name": "Brawler",
+    "desc": "You hit harder. +1 weapon damage.",
+    "bonuses": {"damage": 1}
+  },
+  "ironhide": {
+    "name": "Iron Hide",
+    "desc": "Blows glance off you. +1 AC.",
+    "bonuses": {"armor": 1}
+  },
+  "evasion": {
+    "name": "Evasion",
+    "desc": "You slip the strike. +1 AC (dodge).",
+    "bonuses": {"dodge": 1}
+  },
+  "mighty": {
+    "name": "Mighty",
+    "desc": "+1 Strength.",
+    "bonuses": {"strength": 1}
+  },
+  "nimble": {
+    "name": "Nimble",
+    "desc": "+1 Dexterity.",
+    "bonuses": {"dexterity": 1}
+  },
+  "hardy": {
+    "name": "Hardy",
+    "desc": "+1 Constitution and +4 max HP.",
+    "bonuses": {"constitution": 1, "max_hp": 4}
+  },
+  "keen_mind": {
+    "name": "Keen Mind",
+    "desc": "+1 Intelligence and +8 max mana.",
+    "bonuses": {"intelligence": 1, "max_mana": 8}
+  },
+  "devout": {
+    "name": "Devout",
+    "desc": "+1 Wisdom.",
+    "bonuses": {"wisdom": 1}
+  },
+  "silver_tongue": {
+    "name": "Silver Tongue",
+    "desc": "+1 Charisma.",
+    "bonuses": {"charisma": 1}
+  },
+  "berserker": {
+    "name": "Berserker",
+    "desc": "A martial killer. +2 weapon damage.",
+    "bonuses": {"damage": 2},
+    "requires_class": ["warrior", "barbarian", "guard", "paladin"]
+  },
+  "deadeye": {
+    "name": "Deadeye",
+    "desc": "Every shot tells. +1 damage and +1 Dexterity.",
+    "bonuses": {"damage": 1, "dexterity": 1},
+    "requires_class": ["ranger", "rogue", "bard"]
+  },
+  "battlemage": {
+    "name": "Battlemage",
+    "desc": "A font of power. +20 max mana.",
+    "bonuses": {"max_mana": 20},
+    "requires_class": ["wizard", "sorcerer", "warlock", "cleric", "druid"]
+  }
+}

@@ -115,9 +115,18 @@ def check_level_up(character) -> List[str]:
         for stat in favors:
             setattr(character, stat, getattr(character, stat, 10) + 1)
 
+        # T1.2: a level-up also grants a PERK POINT to spend on a build choice —
+        # so a level is a decision, not just +5 HP (the review's build-agency fix)
+        try:
+            from engine.perks import award_perk_point
+            award_perk_point(character)
+        except Exception:
+            pass
+
         msg = (
             f"** Level up! {character.name} reaches level {character.level} "
-            f"(+5 HP, +1 {favors[0].upper()[:3]}, +1 {favors[1].upper()[:3]}) **"
+            f"(+5 HP, +1 {favors[0].upper()[:3]}, +1 {favors[1].upper()[:3]}, "
+            f"+1 perk point) **"
         )
         msgs.append(msg)
         logger.info(msg)

@@ -171,6 +171,38 @@ class GameAPIMixin:
         self.memory_manager.add_event(msg)
         return msg
 
+    # ---- perks (T1.2 level-up build choice) -------------------------
+
+    def perk_overlay_lines(self) -> list:
+        """The numbered perk-choice list (empty when there's nothing to spend)."""
+        from engine import perks
+        pts = perks.perk_points(self.player)
+        avail = perks.available_perks(self.player)
+        if pts <= 0 or not avail:
+            return []
+        allp = perks.all_perks()
+        lines = [f"Perk points to spend: {pts}", ""]
+        for i, pid in enumerate(avail[:9], 1):
+            spec = allp.get(pid, {})
+            lines.append(f"  [{i}] {spec.get('name', pid)} — {spec.get('desc', '')}")
+        lines.append("")
+        lines.append("  Pick a perk  ·  [Esc] decide later")
+        return lines
+
+    def choose_perk(self, index: int) -> str:
+        """Grant the i-th perk the overlay listed (spends a point)."""
+        from engine import perks
+        avail = perks.available_perks(self.player)
+        if not (0 <= index < len(avail)) or perks.perk_points(self.player) <= 0:
+            return ""
+        pid = avail[index]
+        if perks.grant_perk(self.player, pid):
+            name = perks.all_perks().get(pid, {}).get("name", pid)
+            msg = f"[Perk] You gain {name}."
+            self.memory_manager.add_event(msg)
+            return msg
+        return ""
+
     # ---- spells -----------------------------------------------------
 
     def cast_spell(self, spell_id: str, target_name: str = None) -> str:

@@ -21,7 +21,7 @@ from ui import projectile_anim
 logger = logging.getLogger("llm_rpg.gui")
 
 # numbered pop-up overlays that render through the shared menu path
-_OVERLAY_MODES = ("menu", "travel", "waystone", "stable", "board")
+_OVERLAY_MODES = ("menu", "travel", "waystone", "stable", "board", "perks")
 # below this the side/bottom panels stop leaving a usable map
 MIN_W, MIN_H = 900, 640
 
@@ -233,6 +233,7 @@ class GameGUI:
     # ---- rendering ---------------------------------------------------
 
     def _render(self) -> None:
+        self._maybe_prompt_perk()             # T1.2 pop the perk chooser on level-up
         self.screen.fill((15, 15, 20))
         self.renderer.render(self.screen, self.engine, self.layout["map"])
         self.hud.draw(self.screen, self.engine, self.layout)
@@ -396,6 +397,25 @@ class GameGUI:
     def show_quest_board(self) -> None:   # A-board (E at a tavern notice board)
         self._open("Adventurers' Board", "board",
                    self.engine.board_overlay_lines, "The board is bare.")
+
+    def show_perks(self) -> None:         # T1.2 level-up build choice
+        self._open("Choose a Perk", "perks",
+                   self.engine.perk_overlay_lines, "No perk points to spend.")
+
+    def _maybe_prompt_perk(self) -> None:
+        """Auto-open the perk chooser when a level-up leaves unspent points (the
+        keyspace is full, so a fresh point pops the menu instead of a new key)."""
+        try:
+            from engine import perks
+            pts = perks.perk_points(self.engine.player)
+            if (self.mode == "play" and not self.overlay and pts > 0
+                    and pts != getattr(self, "_perk_seen", -1)):
+                self._perk_seen = pts
+                self.show_perks()
+            elif pts == 0:
+                self._perk_seen = -1
+        except Exception:
+            pass
 
     def show_diaries(self) -> None:
         self._open("Achievement Diaries", "menu",
