@@ -1,0 +1,65 @@
+{
+  "clear_forest": {
+    "from": "forest", "to": "grass", "verb": "clear the trees",
+    "labor": {"skill": "woodcutting", "tool": "axe", "effort": 3, "yields": {"logs": 2}}
+  },
+  "plant_forest": {
+    "from": "grass", "to": "forest", "verb": "grow a woodland",
+    "labor": {"skill": "foraging", "effort": 4},
+    "magic": {"tag": "nature"}
+  },
+  "till_soil": {
+    "from": "grass", "to": "farmland", "verb": "till the soil",
+    "labor": {"skill": "foraging", "effort": 2},
+    "magic": {"tag": "nature"}
+  },
+  "let_fallow": {
+    "from": "farmland", "to": "grass", "verb": "let the field go fallow",
+    "labor": {"skill": "foraging", "effort": 1}
+  },
+  "level_mountain": {
+    "from": "mountain", "to": "grass", "verb": "level the rock",
+    "labor": {"skill": "mining", "tool": "pickaxe", "effort": 5, "yields": {"stone": 3}},
+    "magic": {"tag": "earth"}
+  },
+  "raise_wall": {
+    "from": "grass", "to": "building", "verb": "raise a wall",
+    "labor": {"skill": "carpentry", "resources": {"stone": 2}, "effort": 3},
+    "magic": {"tag": "earth"}
+  },
+  "demolish_wall": {
+    "from": "building", "to": "rubble", "verb": "break down the wall",
+    "labor": {"skill": "carpentry", "tool": "pickaxe", "effort": 4},
+    "magic": {"tag": "force"}
+  },
+  "clear_rubble": {
+    "from": "rubble", "to": "grass", "verb": "clear the rubble",
+    "labor": {"skill": "carpentry", "effort": 2}
+  },
+  "pave_road": {
+    "from": "grass", "to": "road", "verb": "lay a road",
+    "labor": {"skill": "carpentry", "resources": {"stone": 1}, "effort": 2}
+  },
+  "flood_tile": {
+    "from": "grass", "to": "water", "verb": "call forth water",
+    "magic": {"tag": "water"}
+  },
+  "drain_water": {
+    "from": "water", "to": "grass", "verb": "drain the water",
+    "labor": {"skill": "carpentry", "resources": {"stone": 1}, "effort": 3},
+    "magic": {"tag": "water"}
+  },
+  "bridge_water": {
+    "from": "water", "to": "bridge", "verb": "build a bridge",
+    "labor": {"skill": "carpentry", "resources": {"logs": 2}, "effort": 3}
+  },
+  "scorch_earth": {
+    "from": "grass", "to": "scorched", "verb": "scorch the earth",
+    "magic": {"tag": "fire"}
+  },
+  "regrow": {
+    "from": "scorched", "to": "grass", "verb": "coax life back",
+    "labor": {"skill": "foraging", "effort": 1},
+    "magic": {"tag": "nature"}
+  }
+}

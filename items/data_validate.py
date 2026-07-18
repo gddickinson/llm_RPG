@@ -47,13 +47,15 @@ def validate_all() -> List[str]:
     problems += check_resource_nodes()
     from items.validate_world import (check_adventurers, check_guildhalls,
                                        check_wildlife, check_building_styles,
-                                       check_activities, check_skill_combat)
+                                       check_activities, check_skill_combat,
+                                       check_worldcraft)
     problems += check_adventurers()
     problems += check_guildhalls()
     problems += check_wildlife()
     problems += check_building_styles()
     problems += check_activities()
     problems += check_skill_combat()
+    problems += check_worldcraft()
     return problems
 
 

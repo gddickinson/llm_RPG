@@ -9718,3 +9718,27 @@ zoom/resize path, not just the settings one). Confirmed the interior/dungeon dim
 current size) was already correct, and swept the UI — `_dim_shade` was the ONLY construction-cached,
 tile-sized surface of this class (sprite caches are size-keyed or cleared on zoom). Regression test
 `tests/test_fog_dim.py` (4 — size tracking + an end-to-end blit-size check). Before/after verified visually.
+
+## 2026-07-18 — Magic & Worldcraft: research + plan + M0.1 (keystone) — George
+
+George requested a major magic + world-crafting expansion (deeper spells with schools/tiers/per-caster
+learning; world-altering magic; magic-item crafting/imbuing; guilds trading magic; consistent rules for
+NON-magical world change; workers who gather→build; a player build/terraform planner with persistent,
+cross-game blueprints). Approach: research (5 parallel agents surveyed spells / crafting-items / world-
+alteration / guilds-workers / UI-save) → a research-grounded plan (`docs/MAGIC_AND_WORLDCRAFT.md`, phases
+M0–M6) → phased data-first implementation.
+
+**Keystone insight:** the request centers on CONSISTENT rules for magical AND non-magical world change → build
+ONE worldcraft mutation layer that spells, workers, the build tool and the DM all call. Research confirmed the
+substrate: `WorldMap.set_terrain` is the intended chokepoint (with an idle P10.0 callback bus, zero consumers)
+but ~15 systems bypass it; terrain persists free (grid snapshot); `tile_damage`/`surfaces`/`structures` give
+the destroy/build primitives; `dm_api` is the de-facto (DM-only, budgeted) world-edit API.
+
+**M0.1 shipped:** `engine/worldcraft.py` (207 lines) + `data/worldcraft/mutations.json` (14 rules) — a
+validated facade over `set_terrain`. A rule is `{from,to,verb,labor?,magic?}`; `labor={skill,tool?,resources?,
+effort,yields?}`, `magic={tag}` (a means absent ⇒ can't do it that way). `can_mutate` checks rule+means+bounds+
+`protected()` (typed-POI tiles, reusing the DM charter rule)+the labor gate (tool/skill/resources); `mutate`
+consumes resources, drops by-products (clearing a forest yields logs), sets terrain, emits a `[Build]` beat.
+Magic mana stays the spell system's job. Persistence FREE. Validator `check_worldcraft` + `tests/test_worldcraft`
+(11). Full suite green. Next: M0.2 (route earthworks/resource_nodes through it, activate the callback bus,
+add `remove_location`), then M1 magic depth.

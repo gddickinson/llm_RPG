@@ -318,7 +318,10 @@ plan as a batch of `mutate` calls; all obey ONE ruleset.
 
 ## Status
 
-- [ ] M0 Worldcraft foundation
+- [~] M0 Worldcraft foundation — **M0.1 DONE** (`engine/worldcraft.py` +
+  `data/worldcraft/mutations.json` + validator + `tests/test_worldcraft.py`);
+  M0.2 (adopt existing mutators + activate the callback bus + `remove_location`)
+  pending.
 - [ ] M1 Magic depth
 - [ ] M2 World-altering spells
 - [ ] M3 Magic-item crafting + imbuing

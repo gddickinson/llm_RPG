@@ -41,6 +41,44 @@ def check_skill_combat() -> List[str]:
     return problems
 
 
+def check_worldcraft() -> List[str]:
+    """worldcraft/mutations.json (M0): valid terrain names, known skills,
+    resolvable resource/yield item ids, and a labor or magic means on each rule."""
+    path = _DATA / "worldcraft" / "mutations.json"
+    if not path.exists():
+        return []
+    try:
+        rules = json.loads(path.read_text())
+    except Exception as e:
+        return [f"worldcraft/mutations.json unparseable: {e}"]
+    from items.item_registry import create_item
+    from world.world_map import TerrainType
+    terrains = {t.value for t in TerrainType}
+    try:
+        from engine.skill_progression import all_skill_ids
+        skills = set(all_skill_ids())
+    except Exception:
+        skills = None
+    problems: List[str] = []
+    for rid, rule in rules.items():
+        for side in ("from", "to"):
+            t = rule.get(side)
+            if t not in terrains:
+                problems.append(f"mutation {rid}: bad {side} terrain '{t}'")
+        if rule.get("labor") is None and rule.get("magic") is None:
+            problems.append(f"mutation {rid}: needs a labor or magic means")
+        labor = rule.get("labor") or {}
+        if labor:
+            sk = labor.get("skill")
+            if skills is not None and sk and sk not in skills:
+                problems.append(f"mutation {rid}: unknown labor skill '{sk}'")
+            for grp in ("resources", "yields"):
+                for iid in (labor.get(grp) or {}):
+                    if create_item(iid) is None:
+                        problems.append(f"mutation {rid}: unknown {grp} '{iid}'")
+    return problems
+
+
 def check_adventurers() -> List[str]:
     """adventurers.json: valid class/race and resolvable kit (P-M.6)."""
     path = _DATA / "adventurers.json"
