@@ -304,6 +304,20 @@ def skill_verb(engine, k) -> bool:
     return True
 
 
+def grapple_verb(engine, k) -> bool:
+    """SHIFT+C — clinch an adjacent foe (wrestle); press it again while still
+    clinched to THROW the foe (I3: wrestling / throwing / more contact)."""
+    import pygame
+    if k != pygame.K_c:
+        return False
+    from engine import tactics
+    if tactics.is_grappling(engine):
+        tactics.throw(engine)
+    else:
+        tactics.grapple(engine)
+    return True
+
+
 def menu_mode_key(gui, engine, event) -> bool:
     """The numbered pop-up menus — travel (P11) / stable (P28.2d) / waystone
     (P37.1): 1-9 picks an entry, Esc (or the opening key) leaves. Returns True

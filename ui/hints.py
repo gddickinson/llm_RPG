@@ -213,6 +213,14 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
         hints.append("[SHIFT+T/I/B] trip · demoralize · feint")
+        try:   # I3 grapple → throw (wrestling / throwing)
+            from engine import tactics
+            if tactics.is_grappling(engine):
+                hints.append("[SHIFT+C] THROW the foe in your grip")
+            else:
+                hints.append("[SHIFT+F/C] shove · grapple")
+        except Exception:
+            pass
     try:
         tid = getattr(engine, "player_target_id", None)
         lock = engine.npc_manager.npcs.get(tid) if tid else None

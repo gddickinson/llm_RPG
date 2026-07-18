@@ -47,13 +47,16 @@ grapples. That's this feature.
   clip, warms the bond a touch more than an ambient beat, leaves the NPC a fond
   memory, and returns their reply. Tests: `tests/test_interactions.py`
   (`TestPlayerSocial`).
-- **I3 — Combat grapple & throw. (more contact when fighting)** `tactics.grapple`
-  (a STR-vs-STR clinch with an adjacent foe — win → the foe is GRABBED/off-guard or
-  goes PRONE, both play `wrestle`) and `tactics.throw` (hurl a grabbed/adjacent foe
-  — an amplified shove + `throw`/`tumble` + a hard KNOCKDOWN), plus a CONTACT beat
-  on a heavy/crit melee hit (attacker follow-through + target stagger via
-  `anim.interact`). Player keys + the away-agent/colosseum use them so fights read
-  as physical grappling, not just swings at range.
+- **I3 — Combat grapple & throw. ✅ DONE.** `tactics.grapple` (a STR-vs-(STR|DEX)
+  clinch with the nearest adjacent foe — both play `wrestle`; win → the foe is
+  GRABBED/off-guard, a firm win PINS it prone; a bad loss throws the player off
+  balance) and `tactics.throw` (hurl a grabbed/adjacent foe — an amplified shove
+  up to 2 tiles + `throw`/`tumble` + a hard PRONE knockdown + fall damage; a
+  grabbed foe is far easier to throw). `is_grappling` tracks the clinch. One key:
+  **SHIFT+C** clinches, then throws while clinched (`input_actions.grapple_verb`);
+  documented in `controls`, advertised state-aware in the combat `hints`. Tests:
+  `test_tactics.TestGrappleThrow`. So you can now wrestle a foe down and hurl it —
+  physical contact mid-fight, not just swings at range.
 
 ## Constraints
 

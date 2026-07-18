@@ -33,6 +33,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
         ("[ / ]", "cycle the locked target"),
         ("L-CLICK", "lock the target under the cursor"),
         ("SHIFT + F", "shove a foe back (STR)"),
+        ("SHIFT + C", "grapple a foe — again to throw"),
         ("SHIFT + V", "weapon action (once per rest)"),
         ("SHIFT + T", "trip an adjacent foe"),
         ("SHIFT + I", "demoralize — Frighten a foe"),

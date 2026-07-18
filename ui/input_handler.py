@@ -279,12 +279,15 @@ class InputHandler:
 
         # single-key overlays, play-mode number keys (guard / quick-cast), and
         # the SHIFT skill verbs live in input_actions to hold the 500-line line
-        from ui.input_actions import (one_key_overlay, number_key, skill_verb)
+        from ui.input_actions import (one_key_overlay, number_key, skill_verb,
+                                       grapple_verb)
         if one_key_overlay(self.gui, k):
             return True
         if number_key(self.engine, k):
             return True
         if shift and skill_verb(self.engine, k):
+            return True
+        if shift and grapple_verb(self.engine, k):
             return True
 
         # Talk to adjacent NPC
