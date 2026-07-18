@@ -51,6 +51,14 @@ class TestEthology(unittest.TestCase):
         for yy in range(15, 30):
             for xx in range(15, 33):
                 self.wmap.terrain[yy][xx] = TerrainType.GRASS
+        # Remove any WORLD occupant in the test patch: a phantom foe on a flee /
+        # hunt destination tile blocks the step, so an animal doesn't move and the
+        # assertion fails (the B2 procedural flake class).
+        for n in list(self.engine.npc_manager.npcs.values()):
+            nx, ny = n.position
+            if 15 <= nx < 33 and 15 <= ny < 30:
+                self.wmap.remove_character(n)
+                self.engine.npc_manager.remove_npc(n.id)
         self.engine.player.position = (0, 0)   # keep the player far off
 
     def tearDown(self):

@@ -98,5 +98,22 @@ class TestFactionTicker(unittest.TestCase):
         self.assertIn("repelled", notes[0])
 
 
+class TestFactionWarSpills(unittest.TestCase):
+    """T2.2 — a brigand faction AT WAR mobilises: more bandits on the roads."""
+
+    def test_war_bumps_bandit_encounters(self):
+        from engine.game_engine import GameEngine
+        e = GameEngine(llm_provider="heuristic", enable_npc_processes=False)
+        e.start_game()
+        ft = e.faction_ticker
+        ft.state["brigands"]["strength"] = 50          # normal band → mult 1.0
+        peace = ft.bandit_weight_multiplier()
+        e.faction_agendas.at_war = lambda a, b: a == "brigands" and b == "guards"
+        war = ft.bandit_weight_multiplier()
+        self.assertAlmostEqual(war, peace * 1.5, places=3,
+                               msg="a brigand war raises road danger")
+        e.end_game()
+
+
 if __name__ == "__main__":
     unittest.main()

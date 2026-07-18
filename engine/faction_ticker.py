@@ -189,13 +189,19 @@ class FactionTicker:
         return out
 
     def bandit_weight_multiplier(self) -> float:
-        """Strong gangs roam: scales the bandit encounter weight."""
+        """Strong gangs roam: scales the bandit encounter weight. T2.2: brigands
+        AT WAR mobilise — raiders spill onto the roads, so a faction war is FELT,
+        not just computed (the review found faction_agendas consumed nowhere)."""
         s = self.state["brigands"]["strength"]
-        if s > STRONG:
-            return 2.0
-        if s < 25:
-            return 0.5
-        return 1.0
+        mult = 2.0 if s > STRONG else 0.5 if s < 25 else 1.0
+        try:
+            ag = getattr(self.engine, "faction_agendas", None)
+            if ag is not None and any(ag.at_war("brigands", o)
+                                      for o in self.state if o != "brigands"):
+                mult *= 1.5
+        except Exception:
+            pass
+        return mult
 
     def _push_rumor(self, note: str) -> None:
         try:
