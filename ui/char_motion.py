@@ -91,6 +91,13 @@ def has_shield(char) -> bool:
     return _worn(char, "shield") is not None
 
 
+def has_metal_armor(char) -> bool:
+    """H3: the WORN armour is metal/plate — so heavy gear shows shoulder plates on
+    the body whatever the class (a rogue who dons plate reads plated)."""
+    a = _worn(char, "armor")
+    return a is not None and any(k in _tag(a) for k in _METAL)
+
+
 def attack_lunge(t, dur=ATTACK_DUR):
     """0..1 lunge magnitude over a strike: thrust out (peak mid) then ease
     back. `t` counts DOWN from `dur` to 0."""

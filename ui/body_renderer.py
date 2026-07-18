@@ -533,7 +533,8 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     bp.draw_torso(surface, pose, torso, belt)
     bp.draw_arm(surface, pose, near, torso, skin, arm_w)
     kl = klass.lower()
-    if kl in bp.ARMOR_CLASSES:                    # G5 armored shoulder plates
+    # G5 armored shoulder plates by class, OR H3 by WORN metal armour (any class)
+    if kl in bp.ARMOR_CLASSES or char_motion.has_metal_armor(char):
         bp.draw_pauldrons(surface, pose, bp._lighten(torso, 22),
                           max(2, int(H * 0.09)))
     if kl in bp.HOOD_CLASSES:                     # G5 a cowl behind the head

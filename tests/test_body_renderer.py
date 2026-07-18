@@ -288,6 +288,21 @@ class TestGear(unittest.TestCase):
         self.assertIn("rogue", bp.HOOD_CLASSES)
         self.assertNotIn("wizard", bp.ARMOR_CLASSES)   # robed, not plated
 
+    def test_worn_metal_armor_drives_pauldrons(self):
+        # H3: equipping plate shows shoulder plates on ANY class
+        from ui import char_motion
+
+        class _Item:
+            id = "plate_armor"
+            name = "Plate Armor"
+
+        class _C:
+            equipment = None
+        c = _C()
+        self.assertFalse(char_motion.has_metal_armor(c), "unarmored")
+        c.equipment = {"armor": _Item()}
+        self.assertTrue(char_motion.has_metal_armor(c), "worn plate reads metal")
+
     def test_pauldrons_and_hood_draw(self):
         from ui import body_parts as bp
         surf = pygame.Surface((100, 100))

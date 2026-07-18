@@ -121,9 +121,13 @@ readability and takes on the ambitious lighting unification.
   so a spell reads as MAGIC, not just a staff wave. Render `h2_cast.png`. Tests:
   `test_body_renderer` (`test_cast_glow_is_bright`). (Shoot draw-and-loose + iso
   cast glow: a later pass.)
-- **H3 — Equipment-driven appearance (MED, both).** Render the ACTUAL worn gear —
-  helmet kind, armor tier, a cape, the specific shield/pack — from the equipment
-  data, not just a class default, so upgrades show on the body. Shared 2D + iso.
+- **H3 — Equipment-driven appearance. ✅ DONE (2D, bounded).** The renderer already
+  reads the worn WEAPON (`weapon_kind`) + ARMOUR material (`armor_tint`) + SHIELD;
+  H3 adds `char_motion.has_metal_armor` so PAULDRONS now fire when metal/plate
+  armour is EQUIPPED — any class (a rogue who dons plate reads plated), not just
+  the martial classes. Gear shows on the body. Tests:
+  `test_body_renderer.test_worn_metal_armor_drives_pauldrons`. (Full
+  helmet/cape/pack-by-item + iso: a later pass — no head/cloak equip SLOT yet.)
 - **H4 — Population variety. ✅ DONE (2D).** A per-person HAIRSTYLE (short / long /
   bun / bald, short weighted common) seeded off the id by a spreading hash and
   decorrelated from the hair-colour hash, drawn in `body_parts.draw_head`
