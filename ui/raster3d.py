@@ -136,10 +136,15 @@ def render(meshes, cam_pos=ISO_CAM, look=ISO_LOOK, up=(0.0, 1.0, 0.0),
         view /= (np.linalg.norm(view, axis=1, keepdims=True) + 1e-9)
         rim = np.clip(1.0 - np.abs(np.einsum("ij,ij->i", nrm, view)),
                       0.0, 1.0) ** 3
-        ao = 0.72 + 0.28 * np.clip(nrm[:, 1], 0.0, 1.0)
-        base = np.clip((0.22 + 0.74 * lam + 0.12 * lam2) * ao, 0.0, 1.05)
+        # G2 iso EXPOSURE — the figures were murky (dark class colours sinking
+        # into a dark ground). Lift the ambient floor + fill + the AO floor so the
+        # SHADOW side reads (~0.16→~0.30) while the lit side still clips near max,
+        # and warm + strengthen the rim a touch for separation from the background.
+        ao = 0.82 + 0.18 * np.clip(nrm[:, 1], 0.0, 1.0)
+        base = np.clip((0.34 + 0.72 * lam + 0.18 * lam2) * ao, 0.0, 1.06)
         col = np.array(color, float)
-        tri_rgb = np.clip(col[None, :] * base[:, None] + (rim * 60.0)[:, None],
+        rimc = np.array((72.0, 68.0, 58.0))            # a faintly warm back-light
+        tri_rgb = np.clip(col[None, :] * base[:, None] + rim[:, None] * rimc[None, :],
                           0.0, 255.0)
         valid = good & facing & (zc[tris[:, 0]] > 0.02) \
             & (zc[tris[:, 1]] > 0.02) & (zc[tris[:, 2]] > 0.02)

@@ -71,9 +71,14 @@ Ordered by perceived-quality-per-effort.
 
 ## Proposed rounds ("G-series")
 
-- **G1 — Faces.** Refine 2D eyes/nose/mouth + drive context expressions; readable
-  iso face. (Biggest perceived-quality win.)
-- **G2 — Iso exposure.** Brighten/relight the baked figures.
+- **G1 — Faces. ✅ DONE.** 2D `draw_face` eyes are now a sclera + iris + a 1px
+  catchlight (not a black void) + a subtle nose; `EMOTE_EXPR` drives a fighting
+  face on attack/wrestle/throw/taunt and a wince at ≤25% HP. Render `g1_faces.png`.
+  Tests: `test_body_renderer.TestFace`.
+- **G2 — Iso exposure. ✅ DONE.** `raster3d.render` lifts the ambient floor
+  (0.22→0.34), fill (0.12→0.18) and AO floor (0.72→0.82) + a faintly warm rim, so
+  the shadow side reads (~0.16→~0.30) and colours pop — the murky figures now
+  separate from the dark ground (armor silvers, robes vivid). Render `audit_iso.png`.
 - **G3 — Action readability.** Attack/cast/shoot read from any facing, both views.
 - **G4 — Hands, feet, silhouette.** Articulated hands + directional boots + shaping.
 - **G5 — Gear & cloth.** Armor plates / hoods / capes / robe trim; equipment layering.

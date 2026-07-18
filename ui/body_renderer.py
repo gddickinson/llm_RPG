@@ -381,6 +381,12 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     # mood-driven line-of-action spine curve (proud arch / sad slump).
     from ui import char_face
     mood = char_face.EMOTE_EXPR.get(action) or char_face.expr_for(char)
+    if mood == "neutral":                        # G1: a badly-hurt body winces
+        try:
+            if char.is_alive() and char.hp <= max(1, char.max_hp) * 0.25:
+                mood = "hurt"
+        except Exception:
+            pass
     spine = char_pose3d.spine_for(mood)
     face_deg = anim.get("face_cur", 0.0)
     # P34.15 LOCOMOTION plays baked MOCAP through the depth model (real stride/timing

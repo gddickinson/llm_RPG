@@ -177,9 +177,16 @@ def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
     draw_face(surface, hx, hy, r, expr, profile, blink, look)
 
 
+def _catchlight(surface, x, y):
+    """A 1px specular glint in the eye (bounds-checked)."""
+    if 0 <= x < surface.get_width() and 0 <= y < surface.get_height():
+        surface.set_at((x, y), (250, 250, 250))
+
+
 def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False,
               look=(0.0, 0.0)):
-    """P34.2 the expressive face — brows + eyes + mouth from a 3-param spec."""
+    """G1 the expressive face — brows + eyes (sclera + iris + catchlight, not a
+    black void) + a subtle nose + a mouth, all from a 3-param spec (P34.2)."""
     import pygame
     from ui import char_face
     sp = char_face.spec(expr_name)
@@ -198,14 +205,22 @@ def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False,
         elif mode == "wide":
             pygame.draw.circle(surface, (245, 245, 245), (ex, ey), e + 1)
             pygame.draw.circle(surface, ink, (px, py), max(1, e - 1))
+            _catchlight(surface, px - 1, py - 1)
         elif mode == "arch":                       # ‿ happy squint
             pygame.draw.arc(surface, ink, (ex - e, ey - e, e * 2, e * 2 + 1),
                             3.4, 6.0, 1)
         elif mode == "x":
             pygame.draw.line(surface, ink, (ex - e, ey - e), (ex + e, ey + e), 1)
             pygame.draw.line(surface, ink, (ex - e, ey + e), (ex + e, ey - e), 1)
-        else:                                      # dot
-            pygame.draw.circle(surface, ink, (px, py), e)
+        else:                                      # open eye — sclera + iris + glint
+            es = max(2, e)
+            pygame.draw.ellipse(surface, (247, 245, 238),
+                                (ex - es, ey - max(1, es - 1),
+                                 es * 2, max(2, (es - 1) * 2)))
+            ir = max(1, es - 1)
+            pygame.draw.circle(surface, ink, (px, py), ir)
+            if es >= 3:
+                _catchlight(surface, px - 1, py - 1)
         # brow — inner end nudged by the expression's brow tilt
         bx = ex
         by = ey - max(2, r // 2)
@@ -213,9 +228,18 @@ def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False,
         pygame.draw.line(surface, ink,
                          (bx - e, by + inner * sp["brow"] * -1),
                          (bx + e, by - inner * sp["brow"] * -1), 1)
+    # nose — a soft 1px shadow between the eyes and the mouth (a little depth),
+    # nudged with the gaze; skipped on a very small head where it'd just be noise
+    my = hy + r // 2
+    if r >= 6:
+        nose_ink = (108, 84, 74)
+        nx = hx + max(1, r // 9) + int(round(look[0] * r * 0.15))
+        n0 = ey + max(1, r // 4)
+        n1 = my - max(1, r // 8)
+        if n1 > n0:
+            pygame.draw.line(surface, nose_ink, (nx, n0), (hx, n1), 1)
     # mouth — an arc curved by the expression (>0 up = smile)
     mc = sp["mouth"]
-    my = hy + r // 2
     mw = max(2, r // 2)
     if abs(mc) < 0.15:
         pygame.draw.line(surface, ink, (hx - mw // 2, my), (hx + mw // 2, my), 1)

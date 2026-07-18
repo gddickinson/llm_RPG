@@ -209,6 +209,25 @@ class TestFormShading(unittest.TestCase):
         self.assertGreater(bright, 180, "a lit highlight is present")
 
 
+class TestFace(unittest.TestCase):
+    """ANIM_REALISM G1 — the face reads as a face: eyes have a light sclera +
+    catchlight (not a solid black void)."""
+
+    def test_neutral_eye_has_a_light_sclera(self):
+        from ui import body_parts as bp
+        surf = pygame.Surface((160, 160))
+        surf.fill((0, 0, 0))
+        bp.draw_face(surf, 80, 80, 44, "neutral")
+        arr = pygame.surfarray.array3d(surf)
+        bright = int(arr.reshape(-1, 3).max(axis=1).max())
+        self.assertGreater(bright, 200,
+                           "the eye has a light sclera/catchlight, not a void")
+
+    def test_attack_action_drives_a_fighting_face(self):
+        from ui import char_face
+        self.assertEqual(char_face.EMOTE_EXPR.get("attack"), "angry")
+
+
 class TestGroundShadow(unittest.TestCase):
     """ANIM_REALISM R6 — a soft contact shadow grounds a figure and SHRINKS as it
     lifts off the ground (airborne reads)."""
