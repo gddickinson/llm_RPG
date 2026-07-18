@@ -286,15 +286,9 @@ def render_iso(target, engine, view_rect, tile_size, sprites=None) -> None:
 
 
 def _draw_char(target, data, tile_size):
-    from ui import iso_chars
+    from ui import iso_actors
     char, sx, sy = data
-    th = max(6, tile_size // 3)
-    sh = pygame.Surface((tile_size, th), pygame.SRCALPHA)
-    pygame.draw.ellipse(sh, (0, 0, 0, 95), (0, 0, tile_size, th))
-    target.blit(sh, (sx - tile_size // 2, sy - th // 2))     # contact shadow
-    spr = iso_chars.char_sprite(char, int(tile_size * 1.5))
-    w, h = spr.get_size()
-    target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
+    iso_actors.draw_actor(target, char, sx, sy, tile_size)
 
 
 def draw_diamond(target, iso, sx, sy, top, seed=0, name=None, wx=0, wy=0):

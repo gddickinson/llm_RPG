@@ -9652,3 +9652,9 @@ dispatches here (else `body_renderer` keeps it a puppet). `world/wildlife.build_
 war_horse→horse). Tests: `tests/test_creature_glb.py` (12 — loader node-transform check, species resolution,
 bake, facing flip, dispatch, roster models exist). `pygltflib` added to `requirements.txt` (optional); the
 Quaternius CC0 license copied to `data/creatures/LICENSE.txt`. Content validator + related suites green.
+
+**Iso parity** (same feature, follow-up round): the isometric renderer drew every actor — beasts
+included — as a humanoid iso puppet. Since the GLB models bake at the iso camera, `ui/iso_actors.draw_actor`
+now centralises the iso actor draw (shadow + sprite) and uses `beast_sprite` (the baked GLB model, gated to
+non-humanoid body plans, feet-anchored + facing-flipped) for beasts, else the humanoid figure;
+`iso_render._draw_char` + `iso_zone._char` both delegate to it. Tests: `test_creature_glb.TestIsoParity`.

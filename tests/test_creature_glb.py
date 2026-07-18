@@ -109,6 +109,30 @@ class TestDispatch(unittest.TestCase):
             creature_render.draw_creature(surf, ch, 10, 10, 48, plan)
 
 
+class TestIsoParity(unittest.TestCase):
+    """The baked models bake at the iso camera, so the iso path uses them too."""
+
+    @unittest.skipUnless(cg.GLB_OK, "pygltflib/numpy not available")
+    def test_beast_sprite_for_modeled_creature(self):
+        from ui import iso_actors
+        self.assertIsNotNone(iso_actors.beast_sprite(_Ch(name="Wolf"), 48))
+
+    def test_no_beast_sprite_for_humanoid(self):
+        from ui import iso_actors
+        from characters.character_types import CharacterClass
+        ch = _Ch(name="Wolfgang")
+        ch.character_class = CharacterClass.WARRIOR       # a person, not a beast
+        self.assertIsNone(iso_actors.beast_sprite(ch, 48))
+
+    def test_draw_actor_runs(self):
+        import pygame
+        pygame.init()
+        from ui import iso_actors
+        surf = pygame.Surface((120, 120), pygame.SRCALPHA)
+        for ch in (_Ch(name="Aurochs", model="cow"), _Ch(name="Grey Wolf")):
+            iso_actors.draw_actor(surf, ch, 60, 60, 48)
+
+
 class TestRosterModels(unittest.TestCase):
     """Every new roster creature with a model hint has a real GLB behind it."""
 

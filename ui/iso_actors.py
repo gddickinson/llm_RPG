@@ -28,6 +28,40 @@ def tween_world_pos(char, cx, cy):
     return float(cx), float(cy)
 
 
+def beast_sprite(char, tile_size):
+    """#9 — a baked Quaternius GLB model for a beast-class creature (the models
+    are baked at the iso camera, so they drop straight into the iso view), or
+    None so the caller uses the humanoid iso figure. Gated to non-humanoid body
+    plans so an NPC named 'Wolfgang' never becomes a wolf."""
+    from ui import creature_pose
+    if creature_pose.body_plan(char) == "humanoid":
+        return None
+    from ui import creature_glb, iso_chars
+    face_east = iso_chars.move_delta(char)[0] > 0
+    return creature_glb.sprite_for_char(char, int(tile_size * 1.5),
+                                        face_east=face_east)
+
+
+def draw_actor(target, char, sx, sy, tile_size):
+    """Draw one iso actor at screen (sx, sy): a contact shadow, then either a
+    baked GLB creature model (beasts — #9) or the humanoid iso figure. Shared by
+    the world (`iso_render`) and interior (`iso_zone`) paths."""
+    import pygame
+    from ui import iso_chars
+    th = max(6, tile_size // 3)
+    sh = pygame.Surface((tile_size, th), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 95), (0, 0, tile_size, th))
+    target.blit(sh, (sx - tile_size // 2, sy - th // 2))       # contact shadow
+    spr = beast_sprite(char, tile_size)
+    if spr is not None:                          # a grounded quadruped/creature
+        w, h = spr.get_size()
+        target.blit(spr, (sx - w // 2, sy - int(h * 0.62)))
+    else:
+        spr = iso_chars.char_sprite(char, int(tile_size * 1.5))
+        w, h = spr.get_size()
+        target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
+
+
 def visible_chars(engine):
     """Hero + active NPCs the top-down view would show (not wall-hidden)."""
     out = [engine.player]
