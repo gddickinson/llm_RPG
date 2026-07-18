@@ -349,11 +349,18 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
         # ease the slide (slow-in/out) instead of a linear crawl (P34.1)
         frac = 1.0 - smoothstep(1.0 - tw / dur)
         ox, oy = fdx * tile_size * frac, fdy * tile_size * frac
+    atk_t = anim.get("atk_t", 0.0)
+    attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
+    if atk_t > 0:                          # G3: a strike LUNGES the whole body
+        # toward the target — so the attack reads from ANY facing, not just the
+        # arm arc (which is near-invisible head-on)
+        lunge = char_motion.attack_lunge(atk_t) * tile_size * 0.17
+        lfx, lfy = char_motion.facing(anim)
+        ox += lfx * lunge
+        oy += lfy * lunge
     feet_x = sx + tile_size / 2 + ox
     feet_y = sy + tile_size - 2 + oy
 
-    atk_t = anim.get("atk_t", 0.0)
-    attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
     from ui import char_clips, char_style, char_pose3d, char_mocap, char_injury
     action = anim.get("cur_action", "idle")
     weapon = char_motion.weapon_kind(char)

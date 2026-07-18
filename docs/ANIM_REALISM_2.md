@@ -79,8 +79,15 @@ Ordered by perceived-quality-per-effort.
   (0.22→0.34), fill (0.12→0.18) and AO floor (0.72→0.82) + a faintly warm rim, so
   the shadow side reads (~0.16→~0.30) and colours pop — the murky figures now
   separate from the dark ground (armor silvers, robes vivid). Render `audit_iso.png`.
-- **G3 — Action readability.** Attack/cast/shoot read from any facing, both views.
-- **G4 — Hands, feet, silhouette.** Articulated hands + directional boots + shaping.
+- **G3 — Action readability. ✅ DONE (2D).** The unused `char_motion.attack_lunge`
+  now drives the whole body FORWARD on a strike (`body_renderer`, in the facing
+  direction) + a bolder weapon-arm reach (`char_pose3d` H·0.30→0.36), so an attack
+  reads from ANY facing (was near-invisible head-on). Pairs with G1's fighting
+  face. Render `g3_attack.png`. (Iso action-read is a later pass.)
+- **G4 — Hands & directional boots. ✅ DONE (2D).** `draw_arm` caps the wrist with a
+  rounded HAND + lit knuckle; `draw_legs` draws a directional BOOT whose toe points
+  the facing (a clear silhouette cue). Render `audit_2d.png`. Tests:
+  `test_body_renderer.TestActionAndAnatomy`.
 - **G5 — Gear & cloth.** Armor plates / hoods / capes / robe trim; equipment layering.
 - **G6 — (ambitious) Dynamic 2D lighting via baked normal maps.**
 

@@ -67,8 +67,18 @@ def draw_legs(surface, pose, pants, boots, w):
         _limb(surface, pose[hip], kn, pants, w)
         _limb(surface, kn, pose[foot], pants, w)
         fx, fy = _pt(pose[foot])
-        pygame.draw.ellipse(surface, boots,
-                            (fx - w, fy - max(1, w // 2), w * 2, w))
+        # G4 a directional BOOT — the toe extends toward the facing (a clear
+        # silhouette cue), rounder + toward-camera when facing front
+        prof = pose.get("fdir", 0) or pose.get("profile", 0)
+        toe = int(w * 0.85)
+        if prof > 0:                                  # facing screen-right
+            rect = (fx - w // 2, fy - max(1, w // 2), w + toe, w)
+        elif prof < 0:                                # facing screen-left
+            rect = (fx - w // 2 - toe, fy - max(1, w // 2), w + toe, w)
+        else:                                         # facing the camera
+            rect = (fx - w, fy - max(1, w // 2), w * 2, int(w * 1.25))
+        pygame.draw.ellipse(surface, boots, rect)
+        pygame.draw.ellipse(surface, _lighten(boots, 20), rect, 1)
 
 
 # R5: classes that wear a robe/gown — the legs read as a hanging SKIRT, not pants
@@ -127,11 +137,17 @@ def draw_arms(surface, pose, sleeve, skin, w):
 
 def draw_arm(surface, pose, side, sleeve, skin, w):
     """One arm (P34.14 depth-sort: the far arm is drawn behind the torso;
-    P34.6: the elbow bows so the arm arcs)."""
+    P34.6: the elbow bows so the arm arcs). G4: a small HAND caps the wrist."""
+    import pygame
     sh, el, ha = side + "_sh", side + "_elbow", side + "_hand"
     eb = _bow(pose[sh], pose[el], pose[ha], 0.30)
     _limb(surface, pose[sh], eb, sleeve, w)
     _limb(surface, eb, pose[ha], skin, max(1, w - 1))
+    hx, hy = _pt(pose[ha])                       # G4 a rounded hand + a lit knuckle
+    hr = max(2, int(w * 0.72))
+    pygame.draw.circle(surface, skin, (hx, hy), hr)
+    pygame.draw.circle(surface, _lighten(skin, 26),
+                       (hx - max(1, hr // 3), hy - max(1, hr // 3)), max(1, hr // 2))
 
 
 def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,

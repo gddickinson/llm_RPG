@@ -228,6 +228,36 @@ class TestFace(unittest.TestCase):
         self.assertEqual(char_face.EMOTE_EXPR.get("attack"), "angry")
 
 
+class TestActionAndAnatomy(unittest.TestCase):
+    """G3 attack lunge (a strike drives the body forward) + G4 directional boots."""
+
+    def test_attack_lunge_peaks_mid_strike(self):
+        from ui import char_motion as cm
+        self.assertLess(cm.attack_lunge(cm.ATTACK_DUR), 0.05)          # just begun
+        self.assertGreater(cm.attack_lunge(cm.ATTACK_DUR * 0.5), 0.9)  # peak drive
+        self.assertEqual(cm.attack_lunge(0.0), 0.0)                    # at rest
+
+    def test_boot_points_toward_the_facing(self):
+        from ui import body_parts as bp
+
+        def span(prof):
+            surf = pygame.Surface((140, 70))
+            surf.fill((0, 0, 0))
+            pose = {"l_hip": (70, 12), "l_knee": (70, 30), "l_foot": (70, 52),
+                    "r_hip": (70, 12), "r_knee": (70, 30), "r_foot": (70, 52),
+                    "fdir": prof}
+            bp.draw_legs(surf, pose, (80, 70, 60), (58, 44, 34), 7)
+            xs = [x for x in range(140) for y in range(46, 60)
+                  if surf.get_at((x, y))[:3] == (58, 44, 34)]
+            return (min(xs), max(xs)) if xs else (70, 70)
+
+        lmin, _ = span(-1)
+        _, rmax = span(1)
+        cmin, cmax = span(0)
+        self.assertLess(lmin, cmin, "a left-facing boot's toe reaches further left")
+        self.assertGreater(rmax, cmax, "a right-facing boot's toe reaches right")
+
+
 class TestGroundShadow(unittest.TestCase):
     """ANIM_REALISM R6 — a soft contact shadow grounds a figure and SHRINKS as it
     lifts off the ground (airborne reads)."""
