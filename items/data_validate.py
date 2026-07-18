@@ -347,11 +347,21 @@ def _check_spells() -> List[str]:
     from engine.spells import SPELL_REGISTRY
     from characters.status_effects import VALID_EFFECTS
     from items.item_registry import ITEM_REGISTRY
+    from characters.character_types import CharacterClass
+    class_values = {c.value for c in CharacterClass}
     out = []
     for sid, spell in SPELL_REGISTRY.items():
         if spell.status_effect and spell.status_effect not in VALID_EFFECTS:
             out.append(f"spell {sid}: unknown effect "
                        f"'{spell.status_effect}'")
+        if not (1 <= spell.tier <= 5):                     # M1 tier range
+            out.append(f"spell {sid}: tier {spell.tier} out of 1-5")
+        for cv in spell.classes:
+            if cv not in class_values:
+                out.append(f"spell {sid}: unknown class '{cv}'")
+        prereq = (spell.requires or {}).get("prereq")
+        if prereq and prereq not in SPELL_REGISTRY:
+            out.append(f"spell {sid}: prereq unknown spell '{prereq}'")
     for iid, item in ITEM_REGISTRY.items():
         cast = item.use_effect.get("spell")
         if cast and cast not in SPELL_REGISTRY:

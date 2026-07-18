@@ -10,7 +10,9 @@
       "wizard",
       "sorcerer",
       "warlock"
-    ]
+    ],
+    "school": "evocation",
+    "tier": 1
   },
   "fireball": {
     "id": "fireball",
@@ -23,7 +25,9 @@
       "wizard",
       "sorcerer"
     ],
-    "area": 2.0
+    "area": 2.0,
+    "school": "evocation",
+    "tier": 3
   },
   "frost_ray": {
     "id": "frost_ray",
@@ -38,7 +42,9 @@
       "wizard",
       "sorcerer",
       "warlock"
-    ]
+    ],
+    "school": "evocation",
+    "tier": 1
   },
   "heal": {
     "id": "heal",
@@ -51,7 +57,9 @@
       "cleric",
       "paladin",
       "druid"
-    ]
+    ],
+    "school": "restoration",
+    "tier": 1
   },
   "bless": {
     "id": "bless",
@@ -65,7 +73,9 @@
       "cleric",
       "paladin"
     ],
-    "concentration": true
+    "concentration": true,
+    "school": "abjuration",
+    "tier": 1
   },
   "shock": {
     "id": "shock",
@@ -77,7 +87,9 @@
     "classes": [
       "druid",
       "wizard"
-    ]
+    ],
+    "school": "evocation",
+    "tier": 1
   },
   "poison_dart": {
     "id": "poison_dart",
@@ -91,7 +103,9 @@
     "classes": [
       "druid",
       "warlock"
-    ]
+    ],
+    "school": "necromancy",
+    "tier": 1
   },
   "firebolt": {
     "id": "firebolt",
@@ -103,7 +117,9 @@
     "classes": [
       "wizard",
       "sorcerer"
-    ]
+    ],
+    "school": "evocation",
+    "tier": 1
   },
   "smite": {
     "id": "smite",
@@ -115,7 +131,9 @@
     "classes": [
       "cleric",
       "paladin"
-    ]
+    ],
+    "school": "radiant",
+    "tier": 2
   },
   "entangle": {
     "id": "entangle",
@@ -129,7 +147,9 @@
     "classes": [
       "druid"
     ],
-    "concentration": true
+    "concentration": true,
+    "school": "nature",
+    "tier": 1
   },
   "drain": {
     "id": "drain",
@@ -141,7 +161,9 @@
     "description": "Steal the target's vitality for your own.",
     "classes": [
       "warlock"
-    ]
+    ],
+    "school": "necromancy",
+    "tier": 2
   },
   "regrowth": {
     "id": "regrowth",
@@ -152,7 +174,9 @@
     "description": "Green life knits flesh like spring after frost.",
     "classes": [
       "druid"
-    ]
+    ],
+    "school": "nature",
+    "tier": 1
   },
   "war_cry": {
     "id": "war_cry",
@@ -164,7 +188,9 @@
     "description": "A bellow that steels your own arm.",
     "classes": [
       "paladin"
-    ]
+    ],
+    "school": "enchantment",
+    "tier": 1
   },
   "hex": {
     "id": "hex",
@@ -179,7 +205,9 @@
       "warlock",
       "sorcerer"
     ],
-    "concentration": true
+    "concentration": true,
+    "school": "enchantment",
+    "tier": 2
   },
   "frost_armor": {
     "id": "frost_armor",
@@ -192,7 +220,9 @@
     "classes": [
       "wizard"
     ],
-    "concentration": true
+    "concentration": true,
+    "school": "abjuration",
+    "tier": 2
   },
   "water_walk": {
     "id": "water_walk",
@@ -206,7 +236,9 @@
       "wizard",
       "cleric",
       "druid"
-    ]
+    ],
+    "school": "transmutation",
+    "tier": 2
   },
   "swimmers_grace": {
     "id": "swimmers_grace",
@@ -220,7 +252,9 @@
       "cleric",
       "druid",
       "wizard"
-    ]
+    ],
+    "school": "transmutation",
+    "tier": 1
   },
   "flight": {
     "id": "flight",
@@ -233,7 +267,9 @@
     "classes": [
       "wizard",
       "sorcerer"
-    ]
+    ],
+    "school": "transmutation",
+    "tier": 3
   },
   "haste": {
     "id": "haste",
@@ -247,7 +283,9 @@
       "wizard",
       "sorcerer"
     ],
-    "concentration": true
+    "concentration": true,
+    "school": "transmutation",
+    "tier": 3
   },
   "slow": {
     "id": "slow",
@@ -261,7 +299,9 @@
       "wizard",
       "sorcerer",
       "warlock"
-    ]
+    ],
+    "school": "enchantment",
+    "tier": 2
   },
   "transmute": {
     "id": "transmute",
@@ -272,7 +312,9 @@
     "classes": [
       "wizard",
       "sorcerer"
-    ]
+    ],
+    "school": "transmutation",
+    "tier": 1
   },
   "farsight": {
     "id": "farsight",
@@ -284,7 +326,9 @@
     "classes": [
       "wizard",
       "druid"
-    ]
+    ],
+    "school": "divination",
+    "tier": 2
   },
   "keen_sight": {
     "id": "keen_sight",
@@ -298,6 +342,283 @@
       "wizard",
       "cleric",
       "druid"
-    ]
+    ],
+    "school": "divination",
+    "tier": 1
+  },
+  "ice_shard": {
+    "name": "Ice Shard",
+    "mana_cost": 2,
+    "damage": 4,
+    "range": 7.0,
+    "school": "evocation",
+    "tier": 1,
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "A dart of jagged ice."
+  },
+  "scorching_ray": {
+    "name": "Scorching Ray",
+    "mana_cost": 3,
+    "damage": 7,
+    "range": 6.0,
+    "school": "evocation",
+    "tier": 2,
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "A searing beam of flame."
+  },
+  "lightning_bolt": {
+    "name": "Lightning Bolt",
+    "mana_cost": 5,
+    "damage": 10,
+    "range": 8.0,
+    "school": "evocation",
+    "tier": 3,
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "A stroke of raw lightning."
+  },
+  "chain_lightning": {
+    "name": "Chain Lightning",
+    "mana_cost": 7,
+    "damage": 9,
+    "area": 2.0,
+    "range": 7.0,
+    "school": "evocation",
+    "tier": 4,
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Lightning that leaps between foes."
+  },
+  "meteor_swarm": {
+    "name": "Meteor Swarm",
+    "mana_cost": 12,
+    "damage": 22,
+    "area": 3.0,
+    "range": 8.0,
+    "school": "evocation",
+    "tier": 5,
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "requires": {
+      "min_intelligence": 16
+    },
+    "description": "Fiery ruin called down from the sky."
+  },
+  "eldritch_blast": {
+    "name": "Eldritch Blast",
+    "mana_cost": 1,
+    "damage": 5,
+    "range": 8.0,
+    "school": "evocation",
+    "tier": 1,
+    "classes": [
+      "warlock"
+    ],
+    "description": "A crackling bolt of eldritch force."
+  },
+  "frostbite": {
+    "name": "Frostbite",
+    "mana_cost": 3,
+    "damage": 4,
+    "range": 6.0,
+    "status_effect": "slowed",
+    "duration": 3,
+    "school": "evocation",
+    "tier": 2,
+    "classes": [
+      "wizard",
+      "warlock"
+    ],
+    "description": "Biting cold that slows the prey."
+  },
+  "cure_wounds": {
+    "name": "Cure Wounds",
+    "mana_cost": 2,
+    "heal": 8,
+    "range": 1.0,
+    "school": "restoration",
+    "tier": 1,
+    "classes": [
+      "cleric",
+      "paladin",
+      "druid"
+    ],
+    "description": "Knit a wound closed with a touch."
+  },
+  "greater_heal": {
+    "name": "Greater Heal",
+    "mana_cost": 6,
+    "heal": 25,
+    "range": 2.0,
+    "school": "restoration",
+    "tier": 3,
+    "classes": [
+      "cleric",
+      "druid"
+    ],
+    "requires": {
+      "min_wisdom": 14
+    },
+    "description": "A flood of restoring light."
+  },
+  "aid": {
+    "name": "Aid",
+    "mana_cost": 2,
+    "heal": 5,
+    "status_effect": "blessed",
+    "duration": 5,
+    "range": 1.0,
+    "school": "restoration",
+    "tier": 1,
+    "classes": [
+      "cleric"
+    ],
+    "description": "Bolster an ally's body and spirit."
+  },
+  "sanctuary": {
+    "name": "Sanctuary",
+    "mana_cost": 3,
+    "status_effect": "blessed",
+    "duration": 6,
+    "concentration": true,
+    "range": 1.0,
+    "school": "abjuration",
+    "tier": 2,
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "description": "A sustained ward of protection."
+  },
+  "radiant_smite": {
+    "name": "Radiant Smite",
+    "mana_cost": 6,
+    "damage": 14,
+    "range": 1.0,
+    "school": "radiant",
+    "tier": 3,
+    "classes": [
+      "paladin",
+      "cleric"
+    ],
+    "description": "Channel divine wrath through your weapon."
+  },
+  "thorn_whip": {
+    "name": "Thorn Whip",
+    "mana_cost": 1,
+    "damage": 3,
+    "range": 2.0,
+    "school": "nature",
+    "tier": 1,
+    "classes": [
+      "druid"
+    ],
+    "description": "A lash of grasping thorns."
+  },
+  "barkskin": {
+    "name": "Barkskin",
+    "mana_cost": 3,
+    "status_effect": "blessed",
+    "duration": 8,
+    "concentration": true,
+    "range": 1.0,
+    "school": "nature",
+    "tier": 1,
+    "classes": [
+      "druid"
+    ],
+    "description": "Skin toughens like oak bark."
+  },
+  "moonbeam": {
+    "name": "Moonbeam",
+    "mana_cost": 5,
+    "damage": 8,
+    "range": 6.0,
+    "school": "nature",
+    "tier": 3,
+    "classes": [
+      "druid"
+    ],
+    "description": "A searing column of silver fire."
+  },
+  "insect_swarm": {
+    "name": "Insect Swarm",
+    "mana_cost": 4,
+    "damage": 5,
+    "area": 1.5,
+    "range": 6.0,
+    "status_effect": "poisoned",
+    "duration": 3,
+    "school": "nature",
+    "tier": 2,
+    "classes": [
+      "druid"
+    ],
+    "description": "A biting, stinging swarm."
+  },
+  "sleep": {
+    "name": "Sleep",
+    "mana_cost": 3,
+    "status_effect": "paralyzed",
+    "duration": 2,
+    "range": 6.0,
+    "school": "enchantment",
+    "tier": 2,
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Heavy drowsiness overtakes a foe."
+  },
+  "fear": {
+    "name": "Fear",
+    "mana_cost": 4,
+    "status_effect": "frightened",
+    "duration": 3,
+    "range": 6.0,
+    "school": "necromancy",
+    "tier": 3,
+    "classes": [
+      "warlock",
+      "sorcerer"
+    ],
+    "description": "Icy dread grips the target's heart."
+  },
+  "vampiric_touch": {
+    "name": "Vampiric Touch",
+    "mana_cost": 4,
+    "damage": 7,
+    "heal": 4,
+    "range": 1.0,
+    "school": "necromancy",
+    "tier": 2,
+    "classes": [
+      "warlock"
+    ],
+    "description": "Drain a foe's life to mend your own."
+  },
+  "bone_spear": {
+    "name": "Bone Spear",
+    "mana_cost": 3,
+    "damage": 6,
+    "range": 7.0,
+    "school": "necromancy",
+    "tier": 2,
+    "classes": [
+      "warlock"
+    ],
+    "description": "A hurled shard of sharpened bone."
   }
 }

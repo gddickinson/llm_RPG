@@ -322,7 +322,11 @@ plan as a batch of `mutate` calls; all obey ONE ruleset.
   `data/worldcraft/mutations.json` + validator + `tests/test_worldcraft.py`);
   M0.2 (adopt existing mutators + activate the callback bus + `remove_location`)
   pending.
-- [ ] M1 Magic depth
+- [~] M1 Magic depth — **DONE**: `Spell` gains `school`/`tier`/`requires`/
+  `world_effect`; tier-1-only starting spells; `can_learn` gate;
+  `learn_new_spells` on level-up + tome `teach_spell`; catalogue 23→43 across
+  schools/tiers/casters; spellbook shows tier+school. (Remaining flavour: cleric
+  prayer-learning & sorcerer-innate distinctions are future polish.)
 - [ ] M2 World-altering spells
 - [ ] M3 Magic-item crafting + imbuing
 - [ ] M4 Guilds + worker build economy

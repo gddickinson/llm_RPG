@@ -138,6 +138,17 @@ def check_level_up(character) -> List[str]:
             if v > 30:
                 setattr(character, stat, 30)
 
+    # M1: a caster who has climbed a tier learns the class spells they now
+    # qualify for (the innate/trained route; wizards ALSO study from tomes)
+    if msgs:
+        try:
+            from engine.spells import learn_new_spells
+            learnt = learn_new_spells(character)
+            if learnt:
+                msgs.append(f"** New magic mastered: {', '.join(learnt)}. **")
+        except Exception:
+            pass
+
     return msgs
 
 

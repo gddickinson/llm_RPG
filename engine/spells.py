@@ -30,6 +30,23 @@ class Spell:
     area: float = 0.0          # blast radius in tiles (P10.1)
     concentration: bool = False    # one sustained spell max (P12.7)
     classes: Tuple[str, ...] = ()   # who can learn it
+    school: str = ""           # M1 evocation/restoration/nature/… (flavour+UI)
+    tier: int = 1              # M1 1 (novice) … 5 (master); gates learning
+    requires: Dict[str, Any] = field(default_factory=dict)   # M1 min_level/min_int/…
+    world_effect: Dict[str, Any] = field(default_factory=dict)  # M2 tile/build/…
+
+
+# M1 — a spell TIER unlocks at a caster level; higher tiers need more levels
+_TIER_MIN_LEVEL = {1: 1, 2: 3, 3: 5, 4: 8, 5: 12}
+
+
+def max_tier_for_level(level: int) -> int:
+    """The highest spell tier a caster of `level` may learn."""
+    best = 1
+    for tier, req in _TIER_MIN_LEVEL.items():
+        if level >= req:
+            best = max(best, tier)
+    return best
 
 
 # Spell registry — loaded from data/spells.json --------------------------
@@ -51,6 +68,10 @@ def _build_spells() -> Dict[str, Spell]:
             area=entry.get("area", 0.0),
             concentration=entry.get("concentration", False),
             classes=tuple(entry.get("classes", ())),
+            school=entry.get("school", ""),
+            tier=int(entry.get("tier", 1)),
+            requires=entry.get("requires", {}) or {},
+            world_effect=entry.get("world_effect", {}) or {},
         )
     return out
 
@@ -58,9 +79,84 @@ def _build_spells() -> Dict[str, Spell]:
 SPELL_REGISTRY: Dict[str, Spell] = _build_spells()
 
 
+def class_spells(class_value: str) -> List[Spell]:
+    """Every spell on `class_value`'s list, any tier (the full learnable set)."""
+    return [s for s in SPELL_REGISTRY.values() if class_value in s.classes]
+
+
 def starting_spells_for(class_value: str) -> List[Spell]:
-    return [s for s in SPELL_REGISTRY.values()
-            if class_value in s.classes]
+    """The NOVICE (tier-1) spells a fresh caster of this class begins with — no
+    longer the whole list, so higher tiers are earned by levelling / study (M1)."""
+    return [s for s in class_spells(class_value) if s.tier <= 1]
+
+
+def _stat(character, name: str) -> int:
+    try:
+        from engine.effects import effective_stat
+        return effective_stat(character, name)
+    except Exception:
+        return getattr(character, name, 10)
+
+
+def can_learn(character, spell) -> Tuple[bool, str]:
+    """Could `character` learn `spell` now? Checks the tier-by-level gate + the
+    spell's `requires` block (min_level, min_int/wis/cha, a prereq spell). The
+    single chokepoint for level-up grants AND tome study (M1)."""
+    if isinstance(spell, str):
+        spell = SPELL_REGISTRY.get(spell)
+        if spell is None:
+            return False, "unknown spell"
+    lvl = getattr(character, "level", 1)
+    req = spell.requires or {}
+    if lvl < req.get("min_level", 0):
+        return False, f"requires level {req['min_level']}"
+    if spell.tier > max_tier_for_level(lvl):
+        return False, f"a tier-{spell.tier} spell — too advanced yet"
+    for stat in ("intelligence", "wisdom", "charisma"):
+        need = req.get(f"min_{stat}")
+        if need and _stat(character, stat) < need:
+            return False, f"requires {stat} {need}"
+    prereq = req.get("prereq")
+    known = (getattr(character, "metadata", None) or {}).get("spells_known", [])
+    if prereq and prereq not in known:
+        pn = SPELL_REGISTRY.get(prereq)
+        return False, f"master {pn.name if pn else prereq} first"
+    return True, ""
+
+
+def learn_new_spells(character) -> List[str]:
+    """Grant every class spell the caster now qualifies for but doesn't know —
+    the innate/trained route fired on level-up. Returns the newly-learnt names."""
+    ensure_mana(character)
+    klass = getattr(getattr(character, "character_class", None), "value", "")
+    known = character.metadata.setdefault("spells_known", [])
+    learnt = []
+    for spell in class_spells(klass):
+        if spell.id in known:
+            continue
+        ok, _ = can_learn(character, spell)
+        if ok:
+            known.append(spell.id)
+            learnt.append(spell.name)
+    return learnt
+
+
+def teach_spell(character, spell_id: str, force: bool = False) -> Tuple[bool, str]:
+    """Learn ONE spell (a tome/trainer). Honours `can_learn` unless `force` (a
+    powerful artifact tome may bypass the gate). Returns (ok, message)."""
+    spell = SPELL_REGISTRY.get(spell_id)
+    if spell is None:
+        return False, "unknown spell"
+    ensure_mana(character)
+    known = character.metadata.setdefault("spells_known", [])
+    if spell_id in known:
+        return False, f"already knows {spell.name}"
+    if not force:
+        ok, why = can_learn(character, spell)
+        if not ok:
+            return False, f"can't learn {spell.name} — {why}"
+    known.append(spell_id)
+    return True, f"learned {spell.name}"
 
 
 def starting_mana(character) -> int:

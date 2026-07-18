@@ -9742,3 +9742,20 @@ consumes resources, drops by-products (clearing a forest yields logs), sets terr
 Magic mana stays the spell system's job. Persistence FREE. Validator `check_worldcraft` + `tests/test_worldcraft`
 (11). Full suite green. Next: M0.2 (route earthworks/resource_nodes through it, activate the callback bus,
 add `remove_location`), then M1 magic depth.
+
+## 2026-07-18 — M1 Magic depth (schools / tiers / learning routes + far more spells)
+
+The `Spell` dataclass gained `school` (evocation/restoration/nature/necromancy/divine/…), `tier` (1 novice →
+5 master), an optional `requires` block (`min_level`/`min_int`/`min_wis`/`prereq`), and an M2-ready
+`world_effect` (all backward-compatible — unknown JSON keys were already ignored). A fresh caster now begins
+with only NOVICE (tier-1) class spells (`starting_spells_for`), not the whole list; higher tiers are earned by
+LEVELLING (`learn_new_spells`, fired from `leveling.check_level_up` — a caster who climbs a tier learns the
+class spells they now qualify for) or STUDIED from tomes (`teach_spell(force=True)` bypasses the gate — the
+wizard's shortcut, and it keeps the existing tome/adventure content working). `can_learn(char,spell)` is the
+ONE gate (tier-by-level via `max_tier_for_level` {1:1,2:3,3:5,4:8,5:12} + the `requires` block). The catalogue
+grew 23→43 spells across the schools/tiers/caster types (evocation ice-shard→meteor-swarm, restoration
+cure/greater-heal/aid/sanctuary, radiant smite, nature thorn-whip/barkskin/moonbeam/insect-swarm, necromancy
+vampiric-touch/bone-spear/fear, enchantment sleep). The X-spellbook shows each spell's tier + school; the
+validator checks tier range / classes / prereq. Tests: `tests/test_spell_progression.py` (14); no regression
+in the existing spell/level/quick/panel suites. Next: M2 world-altering spells (the `world_effect` block →
+`worldcraft.mutate`), then M3 magic-item crafting + imbuing.

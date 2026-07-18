@@ -119,7 +119,8 @@ class SpellPanel:
                 if affordable else \
                 ((180, 150, 150) if selected else (130, 125, 140))
             prefix = f"> {idx + 1}. " if selected else f"  {idx + 1}. "
-            head = f"{prefix}{spell.name} ({spell.mana_cost}m)"
+            tier = f"T{spell.tier} " if getattr(spell, "tier", 1) else ""
+            head = f"{prefix}{tier}{spell.name} ({spell.mana_cost}m)"
             target.blit(self._font.render(head, True, color),
                         (box.x + 12, y))
             effect = []
@@ -129,8 +130,9 @@ class SpellPanel:
                 effect.append(f"heal {spell.heal}")
             if spell.status_effect:
                 effect.append(spell.status_effect)
-            sub = f"     rng {int(spell.range)} · " + " · ".join(effect)
-            target.blit(self._font.render(sub[:42], True, (150, 150, 170)),
+            school = f"{spell.school} · " if getattr(spell, "school", "") else ""
+            sub = f"     {school}rng {int(spell.range)} · " + " · ".join(effect)
+            target.blit(self._font.render(sub[:52], True, (150, 150, 170)),
                         (box.x + 12, y + 15))
             y += line_h
 

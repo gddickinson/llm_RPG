@@ -254,9 +254,12 @@ class TestAnimation(unittest.TestCase):
     def test_dance_sit_jump_swim_bake_distinct(self):
         pygame.init()
         from ui import iso_skeleton as isk
-        seen = set()
+        # keep every mesh ALIVE in a list — else a GC'd mesh's id can be reused
+        # by the next one and `id()`-distinctness flakes by allocation order
+        meshes = []
         for act in ("idle", "dance", "sit", "jump", "swim", "climb"):
             m = isk.sample_figure(act, 0.3, (150, 150, 165), (90, 60, 40), 0.0)
             self.assertIsNotNone(m, f"{act} builds a mesh")
-            seen.add(id(m))
-        self.assertEqual(len(seen), 6, "each action is its own mesh")
+            meshes.append(m)
+        self.assertEqual(len({id(m) for m in meshes}), 6,
+                         "each action is its own mesh")
