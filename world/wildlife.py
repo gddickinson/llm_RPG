@@ -86,6 +86,7 @@ def build_wildlife(species: str, position: Tuple[int, int]):
         metadata={
             "wildlife": True,
             "species": species,
+            "model": spec.get("model", ""),        # #9 GLB model override
             "diet": spec.get("diet", "graze"),
             "timid": spec.get("timid", 5),
             "preys_on": spec.get("preys_on", []),

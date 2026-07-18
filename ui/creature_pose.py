@@ -13,7 +13,9 @@ import math
 _QUAD = ("wolf", "fox", "boar", "bear", "cat", "hound", "dog", "deer", "stag",
          "rabbit", "hare", "lion", "wildcat", "direwolf", "warg", "hog", "ram",
          "goat", "wolfhound", "panther", "lynx", "mare", "pony", "mule", "horse",
-         "dragon", "drake", "wyrm", "lizard", "croc", "basilisk")   # big beasts too
+         "dragon", "drake", "wyrm", "lizard", "croc", "basilisk",
+         "sheep", "mouflon", "mustang", "aurochs", "razorback", "bull", "ox",
+         "cattle", "cow", "donkey", "husky", "shark")   # big beasts too
 _SLIME = ("slime", "ooze", "jelly", "blob", "pudding", "gel")
 _WISP = ("wisp", "spirit", "will-o", "ghost", "wraith", "flame", "ember", "spark")
 _AVIAN = ("bird", "bat", "raven", "crow", "hawk", "eagle", "owl", "harpy",
@@ -33,6 +35,10 @@ def body_plan(char):
     klass = getattr(getattr(char, "character_class", None), "value", "")
     if klass not in _BEAST_CLASSES:
         return "humanoid"
+    # #9 a creature pointing at an animal GLB model draws that baked model, so
+    # give it a non-humanoid plan (→ creature_render dispatch, model or fallback)
+    if md.get("model"):
+        return "quadruped"
     name = ((getattr(char, "name", "") or "") + " " +
             str(getattr(char, "id", ""))).lower()
     for kws, plan in ((_AVIAN, "avian"), (_ARACHNID, "arachnid"),

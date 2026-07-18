@@ -9619,3 +9619,36 @@ drops the weapon during a social clip (parity with `_EMPTY_HANDED`).
 Tests: `test_interactions` (22), `test_tactics.TestGrappleThrow` (7), `test_iso_chars.TestInteractionParity`.
 En route, root-caused + fixed two full-suite flakes (phantom `npc_manager` foe in `test_cleave`; ID-hash
 worksite collision in `test_workers_fan_out`) and recorded the flake pattern to memory. Full suite green.
+
+## 2026-07-18 — #9 Realistic animal/monster graphics (Quaternius GLB) + bigger roster — George
+
+George: "improve animal and monster graphics to make them more realistic … use the movieMaker Quaternius
+animals … Also, further expand the animal and monster roster with far more creatures."
+
+**The GLB pipeline** (`ui/creature_glb.py`, new): a Quaternius CC0 `.glb` (12 copied into `data/creatures/`)
+loads to per-primitive `(verts, tris, rgb)` meshes — `raster3d`'s own mesh format — with each mesh's node
+WORLD transform applied (`_mesh_world_matrices`/`_local_matrix`/`_quat_matrix`). This was the crux: the
+Quaternius rigs park the body mesh under a `−90°X, ×100` armature node, so reading raw POSITION accessors
+(as movieMaker does for humans) gives a tiny near-cubic bind pose that renders reared-up and mis-scaled;
+applying the node transforms yields a correctly-proportioned standing quadruped (Z body-length dominant).
+`_normalise` seats feet on the ground, centres, scales to fill the frame, and yaws to `_FACING`=45° (a clean
+front-3/4 view facing screen-left); `raster3d.bake` renders it once to a cached iso sprite. `species_of`
+(model-hint → name → id → GLB key), `sprite_for_char` (h-flip when heading east), `has_model`. Graceful
+fallback everywhere: no pygltflib / unmodelled species → None → the existing procedural creature.
+
+**Wired** into `ui/creature_render.draw_creature`: it now tries `_draw_model` first (feet-anchored + soft
+ground shadow, facing-flipped) and only falls back to the procedural quadruped/slime/wisp/avian/arachnid when
+no model exists. `creature_pose.body_plan` gives any creature with a `model` hint a non-humanoid plan so it
+dispatches here (else `body_renderer` keeps it a puppet). `world/wildlife.build_wildlife` +
+`world/monsters.build_monster` pass a JSON `model` field through to `metadata["model"]`.
+
+**Roster expansion** — new modelled creatures (all spawn-eligible + terrain-gated):
+- wildlife (`data/wildlife.json`): Red Stag (deer), Mouflon (sheep), Wild Mustang (horse), Aurochs (cow,
+  charges), Wild Hog (pig, charges) — wolves now prey on mouflon/stag.
+- monsters (`data/monsters.json`): Dire Wolf (wolf pack), Feral Hound (dog pack), Razorback (pig, charges),
+  Wild Bull (bull, charges), Mire Shark (shark, swamp predator preying on hog/boar).
+
+`SPECIES_GLB` maps deer/fox/wolf/pig/sheep/horse/cow/bull/dog/donkey/husky/shark (boar→pig, mule→donkey,
+war_horse→horse). Tests: `tests/test_creature_glb.py` (12 — loader node-transform check, species resolution,
+bake, facing flip, dispatch, roster models exist). `pygltflib` added to `requirements.txt` (optional); the
+Quaternius CC0 license copied to `data/creatures/LICENSE.txt`. Content validator + related suites green.

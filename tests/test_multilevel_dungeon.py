@@ -1,5 +1,6 @@
 """Multi-level dungeon tests (P9.5)."""
 
+import random
 import unittest
 
 from engine.game_engine import GameEngine
@@ -28,7 +29,14 @@ class TestMultiLevelDungeon(unittest.TestCase):
         wmap.remove_character(self.player)
         self.player.position = cave
         wmap.place_character(self.player, *cave)
+        # seed dungeon generation + population deterministically so the test is
+        # independent of how much global RNG the rest of a full run has consumed
+        # (else populate_dungeon can, for some prior-RNG states, place 0 monsters);
+        # restore the stream afterward so later tests see an unperturbed sequence
+        state = random.getstate()
+        random.seed(3)
         self.engine.enter_dungeon()
+        random.setstate(state)
         return self.engine.current_dungeon
 
     def test_dungeons_have_depth(self):

@@ -120,6 +120,7 @@ def build_monster(template_id: str, position: Tuple[int, int]):
                   "speed": spec.get("speed", 1.0),
                   "natural_damage": spec.get("natural_damage", 0),
                   "active": spec.get("active", "always"),   # C2 day/night
+                  "model": spec.get("model", ""),           # #9 GLB model override
                   "preys_on": spec.get("preys_on", [])},    # C5 hunts wildlife
         **stats,
     )

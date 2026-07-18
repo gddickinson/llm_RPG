@@ -787,5 +787,59 @@
     "dungeon": true, "boss_depth": 4, "min_depth": 4,
     "stats": {"strength": 16, "intelligence": 22, "constitution": 18},
     "natural_damage": 16, "behavior": {"caster": true, "summon": true}
+  },
+  "dire_wolf": {
+    "name": "Dire Wolf",
+    "class": "monster", "race": "goblin", "hp": 34, "level": 4, "symbol": "W",
+    "description": "A wolf the size of a pony, grizzled and scarred, leading the pack.",
+    "encounter_weight": 3, "dungeon": true, "min_depth": 1,
+    "spawn_terrain": ["forest", "grass", "mountain"],
+    "group": {"min": 2, "max": 5, "word": "pack"},
+    "stats": {"strength": 16, "dexterity": 15, "constitution": 14},
+    "natural_damage": 8, "speed": 1.6, "preys_on": ["deer", "rabbit", "mouflon"],
+    "behavior": {"pack_howl": true}
+  },
+  "feral_hound": {
+    "name": "Feral Hound",
+    "class": "monster", "race": "goblin", "hp": 16, "level": 2, "symbol": "h",
+    "description": "A gaunt, masterless dog running with the pack, ribs showing.",
+    "encounter_weight": 3, "dungeon": false,
+    "spawn_terrain": ["grass", "forest"],
+    "group": {"min": 2, "max": 4, "word": "pack"},
+    "model": "dog",
+    "stats": {"strength": 11, "dexterity": 14},
+    "natural_damage": 5, "speed": 1.5
+  },
+  "razorback": {
+    "name": "Razorback",
+    "class": "monster", "race": "troll", "hp": 30, "level": 4, "symbol": "R",
+    "description": "A monstrous boar with iron-hard bristles, quick to charge.",
+    "encounter_weight": 2, "dungeon": false,
+    "spawn_terrain": ["forest", "swamp"],
+    "model": "pig",
+    "stats": {"strength": 16, "constitution": 14},
+    "natural_damage": 8, "speed": 1.4,
+    "behavior": {"charge": true, "flee_below": 0.05}
+  },
+  "wild_bull": {
+    "name": "Wild Bull",
+    "class": "monster", "race": "troll", "hp": 42, "level": 5, "symbol": "B",
+    "description": "A rangy wild bull, horns scored from old fights — it lowers its head and charges.",
+    "encounter_weight": 2, "dungeon": false,
+    "spawn_terrain": ["grass", "forest"],
+    "model": "bull",
+    "stats": {"strength": 18, "constitution": 16},
+    "natural_damage": 11, "speed": 1.4,
+    "behavior": {"charge": true}
+  },
+  "bull_shark": {
+    "name": "Mire Shark",
+    "class": "monster", "race": "troll", "hp": 26, "level": 3, "symbol": "^",
+    "description": "A grey shark that hunts the flooded channels of the mire, fin cutting the murk.",
+    "encounter_weight": 2, "dungeon": false,
+    "spawn_terrain": ["swamp"],
+    "model": "shark",
+    "stats": {"strength": 15, "dexterity": 14},
+    "natural_damage": 8, "speed": 1.6, "preys_on": ["hog", "boar"]
   }
 }

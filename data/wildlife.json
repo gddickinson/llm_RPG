@@ -146,7 +146,9 @@
     "diet": "hunt",
     "preys_on": [
       "deer",
-      "rabbit"
+      "rabbit",
+      "mouflon",
+      "stag"
     ],
     "terrain": [
       "forest",
@@ -164,5 +166,143 @@
         2
       ]
     ]
+  },
+  "stag": {
+    "name": "Red Stag",
+    "symbol": "S",
+    "model": "deer",
+    "hp": 16,
+    "level": 3,
+    "diet": "graze",
+    "timid": 5,
+    "terrain": [
+      "forest",
+      "grass"
+    ],
+    "weight": 2,
+    "loot_table": [
+      [
+        "raw_meat",
+        5
+      ],
+      [
+        "game_hide",
+        3
+      ]
+    ],
+    "description": "A great antlered stag — a prized quarry that holds its ground before it bolts.",
+    "active": "day",
+    "herd": false
+  },
+  "mouflon": {
+    "name": "Mouflon",
+    "symbol": "m",
+    "model": "sheep",
+    "hp": 7,
+    "level": 1,
+    "diet": "graze",
+    "timid": 5,
+    "terrain": [
+      "grass",
+      "forest"
+    ],
+    "weight": 4,
+    "loot_table": [
+      [
+        "raw_meat",
+        3
+      ],
+      [
+        "game_hide",
+        2
+      ]
+    ],
+    "description": "A wild mountain sheep, curl-horned and sure-footed, grazing in a flock.",
+    "active": "day",
+    "herd": true
+  },
+  "mustang": {
+    "name": "Wild Mustang",
+    "symbol": "h",
+    "model": "horse",
+    "hp": 18,
+    "level": 2,
+    "diet": "graze",
+    "timid": 7,
+    "terrain": [
+      "grass"
+    ],
+    "weight": 3,
+    "loot_table": [
+      [
+        "raw_meat",
+        4
+      ],
+      [
+        "game_hide",
+        3
+      ]
+    ],
+    "description": "A free-running wild horse, mane flying — it wheels and flees at any approach.",
+    "active": "day",
+    "herd": true
+  },
+  "aurochs": {
+    "name": "Aurochs",
+    "symbol": "A",
+    "model": "cow",
+    "hp": 24,
+    "level": 3,
+    "diet": "graze",
+    "timid": 2,
+    "terrain": [
+      "grass",
+      "forest"
+    ],
+    "weight": 2,
+    "loot_table": [
+      [
+        "raw_meat",
+        6
+      ],
+      [
+        "game_hide",
+        4
+      ]
+    ],
+    "description": "A massive wild ox, horns lowered — slow to spook, but it gores what corners it.",
+    "active": "day",
+    "herd": true,
+    "charge": true,
+    "charge_damage": 6
+  },
+  "hog": {
+    "name": "Wild Hog",
+    "symbol": "g",
+    "model": "pig",
+    "hp": 11,
+    "level": 2,
+    "diet": "root",
+    "timid": 3,
+    "terrain": [
+      "forest",
+      "swamp"
+    ],
+    "weight": 3,
+    "loot_table": [
+      [
+        "raw_meat",
+        4
+      ],
+      [
+        "game_hide",
+        1
+      ]
+    ],
+    "description": "A bristled wild hog rooting through the undergrowth in a sounder.",
+    "active": "day",
+    "herd": true,
+    "charge": true,
+    "charge_damage": 3
   }
 }

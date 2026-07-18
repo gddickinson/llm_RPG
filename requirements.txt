@@ -5,3 +5,6 @@ readchar>=4.0.0,<5.0.0
 pygame>=2.1.2,<3.0.0
 pygame_gui>=0.6.8,<1.0.0
 numpy
+# optional — enables the baked 3D Quaternius animal/monster models
+# (data/creatures/*.glb); the game degrades to procedural creatures without it
+pygltflib>=1.16.0
