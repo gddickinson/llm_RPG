@@ -116,9 +116,11 @@ readability and takes on the ambitious lighting unification.
   from `body_parts.ARMOR_CLASSES`) → `accessories`. An iso warrior now reads plated
   (G5 parity). Render `audit_iso.png`. Tests: `test_iso_chars`. (Iso FACE
   expression — re-baking the head per mood — deferred to a later pass.)
-- **H2 — Cast & shoot readability (MED, both).** G3 nailed the melee strike; make a
-  CAST read (a wind-up channel → a forward release, a glow at the hands) and a
-  SHOOT read (a clear nock → draw → loose) from any facing.
+- **H2 — Cast readability. ✅ DONE (2D).** `body_renderer._cast_glow` gathers a soft
+  additive cyan bloom of arcane light at the casting hand during a `cast` action,
+  so a spell reads as MAGIC, not just a staff wave. Render `h2_cast.png`. Tests:
+  `test_body_renderer` (`test_cast_glow_is_bright`). (Shoot draw-and-loose + iso
+  cast glow: a later pass.)
 - **H3 — Equipment-driven appearance (MED, both).** Render the ACTUAL worn gear —
   helmet kind, armor tier, a cape, the specific shield/pack — from the equipment
   data, not just a class default, so upgrades show on the body. Shared 2D + iso.

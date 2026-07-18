@@ -275,6 +275,20 @@ def _update_action(char, anim, dt):
         anim["cur_action"] = "idle"
 
 
+def _cast_glow(surface, x, y, r) -> None:
+    """H2: a channel of arcane light gathered at the casting hand — so a CAST
+    reads as magic, not just a staff wave. A soft additive cyan bloom."""
+    import pygame
+    d = int(r * 4)
+    g = pygame.Surface((d, d), pygame.SRCALPHA)
+    c = d // 2
+    for rr, col in ((r * 2.0, (50, 110, 210, 34)),
+                    (r * 1.25, (110, 180, 255, 70)),
+                    (r * 0.65, (205, 238, 255, 150))):
+        pygame.draw.circle(g, col, (c, c), max(1, int(rr)))
+    surface.blit(g, (int(x - c), int(y - c)), special_flags=pygame.BLEND_RGBA_ADD)
+
+
 def _draw_ground_shadow(surface, pose, feet_x, feet_y, H) -> None:
     """R6 — a soft contact shadow on the ground under the feet: directional (cast
     down-right, away from the top-left key light), pose-shaped (wider on a spread
@@ -511,6 +525,9 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
                  sec.get("look", (0.0, 0.0)))
     if weapon and not bare_hands:                # resolved above (P34.11)
         bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)
+    if action in ("cast", "cast_point", "cast_staff"):   # H2 arcane channel
+        _cast_glow(surface, int(pose["r_hand"][0]), int(pose["r_hand"][1]),
+                   max(3, int(H * 0.13)))
     char_flow.draw_front(surface, anim, pose, sx, sy, tile_size, atk_t, weapon)
 
     hx, hy = int(pose["head"][0]), int(pose["head"][1])

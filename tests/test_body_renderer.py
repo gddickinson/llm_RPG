@@ -237,6 +237,15 @@ class TestActionAndAnatomy(unittest.TestCase):
         self.assertGreater(cm.attack_lunge(cm.ATTACK_DUR * 0.5), 0.9)  # peak drive
         self.assertEqual(cm.attack_lunge(0.0), 0.0)                    # at rest
 
+    def test_cast_glow_is_bright(self):
+        from ui.body_renderer import _cast_glow
+        surf = pygame.Surface((100, 100))
+        surf.fill((0, 0, 0))
+        _cast_glow(surf, 50, 50, 9)
+        arr = pygame.surfarray.array3d(surf)
+        self.assertGreater(int(arr.reshape(-1, 3).max(axis=1).max()), 150,
+                           "H2 the cast channel glows")
+
     def test_boot_points_toward_the_facing(self):
         from ui import body_parts as bp
 
