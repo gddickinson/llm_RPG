@@ -331,8 +331,11 @@ plan as a batch of `mutate` calls; all obey ONE ruleset.
   spell's `world_effect` (`worldcraft`/`tile_damage`/`surface`); 8 new spells
   (Stone Shape, Wall of Stone, Plant Growth, Conjure Water, Blight, Disintegrate,
   Earthquake, Firestorm); pure world spells target the faced tile, overworld only,
-  protected ground resists. `tests/test_spell_world.py`. (Future polish: fold the
-  legacy hardcoded fireball/shock into `world_effect`; reticle tile-targeting.)
+  protected ground resists. `tests/test_spell_world.py`. **M2b** (George): NPCs +
+  away-heroes cast world spells too — `spell_world.ambient_shape` +
+  `engine/ambient_magic.py` (a nearby druid grows a woodland, a warlock blights, a
+  mage raises a wall); the overworld guard is now caster-relative. (Future polish:
+  fold the legacy hardcoded fireball/shock into `world_effect`; reticle targeting.)
 - [~] M3 Magic-item crafting + imbuing — **DONE**: `items/enchanting.py` +
   `data/enchantments.json` (in-place imbue: 8 enchantments over
   equip_bonuses/damage_kind/metadata, gated on forge + `enchanting` skill +
@@ -340,7 +343,12 @@ plan as a batch of `mutate` calls; all obey ONE ruleset.
   + craftable magic items (amulet_of_warding, mage_ring) + magic recipes; K-panel
   enchant rows. `tests/test_enchanting.py`. (Future: a dedicated enchanting-table
   station + wands/charged foci in M4's guild content.)
-- [ ] M4 Guilds + worker build economy
+- [~] M4 Guilds + worker build economy — **DONE**: `engine/construction.py`
+  (`ConstructionSystem.run_day` — settlements with a builder clear rubble/scorched
+  scars via `worldcraft`, so sacked towns rebuild); an `enchanter` profession +
+  `sanctum` building kind + reagents/magic-items buyable at the wizard shop bring
+  magic into the economy. `tests/test_construction.py`. (Future: masons stamp NEW
+  buildings; a dedicated Mage-guild store keyed on hall_id.)
 - [ ] M5 Player build/terraform tool
 - [ ] M6 Blueprint library
 

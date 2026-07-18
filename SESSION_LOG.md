@@ -9804,3 +9804,17 @@ visibly shaped by others, protected-ground-safe (worldcraft refuses typed-POI ti
 casters. Away-heroes are driven NPCs, so the same path covers them. Also folded in the M3 fix: the new 13th
 `enchanting` skill needed a skilling pet (Glimmer, a wisp familiar) in `data/pets.json`. Tests:
 `test_spell_world.TestAmbientCasters` (6). Full suite green.
+
+## 2026-07-18 — M4 Workers build + magic in the economy
+
+**Workers build** (`engine/construction.py`): `ConstructionSystem.run_day` (nightly, in the pipeline) — each
+settlement with a builder among its folk clears its SCARS through the SAME `worldcraft` ruleset the player and
+spells use (George's consistency ask, now closed both ways): rubble left by a raid/siege becomes open ground
+again, scorched earth regrows (capped `MAX_PER_NIGHT`, within `RADIUS`, protected-ground-safe), so a sacked
+town slowly rebuilds itself with a `[Realm]` beat. No own state — the terrain edits persist for free (map
+snapshot). Reuses the production loop's settlement list (minus stable/waystone markers for clean beats).
+**Magic in the economy**: an `enchanter` profession (→`enchanting`, `rune_table` workstation) + a `sanctum`
+building kind in `data/production.json`/`building_types.json`, and reagents (arcane_dust/mana_crystal/ember_core
+/…) + the craftable magic items (amulet_of_warding, mage_ring) added to the wizard shop catalogue so the player
+can actually BUY reagents and magic gear. Tests: `test_construction.py` (5). Next: M5 the player build/terraform
+planner UI, then M6 the cross-game blueprint library.

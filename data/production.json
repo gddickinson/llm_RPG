@@ -10,18 +10,44 @@
     "smith": "smithing",
     "cook": "cooking",
     "alchemist": "alchemy",
-    "carpenter": "carpentry"
+    "carpenter": "carpentry",
+    "enchanter": "enchanting"
   },
   "workstations": {
     "smithing": "forge",
     "cooking": "hearth",
     "alchemy": "alchemy_bench",
-    "carpentry": "workbench"
+    "carpentry": "workbench",
+    "enchanting": "rune_table"
   },
   "raw": {
-    "wheat_sheaf": {"profession": "farmer", "skill": "foraging", "source": "farmland", "tool": null, "yield": 1},
-    "herb_bundle": {"profession": "forager", "skill": "foraging", "source": "forest", "tool": null, "yield": 1},
-    "bogcap": {"profession": "forager", "skill": "foraging", "source": "swamp", "tool": null, "yield": 1},
-    "wolf_pelt": {"profession": "hunter", "skill": "hunting", "source": "beast", "tool": null, "yield": 1}
+    "wheat_sheaf": {
+      "profession": "farmer",
+      "skill": "foraging",
+      "source": "farmland",
+      "tool": null,
+      "yield": 1
+    },
+    "herb_bundle": {
+      "profession": "forager",
+      "skill": "foraging",
+      "source": "forest",
+      "tool": null,
+      "yield": 1
+    },
+    "bogcap": {
+      "profession": "forager",
+      "skill": "foraging",
+      "source": "swamp",
+      "tool": null,
+      "yield": 1
+    },
+    "wolf_pelt": {
+      "profession": "hunter",
+      "skill": "hunting",
+      "source": "beast",
+      "tool": null,
+      "yield": 1
+    }
   }
 }

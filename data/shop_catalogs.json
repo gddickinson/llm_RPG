@@ -102,7 +102,16 @@
     "scroll_water_walk",
     "scroll_swimmers_grace",
     "bottomless_bag",
-    "ring_strength"
+    "ring_strength",
+    "arcane_dust",
+    "mana_crystal",
+    "ember_core",
+    "frost_shard",
+    "shadow_essence",
+    "radiant_mote",
+    "vital_root",
+    "amulet_of_warding",
+    "mage_ring"
   ],
   "ranger": [
     "bow",

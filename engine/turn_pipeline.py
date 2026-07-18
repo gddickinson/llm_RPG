@@ -232,6 +232,10 @@ def run_turn(engine) -> None:
                 self.production.run_day()
             except Exception as e:
                 logger.debug(f"Production loop error: {e}")
+            try:   # M4: workers clear rubble / regrow scorched — towns rebuild
+                self.construction.run_day()
+            except Exception as e:
+                logger.debug(f"Construction error: {e}")
             try:   # logged-out groves regrow (P16.4)
                 self.resource_nodes.run_day()
             except Exception as e:

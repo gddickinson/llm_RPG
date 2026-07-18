@@ -1,34 +1,178 @@
 {
   "_doc": "Building-type catalog (P16.3). Ports AW's SPECIALIZATION_BUILDINGS + room classification as data: each building KIND maps to a FUNCTION, the producer PROFESSION that works there (from engine/production.py's set, or null for service/civic buildings), and the MARKER furniture that identifies the room (an anvil-bearing room IS a smithy). Loaded by world/building_types.py; the P16.2 production loop reads a resident's WORKPLACE building to decide their trade — occupation follows the building, so a villager living in a farmhouse is a farmer, not a woodcutter-by-class. New economic kinds (mine/bakery/sawmill/dock) are catalogued ahead of worldgen placing them (P16.3b).",
   "types": {
-    "forge":      {"function": "smithy",  "profession": "smith",      "markers": ["anvil", "forge"]},
-    "smithy":     {"function": "smithy",  "profession": "smith",      "markers": ["anvil", "forge"]},
-    "farmhouse":  {"function": "farm",    "profession": "farmer",     "markers": []},
-    "lodge":      {"function": "lodge",   "profession": "hunter",     "markers": []},
-    "tavern":     {"function": "tavern",  "profession": "cook",       "markers": ["bar", "hearth"]},
-    "inn":        {"function": "tavern",  "profession": "cook",       "markers": ["bar", "hearth"]},
-    "tower":      {"function": "tower",   "profession": "alchemist",  "markers": ["sigil"]},
-    "mine":       {"function": "mine",    "profession": "miner",      "markers": []},
-    "bakery":     {"function": "bakery",  "profession": "cook",       "markers": ["oven"]},
-    "sawmill":    {"function": "sawmill", "profession": "woodcutter", "markers": []},
-    "mill":       {"function": "mill",    "profession": null,         "markers": []},
-    "dock":       {"function": "dock",    "profession": "fisher",     "markers": []},
-    "shop":       {"function": "market",  "profession": null,         "markers": ["counter"]},
-    "stall":      {"function": "market",  "profession": null,         "markers": []},
-    "temple":     {"function": "temple",  "profession": null,         "markers": ["altar"]},
-    "chapel":     {"function": "temple",  "profession": null,         "markers": ["altar"]},
-    "shrine":     {"function": "shrine",  "profession": null,         "markers": ["altar"]},
-    "library":    {"function": "library", "profession": null,         "markers": ["shelf"]},
-    "watchtower": {"function": "watch",   "profession": null,         "markers": []},
-    "hall":       {"function": "hall",    "profession": null,         "markers": []},
-    "stable":     {"function": "stable",  "profession": null,         "markers": []},
-    "well":       {"function": "well",    "profession": null,         "markers": ["well"]},
-    "warehouse":  {"function": "storage", "profession": null,         "markers": []},
-    "granary":    {"function": "storage", "profession": null,         "markers": []}
+    "forge": {
+      "function": "smithy",
+      "profession": "smith",
+      "markers": [
+        "anvil",
+        "forge"
+      ]
+    },
+    "smithy": {
+      "function": "smithy",
+      "profession": "smith",
+      "markers": [
+        "anvil",
+        "forge"
+      ]
+    },
+    "farmhouse": {
+      "function": "farm",
+      "profession": "farmer",
+      "markers": []
+    },
+    "lodge": {
+      "function": "lodge",
+      "profession": "hunter",
+      "markers": []
+    },
+    "tavern": {
+      "function": "tavern",
+      "profession": "cook",
+      "markers": [
+        "bar",
+        "hearth"
+      ]
+    },
+    "inn": {
+      "function": "tavern",
+      "profession": "cook",
+      "markers": [
+        "bar",
+        "hearth"
+      ]
+    },
+    "tower": {
+      "function": "tower",
+      "profession": "alchemist",
+      "markers": [
+        "sigil"
+      ]
+    },
+    "mine": {
+      "function": "mine",
+      "profession": "miner",
+      "markers": []
+    },
+    "bakery": {
+      "function": "bakery",
+      "profession": "cook",
+      "markers": [
+        "oven"
+      ]
+    },
+    "sawmill": {
+      "function": "sawmill",
+      "profession": "woodcutter",
+      "markers": []
+    },
+    "mill": {
+      "function": "mill",
+      "profession": null,
+      "markers": []
+    },
+    "dock": {
+      "function": "dock",
+      "profession": "fisher",
+      "markers": []
+    },
+    "shop": {
+      "function": "market",
+      "profession": null,
+      "markers": [
+        "counter"
+      ]
+    },
+    "stall": {
+      "function": "market",
+      "profession": null,
+      "markers": []
+    },
+    "temple": {
+      "function": "temple",
+      "profession": null,
+      "markers": [
+        "altar"
+      ]
+    },
+    "chapel": {
+      "function": "temple",
+      "profession": null,
+      "markers": [
+        "altar"
+      ]
+    },
+    "shrine": {
+      "function": "shrine",
+      "profession": null,
+      "markers": [
+        "altar"
+      ]
+    },
+    "library": {
+      "function": "library",
+      "profession": null,
+      "markers": [
+        "shelf"
+      ]
+    },
+    "watchtower": {
+      "function": "watch",
+      "profession": null,
+      "markers": []
+    },
+    "hall": {
+      "function": "hall",
+      "profession": null,
+      "markers": []
+    },
+    "stable": {
+      "function": "stable",
+      "profession": null,
+      "markers": []
+    },
+    "well": {
+      "function": "well",
+      "profession": null,
+      "markers": [
+        "well"
+      ]
+    },
+    "warehouse": {
+      "function": "storage",
+      "profession": null,
+      "markers": []
+    },
+    "granary": {
+      "function": "storage",
+      "profession": null,
+      "markers": []
+    },
+    "sanctum": {
+      "function": "arcane",
+      "profession": "enchanter",
+      "markers": [
+        "anvil",
+        "forge"
+      ]
+    }
   },
   "specializations": {
-    "mining":  ["mine", "smithy", "warehouse"],
-    "farming": ["farmhouse", "mill", "granary"],
-    "coastal": ["dock", "warehouse", "tavern"]
+    "mining": [
+      "mine",
+      "smithy",
+      "warehouse"
+    ],
+    "farming": [
+      "farmhouse",
+      "mill",
+      "granary"
+    ],
+    "coastal": [
+      "dock",
+      "warehouse",
+      "tavern"
+    ]
   }
 }
