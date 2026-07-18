@@ -132,6 +132,32 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class TestInteractionParity(unittest.TestCase):
+    """I4 — the two-character interaction clips reach iso (not a frozen idle),
+    and a hand-busy social clip drops the weapon (parity with the 2D fix)."""
+
+    def test_interaction_clips_map_to_real_mocap(self):
+        from ui import iso_skeleton as isk
+        for act in ("handshake", "hug", "kiss", "wrestle", "tumble",
+                    "knockdown", "taunt"):
+            self.assertNotEqual(isk.clip_for(act), "idle",
+                                f"{act} should play a real iso clip")
+
+    def test_social_clip_drops_the_weapon(self):
+        c = _Char("brawler", "warrior")
+        self.assertIsNotNone(iso_chars.kit_of(c)[0], "a warrior is armed")
+        c.metadata["_anim"] = {"cur_action": "hug"}
+        kit = iso_chars.kit_of(c)
+        self.assertIsNone(kit[0], "no weapon during a hug")
+        self.assertFalse(kit[2], "no shield during a hug")
+
+    def test_combat_clip_keeps_the_weapon(self):
+        c = _Char("duelist", "warrior")
+        c.metadata["_anim"] = {"cur_action": "wrestle"}
+        self.assertIsNotNone(iso_chars.kit_of(c)[0],
+                             "a wrestle is armed (only social clips disarm)")
+
+
 class TestAnimation(unittest.TestCase):
     def test_walk_pose_moves_the_legs(self):
         rest = iso_chars._rest_parts((150,) * 3, (90, 60, 40), 1)

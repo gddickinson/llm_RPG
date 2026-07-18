@@ -316,8 +316,15 @@ def kit_of(char):
         shield = char_motion.has_shield(char)
     except Exception:
         weapon, shield = None, False
+    from ui import body_parts, body_renderer
+    # I4: a hand-busy social clip (hug / kiss / handshake) drops the weapon +
+    # shield in iso too, so an embrace doesn't bake a brandished blade (parity
+    # with body_renderer._EMPTY_HANDED). cur_action is already in the sprite key.
+    action = ((getattr(char, "metadata", {}) or {}).get("_anim") or {}
+              ).get("cur_action")
+    if action in body_renderer._EMPTY_HANDED:
+        weapon, shield = None, False
     height = iso_skeleton.body_of(char)[1]
-    from ui import body_parts
     klass = getattr(getattr(char, "character_class", None), "value", "")
     return (weapon, _headgear_for(char), bool(shield), height,
             klass in body_parts.ROBE_CLASSES)

@@ -38,7 +38,15 @@ grapples. That's this feature.
   kiss, rivals bristle. Weapon fix: a hand-busy social clip (`_EMPTY_HANDED` in
   `body_renderer`) draws NO weapon/shield, so a hug/kiss/handshake doesn't read as
   a raised sword (a square-up keeps its weapon). Tests: `tests/test_interactions.py`
-  (17). Iso parity gap remains: the social clips fall back to idle in iso.
+  (17).
+- **I4 — Iso parity. ✅ DONE.** The two-character interaction clips are now in the
+  iso `_CLIP` map (`iso_skeleton`) → nearest baked mocap (handshake/hug→beckon,
+  kiss→nod, wrestle→charge, tumble→thrown, knockdown→stagger, taunt→argue) instead
+  of freezing to idle; and `iso_chars.kit_of` drops the weapon/shield during a
+  hand-busy social clip in iso too (parity with `_EMPTY_HANDED`). There's no true
+  hug/kiss mocap, so iso reads the intent approximately — but the figures play a
+  fitting gesture and face each other, unarmed for an embrace. Tests:
+  `test_iso_chars.TestInteractionParity`.
 - **I2 — Player social interactions. ✅ DONE.** The conversation quick-pick offers
   a warm gesture by your standing (`interactions.player_social_option`): a
   sweetheart may be KISSED, a friend (regard ≥ 40 / social-friend) EMBRACED, a
@@ -64,5 +72,6 @@ grapples. That's this feature.
 - Heuristic-only, no per-tick LLM; cheap (nearby actors only, low per-turn chance).
 - Social interactions are COSMETIC + a small relationship effect; combat grapples
   have real mechanics (contests, prone, knockback) with charter-safe caps.
-- Iso: social clips currently fall back to idle — map them to existing iso gestures
-  in a later polish pass (throw/thrown already read in iso).
+- Iso: the interaction clips now map to nearest baked gestures (I4) — approximate
+  (no true hug/kiss mocap) but no longer a frozen idle; weapon suppressed for a
+  social clip. A bespoke procedural embrace/kiss pose could sharpen it later.

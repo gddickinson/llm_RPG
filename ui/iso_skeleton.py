@@ -69,6 +69,12 @@ _CLIP = {
     "spin_combo": "spin_combo", "dive_roll": "dive_roll", "weave": "weave",
     "throw": "throw", "thrown": "thrown", "shoved": "shoved",
     "bow_draw": "bow_draw", "bow_loose": "bow_loose", "hop": "hop",
+    # I4 the two-character INTERACTION clips → nearest baked mocap so the iso
+    # figures don't freeze to idle mid-embrace (there's no true hug/kiss mocap;
+    # a warm reach / lean / grapple-lunge reads the intent well enough)
+    "handshake": "beckon", "hug": "beckon", "kiss": "nod",
+    "wrestle": "charge", "tumble": "thrown", "knockdown": "stagger",
+    "taunt": "argue",
 }
 # ISO.11 per-character VARIETY: a seeded idle/dance picks one of the Mixamo
 # variants so a crowd doesn't loop in lockstep.
