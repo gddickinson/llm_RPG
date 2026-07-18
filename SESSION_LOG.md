@@ -9575,3 +9575,47 @@ raid …!"), and `_maybe_spill` draws the raid party from the camp's LIVING warr
 thinned sends fewer raiders and a WIPED camp sends NONE. (Killing camp members already beats the tribe back
 via the `tribe` tag → `on_defeat`; this makes the tie direct + visible.) tests/test_tribe_camps.py (+2).
 Full suite green. LIVING_WORLD (Areas A/B/C) is now COMPLETE — every planned phase built.
+
+## 2026-07-17 — ANIM_REALISM R1–R6: realistic character animation & graphics — George
+
+George: "keep improving the realism of character animation and graphics, both 2D and iso — in rounds of
+upgrades." Audit rendered the current output (2D flat, iso matte); plan in `docs/ANIM_REALISM.md`. Built in
+tested rounds, each with a before/after render to `scratchpad/anim/`.
+
+**R1 — 2D form shading** (`body_parts`): limbs are shaded CYLINDERS (dark underside, lit core shifted toward
+a top-left key light, highlight stripe), the torso has lit/shadow flanks, the head is a shaded SPHERE. Limbs
+read round, not flat sticks. **R2 — iso shading richness** (`raster3d.render`): ambient occlusion on
+down-faces, a white RIM kicker on the silhouette, more key contrast — the baked figures gain form + pop.
+**R3 — foot planting**: measured as already largely solved by `char_tween.move_phase` (deferred). **R4 —
+weapons** (`body_parts.draw_weapon`): shaded metal (lit blade edge over a shadowed spine, grip + gold pommel),
+the staff orb a glowing BEAD not a floating dot. **R5 — 2D cloth** (`body_parts.draw_robe`): robed classes
+wear a flared, folded, shaded SKIRT; **R5b iso robes** (`iso_skeleton._robe_mesh`): a flared frustum gown in
+iso (parity). **R6 — grounding** (`body_renderer._draw_ground_shadow`): a soft, DIRECTIONAL (cast away from
+the key light), POSE-SHAPED (wider on a spread stance), HEIGHT-AWARE (shrinks + fades when airborne) contact
+shadow replaces the flat black ellipse — characters read grounded, a leap looks like a leap. Tests across
+`test_body_renderer`/`test_raster3d`/`test_iso_skeleton`/`test_iso_chars`. Full suite green each round.
+
+## 2026-07-17 — Character INTERACTIONS I1–I4: social + combat contact — George
+
+George: "create ways for characters to better interact — wrestling, hugging, throwing each other, more
+contact when fighting, shaking hands, kissing." The `anim.interact` two-character primitive + the clips
+(handshake/hug/kiss/wrestle/throw/tumble/knockdown) already existed but nothing TRIGGERED them. Plan in
+`docs/INTERACTIONS.md`; built in 4 tested rounds.
+
+**I1 — ambient social** (`engine/interactions.py`): `social_kind(a,b)` reads two adjacent idle neighbours'
+standing — a romance PARTNER → kiss, friends/social-FRIEND → hug, friendly acquaintances → handshake, a
+feud/cold pair → square up — and `perform_social` plays it via `anim.interact` with a small regard nudge + a
+sparse `[Town]` beat. `update_social` (per-turn, deduped, 24-turn cooldown) wired into `turn_pipeline`, so the
+social graph is now VISIBLE. Weapon fix: a hand-busy social clip (`body_renderer._EMPTY_HANDED`) draws no
+weapon/shield (a hug isn't a raised sword). **I2 — player-initiated**: the conversation menu offers a warm
+gesture by standing (`player_social_option`/`player_social`) — kiss a sweetheart, embrace a friend, clasp a
+hand, with a fond memory + reply. **I3 — combat grapple & throw** (`tactics.grapple`/`throw`/`is_grappling`):
+SHIFT+C clinches the nearest foe (STR-vs-(STR|DEX), both wrestle; win → off-guard, firm win → prone), press
+again while clinched to HURL it (amplified shove + prone knockdown + fall damage). One two-stage key
+(`input_actions.grapple_verb`), documented + hint-bar advertised. **I4 — iso parity**: the interaction clips
+map to nearest baked iso mocap (`iso_skeleton._CLIP`) instead of freezing to idle, and `iso_chars.kit_of`
+drops the weapon during a social clip (parity with `_EMPTY_HANDED`).
+
+Tests: `test_interactions` (22), `test_tactics.TestGrappleThrow` (7), `test_iso_chars.TestInteractionParity`.
+En route, root-caused + fixed two full-suite flakes (phantom `npc_manager` foe in `test_cleave`; ID-hash
+worksite collision in `test_workers_fan_out`) and recorded the flake pattern to memory. Full suite green.
