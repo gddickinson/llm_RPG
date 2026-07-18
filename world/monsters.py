@@ -53,10 +53,13 @@ def encounter_table_for(terrain_value: str) -> List[Tuple[str, int]]:
     return out
 
 
-def dungeon_pool() -> List[str]:
-    """Template ids eligible for dungeon rooms."""
+def dungeon_pool(depth: int = None) -> List[str]:
+    """Template ids eligible for dungeon rooms. T1.3: a template may set
+    `min_depth` so a genuinely tough foe only appears on deep floors (a low-level
+    hero's first dungeon stays survivable); no `min_depth` = eligible anywhere."""
     return [tid for tid, t in MONSTER_TEMPLATES.items()
-            if t.get("dungeon", False)]
+            if t.get("dungeon", False)
+            and (depth is None or t.get("min_depth", 1) <= depth)]
 
 
 def group_spec(template_id: str) -> Optional[dict]:

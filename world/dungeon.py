@@ -223,8 +223,9 @@ def populate_dungeon(d: Dungeon, engine, rng: random.Random = None) -> None:
             item = create_item(item_id)
             if item:
                 engine.world.add_item_to_ground(item, cx, cy)
-        # Monster, scaled to the depth (P9.5)
-        template = rng.choice(dungeon_pool())
+        # Monster, scaled to the depth (P9.5); T1.3 depth-gates the POOL so a
+        # tough foe only appears deep (not on a first-floor low-level hero)
+        template = rng.choice(dungeon_pool(depth) or dungeon_pool())
         monster = build_monster(template, (cx, cy))
         if depth > 1:
             monster.level += depth - 1

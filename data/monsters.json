@@ -683,5 +683,109 @@
     "behavior": {
       "flee_below": 0.1
     }
+  },
+  "giant_spider": {
+    "name": "Giant Spider",
+    "class": "monster", "race": "goblin", "hp": 28, "level": 4, "symbol": "s",
+    "description": "A hound-sized spider, fangs beaded with venom.",
+    "encounter_weight": 2, "dungeon": true, "min_depth": 1,
+    "spawn_terrain": ["forest", "swamp"],
+    "stats": {"strength": 12, "dexterity": 15},
+    "natural_damage": 6, "speed": 1.3,
+    "group": {"min": 2, "max": 3, "word": "cluster"},
+    "behavior": {"venomous": true}
+  },
+  "dire_boar": {
+    "name": "Dire Boar",
+    "class": "monster", "race": "troll", "hp": 46, "level": 5, "symbol": "b",
+    "description": "A great tusked boar that charges without warning.",
+    "encounter_weight": 2, "dungeon": false,
+    "spawn_terrain": ["forest", "grass"],
+    "stats": {"strength": 17, "constitution": 15},
+    "natural_damage": 9, "speed": 1.2,
+    "behavior": {"charge": true, "flee_below": 0.05}
+  },
+  "ghoul": {
+    "name": "Ghoul",
+    "class": "monster", "race": "goblin", "hp": 34, "level": 5, "symbol": "g",
+    "description": "A gaunt, grave-touched eater of the dead.",
+    "encounter_weight": 2, "dungeon": true, "min_depth": 1,
+    "spawn_terrain": ["swamp"],
+    "stats": {"strength": 14, "dexterity": 12},
+    "natural_damage": 8,
+    "group": {"min": 1, "max": 3, "word": "pack"}
+  },
+  "bog_troll": {
+    "name": "Bog Troll",
+    "class": "troll", "race": "troll", "hp": 66, "level": 6, "symbol": "T",
+    "description": "A slime-slick troll of the deep fen; its wounds knit as you watch.",
+    "encounter_weight": 1, "dungeon": true, "min_depth": 2,
+    "spawn_terrain": ["swamp"],
+    "stats": {"strength": 19, "constitution": 17},
+    "natural_damage": 12, "behavior": {"regenerates": true}
+  },
+  "ogre": {
+    "name": "Ogre",
+    "class": "troll", "race": "troll", "hp": 72, "level": 6, "symbol": "O",
+    "description": "A slab-muscled brute swinging a tree-trunk club.",
+    "dungeon": true, "min_depth": 1,
+    "stats": {"strength": 20, "constitution": 16},
+    "natural_damage": 13, "speed": 0.9, "behavior": {"flee_below": 0.05}
+  },
+  "revenant": {
+    "name": "Revenant",
+    "class": "monster", "race": "goblin", "hp": 56, "level": 7, "symbol": "r",
+    "description": "A corpse risen on a single hateful purpose, and hard to put down.",
+    "dungeon": true, "min_depth": 2,
+    "stats": {"strength": 16, "constitution": 15},
+    "natural_damage": 10, "behavior": {"regenerates": true}
+  },
+  "wraith": {
+    "name": "Wraith",
+    "class": "monster", "race": "goblin", "hp": 48, "level": 8, "symbol": "W",
+    "description": "A cold shadow with a killing grip; the torchlight bends around it.",
+    "dungeon": true, "min_depth": 2,
+    "stats": {"strength": 15, "dexterity": 17},
+    "natural_damage": 11, "speed": 1.3
+  },
+  "basilisk": {
+    "name": "Basilisk",
+    "class": "monster", "race": "troll", "hp": 78, "level": 9, "symbol": "k",
+    "description": "A six-legged reptile whose gaze stiffens the limbs.",
+    "dungeon": true, "min_depth": 3,
+    "stats": {"strength": 18, "constitution": 17},
+    "natural_damage": 12, "behavior": {"petrifying_gaze": true}
+  },
+  "stone_golem": {
+    "name": "Stone Golem",
+    "class": "monster", "race": "troll", "hp": 132, "level": 10, "symbol": "8",
+    "description": "A lumbering statue of animated rock; slow, but its fists shatter stone.",
+    "dungeon": true, "min_depth": 3,
+    "stats": {"strength": 23, "constitution": 20},
+    "natural_damage": 16, "speed": 0.7, "behavior": {"flee_below": 0.0}
+  },
+  "lesser_drake": {
+    "name": "Lesser Drake",
+    "class": "monster", "race": "troll", "hp": 105, "level": 11, "symbol": "d",
+    "description": "A wingless cousin of the great wyrms, breathing gouts of flame.",
+    "dungeon": true, "min_depth": 4,
+    "stats": {"strength": 21, "constitution": 19},
+    "natural_damage": 15, "behavior": {"breath": "fire"}
+  },
+  "flesh_golem": {
+    "name": "Flesh Golem",
+    "class": "monster", "race": "troll", "hp": 120, "level": 8, "symbol": "F",
+    "description": "A stitched giant of grave-flesh, lurching after intruders.",
+    "dungeon": true, "boss_depth": 2, "min_depth": 2,
+    "stats": {"strength": 21, "constitution": 20},
+    "natural_damage": 14, "speed": 0.8
+  },
+  "lich": {
+    "name": "Lich",
+    "class": "warlock", "race": "human", "hp": 150, "level": 14, "symbol": "L",
+    "description": "An undead sorcerer-king, wreathed in cold fire, jealous of the living.",
+    "dungeon": true, "boss_depth": 4, "min_depth": 4,
+    "stats": {"strength": 16, "intelligence": 22, "constitution": 18},
+    "natural_damage": 16, "behavior": {"caster": true, "summon": true}
   }
 }
