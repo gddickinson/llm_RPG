@@ -102,3 +102,35 @@ Ordered by perceived-quality-per-effort.
 G1 + G2 alone transform the read (a face that isn't two black holes; iso figures
 that aren't murky). Same discipline as R1–R6: pure/thin, cached, headless-tested,
 a before/after render each round, files < 500 lines, suite green + commit per round.
+
+## Further plan — the H-series (after G1–G6)
+
+The G-series pushed the 2D well ahead (expressive faces, lunging attacks, hands,
+boots, gear); the ISO now lags. The H-series closes that gap, then finishes action
+readability and takes on the ambitious lighting unification.
+
+- **H1 — Iso parity pass (HIGH).** Bring the baked iso figure up to the new 2D
+  detail: a clearer iso FACE driven by the same expression params (G1 parity), iso
+  HANDS + directional BOOTS (G4 parity), and iso GEAR — pauldrons / hoods (G5
+  parity). The iso `figure()` mesh + `iso_gear` grow these; expression feeds the
+  baked head. (Closing the 2D↔iso gap is the biggest remaining win.)
+- **H2 — Cast & shoot readability (MED, both).** G3 nailed the melee strike; make a
+  CAST read (a wind-up channel → a forward release, a glow at the hands) and a
+  SHOOT read (a clear nock → draw → loose) from any facing.
+- **H3 — Equipment-driven appearance (MED, both).** Render the ACTUAL worn gear —
+  helmet kind, armor tier, a cape, the specific shield/pack — from the equipment
+  data, not just a class default, so upgrades show on the body. Shared 2D + iso.
+- **H4 — Population variety (MED).** Wider skin tones, hairstyles + hair colour, and
+  body types so a crowd reads as individuals, not clones.
+- **H5 — Status & condition on the body (MED).** Visible bandages/wounds, a buff
+  GLOW, a debuff TINT (poison green, frozen blue), a bleeding drip — the body shows
+  its state (some `char_fx` exists; extend + wire to status effects).
+- **H6 — Dynamic 2D lighting via baked normal maps (AMBITIOUS).** Bake a normal map
+  alongside each 2D sprite and light it by the world (day/night, torch, forge,
+  wisp) so 2D characters react to lighting like the iso world does — the unifying
+  capstone; likely several sub-rounds.
+- **H7 — Cloth & hair richness.** Capes for cloaked classes, stronger cloak/hem
+  sway, hair flow — build on `char_flow`.
+
+Order = close-the-gap first (H1), then readability (H2), then depth (H3–H5), then
+the ambitious lighting (H6) and polish (H7).
