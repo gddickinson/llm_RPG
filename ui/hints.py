@@ -11,6 +11,8 @@ from typing import List
 logger = logging.getLogger("llm_rpg.hints")
 
 MAX_HINTS = 3
+COMBAT_HINTS = 6        # T3.3 a fight is dense with verbs (trip/feint/grapple/…) —
+#                         show more when a foe is adjacent so they aren't starved
 
 
 def _adjacent_npcs(engine, radius: float = 1.5):
@@ -426,13 +428,15 @@ def context_hints(engine) -> List[str]:
     hints.append("[SHIFT+move] run  ·  [`] jump  ·  [.] pace")
     hints.append("[?] all controls")
 
-    # Dedup preserving order, cap
+    # Dedup preserving order, cap (T3.3: a wider cap mid-fight so the combat
+    # verbs — trip/demoralize/feint/grapple/shove/weapon-action — actually show)
+    cap = COMBAT_HINTS if enemies else MAX_HINTS
     seen = set()
     out = []
     for h in hints:
         if h not in seen:
             seen.add(h)
             out.append(h)
-        if len(out) >= MAX_HINTS:
+        if len(out) >= cap:
             break
     return out

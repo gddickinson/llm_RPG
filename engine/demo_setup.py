@@ -287,6 +287,11 @@ def initialize_demo_world(engine, player_spec=None,
     engine.memory_manager.add_event(
         "You stand before the gates of Bloodstone Castle." if castle
         else "You arrive at the outskirts of Oakvale Village.")
+    # T3.1 a one-time welcome nudge — orient a brand-new player toward the three
+    # things they need: the controls, the pinned main goal, and the townsfolk
+    engine.memory_manager.add_event(
+        "Welcome, hero. Press [?] for the controls, follow the ★ MAIN goal in "
+        "your Quests panel, and talk to the townsfolk to find work and lodging.")
 
     # Offer every authored quest (locked ones hide behind their prereqs)
     if engine.quest_manager:
