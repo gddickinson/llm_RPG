@@ -9658,3 +9658,8 @@ included — as a humanoid iso puppet. Since the GLB models bake at the iso came
 now centralises the iso actor draw (shadow + sprite) and uses `beast_sprite` (the baked GLB model, gated to
 non-humanoid body plans, feet-anchored + facing-flipped) for beasts, else the humanoid figure;
 `iso_render._draw_char` + `iso_zone._char` both delegate to it. Tests: `test_creature_glb.TestIsoParity`.
+
+**Mount models** (same feature, round 3): the trailing player mount was a procedural four-legged
+silhouette; `ui/renderer_overlays.draw_mount` now blits the baked Quaternius GLB model where one exists
+(horse/war-horse→horse, mule/donkey→donkey), feet-anchored, else the procedural fallback (elephant,
+magic-carpet). Shared by the top-down + iso mount draw. Tests: `test_creature_glb.TestMountModels`.

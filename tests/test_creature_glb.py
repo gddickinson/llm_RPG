@@ -133,6 +133,26 @@ class TestIsoParity(unittest.TestCase):
             iso_actors.draw_actor(surf, ch, 60, 60, 48)
 
 
+class TestMountModels(unittest.TestCase):
+    """#9 — the trailing mount uses the baked GLB where one exists."""
+
+    def test_mount_kinds_resolve(self):
+        # horse/war_horse → horse, mule/donkey → donkey; carpet has no model
+        self.assertEqual(cg.SPECIES_GLB.get("horse"), "horse")
+        self.assertEqual(cg.SPECIES_GLB.get("war_horse"), "horse")
+        self.assertEqual(cg.SPECIES_GLB.get("mule"), "donkey")
+        self.assertNotIn("magic_carpet", cg.SPECIES_GLB)
+
+    def test_draw_mount_runs_for_all_kinds(self):
+        import pygame
+        pygame.init()
+        from ui.renderer_overlays import draw_mount
+        surf = pygame.Surface((80, 80), pygame.SRCALPHA)
+        for kind in ("horse", "war_horse", "mule", "donkey", "elephant",
+                     "magic_carpet"):
+            draw_mount(surf, kind, 10, 10, 48)      # modeled + fallback both draw
+
+
 class TestRosterModels(unittest.TestCase):
     """Every new roster creature with a model hint has a real GLB behind it."""
 

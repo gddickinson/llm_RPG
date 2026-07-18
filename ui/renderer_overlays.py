@@ -24,8 +24,20 @@ _MOUNT_HIDE = {"horse": (128, 86, 54), "war_horse": (92, 76, 68),
 
 
 def draw_mount(target, kind: str, x: int, y: int, ts: int) -> None:
-    """A trailing mount (P28.2d): a simple four-legged silhouette, hide-coloured
-    by kind. `x, y` is the tile's top-left; the beast stands in its lower half."""
+    """A trailing mount (P28.2d): a baked Quaternius GLB model where we have one
+    for this kind (#9 — horse/war-horse/mule/donkey), else a simple four-legged
+    silhouette. `x, y` is the tile's top-left; the beast stands in its lower half."""
+    try:
+        from ui import creature_glb
+        spr = creature_glb.sprite(kind, int(ts * 1.5))
+        if spr is not None:
+            w, h = spr.get_size()
+            cx = x + ts // 2
+            ground_y = y + int(ts * 0.94)          # where the procedural legs end
+            target.blit(spr, (cx - w // 2, ground_y - int(h * 0.62)))
+            return
+    except Exception:
+        pass
     hide = _MOUNT_HIDE.get(kind, (128, 96, 64))
     dark = tuple(max(0, c - 48) for c in hide)
     cx = x + ts // 2
