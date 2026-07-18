@@ -52,6 +52,8 @@ class BuildPlanner:
         self.cx, self.cy = tuple(engine.player.position)
         self.brush = 0
         self.plan = {}          # (x, y) -> terrain name (pending)
+        self._bp_index = 0      # M6 which saved design to load next
+        self._flash = ""        # a transient status line for the HUD
 
     def open(self) -> None:
         self.cx, self.cy = tuple(self.engine.player.position)
@@ -94,7 +96,31 @@ class BuildPlanner:
             self.plan.pop((self.cx, self.cy), None)
         elif k in (pygame.K_c, pygame.K_TAB):
             self._commit()
+        elif k == pygame.K_v:               # M6 save the plan as a blueprint
+            self._save_blueprint()
+        elif k == pygame.K_l:               # M6 load the next saved design here
+            self._load_blueprint()
         return True
+
+    def _save_blueprint(self) -> None:
+        from engine import blueprint_library as bl
+        date = str(getattr(self.engine.world, "date", "") or "")
+        msg = bl.save_blueprint(f"Design {bl.count() + 1}", self.plan, date)
+        try:
+            self.engine.memory_manager.add_event(f"[Build] {msg}")
+        except Exception:
+            pass
+
+    def _load_blueprint(self) -> None:
+        from engine import blueprint_library as bl
+        designs = bl.list_blueprints()
+        if not designs:
+            self._flash = "No saved designs — plan tiles and press V to save one."
+            return
+        _bid, name, spec = designs[self._bp_index % len(designs)]
+        self._bp_index += 1
+        self.plan = bl.stamp(spec, self.cx, self.cy)   # ghost it at the cursor
+        self._flash = f"Loaded '{name}' — move to position, then C to build."
 
     def _commit(self) -> None:
         from engine import worldcraft
@@ -178,8 +204,16 @@ class BuildPlanner:
         target.blit(font.render(status, True,
                                 (150, 230, 160) if ok else (235, 150, 150)),
                     (bar.x + 10, bar.y + 30))
-        hint = ("arrows move · [ ] or Q/E brush · 1-5 pick · "
-                "Enter place · X erase · C build · Esc close · "
+        if self._flash:
+            target.blit(small.render(self._flash, True, (200, 200, 130)),
+                        (bar.x + 320, bar.y + 30))
+        try:
+            from engine import blueprint_library as bl
+            saved = bl.count()
+        except Exception:
+            saved = 0
+        hint = ("arrows move · [ ]/QE brush · 1-5 pick · Enter place · X erase · "
+                f"C build · V save · L load ({saved} designs) · Esc close · "
                 f"planned: {len(self.plan)}")
         target.blit(small.render(hint, True, (150, 150, 170)),
                     (bar.x + 10, bar.y + 48))

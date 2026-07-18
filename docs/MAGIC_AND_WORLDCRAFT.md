@@ -362,7 +362,10 @@ touch a magic ward at all. Woven into `worldcraft.mutate`/`can_mutate` and
   then COMMITS through worldcraft (skill/resource/protected gated); opened by `B`
   on open ground. `tests/test_build_planner.py`. (Future: mouse click-to-place;
   placing whole multi-tile STRUCTURES, not just terrain.)
-- [ ] M6 Blueprint library
+- [~] M6 Blueprint library — **DONE**: `engine/blueprint_library.py` (mirrors
+  `dm_library`: portable `data/dm_library/blueprints.json`, env-overridable);
+  the build planner's `V` saves the plan, `L` loads a saved design at the cursor —
+  designs survive across saves AND games. `tests/test_blueprint_library.py`.
 
 _Research launched 2026-07-18; plan drafted; substrate sections pending agent
 findings, then M0 begins._

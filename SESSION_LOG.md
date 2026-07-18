@@ -9859,3 +9859,18 @@ refused ("mundane tools can't touch it"); only a caster at least as powerful as 
 re-working a mightier one's item ("warded by a mightier enchanter"). Registered in engine_setup + save_load
 (persists — verified by a save/load test). Emergent in the living world: ambient NPC casters ward their
 creations, so a hedge-wizard can't undo an archmage's wall. Tests: `test_wards.py` (13). Next: M6 blueprints.
+
+## 2026-07-18 — M6 the cross-game BLUEPRINT library (magic-&-worldcraft arc complete)
+
+The final phase: `engine/blueprint_library.py` (mirrors `engine/dm_library`) writes `data/dm_library/
+blueprints.json` — env-overridable via `LLM_RPG_DM_LIBRARY`, gitignored, plain PORTABLE JSON (copy the file to
+share a design). A blueprint is a NORMALISED pattern (`plan_to_spec` → `[dx,dy,terrain]` offsets from the
+design's own corner), so `stamp(spec,cx,cy)` reproduces it at any cursor tile. The build planner's `V` saves
+the current plan as a named design and `L` loads the next saved one and ghosts it at the cursor — so a keep or
+farm laid out in one game can be re-stamped in ANY future game (George: "save designs for other sessions and
+games"). Dedup + cap + atomic write. Tests: `test_blueprint_library.py` (8, tmp library root). Full suite green.
+
+**Magic & Worldcraft arc COMPLETE** (M0–M6 + wards): unified worldcraft mutation layer → magic depth
+(schools/tiers/learning, 23→51 spells) → world-altering spells (player + NPCs/away-heroes) → magic-item
+crafting + imbuing → guilds/workers building → player build/terraform planner → cross-game blueprints → magical
+protection by power. All in `docs/MAGIC_AND_WORLDCRAFT.md`.
