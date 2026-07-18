@@ -70,5 +70,36 @@ class TestEngineHooks(unittest.TestCase):
         self.assertNotIn("_fx_fire", e.player.metadata)
 
 
+class TestStatusOverlays(unittest.TestCase):
+    """H5 — magical conditions shown on the body (aura / wisps)."""
+
+    def test_status_fx_table(self):
+        from ui import char_fx
+        names = [n for n, _, _ in char_fx._STATUS_FX]
+        self.assertIn("blessed", names)
+        self.assertIn("poisoned", names)
+        self.assertIn("cursed", names)
+
+    def test_aura_and_wisps_draw_pixels(self):
+        import pygame
+        from ui import char_fx
+        surf = pygame.Surface((200, 200), pygame.SRCALPHA)
+        char_fx._aura(surf, 60, 60, 64, 0.4, (255, 224, 130))
+        char_fx._wisps(surf, 60, 60, 64, 0.4, (96, 205, 96))
+        self.assertGreater(pygame.mask.from_surface(surf, 5).count(), 10)
+
+    def test_draw_status_haloes_a_blessed_char(self):
+        import pygame
+        from ui import char_fx
+
+        class _C:
+            def __init__(self):
+                self.metadata = {"status_effects": [{"name": "blessed"}]}
+        surf = pygame.Surface((200, 200), pygame.SRCALPHA)
+        char_fx.draw_status(surf, _C(), 60, 60, 64, 0.4)
+        self.assertGreater(pygame.mask.from_surface(surf, 5).count(), 0,
+                           "a blessed body shows a halo")
+
+
 if __name__ == "__main__":
     unittest.main()

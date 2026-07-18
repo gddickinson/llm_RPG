@@ -126,9 +126,11 @@ readability and takes on the ambitious lighting unification.
   data, not just a class default, so upgrades show on the body. Shared 2D + iso.
 - **H4 — Population variety (MED).** Wider skin tones, hairstyles + hair colour, and
   body types so a crowd reads as individuals, not clones.
-- **H5 — Status & condition on the body (MED).** Visible bandages/wounds, a buff
-  GLOW, a debuff TINT (poison green, frozen blue), a bleeding drip — the body shows
-  its state (some `char_fx` exists; extend + wire to status effects).
+- **H5 — Status on the body. ✅ DONE (2D).** `char_fx.draw_status` (wired into
+  `draw_effects`) overlays a soft cue per active magical condition: BLESSED → a
+  golden body-hugging halo RING, POISONED → rising green wisps, CURSED → a dark
+  violet ring — all framing the visible figure, not washing it out, pulsing on the
+  anim clock. Render `h5_status.png`. Tests: `test_char_fx.TestStatusOverlays`.
 - **H6 — Dynamic 2D lighting via baked normal maps (AMBITIOUS).** Bake a normal map
   alongside each 2D sprite and light it by the world (day/night, torch, forge,
   wisp) so 2D characters react to lighting like the iso world does — the unifying
