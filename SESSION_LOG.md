@@ -9705,3 +9705,16 @@ seeded `generate_multilevel` with `hash(name)` — but Python RANDOMISES string 
 no den-lord → flake). Fixed with a STABLE `zlib.crc32(name)` seed — the Deepdelve is now one consistent place
 across sessions, and the dungeon tests are deterministic (setUp seeds worldgen + save/restore; the apex test
 asserts "≥1 den-lord" since a boss-tier template can also be a regular deep spawn). 0/25 flakes after.
+
+## 2026-07-18 — fog-of-war dim overlay bug (George: "a smaller darker tile over out-of-sight tiles")
+
+The explored-but-out-of-sight fog-dim overlay (`renderer._dim_shade`) was a `pygame.Surface` cached ONCE in
+`MapRenderer.__init__` at the CONSTRUCTION `tile_size` (the GUI builds it at 48) — but `settings_panel.
+apply_setting('zoom', …)` / `init_zoom` change `renderer.tile_size` at runtime, and the DEFAULT zoom is 64.
+So on a fresh boot the 48×48 dim overlay was blitted at each 64×64 out-of-sight tile's top-left, darkening
+only a corner and leaving a bright L — a checkerboard of small dark squares (the user's exact report). Fixed
+with a size-aware `_dim_surface()` that rebuilds the overlay whenever `tile_size` changes (handles every
+zoom/resize path, not just the settings one). Confirmed the interior/dungeon dim (built per-render at the
+current size) was already correct, and swept the UI — `_dim_shade` was the ONLY construction-cached,
+tile-sized surface of this class (sprite caches are size-keyed or cleared on zoom). Regression test
+`tests/test_fog_dim.py` (4 — size tracking + an end-to-end blit-size check). Before/after verified visually.

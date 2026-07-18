@@ -48,8 +48,18 @@ class MapRenderer:
         # Lighting + weather overlays (lazy)
         self._lighting = None
         self._weather_overlay = None
-        self._dim_shade = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
-        self._dim_shade.fill((10, 10, 20, 130))   # cached fog-dim (P33.2)
+        self._dim_shade = None      # cached fog-dim overlay, sized to tile_size
+
+    def _dim_surface(self):
+        """The explored-but-out-of-sight fog-dim overlay, sized to the CURRENT
+        tile_size. Rebuilt when the zoom changes — else the overlay stays at the
+        construction size and only darkens a corner of a bigger tile (George
+        2026-07-18: "a smaller darker tile is placed over out-of-sight tiles")."""
+        ts = self.tile_size
+        if self._dim_shade is None or self._dim_shade.get_width() != ts:
+            self._dim_shade = pygame.Surface((ts, ts), pygame.SRCALPHA)
+            self._dim_shade.fill((10, 10, 20, 130))   # P33.2 fog-dim
+        return self._dim_shade
 
     @staticmethod
     def active_zone(engine):
@@ -116,7 +126,7 @@ class MapRenderer:
                 surf = self.sprites.tile_variant(sprite_name, wx, wy)
                 target.blit(surf, dest)
                 if dim:
-                    target.blit(self._dim_shade, dest)
+                    target.blit(self._dim_surface(), dest)
 
         ts = self.tile_size
         try:   # edge-blend seams + water coast (P33.2) then 2.5D blocks (P16.5)
