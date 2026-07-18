@@ -3,13 +3,60 @@ line): the SSAA beauty pass, the glimpsed-through-a-window glaze, and the
 in-flight projectile sprite. All delegate to `body_renderer.draw_body`.
 """
 
+import math
+
 try:
     import pygame
     PYGAME_OK = True
 except Exception:                                    # pragma: no cover
     PYGAME_OK = False
 
+try:
+    import numpy as np
+    NUMPY_OK = True
+except Exception:                                    # pragma: no cover
+    NUMPY_OK = False
+
 from ui import body_renderer as _br
+
+# H6 dynamic lighting — a directional MULTIPLY gradient relights the character by
+# the world's light: the side facing a light source stays bright/warm, the far
+# side sinks to shadow. Built as a MULTIPLY (never ADD) so it can't halo the
+# transparent pixels around the sprite; masked implicitly by the sprite's alpha.
+_GRAD_CACHE = {}
+
+
+def _relight_gradient(w, h, qdir, lit, shadow):
+    """A cached linear gradient (w×h): `lit` colour toward the light direction
+    `qdir` (0-15, in π/8 steps), `shadow` colour away. Multiplied onto the sprite."""
+    key = (w, h, qdir, lit, shadow)
+    g = _GRAD_CACHE.get(key)
+    if g is not None:
+        return g
+    ang = qdir * (math.pi / 8.0)
+    dx, dy = math.cos(ang), math.sin(ang)
+    xs = np.linspace(-1.0, 1.0, w)[:, None]          # (w,1)
+    ys = np.linspace(-1.0, 1.0, h)[None, :]          # (1,h)
+    t = np.clip((xs * dx + ys * dy + 1.0) * 0.5, 0.0, 1.0)   # 0 shadow → 1 lit
+    lit_a = np.array(lit, float)
+    sh_a = np.array(shadow, float)
+    rgb = sh_a[None, None, :] * (1 - t[..., None]) + lit_a[None, None, :] * t[..., None]
+    g = pygame.surfarray.make_surface(rgb.astype(np.uint8))
+    _GRAD_CACHE[key] = g
+    return g
+
+
+def apply_relight(scratch, light):
+    """Relight `scratch` (the isolated character sprite) by a world light:
+    `light` = (dx, dy, lit_rgb, shadow_rgb). BLEND_MULT keeps the sprite's alpha,
+    so only drawn pixels are touched."""
+    if not (PYGAME_OK and NUMPY_OK and light):
+        return
+    dx, dy, lit, shadow = light
+    qdir = int(round(math.atan2(dy, dx) / (math.pi / 8.0))) % 16
+    w, h = scratch.get_size()
+    grad = _relight_gradient(w, h, qdir, tuple(lit), tuple(shadow))
+    scratch.blit(grad, (0, 0), special_flags=pygame.BLEND_MULT)
 
 
 def draw_body_crisp(surface, char, sx: int, sy: int, tile_size: int,
@@ -26,6 +73,9 @@ def draw_body_crisp(surface, char, sx: int, sy: int, tile_size: int,
     w, h = tile_size + pad_x * 2, tile_size + pad_up
     scratch = pygame.Surface((w * n, h * n), pygame.SRCALPHA)
     _br.draw_body(scratch, char, pad_x * n, pad_up * n, tile_size * n, is_player)
+    light = (getattr(char, "metadata", None) or {}).get("_relight")
+    if light:                                 # H6 relight by the world's light
+        apply_relight(scratch, light)
     small = pygame.transform.smoothscale(scratch, (w, h))
     surface.blit(small, (int(sx - pad_x), int(sy - pad_up)))
 

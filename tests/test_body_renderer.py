@@ -314,6 +314,29 @@ class TestGear(unittest.TestCase):
         self.assertGreater(pygame.mask.from_surface(surf, 8).count(), 20)
 
 
+class TestRelight(unittest.TestCase):
+    """H6 — dynamic directional relight of the character sprite."""
+
+    def test_relight_darkens_the_far_side_and_keeps_alpha(self):
+        from ui.body_draw import apply_relight, NUMPY_OK
+        if not NUMPY_OK:
+            self.skipTest("numpy required")
+        s = pygame.Surface((40, 40), pygame.SRCALPHA)
+        s.fill((255, 255, 255, 255))
+        apply_relight(s, (-1.0, 0.0, (255, 255, 255), (60, 60, 60)))  # light ←
+        left = s.get_at((4, 20))[0]
+        right = s.get_at((36, 20))[0]
+        self.assertGreater(left, right, "the light-facing side is brighter")
+        self.assertEqual(s.get_at((4, 20))[3], 255, "alpha preserved (no halo)")
+
+    def test_relight_noop_without_light(self):
+        from ui.body_draw import apply_relight
+        s = pygame.Surface((20, 20), pygame.SRCALPHA)
+        s.fill((200, 200, 200, 255))
+        apply_relight(s, None)                       # no light → unchanged
+        self.assertEqual(s.get_at((10, 10)), (200, 200, 200, 255))
+
+
 class TestGroundShadow(unittest.TestCase):
     """ANIM_REALISM R6 — a soft contact shadow grounds a figure and SHRINKS as it
     lifts off the ground (airborne reads)."""
