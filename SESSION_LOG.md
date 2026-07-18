@@ -9759,3 +9759,17 @@ vampiric-touch/bone-spear/fear, enchantment sleep). The X-spellbook shows each s
 validator checks tier range / classes / prereq. Tests: `tests/test_spell_progression.py` (14); no regression
 in the existing spell/level/quick/panel suites. Next: M2 world-altering spells (the `world_effect` block →
 `worldcraft.mutate`), then M3 magic-item crafting + imbuing.
+
+## 2026-07-18 — M2 World-altering spells (magic that reshapes the world)
+
+Spells now physically change the world through the SAME M0 worldcraft ruleset a mason or the player's build
+tool will use (the "consistency" keystone paying off). `engine/spell_world.py` dispatches a spell's optional
+`world_effect` block: `{"worldcraft":{"to":…}}` → `worldcraft.mutate(means="magic")`, `{"tile_damage":{…}}` →
+raze terrain + structures, `{"surface":{kind:fire/shock/…}}` → ignite/electrify. A PURE world spell (no
+damage/heal) targets the tile the caster FACES (`resolve_tile` — you build/terraform where you look, not at a
+locked enemy); a damage spell that also carries a `world_effect` applies it at the struck tile. Overworld only;
+protected (typed-POI) ground resists — no griefing the towns. 8 new spells: Stone Shape (level rock / drain a
+pool → grass), Wall of Stone (raise a wall), Plant Growth (grow forest), Conjure Water (flood), Blight (→
+scorched), Disintegrate (wall → rubble), Earthquake (tile_damage siege ring), Firestorm (area damage + raze +
+ignite). Catalogue 43→51. Wired into `spells.cast` (two hooks); `spell_world.py` kept separate to hold the
+500-line line. Tests: `tests/test_spell_world.py` (9). Next: M3 magic-item crafting + imbuing.

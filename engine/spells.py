@@ -219,6 +219,12 @@ class SpellSystem:
         if spell_id not in caster.metadata.get("spells_known", []):
             return f"You don't know {spell.name}."
 
+        # M2 — a PURE world spell shapes a tile, not a character
+        if spell.world_effect and not (spell.damage or spell.heal
+                                       or spell.status_effect):
+            from engine import spell_world
+            return spell_world.cast_tile_spell(self, caster, spell)
+
         # Resolve target
         target = self._resolve_target(caster, target_name, spell)
         if target is None:
@@ -296,6 +302,18 @@ class SpellSystem:
             if not target.is_alive():
                 results.append(f"{target.name} is slain by the {spell.name}!")
                 self._on_kill(caster, target, spell.damage)
+        # M2 — a damage spell may ALSO carry a world_effect (a firestorm razes +
+        # ignites the struck ground); applied at the impact tile, overworld only
+        if spell.world_effect:
+            try:
+                if self.engine.active_zone() is None:
+                    from engine import spell_world
+                    tx, ty = target.position
+                    results += spell_world.apply(self.engine, caster,
+                                                 spell, tx, ty)
+            except Exception:
+                pass
+
         if spell.heal:
             healed = min(spell.heal, target.max_hp - target.hp)
             target.heal(spell.heal)

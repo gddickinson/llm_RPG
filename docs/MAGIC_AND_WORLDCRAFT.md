@@ -327,7 +327,12 @@ plan as a batch of `mutate` calls; all obey ONE ruleset.
   `learn_new_spells` on level-up + tome `teach_spell`; catalogue 23→43 across
   schools/tiers/casters; spellbook shows tier+school. (Remaining flavour: cleric
   prayer-learning & sorcerer-innate distinctions are future polish.)
-- [ ] M2 World-altering spells
+- [~] M2 World-altering spells — **DONE**: `engine/spell_world.py` dispatches a
+  spell's `world_effect` (`worldcraft`/`tile_damage`/`surface`); 8 new spells
+  (Stone Shape, Wall of Stone, Plant Growth, Conjure Water, Blight, Disintegrate,
+  Earthquake, Firestorm); pure world spells target the faced tile, overworld only,
+  protected ground resists. `tests/test_spell_world.py`. (Future polish: fold the
+  legacy hardcoded fireball/shock into `world_effect`; reticle tile-targeting.)
 - [ ] M3 Magic-item crafting + imbuing
 - [ ] M4 Guilds + worker build economy
 - [ ] M5 Player build/terraform tool

@@ -620,5 +620,154 @@
       "warlock"
     ],
     "description": "A hurled shard of sharpened bone."
+  },
+  "stone_shape": {
+    "name": "Stone Shape",
+    "mana_cost": 5,
+    "range": 5.0,
+    "school": "transmutation",
+    "tier": 3,
+    "classes": [
+      "wizard",
+      "druid"
+    ],
+    "world_effect": {
+      "worldcraft": {
+        "to": "grass"
+      }
+    },
+    "description": "Level rock, drain a pool, or clear scorched earth to open ground."
+  },
+  "wall_of_stone": {
+    "name": "Wall of Stone",
+    "mana_cost": 5,
+    "range": 4.0,
+    "school": "abjuration",
+    "tier": 3,
+    "classes": [
+      "wizard"
+    ],
+    "world_effect": {
+      "worldcraft": {
+        "to": "building"
+      }
+    },
+    "description": "Raise a wall of stone from the bare earth."
+  },
+  "plant_growth": {
+    "name": "Plant Growth",
+    "mana_cost": 4,
+    "range": 5.0,
+    "school": "nature",
+    "tier": 2,
+    "classes": [
+      "druid"
+    ],
+    "world_effect": {
+      "worldcraft": {
+        "to": "forest"
+      }
+    },
+    "description": "Trees erupt from the soil into a thicket."
+  },
+  "conjure_water": {
+    "name": "Conjure Water",
+    "mana_cost": 4,
+    "range": 5.0,
+    "school": "nature",
+    "tier": 2,
+    "classes": [
+      "druid",
+      "wizard"
+    ],
+    "world_effect": {
+      "worldcraft": {
+        "to": "water"
+      }
+    },
+    "description": "Call forth a pool of water onto open ground."
+  },
+  "blight": {
+    "name": "Blight",
+    "mana_cost": 4,
+    "range": 5.0,
+    "school": "necromancy",
+    "tier": 3,
+    "classes": [
+      "warlock",
+      "druid"
+    ],
+    "world_effect": {
+      "worldcraft": {
+        "to": "scorched"
+      }
+    },
+    "description": "Wither the living ground to blasted ash."
+  },
+  "disintegrate": {
+    "name": "Disintegrate",
+    "mana_cost": 8,
+    "range": 5.0,
+    "school": "evocation",
+    "tier": 4,
+    "classes": [
+      "wizard",
+      "warlock"
+    ],
+    "requires": {
+      "min_intelligence": 15
+    },
+    "world_effect": {
+      "worldcraft": {
+        "to": "rubble"
+      }
+    },
+    "description": "Reduce a wall or structure to rubble."
+  },
+  "earthquake": {
+    "name": "Earthquake",
+    "mana_cost": 11,
+    "range": 6.0,
+    "school": "evocation",
+    "tier": 5,
+    "classes": [
+      "druid",
+      "wizard"
+    ],
+    "requires": {
+      "min_wisdom": 15
+    },
+    "world_effect": {
+      "tile_damage": {
+        "type": "siege",
+        "radius": 2,
+        "amount": 30
+      }
+    },
+    "description": "The ground heaves, shattering walls and works in a wide ring."
+  },
+  "firestorm": {
+    "name": "Firestorm",
+    "mana_cost": 9,
+    "damage": 14,
+    "area": 2.0,
+    "range": 7.0,
+    "school": "evocation",
+    "tier": 4,
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "world_effect": {
+      "tile_damage": {
+        "type": "fire"
+      },
+      "surface": {
+        "kind": "fire",
+        "radius": 1,
+        "intensity": 2
+      }
+    },
+    "description": "A roaring storm of flame that scorches earth and foe alike."
   }
 }
