@@ -380,6 +380,19 @@ class GameAPIMixin:
             self.memory_manager.add_event(msg)
         return msg
 
+    # ---- Animal companions (tame a wild beast) ------------------------
+
+    def tameable_animal_near(self):
+        from engine import animal_companions
+        return animal_companions.nearest_tameable(self)
+
+    def tame_animal(self) -> str:
+        from engine import animal_companions
+        msg = animal_companions.try_tame(self)
+        if msg:
+            self.memory_manager.add_event(msg)
+        return msg
+
     # ---- Claim a home (P15.7) -----------------------------------------
 
     def home_action(self) -> Optional[str]:

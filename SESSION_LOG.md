@@ -10105,3 +10105,14 @@ owl's deeper well, delta-reconciled in `spells.ensure_mana` so it's a no-op at n
 rebind raven → back to base), or `sight` (a raven scouts → +visibility). Bound with the E-key at a place of
 magical study (an arcane/divine trainer); the follower renders with an arcane glow. A start-triggered codex
 entry teaches it. Tests: `test_familiars.py` (9).
+
+**ANI — Animal companions (fight/hunt) for all.** `engine/animal_companions.py` + `data/animal_companions.json`:
+TAME an adjacent WILD animal (a Hunting check `hunting+10 ≥ dc`, eased 4 by a food lure) and it joins your
+PARTY — a GUARDIAN (wolf/boar/aurochs/stag/hog/mouflon) that fights at your side, or a HUNTER (fox/deer, whose
+`owner_hunting_bonus` gives you +damage vs beasts). A wild horse (mustang) breaks to the saddle as a MOUNT
+instead (satisfying "horses as mounts" through taming). Reuses everything: the tamed beast IS the same ANIMAL
+Character (already rendered + in `npc_manager`) — re-flagged friendly, stripped of its wildlife instincts, given
+`natural_damage`, dropped from the WildlifeSystem, and added to `companion_manager.party`, so the companion AI
+walks + fights it for free. Bound to the E key beside a tameable beast (+ a hint cue + a codex entry). `BEAST_CAP`
+= 2. Tests: `test_animal_companions.py` (8). Together with the earlier FAM familiars + existing mounts/pack/pets,
+this completes George's animal-companion request.

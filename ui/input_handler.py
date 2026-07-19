@@ -429,6 +429,15 @@ class InputHandler:
                         return True
             except Exception:
                 pass
+            # A wild animal beside you, and food to lure it — tame it
+            try:
+                if self.engine.tameable_animal_near() is not None \
+                        and not self.engine.world.get_items_at(
+                            *self.engine.player.position):
+                    self.engine.tame_animal()
+                    return True
+            except Exception:
+                pass
             from engine.mount import try_buy_at_stable   # P15.8b mule (legacy)
             if try_buy_at_stable(self.engine):
                 return True

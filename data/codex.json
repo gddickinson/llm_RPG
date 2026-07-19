@@ -98,6 +98,9 @@
     {"id": "familiars", "category": "People", "title": "Familiars",
      "hint": "A caster can bind a familiar — a cat, owl, raven or imp that trails you and lends a passive gift (more mana, faster regen, keener sight). Press E at a place of magical study (a mage tower or temple) to bind one.",
      "triggers": ["[Familiar]"]},
+    {"id": "animal_companions", "category": "People", "title": "Animal Companions",
+     "hint": "Carry food and press E beside a wild beast to TAME it — a boar or wolf fights at your side, a fox aids the hunt, and a wild horse breaks to the saddle as a mount. Taming turns on your Hunting skill.",
+     "triggers": ["[Companion] You tame", "your animal companion"]},
     {"id": "diaries", "category": "People", "title": "Regional Diaries",
      "hint": "Press J for regional achievement tiers that pay rewards and unlock shop discounts and teleports.",
      "triggers": ["[Diary]"]}

@@ -96,6 +96,15 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    # a wild animal beside you + food to lure it — tame a companion / mount
+    try:
+        if engine.tameable_animal_near() is not None:
+            from engine.animal_companions import has_food
+            hints.append("[E] tame the wild animal" if has_food(player)
+                         else "a wild animal — carry food to tame it")
+    except Exception:
+        pass
+
     # GX.5 the Deepdelve — its cues lead: finding the secret stair (the sole
     # discovery mechanism) and descending a mouth must NOT be crowded out of
     # the capped hint bar by ambient talk/barter prompts when it sits in town.

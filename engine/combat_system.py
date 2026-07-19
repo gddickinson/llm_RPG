@@ -232,6 +232,13 @@ class CombatSystem:
         from engine.combat_math import damage_type_modifier
         damage = damage_type_modifier(attacker, defender, damage)
 
+        try:   # a HUNTER animal at your side helps you fell beasts
+            if attacker is self.engine.player:
+                from engine.animal_companions import owner_hunting_bonus
+                damage += owner_hunting_bonus(self.engine, defender)
+        except Exception:
+            pass
+
         # GAP.3 sneak attack — a hit on the foe we caught unaware lands hard
         if sneak_ready:
             try:
