@@ -307,3 +307,50 @@ def _water_toward(engine, char, r: int = 6):
                 if d < bd:
                     best, bd = (nx, ny), d
     return best
+
+
+def nearest_loot(engine, char, r: int = 5):
+    """The nearest tile within `r` holding a real (pickable) item — skips a
+    plain-string BODY MARKER (a corpse isn't loot) and returns None when the
+    pack is FULL. Split from `agent_controller` (2026-07-19, drives round)."""
+    try:
+        from engine.carry import can_carry
+        if not can_carry(char):
+            return None
+    except Exception:
+        pass
+    x, y = char.position
+    best, bd = None, r + 1
+    try:
+        for dx in range(-r, r + 1):
+            for dy in range(-r, r + 1):
+                its = engine.world.get_items_at(x + dx, y + dy)
+                if its and any(hasattr(i, "id") for i in its):
+                    d = max(abs(dx), abs(dy))
+                    if d < bd:
+                        best, bd = (x + dx, y + dy), d
+    except Exception:
+        return None
+    return best
+
+
+def friendly_near(engine, char, r: int = 7):
+    """The nearest living, non-hostile, non-player soul ON OUR GRID — someone
+    to talk to, take a quest from, or recruit (no chatting through walls).
+    Split from `agent_controller` (2026-07-19, drives round)."""
+    from engine import agent_nav as nav
+    zone = nav.active_zone(engine)
+    zname = getattr(zone, "name", None) if zone is not None else None
+    best, bd = None, r + 1
+    for npc in engine.npc_manager.npcs.values():
+        if npc.id == char.id or not npc.is_active():
+            continue
+        if _is_hostile(npc) or (getattr(npc, "metadata", {})
+                                or {}).get("player_char"):
+            continue
+        if not _colocated(zname, npc):
+            continue
+        d = nav._dist(char.position, npc.position)
+        if d < bd:
+            best, bd = npc, d
+    return best

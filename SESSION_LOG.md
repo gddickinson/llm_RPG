@@ -10219,3 +10219,19 @@ spawns/quest) was lost. But `dm_api.create_quest` already board-posts every modu
 optional. Dropped the `giver_id` (the quest is now board-posted, reachable in every world) and relaxed
 `validate_packs` to accept a giver-less quest (only a SPECIFIED-but-unknown giver is an error). The pack now
 installs everywhere. Tests: `test_autoplay_hardening` giver-less cases. All world types soak clean (no crashes).
+
+## 2026-07-19 — Autoplay: seek companions + a loot-loop fix (George)
+
+George: tune heroes to seek adventure and companions more. Explored an aggressive "strike out for the nearest
+monster lair" drive, but it charged fragile solo heroes into dens that back onto mountains/water — the pathing
+dead-ended (heroes froze) or the pack overwhelmed them (deaths). Pulled it back to the SAFE, high-value parts:
+- **Seek companions**: a partyless hero with party-room is now DRAWN to a guild hall (folded into
+  `agent_goals.named_goal`, so it rides rule 7's proven stall-and-abandon roaming rather than a dedicated
+  cross-map march that dead-ended). It gathers a band via the existing adjacent-recruit, so parties form more.
+- **Loot-loop fix** (a real bug, hits human players too): a ground tile often holds a plain-string BODY MARKER
+  ("Wolf's body") FIRST, then the real loot under it. A blind `pickup_item()` grabbed the marker, "left it in
+  peace", and never reached the loot — so `nearest_loot` kept returning the tile and an away-hero looted it 737×
+  in place. `player_actions.pickup` now sorts real items (with an id) ahead of body-marker strings.
+- **Refactor** to hold the 500-line line: moved the pure sensing helpers `nearest_loot`/`friendly_near` to
+  `agent_sense` and `pack_outmatches` to `agent_goals` (agent_controller back under 500).
+Tests green; soak shows parties forming and the big loot/zombie/gather freezes gone.

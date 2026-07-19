@@ -48,6 +48,17 @@ def named_goal(ctrl, engine, char):
     on `ctrl.goal_name`."""
     cls = getattr(getattr(char, "character_class", None), "value", "")
     draw = AMBITION_DRAW.get(ambition(char)) or CLASS_DRAW.get(cls, ())
+    # SEEK COMPANIONS (George) — a partyless hero with room to grow a band is
+    # DRAWN to a guild hall, where adventurers gather to be recruited. Folded
+    # into the class draw so it rides rule 7's safe stall-and-abandon roaming
+    # (a dedicated cross-map march kept dead-ending in rough terrain).
+    try:
+        if ctrl._room_in_party(engine) \
+                and not engine.companion_manager.party:
+            draw = tuple(draw) + ("guild", "hall", "adventurers",
+                                  "mercenaries")
+    except Exception:
+        pass
     px, py = char.position
     pref, other = [], []
     for loc in getattr(engine.world, "locations", []):
@@ -76,6 +87,16 @@ def disposition(char) -> str:
     except Exception:
         pass
     return (getattr(char, "metadata", {}) or {}).get("disposition", "balanced")
+
+
+def pack_outmatches(char, pack) -> bool:
+    """Would this pack likely overwhelm the hero? Weigh the hero's level and
+    current HP against the pack's summed strength — generous to the hero
+    (gear + a healthy body beat a rabble), so it flees only a clearly
+    superior warband, not every three goblins."""
+    hero = getattr(char, "level", 1) + max(1, char.hp // 8)
+    threat = sum(max(1, getattr(f, "level", 1)) for f in pack)
+    return threat > hero * 1.3
 
 
 def pick_goal(ctrl, engine, char):

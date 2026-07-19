@@ -23,6 +23,7 @@ from contextlib import contextmanager
 from engine import agent_nav as nav
 from engine import agent_goals as agoals
 from engine import agent_trade as agtrade
+from engine import agent_sense as sense
 from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
                                 _knows_heal, _can_shoot, _provisioned,
@@ -98,9 +99,8 @@ class AgentController:
         zname = getattr(zone, "name", None) if zone is not None else None
         out = []
         for npc in engine.npc_manager.npcs.values():
-            # skip a hp<=0 "zombie" (status still 'alive' but really dead —
-            # a non-combat damage source left it at 0): targeting it loops
-            # forever plinking a corpse (George: sorcerer froze 945 turns)
+            # skip a hp<=0 "zombie" (status 'alive' but really dead — a
+            # non-combat kill): targeting it loops on a corpse (George)
             if npc.id == char.id or not npc.is_active() or npc.hp <= 0:
                 continue
             if not _is_hostile(npc) or not _colocated(zname, npc):
@@ -110,15 +110,6 @@ class AgentController:
                 out.append((npc, d))
         out.sort(key=lambda t: t[1])
         return out
-
-    def _pack_outmatches(self, char, pack) -> bool:
-        """Would this pack likely overwhelm the hero? Weigh the hero's level
-        and current HP against the pack's summed strength. Generous to the
-        hero (gear + a healthy body beat a rabble), so it flees only a
-        clearly superior warband — not every three goblins."""
-        hero = getattr(char, "level", 1) + max(1, char.hp // 8)
-        threat = sum(max(1, getattr(f, "level", 1)) for f in pack)
-        return threat > hero * 1.3
 
     def _focus(self, foes):
         """Keep hammering one target while it lives and is in sight —
@@ -131,47 +122,8 @@ class AgentController:
         return foes[0][0] if foes else None
 
     def _nearest_loot(self, engine, char, r: int = 5):
-        try:   # a full pack can't pick anything up — don't loop on it
-            from engine.carry import can_carry
-            if not can_carry(char):
-                return None
-        except Exception:
-            pass
-        x, y = char.position
-        best, bd = None, r + 1
-        try:
-            for dx in range(-r, r + 1):
-                for dy in range(-r, r + 1):
-                    its = engine.world.get_items_at(x + dx, y + dy)
-                    # real items only — a plain-string BODY MARKER is not
-                    # loot (rob_body leaves it), so pursuing it loops forever
-                    if its and any(hasattr(i, "id") for i in its):
-                        d = max(abs(dx), abs(dy))
-                        if d < bd:
-                            best, bd = (x + dx, y + dy), d
-        except Exception:
-            return None
-        return best
-
-    def _friendly_near(self, engine, char, r: int = 7):
-        """The nearest living, non-hostile, non-player soul ON OUR GRID —
-        someone to talk to, take a quest from, or recruit (no chatting
-        with folk sealed behind a building's walls)."""
-        zone = nav.active_zone(engine)
-        zname = getattr(zone, "name", None) if zone is not None else None
-        best, bd = None, r + 1
-        for npc in engine.npc_manager.npcs.values():
-            if npc.id == char.id or not npc.is_active():
-                continue
-            if _is_hostile(npc) or (getattr(npc, "metadata", {})
-                                    or {}).get("player_char"):
-                continue
-            if not _colocated(zname, npc):
-                continue
-            d = _dist(char.position, npc.position)
-            if d < bd:
-                best, bd = npc, d
-        return best
+        from engine.agent_sense import nearest_loot
+        return nearest_loot(engine, char, r)
 
     def _room_in_party(self, engine) -> bool:
         try:
@@ -268,7 +220,7 @@ class AgentController:
         if len(pack) >= 3:
             valiant = disp == "valiant" and hp > SWARM_HP
             cautious = disp == "cautious"
-            if not valiant and (cautious or self._pack_outmatches(char, pack)):
+            if not valiant and (cautious or agoals.pack_outmatches(char, pack)):
                 step = nav.flee_step(engine, char, pack[0].position,
                                      self.recent)
                 if step is not None:
@@ -287,12 +239,10 @@ class AgentController:
                 if step is not None:
                     return ("flee", step)
                 # backed into a corner — a cautious hero still defends itself
-            # a caster fights with MAGIC (M.8c): the best damage spell it
-            # knows, can pay for, and that reaches — before blade or bow.
-            # Use the EUCLIDEAN gap the spell system itself checks (not the
-            # Chebyshev `d`), so a caster closes to TRUE range instead of
-            # standing and wasting casts on a foe just out of reach (George:
-            # residual caster stand — the spell range is a radius, not a box).
+            # a caster fights with MAGIC (M.8c): the best damage spell it can
+            # afford that reaches — using the EUCLIDEAN gap the spell system
+            # checks (not Chebyshev `d`), so it closes to TRUE range instead
+            # of wasting casts on a foe just out of a spell's radius (George).
             eucd = math.hypot(char.position[0] - target.position[0],
                               char.position[1] - target.position[1])
             spell = _attack_spell(char, eucd)
@@ -425,7 +375,10 @@ class AgentController:
                 return ("loot",)
             return ("move", nav.safe_step(engine, char, loot, self.recent))
 
-        # 7. explore a class-flavoured place; abandon one we can't close on
+        # 7. explore a class-flavoured place; abandon one we can't close on.
+        # (SEEK COMPANIONS — George — is folded into `named_goal`: a partyless
+        # hero is DRAWN to a guild hall, reusing this rule's safe stall-and-
+        # abandon machinery, so it never dead-ends marching to a far goal.)
         if self.goal is None or char.position == self.goal or self._stall > 8:
             if self.goal_name is not None:
                 self.visited.add(self.goal_name)
@@ -443,7 +396,7 @@ class AgentController:
         biased by disposition (a SOCIABLE hero seeks people out)."""
         outgoing = disp == "sociable" or agoals.ambition(char) == "fellowship"
         reach = 8 if outgoing else 4
-        friend = self._friendly_near(engine, char, r=reach)
+        friend = sense.friendly_near(engine, char, r=reach)
         if friend is None:
             return None
         adjacent = _dist(char.position, friend.position) <= 1
