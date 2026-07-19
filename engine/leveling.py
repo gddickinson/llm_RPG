@@ -123,10 +123,18 @@ def check_level_up(character) -> List[str]:
         except Exception:
             pass
 
+        # SKILLS: a level-up grants TRAINING POINTS to spend at a class-suitable
+        # trainer on skills + spells (deliberate advancement, via the C screen)
+        try:
+            from engine.training import award_training_points, TP_PER_LEVEL
+            award_training_points(character)
+        except Exception:
+            TP_PER_LEVEL = 3
+
         msg = (
             f"** Level up! {character.name} reaches level {character.level} "
             f"(+5 HP, +1 {favors[0].upper()[:3]}, +1 {favors[1].upper()[:3]}, "
-            f"+1 perk point) **"
+            f"+1 perk point, +{TP_PER_LEVEL} training) **"
         )
         msgs.append(msg)
         logger.info(msg)

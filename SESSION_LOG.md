@@ -10067,3 +10067,17 @@ reconciled delta-safe in `spells.ensure_mana` so it's a no-op at skill 0), **med
 healing), **thievery** (lowers a lock's effective DC in `doors`). Each trains BY DOING through pet-roll-free
 `add_skill_xp` at the melee/ranged/cast/heal/lockpick sites (no RNG churn), plus a pet each. `combat_summary`
 shows every tie. Validator's combat-key whitelist extended. Tests: `test_richer_skills.py` (6).
+
+**SKILLS.B/C — Training & advancement (the core of George's ask).** A level-up now grants TRAINING POINTS
+(3/level, `engine/training.award_training_points`, hooked into `leveling.check_level_up`) — a deliberate
+advancement currency you SPEND at a class-appropriate TRAINER, via the character screen. `engine/training.py`
++ `data/trainers.json` define 5 trainer profiles (combat/arcane/divine/nature/trade), each a set of location
+kinds + mentor role tokens + a `for_classes` gate, so a warrior can't study at a mage tower; `trainer_here`
+detects a suitable trainer at the player's spot (location kind OR a nearby mentor's role tokens — a
+`blacksmith_01` is class `merchant`, so the role is read from the id too). `skill_options` teaches skills toward
+a `skill_cap` = level×3 (directed growth up to your understanding; mastery beyond comes from DOING);
+`spell_options` teaches cross-school BREADTH (eligible spells of the trainer's schools your class's innate list
+doesn't cover — leaving the auto-learn tier progression intact). `train_skill`/`learn_spell` spend the points
+(1 / 2). The character hub gained a **Training tab** (`ui/hub_training.py`, an 8th tab): points + trainer +
+selectable skill/spell rows, Up/Down + Enter/click to train; a start:true codex entry teaches it. Tests:
+`test_training.py` (11). This closes the skills-&-training upgrade.

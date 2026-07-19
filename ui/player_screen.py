@@ -17,8 +17,8 @@ except ImportError:                       # pragma: no cover
 from ui import hub_data
 from ui import hub_paperdoll as doll
 
-TABS = ["Character", "Equipment", "Skills", "Spells", "Quests",
-        "Journal", "Options"]
+TABS = ["Character", "Equipment", "Skills", "Spells", "Training",
+        "Quests", "Journal", "Options"]
 _LINE_BUILDERS = {
     "Character": hub_data.character_lines,
     "Skills": hub_data.skills_lines,
@@ -35,6 +35,7 @@ class PlayerScreen:
         self.scroll = 0
         self.drag = None
         self.opt_cursor = 0
+        self.train_cursor = 0
         self._f = self._big = self._small = None
 
     # ---- fonts / geometry --------------------------------------------
@@ -97,6 +98,12 @@ class PlayerScreen:
             if name == "Options" and \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 return self._options_click(event.pos, panel)
+            if name == "Training" and \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                from ui import hub_training
+                return hub_training.handle_click(event.pos,
+                                                 self._body(panel),
+                                                 self.gui, self)
         return True
 
     def _key(self, event):
@@ -114,11 +121,14 @@ class PlayerScreen:
         if k == pygame.K_LEFTBRACKET:
             self._set_tab((self.tab - 1) % len(TABS))
             return True
-        if pygame.K_1 <= k <= pygame.K_7:
+        if pygame.K_1 <= k <= pygame.K_8:
             self._set_tab(k - pygame.K_1)
             return True
         if TABS[self.tab] == "Options":
             return self._options_key(k)
+        if TABS[self.tab] == "Training":
+            from ui import hub_training
+            return hub_training.handle_key(event, self.gui, self)
         if k in (pygame.K_DOWN, pygame.K_s):
             self.scroll += 2
         elif k in (pygame.K_UP, pygame.K_w):
@@ -131,6 +141,7 @@ class PlayerScreen:
         self.tab = i % len(TABS)
         self.scroll = 0
         self.drag = None
+        self.train_cursor = 0
 
     # ---- options tab --------------------------------------------------
 
@@ -200,11 +211,15 @@ class PlayerScreen:
                                 self._f, self._small)
         elif name == "Options":
             self._draw_options(target, body)
+        elif name == "Training":
+            from ui import hub_training
+            hub_training.draw_training(target, body, self.gui, self,
+                                       self._f, self._small, self._big)
         else:
             self._draw_lines(target, body, _LINE_BUILDERS[name])
 
         hint = self._small.render(
-            "[ ] or Tab / 1-7 switch tab   ·   drag items to (un)equip   ·"
+            "[ ] or Tab / 1-8 switch tab   ·   drag items to (un)equip   ·"
             "   Esc / C close", True, (150, 152, 168))
         target.blit(hint, (panel.centerx - hint.get_width() // 2,
                            panel.bottom - 22))

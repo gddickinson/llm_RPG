@@ -1,0 +1,45 @@
+{
+  "_note": "Training profiles (skills-and-training upgrade). A trainer is a PLACE (location kind) or a mentor NPC (class); it teaches a set of SKILLS and, for the arcane/divine/nature ones, SPELLS of certain schools (cross-school breadth beyond your class's innate list). A profile only serves the classes in `for_classes` ('*' = anyone), so a warrior can't train at a mage tower.",
+  "profiles": {
+    "combat": {
+      "label": "Weapon Master",
+      "skills": ["weaponry", "defense", "marksmanship", "medicine", "athletics"],
+      "spell_schools": [],
+      "location_kinds": ["guildhall", "barracks", "training_ground", "keep", "castle", "colosseum", "arena"],
+      "npc_classes": ["guildmaster", "guard", "knight", "blacksmith", "warrior", "barbarian"],
+      "for_classes": ["warrior", "barbarian", "paladin", "ranger", "rogue", "monk", "bard", "artificer", "guard", "knight"]
+    },
+    "arcane": {
+      "label": "Arcane Tutor",
+      "skills": ["spellcraft", "enchanting", "alchemy"],
+      "spell_schools": ["evocation", "conjuration", "transmutation", "abjuration", "necromancy", "illusion", "arcane"],
+      "location_kinds": ["tower", "sanctum", "library", "academy", "wizard"],
+      "npc_classes": ["wizard", "sorcerer", "enchanter", "scholar", "warlock"],
+      "for_classes": ["wizard", "sorcerer", "warlock", "bard", "artificer"]
+    },
+    "divine": {
+      "label": "Temple Mentor",
+      "skills": ["medicine", "spellcraft"],
+      "spell_schools": ["restoration", "divine", "protection", "holy"],
+      "location_kinds": ["temple", "cathedral", "shrine", "chapel"],
+      "npc_classes": ["priest", "cleric", "monk"],
+      "for_classes": ["cleric", "paladin", "druid", "monk", "bard"]
+    },
+    "nature": {
+      "label": "Wildwarden",
+      "skills": ["hunting", "foraging", "medicine", "marksmanship", "survival"],
+      "spell_schools": ["nature", "restoration"],
+      "location_kinds": ["grove", "lodge", "camp", "glade", "hollow"],
+      "npc_classes": ["ranger", "druid", "hunter"],
+      "for_classes": ["ranger", "druid", "barbarian"]
+    },
+    "trade": {
+      "label": "Guild Instructor",
+      "skills": ["mining", "woodcutting", "fishing", "cooking", "smithing", "alchemy", "foraging", "carpentry", "bartering", "hunting", "thievery", "enchanting"],
+      "spell_schools": [],
+      "location_kinds": ["guildhall", "smithy", "market", "workshop", "forge", "stall"],
+      "npc_classes": ["guildmaster", "blacksmith", "merchant", "artisan", "shopkeeper"],
+      "for_classes": ["*"]
+    }
+  }
+}
