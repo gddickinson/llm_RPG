@@ -153,10 +153,14 @@ def _bag_item(player, idx):
 
 def _icon(gui, item, size):
     try:
-        spr = gui.renderer.sprites.item(getattr(item, "name", ""))
-        return pygame.transform.smoothscale(spr, (size, size))
+        from ui import item_icons
+        return item_icons.icon(item, size)     # type + rarity aware (GAP art)
     except Exception:
-        return None
+        try:
+            spr = gui.renderer.sprites.item(getattr(item, "name", ""))
+            return pygame.transform.smoothscale(spr, (size, size))
+        except Exception:
+            return None
 
 
 _RARITY = {"common": (170, 170, 170), "uncommon": (90, 200, 110),

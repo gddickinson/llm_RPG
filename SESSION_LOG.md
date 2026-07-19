@@ -10041,3 +10041,15 @@ PLAYER to a far hoard — a new `LairSystem.claim_by_rival` clears the farthest 
 `ledger_lines` surfaces the renown race in the `realm_digest` "State of the Realm" (Y-journal). Wired into the
 nightly stack. Tests: `test_company_fortune.py` (4). This closes TIER 4 (T4.1–T4.5 all done; T4.4 shipped
 earlier as skill_combat).
+
+## 2026-07-18 — Richer item art
+
+The paper-doll hub + ground drops used `sprite_loader.item`, which drew almost everything as one flat brown
+box. `ui/item_icons.py` replaces it with a proper, TYPE + RARITY-aware icon library: `_classify` maps an item
+to one of 31 recognizable archetypes (sword/dagger/axe/mace/bow/spear/staff/wand, breastplate/robe/shield/
+boots/helmet, ring/amulet, flask/food/bandage/scroll/book/arrow, ore/herb/log/gem/coins/key/bag/pouch/orb/
+crate) — keyword-first (short keywords match a WHOLE WORD so "hat" ⊄ "whatsit"), falling back to the item TYPE.
+`icon(item, size)` draws the glyph with a rarity frame + an epic/legendary glow, supersampled + cached; the
+name-only `icon_by_name` backs `sprite_loader.item`. Wired into `hub_paperdoll` (full rarity) + the world
+sprite loader (ground drops/shops). Every equipped item + bag item now reads at a glance, rarity-coloured.
+Tests: `test_item_icons.py` (6). Full suite green.

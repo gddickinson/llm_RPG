@@ -445,6 +445,13 @@ class SpriteLoader:
     # ---------------------------------------------------------------- items
     def item(self, name: str) -> pygame.Surface:
         ts = self.tile_size
+        try:   # richer type-aware glyphs (GAP art) — falls back below on error
+            from ui import item_icons
+            spr = item_icons.icon_by_name(name, ts)
+            if spr is not None:
+                return spr
+        except Exception:
+            pass
         surf = pygame.Surface((ts, ts), pygame.SRCALPHA)
         cx, cy = ts // 2, ts // 2
         name = name.lower()
