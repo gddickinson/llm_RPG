@@ -97,7 +97,22 @@ class TravelSystem:
         ready_at = self.engine.player.metadata.get("teleport_ready_at", 0)
         return max(0, ready_at - self.engine.world.time)
 
+    def at_station(self) -> bool:
+        """Standing on (or beside) a WAYSTONE — a magical transit platform.
+        Fast-travel departs only from one (George: no teleporting to anywhere
+        from anywhere; you must reach a station first)."""
+        tn = getattr(self.engine, "teleport_network", None)
+        if tn is None:
+            return False
+        try:
+            return tn.platform_at(self.engine.player.position) is not None
+        except Exception:
+            return False
+
     def teleport(self, index: int) -> str:
+        if not self.at_station():
+            return ("You can only travel from a waystone — find a rune-circle "
+                    "platform and step onto it.")
         dests = self.destinations()
         if not (0 <= index < len(dests)):
             return "No such destination."

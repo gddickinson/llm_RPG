@@ -191,19 +191,25 @@ class AgentController:
             if plan is not None:
                 return plan
 
-        # 1. survive — heal if we can, else run from the nearest threat
+        # 1. survive. At low HP with a foe IN OUR FACE, break off (cornered,
+        # fight) rather than heal-loop; heal only when clear of melee (George).
         if hp <= LOW_HP:
-            pot = _healing_item(char)
-            if pot is not None:
-                return ("heal_potion", pot)
-            if _knows_heal(char):
-                return ("heal_spell",)
-            if foes:
-                step = nav.flee_step(engine, char, foes[0][0].position,
+            if adj:
+                step = nav.flee_step(engine, char, adj[0].position,
                                      self.recent)
                 if step is not None:
-                    return ("flee", step)
-                # cornered with no heals — fall through and fight for it
+                    return ("flee", step)   # cornered → fall through to fight
+            else:
+                pot = _healing_item(char)
+                if pot is not None:
+                    return ("heal_potion", pot)
+                if _knows_heal(char):
+                    return ("heal_spell",)
+                if foes:
+                    step = nav.flee_step(engine, char, foes[0][0].position,
+                                         self.recent)
+                    if step is not None:
+                        return ("flee", step)
 
         # 2. don't stand and trade blows when swarmed in melee
         if len(adj) >= 2 and hp < SWARM_HP:
@@ -249,16 +255,16 @@ class AgentController:
             if spell is not None:
                 return ("cast", spell, target)
             if d <= 1:
-                return ("attack", target)
+                bail = agoals.stalemate_flee(self, engine, char, target)
+                return ("flee", bail) if bail else ("attack", target)
             if _can_shoot(char) and d <= RANGED:
                 return ("shoot", target)
             step = nav.safe_step(engine, char, target.position, self.recent)
             if step is not None:
                 self.goal = target.position
                 return ("move", step)
-            # can't hit it and can't reach it (unreachable / it kites at our
-            # pace) — DROP the fixation and carry on (explore/quest/forage)
-            # instead of standing and staring (George: residual caster stand).
+            # can't hit it and can't reach it (unreachable / it kites) — DROP
+            # the fixation and carry on (explore/quest) instead of staring.
             self.target_id = None
 
         # grab loot right at our feet before wandering off to socialize

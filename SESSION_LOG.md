@@ -10273,3 +10273,30 @@ grave-crown.
   the grave-crown's cold power — each a distinct `[Legend]` ending. Seeder drops the journal, guards the sites,
   posts a rumor. Wired into engine_setup + save_load; the validator knows its NPC ids. Tests:
   `test_ravenmoor.py` (7).
+
+## 2026-07-19 — Adventure-seeking freezes + door/waystone gating (George)
+
+George: fix the "safe_step dead-end" so heroes can seek adventure; and two exploits — TAB out of a
+building/dungeon from anywhere, and fast-travel from anywhere.
+
+Diagnosed the "safe_step dead-end": pure `safe_step` marching NEVER freezes (it always routes or, boxed in,
+waits) — the away-hero freezes were the earlier LOOT-loop (already fixed) plus two combat loops, now fixed:
+- **Heal loop** (`agent_controller` rule 1): a hero at low HP with a foe chipping it in melee healed a
+  potion-a-turn forever (an artificer chugged 860). Now it BREAKS OFF (flees) at low HP with a foe in its
+  face — cornered, it fights — and heals only when clear of melee.
+- **Combat stalemate** (`agent_goals.stalemate_flee`): grinding a foe whose HP won't drop (a regenerating troll
+  a barbarian can't out-damage) is an endless in-place fight (700 turns). After ~30 fruitless swings on one
+  target it disengages and drops the fixation.
+- **Seek adventure**: a battle-ready hero is now drawn (via `named_goal`) to the nearest MANAGEABLE uncleared
+  lair — a den it can clear (total- and toughest-defender gates keep it from a suicidal delve) — riding rule
+  7's safe stall-and-abandon roaming, so it can never dead-end. Level-1 heroes (no beatable den) level up on
+  the wandering wild first.
+
+Exploits:
+- **Door/stairs exit** (`input_actions.try_exit_zone`, from the TAB handler): you leave a building only at its
+  DOOR and a dungeon only at the way out — deeper floors have no door, so you climb the stairs (by stepping on
+  them) to the floor that does. No more exiting by wishing yourself outside from anywhere.
+- **Waystone-only fast-travel** (`travel.at_station` + the U-key): the diary-unlocked fast-travel now departs
+  ONLY from a waystone (a rune-circle platform), like the teleport network — no teleporting to anywhere from
+  anywhere. Tests: `test_exit_teleport_gating` (3). (Known minor: a swallowed shopkeeper-NPC action error
+  "string indices…" — an action returned as a string; doesn't affect play.)

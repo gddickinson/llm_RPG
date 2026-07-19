@@ -42,10 +42,72 @@ def ambition(char) -> str:
         return "none"
 
 
+def battle_ready(char) -> bool:
+    """Hale enough to go LOOKING for a fight — healthy and carrying a way to
+    recover mid-battle (a heal potion or a heal spell), and not the timid
+    sort. A hurt, unprovisioned, or cautious hero sticks to safer roaming."""
+    if disposition(char) == "cautious":
+        return False
+    if char.hp < char.max_hp * 0.75:
+        return False
+    from engine.agent_sense import _healing_item, _knows_heal
+    return _healing_item(char) is not None or _knows_heal(char)
+
+
+def adventure_lair(engine, char, avoid=()):
+    """The nearest UNCLEARED lair the hero (and band) can plausibly CLEAR and
+    hasn't given up on — (pos, name), or None. Weighs the den's TOTAL and
+    TOUGHEST defenders against the party's capacity, so a fresh hero takes a
+    small goblin warren but never charges a troll den or a warband to its
+    death. Reads `engine.lairs`; state-free."""
+    ls = getattr(engine, "lairs", None)
+    if ls is None:
+        return None
+    px, py = char.position
+    cap = getattr(char, "level", 1) + max(1, char.hp // 8)
+    try:
+        cap += 2 * len(getattr(engine.companion_manager, "party", []))
+    except Exception:
+        pass
+    hero = getattr(char, "level", 1)
+    best, bd = None, None
+    for lair in getattr(ls, "lairs", []):
+        if lair.get("cleared") or lair.get("name", "") in avoid:
+            continue
+        threat, toughest = 0, 0
+        for oid in lair.get("occupants", []):
+            occ = engine.npc_manager.get_npc(oid)
+            if occ is not None and occ.is_active():
+                lvl = max(1, getattr(occ, "level", 1))
+                threat += lvl
+                toughest = max(toughest, lvl)
+        if threat > cap or toughest > hero + 1:
+            continue
+        pos = tuple(lair.get("pos", (0, 0)))
+        d = (pos[0] - px) ** 2 + (pos[1] - py) ** 2
+        if bd is None or d < bd:
+            best, bd = (pos, lair.get("name", "")), d
+    return best
+
+
 def named_goal(ctrl, engine, char):
     """The nearest UNVISITED named place the hero is drawn to — its AMBITION
     (M.9d) if the player set one, else its class calling. Records the choice
     on `ctrl.goal_name`."""
+    # SEEK ADVENTURE (George) — a battle-ready hero strikes out for a DEN it
+    # can clear (XP + a hoard). It rides this rule's SAFE stall-and-abandon
+    # roaming (pathing never dead-ends — `safe_step` always routes or waits),
+    # and the manageable-lair gate keeps it from a suicidal delve. If it can't
+    # reach the den (stalls out), rule 7 marks the name visited and it moves
+    # on to the next one — so seeking a fight can never freeze it.
+    try:
+        if battle_ready(char):
+            al = adventure_lair(engine, char, ctrl.visited)
+            if al is not None:
+                ctrl.goal_name = al[1]
+                return al[0]
+    except Exception:
+        pass
     cls = getattr(getattr(char, "character_class", None), "value", "")
     draw = AMBITION_DRAW.get(ambition(char)) or CLASS_DRAW.get(cls, ())
     # SEEK COMPANIONS (George) — a partyless hero with room to grow a band is
@@ -87,6 +149,28 @@ def disposition(char) -> str:
     except Exception:
         pass
     return (getattr(char, "metadata", {}) or {}).get("disposition", "balanced")
+
+
+def stalemate_flee(ctrl, engine, char, target):
+    """Break off a fight we can't FINISH. Grinding a foe whose HP won't drop
+    — a regenerator we can't out-damage — is an endless in-place freeze
+    (George: a barbarian traded blows with a troll for 700 turns). After a
+    long fruitless streak on one target, returns a flee step, else None."""
+    from engine.agent_nav import flee_step
+    tid = getattr(target, "id", None)
+    hp = getattr(target, "hp", 0)
+    if tid == getattr(ctrl, "_atk_id", None) and hp >= getattr(ctrl, "_atk_hp", hp):
+        ctrl._atk_n = getattr(ctrl, "_atk_n", 0) + 1   # no progress this streak
+    else:
+        ctrl._atk_n = 0
+    ctrl._atk_id, ctrl._atk_hp = tid, hp
+    if ctrl._atk_n > 30:
+        step = flee_step(engine, char, target.position, ctrl.recent)
+        if step is not None:
+            ctrl._atk_n = 0
+            ctrl.target_id = None    # drop the fixation so we don't re-lock it
+            return step
+    return None
 
 
 def pack_outmatches(char, pack) -> bool:

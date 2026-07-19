@@ -578,11 +578,10 @@ class InputHandler:
                 msg = tm.try_depart()
                 self.engine.memory_manager.add_event(msg)
                 return
-            if self.engine.current_interior:
-                self.engine.exit_building()
-                return
-            if self.engine.current_dungeon:
-                self.engine.exit_dungeon()
+            # You leave through the DOOR / stairs, not by wishing yourself out
+            # from anywhere (George) — gated in input_actions.try_exit_zone.
+            from ui.input_actions import try_exit_zone
+            if try_exit_zone(self):
                 return
             # Cave?
             from world.world_map import TerrainType

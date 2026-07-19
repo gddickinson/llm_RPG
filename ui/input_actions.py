@@ -271,9 +271,19 @@ def open_shop(handler) -> None:
 def one_key_overlay(gui, k) -> bool:
     """Single-key overlays: collection / diaries / travel / topics / settings."""
     import pygame
+    # U fast-travel opens ONLY at a waystone (George: teleport only from a
+    # station) — elsewhere it just says where to go, no menu.
+    if k == pygame.K_u:
+        ts = getattr(gui.engine, "travel_system", None)
+        if ts is not None and not ts.at_station():
+            gui.engine.memory_manager.add_event(
+                "You can only fast-travel from a waystone — seek a "
+                "rune-circle platform.")
+            return True
+        gui.show_travel()
+        return True
     overlays = {pygame.K_o: gui.show_collection_log,
                 pygame.K_j: gui.show_diaries,
-                pygame.K_u: gui.show_travel,
                 pygame.K_y: gui.show_topics,
                 pygame.K_COMMA: gui.show_settings}
     fn = overlays.get(k)
@@ -371,3 +381,34 @@ def menu_mode_key(gui, engine, event) -> bool:
         gui.overlay = None
         return True
     return True
+
+
+def try_exit_zone(handler) -> bool:
+    """TAB leaves a building only at its DOOR and a dungeon only at the way
+    out (George: no exiting by wishing yourself outside from anywhere).
+    Deeper floors have no door — the hero climbs the stairs (by stepping on
+    them) to the floor that does. Returns True if a zone-exit was handled
+    (performed or refused with a message)."""
+    engine = handler.engine
+    if engine.current_interior:
+        inter = engine.current_interior
+        door = getattr(inter, "door", None)
+        if door is not None and tuple(engine.player.position) == tuple(door):
+            engine.exit_building()
+        else:
+            engine.memory_manager.add_event(
+                "You must stand at the door to leave.")
+        return True
+    if engine.current_dungeon:
+        dng = engine.current_dungeon
+        if getattr(dng, "level_above", None) is not None:
+            engine.memory_manager.add_event(
+                "The way out is above — take the stairs up.")
+        elif tuple(engine.player.position) \
+                == tuple(getattr(dng, "exit_pos", (-1, -1))):
+            engine.exit_dungeon()
+        else:
+            engine.memory_manager.add_event(
+                "You must reach the stairs out to leave.")
+        return True
+    return False

@@ -95,6 +95,10 @@ class TestTeleports(unittest.TestCase):
         self.engine.start_game()
         self.player = self.engine.player
         self.travel = self.engine.travel_system
+        # these exercise teleport MECHANICS (landing/cooldown/toll), not the
+        # waystone-only gate — bypass it so they teleport from anywhere; the
+        # gate itself is covered by test_exit_teleport_gating.
+        self.travel.at_station = lambda: True
 
     def tearDown(self):
         try:
