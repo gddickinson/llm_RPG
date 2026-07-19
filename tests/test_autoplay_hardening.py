@@ -110,6 +110,40 @@ class TestGatherLoop(unittest.TestCase):
         e.end_game()
 
 
+class TestGiverlessPackQuest(unittest.TestCase):
+    """A module quest with NO giver installs (board-posted), so a pack works
+    in a world that lacks a specific preset NPC (the Mire Beacon adventure
+    refused to install in the procedural Oakvale town — its giver 'guard_01'
+    isn't seeded there)."""
+
+    def test_giverless_quest_installs_and_posts(self):
+        e = GameEngine(llm_provider="heuristic", enable_npc_processes=False)
+        e.start_game()
+        dm = getattr(e, "dm", None)
+        if dm is None:
+            e.end_game()
+            self.skipTest("no DM api")
+        spec = {
+            "title": "Board Bounty",
+            "description": "A wilderness cull posted at the board.",
+            "objectives": [{"type": "kill", "target": "monster",
+                            "required": 1, "description": "Slay it"}],
+            "reward_gold": 30, "reward_xp": 40,
+        }
+        ok, note = dm.create_quest("q_board_bounty", spec)
+        self.assertTrue(ok, note)
+        self.assertIn("q_board_bounty", e.quest_manager.quests)
+        e.end_game()
+
+    def test_validator_accepts_giverless_pack_quest(self):
+        # the data validator runs over every shipped pack; the giver-less
+        # mire_beacon must now validate cleanly (no giver complaint)
+        from items.data_validate import validate_all
+        problems = validate_all()
+        mire = [p for p in problems if "mire_beacon" in p]
+        self.assertEqual(mire, [], mire)
+
+
 class TestScreenshot(unittest.TestCase):
     def test_f12_writes_a_file(self):
         import pygame

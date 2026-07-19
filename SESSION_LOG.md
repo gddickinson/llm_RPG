@@ -10209,3 +10209,13 @@ inside the `except`) plus per-game anomalies (freeze streaks, deaths, XP/level/p
 
 Freezes went from ~945-turn pathological loops to occasional ≤90-turn stretches that are legitimate prolonged
 combat/healing. Tests: `test_autoplay_hardening.py` (5) + the updated `test_living_agent`.
+
+## 2026-07-19 — Autoplay world-sweep: giver-less pack quests
+
+Soaking away-heroes across all world types (oakvale/castle/realistic/default) surfaced one content-robustness
+bug: the **Mire Beacon** module pack refused to install in the procedural Oakvale town because its quest's
+`giver_id: "guard_01"` isn't seeded there — and a pack install is atomic, so the WHOLE adventure (monster/items/
+spawns/quest) was lost. But `dm_api.create_quest` already board-posts every module quest, so a giver is
+optional. Dropped the `giver_id` (the quest is now board-posted, reachable in every world) and relaxed
+`validate_packs` to accept a giver-less quest (only a SPECIFIED-but-unknown giver is an error). The pack now
+installs everywhere. Tests: `test_autoplay_hardening` giver-less cases. All world types soak clean (no crashes).
