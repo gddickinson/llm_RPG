@@ -681,5 +681,120 @@
     "reward_items": [
       "greater_potion"
     ]
+  },
+  "bounty_wolves": {
+    "title": "Wolf Bounty",
+    "description": "The wolves grow bold on the outskirts. The watch pays a standing bounty for every pack thinned — come back whenever they gather again.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "wolf",
+        "required": 4,
+        "description": "Cull 4 wolves from the outskirts"
+      }
+    ],
+    "giver_id": "guard_01",
+    "reward_gold": 45,
+    "reward_xp": 60,
+    "reward_items": [
+      "greater_potion"
+    ],
+    "repeatable": true,
+    "quest_points": 1
+  },
+  "standing_herbs": {
+    "title": "Standing Order: Healing Herbs",
+    "description": "Brother Anselm always needs more herbs for his remedies. Bring a fresh bundle whenever you can and he'll pay each time.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "herb_bundle",
+        "required": 3,
+        "description": "Gather 3 bundles of healing herbs"
+      }
+    ],
+    "giver_id": "hamlet_priest_01",
+    "reward_gold": 35,
+    "reward_xp": 45,
+    "reward_items": [
+      "greater_potion"
+    ],
+    "repeatable": true,
+    "quest_points": 1
+  },
+  "cull_goblins": {
+    "title": "The Goblin Menace",
+    "description": "Goblins keep creeping down from the hills to pilfer and pillage. There's coin for anyone who keeps their numbers down — a standing arrangement.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "goblin",
+        "required": 5,
+        "description": "Slay 5 marauding goblins"
+      }
+    ],
+    "giver_id": "blacksmith_01",
+    "reward_gold": 60,
+    "reward_xp": 80,
+    "reward_items": [
+      "longsword"
+    ],
+    "repeatable": true,
+    "quest_points": 1
+  },
+  "the_bandit_bargain": {
+    "title": "The Brigand's Bargain",
+    "description": "Gorkash the brigand offers you a cut of his takings to look the other way. Accept, and the guard's warrant against him goes unserved.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "troll_brigand_01",
+        "required": 1,
+        "description": "Strike a deal with Gorkash"
+      }
+    ],
+    "giver_id": "troll_brigand_01",
+    "excludes": [
+      "bring_brigand_to_justice"
+    ],
+    "sets_flag": "spared_the_brigand",
+    "reward_gold": 150,
+    "reward_xp": 60,
+    "quest_points": 2
+  },
+  "bring_brigand_to_justice": {
+    "title": "Bring the Brigand to Justice",
+    "description": "The guard wants Gorkash the brigand answered for. Cut him down on the East Road — or take his bargain instead, and let him walk.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "troll_brigand_01",
+        "required": 1,
+        "description": "Bring Gorkash to justice"
+      }
+    ],
+    "giver_id": "guard_01",
+    "excludes": [
+      "the_bandit_bargain"
+    ],
+    "sets_flag": "brigand_slain",
+    "reward_gold": 120,
+    "reward_xp": 220,
+    "reward_choices": [
+      {
+        "gold": 250,
+        "xp": 180,
+        "label": "Take the bounty in gold"
+      },
+      {
+        "gold": 60,
+        "items": [
+          "longsword"
+        ],
+        "xp": 260,
+        "label": "Claim his blade and a commendation"
+      }
+    ],
+    "quest_points": 3
   }
 }

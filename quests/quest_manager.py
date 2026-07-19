@@ -181,8 +181,22 @@ class QuestManager:
         if legend:
             self._log(f"[Legend] {legend}")
 
-        quest.status = QuestStatus.TURNED_IN
         self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")
+
+        # T4.5 a REPEATABLE quest (a standing bounty / delivery / cull) re-arms
+        # after each turn-in: its objectives reset and it becomes AVAILABLE
+        # again from the same giver / board, tallying how often you've run it.
+        if quest.metadata.get("repeatable"):
+            quest.metadata["times_done"] = quest.metadata.get("times_done", 0) + 1
+            for obj in quest.objectives:
+                obj.progress = 0
+            quest.metadata.pop("reward_choice", None)
+            quest.status = QuestStatus.AVAILABLE
+            self._log(f"The board's standing task \"{quest.title}\" can be "
+                      f"taken up again.")
+            return True
+
+        quest.status = QuestStatus.TURNED_IN
         return True
 
     def _apply_unlock(self, player, unlock: str) -> None:

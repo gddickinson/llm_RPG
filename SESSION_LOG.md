@@ -10013,3 +10013,11 @@ beside a shop → step in, sell to an indoor merchant, step out. A hard `INDOOR_
 make enter/exit bounce IMPOSSIBLE. Isolated in its own module to contain the risk in the freeze-prone agent;
 wired as 3 hooks in `agent_controller.decide` + an `enter_building` action in `agent_exec`. Tests:
 `test_agent_building.py` (8, incl. a full enter→rest→exit no-loop cycle). 120 away-agent tests stay green.
+
+**T4.5 — Repeatable + branching quests.** The `excludes`/`reward_choices`/`sets_flag` branching machinery
+existed but only 2 quests used it and NONE were repeatable. Added repeatable support: a `metadata["repeatable"]`
+quest re-arms on turn-in (objectives reset → status AVAILABLE, a `times_done` tally), so a standing task can be
+run again from the same giver. `data/quests.json` gains 3 repeatable standing tasks (Wolf Bounty, Standing
+Order: Healing Herbs, The Goblin Menace) + a lawful-vs-outlaw `excludes` FORK (bring the brigand to justice OR
+take his bargain — each shuts the door on the other, one with a `reward_choices` payout). `repeatable`
+whitelisted in `quest_templates`. Tests: `test_repeatable_quests.py` (5). Validator clean.
