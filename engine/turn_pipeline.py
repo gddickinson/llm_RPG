@@ -198,6 +198,11 @@ def run_turn(engine) -> None:
                 self.social_graph.run_day()
             except Exception as e:
                 logger.debug(f"Social graph error: {e}")
+            try:   # T4.2 rival companies: renown ledger, hoard race, death
+                from engine import companies
+                companies.run_day(self.adventurers, day)
+            except Exception as e:
+                logger.debug(f"Company day error: {e}")
             try:   # a spouse provides; grudges harden into rivalry (P20.6)
                 self.romance.run_day()
             except Exception as e:

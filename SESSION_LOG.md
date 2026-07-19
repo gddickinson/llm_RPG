@@ -10031,3 +10031,13 @@ won hero's legend (level/xp/gold/stats/inventory/equipment/skills/spells) into a
 wilds run fiercer (and the carried high level crowns tougher elites/apexes). Wired into `gui` (a `"victory"`
 mode + `restart_ng_plus`) + `input_handler`. Tests: `test_newgame_plus.py` (6 — carry-over, danger scaling,
 victory draw + the N/C flows).
+
+**T4.2 — Rival companies compete & die.** The "other heroes" banded into companies (M.6b) but never competed
+or died. Added the fortune arc: `companies.run_day(advsys, day)` (nightly) keeps a persisted RENOWN LEDGER
+(`player.metadata["company_ledger"]` — peak renown + fate per company), marks a WIPED company (no living
+members) as `fallen` with a `[Realm]` death beat, and every 6 days lets the strongest renowned company BEAT THE
+PLAYER to a far hoard — a new `LairSystem.claim_by_rival` clears the farthest uncleared lair off-screen
+(occupants routed, encounter-suppression applied, hoard taken, a `[Realm]` beat), denying you the prize.
+`ledger_lines` surfaces the renown race in the `realm_digest` "State of the Realm" (Y-journal). Wired into the
+nightly stack. Tests: `test_company_fortune.py` (4). This closes TIER 4 (T4.1–T4.5 all done; T4.4 shipped
+earlier as skill_combat).

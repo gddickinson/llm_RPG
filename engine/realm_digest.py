@@ -68,9 +68,20 @@ def _nemesis(engine) -> list:
     return out
 
 
+def _companies(engine) -> list:
+    """T4.2 the rival-company renown race."""
+    try:
+        from engine import companies
+        rows = companies.ledger_lines(engine.adventurers)
+        return ["  " + r for r in rows]
+    except Exception:
+        return []
+
+
 def lines(engine) -> list:
     """The 'State of the Realm' journal section."""
-    body = _factions(engine) + _tribes(engine) + _nemesis(engine)
+    body = (_factions(engine) + _tribes(engine) + _nemesis(engine)
+            + _companies(engine))
     if not body:
         body = ["  All is quiet across the realm."]
     return ["", "State of the Realm", "(how the land fares now)", ""] + body

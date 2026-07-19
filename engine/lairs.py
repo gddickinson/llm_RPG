@@ -233,6 +233,37 @@ class LairSystem:
         source that fed it has been cleared)."""
         return self.suppression.get(template_id, 1.0)
 
+    def claim_by_rival(self, claimant_name: str):
+        """T4.2: a rival adventuring company clears the FARTHEST uncleared
+        lair off-screen, taking its hoard for itself — so the player finds it
+        already broken (competition for the world's prizes). Returns the lair
+        name, or None. The hoard does NOT spill (the company kept it), but the
+        clear still THINS the encounters that lair fed."""
+        ppos = self.engine.player.position
+        best, bestd = None, -1
+        for lair in self.lairs:
+            if lair.get("cleared"):
+                continue
+            d = (abs(lair["pos"][0] - ppos[0])
+                 + abs(lair["pos"][1] - ppos[1]))
+            if d >= 25 and d > bestd:        # far from the player
+                best, bestd = lair, d
+        if best is None:
+            return None
+        for oid in best["occupants"]:        # the company overwhelms them
+            try:
+                self.engine.npc_manager.remove_npc(oid)
+            except Exception:
+                n = self.engine.npc_manager.npcs.get(oid)
+                if n is not None:
+                    n.hp = 0
+        self._apply_suppression(best)
+        best["cleared"] = True
+        self.engine.memory_manager.add_event(
+            f"[Realm] {claimant_name} stormed the {best['name']} and carried "
+            f"off its hoard — another prize claimed before you reached it.")
+        return best["name"]
+
     def _all_dead(self, ids: List[str]) -> bool:
         npcs = self.engine.npc_manager.npcs
         for oid in ids:
