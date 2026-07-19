@@ -437,5 +437,19 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Hazard tick error: {e}")
 
+    # Reap 0-HP "zombies": a creature dropped to 0 by a NON-combat source
+    # (poison/fire/hazard/drown — these call take_damage directly, not the
+    # combat defeat path) stays status='alive' — is_active() True but
+    # is_alive() False — so every targeting system plinks a corpse forever
+    # (George: an away-caster froze 945 turns on one). Route each through the
+    # ONE defeat handler (self-as-attacker → no spurious player XP) so it
+    # dies/KOs and drops its loot like any other death.
+    try:
+        for ch in list(self.npc_manager.npcs.values()):
+            if ch is not self.player and ch.is_active() and ch.hp <= 0:
+                self.combat_system._handle_defeat(ch, ch, 0)
+    except Exception as e:
+        logger.debug(f"zombie reaper error: {e}")
+
     if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
         self.process_npc_turns_async()

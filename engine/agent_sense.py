@@ -190,8 +190,17 @@ def _gatherable(engine, char) -> bool:
         gm = getattr(engine, "gathering_manager", None)
         if gm is not None:
             node = gm.node_at(x, y)
+            # a node must be TOOLED and OFF COOLDOWN — a picked-clean node
+            # still "exists", so without the cooldown check a driven hero
+            # forages the same depleted spot forever (George: barbarian froze
+            # 1178 turns re-chopping one picked-clean tree)
             if node is not None and gm.has_tool_for(node):
-                return True
+                try:
+                    skill_id, spec, pos = node
+                    if gm._cooldown_ok(skill_id, spec, pos):
+                        return True
+                except Exception:
+                    return True
         from world.world_map import TerrainType
         t = engine.world.map.get_terrain_at(x, y)
         if t in (TerrainType.FOREST, TerrainType.SWAMP):

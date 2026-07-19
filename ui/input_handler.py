@@ -45,6 +45,15 @@ class InputHandler:
             self.gui.running = False
             return True
 
+        # F12 — save a screenshot, in ANY mode (play, menus, overlays, death)
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_F12:
+            try:
+                from ui.screenshot import save_screenshot
+                save_screenshot(self.gui)
+            except Exception:
+                pass
+            return True
+
         # Click-to-target (P8.7 UX): left-click a visible enemy
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 \
                 and self.gui.mode == "play":

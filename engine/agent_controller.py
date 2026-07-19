@@ -16,6 +16,7 @@ pipeline (advance_turn re-entrancy-guarded against nested ticks).
 """
 
 import logging
+import math
 import random
 from contextlib import contextmanager
 
@@ -97,7 +98,10 @@ class AgentController:
         zname = getattr(zone, "name", None) if zone is not None else None
         out = []
         for npc in engine.npc_manager.npcs.values():
-            if npc.id == char.id or not npc.is_active():
+            # skip a hp<=0 "zombie" (status still 'alive' but really dead —
+            # a non-combat damage source left it at 0): targeting it loops
+            # forever plinking a corpse (George: sorcerer froze 945 turns)
+            if npc.id == char.id or not npc.is_active() or npc.hp <= 0:
                 continue
             if not _is_hostile(npc) or not _colocated(zname, npc):
                 continue
@@ -106,6 +110,15 @@ class AgentController:
                 out.append((npc, d))
         out.sort(key=lambda t: t[1])
         return out
+
+    def _pack_outmatches(self, char, pack) -> bool:
+        """Would this pack likely overwhelm the hero? Weigh the hero's level
+        and current HP against the pack's summed strength. Generous to the
+        hero (gear + a healthy body beat a rabble), so it flees only a
+        clearly superior warband — not every three goblins."""
+        hero = getattr(char, "level", 1) + max(1, char.hp // 8)
+        threat = sum(max(1, getattr(f, "level", 1)) for f in pack)
+        return threat > hero * 1.3
 
     def _focus(self, foes):
         """Keep hammering one target while it lives and is in sight —
@@ -246,13 +259,20 @@ class AgentController:
             if step is not None:
                 return ("flee", step)
 
-        # 2b. a PACK closing in (a lair/warband) — withdraw before it boxes
-        # us in and butchers us; only a valiant hero at full health wades in
+        # 2b. a PACK closing in (a lair/warband) — withdraw ONLY when it
+        # genuinely OUTMATCHES us. A healthy hero wades into a beatable pack
+        # (else it flees every cluster of goblins forever and never levels —
+        # George: the away-hero must amass XP). Rules 1 & 2 still bail us out
+        # once the fight turns against us, so this can't death-loop.
         pack = [f for f, d in foes if d <= 4]
-        if len(pack) >= 3 and not (disp == "valiant" and hp > SWARM_HP):
-            step = nav.flee_step(engine, char, pack[0].position, self.recent)
-            if step is not None:
-                return ("flee", step)
+        if len(pack) >= 3:
+            valiant = disp == "valiant" and hp > SWARM_HP
+            cautious = disp == "cautious"
+            if not valiant and (cautious or self._pack_outmatches(char, pack)):
+                step = nav.flee_step(engine, char, pack[0].position,
+                                     self.recent)
+                if step is not None:
+                    return ("flee", step)
 
         # a CAUTIOUS hero avoids a fight it hasn't been forced into
         avoid = disp == "cautious"
@@ -268,17 +288,28 @@ class AgentController:
                     return ("flee", step)
                 # backed into a corner — a cautious hero still defends itself
             # a caster fights with MAGIC (M.8c): the best damage spell it
-            # knows, can pay for, and that reaches — before blade or bow
-            spell = _attack_spell(char, d)
+            # knows, can pay for, and that reaches — before blade or bow.
+            # Use the EUCLIDEAN gap the spell system itself checks (not the
+            # Chebyshev `d`), so a caster closes to TRUE range instead of
+            # standing and wasting casts on a foe just out of reach (George:
+            # residual caster stand — the spell range is a radius, not a box).
+            eucd = math.hypot(char.position[0] - target.position[0],
+                              char.position[1] - target.position[1])
+            spell = _attack_spell(char, eucd)
             if spell is not None:
                 return ("cast", spell, target)
             if d <= 1:
                 return ("attack", target)
             if _can_shoot(char) and d <= RANGED:
                 return ("shoot", target)
-            self.goal = target.position
-            return ("move", nav.safe_step(engine, char, target.position,
-                                          self.recent))
+            step = nav.safe_step(engine, char, target.position, self.recent)
+            if step is not None:
+                self.goal = target.position
+                return ("move", step)
+            # can't hit it and can't reach it (unreachable / it kites at our
+            # pace) — DROP the fixation and carry on (explore/quest/forage)
+            # instead of standing and staring (George: residual caster stand).
+            self.target_id = None
 
         # grab loot right at our feet before wandering off to socialize
         if self._nearest_loot(engine, char, r=0) == tuple(char.position):

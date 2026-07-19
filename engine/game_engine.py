@@ -454,20 +454,25 @@ class GameEngine(GameAPIMixin):
         if not name_or_id:
             return None
         text = name_or_id.lower()
-        # Player keywords
-        if any(t in text for t in ("player", "adventurer", "traveler",
-                                   "stranger", "newcomer")):
-            return self.player
         # By id
         if name_or_id in self.npc_manager.npcs:
             return self.npc_manager.npcs[name_or_id]
         # By name — prefer the NEAREST active match. Names can collide now
         # (P19.2: a Wandering Troll in an overworld den and one in a crypt),
         # so "attack the Wandering Troll" must mean the one in front of you.
+        # An EXACT entity name wins before the loose player-keyword heuristic
+        # below, so casting at a real foe named "Ghost of Player" hits the
+        # GHOST, not the caster (George: away-casters froze plinking a
+        # never-dying phantom because "player" ⊂ its name).
         exact = [n for n in self.npc_manager.npcs.values()
                  if n.name.lower() == text]
         if exact:
             return self._nearest_active(exact)
+        # Player keywords — a loose LLM/NPC reference to the hero ("the
+        # traveler", "the player") when no concrete entity matched.
+        if any(t in text for t in ("player", "adventurer", "traveler",
+                                   "stranger", "newcomer")):
+            return self.player
         # Substring match
         subs = [n for n in self.npc_manager.npcs.values()
                 if n.name.lower() in text or text in n.name.lower()]

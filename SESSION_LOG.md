@@ -10174,3 +10174,38 @@ don't face each other when interacting. Reproduced headlessly and fixed both.
   `is_junk` → `str.item_type` (swallowed by `drive_agents`, leaving the NPC idle that turn). Guarded
   `trade_info.is_junk` to skip non-Item entries.
 Tests: `test_autoplay_qa.py` (5).
+
+## 2026-07-19 — Extensive autoplay testing & hardening (George)
+
+George: play long autoplay games across all classes, amass XP / level up, find magic items, form parties; fix
+every problem surfaced; build screenshots into the GUI. Built an F12 SCREENSHOT feature (`ui/screenshot.py`,
+hooked at the top of `input_handler.handle_event` so it fires in any mode; saves to a gitignored `screenshots/`
+with a context-tagged name) and a headless soak-test harness that runs long away-hero games per class and
+captures swallowed agent exceptions (via `traceback.format_exc()` in a log handler — the agent swallow logs
+inside the `except`) plus per-game anomalies (freeze streaks, deaths, XP/level/party/loot). Ran dozens of
+1000–1500-turn games; no crashes, no exceptions — but several FREEZE/behaviour bugs surfaced and were fixed:
+
+- **Targeting collision** (`game_engine.find_character`): "Ghost of Player" (a P12.13 bones ghost) contains
+  "player", so the loose player-keyword heuristic resolved it to the HERO — an away-caster cast at itself
+  forever (frozen ~945 turns). Fixed: an EXACT entity name (and id) now wins before the player-keyword fallback.
+- **0-HP "zombies"** (`turn_pipeline` reaper + `agent_controller._foes_in_sight`): a creature dropped to 0 by a
+  NON-combat source (poison/fire/hazard call `take_damage` directly, not the defeat path) stayed `status='alive'`
+  — `is_active()` True but `is_alive()` False — so every targeting system plinked a corpse forever. Added a
+  pipeline reaper that routes any active 0-HP NPC through the ONE defeat handler (self-as-attacker → no spurious
+  player XP), and the agent skips `hp<=0` foes.
+- **Depleted-node forage loop** (`agent_sense._gatherable`): it returned True for any tooled node WITHOUT
+  checking the cooldown, so a hero re-chopped one picked-clean tree forever (barbarian froze 1178 turns). Now it
+  checks `_cooldown_ok`.
+- **Never levels** (`agent_controller` rule 2b + `_pack_outmatches`): the away-hero fled EVERY 3+ pack unless a
+  valiant hero at full HP, so it never fought → never levelled. Now it weighs its level+HP against the pack's
+  strength and FIGHTS a beatable rabble (flees only a deadly warband). Combat classes now reach level 2–4 over a
+  long game. Updated the `test_living_agent` retreat test to the new winnability behaviour.
+- **Caster fixation** (`agent_controller`): the agent's Chebyshev `_dist` didn't match the spell system's
+  EUCLIDEAN range, so a caster stood plinking a foe just out of true range; and when a target was unreachable it
+  returned a no-op move. Now it uses the Euclidean gap for the spell-range decision and ABANDONS an unreachable
+  target (falls through to explore) instead of staring.
+- **Log noise** (`npc_manager.remove_npc`): a benign double-remove (a predator kill + the despawn sweep) cried a
+  WARNING; downgraded to debug.
+
+Freezes went from ~945-turn pathological loops to occasional ≤90-turn stretches that are legitimate prolonged
+combat/healing. Tests: `test_autoplay_hardening.py` (5) + the updated `test_living_agent`.

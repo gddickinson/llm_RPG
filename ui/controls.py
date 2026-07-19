@@ -70,6 +70,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
     ("SYSTEM", [
         (",", "settings — 3D iso view, zoom, sound"),
         ("F11", "toggle fullscreen"),
+        ("F12", "save screenshot"),
         ("F5 / F9", "quicksave / quickload"),
         ("F1 or ?", "this help"),
         ("ESC", "close a panel · quit map"),
