@@ -9963,3 +9963,11 @@ CONTEXTUAL M in `input_handler` — the world map away from a bank, gold-withdra
 n/m banking still works where it matters). `notable_locations`/`terrain_color` are pure + headless-testable;
 added to `controls.py` + a start:true codex entry. Tests: `test_world_map.py` (6 — fog-respecting landmark
 list, headless draw, M/Esc open+close). Full suite green.
+
+**GAP.5 — Combat juice (screen shake).** The game had damage popups + hit flashes but no impact FEEL.
+`ui/screen_shake.py` adds a trauma-based screen shake (Eiserloh's model): impactful event beats add trauma, the
+on-screen offset scales with trauma² and decays fast, so a killing blow / fireball / SNEAK ATTACK punches and
+settles in ~⅓s. Pure + deterministic (fixed oscillation, no RNG). Fed by the event log; `gui._render` renders
+the map to an offscreen surface and blits it at the offset (all sprites/effects shake together, HUD stays put),
+only when actively shaking (no cost otherwise). Gated by a new "Screen shake" setting (accessibility). Tests:
+`test_screen_shake.py` (6). Full suite green.

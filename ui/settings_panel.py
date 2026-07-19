@@ -59,6 +59,13 @@ def apply_setting(gui, key, value) -> None:
             # re-enable is handled live by MusicManager.update_mood
         except Exception:
             pass
+    elif key == "shake":
+        try:
+            gui.shake.enabled = (value == "on")
+            if value == "off":
+                gui.shake.trauma = 0.0
+        except Exception:
+            pass
     elif key == "autoplay":            # M.3: hand the hero to an agent
         try:
             gui.engine.roster.set_away(gui.engine.player, value == "on")

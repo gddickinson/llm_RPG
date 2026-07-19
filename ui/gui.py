@@ -113,6 +113,21 @@ class GameGUI:
         except Exception as e:
             logger.debug(f"Music unavailable: {e}")
             self.music = None
+        # Screen shake — combat juice (GAP.5)
+        try:
+            from ui.screen_shake import ScreenShake
+            self.shake = ScreenShake()
+            try:
+                from engine import settings
+                self.shake.enabled = settings.get_setting(
+                    engine.player, "shake") != "off"
+            except Exception:
+                pass
+            engine.memory_manager.add_observer(self.shake.on_event)
+            self._shake_surf = None
+        except Exception as e:
+            logger.debug(f"Screen shake unavailable: {e}")
+            self.shake = None
 
         # Layout
         self._compute_layout()
@@ -224,6 +239,11 @@ class GameGUI:
                     self.music.update(dt)
                 except Exception:
                     pass
+            if self.shake is not None:
+                try:
+                    self.shake.update(1.0 / 30.0)
+                except Exception:
+                    pass
             if getattr(self.engine, "dm_bridge", None) is not None:
                 try:
                     self.engine.dm_bridge.tick()
@@ -252,7 +272,25 @@ class GameGUI:
     def _render(self) -> None:
         self._maybe_prompt_perk()             # T1.2 pop the perk chooser on level-up
         self.screen.fill((15, 15, 20))
-        self.renderer.render(self.screen, self.engine, self.layout["map"])
+        # GAP.5 screen shake — render the map to an offscreen surface and blit
+        # it at the trauma offset (all sprites/effects shake together; HUD
+        # stays put). Only when actively shaking, so no cost in the common case.
+        shk = self.shake.offset() if self.shake is not None else (0, 0)
+        rect = self.layout["map"]
+        if shk != (0, 0):
+            try:
+                if (self._shake_surf is None
+                        or self._shake_surf.get_size() != rect.size):
+                    self._shake_surf = pygame.Surface(rect.size)
+                self._shake_surf.fill((15, 15, 20))
+                self.renderer.render(self._shake_surf, self.engine,
+                                     pygame.Rect(0, 0, rect.width, rect.height))
+                self.screen.blit(self._shake_surf,
+                                 (rect.x + shk[0], rect.y + shk[1]))
+            except Exception:
+                self.renderer.render(self.screen, self.engine, rect)
+        else:
+            self.renderer.render(self.screen, self.engine, rect)
         self.hud.draw(self.screen, self.engine, self.layout)
 
         if self.mode == "dialog":

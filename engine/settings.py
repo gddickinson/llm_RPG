@@ -28,6 +28,8 @@ OPTIONS: List[dict] = [
      "choices": [24, 32, 48, 64, 80], "default": 64},
     {"key": "smooth", "label": "Smooth sprites",   # P34.7 SSAA on/off
      "choices": ["on", "off"], "default": "on"},
+    {"key": "shake", "label": "Screen shake",      # GAP.5 combat juice
+     "choices": ["on", "off"], "default": "on"},
     {"key": "renderer", "label": "Renderer",       # P41.7 view: 3D iso or flat
      "choices": ["topdown", "iso"], "default": "topdown"},
     {"key": "autoplay", "label": "Auto-play (away)",
