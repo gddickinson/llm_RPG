@@ -138,7 +138,7 @@
     "value": 12,
     "heal_amount": 8,
     "stackable": true,
-    "description": "Eats in one bite even mid-swing — a fighter's pie.",
+    "description": "Eats in one bite even mid-swing \u2014 a fighter's pie.",
     "use_effect": {
       "food": true,
       "perishable": true,
@@ -166,7 +166,7 @@
     "value": 6,
     "heal_amount": 3,
     "stackable": true,
-    "description": "Fresh game — better cooked at a hearth.",
+    "description": "Fresh game \u2014 better cooked at a hearth.",
     "use_effect": {
       "food": true,
       "perishable": true
@@ -240,7 +240,7 @@
       "effect": "water_walking",
       "duration": 12
     },
-    "description": "A blue philter — the drinker walks upon the water."
+    "description": "A blue philter \u2014 the drinker walks upon the water."
   },
   "draught_of_the_bear": {
     "name": "Draught of the Bear",
@@ -254,5 +254,18 @@
       "duration": 6
     },
     "description": "A thick brew that heals and steels the drinker's heart."
+  },
+  "restoration_elixir": {
+    "id": "restoration_elixir",
+    "name": "Elixir of Restoration",
+    "item_type": "consumable",
+    "value": 90,
+    "rarity": "uncommon",
+    "description": "A silver draught that unwinds hostile magic \u2014 it breaks a shape forced upon you.",
+    "use_effect": {
+      "shapeshift": {
+        "cure": true
+      }
+    }
   }
 }

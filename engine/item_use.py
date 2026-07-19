@@ -19,9 +19,28 @@ def use_item(engine, item_name: str) -> str:
         if item_name.lower() not in it_name.lower():
             continue
 
+        use_eff = getattr(it, "use_effect", None) or {}
+
+        # Shapeshift item — a druid's totem (voluntary), a cursed stone that
+        # leaves you a beast (involuntary), or a cure that lifts a shape-curse
+        if "shapeshift" in use_eff:
+            from engine import shapeshift as _ss
+            blk = use_eff["shapeshift"]
+            if blk.get("cure"):
+                msg = _ss.remove_curse(engine, player)
+            else:
+                msg = _ss.shift(engine, player, blk.get("form", "frog"),
+                                duration=blk.get("duration"),
+                                involuntary=bool(blk.get("involuntary")),
+                                source=it_name)
+            if blk.get("consume", True):
+                _remove_one(player, it)
+            engine.memory_manager.add_event(f"You use the {it_name}.")
+            engine.advance_turn()
+            return msg
+
         # Scroll (one-shot) or WAND/STAFF (charged) — cast the embedded spell.
         # A `metadata["charges"]` count makes it reusable until it runs dry.
-        use_eff = getattr(it, "use_effect", None) or {}
         if "spell" in use_eff:
             spell_id = use_eff["spell"]
             meta = getattr(it, "metadata", None) or {}

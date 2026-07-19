@@ -10116,3 +10116,18 @@ Character (already rendered + in `npc_manager`) — re-flagged friendly, strippe
 walks + fights it for free. Bound to the E key beside a tameable beast (+ a hint cue + a codex entry). `BEAST_CAP`
 = 2. Tests: `test_animal_companions.py` (8). Together with the earlier FAM familiars + existing mounts/pack/pets,
 this completes George's animal-companion request.
+
+## 2026-07-19 — Shapeshifting (George)
+
+George: characters should be able to shapeshift (players/NPCs/monsters) with the right magic/items/abilities,
+or be turned into another creature against their will (curses, items). Built `engine/shapeshift.py` +
+`data/forms.json`: a form OVERRIDES how a character RENDERS (sets `metadata["body_plan"]`+`model` → the existing
+`creature_pose`/`creature_render` path draws the beast for FREE — a shifted human is a wolf on screen, verified),
+FIGHTS (`natural_damage` claws/fangs; `_best_weapon_damage` drops held weapons under `no_wield`), ENDURES
+(`hp_mult`, fraction-preserved through shift↔revert), MOVES (a `flying` flag), and what it can DO
+(`no_cast`/`no_wield`/`no_speak`/`helpless`). Routes: VOLUNTARY — a druid's `wild_shape` spell (a toggle:
+cast to shift, cast to revert), `beast_shape_bear`, and a `beastlord_totem` item so even non-casters can shift;
+INVOLUNTARY — a `baleful_polymorph` spell on a foe, a `cursed_toadstone` (permanent) / `hags_hexstone` (timed)
+that leave YOU a frog against your will. CURES — a `remove_curse` spell (an ally/self, gated by no_cast so a
+frog needs help), a `restoration_elixir`, a shrine's prayer, or the curse's own clock (`tick`). Works on any
+Character (a wizard can toad a goblin). Codex entry teaches it. Tests: `test_shapeshift.py` (12).

@@ -34,6 +34,7 @@ class Spell:
     tier: int = 1              # M1 1 (novice) … 5 (master); gates learning
     requires: Dict[str, Any] = field(default_factory=dict)   # M1 min_level/min_int/…
     world_effect: Dict[str, Any] = field(default_factory=dict)  # M2 tile/build/…
+    shapeshift: Dict[str, Any] = field(default_factory=dict)  # SHIFT {form,self,duration,involuntary,cure}
 
 
 # M1 — a spell TIER unlocks at a caster level; higher tiers need more levels
@@ -72,6 +73,7 @@ def _build_spells() -> Dict[str, Spell]:
             tier=int(entry.get("tier", 1)),
             requires=entry.get("requires", {}) or {},
             world_effect=entry.get("world_effect", {}) or {},
+            shapeshift=entry.get("shapeshift", {}) or {},
         )
     return out
 
@@ -259,6 +261,29 @@ class SpellSystem:
             return f"Not enough mana ({mana}/{spell.mana_cost})."
         if spell_id not in caster.metadata.get("spells_known", []):
             return f"You don't know {spell.name}."
+
+        # SHIFT — a beast can't weave an ordinary spell (but MAY toggle its own
+        # shape back). Shapeshift spells (wild shape / polymorph / remove curse)
+        # resolve here — a self/cure one needs no enemy target.
+        try:
+            from engine import shapeshift as _ss
+            if _ss.restricted(caster, "no_cast") and not spell.shapeshift:
+                return "You cannot weave a spell in this shape."
+            if spell.shapeshift:
+                blk = spell.shapeshift
+                tgt = caster
+                if not blk.get("self") and not blk.get("cure"):
+                    tgt = self._resolve_target(caster, target_name, spell)
+                    if tgt is None:
+                        return f"No valid target for {spell.name}."
+                    if self._distance(caster, tgt) > spell.range:
+                        return f"{spell.name}: target out of range."
+                caster.metadata["mana"] = mana - spell.mana_cost
+                msg = _ss.cast_shapeshift(self.engine, caster, spell, tgt)
+                self.engine.memory_manager.add_event(msg)
+                return msg
+        except Exception as e:
+            logger.debug(f"shapeshift spell error: {e}")
 
         # M2 — a PURE world spell shapes a tile, not a character
         if spell.world_effect and not (spell.damage or spell.heal

@@ -110,6 +110,13 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Mana regen error: {e}")
 
+    # SHIFT — timed shapes (wild shape, a curse with a clock) run down + revert
+    try:
+        from engine import shapeshift
+        shapeshift.tick(self)
+    except Exception as e:
+        logger.debug(f"Shapeshift tick error: {e}")
+
     # P27.2 slow passive HP recovery between fights — a wound knits on its
     # own when safe & provided for, so chronic low HP isn't the default state
     try:

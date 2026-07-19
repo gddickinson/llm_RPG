@@ -515,6 +515,14 @@ class CombatSystem:
             pass
 
     def _best_weapon_damage(self, char) -> int:
+        # A shapeshifted beast has no hands for a weapon — it rends with
+        # claws/fangs (the form's natural attack), whatever it "carries".
+        try:
+            from engine import shapeshift
+            if shapeshift.restricted(char, "no_wield"):
+                return max(1, shapeshift.form_natural_damage(char))
+        except Exception:
+            pass
         # Prefer equipped weapon
         try:
             from characters.equipment import equipped_weapon

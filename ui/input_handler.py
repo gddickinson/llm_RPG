@@ -353,6 +353,14 @@ class InputHandler:
 
         # Talk to adjacent NPC
         if k == pygame.K_t:
+            try:
+                from engine import shapeshift
+                if shapeshift.restricted(self.engine.player, "no_speak"):
+                    self.engine.memory_manager.add_event(
+                        "You can only growl and snap in this shape.")
+                    return True
+            except Exception:
+                pass
             npc = self._find_adjacent_npc()
             if npc:
                 self.gui.start_dialog(npc.id)

@@ -769,5 +769,51 @@
       }
     },
     "description": "A roaring storm of flame that scorches earth and foe alike."
+  },
+  "wild_shape": {
+    "id": "wild_shape",
+    "name": "Wild Shape",
+    "mana_cost": 5,
+    "range": 0.0,
+    "classes": ["druid", "ranger"],
+    "school": "transmutation",
+    "tier": 3,
+    "shapeshift": {"form": "wolf", "self": true, "duration": 40},
+    "description": "Take the shape of a grey wolf to fight tooth and claw. Cast again to return to your true form."
+  },
+  "beast_shape_bear": {
+    "id": "beast_shape_bear",
+    "name": "Beast Shape: Bear",
+    "mana_cost": 8,
+    "range": 0.0,
+    "classes": ["druid"],
+    "school": "transmutation",
+    "tier": 4,
+    "requires": {"min_level": 8},
+    "shapeshift": {"form": "bear", "self": true, "duration": 30},
+    "description": "Become a great bear — a wall of fur, muscle and rending claws."
+  },
+  "baleful_polymorph": {
+    "id": "baleful_polymorph",
+    "name": "Baleful Polymorph",
+    "mana_cost": 9,
+    "range": 5.0,
+    "classes": ["wizard", "warlock", "sorcerer"],
+    "school": "transmutation",
+    "tier": 4,
+    "requires": {"min_level": 8},
+    "shapeshift": {"form": "toad", "involuntary": true, "duration": 20},
+    "description": "Twist a foe into a hapless toad — no spell, no blade, no bite worth the name — until the magic fades."
+  },
+  "remove_curse": {
+    "id": "remove_curse",
+    "name": "Remove Curse",
+    "mana_cost": 4,
+    "range": 1.0,
+    "classes": ["cleric", "paladin", "wizard"],
+    "school": "abjuration",
+    "tier": 2,
+    "shapeshift": {"cure": true},
+    "description": "Lift a curse from yourself or an ally — restoring a shape twisted against its owner's will."
   }
 }
