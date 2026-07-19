@@ -164,6 +164,12 @@ class InputHandler:
                 self.gui.mode = "play"
             return True
 
+        # Cold-open prologue (GAP.7) — any key or click begins the game
+        if self.gui.mode == "intro":
+            if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+                self.gui.dismiss_intro()
+            return True
+
         # Character hub (GAP.6) — mouse + keys routed to the tabbed screen
         if self.gui.mode == "player":
             ps = getattr(self.gui, "player_screen", None)

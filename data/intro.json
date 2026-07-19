@@ -1,0 +1,25 @@
+{
+  "_note": "GAP.7 the cold-open prologue shown once at the start of a new game. Composed by engine/intro.py from the hero's class + world + first goal.",
+  "openings": {
+    "warrior": "Steel has been your tongue since boyhood, and the shield-wall your first home.",
+    "wizard": "You have traded sleep for grimoires, and count power in syllables few dare speak.",
+    "rogue": "The world showed you its locked doors early. You simply learned to open them.",
+    "ranger": "The roads end where you begin. The wild has always kept your counsel.",
+    "cleric": "A vow set you on this path — and the vow, in turn, has taken root in you.",
+    "bard": "You have sung for supper in a hundred tap-rooms, and heard every rumour twice.",
+    "merchant": "You learned the weight of a coin before the weight of a blade — and both have their uses.",
+    "default": "You came up hard, made your own way, and the road has never once let you rest."
+  },
+  "worlds": {
+    "default": "Now Oakvale opens before you — a green country of village hearths, deep forest, and older, darker places that the maps mark only with warnings.",
+    "oakvale": "Now the great town of Oakvale opens before you — its walls and wards, its crowded wards and, beneath the streets, a stair going down into the dark.",
+    "castle": "Now the Bloodstone realm opens before you — a curtain-walled fortress, a king's court, and a fault-line of intrigue running straight through the throne room.",
+    "realistic": "Now a whole living world opens before you — mountains and coasts shaped by a thousand years of history, its ruins still remembering the wars that raised them."
+  },
+  "call": "What you make of it is yours alone to write. The first page is blank.",
+  "hints": [
+    "Press M for the map, Y for your journal, C for your character.",
+    "An Adventurers' Board hangs in the tavern (E) — your first tasks wait there.",
+    "Talk to everyone (T). The world remembers what you do."
+  ]
+}

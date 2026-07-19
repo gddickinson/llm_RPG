@@ -84,6 +84,7 @@ class GameGUI:
         self.settings_panel = None
         self.build_planner = None      # M5 build/terraform tool
         self.player_screen = None      # GAP.6 the unified character hub
+        self._intro_pending = False    # GAP.7 show the cold-open on a new game
 
         # Init pygame
         pygame.init()
@@ -166,6 +167,13 @@ class GameGUI:
         # Mark engine so combat_system knows there's a GUI to show death popup
         self.engine._has_gui = True
         self.engine.start_game()
+        if self._intro_pending:            # GAP.7 cold-open, once, new game only
+            try:
+                from engine import intro
+                if intro.should_show(self.engine):
+                    self.show_intro()
+            except Exception:
+                pass
         self.running = True
         self._loop()
         self.shutdown()
@@ -358,6 +366,13 @@ class GameGUI:
             except Exception as e:
                 logger.debug(f"player screen draw error: {e}")
 
+        if self.mode == "intro":
+            try:
+                from ui.intro_screen import draw_intro
+                draw_intro(self)
+            except Exception as e:
+                logger.debug(f"intro draw error: {e}")
+
         if self.mode == "death":
             self._draw_death_popup()
 
@@ -409,6 +424,17 @@ class GameGUI:
             from ui.player_screen import PlayerScreen
             self.player_screen = PlayerScreen(self)
         self.player_screen.open()
+
+    def show_intro(self) -> None:          # GAP.7 the cold-open prologue
+        self.mode = "intro"
+
+    def dismiss_intro(self) -> None:
+        try:
+            from engine import intro
+            intro.mark_seen(self.engine)
+        except Exception:
+            pass
+        self.mode = "play"
 
     def show_inventory(self) -> None:
         from ui.inventory_panel import InventoryPanel

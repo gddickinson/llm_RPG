@@ -171,6 +171,9 @@ def main() -> int:
             # ISO.10: honour the player's saved / default map-zoom from boot
             from ui.settings_panel import init_zoom
             init_zoom(ui)
+            # GAP.7: a fresh game opens with a cold-open prologue (not a load)
+            if not load_save_name and not arena_matchup:
+                ui._intro_pending = True
     else:
         ui = TerminalUI(engine)
 

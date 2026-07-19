@@ -9988,3 +9988,16 @@ opened on **C** (upgrading the old text character-sheet):
 Wired into `gui`/`input_handler` (C repointed from `show_character_sheet` to `show_player_screen`); controls +
 `test_input_bindings` FakeGUI updated. Tests: `test_player_hub.py` (12 — builders, drop logic equip/unequip/
 reject, open/close/switch, every tab draws headless). Full suite green.
+
+**GAP.7 — Cold-open prologue.** A new game just dropped you into the world with no framing. `engine/intro.py`
+composes a short, class- and world-aware prologue from `data/intro.json` (who you are + where you've arrived +
+a first goal + a call to adventure); `ui/intro_screen.py` draws it as a quiet full-screen serif framing before
+the first step. Shown once per hero (an `intro_seen` metadata flag that rides the save), only for a NEW game
+(`main.py` sets `gui._intro_pending`, gated after `start_game` builds the player). Any key begins the game.
+Tests: `test_intro.py` (4). Full suite green.
+
+**"What is the game missing?" — the GAP program complete (GAP.1–7).** The gaps in a mechanically-vast game
+weren't more simulation but what the player SENSES, DISCOVERS and FEELS: adaptive **music**, a self-teaching
+**codex**, **stealth & sneak attacks**, an openable **world map**, combat **screen-shake**, a unified
+**character hub** (George's ask — tabs + drag-and-drop paper-doll), and a **cold-open** prologue. Seven tested,
+green, pushed rounds.
