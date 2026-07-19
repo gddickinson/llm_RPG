@@ -9971,3 +9971,20 @@ settles in ~⅓s. Pure + deterministic (fixed oscillation, no RNG). Fed by the e
 the map to an offscreen surface and blits it at the offset (all sprites/effects shake together, HUD stays put),
 only when actively shaking (no cost otherwise). Gated by a new "Screen shake" setting (accessibility). Tests:
 `test_screen_shake.py` (6). Full suite green.
+
+**GAP.6 — Unified Character Hub (George's request).** "A separate player screen … all attributes, skills,
+backstory, quests, history explained in detail, with better equipment management (drag-and-drop onto a
+mannequin), bags, spellbooks, skills and all player options in one multi-tabbed window." Built exactly that,
+opened on **C** (upgrading the old text character-sheet):
+- `ui/player_screen.py` — `PlayerScreen`, a 7-tab window (Character/Equipment/Skills/Spells/Quests/Journal/
+  Options) switched by click / `[` `]` / Tab / 1-7, closed by Esc/C; mouse + keyboard.
+- `ui/hub_data.py` (pure) — the text tabs: Character (identity + attributes-with-mods + condition + a
+  synthesized backstory + goals), Skills (every skill with a progress bar), Spells (the known spellbook by
+  tier/school), Quests (active objectives + completed), Journal (deeds/chronicle/collection).
+- `ui/hub_paperdoll.py` — the Equipment tab: a paper-doll mannequin with the six worn slots + the bag grid and
+  DRAG-AND-DROP between them (drag a bag item onto a slot to equip, a slot to the bag to unequip; a click does
+  the same). Geometry + drop logic are pure/testable; drawing shows rarity-bordered icons, quantities, a hover
+  tooltip. The Options tab consolidates every game setting, cycled live.
+Wired into `gui`/`input_handler` (C repointed from `show_character_sheet` to `show_player_screen`); controls +
+`test_input_bindings` FakeGUI updated. Tests: `test_player_hub.py` (12 — builders, drop logic equip/unequip/
+reject, open/close/switch, every tab draws headless). Full suite green.

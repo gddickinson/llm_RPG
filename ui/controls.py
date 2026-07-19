@@ -59,7 +59,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
     ]),
     ("PANELS & JOURNALS", [
         ("I", "inventory + gear (equip/use/drop)"),
-        ("C", "character sheet"),
+        ("C", "character hub (gear/skills/opts)"),
         ("Q", "quest log"),
         ("O", "collection log"),
         ("J", "achievement diaries"),

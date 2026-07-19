@@ -39,6 +39,7 @@ class FakeGUI:
         self.show_inventory = MagicMock()
         self.show_quests = MagicMock()
         self.show_character_sheet = MagicMock()
+        self.show_player_screen = MagicMock()
         self.show_help = MagicMock()
         self.start_dialog = MagicMock()
 

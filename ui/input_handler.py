@@ -164,6 +164,14 @@ class InputHandler:
                 self.gui.mode = "play"
             return True
 
+        # Character hub (GAP.6) — mouse + keys routed to the tabbed screen
+        if self.gui.mode == "player":
+            ps = getattr(self.gui, "player_screen", None)
+            if ps is not None:
+                return ps.handle_event(event)
+            self.gui.mode = "play"
+            return True
+
         if event.type != pygame.KEYDOWN:
             return False
 
@@ -412,9 +420,9 @@ class InputHandler:
             self.gui.show_quests()
             return True
 
-        # Character sheet
+        # Character hub (GAP.6) — the "one place" for the player
         if k == pygame.K_c:
-            self.gui.show_character_sheet()
+            self.gui.show_player_screen()
             return True
 
         # Save / load

@@ -83,6 +83,7 @@ class GameGUI:
         self.spell_panel = None
         self.settings_panel = None
         self.build_planner = None      # M5 build/terraform tool
+        self.player_screen = None      # GAP.6 the unified character hub
 
         # Init pygame
         pygame.init()
@@ -351,6 +352,12 @@ class GameGUI:
             except Exception as e:
                 logger.debug(f"world map draw error: {e}")
 
+        if self.mode == "player" and self.player_screen is not None:
+            try:
+                self.player_screen.draw(self.screen)
+            except Exception as e:
+                logger.debug(f"player screen draw error: {e}")
+
         if self.mode == "death":
             self._draw_death_popup()
 
@@ -396,6 +403,12 @@ class GameGUI:
 
     def show_world_map(self) -> None:      # GAP.4 the full-screen map (M)
         self.mode = "worldmap"
+
+    def show_player_screen(self) -> None:  # GAP.6 the unified character hub (C)
+        if self.player_screen is None:
+            from ui.player_screen import PlayerScreen
+            self.player_screen = PlayerScreen(self)
+        self.player_screen.open()
 
     def show_inventory(self) -> None:
         from ui.inventory_panel import InventoryPanel
