@@ -264,6 +264,11 @@ class EncounterManager:
                 mult *= ROAD_MULT
         except Exception:
             pass
+        try:   # T4.3 a New Game+ world runs fiercer
+            from engine.newgame_plus import danger_scale
+            mult *= danger_scale(self.engine)
+        except Exception:
+            pass
         return mult
 
     _BLOCKED = (TerrainType.WATER, TerrainType.MOUNTAIN,

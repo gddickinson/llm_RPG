@@ -85,6 +85,7 @@ class GameGUI:
         self.build_planner = None      # M5 build/terraform tool
         self.player_screen = None      # GAP.6 the unified character hub
         self._intro_pending = False    # GAP.7 show the cold-open on a new game
+        self._victory_shown = False    # T4.3 pop the ending once, on a win
 
         # Init pygame
         pygame.init()
@@ -183,6 +184,15 @@ class GameGUI:
             # Auto-enter death mode when the player has been defeated
             if getattr(self.engine, "player_dead", False) and self.mode != "death":
                 self.mode = "death"
+            # T4.3 the campaign is won — pop the ending once
+            elif not self._victory_shown and self.mode == "play":
+                try:
+                    from engine.campaign import is_won
+                    if is_won(self.engine):
+                        self._victory_shown = True
+                        self.mode = "victory"
+                except Exception:
+                    pass
             for event in pygame.event.get():
                 if event.type == pygame.VIDEORESIZE:
                     self.resize(event.w, event.h)
@@ -373,6 +383,13 @@ class GameGUI:
             except Exception as e:
                 logger.debug(f"intro draw error: {e}")
 
+        if self.mode == "victory":
+            try:
+                from ui.victory_screen import draw_victory
+                draw_victory(self)
+            except Exception as e:
+                logger.debug(f"victory draw error: {e}")
+
         if self.mode == "death":
             self._draw_death_popup()
 
@@ -413,6 +430,24 @@ class GameGUI:
         self.dialog_npc_id = None
         self.dialog_pending_reply = None
         self.dialog_input = ""
+
+    def restart_ng_plus(self) -> None:
+        """T4.3 New Game+ — carry the won hero's legend into a fresh,
+        tougher world."""
+        payload = None
+        try:
+            from engine import newgame_plus
+            payload = newgame_plus.capture(self.engine)
+        except Exception as e:
+            logger.debug(f"NG+ capture failed: {e}")
+        self.restart()                     # a clean fresh world
+        self._victory_shown = False
+        if payload is not None:
+            try:
+                from engine import newgame_plus
+                newgame_plus.apply(self.engine, payload)
+            except Exception as e:
+                logger.debug(f"NG+ apply failed: {e}")
 
     # ---- overlays ---------------------------------------------------
 

@@ -10021,3 +10021,13 @@ run again from the same giver. `data/quests.json` gains 3 repeatable standing ta
 Order: Healing Herbs, The Goblin Menace) + a lawful-vs-outlaw `excludes` FORK (bring the brigand to justice OR
 take his bargain — each shuts the door on the other, one with a `reward_choices` payout). `repeatable`
 whitelisted in `quest_templates`. Tests: `test_repeatable_quests.py` (5). Validator clean.
+
+**T4.3 — Endgame payoff + New Game+.** Winning the 5-act campaign fired one `[Legend]` line and play just
+carried on. Added a real ENDING + replay: `ui/victory_screen.py` pops a full-screen VICTORY overlay (the
+chronicle of the age you wrote, from `campaign.summary`) the moment `campaign.is_won`, with a choice — [N]
+begin New Game+, [C] keep playing this won realm, [Esc] lay it to rest. `engine/newgame_plus.py` carries the
+won hero's legend (level/xp/gold/stats/inventory/equipment/skills/spells) into a FRESH, tougher world:
+`capture`→rebuild→`apply`, with `ng_plus`++ scaling `encounters.danger_multiplier` (×1+0.4·ng_plus) so the
+wilds run fiercer (and the carried high level crowns tougher elites/apexes). Wired into `gui` (a `"victory"`
+mode + `restart_ng_plus`) + `input_handler`. Tests: `test_newgame_plus.py` (6 — carry-over, danger scaling,
+victory draw + the N/C flows).

@@ -164,6 +164,17 @@ class InputHandler:
                 self.gui.mode = "play"
             return True
 
+        # Victory (T4.3) — New Game+, keep playing, or lay it to rest
+        if self.gui.mode == "victory":
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_n:
+                    self.gui.restart_ng_plus()
+                elif event.key == pygame.K_c:
+                    self.gui.mode = "play"
+                elif event.key in (pygame.K_ESCAPE, pygame.K_q):
+                    self.gui.mode = "confirm_quit"
+            return True
+
         # Cold-open prologue (GAP.7) — any key or click begins the game
         if self.gui.mode == "intro":
             if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
