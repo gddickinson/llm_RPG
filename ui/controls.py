@@ -54,7 +54,7 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
         ("P", "party: recruit / dismiss"),
         ("SHIFT + P", "pray at a shrine or temple"),
         ("K", "craft — browse and make"),
-        ("N / M", "deposit / withdraw gold"),
+        ("N / M", "bank deposit / withdraw (at a bank)"),
         ("1 – 5", "answer a confronting guard"),
     ]),
     ("PANELS & JOURNALS", [
@@ -64,7 +64,8 @@ CONTROLS: List[Tuple[str, List[Tuple[str, str]]]] = [
         ("O", "collection log"),
         ("J", "achievement diaries"),
         ("U", "travel menu (teleports)"),
-        ("Y", "topic journal"),
+        ("Y", "topic journal + field guide"),
+        ("M", "world map (away from a bank)"),
     ]),
     ("SYSTEM", [
         (",", "settings — 3D iso view, zoom, sound"),

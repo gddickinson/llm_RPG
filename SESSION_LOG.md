@@ -9954,3 +9954,12 @@ blows are exchanged / a pursuer engages, and cleared when a foe loses you past c
 "unaware" BEFORE marking the fight joined, so any attack (hit or miss) alerts but only a hit on the caught foe
 gets the bonus. Wired into `combat_system._resolve`, `pursuit`, `aggression`, and a crawl hint cue. Tests:
 `test_stealth.py` (8). Full suite green.
+
+**GAP.4 — Openable world map (M).** A sprawling world had only a corner minimap. `ui/world_map_screen.py`
+draws the whole terrain grid over the persistent EXPLORED mask (fog of war respected) into a 1px-per-tile
+surface scaled to fit the screen, then overlays discovered landmarks (labels de-cluttered by collision-skip,
+waystones picked out in cyan, the player + party marked). The map fills in as you explore. Bound to a
+CONTEXTUAL M in `input_handler` — the world map away from a bank, gold-withdraw when standing at one (so the
+n/m banking still works where it matters). `notable_locations`/`terrain_color` are pure + headless-testable;
+added to `controls.py` + a start:true codex entry. Tests: `test_world_map.py` (6 — fog-respecting landmark
+list, headless draw, M/Esc open+close). Full suite green.

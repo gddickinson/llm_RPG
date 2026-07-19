@@ -157,6 +157,13 @@ class InputHandler:
                 return self.gui.build_planner.handle_key(event)
             return True
 
+        # World map (GAP.4) — M or Esc closes
+        if self.gui.mode == "worldmap":
+            if event.type == pygame.KEYDOWN and event.key in \
+                    (pygame.K_ESCAPE, pygame.K_m):
+                self.gui.mode = "play"
+            return True
+
         if event.type != pygame.KEYDOWN:
             return False
 
@@ -237,15 +244,26 @@ class InputHandler:
             return True
 
         # Bank deposit all (N) / withdraw all (M)
-        if k in (pygame.K_n, pygame.K_m):
+        if k == pygame.K_n:                      # deposit at a bank
             try:
-                if k == pygame.K_n:
-                    self.engine.deposit_gold(self.engine.player.gold)
-                else:
-                    self.engine.withdraw_gold(
-                        self.engine.bank_balance())
+                self.engine.deposit_gold(self.engine.player.gold)
             except Exception:
                 pass
+            return True
+
+        if k == pygame.K_m:                      # M = world map, unless
+            at_bank = False                      # standing at a bank (then
+            try:                                 # it withdraws, as before)
+                at_bank = self.engine.bank.is_at_bank()[0]
+            except Exception:
+                at_bank = False
+            if at_bank:
+                try:
+                    self.engine.withdraw_gold(self.engine.bank_balance())
+                except Exception:
+                    pass
+            else:
+                self.gui.show_world_map()
             return True
 
         if k == pygame.K_l:   # look around; SHIFT+L: log detail

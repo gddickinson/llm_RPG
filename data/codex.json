@@ -10,6 +10,9 @@
     {"id": "fasttravel", "category": "Getting Started", "title": "Fast Travel",
      "hint": "Press U for earned teleport shortcuts, unlocked by completing regional diaries.",
      "start": true},
+    {"id": "worldmap", "category": "Getting Started", "title": "World Map",
+     "hint": "Press M to open the full world map — it fills in as you explore, marking landmarks and waystones.",
+     "start": true},
 
     {"id": "combat", "category": "Adventuring", "title": "Combat",
      "hint": "Bump into a foe, or press F / Space to strike. Position matters — hit from a flank or from cover for the edge.",

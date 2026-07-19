@@ -306,6 +306,13 @@ class GameGUI:
         if self.mode == "spells" and self.spell_panel is not None:
             self.spell_panel.draw(self.screen, self.screen.get_rect())
 
+        if self.mode == "worldmap":
+            try:
+                from ui.world_map_screen import draw_world_map
+                draw_world_map(self)
+            except Exception as e:
+                logger.debug(f"world map draw error: {e}")
+
         if self.mode == "death":
             self._draw_death_popup()
 
@@ -348,6 +355,9 @@ class GameGUI:
         self.dialog_input = ""
 
     # ---- overlays ---------------------------------------------------
+
+    def show_world_map(self) -> None:      # GAP.4 the full-screen map (M)
+        self.mode = "worldmap"
 
     def show_inventory(self) -> None:
         from ui.inventory_panel import InventoryPanel
