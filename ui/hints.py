@@ -87,6 +87,15 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    # GAP.3 crawling = sneaking: advertise the sneak-attack payoff
+    try:
+        from engine import stealth
+        if stealth.is_sneaking(player):
+            hints.append("Sneaking — a strike on an unaware foe is a "
+                         "SNEAK ATTACK")
+    except Exception:
+        pass
+
     # GX.5 the Deepdelve — its cues lead: finding the secret stair (the sole
     # discovery mechanism) and descending a mouth must NOT be crowded out of
     # the capped hint bar by ambient talk/barter prompts when it sits in town.

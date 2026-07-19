@@ -92,6 +92,20 @@ class CombatSystem:
         except Exception:
             pass
 
+        # GAP.3 note whether this strike lands on an UNAWARE foe (a sneak
+        # attack) — captured BEFORE marking the fight joined; ANY attack,
+        # hit or miss, alerts the target.
+        sneak_ready = False
+        try:
+            from engine import stealth
+            sneak_ready = (attacker is self.engine.player
+                           and defender is not self.engine.player
+                           and stealth.is_sneaking(attacker)
+                           and stealth.is_unaware(defender))
+            stealth.mark_combat_awareness(self.engine, attacker, defender)
+        except Exception:
+            sneak_ready = False
+
         # Assault has consequences: a peaceful NPC the player attacks
         # turns hostile (fight back or flee — heuristic provider) and
         # word of it costs villager goodwill (P7 follow-up, George)
@@ -205,6 +219,17 @@ class CombatSystem:
         # vs beasts (T4.4) — both fold into damage_type_modifier
         from engine.combat_math import damage_type_modifier
         damage = damage_type_modifier(attacker, defender, damage)
+
+        # GAP.3 sneak attack — a hit on the foe we caught unaware lands hard
+        if sneak_ready:
+            try:
+                from engine import stealth
+                damage = stealth.apply_sneak_bonus(attacker, damage)
+                self.engine.memory_manager.add_event(
+                    f"You strike from the shadows — a SNEAK ATTACK "
+                    f"on {defender.name}!")
+            except Exception:
+                pass
 
         defender.take_damage(damage)
         try:   # the struck body recoils (P33.6b)

@@ -82,7 +82,16 @@ class PursuitSystem:
                 continue
             if _cheb(npc.position, ppos) > CHASE_RADIUS:
                 npc.metadata["chase_accum"] = 0.0      # out of the chase
+                npc.metadata.pop("noticed_player", None)  # lost track (GAP.3)
                 continue
+            try:   # GAP.3 a hidden (crawling, unseen) player is not chased
+                from engine import stealth
+                if stealth.evades(engine, npc):
+                    npc.metadata["chase_accum"] = 0.0
+                    continue
+                npc.metadata["noticed_player"] = True
+            except Exception:
+                pass
             steps += self._advance(npc, ppos, wmap)
         return steps
 

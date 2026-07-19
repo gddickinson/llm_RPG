@@ -9942,3 +9942,15 @@ nudge + a discover chime announce fresh entries. `start:true` entries (journal/c
 known from the off. State on `player.metadata["codex"]` (rides the save free). Even the opening world rumors
 teach relevant systems immediately (Dungeons, Waystones). Tests: `test_codex.py` (7 — auto-unlock, no
 self-trigger recursion, silent start unlocks, save round-trip). Full suite green.
+
+**GAP.3 — Stealth & sneak attacks.** The STEALTH skill was vestigial — no detection, no sneak attacks.
+`engine/stealth.py` adds both, ENTIRELY gated on the opt-in CRAWL stance (`.`-key `_move_mode=="crawl"`), so
+default play and every existing pursuit/aggression/combat test is untouched (verified). While crawling, a
+hostile only NOTICES the player inside a detection radius that shrinks with DEX, level, a rogue calling and the
+dark (a level-6 rogue crawling drops it to 1 — near invisible); an un-noticed hostile is skipped by pursuit +
+aggression, so you creep up or slip past. A strike on an UNAWARE foe is a SNEAK ATTACK (+60%..+250% damage, a
+"from the shadows" beat that unlocks the codex entry). Awareness (`npc.metadata["noticed_player"]`) is set when
+blows are exchanged / a pursuer engages, and cleared when a foe loses you past chase range. Combat captures
+"unaware" BEFORE marking the fight joined, so any attack (hit or miss) alerts but only a hit on the caught foe
+gets the bonus. Wired into `combat_system._resolve`, `pursuit`, `aggression`, and a crawl hint cue. Tests:
+`test_stealth.py` (8). Full suite green.

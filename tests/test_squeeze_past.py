@@ -43,12 +43,15 @@ class TestSqueezePast(unittest.TestCase):
                    if getattr(n.character_class, "value", "") in
                    ("merchant", "villager") and n.is_active())
         self._put_npc(npc, self.ox + 1, self.oy)
+        n_before = len(self.engine.memory_manager.game_history)
         moved = self.engine.player_actions.move(1, 0)
         self.assertTrue(moved, "friendlies must let you squeeze past")
         self.assertEqual(self.player.position, (self.ox + 1, self.oy))
         self.assertEqual(npc.position, (self.ox, self.oy))
+        # scan every beat this move produced — an ambient encounter/weather
+        # beat can crowd a small tail window (the documented pattern)
         log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-4:])
+                       self.engine.memory_manager.game_history[n_before:])
         self.assertIn("squeeze past", log)
 
     def test_hostiles_hold_the_line(self):

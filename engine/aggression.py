@@ -48,6 +48,12 @@ class AggressionSystem:
                 continue
             if pursuit is not None and not pursuit._is_pursuer(npc, party, wmap):
                 continue
+            try:   # GAP.3 a hidden (crawling, unseen) player is not bitten
+                from engine import stealth
+                if stealth.evades(eng, npc):
+                    continue
+            except Exception:
+                pass
             try:
                 msg = cs._resolve(npc, player, "attack")
                 if msg:
