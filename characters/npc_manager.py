@@ -30,6 +30,11 @@ class NPCManager:
                 npc.faction = faction_of_class(npc.character_class.value).value
         except Exception:
             pass
+        try:   # seed calling-appropriate skills once (a guard gets Weaponry,
+            from engine import npc_skills      # a cleric Medicine…) — lazy import
+            npc_skills.seed(npc)               # avoids a characters->engine cycle
+        except Exception:
+            pass
         self.npcs[npc.id] = npc
         logger.info(f"Added NPC: {npc.name} (ID: {npc.id}, faction: {getattr(npc, 'faction', '?')})")
 

@@ -10081,3 +10081,13 @@ doesn't cover — leaving the auto-learn tier progression intact). `train_skill`
 (1 / 2). The character hub gained a **Training tab** (`ui/hub_training.py`, an 8th tab): points + trainer +
 selectable skill/spell rows, Up/Down + Enter/click to train; a start:true codex entry teaches it. Tests:
 `test_training.py` (11). This closes the skills-&-training upgrade.
+
+**SKILLS.D — Seed NPCs with calling skills (George).** The richer skill roster feeds combat/magic power for
+ANY character, but NPCs started at 0. `engine/npc_skills.py` + `data/npc_skills.json` seed each NPC's skills
+from its CLASS + ROLE (role read from the id/name — a `blacksmith_01` is class `merchant`, so its craft is only
+legible from the name → smithing), scaled by level, ONCE at creation (hooked in `npc_manager.add_npc`).
+Deliberately CONSERVATIVE (primary ~level+2, secondary ~level−1) so a weak NPC stays below the `+1 per N`
+threshold (combat maths unchanged) while seasoned NPCs pull ahead — a veteran guard hits harder, a wizard has a
+deeper mana well. Monsters/animals/trolls + player-chars skipped. Verified live: all 78 world NPCs seeded
+calling-appropriately (blacksmith→smithing+weaponry, priest→spellcraft+medicine, guard→weaponry+defense).
+Tests: `test_npc_skills.py` (9).
