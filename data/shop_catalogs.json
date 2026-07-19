@@ -7,7 +7,9 @@
     "bandage",
     "antidote",
     "scroll_heal",
-    "scroll_bless"
+    "scroll_bless",
+    "greater_healing_potion",
+    "scroll_cure_wounds"
   ],
   "priest": [
     "potion",
@@ -79,7 +81,9 @@
     "crossbow",
     "sling",
     "thrown_knife",
-    "explorers_chart"
+    "explorers_chart",
+    "scroll_ice_shard",
+    "elixir_of_might"
   ],
   "wheelwright": [
     "leather",
@@ -111,7 +115,29 @@
     "radiant_mote",
     "vital_root",
     "amulet_of_warding",
-    "mage_ring"
+    "mage_ring",
+    "wand_of_firebolts",
+    "wand_of_frost",
+    "wand_of_magic_missiles",
+    "staff_of_flame",
+    "staff_of_healing",
+    "rod_of_conjuring",
+    "scroll_lightning_bolt",
+    "scroll_ice_shard",
+    "scroll_cure_wounds",
+    "scroll_haste",
+    "scroll_bless",
+    "scroll_sleep",
+    "robe_of_the_magi",
+    "robe_of_vitality",
+    "ring_of_spell_storing",
+    "amulet_of_mana",
+    "circlet_of_intellect",
+    "elixir_of_might",
+    "potion_of_haste",
+    "greater_healing_potion",
+    "elixir_of_true_sight",
+    "spellguard_shield"
   ],
   "ranger": [
     "bow",

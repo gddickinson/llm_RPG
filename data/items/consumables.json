@@ -138,7 +138,7 @@
     "value": 12,
     "heal_amount": 8,
     "stackable": true,
-    "description": "Eats in one bite even mid-swing \u2014 a fighter's pie.",
+    "description": "Eats in one bite even mid-swing — a fighter's pie.",
     "use_effect": {
       "food": true,
       "perishable": true,
@@ -166,10 +166,93 @@
     "value": 6,
     "heal_amount": 3,
     "stackable": true,
-    "description": "Fresh game \u2014 better cooked at a hearth.",
+    "description": "Fresh game — better cooked at a hearth.",
     "use_effect": {
       "food": true,
       "perishable": true
     }
+  },
+  "elixir_of_might": {
+    "name": "Elixir of Might",
+    "item_type": "consumable",
+    "value": 80,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "effect": "blessed",
+      "duration": 8
+    },
+    "description": "A red elixir that fills the drinker with heroic strength."
+  },
+  "potion_of_haste": {
+    "name": "Potion of Haste",
+    "item_type": "consumable",
+    "value": 100,
+    "rarity": "rare",
+    "stackable": true,
+    "use_effect": {
+      "effect": "hasted",
+      "duration": 6
+    },
+    "description": "A fizzing draught that quickens every motion."
+  },
+  "potion_of_flight": {
+    "name": "Potion of Flight",
+    "item_type": "consumable",
+    "value": 120,
+    "rarity": "rare",
+    "stackable": true,
+    "use_effect": {
+      "effect": "flying",
+      "duration": 8
+    },
+    "description": "A cloud-white potion that lets the drinker take to the air."
+  },
+  "greater_healing_potion": {
+    "name": "Greater Healing Potion",
+    "item_type": "consumable",
+    "value": 90,
+    "rarity": "rare",
+    "stackable": true,
+    "heal_amount": 40,
+    "use_effect": {},
+    "description": "A potent draught that knits deep wounds."
+  },
+  "elixir_of_true_sight": {
+    "name": "Elixir of True Sight",
+    "item_type": "consumable",
+    "value": 70,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "effect": "keen_sight",
+      "duration": 10
+    },
+    "description": "A clear tonic that lets you see through wall and shadow."
+  },
+  "philter_of_watery_grace": {
+    "name": "Philter of Watery Grace",
+    "item_type": "consumable",
+    "value": 60,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "effect": "water_walking",
+      "duration": 12
+    },
+    "description": "A blue philter — the drinker walks upon the water."
+  },
+  "draught_of_the_bear": {
+    "name": "Draught of the Bear",
+    "item_type": "consumable",
+    "value": 85,
+    "rarity": "uncommon",
+    "stackable": true,
+    "heal_amount": 15,
+    "use_effect": {
+      "effect": "blessed",
+      "duration": 6
+    },
+    "description": "A thick brew that heals and steels the drinker's heart."
   }
 }

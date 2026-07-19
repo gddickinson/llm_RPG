@@ -98,12 +98,25 @@ DEFAULT_LOOT = [
 # the loot-chase reward (the "power from gear" axis the steep-ish curve assumes).
 TIER_LOOT = {
     "uncommon": [("chainmail", 3), ("brigandine", 3), ("banded_mail", 3),
-                 ("iron_shield", 2)],
+                 ("iron_shield", 2), ("wand_of_firebolts", 2),
+                 ("wand_of_frost", 2), ("elixir_of_might", 2),
+                 ("boots_of_striding", 2), ("scroll_ice_shard", 3)],
     "rare": [("plate", 3), ("fortified_plate", 3), ("steel_shield", 2),
-             ("guardian_halberd", 1)],
+             ("guardian_halberd", 1), ("thunderblade", 2), ("venomfang", 2),
+             ("frostbrand_axe", 2), ("robe_of_the_magi", 2),
+             ("ring_of_regeneration", 1), ("amulet_of_health", 2),
+             ("staff_of_flame", 1), ("wand_of_lightning", 2),
+             ("cloak_of_protection", 2), ("potion_of_haste", 2)],
     "epic": [("dragonscale_mail", 2), ("sunderer", 2), ("titans_maul", 2),
-             ("stormcaller_bow", 2)],
-    "legendary": [("aegis_of_dawn", 1), ("doombringer", 1)],
+             ("stormcaller_bow", 2), ("warded_plate", 2), ("moonbow", 2),
+             ("stormcaller_glaive", 1), ("staff_of_thunder", 1),
+             ("boots_of_speed", 1), ("gauntlets_of_ogre_power", 2),
+             ("mace_of_disruption", 1), ("wand_of_disintegration", 1)],
+    "legendary": [("aegis_of_dawn", 1), ("doombringer", 1), ("sunblade", 1),
+                  ("soulreaver", 1), ("staff_of_the_magi", 1),
+                  ("ring_of_the_archmage", 1), ("crown_of_kings", 1),
+                  ("dragonscale_mail", 1), ("ring_of_three_wishes", 1),
+                  ("book_of_infinite_spells", 1)],
 }
 
 

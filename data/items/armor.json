@@ -87,13 +87,20 @@
     }
   },
   "dragonscale_mail": {
-    "id": "dragonscale_mail",
     "name": "Dragonscale Mail",
     "item_type": "armor",
-    "value": 1400,
-    "rarity": "epic",
-    "description": "A hauberk of overlapping wyrm-scales — nigh impervious, and warm against the cold of the deep.",
-    "armor": 10
+    "value": 800,
+    "rarity": "legendary",
+    "armor": 8,
+    "equip_bonuses": {
+      "armor": 2,
+      "constitution": 1,
+      "max_hp": 10
+    },
+    "metadata": {
+      "artifact": true
+    },
+    "description": "Armour of overlapping dragon scales — nigh impervious to flame."
   },
   "aegis_of_dawn": {
     "id": "aegis_of_dawn",
@@ -115,5 +122,81 @@
     "metadata": {
       "armor_set": "steel"
     }
+  },
+  "robe_of_the_magi": {
+    "name": "Robe of the Magi",
+    "item_type": "armor",
+    "value": 600,
+    "rarity": "epic",
+    "armor": 2,
+    "equip_bonuses": {
+      "intelligence": 2,
+      "max_mana": 10,
+      "mana_regen": 1
+    },
+    "description": "A star-flecked robe worn by masters of the arcane."
+  },
+  "warded_plate": {
+    "name": "Warded Plate",
+    "item_type": "armor",
+    "value": 700,
+    "rarity": "epic",
+    "armor": 7,
+    "equip_bonuses": {
+      "armor": 2,
+      "max_hp": 6
+    },
+    "metadata": {
+      "armor_set": "warded"
+    },
+    "description": "Full plate etched with runes that turn aside blade and spell alike."
+  },
+  "cloak_of_protection": {
+    "name": "Cloak of Protection",
+    "item_type": "armor",
+    "value": 220,
+    "rarity": "rare",
+    "armor": 1,
+    "equip_bonuses": {
+      "armor": 1,
+      "dodge": 1
+    },
+    "description": "A shimmering cloak that ward its wearer from harm."
+  },
+  "elven_chain": {
+    "name": "Elven Chain",
+    "item_type": "armor",
+    "value": 420,
+    "rarity": "epic",
+    "armor": 5,
+    "equip_bonuses": {
+      "dexterity": 1,
+      "dodge": 1
+    },
+    "description": "Mithril links light as silk, forged by elven smiths."
+  },
+  "robe_of_vitality": {
+    "name": "Robe of Vitality",
+    "item_type": "armor",
+    "value": 340,
+    "rarity": "rare",
+    "armor": 2,
+    "equip_bonuses": {
+      "max_hp": 12,
+      "hp_regen": 1
+    },
+    "description": "A green robe that quickens the flesh to heal."
+  },
+  "spellguard_shield": {
+    "name": "Spellguard Shield",
+    "item_type": "shield",
+    "value": 380,
+    "rarity": "epic",
+    "armor": 4,
+    "equip_bonuses": {
+      "armor": 1,
+      "max_mana": 4
+    },
+    "description": "A shield humming with abjuration — it drinks hostile magic."
   }
 }

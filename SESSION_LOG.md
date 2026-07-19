@@ -9891,3 +9891,25 @@ materials + walls→rubble, `earthworks` breach-sync outside↔inside, `giants` 
   one). Rubble stays clearable/transformable via the M0 worldcraft rules.
 Tests: `test_building_integrity.py` (6). Full suite green. (The tactical P17 battle layer already breaches
 walls via `battle_fire`/siege engines in its own field; this covers the overworld.)
+
+## 2026-07-18 — A large range of magical objects (George)
+
+George: "add a large range of magical objects to the game — many of them should be able to replicate spells,
+or spell effects. Add items across all categories of object, including legendary powerful items with unusual
+magic." ~89 new items across every category:
+- **`data/items/wands.json`** (NEW, 15) — charged wands/staves/orbs that CAST a spell. New in `item_use`: the
+  `use_effect.spell` path reads `metadata["charges"]` — a wand spends one per use and CRUMBLES when spent
+  (charges persist through saves), where a bare scroll still burns away one-shot. Wand of Firebolts (12),
+  legendary Staff of the Magi (meteor_swarm ×4 + equip bonuses), Orb of Dragonkind, Wand of Disintegration…
+- **`ammo_scrolls.json`** — +30 spell scrolls (one-shot, stackable) spanning lightning_bolt/ice_shard/
+  cure_wounds/greater_heal/sleep/haste/earthquake/… so any spell is reachable as a consumable.
+- **`weapons.json`** +10 (thunderblade, venomfang, frostbrand_axe, legendary sunblade & soulreaver, …),
+  **`armor.json`** +7 (robe_of_the_magi, warded_plate, dragonscale_mail, spellguard_shield, …),
+  **`jewelry.json`** +12 (ring_of_spell_storing, ring_of_the_archmage, amulet_of_health, boots_of_speed, …),
+  **`consumables.json`** +7 elixirs (of_might, of_haste, of_flight, of_true_sight, …),
+  **`relics.json`** (NEW) +8 legendary artifacts with unusual magic (ring_of_three_wishes, crown_of_kings,
+  book_of_infinite_spells, gauntlets_of_ogre_power, staff_of_withering, cloak_of_the_bat, …).
+- **Distribution**: `loot_tables.TIER_LOOT` seeds the new gear by rarity (uncommon→legendary); the wizard shelf
+  in `data/shop_catalogs.json` now sells 46 wands/scrolls/staves/robes/rings (cleric + general got a few).
+Registry grew 69→235 items. Tests: `test_magic_items.py` (7 — charge burn-down, scroll one-shot, charge save
+round-trip, every spell-item references a real spell, legendaries are potent). Full suite green.

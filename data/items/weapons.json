@@ -10,7 +10,9 @@
     "weapon_kind": "melee",
     "damage_kind": "slash",
     "two_handed": true,
-    "metadata": {"reach": true}
+    "metadata": {
+      "reach": true
+    }
   },
   "dagger": {
     "id": "dagger",
@@ -164,7 +166,7 @@
     "name": "Silver Blade",
     "item_type": "weapon",
     "value": 200,
-    "description": "A masterwork silver blade \u2014 devastating to monsters.",
+    "description": "A masterwork silver blade — devastating to monsters.",
     "rarity": "rare",
     "damage": 7,
     "weapon_kind": "melee"
@@ -287,5 +289,161 @@
       "damage": 2,
       "strength": 1
     }
+  },
+  "thunderblade": {
+    "name": "Thunderblade",
+    "item_type": "weapon",
+    "value": 420,
+    "rarity": "epic",
+    "damage": 9,
+    "damage_kind": "lightning",
+    "weapon_kind": "melee",
+    "equip_bonuses": {
+      "damage": 3,
+      "dexterity": 1
+    },
+    "description": "A sword that crackles with caged lightning."
+  },
+  "venomfang": {
+    "name": "Venomfang",
+    "item_type": "weapon",
+    "value": 180,
+    "rarity": "rare",
+    "damage": 6,
+    "damage_kind": "poison",
+    "weapon_kind": "melee",
+    "equip_bonuses": {
+      "damage": 2
+    },
+    "description": "A wicked dagger that drips green venom."
+  },
+  "frostbrand_axe": {
+    "name": "Frostbrand Axe",
+    "item_type": "weapon",
+    "value": 260,
+    "rarity": "rare",
+    "damage": 8,
+    "damage_kind": "frost",
+    "weapon_kind": "melee",
+    "equip_bonuses": {
+      "damage": 2
+    },
+    "description": "An axe rimed in frost that never melts."
+  },
+  "sunblade": {
+    "name": "Sunblade",
+    "item_type": "weapon",
+    "value": 900,
+    "rarity": "legendary",
+    "damage": 10,
+    "damage_kind": "holy",
+    "weapon_kind": "melee",
+    "equip_bonuses": {
+      "damage": 4,
+      "charisma": 1
+    },
+    "metadata": {
+      "artifact": true,
+      "light_source": true
+    },
+    "description": "A blade of pure daylight that sears the wicked and lights the dark."
+  },
+  "soulreaver": {
+    "name": "Soulreaver",
+    "item_type": "weapon",
+    "value": 950,
+    "rarity": "legendary",
+    "damage": 11,
+    "damage_kind": "necrotic",
+    "weapon_kind": "melee",
+    "equip_bonuses": {
+      "damage": 4,
+      "max_hp": 8
+    },
+    "metadata": {
+      "artifact": true,
+      "corruption": true
+    },
+    "description": "A hungering black blade that drinks the life of the slain."
+  },
+  "stormcaller_glaive": {
+    "name": "Stormcaller Glaive",
+    "item_type": "weapon",
+    "value": 480,
+    "rarity": "epic",
+    "damage": 10,
+    "damage_kind": "lightning",
+    "weapon_kind": "melee",
+    "two_handed": true,
+    "equip_bonuses": {
+      "damage": 3
+    },
+    "metadata": {
+      "reach": true
+    },
+    "description": "A glaive that gathers the storm along its edge."
+  },
+  "dragonbone_maul": {
+    "name": "Dragonbone Maul",
+    "item_type": "weapon",
+    "value": 540,
+    "rarity": "epic",
+    "damage": 13,
+    "damage_kind": "bludgeon",
+    "weapon_kind": "melee",
+    "two_handed": true,
+    "equip_bonuses": {
+      "strength": 1,
+      "damage": 2
+    },
+    "description": "A colossal maul carved from a dragon's thighbone."
+  },
+  "moonbow": {
+    "name": "Moonbow",
+    "item_type": "weapon",
+    "value": 460,
+    "rarity": "epic",
+    "damage": 8,
+    "damage_kind": "holy",
+    "weapon_kind": "ranged",
+    "ammo_type": "arrow",
+    "equip_bonuses": {
+      "dexterity": 2,
+      "damage": 2
+    },
+    "metadata": {
+      "range_factor": 1.4
+    },
+    "description": "A silver bow that looses arrows of pale moonlight."
+  },
+  "flametongue_scimitar": {
+    "name": "Flametongue Scimitar",
+    "item_type": "weapon",
+    "value": 300,
+    "rarity": "rare",
+    "damage": 8,
+    "damage_kind": "fire",
+    "weapon_kind": "melee",
+    "equip_bonuses": {
+      "damage": 2
+    },
+    "metadata": {
+      "light_source": true
+    },
+    "description": "A curved blade wreathed in living flame."
+  },
+  "mace_of_disruption": {
+    "name": "Mace of Disruption",
+    "item_type": "weapon",
+    "value": 520,
+    "rarity": "epic",
+    "damage": 9,
+    "damage_kind": "holy",
+    "weapon_kind": "melee",
+    "equip_bonuses": {
+      "damage": 3,
+      "wisdom": 1
+    },
+    "description": "A holy mace that shatters the undead to dust."
   }
 }
