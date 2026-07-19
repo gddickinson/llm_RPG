@@ -11,7 +11,9 @@ _DATA = Path(__file__).resolve().parent.parent / "data"
 
 
 _COMBAT_KEYS = {"weapon_damage_per", "armor_ac_per", "dodge_ac_per",
-                "beast_damage_per"}
+                "beast_damage_per",
+                # richer skills (weaponry/defense reuse the above)
+                "ranged_damage_per", "mana_per", "heal_per", "lock_per"}
 
 
 def check_skill_combat() -> List[str]:

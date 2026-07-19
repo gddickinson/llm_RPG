@@ -173,6 +173,26 @@ def starting_mana(character) -> int:
     return max(0, base + bonus)
 
 
+def _apply_spellcraft(character) -> None:
+    """Fold the SPELLCRAFT skill's mana bonus into max mana, reconciling only
+    the DELTA (tracked in `spellcraft_mana`) so it's idempotent and a no-op at
+    skill 0 — no change for anyone who hasn't studied spellcraft."""
+    try:
+        from engine.skill_combat import spellcraft_mana_bonus
+        want = int(spellcraft_mana_bonus(character))
+    except Exception:
+        return
+    meta = character.metadata
+    have = int(meta.get("spellcraft_mana", 0))
+    if want == have:
+        return
+    delta = want - have
+    meta["max_mana"] = max(0, int(meta.get("max_mana", 0)) + delta)
+    meta["mana"] = max(0, min(int(meta.get("mana", 0)) + delta,
+                              meta["max_mana"]))
+    meta["spellcraft_mana"] = want
+
+
 def ensure_mana(character) -> None:
     """Ensure character has mana/max_mana initialized on metadata."""
     meta = getattr(character, "metadata", None)
@@ -186,6 +206,7 @@ def ensure_mana(character) -> None:
         klass = getattr(getattr(character, "character_class", None),
                         "value", "")
         meta["spells_known"] = [s.id for s in starting_spells_for(klass)]
+    _apply_spellcraft(character)
 
 
 def get_mana(character) -> Tuple[int, int]:
@@ -246,6 +267,12 @@ class SpellSystem:
 
         # Pay mana
         caster.metadata["mana"] = mana - spell.mana_cost
+        try:   # working magic trains Spellcraft (pet-roll-free — no RNG churn)
+            if caster.id == getattr(self.engine.player, "id", None):
+                from engine.skill_progression import add_skill_xp
+                add_skill_xp(caster, "spellcraft", 5)
+        except Exception:
+            pass
 
         # Apply effects
         results = []

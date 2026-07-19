@@ -170,6 +170,13 @@ def battle_medicine(engine, target=None) -> str:
         amount = BM_HEAL["crit"] if \
             result.degree is Degree.CRIT_SUCCESS else \
             BM_HEAL["success"]
+        try:   # a healer's Medicine mends more, and the practice trains it
+            from engine.skill_combat import heal_bonus
+            from engine.skill_progression import add_skill_xp
+            amount += heal_bonus(player)
+            add_skill_xp(player, "medicine", 12)
+        except Exception:
+            pass
         before = patient.hp
         patient.heal(amount)
         msg = (f"Field dressing, quick and sure "

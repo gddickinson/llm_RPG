@@ -106,6 +106,18 @@ class CombatSystem:
         except Exception:
             sneak_ready = False
 
+        # a martial exchange hones the player's skill — Weaponry when they
+        # swing, Defense when they weather a blow (pet-roll-free, no RNG churn)
+        try:
+            from engine.skill_progression import add_skill_xp
+            pl = self.engine.player
+            if attacker is pl and defender is not pl:
+                add_skill_xp(pl, "weaponry", 4)
+            elif defender is pl and attacker is not pl:
+                add_skill_xp(pl, "defense", 4)
+        except Exception:
+            pass
+
         # Assault has consequences: a peaceful NPC the player attacks
         # turns hostile (fight back or flee — heuristic provider) and
         # word of it costs villager goodwill (P7 follow-up, George)

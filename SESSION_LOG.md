@@ -10053,3 +10053,17 @@ crate) — keyword-first (short keywords match a WHOLE WORD so "hat" ⊄ "whatsi
 name-only `icon_by_name` backs `sprite_loader.item`. Wired into `hub_paperdoll` (full rarity) + the world
 sprite loader (ground drops/shops). Every equipped item + bag item now reads at a glance, rarity-coloured.
 Tests: `test_item_icons.py` (6). Full suite green.
+
+## 2026-07-19 — Skills & Training: richer roster + level-up training (George)
+
+George: level-up should let you IMPROVE skills / learn spells by going to a class-appropriate TRAINER and
+choosing (via the character screen); upgrade the skills characters/NPCs can have and integrate with items/
+features. A major depth upgrade, built in rounds.
+
+**SKILLS.A — Richer skill roster.** The 12→13 skills were all gathering/crafting. Added 6 combat/magic/utility
+skills, each INTEGRATED with real power: **weaponry** (+melee damage, via skill_combat.weapon_damage_bonus),
+**defense** (+AC), **marksmanship** (+ranged damage, wired into `ranged`), **spellcraft** (+max mana,
+reconciled delta-safe in `spells.ensure_mana` so it's a no-op at skill 0), **medicine** (+battle-medicine
+healing), **thievery** (lowers a lock's effective DC in `doors`). Each trains BY DOING through pet-roll-free
+`add_skill_xp` at the melee/ranged/cast/heal/lockpick sites (no RNG churn), plus a pet each. `combat_summary`
+shows every tie. Validator's combat-key whitelist extended. Tests: `test_richer_skills.py` (6).

@@ -38,14 +38,38 @@ def _step_bonus(character, skill_id: str, key: str) -> int:
 
 
 def weapon_damage_bonus(character) -> int:
-    """Extra melee/ranged damage from a well-kept blade (smithing)."""
-    return _step_bonus(character, "smithing", "weapon_damage_per")
+    """Extra damage from a well-kept blade (smithing) + martial skill at
+    arms (weaponry). Applies to any weapon via `engine/effects`."""
+    return (_step_bonus(character, "smithing", "weapon_damage_per")
+            + _step_bonus(character, "weaponry", "weapon_damage_per"))
 
 
 def armor_ac_bonus(character) -> int:
-    """Extra AC from sound armour (smithing) + nimble footwork (agility)."""
+    """Extra AC from sound armour (smithing) + footwork (agility) + a
+    fighter's guard (defense)."""
     return (_step_bonus(character, "smithing", "armor_ac_per")
-            + _step_bonus(character, "agility", "dodge_ac_per"))
+            + _step_bonus(character, "agility", "dodge_ac_per")
+            + _step_bonus(character, "defense", "armor_ac_per"))
+
+
+def ranged_damage_bonus(character) -> int:
+    """A marksman looses with extra bite (applied in `engine/ranged`)."""
+    return _step_bonus(character, "marksmanship", "ranged_damage_per")
+
+
+def spellcraft_mana_bonus(character) -> int:
+    """A deeper mana well from the study of spellcraft (added to max mana)."""
+    return _step_bonus(character, "spellcraft", "mana_per")
+
+
+def heal_bonus(character) -> int:
+    """A healer's touch mends more (medicine) — battle medicine + remedies."""
+    return _step_bonus(character, "medicine", "heal_per")
+
+
+def lock_bonus(character) -> int:
+    """Nimble fingers lower a lock's effective difficulty (thievery)."""
+    return _step_bonus(character, "thievery", "lock_per")
 
 
 def beast_damage_bonus(character, target) -> int:
@@ -72,4 +96,22 @@ def combat_summary(character):
     hb = _step_bonus(character, "hunting", "beast_damage_per")
     if hb:
         lines.append(f"Hunting: +{hb} damage vs beasts")
+    wp = _step_bonus(character, "weaponry", "weapon_damage_per")
+    if wp:
+        lines.append(f"Weaponry: +{wp} melee damage")
+    df = _step_bonus(character, "defense", "armor_ac_per")
+    if df:
+        lines.append(f"Defense: +{df} AC (guard)")
+    rd = ranged_damage_bonus(character)
+    if rd:
+        lines.append(f"Marksmanship: +{rd} ranged damage")
+    mb = spellcraft_mana_bonus(character)
+    if mb:
+        lines.append(f"Spellcraft: +{mb} max mana")
+    hl = heal_bonus(character)
+    if hl:
+        lines.append(f"Medicine: +{hl} healing")
+    lb = lock_bonus(character)
+    if lb:
+        lines.append(f"Thievery: -{lb} to lock difficulty")
     return lines
