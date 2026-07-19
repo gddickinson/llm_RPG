@@ -9913,3 +9913,21 @@ magic." ~89 new items across every category:
   in `data/shop_catalogs.json` now sells 46 wands/scrolls/staves/robes/rings (cleric + general got a few).
 Registry grew 69→235 items. Tests: `test_magic_items.py` (7 — charge burn-down, scroll one-shot, charge save
 round-trip, every spell-item references a real spell, legendaries are potent). Full suite green.
+
+## 2026-07-18 — "What is the game missing?" → the GAP program
+
+Ultrathink review of a mechanically vast game (~150 systems, 3400+ tests): the gaps aren't more simulation,
+they're what the player SENSES, DISCOVERS and FEELS. Confirmed by code inspection: no music (only SFX + rain),
+no codex/field-journal (150 systems are "dark matter" the player never finds), no stealth gameplay (STEALTH
+skill vestigial, no sneak attacks), no world-map screen (only a minimap), no combat juice (no screen shake),
+no cold-open. Implementing these as tested rounds.
+
+**GAP.1 — Procedural adaptive music.** True to the procedural-audio ethos (no assets): `ui/music_synth.py`
+synthesizes moods with numpy (modal/pentatonic scales → a breathing pad + a seeded arpeggio + a bass pulse,
+mixed into a seamless loop). `ui/music.py`'s `MusicManager` renders each mood (`data/music.json`: explore/
+town/night/dungeon/tension/combat) on first use and CROSSFADES between them as the game state changes — the
+open-road theme tightens to a pulse of tension as a hostile nears, breaks into a driving combat bed when blades
+cross, thins to a sparse night motif after dark. `select_mood` is the pure policy; `read_state` reads the
+nearest-hostile distance / dungeon / safe-zone / night. Wired into `gui` (ticked in the main loop), gated by a
+new "Music" setting. Tests: `test_music.py` (12 — synth shape/range/determinism/seamless-loop, mood policy
+priority, headless manager). Full suite green.

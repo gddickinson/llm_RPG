@@ -22,6 +22,8 @@ OPTIONS: List[dict] = [
      "choices": ["on", "off"], "default": "on"},
     {"key": "sound", "label": "Sound",
      "choices": ["on", "off"], "default": "on"},
+    {"key": "music", "label": "Music",
+     "choices": ["on", "off"], "default": "on"},
     {"key": "zoom", "label": "Map zoom",
      "choices": [24, 32, 48, 64, 80], "default": 64},
     {"key": "smooth", "label": "Smooth sprites",   # P34.7 SSAA on/off

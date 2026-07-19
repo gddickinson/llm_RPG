@@ -106,6 +106,13 @@ class GameGUI:
         except Exception as e:
             logger.debug(f"Sound unavailable: {e}")
             self.sound = None
+        # Adaptive procedural music (crossfades by game state)
+        try:
+            from ui.music import MusicManager
+            self.music = MusicManager()
+        except Exception as e:
+            logger.debug(f"Music unavailable: {e}")
+            self.music = None
 
         # Layout
         self._compute_layout()
@@ -210,6 +217,13 @@ class GameGUI:
                         self.engine.current_weather())
                 except Exception:
                     pass
+            if self.music is not None:
+                try:
+                    dt = 1.0 / 30.0
+                    self.music.update_mood(self.engine, dt)
+                    self.music.update(dt)
+                except Exception:
+                    pass
             if getattr(self.engine, "dm_bridge", None) is not None:
                 try:
                     self.engine.dm_bridge.tick()
@@ -222,6 +236,8 @@ class GameGUI:
     def shutdown(self) -> None:
         if self.sound is not None:
             self.sound.shutdown()
+        if getattr(self, "music", None) is not None:
+            self.music.shutdown()
         try:
             self.engine.end_game()
         except Exception:

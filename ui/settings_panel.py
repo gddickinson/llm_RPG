@@ -51,6 +51,14 @@ def apply_setting(gui, key, value) -> None:
             gui.sound.enabled = (value == "on")
         except Exception:
             pass
+    elif key == "music":
+        try:
+            if value == "off":
+                gui.music.enabled = False
+                gui.music._silence()
+            # re-enable is handled live by MusicManager.update_mood
+        except Exception:
+            pass
     elif key == "autoplay":            # M.3: hand the hero to an agent
         try:
             gui.engine.roster.set_away(gui.engine.player, value == "on")

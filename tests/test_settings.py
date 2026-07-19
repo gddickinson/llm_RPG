@@ -70,7 +70,9 @@ class TestSettingsAndQuitInGui(unittest.TestCase):
         gui = self._gui()
         gui.show_settings()
         self.assertEqual(gui.mode, "settings")
-        gui.settings_panel.cursor = 4          # the zoom row
+        # find the zoom row (its index shifts as options are added)
+        gui.settings_panel.cursor = [o["key"] for o in
+                                     settings.all_options()].index("zoom")
         gui.settings_panel.handle_key(self._key(pygame.K_RIGHT))
         self.assertEqual(gui.renderer.tile_size,
                          settings.get_setting(gui.engine.player, "zoom"))

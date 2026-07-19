@@ -1,0 +1,44 @@
+{
+  "explore": {
+    "scale": "dorian", "root": 57, "bpm": 66, "bars": 8,
+    "layers": ["pad", "bass", "arp"],
+    "pad_vol": 0.34, "bass_vol": 0.24, "arp_vol": 0.16, "arp_octaves": 2,
+    "volume": 0.85,
+    "_desc": "the open road — calm, wandering, hopeful"
+  },
+  "town": {
+    "scale": "mixolydian", "root": 60, "bpm": 84, "bars": 8,
+    "layers": ["pad", "bass", "arp"],
+    "pad_vol": 0.3, "bass_vol": 0.26, "arp_vol": 0.22, "arp_octaves": 2,
+    "volume": 0.9,
+    "_desc": "a settlement — warm, bright, lived-in"
+  },
+  "night": {
+    "scale": "minor", "root": 57, "bpm": 54, "bars": 8,
+    "layers": ["pad", "arp"],
+    "pad_vol": 0.36, "arp_vol": 0.12, "arp_octaves": 1,
+    "volume": 0.78,
+    "_desc": "the dark hours — sparse, still, watchful"
+  },
+  "dungeon": {
+    "scale": "phrygian", "root": 50, "bpm": 58, "bars": 8,
+    "layers": ["pad", "bass"],
+    "pad_vol": 0.38, "bass_vol": 0.3,
+    "volume": 0.82,
+    "_desc": "underground — dark, oppressive, low"
+  },
+  "tension": {
+    "scale": "phrygian", "root": 52, "bpm": 96, "bars": 4,
+    "layers": ["pad", "bass"],
+    "pad_vol": 0.32, "bass_vol": 0.34,
+    "volume": 0.9,
+    "_desc": "a threat nears — unsettled, pulsing"
+  },
+  "combat": {
+    "scale": "minor", "root": 45, "bpm": 132, "bars": 4,
+    "layers": ["pad", "bass", "arp"],
+    "pad_vol": 0.26, "bass_vol": 0.38, "arp_vol": 0.26, "arp_octaves": 2,
+    "volume": 1.0,
+    "_desc": "battle — driving, urgent"
+  }
+}
