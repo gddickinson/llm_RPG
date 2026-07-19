@@ -9874,3 +9874,20 @@ games"). Dedup + cap + atomic write. Tests: `test_blueprint_library.py` (8, tmp 
 (schools/tiers/learning, 23→51 spells) → world-altering spells (player + NPCs/away-heroes) → magic-item
 crafting + imbuing → guilds/workers building → player build/terraform planner → cross-game blueprints → magical
 protection by power. All in `docs/MAGIC_AND_WORLDCRAFT.md`.
+
+## 2026-07-18 — Building STRUCTURAL integrity (George)
+
+George: wall damage should propagate outside↔inside; buildings collapse past enough damage; rubble from
+knocked-down walls (clearable/transformable); siege damages walls in battle; materials respond differently
+(wood burns, stone doesn't but dragon-fire/magic destroys it). Much of the substrate existed (`tile_damage`
+materials + walls→rubble, `earthworks` breach-sync outside↔inside, `giants` smash/rebuild). New work:
+- **Materials**: added `magic` (1.3×) + `dragonfire` (2.5×) damage types to `tile_damage.MATERIALS` — stone
+  still shrugs off ordinary fire (0.3×) but a dragon's breath or magic blast tears it down. `bosses._detonate`
+  now sends `dragonfire` for a breath telegraph (a wyrm razes a keep a siege ram only cracks).
+- **`engine/building_integrity.py`**: `on_wall_destroyed` (called by `tile_damage` AND `worldcraft` the moment
+  a BUILDING tile becomes rubble) mirrors the breach INSIDE in real time (`sync_interior`, not just on entry)
+  and COLLAPSES the whole building once ≥50% of its footprint walls are rubble — every standing wall drops at
+  once with a `[!]` beat + `properties["collapsed"]`. Scoped to enterable buildings (a lone town rampart isn't
+  one). Rubble stays clearable/transformable via the M0 worldcraft rules.
+Tests: `test_building_integrity.py` (6). Full suite green. (The tactical P17 battle layer already breaches
+walls via `battle_fire`/siege engines in its own field; this covers the overworld.)

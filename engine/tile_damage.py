@@ -24,9 +24,14 @@ from world.world_map import TerrainType
 logger = logging.getLogger("llm_rpg.tile_damage")
 
 MATERIALS = {
-    "stone": {"physical": 1.0, "fire": 0.3, "siege": 1.5},
-    "wood": {"physical": 1.0, "fire": 2.0, "siege": 1.5},
-    "light": {"physical": 1.5, "fire": 2.0, "siege": 2.0},
+    # stone shrugs off ordinary FIRE (0.3) but a DRAGON'S breath or a magical
+    # blast tears it apart (George); wood burns; light stuff is fragile
+    "stone": {"physical": 1.0, "fire": 0.3, "siege": 1.5,
+              "magic": 1.3, "dragonfire": 2.5},
+    "wood": {"physical": 1.0, "fire": 2.0, "siege": 1.5,
+             "magic": 1.3, "dragonfire": 2.5},
+    "light": {"physical": 1.5, "fire": 2.0, "siege": 2.0,
+              "magic": 1.5, "dragonfire": 2.5},
 }
 TILE_MATERIAL = {
     TerrainType.BUILDING: "stone",
@@ -102,6 +107,12 @@ class TileDamage:
                     self.rubble_depth.get((x, y), 0) + 1
             msg = DESTROY_LINES.get(terrain, "It breaks apart.")
             self.engine.memory_manager.add_event(msg)
+            if terrain == TerrainType.BUILDING:   # mirror inside + maybe collapse
+                try:
+                    from engine.building_integrity import on_wall_destroyed
+                    on_wall_destroyed(self.engine, x, y)
+                except Exception:
+                    pass
             return msg
         self.tile_hp[(x, y)] = hp
         if terrain == TerrainType.BUILDING and not cracked_before \

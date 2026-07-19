@@ -175,8 +175,16 @@ def mutate(engine, x: int, y: int, to_t, means: str, actor=None,
             _consume(actor, iid, need)
         for iid, qty in (block.get("yields") or {}).items():
             _give(actor, iid, qty)
+    cur_terrain = engine.world.map.get_terrain_at(x, y)
     tt = to_t if isinstance(to_t, TerrainType) else TerrainType(_tname(to_t))
     engine.world.map.set_terrain(x, y, tt)
+    # a wall knocked down (e.g. Disintegrate) mirrors inside + may collapse it
+    if cur_terrain == TerrainType.BUILDING and tt == TerrainType.RUBBLE:
+        try:
+            from engine.building_integrity import on_wall_destroyed
+            on_wall_destroyed(engine, x, y)
+        except Exception:
+            pass
     # stamp / lift the ward: MAGIC leaves a ward of the caster's power; mundane
     # LABOUR (or the system) leaves plain, unwarded ground
     wards = getattr(engine, "wards", None)
