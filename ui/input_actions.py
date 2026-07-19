@@ -324,7 +324,8 @@ def menu_mode_key(gui, engine, event) -> bool:
     if handled, None if `gui.mode` isn't one of these menus."""
     import pygame
     mode = gui.mode
-    if mode not in ("travel", "stable", "waystone", "board", "perks"):
+    if mode not in ("travel", "stable", "waystone", "board", "perks",
+                    "familiar"):
         return None
     if event.type != pygame.KEYDOWN:
         return True
@@ -332,6 +333,7 @@ def menu_mode_key(gui, engine, event) -> bool:
              "stable": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
              "waystone": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
              "board": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
+             "familiar": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
              "perks": (pygame.K_ESCAPE,)}
     if event.key in exits[mode]:
         gui.mode = "play"
@@ -346,6 +348,8 @@ def menu_mode_key(gui, engine, event) -> bool:
                 engine.mount_stable_buy(idx)
             elif mode == "board":
                 engine.board_accept_index(idx)
+            elif mode == "familiar":
+                engine.familiar_bind_index(idx)
             elif mode == "perks":
                 engine.choose_perk(idx)
                 from engine import perks

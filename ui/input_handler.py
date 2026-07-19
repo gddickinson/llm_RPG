@@ -417,6 +417,18 @@ class InputHandler:
                     return True
             except Exception:
                 pass
+            # A place of magical study — a caster binds a familiar here
+            try:
+                if self.engine.can_bind_familiar() \
+                        and not self.engine.world.get_items_at(
+                            *self.engine.player.position):
+                    from engine import training
+                    prof = training.trainer_here(self.engine)
+                    if prof is not None and prof.get("teaches_spells"):
+                        self.gui.show_familiars()
+                        return True
+            except Exception:
+                pass
             from engine.mount import try_buy_at_stable   # P15.8b mule (legacy)
             if try_buy_at_stable(self.engine):
                 return True

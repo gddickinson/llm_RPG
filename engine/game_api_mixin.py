@@ -363,6 +363,23 @@ class GameAPIMixin:
         self.memory_manager.add_event(msg)
         return msg
 
+    # ---- Familiars (casters) ------------------------------------------
+
+    def can_bind_familiar(self) -> bool:
+        from engine import familiars
+        return familiars.can_bind(self.player)
+
+    def familiar_overlay_lines(self) -> list:
+        from engine import familiars
+        return familiars.overlay_lines(self)
+
+    def familiar_bind_index(self, index: int) -> str:
+        from engine import familiars
+        msg = familiars.bind_index(self, index)
+        if msg:
+            self.memory_manager.add_event(msg)
+        return msg
+
     # ---- Claim a home (P15.7) -----------------------------------------
 
     def home_action(self) -> Optional[str]:
@@ -402,7 +419,13 @@ class GameAPIMixin:
             mod = self.weather_system.visibility_modifier()
         except Exception:
             mod = 1.0
-        return max(2, round(base * mod))
+        sight = 0
+        try:   # a raven familiar scouts ahead — you see further
+            from engine.familiars import familiar_bonus
+            sight = familiar_bonus(self.player, "sight")
+        except Exception:
+            pass
+        return max(2, round(base * mod) + sight)
 
     def enter_colosseum(self, matchup=None) -> bool:
         """Seat the player as a spectator + stage a colosseum matchup (the

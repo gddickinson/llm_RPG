@@ -100,7 +100,13 @@ def run_turn(engine) -> None:
         from engine.spells import rest_recover_mana, ensure_mana
         ensure_mana(self.player)
         if self.turn_counter % 5 == 0:
-            rest_recover_mana(self.player, amount=1)
+            extra = 0
+            try:   # a mana-familiar (a witch's cat) quickens the recovery
+                from engine.familiars import familiar_bonus
+                extra = familiar_bonus(self.player, "mana_regen")
+            except Exception:
+                pass
+            rest_recover_mana(self.player, amount=1 + extra)
     except Exception as e:
         logger.debug(f"Mana regen error: {e}")
 

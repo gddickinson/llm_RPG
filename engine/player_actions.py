@@ -299,6 +299,11 @@ class PlayerActions:
             mount_follow(self.engine, old_pos)
         except Exception:
             pass
+        try:   # a familiar trails the caster too
+            from engine.familiars import follow
+            follow(self.engine.player, old_pos)
+        except Exception:
+            pass
 
         loc = self.engine.world.get_location_at(nx, ny)
         loc_name = loc.name if loc else "wilderness"

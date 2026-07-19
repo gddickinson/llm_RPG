@@ -10091,3 +10091,17 @@ threshold (combat maths unchanged) while seasoned NPCs pull ahead — a veteran 
 deeper mana well. Monsters/animals/trolls + player-chars skipped. Verified live: all 78 world NPCs seeded
 calling-appropriately (blacksmith→smithing+weaponry, priest→spellcraft+medicine, guard→weaponry+defense).
 Tests: `test_npc_skills.py` (9).
+
+## 2026-07-19 — Familiars & animal companions (George)
+
+George: wizards & witches should have familiars; all characters should have pets/companion/hunting animals
+(incl. horses/pack animals as mounts). Mounts (`mounts.py` — horse/mule/donkey/…), pack-carry, and cosmetic
+skilling pets (`pets.py`) already exist; the gaps are FAMILIARS and working animal companions. Built in rounds.
+
+**FAM — Familiars for casters.** `engine/familiars.py` + `data/familiars.json`: a caster binds ONE familiar
+(cat/owl/raven/toad/serpent, + a warlock's imp, + a druid/bard's hare — `classes`-gated) that trails a step
+behind and grants a passive magical GIFT: `mana_regen` (a witch's cat quickens the mana tick), `mana_max` (an
+owl's deeper well, delta-reconciled in `spells.ensure_mana` so it's a no-op at none — verified: bind owl → +6,
+rebind raven → back to base), or `sight` (a raven scouts → +visibility). Bound with the E-key at a place of
+magical study (an arcane/divine trainer); the follower renders with an arcane glow. A start-triggered codex
+entry teaches it. Tests: `test_familiars.py` (9).

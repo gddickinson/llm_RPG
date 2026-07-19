@@ -95,6 +95,9 @@
     {"id": "pets", "category": "People", "title": "Skilling Pets",
      "hint": "Keep training a skill for a rare chance at a loyal pet that trails you. SHIFT+Z treats it to keep it happy.",
      "triggers": ["as a pet"]},
+    {"id": "familiars", "category": "People", "title": "Familiars",
+     "hint": "A caster can bind a familiar — a cat, owl, raven or imp that trails you and lends a passive gift (more mana, faster regen, keener sight). Press E at a place of magical study (a mage tower or temple) to bind one.",
+     "triggers": ["[Familiar]"]},
     {"id": "diaries", "category": "People", "title": "Regional Diaries",
      "hint": "Press J for regional achievement tiers that pay rewards and unlock shop discounts and teleports.",
      "triggers": ["[Diary]"]}

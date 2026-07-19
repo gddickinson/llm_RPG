@@ -553,6 +553,11 @@ class GameGUI:
         self._open("Stable", "stable", self.engine.mount_stable_lines,
                    "The stable is quiet.")
 
+    def show_familiars(self) -> None:  # bind a familiar at a place of power
+        self._open("Bind a Familiar", "familiar",
+                   self.engine.familiar_overlay_lines,
+                   "No familiar answers here.")
+
     def show_quest_board(self) -> None:   # A-board (E at a tavern notice board)
         self._open("Adventurers' Board", "board",
                    self.engine.board_overlay_lines, "The board is bare.")

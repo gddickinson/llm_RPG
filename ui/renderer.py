@@ -228,6 +228,20 @@ class MapRenderer:
         except Exception:
             pass
 
+        # Familiar follower (a caster's magical companion)
+        try:
+            from engine.familiars import active
+            from ui.renderer_overlays import draw_familiar
+            fam = active(engine.player)
+            fpos = fam.get("pos") if fam else None
+            if fpos and cam_x <= fpos[0] < cam_x + cols \
+                    and cam_y <= fpos[1] < cam_y + rows:
+                fsx = view_rect.x + (fpos[0] - cam_x) * self.tile_size
+                fsy = view_rect.y + (fpos[1] - cam_y) * self.tile_size
+                draw_familiar(target, fam, fsx, fsy, self.tile_size)
+        except Exception:
+            pass
+
         # Trailing mount (P28.2d): a horse/mule that follows the rider
         try:
             from engine.mounts import mount_position, active_mount

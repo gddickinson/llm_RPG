@@ -207,6 +207,26 @@ def ensure_mana(character) -> None:
                         "value", "")
         meta["spells_known"] = [s.id for s in starting_spells_for(klass)]
     _apply_spellcraft(character)
+    _apply_familiar_mana(character)
+
+
+def _apply_familiar_mana(character) -> None:
+    """Fold a familiar's `mana_max` gift into the pool, delta-reconciled
+    (tracked in `familiar_mana`) so it's a no-op with no such familiar."""
+    try:
+        from engine.familiars import familiar_bonus
+        want = int(familiar_bonus(character, "mana_max"))
+    except Exception:
+        return
+    meta = character.metadata
+    have = int(meta.get("familiar_mana", 0))
+    if want == have:
+        return
+    delta = want - have
+    meta["max_mana"] = max(0, int(meta.get("max_mana", 0)) + delta)
+    meta["mana"] = max(0, min(int(meta.get("mana", 0)) + delta,
+                              meta["max_mana"]))
+    meta["familiar_mana"] = want
 
 
 def get_mana(character) -> Tuple[int, int]:
