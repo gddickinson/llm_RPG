@@ -62,6 +62,12 @@ def apply_effect(character, name: str, duration: int,
     if name not in VALID_EFFECTS:
         logger.warning(f"Unknown status effect: {name}")
         return
+    try:   # the dead feel no poison, plague or fear (undead immunities)
+        from engine.undead import immune_to_status
+        if immune_to_status(character, name):
+            return
+    except Exception:
+        pass
     effects = _slot(character)
     # Refresh existing
     for e in effects:

@@ -75,9 +75,19 @@ def use_item(engine, item_name: str) -> str:
             if spell_id in known:
                 return f"You already know {spell.name}."
             known.append(spell_id)
+            if use_eff.get("specialization"):     # a tome that names a subclass
+                player.metadata["specialization"] = use_eff["specialization"]
             player.inventory.remove(it)
             msg = (f"You study the {it_name} and learn "
                    f"{spell.name}!")
+            engine.memory_manager.add_event(msg)
+            engine.advance_turn()
+            return msg
+
+        # UNDEAD — a necromancer's soul-binding rite: become a lich
+        if use_eff.get("ritual") == "lich_ascension":
+            from engine import necromancy
+            msg = necromancy.lich_ascension(engine, player)
             engine.memory_manager.add_event(msg)
             engine.advance_turn()
             return msg

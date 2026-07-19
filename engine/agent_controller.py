@@ -284,6 +284,18 @@ class AgentController:
         if self._nearest_loot(engine, char, r=0) == tuple(char.position):
             return ("loot",)
 
+        # loot a step or two away is worth taking BEFORE chasing a quest or a
+        # chat — else the hero visibly strolls past items on the ground
+        # (George: "players don't pick up items"). Not mid-fight.
+        if not foes:
+            near_loot = self._nearest_loot(engine, char, r=2)
+            if near_loot is not None:
+                if near_loot == tuple(char.position):
+                    return ("loot",)
+                step = nav.safe_step(engine, char, near_loot, self.recent)
+                if step is not None:
+                    return ("move", step)
+
         # 3b. tend the body between fights (M.8a + M.10a needs) — a SAFE hero
         # acts on a NEED before it's dire: slake thirst (a drink, or step to
         # the river and drink), eat when hungry, mend HP, and camp when tired

@@ -137,7 +137,8 @@
     "potion_of_haste",
     "greater_healing_potion",
     "elixir_of_true_sight",
-    "spellguard_shield"
+    "spellguard_shield",
+    "tome_necromancy"
   ],
   "ranger": [
     "bow",

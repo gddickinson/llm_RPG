@@ -89,6 +89,9 @@ class CombatSystem:
             m["_atk_seq"] = m.get("_atk_seq", 0) + 1
             from ui import char_motion              # pure, pygame-free
             char_motion.face_toward(attacker, defender.position)
+            # the defender turns to meet its attacker (George: combatants
+            # should FACE each other, not fight side-on)
+            char_motion.face_toward(defender, attacker.position)
         except Exception:
             pass
 
@@ -326,6 +329,26 @@ class CombatSystem:
                     return escape
             except Exception:
                 pass
+
+        # UNDEAD — a vampire's victim may RISE as a spawn (vampirism spreads)
+        try:
+            from engine import necromancy, undead as _ud
+            atype = (getattr(attacker, "metadata", None) or {}).get(
+                "undead_type", "")
+            if atype.startswith("vamp") and not _ud.is_undead(defender) \
+                    and self.rng.random() < 0.25:
+                from engine.dying import is_person as _isp
+                if _isp(defender):
+                    necromancy.become_undead(
+                        self.engine, defender, "vampire_spawn",
+                        source=f"slain by {attacker.name}")
+                    defender.hp = max(1, defender.max_hp // 2)
+                    msg = (f"{attacker.name} drains {defender.name} dry — and "
+                           f"{defender.name} rises again, a vampire spawn!")
+                    self.engine.memory_manager.add_event(msg)
+                    return msg
+        except Exception:
+            pass
 
         # People are knocked out; monsters die (P12.4, Kenshi)
         try:

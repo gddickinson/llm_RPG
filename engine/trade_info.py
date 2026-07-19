@@ -99,6 +99,11 @@ def factors_line(factors) -> str:
 def is_junk(item) -> bool:
     """Common misc trinketry worth clearing out — never gear, quest
     items, consumables or crafting stock."""
+    # a preset NPC's inventory may hold bare item-NAME strings (not Item
+    # objects); those aren't sellable junk — guard so a driven NPC's trade
+    # logic doesn't trip on them (George: agent 'str' has no item_type)
+    if not hasattr(item, "item_type"):
+        return False
     return (item.item_type == ItemType.MISC
             and item.rarity == ItemRarity.COMMON
             and int(getattr(item, "value", 0)) <= JUNK_MAX_VALUE)

@@ -197,4 +197,9 @@ def generate_loot(character: Any, rng: random.Random = None,
     if bonus is not None:
         drops.append(bonus)
 
+    for gid in meta.get("guaranteed_drops", []):    # UNDEAD: a lich's phylactery
+        gitem = create_item(gid)
+        if gitem:
+            drops.append(gitem)
+
     return drops

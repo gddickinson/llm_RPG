@@ -1,0 +1,23 @@
+{
+  "_note": "Undead traits (George: expand the undead world). Every undead is IMMUNE to the poisons, plagues and terrors that only touch living flesh, RESISTS the necrotic magic that made it, and RECOILS from holy light, radiance and cleansing fire. `by_type` layers a creature's own weaknesses over the universal ones (a skeleton shatters under a mace, a mummy is a torch waiting to catch, a vampire dreads the sun and silver). Read by engine/undead.",
+  "universal": {
+    "immune_status": ["poisoned", "diseased", "frightened", "bleeding"],
+    "immune_damage": ["poison"],
+    "resist": {"necrotic": 0.35},
+    "weak": {"holy": 1.6, "radiant": 1.6, "fire": 1.3}
+  },
+  "by_type": {
+    "skeleton":     {"weak": {"bludgeon": 1.5, "holy": 1.5}, "resist": {"pierce": 0.7}},
+    "zombie":       {"weak": {"fire": 1.6, "holy": 1.5}, "resist": {"bludgeon": 0.85}},
+    "ghoul":        {"weak": {"holy": 1.6, "radiant": 1.5}},
+    "wight":        {"weak": {"holy": 1.8, "silver": 1.5, "radiant": 1.6}},
+    "wraith":       {"weak": {"holy": 2.0, "radiant": 2.0, "silver": 1.5}, "resist": {"slash": 0.6, "pierce": 0.6}},
+    "ghost":        {"weak": {"holy": 2.0, "radiant": 1.8, "silver": 1.5}, "resist": {"slash": 0.6, "pierce": 0.6, "bludgeon": 0.6}},
+    "mummy":        {"weak": {"fire": 2.2, "holy": 1.5}},
+    "vampire":      {"weak": {"holy": 2.0, "fire": 1.5, "silver": 1.5, "radiant": 1.8}, "resist": {"necrotic": 0.25}},
+    "revenant":     {"weak": {"holy": 1.6, "radiant": 1.5}},
+    "death_knight": {"weak": {"holy": 1.8, "radiant": 1.6}, "resist": {"necrotic": 0.2}},
+    "lich":         {"weak": {"holy": 1.6, "radiant": 1.5}, "resist": {"necrotic": 0.15, "frost": 0.6}},
+    "construct":    {"weak": {"bludgeon": 1.5}, "resist": {"pierce": 0.6, "necrotic": 0.5}}
+  }
+}

@@ -189,7 +189,9 @@
       "word": "shamble"
     },
     "natural_damage": 4,
-    "active": "night"
+    "active": "night",
+    "undead": true,
+    "undead_type": "skeleton"
   },
   "hill_giant": {
     "name": "Hill Giant",
@@ -495,7 +497,9 @@
     },
     "speed": 0.9,
     "natural_damage": 6,
-    "active": "night"
+    "active": "night",
+    "undead": true,
+    "undead_type": "ghoul"
   },
   "drowned_guardian": {
     "name": "Drowned Guardian",
@@ -517,7 +521,9 @@
     },
     "speed": 0.7,
     "natural_damage": 8,
-    "active": "night"
+    "active": "night",
+    "undead": true,
+    "undead_type": "wight"
   },
   "cinder_cultist": {
     "name": "Cinder Cultist",
@@ -663,7 +669,12 @@
       }
     },
     "speed": 0.9,
-    "active": "night"
+    "active": "night",
+    "undead": true,
+    "undead_type": "lich",
+    "guaranteed_drops": [
+      "phylactery"
+    ]
   },
   "bandit_chief": {
     "name": "Bandit Chief",
@@ -686,160 +697,635 @@
   },
   "giant_spider": {
     "name": "Giant Spider",
-    "class": "monster", "race": "goblin", "hp": 28, "level": 4, "symbol": "s",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 28,
+    "level": 4,
+    "symbol": "s",
     "description": "A hound-sized spider, fangs beaded with venom.",
-    "encounter_weight": 2, "dungeon": true, "min_depth": 1,
-    "spawn_terrain": ["forest", "swamp"],
-    "stats": {"strength": 12, "dexterity": 15},
-    "natural_damage": 6, "speed": 1.3,
-    "group": {"min": 2, "max": 3, "word": "cluster"},
-    "behavior": {"venomous": true}
+    "encounter_weight": 2,
+    "dungeon": true,
+    "min_depth": 1,
+    "spawn_terrain": [
+      "forest",
+      "swamp"
+    ],
+    "stats": {
+      "strength": 12,
+      "dexterity": 15
+    },
+    "natural_damage": 6,
+    "speed": 1.3,
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "cluster"
+    },
+    "behavior": {
+      "venomous": true
+    }
   },
   "dire_boar": {
     "name": "Dire Boar",
-    "class": "monster", "race": "troll", "hp": 46, "level": 5, "symbol": "b",
+    "class": "monster",
+    "race": "troll",
+    "hp": 46,
+    "level": 5,
+    "symbol": "b",
     "description": "A great tusked boar that charges without warning.",
-    "encounter_weight": 2, "dungeon": false,
-    "spawn_terrain": ["forest", "grass"],
-    "stats": {"strength": 17, "constitution": 15},
-    "natural_damage": 9, "speed": 1.2,
-    "behavior": {"charge": true, "flee_below": 0.05}
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "forest",
+      "grass"
+    ],
+    "stats": {
+      "strength": 17,
+      "constitution": 15
+    },
+    "natural_damage": 9,
+    "speed": 1.2,
+    "behavior": {
+      "charge": true,
+      "flee_below": 0.05
+    }
   },
   "ghoul": {
     "name": "Ghoul",
-    "class": "monster", "race": "goblin", "hp": 34, "level": 5, "symbol": "g",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 34,
+    "level": 5,
+    "symbol": "g",
     "description": "A gaunt, grave-touched eater of the dead.",
-    "encounter_weight": 2, "dungeon": true, "min_depth": 1,
-    "spawn_terrain": ["swamp"],
-    "stats": {"strength": 14, "dexterity": 12},
+    "encounter_weight": 2,
+    "dungeon": true,
+    "min_depth": 1,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "strength": 14,
+      "dexterity": 12
+    },
     "natural_damage": 8,
-    "group": {"min": 1, "max": 3, "word": "pack"}
+    "group": {
+      "min": 1,
+      "max": 3,
+      "word": "pack"
+    },
+    "undead": true,
+    "undead_type": "ghoul"
   },
   "bog_troll": {
     "name": "Bog Troll",
-    "class": "troll", "race": "troll", "hp": 66, "level": 6, "symbol": "T",
+    "class": "troll",
+    "race": "troll",
+    "hp": 66,
+    "level": 6,
+    "symbol": "T",
     "description": "A slime-slick troll of the deep fen; its wounds knit as you watch.",
-    "encounter_weight": 1, "dungeon": true, "min_depth": 2,
-    "spawn_terrain": ["swamp"],
-    "stats": {"strength": 19, "constitution": 17},
-    "natural_damage": 12, "behavior": {"regenerates": true}
+    "encounter_weight": 1,
+    "dungeon": true,
+    "min_depth": 2,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "strength": 19,
+      "constitution": 17
+    },
+    "natural_damage": 12,
+    "behavior": {
+      "regenerates": true
+    }
   },
   "ogre": {
     "name": "Ogre",
-    "class": "troll", "race": "troll", "hp": 72, "level": 6, "symbol": "O",
+    "class": "troll",
+    "race": "troll",
+    "hp": 72,
+    "level": 6,
+    "symbol": "O",
     "description": "A slab-muscled brute swinging a tree-trunk club.",
-    "dungeon": true, "min_depth": 1,
-    "stats": {"strength": 20, "constitution": 16},
-    "natural_damage": 13, "speed": 0.9, "behavior": {"flee_below": 0.05}
+    "dungeon": true,
+    "min_depth": 1,
+    "stats": {
+      "strength": 20,
+      "constitution": 16
+    },
+    "natural_damage": 13,
+    "speed": 0.9,
+    "behavior": {
+      "flee_below": 0.05
+    }
   },
   "revenant": {
     "name": "Revenant",
-    "class": "monster", "race": "goblin", "hp": 56, "level": 7, "symbol": "r",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 56,
+    "level": 7,
+    "symbol": "r",
     "description": "A corpse risen on a single hateful purpose, and hard to put down.",
-    "dungeon": true, "min_depth": 2,
-    "stats": {"strength": 16, "constitution": 15},
-    "natural_damage": 10, "behavior": {"regenerates": true}
+    "dungeon": true,
+    "min_depth": 2,
+    "stats": {
+      "strength": 16,
+      "constitution": 15
+    },
+    "natural_damage": 10,
+    "behavior": {
+      "regenerates": true
+    },
+    "undead": true,
+    "undead_type": "revenant"
   },
   "wraith": {
     "name": "Wraith",
-    "class": "monster", "race": "goblin", "hp": 48, "level": 8, "symbol": "W",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 48,
+    "level": 8,
+    "symbol": "W",
     "description": "A cold shadow with a killing grip; the torchlight bends around it.",
-    "dungeon": true, "min_depth": 2,
-    "stats": {"strength": 15, "dexterity": 17},
-    "natural_damage": 11, "speed": 1.3
+    "dungeon": true,
+    "min_depth": 2,
+    "stats": {
+      "strength": 15,
+      "dexterity": 17
+    },
+    "natural_damage": 11,
+    "speed": 1.3,
+    "undead": true,
+    "undead_type": "wraith"
   },
   "basilisk": {
     "name": "Basilisk",
-    "class": "monster", "race": "troll", "hp": 78, "level": 9, "symbol": "k",
+    "class": "monster",
+    "race": "troll",
+    "hp": 78,
+    "level": 9,
+    "symbol": "k",
     "description": "A six-legged reptile whose gaze stiffens the limbs.",
-    "dungeon": true, "min_depth": 3,
-    "stats": {"strength": 18, "constitution": 17},
-    "natural_damage": 12, "behavior": {"petrifying_gaze": true}
+    "dungeon": true,
+    "min_depth": 3,
+    "stats": {
+      "strength": 18,
+      "constitution": 17
+    },
+    "natural_damage": 12,
+    "behavior": {
+      "petrifying_gaze": true
+    }
   },
   "stone_golem": {
     "name": "Stone Golem",
-    "class": "monster", "race": "troll", "hp": 132, "level": 10, "symbol": "8",
+    "class": "monster",
+    "race": "troll",
+    "hp": 132,
+    "level": 10,
+    "symbol": "8",
     "description": "A lumbering statue of animated rock; slow, but its fists shatter stone.",
-    "dungeon": true, "min_depth": 3,
-    "stats": {"strength": 23, "constitution": 20},
-    "natural_damage": 16, "speed": 0.7, "behavior": {"flee_below": 0.0}
+    "dungeon": true,
+    "min_depth": 3,
+    "stats": {
+      "strength": 23,
+      "constitution": 20
+    },
+    "natural_damage": 16,
+    "speed": 0.7,
+    "behavior": {
+      "flee_below": 0.0
+    }
   },
   "lesser_drake": {
     "name": "Lesser Drake",
-    "class": "monster", "race": "troll", "hp": 105, "level": 11, "symbol": "d",
+    "class": "monster",
+    "race": "troll",
+    "hp": 105,
+    "level": 11,
+    "symbol": "d",
     "description": "A wingless cousin of the great wyrms, breathing gouts of flame.",
-    "dungeon": true, "min_depth": 4,
-    "stats": {"strength": 21, "constitution": 19},
-    "natural_damage": 15, "behavior": {"breath": "fire"}
+    "dungeon": true,
+    "min_depth": 4,
+    "stats": {
+      "strength": 21,
+      "constitution": 19
+    },
+    "natural_damage": 15,
+    "behavior": {
+      "breath": "fire"
+    }
   },
   "flesh_golem": {
     "name": "Flesh Golem",
-    "class": "monster", "race": "troll", "hp": 120, "level": 8, "symbol": "F",
+    "class": "monster",
+    "race": "troll",
+    "hp": 120,
+    "level": 8,
+    "symbol": "F",
     "description": "A stitched giant of grave-flesh, lurching after intruders.",
-    "dungeon": true, "boss_depth": 2, "min_depth": 2,
-    "stats": {"strength": 21, "constitution": 20},
-    "natural_damage": 14, "speed": 0.8
+    "dungeon": true,
+    "boss_depth": 2,
+    "min_depth": 2,
+    "stats": {
+      "strength": 21,
+      "constitution": 20
+    },
+    "natural_damage": 14,
+    "speed": 0.8
   },
   "lich": {
     "name": "Lich",
-    "class": "warlock", "race": "human", "hp": 150, "level": 14, "symbol": "L",
+    "class": "warlock",
+    "race": "human",
+    "hp": 150,
+    "level": 14,
+    "symbol": "L",
     "description": "An undead sorcerer-king, wreathed in cold fire, jealous of the living.",
-    "dungeon": true, "boss_depth": 4, "min_depth": 4,
-    "stats": {"strength": 16, "intelligence": 22, "constitution": 18},
-    "natural_damage": 16, "behavior": {"caster": true, "summon": true}
+    "dungeon": true,
+    "boss_depth": 4,
+    "min_depth": 4,
+    "stats": {
+      "strength": 16,
+      "intelligence": 22,
+      "constitution": 18
+    },
+    "natural_damage": 16,
+    "behavior": {
+      "caster": true,
+      "summon": true
+    },
+    "undead": true,
+    "undead_type": "lich",
+    "guaranteed_drops": [
+      "phylactery"
+    ]
   },
   "dire_wolf": {
     "name": "Dire Wolf",
-    "class": "monster", "race": "goblin", "hp": 34, "level": 4, "symbol": "W",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 34,
+    "level": 4,
+    "symbol": "W",
     "description": "A wolf the size of a pony, grizzled and scarred, leading the pack.",
-    "encounter_weight": 3, "dungeon": true, "min_depth": 1,
-    "spawn_terrain": ["forest", "grass", "mountain"],
-    "group": {"min": 2, "max": 5, "word": "pack"},
-    "stats": {"strength": 16, "dexterity": 15, "constitution": 14},
-    "natural_damage": 8, "speed": 1.6, "preys_on": ["deer", "rabbit", "mouflon"],
-    "behavior": {"pack_howl": true}
+    "encounter_weight": 3,
+    "dungeon": true,
+    "min_depth": 1,
+    "spawn_terrain": [
+      "forest",
+      "grass",
+      "mountain"
+    ],
+    "group": {
+      "min": 2,
+      "max": 5,
+      "word": "pack"
+    },
+    "stats": {
+      "strength": 16,
+      "dexterity": 15,
+      "constitution": 14
+    },
+    "natural_damage": 8,
+    "speed": 1.6,
+    "preys_on": [
+      "deer",
+      "rabbit",
+      "mouflon"
+    ],
+    "behavior": {
+      "pack_howl": true
+    }
   },
   "feral_hound": {
     "name": "Feral Hound",
-    "class": "monster", "race": "goblin", "hp": 16, "level": 2, "symbol": "h",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 16,
+    "level": 2,
+    "symbol": "h",
     "description": "A gaunt, masterless dog running with the pack, ribs showing.",
-    "encounter_weight": 3, "dungeon": false,
-    "spawn_terrain": ["grass", "forest"],
-    "group": {"min": 2, "max": 4, "word": "pack"},
+    "encounter_weight": 3,
+    "dungeon": false,
+    "spawn_terrain": [
+      "grass",
+      "forest"
+    ],
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "pack"
+    },
     "model": "dog",
-    "stats": {"strength": 11, "dexterity": 14},
-    "natural_damage": 5, "speed": 1.5
+    "stats": {
+      "strength": 11,
+      "dexterity": 14
+    },
+    "natural_damage": 5,
+    "speed": 1.5
   },
   "razorback": {
     "name": "Razorback",
-    "class": "monster", "race": "troll", "hp": 30, "level": 4, "symbol": "R",
+    "class": "monster",
+    "race": "troll",
+    "hp": 30,
+    "level": 4,
+    "symbol": "R",
     "description": "A monstrous boar with iron-hard bristles, quick to charge.",
-    "encounter_weight": 2, "dungeon": false,
-    "spawn_terrain": ["forest", "swamp"],
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "forest",
+      "swamp"
+    ],
     "model": "pig",
-    "stats": {"strength": 16, "constitution": 14},
-    "natural_damage": 8, "speed": 1.4,
-    "behavior": {"charge": true, "flee_below": 0.05}
+    "stats": {
+      "strength": 16,
+      "constitution": 14
+    },
+    "natural_damage": 8,
+    "speed": 1.4,
+    "behavior": {
+      "charge": true,
+      "flee_below": 0.05
+    }
   },
   "wild_bull": {
     "name": "Wild Bull",
-    "class": "monster", "race": "troll", "hp": 42, "level": 5, "symbol": "B",
-    "description": "A rangy wild bull, horns scored from old fights — it lowers its head and charges.",
-    "encounter_weight": 2, "dungeon": false,
-    "spawn_terrain": ["grass", "forest"],
+    "class": "monster",
+    "race": "troll",
+    "hp": 42,
+    "level": 5,
+    "symbol": "B",
+    "description": "A rangy wild bull, horns scored from old fights \u2014 it lowers its head and charges.",
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "grass",
+      "forest"
+    ],
     "model": "bull",
-    "stats": {"strength": 18, "constitution": 16},
-    "natural_damage": 11, "speed": 1.4,
-    "behavior": {"charge": true}
+    "stats": {
+      "strength": 18,
+      "constitution": 16
+    },
+    "natural_damage": 11,
+    "speed": 1.4,
+    "behavior": {
+      "charge": true
+    }
   },
   "bull_shark": {
     "name": "Mire Shark",
-    "class": "monster", "race": "troll", "hp": 26, "level": 3, "symbol": "^",
+    "class": "monster",
+    "race": "troll",
+    "hp": 26,
+    "level": 3,
+    "symbol": "^",
     "description": "A grey shark that hunts the flooded channels of the mire, fin cutting the murk.",
-    "encounter_weight": 2, "dungeon": false,
-    "spawn_terrain": ["swamp"],
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "swamp"
+    ],
     "model": "shark",
-    "stats": {"strength": 15, "dexterity": 14},
-    "natural_damage": 8, "speed": 1.6, "preys_on": ["hog", "boar"]
+    "stats": {
+      "strength": 15,
+      "dexterity": 14
+    },
+    "natural_damage": 8,
+    "speed": 1.6,
+    "preys_on": [
+      "hog",
+      "boar"
+    ]
+  },
+  "zombie": {
+    "name": "Shambling Zombie",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 16,
+    "level": 2,
+    "symbol": "z",
+    "description": "A rotting corpse lurching after warm flesh.",
+    "natural_damage": 4,
+    "speed": 0.5,
+    "active": "night",
+    "undead": true,
+    "undead_type": "zombie",
+    "encounter_weight": 2,
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "shuffle"
+    },
+    "behavior": {}
+  },
+  "skeleton_warrior": {
+    "name": "Skeleton Warrior",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 14,
+    "level": 3,
+    "symbol": "s",
+    "description": "An armoured skeleton with a rusted blade and no fear of death.",
+    "natural_damage": 5,
+    "speed": 1.0,
+    "active": "night",
+    "undead": true,
+    "undead_type": "skeleton",
+    "encounter_weight": 2,
+    "dungeon": true,
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "rank"
+    },
+    "behavior": {}
+  },
+  "skeletal_archer": {
+    "name": "Skeletal Archer",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 10,
+    "level": 3,
+    "symbol": "s",
+    "description": "A skeleton that looses arrows with dead, unerring patience.",
+    "natural_damage": 5,
+    "speed": 1.0,
+    "active": "night",
+    "undead": true,
+    "undead_type": "skeleton",
+    "dungeon": true,
+    "behavior": {
+      "ranged": 6
+    },
+    "encounter_weight": 0
+  },
+  "wight": {
+    "name": "Barrow-Wight",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 26,
+    "level": 5,
+    "symbol": "W",
+    "description": "A grave-cold warrior of a fallen age, its touch draining the living.",
+    "natural_damage": 7,
+    "speed": 1.0,
+    "active": "night",
+    "undead": true,
+    "undead_type": "wight",
+    "dungeon": true,
+    "behavior": {},
+    "encounter_weight": 0
+  },
+  "specter": {
+    "name": "Specter",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 16,
+    "level": 4,
+    "symbol": "G",
+    "description": "A translucent, drifting dead thing that passes where walls should stop it.",
+    "natural_damage": 6,
+    "speed": 1.3,
+    "active": "night",
+    "undead": true,
+    "undead_type": "ghost",
+    "dungeon": true,
+    "behavior": {
+      "flying": true
+    },
+    "encounter_weight": 0
+  },
+  "banshee": {
+    "name": "Banshee",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 20,
+    "level": 6,
+    "symbol": "G",
+    "description": "A wailing spirit whose keening freezes the blood.",
+    "natural_damage": 7,
+    "speed": 1.2,
+    "active": "night",
+    "undead": true,
+    "undead_type": "ghost",
+    "dungeon": true,
+    "status_on_hit": "frightened",
+    "behavior": {
+      "flying": true
+    },
+    "encounter_weight": 0
+  },
+  "mummy": {
+    "name": "Mummy",
+    "class": "monster",
+    "race": "troll",
+    "hp": 34,
+    "level": 7,
+    "symbol": "M",
+    "description": "A bandaged, curse-wrapped corpse from a forgotten tomb.",
+    "natural_damage": 8,
+    "speed": 0.6,
+    "active": "always",
+    "undead": true,
+    "undead_type": "mummy",
+    "dungeon": true,
+    "status_on_hit": "cursed",
+    "behavior": {},
+    "encounter_weight": 0
+  },
+  "bone_golem": {
+    "name": "Bone Golem",
+    "class": "monster",
+    "race": "troll",
+    "hp": 44,
+    "level": 8,
+    "symbol": "B",
+    "description": "A lattice of a hundred corpses' bones, bound by dark craft.",
+    "natural_damage": 10,
+    "speed": 0.7,
+    "active": "always",
+    "undead": true,
+    "undead_type": "construct",
+    "dungeon": true,
+    "behavior": {},
+    "encounter_weight": 0
+  },
+  "vampire_spawn": {
+    "name": "Vampire Spawn",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 24,
+    "level": 6,
+    "symbol": "V",
+    "description": "A newly-risen thrall, fanged and fast, hungering for blood.",
+    "natural_damage": 7,
+    "speed": 1.5,
+    "active": "night",
+    "undead": true,
+    "undead_type": "vampire",
+    "dungeon": true,
+    "behavior": {},
+    "encounter_weight": 0
+  },
+  "vampire": {
+    "name": "Vampire",
+    "class": "monster",
+    "race": "human",
+    "hp": 48,
+    "level": 10,
+    "symbol": "V",
+    "description": "An ancient blood-drinker, charming and merciless, who makes more of its kind.",
+    "natural_damage": 11,
+    "speed": 1.6,
+    "active": "night",
+    "undead": true,
+    "undead_type": "vampire",
+    "dungeon": true,
+    "boss_depth": 4,
+    "behavior": {},
+    "encounter_weight": 0
+  },
+  "death_knight": {
+    "name": "Death Knight",
+    "class": "monster",
+    "race": "orc",
+    "hp": 56,
+    "level": 11,
+    "symbol": "K",
+    "description": "A fallen champion clad in black plate, wielding a blade of grave-cold fire.",
+    "natural_damage": 12,
+    "speed": 1.0,
+    "active": "always",
+    "undead": true,
+    "undead_type": "death_knight",
+    "dungeon": true,
+    "boss_depth": 4,
+    "behavior": {},
+    "encounter_weight": 0
+  },
+  "wisp_of_the_dead": {
+    "name": "Corpse-light",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 8,
+    "level": 2,
+    "symbol": "w",
+    "description": "A pale marsh-light that is really a hungry, drifting dead thing.",
+    "natural_damage": 3,
+    "speed": 1.2,
+    "active": "night",
+    "undead": true,
+    "undead_type": "ghost",
+    "model": "",
+    "encounter_weight": 1,
+    "behavior": {
+      "flying": true
+    }
   }
 }

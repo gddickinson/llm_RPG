@@ -23,9 +23,22 @@ def _type_multiplier(attacker, defender, damage: int) -> int:
     try:
         from characters.equipment import equipped_weapon
         w = equipped_weapon(attacker)
+        kind = (w.damage_kind or "slash").lower() if w is not None else ""
+        is_silver = w is not None and (
+            "silver" in (w.id or "") or "silver" in (w.name.lower() or ""))
+
+        # UNDEAD — the dead recoil from holy/radiant/fire and silver, and a
+        # skeleton shatters under a mace; poison does nothing to a corpse.
+        from engine import undead
+        if undead.is_undead(defender):
+            eff = "silver" if is_silver else kind
+            mult = undead.damage_multiplier(defender, eff)
+            if is_silver and eff != "silver":
+                mult = max(mult, undead.damage_multiplier(defender, "silver"))
+            return max(0, int(round(damage * mult)))
+
         if w is None:
             return damage
-        kind = (w.damage_kind or "slash").lower()
         target_class = getattr(defender.character_class, "value", "")
         target_race = getattr(defender.race, "value", "")
 

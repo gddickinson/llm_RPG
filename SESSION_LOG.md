@@ -10131,3 +10131,46 @@ INVOLUNTARY — a `baleful_polymorph` spell on a foe, a `cursed_toadstone` (perm
 that leave YOU a frog against your will. CURES — a `remove_curse` spell (an ally/self, gated by no_cast so a
 frog needs help), a `restoration_elixir`, a shrine's prayer, or the curse's own clock (`tick`). Works on any
 Character (a wizard can toad a goblin). Codex entry teaches it. Tests: `test_shapeshift.py` (12).
+
+## 2026-07-19 — The Undead world (George)
+
+George: "expand the undead world… all sorts of undead, some created by necromancers and other magical routes;
+many routes to become undead (vampires/zombies/liches/ghosts/ghouls); integrate with the gods; certain classes
+having powers to create/destroy/command undead… subclasses such as necromancy."
+
+**Round 1 — the un-living + their traits + Turn Undead.** `engine/undead.py` + `data/undead.json` give the
+dead true traits: IMMUNE to poison/plague/fear/bleed (gated in `status_effects.apply_effect`), WEAK to
+holy/radiant/fire (a mace crushes brittle bone, silver+fire scourge a vampire, fire 2.2× a dry mummy), and
+RESISTANT to necrotic (and physical, for the incorporeal) — all folded FIRST into
+`combat_math._type_multiplier`. Expanded `data/monsters.json` to **20 undead** (flagged the 8 existing +
+zombie/skeleton_warrior/skeletal_archer/wight/specter/banshee/mummy/bone_golem/vampire_spawn/vampire/death_knight/
+wisp_of_the_dead), the `undead`/`undead_type` flag carried through `build_monster`. The cleric/paladin's bane:
+`turn_undead(engine, caster)` sears every undead within radius, the frail crumble to dust, the rest rout — cast
+via the new `turn_undead` radiant spell.
+
+**Round 2 — necromancy (create/command) + routes to undeath + gods.** `engine/necromancy.py`: `animate_dead`
+raises a nearby corpse as a zombie (else conjures a skeleton from the earth) into a friendly minion added to the
+party (the companion AI walks + fights it for free); `command_undead` enthralls a weaker hostile undead or mends
+your risen; `minion_cap` scales with level. Routes to become undead: `become_undead`/`lich_ascension` (a
+`phylactery` soul-binding rite — necromancer + level ≥ 10 → a deathless lich, +20 max mana) / `vampire_embrace`,
+plus a `combat_system._handle_defeat` hook that rises a vampire's victim as a spawn (vampirism spreads). Spells
+`animate_dead`/`command_undead` (wizard/warlock/sorcerer, necromancy school, level-gated); items the
+`tome_necromancy` "Pallid Codex" (study it → become a necromancer, sold under the arcane counter) and the
+`phylactery` (a lich's guaranteed drop, via new `guaranteed_drops` loot support). The GODS take note — raising
+the dead warms the Pale Lady (death) and cools Solara (the sun). Tests: `test_undead.py` (14).
+
+## 2026-07-19 — Autoplay QA (George)
+
+George watched the game on autoplay and flagged two problems: heroes don't pick up items, and characters
+don't face each other when interacting. Reproduced headlessly and fixed both.
+- **Pickup**: the away-agent grabbed loot on its own tile but strolled PAST items a step or two away while
+  chasing a quest/chat. Added a higher-priority nearby-loot grab (`_nearest_loot` r=2, not mid-fight) in
+  `agent_controller.decide` right after the feet-grab, so the hero collects the loot around it before wandering.
+- **Facing**: combat only faced the ATTACKER — now `combat_system._resolve` turns the DEFENDER to meet its
+  attacker too (both `face_toward`). Trade gained facing on both sides — `agent_trade.do_trade` (away-hero) and
+  `input_actions.open_shop` (human) turn buyer + merchant to face over the counter. (Dialog already faced both.)
+- **Robustness** (found while hunting for other problems): a preset NPC's inventory holds bare item-NAME
+  strings, not `Item` objects, so when an away-agent drove such an NPC its trade logic crashed on
+  `is_junk` → `str.item_type` (swallowed by `drive_agents`, leaving the NPC idle that turn). Guarded
+  `trade_info.is_junk` to skip non-Item entries.
+Tests: `test_autoplay_qa.py` (5).

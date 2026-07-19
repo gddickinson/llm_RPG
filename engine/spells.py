@@ -35,6 +35,7 @@ class Spell:
     requires: Dict[str, Any] = field(default_factory=dict)   # M1 min_level/min_int/…
     world_effect: Dict[str, Any] = field(default_factory=dict)  # M2 tile/build/…
     shapeshift: Dict[str, Any] = field(default_factory=dict)  # SHIFT {form,self,duration,involuntary,cure}
+    special: str = ""          # UNDEAD a named handler: turn_undead / animate_dead / …
 
 
 # M1 — a spell TIER unlocks at a caster level; higher tiers need more levels
@@ -74,6 +75,7 @@ def _build_spells() -> Dict[str, Spell]:
             requires=entry.get("requires", {}) or {},
             world_effect=entry.get("world_effect", {}) or {},
             shapeshift=entry.get("shapeshift", {}) or {},
+            special=entry.get("special", ""),
         )
     return out
 
@@ -284,6 +286,27 @@ class SpellSystem:
                 return msg
         except Exception as e:
             logger.debug(f"shapeshift spell error: {e}")
+
+        # UNDEAD — named special handlers (turn undead, animate the dead)
+        if spell.special:
+            try:
+                from engine import shapeshift as _ss2
+                if _ss2.restricted(caster, "no_cast"):
+                    return "You cannot weave a spell in this shape."
+            except Exception:
+                pass
+            caster.metadata["mana"] = mana - spell.mana_cost
+            if spell.special == "turn_undead":
+                from engine import undead
+                return undead.turn_undead(self.engine, caster)
+            if spell.special == "animate_dead":
+                from engine import necromancy
+                tgt = self._resolve_target(caster, target_name, spell) \
+                    if target_name else None
+                return necromancy.animate_dead(self.engine, caster, tgt)
+            if spell.special == "command_undead":
+                from engine import necromancy
+                return necromancy.command_undead(self.engine, caster)
 
         # M2 — a PURE world spell shapes a tile, not a character
         if spell.world_effect and not (spell.damage or spell.heal

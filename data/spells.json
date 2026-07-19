@@ -815,5 +815,40 @@
     "tier": 2,
     "shapeshift": {"cure": true},
     "description": "Lift a curse from yourself or an ally — restoring a shape twisted against its owner's will."
+  },
+  "turn_undead": {
+    "id": "turn_undead",
+    "name": "Turn Undead",
+    "mana_cost": 4,
+    "range": 0.0,
+    "classes": ["cleric", "paladin"],
+    "school": "radiant",
+    "tier": 2,
+    "special": "turn_undead",
+    "description": "Channel holy power to sear and rout the undead nearby — the frailest crumble to dust."
+  },
+  "animate_dead": {
+    "id": "animate_dead",
+    "name": "Animate Dead",
+    "mana_cost": 8,
+    "range": 4.0,
+    "classes": ["wizard", "warlock", "sorcerer"],
+    "school": "necromancy",
+    "tier": 3,
+    "requires": {"min_level": 4},
+    "special": "animate_dead",
+    "description": "Drag a fallen body — or bones from the cold earth — into unlife to serve as your minion."
+  },
+  "command_undead": {
+    "id": "command_undead",
+    "name": "Command Undead",
+    "mana_cost": 6,
+    "range": 4.0,
+    "classes": ["wizard", "warlock", "sorcerer"],
+    "school": "necromancy",
+    "tier": 4,
+    "requires": {"min_level": 6},
+    "special": "command_undead",
+    "description": "Bend a nearby undead to your will, or knit your risen servants back together."
   }
 }

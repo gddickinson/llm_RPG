@@ -257,6 +257,12 @@ def open_shop(handler) -> None:
         if refusal:
             engine.memory_manager.add_event(refusal)
             return
+        try:   # customer & merchant turn to face each other
+            from engine import anim
+            anim.face(engine.player, merchants[0].position)
+            anim.face(merchants[0], engine.player.position)
+        except Exception:
+            pass
         gui.show_shop(merchants[0])
     except Exception:
         pass

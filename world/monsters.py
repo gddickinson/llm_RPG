@@ -121,6 +121,9 @@ def build_monster(template_id: str, position: Tuple[int, int]):
                   "natural_damage": spec.get("natural_damage", 0),
                   "active": spec.get("active", "always"),   # C2 day/night
                   "model": spec.get("model", ""),           # #9 GLB model override
-                  "preys_on": spec.get("preys_on", [])},    # C5 hunts wildlife
+                  "preys_on": spec.get("preys_on", []),     # C5 hunts wildlife
+                  "undead": spec.get("undead", False),      # UNDEAD trait carrier
+                  "undead_type": spec.get("undead_type", ""),
+                  "guaranteed_drops": spec.get("guaranteed_drops", [])},
         **stats,
     )
