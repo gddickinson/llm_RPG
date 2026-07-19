@@ -10001,3 +10001,15 @@ weren't more simulation but what the player SENSES, DISCOVERS and FEELS: adaptiv
 **codex**, **stealth & sneak attacks**, an openable **world map**, combat **screen-shake**, a unified
 **character hub** (George's ask — tabs + drag-and-drop paper-doll), and a **cold-open** prologue. Seven tested,
 green, pushed rounds.
+
+## 2026-07-18 — T4: finish half-built features & deepen replay (docs/GAME_REVIEW.md)
+
+**T4.1 — Away-hero enters buildings.** The away/agent hero SKIRTS buildings (the 2026-07-12b
+freeze-proofing), so shipped indoor autoplay — a well-rested INN sleep, trading with an INDOOR merchant —
+never fired. `engine/agent_building.py` gives the SOCIAL active away-hero (which IS `engine.player`, so its
+interior state is real and unmasked by `acting_as`; adventurer NPCs `social=False` are skipped) a tight,
+LOOP-PROOF enter→act→exit: badly hurt beside an inn → step in, sleep (well-rested), step out; carrying junk
+beside a shop → step in, sell to an indoor merchant, step out. A hard `INDOOR_COOLDOWN`(30) + a `visited` mark
+make enter/exit bounce IMPOSSIBLE. Isolated in its own module to contain the risk in the freeze-prone agent;
+wired as 3 hooks in `agent_controller.decide` + an `enter_building` action in `agent_exec`. Tests:
+`test_agent_building.py` (8, incl. a full enter→rest→exit no-loop cycle). 120 away-agent tests stay green.

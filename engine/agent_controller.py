@@ -87,6 +87,8 @@ class AgentController:
         self._gd = None           # last distance to goal, to notice a stall
         self._stall = 0           # turns without getting closer to the goal
         self.social = True        # False for adventurer NPCs (no player state)
+        self.indoor = None        # T4.1 an active enter→act→exit building task
+        self._indoor_cd = 0       # cooldown so it never bounces in and out
 
     # ---- perception --------------------------------------------
 
@@ -214,6 +216,16 @@ class AgentController:
         foes = self._foes_in_sight(engine, char)
         adj = [f for f, d in foes if d <= 1]
 
+        # T4.1: mid a building visit (rest/trade inside) — do it, then leave;
+        # a hard cooldown ticks down so the hero never bounces in and out
+        from engine import agent_building as abld
+        abld.tick_cooldown(self)
+        if self.indoor is not None and nav.active_zone(engine) is not None \
+                and not adj:
+            plan = abld.inside_plan(self, engine, char)
+            if plan is not None:
+                return plan
+
         # 1. survive — heal if we can, else run from the nearest threat
         if hp <= LOW_HP:
             pot = _healing_item(char)
@@ -309,6 +321,14 @@ class AgentController:
                     and nav.active_zone(engine) is None \
                     and _provisioned(char):
                 return ("rest",)
+
+        # T4.1: step into a nearby building for a proper indoor task — a
+        # well-rested INN sleep when badly hurt, or selling junk to an INDOOR
+        # merchant — that the building-skirting hero could never reach before
+        if not foes:
+            intent = abld.enter_intent(self, engine, char)
+            if intent is not None:
+                return ("enter_building", intent[0], intent[1])
 
         # 3c. gather from the land (M.8d) — a node or a rich forest/swamp we
         # stand on: raws, and from a forest FOOD for the M.8a camp
