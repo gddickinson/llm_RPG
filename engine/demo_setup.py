@@ -191,11 +191,25 @@ def initialize_demo_world(engine, player_spec=None,
     """Populate `engine` with world terrain, NPCs, player, and starter
     quests. `world_kind="castle"` plants the Bloodstone realm (P18.5)."""
     castle = (world_kind == "castle")
-    oakvale = (world_kind == "oakvale")
+    combined = (world_kind == "combined")
+    oakvale = (world_kind == "oakvale") or combined
     # World generation
     if oakvale:
         from world.town_region import build_oakvale_region
         engine._oakvale_region = build_oakvale_region(engine.world)
+        if combined:
+            # ONE world (George): plant a castle at a far corner and road it
+            # back to Oakvale, so the big town, the keep, and the wilds all
+            # share one large map with a single entry point (the Oakvale
+            # arrival waystone). The Bloodstone Castle STRUCTURE attaches to
+            # its Location, so it's an enterable 7-floor keep + royal court.
+            from world.castle_region import add_castle
+            wm = engine.world.map
+            oak = (engine._oakvale_region or {}).get(
+                "center", (wm.width // 2, wm.height // 2))
+            engine._combined_castle = add_castle(
+                engine.world, int(wm.width * 0.16), int(wm.height * 0.20),
+                link_to=oak)
     elif castle:
         from world.castle_region import build_castle_region
         build_castle_region(engine.world)

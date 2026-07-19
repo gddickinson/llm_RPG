@@ -10300,3 +10300,22 @@ Exploits:
   ONLY from a waystone (a rune-circle platform), like the teleport network — no teleporting to anywhere from
   anywhere. Tests: `test_exit_teleport_gating` (3). (Known minor: a swallowed shopkeeper-NPC action error
   "string indices…" — an action returned as a string; doesn't affect play.)
+
+## 2026-07-19 — One combined world, bigger + less crowded (George)
+
+George: combine all the start-menu world options into ONE world with one entry point; expand the world's
+dimensions so things are less crowded. Done:
+- **One world** (`world_kind="combined"`, `demo_setup`): plants the big procedural Oakvale town as the base
+  (its terrain + town + countryside villages), then ADDS the Bloodstone Castle at a far corner via a new
+  `castle_region.add_castle(world, cx, cy, link_to=)` (the fortress + a gate town, roaded back to Oakvale). The
+  castle's P18 STRUCTURE attaches to its Location, so it's an enterable 7-floor keep with the royal court. All
+  the seeded content — guild halls, waystones, lairs, the Deepdelve, the Sunken Tome + Ravenmoor adventures,
+  the colosseum — already seed into this one world.
+- **Bigger** (`COMBINED_SIZE = 240x170` vs the old 190x140 / 120x80): far more room, so the town, keep, villages
+  and wilds aren't crowded together.
+- **One entry point**: the hero wakes on the Oakvale arrival waystone (the market-square dais), as before.
+- **Simplified start menu** (`ui/start_menu`): Quick Start / Customize Character both drop you into the ONE
+  combined world; Tutorial Island stays as a learning start. The old per-world options (realistic / oakvale /
+  castle) are folded in — their world_kinds remain functional for saves/flags/tests.
+Verified: a 400-turn away-hero soak in the combined world runs clean (no crash, no freeze), with Oakvale, the
+castle, guild halls, 6 waystones and 4 lairs all present in the single map.

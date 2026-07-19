@@ -32,13 +32,15 @@ TITLE_OPTIONS = [
     ("Quit", "quit"),
 ]
 
+# George: ONE world with one entry point — Quick Start / Customize both drop
+# you into the single COMBINED world (the big Oakvale town + the Bloodstone
+# castle + the wilds on one large map). Tutorial Island stays as a learning
+# start. (The old per-world options — realistic / oakvale / castle — are folded
+# into the one world; their world_kinds remain for saves/flags/tests.)
 NEW_GAME_OPTIONS = [
     ("Quick Start", "quick"),
-    ("Tutorial Island", "tutorial"),           # A-disc: learn every system
     ("Customize Character", "customize"),
-    ("Realistic World", "realistic"),          # P36.1 heightmap landscape
-    ("Large Town (Oakvale)", "oakvale"),       # OAKVALE the big walled town
-    ("Begin at the Castle", "castle"),
+    ("Tutorial Island", "tutorial"),           # A-disc: learn every system
     ("Back", "back"),
 ]
 
@@ -135,22 +137,14 @@ class StartMenu:
             self.selected = (self.selected + 1) % len(NEW_GAME_OPTIONS)
         elif k in (pygame.K_RETURN, pygame.K_SPACE):
             label, code = NEW_GAME_OPTIONS[self.selected]
-            if code == "quick":
+            if code == "quick":                # the ONE combined world
                 return {"action": "new", "spec": default_quick_start_spec(),
-                        "start": "default"}
-            if code == "realistic":            # P36.1 a heightmap-generated world
-                return {"action": "new", "spec": default_quick_start_spec(),
-                        "start": "realistic"}
+                        "start": "combined"}
             if code == "tutorial":             # A-disc: Tutorial Island start
                 return {"action": "new", "spec": default_quick_start_spec(),
                         "start": "tutorial"}
-            if code == "oakvale":              # OAKVALE the large walled town
-                return {"action": "new", "spec": default_quick_start_spec(),
-                        "start": "oakvale"}
-            if code in ("customize", "castle"):
-                # both make a hero; the castle option starts them at the gate
-                self.pending_start = "castle" if code == "castle" \
-                    else "default"
+            if code == "customize":            # a made hero, same combined world
+                self.pending_start = "combined"
                 self.creator = CharacterCreator(
                     self.screen, self.font, self.big_font)
                 self.state = "customize"

@@ -23,12 +23,17 @@ from world.world_map import TerrainType
 logger = logging.getLogger("llm_rpg.oakvale_region")
 
 REGION_SIZE = (190, 140)          # room for a big town + countryside
-OAKVALE_RADIUS = 42
+COMBINED_SIZE = (240, 170)        # George: ONE world, bigger + less crowded —
+OAKVALE_RADIUS = 42               # the Oakvale town + a castle + the wilds
 
 
 def region_size(world_kind: str):
     """The map (width, height) for a world kind, or None for the default."""
-    return REGION_SIZE if world_kind == "oakvale" else None
+    if world_kind == "oakvale":
+        return REGION_SIZE
+    if world_kind == "combined":
+        return COMBINED_SIZE
+    return None
 
 
 def _fill_grass(wm) -> None:
