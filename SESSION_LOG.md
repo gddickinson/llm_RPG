@@ -10235,3 +10235,20 @@ dead-ended (heroes froze) or the pack overwhelmed them (deaths). Pulled it back 
 - **Refactor** to hold the 500-line line: moved the pure sensing helpers `nearest_loot`/`friendly_near` to
   `agent_sense` and `pack_outmatches` to `agent_goals` (agent_controller back under 500).
 Tests green; soak shows parties forming and the big loot/zombie/gather freezes gone.
+
+## 2026-07-19 — Monsters with goals & tribal ambitions (George)
+
+George: monsters should have goals and ambitions for themselves and their tribes (and NPCs/monsters should
+explore + go on quests like the player). Delivered the monster-goals half:
+- **Individual monster goals** (`data/monsters.json` + `world/monsters.build_monster`): every one of the 52
+  monster templates now carries drive-flavoured `goals` instead of the bare "Attack the player" — a wolf runs
+  down the weak and feeds the pack, a dragon amasses the greatest hoard and reduces challengers to ash, a
+  goblin raids for the warren and schemes to rise among the warriors, a vampire grows its brood and rules the
+  night, a mummy guards its tomb for eternity. Read by the ambition matcher + shown in the world.
+- **Tribal agendas** (`engine/monster_tribes.py`): each wild tribe pursues a shifting collective goal that
+  re-aims on its fortunes and shapes the nightly loop — beaten low it FORTIFIES (dug in, a slain raider costs
+  it half), war-ready it RAIDS (swarms out sooner), dominant it turns to PLUNDER (a strength surge for a
+  richer hoard), else it EXPANDS (breeds faster) — mirroring the P20.3 faction agendas, each shift a `[Realm]`
+  beat. Persists. (NPC adventurers already explore/fight/loot/quest/recruit via the AgentController — and
+  Round 1's guild-hall drive makes them gather bands too; extending exploration to ordinary townsfolk is a
+  later round.) Tests: `test_monster_goals.py` (7).

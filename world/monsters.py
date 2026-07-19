@@ -113,7 +113,11 @@ def build_monster(template_id: str, position: Tuple[int, int]):
         symbol=spec.get("symbol", "m"),
         description=spec.get("description", ""),
         personality={"traits": ["hostile"]},
-        goals=["Attack the player"],
+        # a monster's own GOALS (George: monsters should have ambitions for
+        # themselves and their tribes) — drive-flavoured strings from the
+        # template (hunt/hoard/raid/rise/spread), read by the ambition matcher
+        # + shown in the world; falls back to the old default.
+        goals=list(spec.get("goals", ["Attack the player"])),
         inventory=[],
         metadata={"behavior": behavior,
                   "home_pos": list(position),

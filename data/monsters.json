@@ -26,6 +26,11 @@
     "preys_on": [
       "deer",
       "rabbit"
+    ],
+    "goals": [
+      "Run down the weak",
+      "Feed the pack",
+      "Hold the hunting-grounds"
     ]
   },
   "bandit": {
@@ -50,7 +55,12 @@
       "strength": 13,
       "constitution": 12
     },
-    "natural_damage": 5
+    "natural_damage": 5,
+    "goals": [
+      "Take what I want by the blade",
+      "Get rich or die trying",
+      "Answer to the chief"
+    ]
   },
   "goblin": {
     "name": "Goblin",
@@ -75,7 +85,12 @@
       "strength": 11,
       "dexterity": 12
     },
-    "natural_damage": 3
+    "natural_damage": 3,
+    "goals": [
+      "Raid for the warren",
+      "Rise among the warriors",
+      "Prey on the weak, fear the strong"
+    ]
   },
   "wandering_troll": {
     "name": "Wandering Troll",
@@ -95,7 +110,12 @@
       "strength": 18,
       "constitution": 16
     },
-    "natural_damage": 10
+    "natural_damage": 10,
+    "goals": [
+      "Smash and devour",
+      "Hoard shiny things in my den",
+      "Hold my ground"
+    ]
   },
   "bog_lurker": {
     "name": "Bog Lurker",
@@ -123,6 +143,10 @@
     "preys_on": [
       "deer",
       "boar"
+    ],
+    "goals": [
+      "Ambush from the pools",
+      "Feed on what wanders near"
     ]
   },
   "marsh_wisp": {
@@ -147,7 +171,11 @@
       "dexterity": 15
     },
     "natural_damage": 3,
-    "active": "night"
+    "active": "night",
+    "goals": [
+      "Lure the wanderer from the path",
+      "Drown the curious"
+    ]
   },
   "bounty_hunter": {
     "name": "Bounty Hunter",
@@ -167,7 +195,11 @@
       "flee_below": 0.15
     },
     "speed": 1.2,
-    "natural_damage": 4
+    "natural_damage": 4,
+    "goals": [
+      "Collect the bounty, dead or alive",
+      "Leave no mark standing"
+    ]
   },
   "restless_bones": {
     "name": "Restless Bones",
@@ -191,7 +223,11 @@
     "natural_damage": 4,
     "active": "night",
     "undead": true,
-    "undead_type": "skeleton"
+    "undead_type": "skeleton",
+    "goals": [
+      "Rise against the living",
+      "Never lie still"
+    ]
   },
   "hill_giant": {
     "name": "Hill Giant",
@@ -215,6 +251,10 @@
     "natural_damage": 12,
     "spawn_terrain": [
       "mountain"
+    ],
+    "goals": [
+      "Crush the small folk",
+      "Pile a cairn of loot"
     ]
   },
   "giant_warlord": {
@@ -254,7 +294,12 @@
     },
     "boss_depth": 3,
     "speed": 0.8,
-    "natural_damage": 16
+    "natural_damage": 16,
+    "goals": [
+      "Conquer the low lands",
+      "Break every wall",
+      "Rule all who cower"
+    ]
   },
   "tyrant_depths": {
     "name": "Tyrant of the Depths",
@@ -293,7 +338,11 @@
     },
     "boss_depth": 2,
     "speed": 0.9,
-    "natural_damage": 14
+    "natural_damage": 14,
+    "goals": [
+      "Drown the surface world",
+      "Rule the deep"
+    ]
   },
   "wisp_queen": {
     "name": "Wisp Queen",
@@ -335,7 +384,11 @@
     "boss_depth": 2,
     "speed": 1.2,
     "natural_damage": 12,
-    "active": "night"
+    "active": "night",
+    "goals": [
+      "Gather souls to my light",
+      "Lead all astray into the mire"
+    ]
   },
   "dragon_whelp": {
     "name": "Dragon Whelp",
@@ -360,7 +413,11 @@
       "flee_below": 0.15
     },
     "speed": 1.4,
-    "natural_damage": 10
+    "natural_damage": 10,
+    "goals": [
+      "Begin my hoard",
+      "Grow strong and dreaded"
+    ]
   },
   "young_dragon": {
     "name": "Young Dragon",
@@ -410,7 +467,12 @@
       }
     },
     "speed": 1.5,
-    "natural_damage": 16
+    "natural_damage": 16,
+    "goals": [
+      "Swell my hoard of gold",
+      "Burn those who covet it",
+      "Claim a wider domain"
+    ]
   },
   "elder_dragon": {
     "name": "Elder Dragon",
@@ -468,7 +530,12 @@
       }
     },
     "speed": 1.3,
-    "natural_damage": 16
+    "natural_damage": 16,
+    "goals": [
+      "Amass the greatest hoard in the world",
+      "Reduce all challengers to ash",
+      "Rule my domain unquestioned"
+    ]
   },
   "grave_touched": {
     "name": "Grave-Touched",
@@ -499,7 +566,11 @@
     "natural_damage": 6,
     "active": "night",
     "undead": true,
-    "undead_type": "ghoul"
+    "undead_type": "ghoul",
+    "goals": [
+      "Spread the grave's chill",
+      "Drag the living down"
+    ]
   },
   "drowned_guardian": {
     "name": "Drowned Guardian",
@@ -523,7 +594,11 @@
     "natural_damage": 8,
     "active": "night",
     "undead": true,
-    "undead_type": "wight"
+    "undead_type": "wight",
+    "goals": [
+      "Keep the drowned vault sealed",
+      "Pull the living under"
+    ]
   },
   "cinder_cultist": {
     "name": "Cinder Cultist",
@@ -545,7 +620,12 @@
       "word": "coven"
     },
     "speed": 1.0,
-    "natural_damage": 6
+    "natural_damage": 6,
+    "goals": [
+      "Feed the Cinder Circle's fire",
+      "Let the wards fail",
+      "Burn a path for the master"
+    ]
   },
   "cinder_captain": {
     "name": "The Ashen Captain",
@@ -565,7 +645,11 @@
       "flee_below": 0.15
     },
     "speed": 1.0,
-    "natural_damage": 10
+    "natural_damage": 10,
+    "goals": [
+      "Break the wards for the Circle",
+      "Lead the faithful into the fire"
+    ]
   },
   "bog_goblin": {
     "name": "Bog Goblin",
@@ -590,7 +674,12 @@
     },
     "speed": 1.1,
     "natural_damage": 4,
-    "active": "night"
+    "active": "night",
+    "goals": [
+      "Drag plunder back to the mire",
+      "Serve the champion",
+      "Grow the warren"
+    ]
   },
   "bog_goblin_champion": {
     "name": "Reedmarsh Champion",
@@ -613,7 +702,12 @@
     },
     "speed": 1.0,
     "natural_damage": 8,
-    "active": "night"
+    "active": "night",
+    "goals": [
+      "Lead the warren to plunder",
+      "Prove myself the strongest",
+      "Break the settlements"
+    ]
   },
   "vaelzhur_lich": {
     "name": "Vael'Zhur the Drowned",
@@ -674,6 +768,10 @@
     "undead_type": "lich",
     "guaranteed_drops": [
       "phylactery"
+    ],
+    "goals": [
+      "Wake and reclaim my drowned library",
+      "Cheat death forever"
     ]
   },
   "bandit_chief": {
@@ -693,7 +791,12 @@
     "natural_damage": 6,
     "behavior": {
       "flee_below": 0.1
-    }
+    },
+    "goals": [
+      "Rule the road",
+      "Grow my band of cutthroats",
+      "Take the fattest purses"
+    ]
   },
   "giant_spider": {
     "name": "Giant Spider",
@@ -723,7 +826,11 @@
     },
     "behavior": {
       "venomous": true
-    }
+    },
+    "goals": [
+      "Wrap the living in silk",
+      "Feed the brood"
+    ]
   },
   "dire_boar": {
     "name": "Dire Boar",
@@ -748,7 +855,11 @@
     "behavior": {
       "charge": true,
       "flee_below": 0.05
-    }
+    },
+    "goals": [
+      "Gore all who trespass the wallow",
+      "Root out the soft"
+    ]
   },
   "ghoul": {
     "name": "Ghoul",
@@ -775,7 +886,11 @@
       "word": "pack"
     },
     "undead": true,
-    "undead_type": "ghoul"
+    "undead_type": "ghoul",
+    "goals": [
+      "Feed on the dead and the dying",
+      "Drag the fallen to my pit"
+    ]
   },
   "bog_troll": {
     "name": "Bog Troll",
@@ -798,7 +913,11 @@
     "natural_damage": 12,
     "behavior": {
       "regenerates": true
-    }
+    },
+    "goals": [
+      "Drag prey into the fen",
+      "Guard the sunken den"
+    ]
   },
   "ogre": {
     "name": "Ogre",
@@ -818,7 +937,12 @@
     "speed": 0.9,
     "behavior": {
       "flee_below": 0.05
-    }
+    },
+    "goals": [
+      "Eat my fill",
+      "Take the biggest club",
+      "Rule by the biggest fist"
+    ]
   },
   "revenant": {
     "name": "Revenant",
@@ -839,7 +963,11 @@
       "regenerates": true
     },
     "undead": true,
-    "undead_type": "revenant"
+    "undead_type": "revenant",
+    "goals": [
+      "Avenge my murder",
+      "Hunt my killer beyond death"
+    ]
   },
   "wraith": {
     "name": "Wraith",
@@ -858,7 +986,11 @@
     "natural_damage": 11,
     "speed": 1.3,
     "undead": true,
-    "undead_type": "wraith"
+    "undead_type": "wraith",
+    "goals": [
+      "Drain the warmth of the living",
+      "Haunt where I was wronged"
+    ]
   },
   "basilisk": {
     "name": "Basilisk",
@@ -877,7 +1009,11 @@
     "natural_damage": 12,
     "behavior": {
       "petrifying_gaze": true
-    }
+    },
+    "goals": [
+      "Turn the bold to stone",
+      "Guard my stony lair"
+    ]
   },
   "stone_golem": {
     "name": "Stone Golem",
@@ -897,7 +1033,11 @@
     "speed": 0.7,
     "behavior": {
       "flee_below": 0.0
-    }
+    },
+    "goals": [
+      "Guard what I was set to guard",
+      "Crush intruders"
+    ]
   },
   "lesser_drake": {
     "name": "Lesser Drake",
@@ -916,7 +1056,11 @@
     "natural_damage": 15,
     "behavior": {
       "breath": "fire"
-    }
+    },
+    "goals": [
+      "Hunt from the wing",
+      "Hoard bright scraps"
+    ]
   },
   "flesh_golem": {
     "name": "Flesh Golem",
@@ -934,7 +1078,11 @@
       "constitution": 20
     },
     "natural_damage": 14,
-    "speed": 0.8
+    "speed": 0.8,
+    "goals": [
+      "Obey my maker",
+      "Rend the trespasser"
+    ]
   },
   "lich": {
     "name": "Lich",
@@ -961,6 +1109,11 @@
     "undead_type": "lich",
     "guaranteed_drops": [
       "phylactery"
+    ],
+    "goals": [
+      "Guard my phylactery",
+      "Bend death to my will",
+      "Amass forbidden power"
     ]
   },
   "dire_wolf": {
@@ -998,7 +1151,12 @@
     ],
     "behavior": {
       "pack_howl": true
-    }
+    },
+    "goals": [
+      "Lead the pack to the kill",
+      "Feed on the strong",
+      "Drive rivals from the range"
+    ]
   },
   "feral_hound": {
     "name": "Feral Hound",
@@ -1025,7 +1183,11 @@
       "dexterity": 14
     },
     "natural_damage": 5,
-    "speed": 1.5
+    "speed": 1.5,
+    "goals": [
+      "Hunt in the pack",
+      "Tear down fleeing prey"
+    ]
   },
   "razorback": {
     "name": "Razorback",
@@ -1051,7 +1213,11 @@
     "behavior": {
       "charge": true,
       "flee_below": 0.05
-    }
+    },
+    "goals": [
+      "Charge down intruders",
+      "Fatten on the fallen"
+    ]
   },
   "wild_bull": {
     "name": "Wild Bull",
@@ -1076,7 +1242,11 @@
     "speed": 1.4,
     "behavior": {
       "charge": true
-    }
+    },
+    "goals": [
+      "Trample rivals",
+      "Guard the herd"
+    ]
   },
   "bull_shark": {
     "name": "Mire Shark",
@@ -1101,6 +1271,10 @@
     "preys_on": [
       "hog",
       "boar"
+    ],
+    "goals": [
+      "Hunt the shallows",
+      "Devour the drowning"
     ]
   },
   "zombie": {
@@ -1122,7 +1296,11 @@
       "max": 4,
       "word": "shuffle"
     },
-    "behavior": {}
+    "behavior": {},
+    "goals": [
+      "Hunger for the flesh of the living",
+      "Shamble toward the warm"
+    ]
   },
   "skeleton_warrior": {
     "name": "Skeleton Warrior",
@@ -1144,7 +1322,11 @@
       "max": 3,
       "word": "rank"
     },
-    "behavior": {}
+    "behavior": {},
+    "goals": [
+      "Serve the one who raised me",
+      "Cut down the living"
+    ]
   },
   "skeletal_archer": {
     "name": "Skeletal Archer",
@@ -1163,7 +1345,11 @@
     "behavior": {
       "ranged": 6
     },
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Loose on the living from the dark",
+      "Guard the barrow"
+    ]
   },
   "wight": {
     "name": "Barrow-Wight",
@@ -1180,7 +1366,11 @@
     "undead_type": "wight",
     "dungeon": true,
     "behavior": {},
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Chill the living to the bone",
+      "Guard my grave-hoard"
+    ]
   },
   "specter": {
     "name": "Specter",
@@ -1199,7 +1389,11 @@
     "behavior": {
       "flying": true
     },
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Relive my death upon the living",
+      "Let none rest where I cannot"
+    ]
   },
   "banshee": {
     "name": "Banshee",
@@ -1219,7 +1413,11 @@
     "behavior": {
       "flying": true
     },
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Wail the living into the grave",
+      "Mourn my endless grief"
+    ]
   },
   "mummy": {
     "name": "Mummy",
@@ -1237,7 +1435,11 @@
     "dungeon": true,
     "status_on_hit": "cursed",
     "behavior": {},
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Guard the tomb for all eternity",
+      "Curse the grave-robber"
+    ]
   },
   "bone_golem": {
     "name": "Bone Golem",
@@ -1254,7 +1456,11 @@
     "undead_type": "construct",
     "dungeon": true,
     "behavior": {},
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Bar the way to the tomb",
+      "Grind the living to dust"
+    ]
   },
   "vampire_spawn": {
     "name": "Vampire Spawn",
@@ -1271,7 +1477,11 @@
     "undead_type": "vampire",
     "dungeon": true,
     "behavior": {},
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Feed on warm blood",
+      "Serve my sire"
+    ]
   },
   "vampire": {
     "name": "Vampire",
@@ -1289,7 +1499,12 @@
     "dungeon": true,
     "boss_depth": 4,
     "behavior": {},
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Drink deep of the living",
+      "Grow my brood of spawn",
+      "Rule the night"
+    ]
   },
   "death_knight": {
     "name": "Death Knight",
@@ -1307,7 +1522,12 @@
     "dungeon": true,
     "boss_depth": 4,
     "behavior": {},
-    "encounter_weight": 0
+    "encounter_weight": 0,
+    "goals": [
+      "Serve my dark oath",
+      "Break the living in battle",
+      "Command the lesser dead"
+    ]
   },
   "wisp_of_the_dead": {
     "name": "Corpse-light",
@@ -1326,6 +1546,10 @@
     "encounter_weight": 1,
     "behavior": {
       "flying": true
-    }
+    },
+    "goals": [
+      "Draw the living to a cold grave",
+      "Wander where I died"
+    ]
   }
 }
