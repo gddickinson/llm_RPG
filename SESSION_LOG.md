@@ -10252,3 +10252,24 @@ explore + go on quests like the player). Delivered the monster-goals half:
   beat. Persists. (NPC adventurers already explore/fight/loot/quest/recruit via the AgentController — and
   Round 1's guild-hall drive makes them gather bands too; extending exploration to ordinary townsfolk is a
   later round.) Tests: `test_monster_goals.py` (7).
+
+## 2026-07-19 — A complex adventure: "The Hollowing of Ravenmoor" (George)
+
+George: adventures should be complex, with multiple objectives and layers of detail. Authored a full new
+3-act undead-mystery adventure (`engine/ravenmoor.py` + `data/ravenmoor.json`, modelled on the Sunken Tome),
+tying into the new undead systems. A moorland village is being hollowed out — its folk fall to a deathless
+sleep and rise as thralls — after the grave-robber Corvin Vane woke an ancient barrow-wight by stealing its
+grave-crown.
+- **Areas + cast** seed at world start: Ravenmoor village, Corvin's Cottage, The Sunken Barrow; Elder Maeve
+  (the grieving quest-giver, hiding that she knew the barrow was cursed) and Sister Alenn (a wandering cleric
+  who tends the fallen). Kept out of `data/npcs/` so they never leak into the general roster.
+- **3 new undead** (`data/monsters.json`): hollow_thrall (a villager turned), grave_warden (a skeletal
+  guardian), and the boss **Aedelric the Barrow-Wight** (drops the legendary `grave_crown`). New items: Corvin's
+  Journal (the Act-2 clue) + the grave-crown.
+- **3-act quest chain** (`data/quests.json`, `q_ravenmoor_hollow`→`_barrow`→`_reckoning`), each with MULTIPLE
+  layered objectives (talk to Alenn, put down a thrall, search the croft → recover the journal, find the barrow,
+  fell the grave-warden → confront Aedelric), chained by `prereq_quest`, given by Elder Maeve. The finale
+  BRANCHES three ways — **Destroy** him and bury the crown, **Lay him to rest** by Alenn's rite, or **Claim**
+  the grave-crown's cold power — each a distinct `[Legend]` ending. Seeder drops the journal, guards the sites,
+  posts a rumor. Wired into engine_setup + save_load; the validator knows its NPC ids. Tests:
+  `test_ravenmoor.py` (7).

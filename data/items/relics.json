@@ -5,7 +5,7 @@
     "item_type": "book",
     "value": 1200,
     "rarity": "legendary",
-    "description": "The archmage's magnum opus, bound in drowned leather and cold to the touch. Its pages whisper. To read it is to learn the soul-draining art Vael'Zhur bound his life to — and to risk what he became.",
+    "description": "The archmage's magnum opus, bound in drowned leather and cold to the touch. Its pages whisper. To read it is to learn the soul-draining art Vael'Zhur bound his life to \u2014 and to risk what he became.",
     "use_effect": {
       "teach_spell": "drain"
     },
@@ -54,7 +54,7 @@
     "item_type": "misc",
     "value": 600,
     "rarity": "legendary",
-    "description": "The three fragments made whole — a key of black glass that can open Vael'Zhur's sanctum without waking its traps, or bind the lich back into his drowning-sleep.",
+    "description": "The three fragments made whole \u2014 a key of black glass that can open Vael'Zhur's sanctum without waking its traps, or bind the lich back into his drowning-sleep.",
     "metadata": {
       "warding_key": true,
       "artifact": true
@@ -132,7 +132,7 @@
     "item_type": "misc",
     "value": 40,
     "rarity": "uncommon",
-    "description": "Split down the middle — blown once too hard at the last raid.",
+    "description": "Split down the middle \u2014 blown once too hard at the last raid.",
     "metadata": {
       "legend_id": "goblin_raid"
     }
@@ -174,7 +174,7 @@
       "charges": 3,
       "artifact": true
     },
-    "description": "A fabled ring said to grant three wishes — its power wells up thrice, then fades."
+    "description": "A fabled ring said to grant three wishes \u2014 its power wells up thrice, then fades."
   },
   "crown_of_kings": {
     "name": "Crown of Kings",
@@ -226,7 +226,7 @@
       "artifact": true,
       "corruption": true
     },
-    "description": "A withered hand clutching a black candle — it fills the living with terror."
+    "description": "A withered hand clutching a black candle \u2014 it fills the living with terror."
   },
   "staff_of_withering": {
     "name": "Staff of Withering",
@@ -262,7 +262,7 @@
       "charges": 8,
       "artifact": true
     },
-    "description": "A tome whose pages never empty — turn one, and a mighty spell answers."
+    "description": "A tome whose pages never empty \u2014 turn one, and a mighty spell answers."
   },
   "gauntlets_of_ogre_power": {
     "name": "Gauntlets of Ogre Power",
@@ -292,5 +292,13 @@
       "charges": 3
     },
     "description": "A silver medallion that whispers the secrets of the land."
+  },
+  "grave_crown": {
+    "id": "grave_crown",
+    "name": "The Grave-Crown of Aedelric",
+    "item_type": "misc",
+    "value": 900,
+    "rarity": "legendary",
+    "description": "A circlet of black barrow-iron, cold as the grave. It is said to command the hollowed dead \u2014 and to hollow, slowly, whoever dares to wear it."
   }
 }

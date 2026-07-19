@@ -1551,5 +1551,70 @@
       "Draw the living to a cold grave",
       "Wander where I died"
     ]
+  },
+  "hollow_thrall": {
+    "name": "Hollow Thrall",
+    "class": "monster",
+    "race": "human",
+    "hp": 16,
+    "level": 2,
+    "symbol": "h",
+    "description": "A villager of Ravenmoor emptied by the barrow's cold sleep \u2014 it shambles where the wight wills, reaching for the warmth of the living.",
+    "natural_damage": 4,
+    "speed": 0.7,
+    "active": "always",
+    "undead": true,
+    "undead_type": "zombie",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "goals": [
+      "Reach for the warmth of the living",
+      "Obey the barrow's cold call"
+    ]
+  },
+  "grave_warden": {
+    "name": "Grave-Warden",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 30,
+    "level": 4,
+    "symbol": "G",
+    "description": "A skeletal sentinel bound to the Sunken Barrow, sword and shield fused to fleshless bone, sworn to let none pass to the wight it guards.",
+    "natural_damage": 8,
+    "speed": 1.0,
+    "active": "always",
+    "undead": true,
+    "undead_type": "skeleton",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "goals": [
+      "Bar the way to the barrow-lord",
+      "Cut down the living intruder"
+    ]
+  },
+  "aedelric_wight": {
+    "name": "Aedelric the Barrow-Wight",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 60,
+    "level": 7,
+    "symbol": "W",
+    "description": "The ancient warlord laid in the Sunken Barrow with his grave-crown \u2014 woken by a grave-robber's greed, he hollows the living to raise an army as he had in life. His touch is the cold of the grave.",
+    "natural_damage": 12,
+    "speed": 1.0,
+    "active": "always",
+    "undead": true,
+    "undead_type": "wight",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "flee_below": 0.0,
+    "guaranteed_drops": [
+      "grave_crown"
+    ],
+    "goals": [
+      "Hollow the living into my host",
+      "Reclaim the lands I ruled in life",
+      "Never sleep again"
+    ]
   }
 }

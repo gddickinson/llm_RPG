@@ -24,7 +24,8 @@ class TestPlaytest2Findings(unittest.TestCase):
         through the GUI (dialog turn-in needs giver adjacency)."""
         from characters.npc_presets import NPC_SPECS
         from engine.adventure_tome import adventure_npc_ids
-        adv = adventure_npc_ids()
+        from engine.ravenmoor import adventure_npc_ids as ravenmoor_npc_ids
+        adv = adventure_npc_ids() | ravenmoor_npc_ids()
         for qid, quest in self.engine.quest_manager.quests.items():
             if qid.startswith("radiant_"):
                 continue

@@ -380,13 +380,14 @@ def _check_quests() -> List[str]:
     from world.monsters import MONSTER_TEMPLATES
     from characters.character_types import CharacterClass
     class_values = {c.value for c in CharacterClass}
-    # P38.3: the Sunken Tome adventure seeds its cast from data/adventure_tome.
-    # json (kept out of data/npcs/), so they are valid givers/actors too
+    # Adventure seeders keep their cast OUT of data/npcs/ (the Sunken Tome
+    # P38.3, and Ravenmoor) yet those NPCs are valid quest givers/actors at
+    # runtime, so fold their ids into the known set.
     adv_npcs = set()
     try:
         from items.data_loader import load_data_file
-        adv_npcs = set(
-            (load_data_file("adventure_tome.json") or {}).get("npcs", {}))
+        for _adv in ("adventure_tome.json", "ravenmoor.json"):
+            adv_npcs |= set((load_data_file(_adv) or {}).get("npcs", {}))
     except Exception:
         pass
     out = []

@@ -684,7 +684,7 @@
   },
   "bounty_wolves": {
     "title": "Wolf Bounty",
-    "description": "The wolves grow bold on the outskirts. The watch pays a standing bounty for every pack thinned — come back whenever they gather again.",
+    "description": "The wolves grow bold on the outskirts. The watch pays a standing bounty for every pack thinned \u2014 come back whenever they gather again.",
     "objectives": [
       {
         "type": "kill",
@@ -724,7 +724,7 @@
   },
   "cull_goblins": {
     "title": "The Goblin Menace",
-    "description": "Goblins keep creeping down from the hills to pilfer and pillage. There's coin for anyone who keeps their numbers down — a standing arrangement.",
+    "description": "Goblins keep creeping down from the hills to pilfer and pillage. There's coin for anyone who keeps their numbers down \u2014 a standing arrangement.",
     "objectives": [
       {
         "type": "kill",
@@ -764,7 +764,7 @@
   },
   "bring_brigand_to_justice": {
     "title": "Bring the Brigand to Justice",
-    "description": "The guard wants Gorkash the brigand answered for. Cut him down on the East Road — or take his bargain instead, and let him walk.",
+    "description": "The guard wants Gorkash the brigand answered for. Cut him down on the East Road \u2014 or take his bargain instead, and let him walk.",
     "objectives": [
       {
         "type": "kill",
@@ -796,5 +796,103 @@
       }
     ],
     "quest_points": 3
+  },
+  "q_ravenmoor_hollow": {
+    "title": "The Sleepless Dead",
+    "description": "Elder Maeve of Ravenmoor begs you to learn what hollows her people: each dawn another falls to a deathless sleep and rises cold at night. Speak with Sister Alenn who tends the fallen, put down a risen thrall, and search the croft of Corvin Vane, the grave-robber who vanished when the hollowing began.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "sister_alenn",
+        "required": 1,
+        "description": "Speak with Sister Alenn about the cold sleep"
+      },
+      {
+        "type": "kill",
+        "target": "hollow_thrall",
+        "required": 1,
+        "description": "Put down a hollowed thrall"
+      },
+      {
+        "type": "explore",
+        "target": "Corvin's Cottage",
+        "required": 1,
+        "description": "Search Corvin Vane's abandoned croft"
+      }
+    ],
+    "giver_id": "elder_maeve",
+    "reward_gold": 60,
+    "reward_xp": 120,
+    "next_quest": "q_ravenmoor_barrow"
+  },
+  "q_ravenmoor_barrow": {
+    "title": "The Grave-Robber's Trail",
+    "description": "Corvin's journal tells the tale: he forced the Sunken Barrow and stole a black-iron crown from a sleeping king. Recover the journal from his croft, follow the trail to the barrow on the moor, and cut down the grave-warden that bars its door.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "corvins_journal",
+        "required": 1,
+        "description": "Recover Corvin's Journal from the croft"
+      },
+      {
+        "type": "explore",
+        "target": "The Sunken Barrow",
+        "required": 1,
+        "description": "Follow the trail to the Sunken Barrow"
+      },
+      {
+        "type": "kill",
+        "target": "grave_warden",
+        "required": 1,
+        "description": "Destroy the grave-warden at the barrow door"
+      }
+    ],
+    "giver_id": "elder_maeve",
+    "prereq_quest": "q_ravenmoor_hollow",
+    "reward_gold": 90,
+    "reward_xp": 200,
+    "next_quest": "q_ravenmoor_reckoning"
+  },
+  "q_ravenmoor_reckoning": {
+    "title": "The Barrow-Wight",
+    "description": "Aedelric, the barrow-king woken by Corvin's greed, hollows the living to raise the host he led in life. Face him at the Sunken Barrow and end the hollowing \u2014 destroy him and bury his crown, lay him to his rest by Sister Alenn's rite, or take the grave-crown's cold power for your own.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "aedelric_wight",
+        "required": 1,
+        "description": "Confront Aedelric the Barrow-Wight"
+      }
+    ],
+    "giver_id": "elder_maeve",
+    "prereq_quest": "q_ravenmoor_barrow",
+    "reward_gold": 150,
+    "reward_xp": 400,
+    "reward_choices": [
+      {
+        "label": "Destroy him and bury the crown",
+        "xp": 400,
+        "gold": 200,
+        "items": [],
+        "legend": "You cast Aedelric down and buried his grave-crown deep beneath the barrow. The hollowed dead of Ravenmoor lay still at last, and the moor road is safe once more."
+      },
+      {
+        "label": "Lay him to his rest (Sister Alenn's rite)",
+        "xp": 400,
+        "gold": 120,
+        "items": [],
+        "legend": "By the dawn-rite, you unmade the wight's grief instead of his body \u2014 Aedelric bowed his crowned head and passed into a true and grateful sleep. Ravenmoor mourns its dead, and honours yours."
+      },
+      {
+        "label": "Claim the grave-crown's power",
+        "xp": 400,
+        "gold": 90,
+        "items": [
+          "grave_crown"
+        ],
+        "legend": "You lifted the black-iron crown from the wight's brow and felt the grave's cold settle into your bones. Aedelric is ended \u2014 but Ravenmoor whispers that its saviour's eyes have gone grey and far away."
+      }
+    ]
   }
 }

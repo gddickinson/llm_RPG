@@ -167,6 +167,11 @@ class TestConditionsInPlay(unittest.TestCase):
             if ch is not None:
                 self.wmap.remove_character(ch)
         self.engine.turn_counter = 1
+        # pin the GLOBAL rng too: the shove's incidental world tick draws from
+        # it, so a shifted global state (another test's draws) could otherwise
+        # let the foe scramble up — seed it so this test is order-independent
+        import random
+        random.seed(1234)
         shove(self.engine, rng=_Seq([20, 1]))
         self.assertTrue(has_effect(foe, "prone"),
                         "hurled sprawling means PRONE")

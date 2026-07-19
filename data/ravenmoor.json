@@ -1,0 +1,41 @@
+{
+  "_doc": "'The Hollowing of Ravenmoor' — a 3-act undead-mystery adventure (areas + custom cast, kept OUT of data/npcs/). Seeded by engine/ravenmoor.py at world start like the Sunken Tome. The quest chain (q_ravenmoor_hollow -> q_ravenmoor_barrow -> q_ravenmoor_reckoning) lives in data/quests.json, given by Elder Maeve, with a branching Destroy/Lay-to-Rest/Claim finale.",
+  "areas": [
+    {"id": "ravenmoor", "name": "Ravenmoor", "kind": "village", "near": "grass",
+     "legend": "A grey moorland village of turf-roofed cottages, its folk hollow-eyed and afraid — each dawn another neighbour will not wake."},
+    {"id": "corvins_cottage", "name": "Corvin's Cottage", "kind": "hut", "near": "grass",
+     "legend": "The grave-robber Corvin Vane's abandoned croft on the moor's edge, its door hanging open, cold ash in the hearth."},
+    {"id": "sunken_barrow", "name": "The Sunken Barrow", "kind": "barrow", "near": "grass",
+     "legend": "A green mound sunk into the moor, its stone door forced from within. Older than the village, older than the road — and no longer sleeping."}
+  ],
+  "npcs": {
+    "elder_maeve": {
+      "name": "Elder Maeve",
+      "class": "villager", "race": "human", "level": 3,
+      "stats": {"wisdom": 14, "charisma": 13, "constitution": 11},
+      "hp": 18, "gold": 55, "symbol": "M", "area": "ravenmoor",
+      "faction": "neutral",
+      "inventory": [],
+      "description": "The stooped elder of Ravenmoor, her hands never still. She has buried too many neighbours this month, and carries a guilt she will not name — for she knew the old barrow was cursed, and said nothing when Corvin went digging.",
+      "personality": {"traits": ["grieving", "dutiful", "secretive"],
+                       "likes": ["her village", "the old ways kept"],
+                       "dislikes": ["grave-robbers", "her own silence"]},
+      "goals": ["End the hollowing before Ravenmoor is emptied", "Atone for the silence that doomed us"],
+      "metadata": {"adventure": "ravenmoor", "quest_giver": true}
+    },
+    "sister_alenn": {
+      "name": "Sister Alenn",
+      "class": "cleric", "race": "human", "level": 4,
+      "stats": {"wisdom": 15, "constitution": 12, "charisma": 12},
+      "hp": 26, "gold": 30, "symbol": "A", "area": "ravenmoor",
+      "faction": "neutral",
+      "inventory": ["holy_symbol"],
+      "description": "A road-worn cleric of the dawn who came to Ravenmoor following the cold. She knows the rites to lay the restless dead — and will teach the trick of it to any who help her tend the fallen.",
+      "personality": {"traits": ["kindly", "steadfast", "weary"],
+                       "likes": ["mercy for the dead", "a light against the dark"],
+                       "dislikes": ["necromancy", "graves left open"]},
+      "goals": ["Lay the hollowed dead to their rest", "See the barrow-wight quieted, not just destroyed"],
+      "metadata": {"adventure": "ravenmoor", "faction_role": "cleric"}
+    }
+  }
+}
