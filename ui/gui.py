@@ -401,7 +401,12 @@ class GameGUI:
                 lines += summary(self.engine)
         except Exception:
             pass
-        self.overlay = ("Journal — Topics, Legends & Chronicle", lines)
+        try:   # GAP.2 the self-teaching Field Guide (discovered systems)
+            lines += self.engine.codex.overlay_lines()
+        except Exception:
+            pass
+        self.overlay = ("Journal — Topics, Legends, Chronicle & Field Guide",
+                        lines)
         self.mode = "menu"
 
     def _open(self, title: str, mode: str, fn, fallback: str) -> None:

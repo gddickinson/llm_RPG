@@ -78,6 +78,15 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    # GAP.2 a freshly-unlocked Field Guide entry — nudge them to read it (Y)
+    try:
+        n = engine.codex.unseen()
+        if n > 0:
+            hints.append(f"[Y] journal — {n} new entr"
+                         + ("ies" if n > 1 else "y"))
+    except Exception:
+        pass
+
     # GX.5 the Deepdelve — its cues lead: finding the secret stair (the sole
     # discovery mechanism) and descending a mouth must NOT be crowded out of
     # the capped hint bar by ambient talk/barter prompts when it sits in town.

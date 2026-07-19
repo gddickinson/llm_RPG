@@ -9931,3 +9931,14 @@ cross, thins to a sparse night motif after dark. `select_mood` is the pure polic
 nearest-hostile distance / dungeon / safe-zone / night. Wired into `gui` (ticked in the main loop), gated by a
 new "Music" setting. Tests: `test_music.py` (12 — synth shape/range/determinism/seamless-loop, mood policy
 priority, headless manager). Full suite green.
+
+**GAP.2 — Field Guide / Codex (discoverability).** The game's #1 design problem: ~150 systems, most of them
+"dark matter" a player never finds. `engine/codex.py` (`CodexSystem` over `data/codex.json`, 30 authored
+entries) is registered as an event-log observer — the first time a trigger phrase appears (a spell cast, a
+craft, a haggle, a cave rumor…) it unlocks the matching entry and drops a `[Codex]` beat that teaches the
+system in one line + names the key. The Y-journal gained a "Field Guide" section listing everything discovered
+(by category + a creatures/places tally + an "N ways yet undiscovered" hook); a `[Y] journal — N new` hint-bar
+nudge + a discover chime announce fresh entries. `start:true` entries (journal/collection/fast-travel) are
+known from the off. State on `player.metadata["codex"]` (rides the save free). Even the opening world rumors
+teach relevant systems immediately (Dungeons, Waystones). Tests: `test_codex.py` (7 — auto-unlock, no
+self-trigger recursion, silent start unlocks, save round-trip). Full suite green.
