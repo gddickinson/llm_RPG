@@ -15,7 +15,7 @@
   - Run the game: `.venv/bin/python main.py`
     (flags: `--tutorial`, `--dm-bridge`, `--provider anthropic|ollama|openai`,
     `--ui terminal`, `--load`)
-  - Tests: `.venv/bin/python -m unittest discover tests/`  (650+, keep green)
+  - Tests: `.venv/bin/python -m unittest discover tests/`  (3650+, keep green)
   - Content validator: `.venv/bin/python -m items.data_validate`
     (run after ANY `data/` edit; exit 1 = broken cross-references)
 - Headless work: `tests/__init__.py` forces SDL dummy drivers; scripts should

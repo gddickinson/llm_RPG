@@ -23,7 +23,7 @@ llm_RPG/
 ├── llm/                        # LLM interface + providers
 ├── ui/                         # GUI (pygame) and terminal UI
 ├── saves/                      # Saved games (created at runtime)
-├── tests/                      # Unit tests (290+)
+├── tests/                      # Unit tests (3650+)
 ```
 
 ## Module Index
