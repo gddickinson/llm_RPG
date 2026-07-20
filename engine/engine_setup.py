@@ -108,6 +108,8 @@ def build_subsystems(engine, llm_model=None,
     self.blackbanner = AdventureSeeder(self, "blackbanner.json")
     from engine.adventurers import AdventurerSystem
     self.adventurers = AdventurerSystem(self)
+    from engine.townsfolk_venture import TownsfolkVentureSystem
+    self.townsfolk_venture = TownsfolkVentureSystem(self)
     from engine.monster_packs import MonsterPackSystem
     self.monster_packs = MonsterPackSystem(self)
     from engine.monster_tribes import MonsterTribeSystem

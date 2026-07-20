@@ -10383,3 +10383,27 @@ Adding a layer of conversational detail to the two new adventures — and a gene
   gorkash/silver_blade authored topics for their own experts.
 Verified: content validator clean; each giver's askable topics lead with their signature topic; the
 conversation/topics/dialog suites + both adventure suites green.
+
+## 2026-07-19 — Townsfolk ventures: ordinary folk get a life beyond work (George: option a)
+
+George: the adventurer NPCs already roam/fight/quest — extend that to ORDINARY townsfolk as a fresh round.
+Ordinary folk mostly work their schedules and go home; this gives them the OCCASIONAL trip:
+- **`engine/townsfolk_venture.py`** (`TownsfolkVentureSystem`, data `data/townsfolk_venture.json`): now and
+  then a townsperson leaves on a VENTURE with a mundane, story-shaped PURPOSE — visit kin in another
+  settlement, a pilgrimage to a shrine, a trade run, wanderlust to a ruin — walks the roads there, lingers, and
+  comes home with road-tales, each a `[Town]` beat. Cautious travel via the proven `agent_nav.safe_step`/
+  `flee_step` (they FLEE danger and only defend when cornered — a baker is no hero), NOT the fighter brain.
+  `run_day` starts a few (per-day chance + `max_venturing` cap so the town never empties; excludes the
+  adventure cast / quest-givers / mayors / hirelings so key NPCs stay findable); `run_turn` drives them
+  (out→linger→home, a `max_turns` cap GUARANTEES termination — never a wanderer stuck oscillating). A venturer
+  carries `metadata["venturing"]` so the ambient AI hands it off.
+- **`game_engine._driven_elsewhere`**: the two `process_npc_turns` paths each carried an identical 14-line
+  ambient-AI skip cascade (player_char/adventurer/wildlife/arena/aggro); folded BOTH into one shared helper
+  (+ the new `venturing` skip). Removed the duplication AND brought `game_engine.py` back under 500 (was 519
+  after the venture wiring → 496).
+Wired: `engine_setup` (`self.townsfolk_venture`), `turn_pipeline` (nightly `run_day` + per-turn `run_turn`),
+`save_load` (persist the venturing set; the venture state rides each NPC's metadata). Verified: content
+validator clean; `tests/test_townsfolk_venture.py` (8 tests) green; a venturing townsperson survives a REAL
+save/load; a 1500-turn combined-world soak ran clean (no crash/freeze/death, zero swallowed errors) with
+ventures firing and returning (Cora traded at Greenhollow, Aldo's pilgrimage to the Temple of the Crown) and
+the cap holding.

@@ -27,6 +27,19 @@ from engine.game_api_mixin import GameAPIMixin
 logger = logging.getLogger("llm_rpg.engine")
 
 
+def _driven_elsewhere(npc, turn_counter) -> bool:
+    """True when the ambient NPC AI must NOT drive this NPC because another
+    system owns it this turn: a roster player-character or adventurer (its
+    controller), a townsperson away on a venture (TownsfolkVentureSystem), a
+    wildlife animal (WildlifeSystem), an arena combatant (ColosseumSystem), or
+    a hostile that already bit via the per-turn AggressionSystem."""
+    m = getattr(npc, "metadata", {}) or {}
+    return bool(m.get("player_char") or m.get("adventurer")
+                or m.get("venturing") or m.get("wildlife")
+                or m.get("arena_fighter")
+                or m.get("_aggro_turn") == turn_counter)
+
+
 class GameEngine(GameAPIMixin):
     """High-level game engine. UIs interact through this object."""
 
@@ -291,23 +304,9 @@ class GameEngine(GameAPIMixin):
                     continue
             except Exception:
                 pass
-            # roster player-characters are driven by their controller
-            # (human / M.2 agent), never the ambient NPC AI (M.1b); the same
-            # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
-            meta = getattr(npc, "metadata", {}) or {}
-            if meta.get("player_char") or meta.get("adventurer"):
-                continue
-            # neutral wildlife are driven by the WildlifeSystem (P32.3), never
-            # the ambient hostile/social AI
-            if meta.get("wildlife"):
-                continue
-            # arena combatants are driven by the ColosseumSystem, not the
-            # ambient AI (which would march them off to fight the spectator)
-            if meta.get("arena_fighter"):
-                continue
-            # P37.6b: a hostile that already bit via the per-turn AggressionSystem
-            # this turn doesn't also swing here (no double attack)
-            if meta.get("_aggro_turn") == self.turn_counter:
+            # NPCs another system owns this turn (controllers, ventures,
+            # wildlife, arena, the AggressionSystem) skip the ambient AI
+            if _driven_elsewhere(npc, self.turn_counter):
                 continue
             try:
                 npc_x, npc_y = npc.position
@@ -371,23 +370,9 @@ class GameEngine(GameAPIMixin):
                     continue
             except Exception:
                 pass
-            # roster player-characters are driven by their controller
-            # (human / M.2 agent), never the ambient NPC AI (M.1b); the same
-            # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
-            meta = getattr(npc, "metadata", {}) or {}
-            if meta.get("player_char") or meta.get("adventurer"):
-                continue
-            # neutral wildlife are driven by the WildlifeSystem (P32.3), never
-            # the ambient hostile/social AI
-            if meta.get("wildlife"):
-                continue
-            # arena combatants are driven by the ColosseumSystem, not the
-            # ambient AI (which would march them off to fight the spectator)
-            if meta.get("arena_fighter"):
-                continue
-            # P37.6b: a hostile that already bit via the per-turn AggressionSystem
-            # this turn doesn't also swing here (no double attack)
-            if meta.get("_aggro_turn") == self.turn_counter:
+            # NPCs another system owns this turn (controllers, ventures,
+            # wildlife, arena, the AggressionSystem) skip the ambient AI
+            if _driven_elsewhere(npc, self.turn_counter):
                 continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \

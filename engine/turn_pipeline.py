@@ -216,6 +216,10 @@ def run_turn(engine) -> None:
                 companies.run_day(self.adventurers, day)
             except Exception as e:
                 logger.debug(f"Company day error: {e}")
+            try:   # ordinary townsfolk occasionally set out on a venture
+                self.townsfolk_venture.run_day()
+            except Exception as e:
+                logger.debug(f"Townsfolk venture day error: {e}")
             try:   # a spouse provides; grudges harden into rivalry (P20.6)
                 self.romance.run_day()
             except Exception as e:
@@ -325,6 +329,12 @@ def run_turn(engine) -> None:
         self.adventurers.run_turn()
     except Exception as e:
         logger.debug(f"Adventurer drive error: {e}")
+
+    # Ordinary townsfolk away on a venture take their step home or afield
+    try:
+        self.townsfolk_venture.run_turn()
+    except Exception as e:
+        logger.debug(f"Townsfolk venture drive error: {e}")
 
     # The world fights its own battles (P7.1)
     try:
