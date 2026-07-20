@@ -31,6 +31,66 @@ _BAD = (TerrainType.BUILDING, TerrainType.WATER, TerrainType.MOUNTAIN)
 MIN_DIST = 16
 
 
+# the engine attributes that hold a seeded adventure (AdventureSeeder-based or
+# a bespoke seeder exposing resolve()/adventure_id())
+ADVENTURE_ATTRS = ("emberfell", "blackbanner", "wychwood", "ravenmoor",
+                   "adventure_tome")
+
+
+def resolve_adventure(engine, adventure_id: str, outcome: str = None) -> bool:
+    """Find the seeded adventure matching `adventure_id` and RESOLVE it — a
+    finale reshapes the world (guardian foes disperse, the threat thins). Any
+    subsystem exposing `resolve()` and either `adventure_id()` or a matching
+    attribute name qualifies. Called from `quest_manager.turn_in`."""
+    for attr in ADVENTURE_ATTRS:
+        sub = getattr(engine, attr, None)
+        if sub is None or not hasattr(sub, "resolve"):
+            continue
+        aid = sub.adventure_id() if hasattr(sub, "adventure_id") else attr
+        if aid == adventure_id or attr == adventure_id:
+            try:
+                return bool(sub.resolve(outcome))
+            except Exception as e:
+                logger.debug(f"resolve {adventure_id}: {e}")
+                return False
+    return False
+
+
+def apply_resolution(engine, foe_ids, data) -> bool:
+    """Shared finale world-change (used by AdventureSeeder AND the bespoke
+    seeders like Ravenmoor): the surviving guardian foes disperse, the theme's
+    wilderness encounters thin (via the lair suppression the encounters read),
+    and the lasting `[Realm]` beat is posted."""
+    for nid in list(foe_ids or []):
+        foe = engine.npc_manager.npcs.get(nid)
+        if foe is None or not foe.is_active() \
+                or foe.metadata.get("adventure_boss"):
+            continue
+        try:
+            engine.world.map.remove_character(foe)
+        except Exception:
+            pass
+        foe.status = "defeated"
+    supp = data.get("suppresses")
+    lairs = getattr(engine, "lairs", None)
+    if supp and lairs is not None and hasattr(lairs, "_apply_suppression"):
+        try:
+            lairs._apply_suppression(
+                {"name": data.get("resolved_name", "the threat"),
+                 "suppresses": supp})
+        except Exception:
+            pass
+    beat = data.get("resolved")
+    if beat:
+        if not beat.lstrip().startswith("["):
+            beat = "[Realm] " + beat
+        try:
+            engine.memory_manager.add_event(beat)
+        except Exception:
+            pass
+    return True
+
+
 def npc_ids_of(data_file: str) -> set:
     """The NPC ids an adventure data file seeds — kept OUT of data/npcs/ so the
     general roster never carries them, yet quest-giver validators know them."""
@@ -47,7 +107,12 @@ class AdventureSeeder:
         self.data_file = data_file
         self.areas: List[dict] = []
         self.npc_ids: List[str] = []
+        self.foe_ids: List[str] = []      # the guardian monsters it planted
         self._seeded = False
+        self._resolved = False
+
+    def adventure_id(self) -> str:
+        return self._data().get("id", "")
 
     def _data(self) -> dict:
         from items.data_loader import load_data_file
@@ -108,7 +173,10 @@ class AdventureSeeder:
                 if spot is None or spot in wmap.characters:
                     continue
                 foe = build_monster(f.get("template", "goblin"), tuple(spot))
+                foe.metadata["adventure"] = self._data().get("id", "")
+                foe.metadata["adventure_boss"] = bool(f.get("boss"))
                 self.engine.npc_manager.add_npc(foe)
+                self.foe_ids.append(foe.id)
                 try:
                     wmap.place_character(foe, *spot)
                 except Exception:
@@ -222,10 +290,25 @@ class AdventureSeeder:
             npc.metadata[k] = v
         return npc
 
+    # ---- finale: the world reflects the victory --------------------
+
+    def resolve(self, outcome: str = None) -> bool:
+        """The player finished the finale — so the world CHANGES: the surviving
+        guardian foes disperse (the area is safe now), the theme's wilderness
+        encounters thin (reusing the lair-suppression the encounters already
+        read), and the lasting `[Realm]` beat is posted. Idempotent."""
+        if self._resolved or not self.areas:
+            return False
+        self._resolved = True
+        return apply_resolution(self.engine, self.foe_ids, self._data())
+
     # ---- queries & persistence -------------------------------------
 
     def is_active(self) -> bool:
         return bool(self.areas)
+
+    def is_resolved(self) -> bool:
+        return self._resolved
 
     def area_pos(self, area_id: str) -> Optional[Tuple[int, int]]:
         a = next((a for a in self.areas if a["id"] == area_id), None)
@@ -233,10 +316,13 @@ class AdventureSeeder:
 
     def to_dict(self) -> dict:
         return {"seeded": self._seeded, "areas": self.areas,
-                "npc_ids": self.npc_ids}
+                "npc_ids": self.npc_ids, "foe_ids": self.foe_ids,
+                "resolved": self._resolved}
 
     def from_dict(self, d: dict) -> None:
         d = d or {}
         self._seeded = d.get("seeded", bool(d.get("areas")))
         self.areas = d.get("areas", []) or []
         self.npc_ids = d.get("npc_ids", []) or []
+        self.foe_ids = d.get("foe_ids", []) or []
+        self._resolved = d.get("resolved", False)

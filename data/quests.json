@@ -893,7 +893,8 @@
         ],
         "legend": "You lifted the black-iron crown from the wight's brow and felt the grave's cold settle into your bones. Aedelric is ended — but Ravenmoor whispers that its saviour's eyes have gone grey and far away."
       }
-    ]
+    ],
+    "resolves_adventure": "ravenmoor"
   },
   "q_emberfell_raids": {
     "title": "The Burning Season",
@@ -991,7 +992,8 @@
         "items": [],
         "legend": "You lowered your spear and spoke the wyrm's own tongue of greed: tribute and silence for gold and safety. Cindermaw keeps to its roost now, and grows — and Emberfell pays a tithe to the thing on the mountain, and does not meet your eye."
       }
-    ]
+    ],
+    "resolves_adventure": "emberfell"
   },
   "q_blackbanner_raids": {
     "title": "The Burning Road",
@@ -1091,7 +1093,8 @@
         ],
         "legend": "You struck Vharo down and lifted the black banner from the mud before his body cooled — and the outlaw host, who follow strength, roared your name instead of his. Marshal Orsa has a new and worse problem on the trade road now, and it wears your face."
       }
-    ]
+    ],
+    "resolves_adventure": "blackbanner"
   },
   "q_wychwood_vanishings": {
     "title": "The Vanishing Wood",
@@ -1192,6 +1195,7 @@
         ],
         "legend": "You lifted the green hag's staff before her body cooled and felt the hundred stolen shapes turn to you as their new keeper. Some of Wychwood's lost may never come home now — but the gift of shapes is yours, and the wood knows a new name to fear."
       }
-    ]
+    ],
+    "resolves_adventure": "wychwood"
   }
 }

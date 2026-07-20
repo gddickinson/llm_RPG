@@ -10484,3 +10484,18 @@ matched as whole WORDS so "vale" catches "Charred Vale" but NOT "Oak-vale" (the 
 every town building through). Now the beats read evocatively — "a pilgrimage to Millbrook Chapel", "wanders off
 toward Greenhollow Village". test_townsfolk_venture green; a 5-disposition soak sweep (balanced/explorer/
 valiant/greedy/sociable) runs clean with the death fix + ventures + trade + all adventures active.
+
+## 2026-07-20 — Finales reshape the world (George: option 3)
+
+Completing an adventure finale now CHANGES the world, not just the quest log:
+- `AdventureSeeder` tracks the guardian foes it plants (`foe_ids`, boss tagged `adventure_boss`). A finale quest
+  tagged `resolves_adventure: "<id>"` calls `resolve_adventure(engine, id, outcome)` from `quest_manager.turn_in`
+  → the matching seeder's `resolve()` → the shared `apply_resolution`: the surviving minions DISPERSE (removed
+  from the map, the area is safe now), the theme's wilderness encounters THIN (the data's `suppresses` fed
+  through the lair-suppression the encounters already read — Blackbanner cuts `bandit` to 0.4×, Wychwood `wolf`
+  to 0.6×), and a lasting `resolved` `[Realm]` beat is posted. Idempotent; the resolved state persists.
+- Wired all 4 playable adventures: Emberfell / Blackbanner / Wychwood (AdventureSeeder) + Ravenmoor (its
+  bespoke seeder shares `apply_resolution`). Added `resolves_adventure` to the quest-template metadata
+  whitelist (it was being dropped on load).
+Verified: all 4 finales resolve (foes 6→0, bandit 1.0→0.4, wolf→0.6, the beats fire); the resolved state
+round-trips; the 12-quest playtest still passes; test_blackbanner +1 resolution test.

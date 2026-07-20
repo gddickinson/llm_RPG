@@ -183,6 +183,20 @@ class QuestManager:
             # branching-finale endings were never seen (George)
             self._surface(f"[Legend] {legend}")
 
+        # An adventure FINALE reshapes the WORLD (George): the guardian foes
+        # disperse and the theme's wilderness encounters thin
+        adv = quest.metadata.get("resolves_adventure")
+        eng = getattr(self, "engine", None)
+        if adv and eng is not None:
+            try:
+                from engine.adventure_seed import resolve_adventure
+                idx = quest.metadata.get("reward_choice", 0)
+                out = (choices[idx].get("label") if choices
+                       and 0 <= idx < len(choices) else None)
+                resolve_adventure(eng, adv, out)
+            except Exception as e:
+                logger.debug(f"adventure resolve: {e}")
+
         self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")
 
         # T4.5 a REPEATABLE quest (a standing bounty / delivery / cull) re-arms

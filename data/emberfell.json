@@ -37,69 +37,145 @@
       "class": "villager",
       "race": "human",
       "level": 4,
-      "stats": {"strength": 13, "constitution": 13, "wisdom": 12, "charisma": 13},
+      "stats": {
+        "strength": 13,
+        "constitution": 13,
+        "wisdom": 12,
+        "charisma": 13
+      },
       "hp": 34,
       "gold": 40,
       "symbol": "H",
       "area": "emberfell",
       "faction": "town_guard",
-      "inventory": ["sword", "bread"],
+      "inventory": [
+        "sword",
+        "bread"
+      ],
       "description": "A broad, grey-bearded man with a soldier's bearing gone to farming, the reeve of Emberfell. He has buried three neighbours this season and means to bury no more.",
-      "personality": {"traits": ["dutiful", "weary", "stubborn"], "mood": "grim"},
+      "personality": {
+        "traits": [
+          "dutiful",
+          "weary",
+          "stubborn"
+        ],
+        "mood": "grim"
+      },
       "goals": [
         "End the wyrm's raids on my village",
         "Keep my people from fleeing the mountain",
         "See Emberfell's fields green again"
       ],
-      "metadata": {"quest_giver": true, "adventure": "emberfell"}
+      "metadata": {
+        "quest_giver": true,
+        "adventure": "emberfell"
+      }
     },
     "shepherd_bryn": {
       "name": "Shepherd Bryn",
       "class": "villager",
       "race": "human",
       "level": 2,
-      "stats": {"strength": 11, "dexterity": 12, "constitution": 11},
+      "stats": {
+        "strength": 11,
+        "dexterity": 12,
+        "constitution": 11
+      },
       "hp": 18,
       "gold": 6,
       "symbol": "b",
       "area": "emberfell",
       "faction": "neutral",
-      "inventory": ["sling"],
+      "inventory": [
+        "sling"
+      ],
       "description": "A young shepherd, soot-streaked and hollow-eyed, who watched a whelp carry off half his flock and can point you to where the burning began.",
-      "personality": {"traits": ["frightened", "honest"], "mood": "shaken"},
-      "goals": ["Warn travellers off the high pastures", "See my flock avenged"],
-      "metadata": {"adventure": "emberfell"}
+      "personality": {
+        "traits": [
+          "frightened",
+          "honest"
+        ],
+        "mood": "shaken"
+      },
+      "goals": [
+        "Warn travellers off the high pastures",
+        "See my flock avenged"
+      ],
+      "metadata": {
+        "adventure": "emberfell"
+      }
     },
     "loremaster_yorwin": {
       "name": "Loremaster Yorwin",
       "class": "wizard",
       "race": "half-elf",
       "level": 8,
-      "stats": {"intelligence": 17, "wisdom": 15, "dexterity": 11, "constitution": 12},
+      "stats": {
+        "intelligence": 17,
+        "wisdom": 15,
+        "dexterity": 11,
+        "constitution": 12
+      },
       "hp": 44,
       "gold": 25,
       "symbol": "Y",
       "area": "yorwins_refuge",
       "faction": "neutral",
-      "inventory": ["staff", "scroll_fireball", "wyrmsbane_draught"],
+      "inventory": [
+        "staff",
+        "scroll_fireball",
+        "wyrmsbane_draught"
+      ],
       "description": "An exiled dragon-scholar, lean and hawk-eyed, who spent a lifetime cataloguing wyrms until his guild named him a heretic. He alone knows where Cindermaw's scales never healed.",
-      "personality": {"traits": ["learned", "sardonic", "obsessive"], "mood": "intent"},
+      "personality": {
+        "traits": [
+          "learned",
+          "sardonic",
+          "obsessive"
+        ],
+        "mood": "intent"
+      },
       "goals": [
         "Prove the guild wrong about the great wyrms",
         "See a wyrm's weakness put to the test",
         "Finish my life's catalogue before I die"
       ],
-      "metadata": {"quest_giver": true, "adventure": "emberfell",
-                   "secret": "beneath the jaw, where the old wound never scaled"}
+      "metadata": {
+        "quest_giver": true,
+        "adventure": "emberfell",
+        "secret": "beneath the jaw, where the old wound never scaled"
+      }
     }
   },
   "clues": [
-    {"area": "charred_vale", "item": "scorched_scale"}
+    {
+      "area": "charred_vale",
+      "item": "scorched_scale"
+    }
   ],
   "foes": [
-    {"area": "charred_vale", "template": "dragon_whelp", "count": 2},
-    {"area": "wyrms_roost", "template": "dragon_whelp", "count": 1},
-    {"area": "wyrms_roost", "template": "lesser_drake", "count": 1},
-    {"area": "wyrms_roost", "template": "emberfell_wyrm", "count": 1}
-  ]
+    {
+      "area": "charred_vale",
+      "template": "dragon_whelp",
+      "count": 2
+    },
+    {
+      "area": "wyrms_roost",
+      "template": "dragon_whelp",
+      "count": 1
+    },
+    {
+      "area": "wyrms_roost",
+      "template": "lesser_drake",
+      "count": 1
+    },
+    {
+      "area": "wyrms_roost",
+      "template": "emberfell_wyrm",
+      "count": 1,
+      "boss": true
+    }
+  ],
+  "resolved": "With Cindermaw dead and its brood scattered, the terraced fields of Emberfell are safe to sow again and the high roads reopen.",
+  "resolved_name": "wyrm of Emberpeak"
 }

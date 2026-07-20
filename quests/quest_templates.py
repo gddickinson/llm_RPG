@@ -40,7 +40,9 @@ def _quest_from_entry(quest_id: str, entry: dict) -> Quest:
                         # set-pieces (P21.4)
                         "time_limit",
                         # repeatable standing tasks (T4.5)
-                        "repeatable")
+                        "repeatable",
+                        # an adventure finale that reshapes the world
+                        "resolves_adventure")
             if key in entry
         },
     )

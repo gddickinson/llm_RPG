@@ -40,7 +40,12 @@ class Ravenmoor:
         self.engine = engine
         self.areas: List[dict] = []
         self.npc_ids: List[str] = []
+        self.foe_ids: List[str] = []
         self._seeded = False
+        self._resolved = False
+
+    def adventure_id(self) -> str:
+        return "ravenmoor"
 
     def _data(self) -> dict:
         from items.data_loader import load_data_file
@@ -94,12 +99,12 @@ class Ravenmoor:
         """The risen dead haunt the sites — a hollow-thrall by the cottage, a
         grave-warden and thralls guarding the barrow (the Act-2/3 KILLs)."""
         from world.monsters import build_monster
-        plan = [("corvins_cottage", "hollow_thrall", 1),
-                ("sunken_barrow", "hollow_thrall", 2),
-                ("sunken_barrow", "grave_warden", 1),
-                ("sunken_barrow", "aedelric_wight", 1)]   # the boss awaits
+        plan = [("corvins_cottage", "hollow_thrall", 1, False),
+                ("sunken_barrow", "hollow_thrall", 2, False),
+                ("sunken_barrow", "grave_warden", 1, False),
+                ("sunken_barrow", "aedelric_wight", 1, True)]   # the boss awaits
         wmap = self.engine.world.map
-        for area_id, template, n in plan:
+        for area_id, template, n, is_boss in plan:
             if self.area_pos(area_id) is None:
                 continue
             for _ in range(n):
@@ -107,7 +112,9 @@ class Ravenmoor:
                 if spot is None or spot in wmap.characters:
                     continue
                 foe = build_monster(template, tuple(spot))
+                foe.metadata["adventure_boss"] = is_boss
                 self.engine.npc_manager.add_npc(foe)
+                self.foe_ids.append(foe.id)
                 try:
                     wmap.place_character(foe, *spot)
                 except Exception:
@@ -219,10 +226,22 @@ class Ravenmoor:
             npc.metadata[k] = v
         return npc
 
+    def resolve(self, outcome: str = None) -> bool:
+        """The hollowing is ended — the risen dead of Ravenmoor lie still and
+        the moor is quiet (the finale reshapes the world)."""
+        if self._resolved or not self.areas:
+            return False
+        self._resolved = True
+        from engine.adventure_seed import apply_resolution
+        return apply_resolution(self.engine, self.foe_ids, self._data())
+
     # ---- queries & persistence -------------------------------------
 
     def is_active(self) -> bool:
         return bool(self.areas)
+
+    def is_resolved(self) -> bool:
+        return self._resolved
 
     def area_pos(self, area_id: str) -> Optional[Tuple[int, int]]:
         a = next((a for a in self.areas if a["id"] == area_id), None)
@@ -230,10 +249,13 @@ class Ravenmoor:
 
     def to_dict(self) -> dict:
         return {"seeded": self._seeded, "areas": self.areas,
-                "npc_ids": self.npc_ids}
+                "npc_ids": self.npc_ids, "foe_ids": self.foe_ids,
+                "resolved": self._resolved}
 
     def from_dict(self, d: dict) -> None:
         d = d or {}
         self._seeded = d.get("seeded", bool(d.get("areas")))
         self.areas = d.get("areas", []) or []
         self.npc_ids = d.get("npc_ids", []) or []
+        self.foe_ids = d.get("foe_ids", []) or []
+        self._resolved = d.get("resolved", False)

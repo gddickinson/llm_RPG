@@ -96,6 +96,47 @@ class TestBlackbannerContent(unittest.TestCase):
             os.environ["LLM_RPG_NO_ADVENTURERS"] = "1"
             e.end_game()
 
+    def test_finale_turn_in_reshapes_the_world(self):
+        # the finale disperses the guardian foes AND thins the theme's
+        # wilderness encounters (George: finales reshape the world)
+        from quests.quest import QuestStatus
+        os.environ.pop("LLM_RPG_NO_ADVENTURERS", None)
+        e = GameEngine(llm_provider="heuristic", enable_npc_processes=False)
+        e.start_game()
+        try:
+            bb = e.blackbanner
+            active0 = [nid for nid in bb.foe_ids
+                       if e.npc_manager.npcs.get(nid)
+                       and e.npc_manager.npcs[nid].is_active()]
+            self.assertTrue(active0, "guardian foes are seeded")
+            self.assertEqual(e.lairs.spawn_multiplier("bandit"), 1.0)
+            # the boss falls (as the kill objective requires), then turn in
+            warlord = next(n for n in e.npc_manager.npcs.values()
+                           if "Vharo" in n.name)
+            warlord.status = "defeated"
+            e.world.map.remove_character(warlord)
+            q3 = e.quest_manager.quests["q_blackbanner_reckoning"]
+            q3.status = QuestStatus.ACTIVE
+            for o in q3.objectives:
+                o.progress = o.required
+            q3.update_status()
+            e.turn_in_quest("q_blackbanner_reckoning")
+            self.assertTrue(bb.is_resolved())
+            active1 = [nid for nid in bb.foe_ids
+                       if e.npc_manager.npcs.get(nid)
+                       and e.npc_manager.npcs[nid].is_active()]
+            self.assertEqual(active1, [], "the guardian foes disperse")
+            self.assertLess(e.lairs.spawn_multiplier("bandit"), 1.0,
+                            "the confederation broken → fewer bandits")
+            # the resolved state persists
+            from engine.adventure_seed import AdventureSeeder
+            bb2 = AdventureSeeder(e, "blackbanner.json")
+            bb2.from_dict(bb.to_dict())
+            self.assertTrue(bb2.is_resolved())
+        finally:
+            os.environ["LLM_RPG_NO_ADVENTURERS"] = "1"
+            e.end_game()
+
 
 if __name__ == "__main__":
     unittest.main()
