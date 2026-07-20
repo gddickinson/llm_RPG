@@ -61,6 +61,37 @@ class TestCompanions(unittest.TestCase):
         # Should be much closer than 14 (initial diagonal distance)
         self.assertLess(d, 8)
 
+    def test_companion_trapped_on_building_emerges(self):
+        # George: a companion recruited THROUGH A WINDOW starts on the guild
+        # hall's BUILDING footprint (un-walkable) close to the leader — so it's
+        # NOT "far", but it can't path out the door and was stuck inside
+        # forever. update() should pull it onto a walkable tile by the leader.
+        from world.world_map import TerrainType
+        wmap = self.engine.world.map
+        minstrel = self.engine.npc_manager.get_npc("minstrel_01")
+        minstrel.relationships[self.engine.player.id] = 50
+        self.engine.recruit("minstrel_01")
+        # a clear grassy patch for the leader to stand in / rejoin at
+        for yy in range(8, 15):
+            for xx in range(8, 15):
+                wmap.terrain[yy][xx] = TerrainType.GRASS
+        wmap.remove_character(self.engine.player)
+        self.engine.player.position = (11, 11)
+        wmap.place_character(self.engine.player, 11, 11)
+        # trap the minstrel on a BUILDING tile a few tiles off (near, not far)
+        wmap.terrain[10][10] = TerrainType.BUILDING
+        wmap.remove_character(minstrel)
+        minstrel.position = (10, 10)
+        wmap.place_character(minstrel, 10, 10)
+        self.assertEqual(minstrel.metadata.get("order", "follow"), "follow")
+        self.engine.companion_manager.update()
+        tx, ty = minstrel.position
+        self.assertNotEqual(
+            wmap.terrain[ty][tx], TerrainType.BUILDING,
+            "the trapped companion should emerge onto a walkable tile")
+        d = abs(tx - 11) + abs(ty - 11)
+        self.assertLessEqual(d, 6, "it should rejoin near the leader")
+
 
 if __name__ == "__main__":
     unittest.main()

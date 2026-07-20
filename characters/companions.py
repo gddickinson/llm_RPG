@@ -280,11 +280,7 @@ class CompanionManager:
                 px, py = self.engine.player.position
                 far = abs(npc.position[0] - px) + abs(npc.position[1] - py) \
                     > CATCHUP_DIST
-                # a companion RECRUITED THROUGH A WINDOW starts ON the guild
-                # hall's BUILDING footprint — it can't path out the door, so it
-                # was trapped inside forever (George). Pull a companion stuck
-                # on an un-walkable tile out to the leader at once.
-                if far or self._stuck_indoors(npc):
+                if far:
                     spot = self._catchup_spot(px, py)
                     if spot is not None:
                         self.engine.world.map.place_character(npc, *spot)
@@ -335,10 +331,21 @@ class CompanionManager:
             # Attack any adjacent enemy
             if self._companion_attack_nearby_enemy(npc):
                 continue
-            # Otherwise, follow — unless holding ground (P15.5)
+            # Otherwise, follow — unless holding ground (P15.5).
+            # A companion RECRUITED THROUGH A WINDOW starts trapped ON the
+            # guild-hall BUILDING footprint — it can't path out the door, so it
+            # was stuck inside forever (George). By here it has nothing to fight
+            # or heal, so pull it out to the leader instead of pathing uselessly
+            # against the wall. (Self-heal/combat above still run for a member
+            # transiently standing on a building tile — they need no movement.)
             if order != "hold":
-                self._companion_step_toward(
-                    npc, self.engine.player.position)
+                if on_overworld and self._stuck_indoors(npc):
+                    spot = self._catchup_spot(*self.engine.player.position)
+                    if spot is not None:
+                        self.engine.world.map.place_character(npc, *spot)
+                else:
+                    self._companion_step_toward(
+                        npc, self.engine.player.position)
 
     def _companion_attack_nearby_enemy(self, comp) -> bool:
         """If a hostile is adjacent, attack it. Return True if did."""
