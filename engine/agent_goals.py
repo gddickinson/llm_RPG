@@ -227,7 +227,7 @@ def nearest_recruitable(ctrl, engine, char):
         return None
     cm = engine.companion_manager
     px, py = char.position
-    best, bd = None, 1e18
+    best, key = None, None
     for npc in engine.npc_manager.npcs.values():
         if not npc.is_active() or not npc.metadata.get("adventurer"):
             continue
@@ -236,9 +236,13 @@ def nearest_recruitable(ctrl, engine, char):
                 continue
         except Exception:
             continue
+        # prefer the STRONGEST recruit (they gather at the same hall, so this
+        # gathers a CAPABLE band that can clear adventures rather than the
+        # weakest three), tie-broken by nearest
         d = (npc.position[0] - px) ** 2 + (npc.position[1] - py) ** 2
-        if d < bd:
-            best, bd = npc, d
+        k = (-getattr(npc, "level", 1), d)
+        if key is None or k < key:
+            best, key = npc, k
     return (best.name, tuple(best.position)) if best else None
 
 
@@ -263,14 +267,27 @@ def reachable_tile(engine, char, pos):
     return (cx, cy)
 
 
-def pack_outmatches(char, pack) -> bool:
-    """Would this pack likely overwhelm the hero? Weigh the hero's level and
-    current HP against the pack's summed strength — generous to the hero
-    (gear + a healthy body beat a rabble), so it flees only a clearly
-    superior warband, not every three goblins."""
-    hero = getattr(char, "level", 1) + max(1, char.hp // 8)
+def pack_outmatches(char, pack, engine=None) -> bool:
+    """Would this pack likely overwhelm the hero AND ITS BAND? Weigh the hero's
+    level + current HP — plus each nearby COMPANION's — against the pack's
+    summed strength. A capable party stands and fights adventure content it
+    could never take solo (George: "let the party fight adventures more
+    decisively"); a weak or scattered one still flees a superior warband. So
+    the flee line is SELF-CALIBRATING to how strong the party actually is."""
+    strength = getattr(char, "level", 1) + max(1, char.hp // 8)
+    if engine is not None:
+        try:
+            cx, cy = char.position
+            for mid in engine.companion_manager.party:
+                m = engine.npc_manager.get_npc(mid)
+                if m is not None and m.is_active() and m.hp > 0 \
+                        and abs(m.position[0] - cx) \
+                        + abs(m.position[1] - cy) <= 6:
+                    strength += getattr(m, "level", 1) + max(1, m.hp // 8)
+        except Exception:
+            pass
     threat = sum(max(1, getattr(f, "level", 1)) for f in pack)
-    return threat > hero * 1.3
+    return threat > strength * 1.3
 
 
 def pick_goal(ctrl, engine, char):

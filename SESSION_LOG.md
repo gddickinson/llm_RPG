@@ -10570,3 +10570,19 @@ but (a) companions didn't follow — they got stranded ~190 tiles back, and (b) 
   seeker" (Sable) assumption holds.
 Verified: companion/agent/living-agent/party/ambition/companies suites green; forage capped; party stays
 together.
+
+## 2026-07-20 — The party fights adventures decisively (George)
+
+George: "let the party fight adventures more decisively." The away-hero was fleeing ~43% of the time because
+the flee check (`pack_outmatches`) weighed the HERO ALONE — and it recruited the WEAKEST nearest adventurers.
+Two changes:
+- **Recruit a capable band**: `agent_goals.nearest_recruitable` + `agent_social._pick_friend` now prefer the
+  STRONGEST recruitable adventurer (they all gather at the same hall). The party is now the seasoned trio
+  (Ulric L8 / Seraphine L7 / Thaddeus L6) instead of three L3-4 nobodies.
+- **A capable party stands and fights**: `pack_outmatches(char, pack, engine)` adds each nearby COMPANION's
+  level+HP to the hero's strength, so the flee line is SELF-CALIBRATING — a strong band holds against a pack it
+  could clear (a weak/scattered one still flees a superior warband). Full ally strength is safe now that the
+  band is genuinely strong.
+Result: flee dropped 0.43 → 0.22, the party fights hard (attack 49 → 230+), and the hero survives. (An earlier
+full-strength attempt on a WEAK party made it fearless and it died — the strong-recruit change is what makes
+decisive fighting safe.) Agent/companion/ambition/living-agent/npc-adventuring suites (91) green.

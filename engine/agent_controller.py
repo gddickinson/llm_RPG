@@ -233,7 +233,8 @@ class AgentController:
         if len(pack) >= 3:
             valiant = disp == "valiant" and hp > SWARM_HP
             cautious = disp == "cautious"
-            if not valiant and (cautious or agoals.pack_outmatches(char, pack)):
+            if not valiant and (cautious
+                                or agoals.pack_outmatches(char, pack, engine)):
                 step = nav.flee_step(engine, char, pack[0].position,
                                      self.recent)
                 if step is not None:

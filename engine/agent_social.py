@@ -55,9 +55,15 @@ def _pick_friend(ctrl, engine, char, reach):
     friends = sense.friendlies_near(engine, char, r=reach)
     if not friends:
         return None
-    for f in friends:                      # business first (quest/recruit/trade)
-        if offers(ctrl, engine, char, f):
-            return f
+    business = [f for f in friends if offers(ctrl, engine, char, f)]
+    if business:
+        # among those with business, prefer the STRONGEST RECRUIT (gather a
+        # capable band that can clear adventures, not the weakest three that
+        # happen to be nearest); other business keeps its nearest-first order
+        recruitable = [f for f in business if f.metadata.get("adventurer")]
+        if recruitable:
+            return max(recruitable, key=lambda f: getattr(f, "level", 1))
+        return business[0]
     return friends[0]
 
 
