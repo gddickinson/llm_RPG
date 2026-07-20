@@ -105,6 +105,7 @@ def build_subsystems(engine, llm_model=None,
     self.ravenmoor = Ravenmoor(self)
     from engine.adventure_seed import AdventureSeeder
     self.emberfell = AdventureSeeder(self, "emberfell.json")
+    self.blackbanner = AdventureSeeder(self, "blackbanner.json")
     from engine.adventurers import AdventurerSystem
     self.adventurers = AdventurerSystem(self)
     from engine.monster_packs import MonsterPackSystem
@@ -254,6 +255,7 @@ def seed_world(engine) -> None:
         ("Sunken Tome adventure", lambda: self.adventure_tome.seed()),  # P38
         ("Ravenmoor adventure", lambda: self.ravenmoor.seed()),
         ("Emberfell adventure", lambda: self.emberfell.seed()),
+        ("Blackbanner adventure", lambda: self.blackbanner.seed()),
         ("Adventurers", lambda: self.adventurers.seed()),  # P-M.6
     ):
         try:

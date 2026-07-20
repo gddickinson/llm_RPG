@@ -1677,5 +1677,38 @@
       "Grow my hoard and my dread",
       "Suffer no blade near the old wound"
     ]
+  },
+  "vharo_blackbanner": {
+    "name": "Vharo Blackbanner",
+    "class": "brigand",
+    "race": "human",
+    "hp": 92,
+    "level": 9,
+    "symbol": "V",
+    "description": "The outlaw warlord who bound the scattered raiding camps under one black standard — a big, easy-laughing man with a captain's gift for making cutthroats love him. He means to turn a rabble of thieves into an army and carve himself a kingdom from the trade road.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "spawn_terrain": [
+      "forest",
+      "grass"
+    ],
+    "stats": {
+      "strength": 18,
+      "constitution": 17,
+      "dexterity": 15,
+      "charisma": 16
+    },
+    "natural_damage": 12,
+    "speed": 1.1,
+    "active": "always",
+    "flee_below": 0.0,
+    "guaranteed_drops": [
+      "blackbanner_standard"
+    ],
+    "goals": [
+      "Forge the raiding camps into one army",
+      "Sack the settlements and carve out a kingdom",
+      "Never be a nameless thief again"
+    ]
   }
 }

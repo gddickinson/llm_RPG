@@ -10347,3 +10347,23 @@ data-only:
 Verified: content validator clean; `tests/test_emberfell.py` (9 tests) + the ravenmoor/data-content/playtest/
 combined/castle suites all green. The wyrm's boss block matches `young_dragon` exactly, so the finale gets a
 real breath telegraph.
+
+## 2026-07-19 — Second data-only adventure: "The Blackbanner Reaving" (George: rich content)
+
+Proving the reusable seeder pays off — a SECOND complex adventure authored purely as data (no new seeder
+module), with a distinct HUMAN-antagonist theme (vs Emberfell's dragon and Ravenmoor's undead):
+- **"The Blackbanner Reaving"** (`data/blackbanner.json`) — an outlaw warlord, Vharo Blackbanner, binds the
+  scattered raiding camps into one host to sack the settlements. 3 acts with a socially-distinct branch:
+  - **Act 1 "The Burning Road"** (`q_blackbanner_raids`): talk Caravan-Master Deel → cut down a raiding
+    `bandit` → track them to the Ambush Wood.
+  - **Act 2 "The Muster-Roll"** (`q_blackbanner_muster`): fetch `blackbanner_muster` from the wood → sound out
+    **Kessa Fenn**, a wavering (neutral, `swayable`) lieutenant → scout the Blackbanner Camp.
+  - **Act 3 "The Black Banner"** (`q_blackbanner_reckoning`): the named boss **Vharo Blackbanner** — a branching
+    **Kill / Turn-the-captains (a bloodless social win) / Seize-the-banner (become the outlaw lord)** finale.
+  - New content (data): `vharo_blackbanner` boss (lvl 9 brigand, drops the legendary `blackbanner_standard`),
+    `blackbanner_muster` clue, `blackbanner_standard` relic; cast Marshal Orsa / Caravan-Master Deel / Kessa Fenn.
+- Wired `self.blackbanner` in `engine_setup` + `save_load`; folded the cast into the quest-giver validator +
+  the 3 playtest tests (same 4-line pattern as Emberfell).
+Verified: content validator clean; both new adventures survive a save/load round-trip; the seeded warlord's
+REAL defeat (id `enc_vharo_blackbanner_<hash>` → template match) completes the finale; `tests/test_blackbanner.py`
+(8 tests) + `tests/test_emberfell.py` + the playtest/content/save-load suites all green.

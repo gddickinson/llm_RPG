@@ -1,0 +1,98 @@
+{
+  "id": "blackbanner",
+  "rumor": "[Realm] The road-marshal Orsa is asking after sword-hands: a charismatic outlaw named Vharo Blackbanner is binding the scattered raiding camps into one host, and the burnt waystation at Redgate is only his opening move.",
+  "areas": [
+    {
+      "id": "redgate",
+      "name": "Redgate Waystation",
+      "kind": "site",
+      "near": "road",
+      "legend": "A coaching inn and toll-post on the trade road, its stockade thrown down and its stables burnt — the first place Blackbanner's united raiders struck. Marshal Orsa keeps a grim watch over the ashes."
+    },
+    {
+      "id": "ambush_wood",
+      "name": "The Ambush Wood",
+      "kind": "site",
+      "near": "forest",
+      "legend": "A dense stretch of roadside timber hung with the raiders' rope-and-hook snares, where the camps stage their attacks on the caravans. A muster-roll lies dropped among the trampled ferns."
+    },
+    {
+      "id": "blackbanner_camp",
+      "name": "The Blackbanner Camp",
+      "kind": "lair",
+      "near": "forest",
+      "legend": "A palisaded outlaw camp of a hundred cook-fires beneath a great black standard, where Vharo Blackbanner holds court over the confederated raiding bands and plans the sack of the settlements."
+    }
+  ],
+  "npcs": {
+    "marshal_orsa": {
+      "name": "Marshal Orsa",
+      "class": "guard",
+      "race": "human",
+      "level": 6,
+      "stats": {"strength": 15, "constitution": 14, "dexterity": 13, "charisma": 12},
+      "hp": 52,
+      "gold": 60,
+      "symbol": "O",
+      "area": "redgate",
+      "faction": "guards",
+      "inventory": ["sword", "crossbow", "bolt"],
+      "description": "A scarred, plain-spoken road-marshal who has policed the trade roads for twenty years and never seen the camps unite until now. She has no soldiers left to spare and every reason to hire a blade.",
+      "personality": {"traits": ["hard", "fair", "pragmatic"], "mood": "grim"},
+      "goals": [
+        "Break the outlaw confederation before it marches",
+        "Keep the trade road open",
+        "Avenge the folk of Redgate"
+      ],
+      "metadata": {"quest_giver": true, "adventure": "blackbanner"}
+    },
+    "caravan_master_deel": {
+      "name": "Caravan-Master Deel",
+      "class": "merchant",
+      "race": "halfling",
+      "level": 3,
+      "stats": {"dexterity": 13, "charisma": 14, "constitution": 11},
+      "hp": 22,
+      "gold": 15,
+      "symbol": "d",
+      "area": "redgate",
+      "faction": "merchants",
+      "inventory": ["dagger", "bread"],
+      "description": "A shaken caravan-master who lost his goods and half his guards to the Ambush Wood and lived only by playing dead. He can tell you how the raiders fight now — together, and to a plan.",
+      "personality": {"traits": ["talkative", "rattled", "shrewd"], "mood": "shaken"},
+      "goals": ["Recover what's left of my trade", "See the road made safe"],
+      "metadata": {"adventure": "blackbanner"}
+    },
+    "lieutenant_kessa": {
+      "name": "Kessa Fenn",
+      "class": "rogue",
+      "race": "half-elf",
+      "level": 5,
+      "stats": {"dexterity": 16, "strength": 12, "charisma": 13, "constitution": 12},
+      "hp": 38,
+      "gold": 30,
+      "symbol": "k",
+      "area": "ambush_wood",
+      "faction": "neutral",
+      "inventory": ["dagger", "bow", "arrow"],
+      "description": "One of Blackbanner's own lieutenants, keeping her own watch at the wood's edge. She joined the raiders to feed a starving village and did not sign on to sack towns — a word in her ear might turn her, and with her the other camps' captains.",
+      "personality": {"traits": ["proud", "disillusioned", "loyal-to-her-own"], "mood": "conflicted"},
+      "goals": [
+        "Feed my village without becoming a monster",
+        "Find a way out from under Blackbanner's banner",
+        "Protect the camp-folk who trusted me"
+      ],
+      "metadata": {"quest_giver": true, "adventure": "blackbanner",
+                   "swayable": true}
+    }
+  },
+  "clues": [
+    {"area": "ambush_wood", "item": "blackbanner_muster"}
+  ],
+  "foes": [
+    {"area": "ambush_wood", "template": "bandit", "count": 2},
+    {"area": "blackbanner_camp", "template": "bandit", "count": 2},
+    {"area": "blackbanner_camp", "template": "bandit_chief", "count": 1},
+    {"area": "blackbanner_camp", "template": "vharo_blackbanner", "count": 1}
+  ]
+}

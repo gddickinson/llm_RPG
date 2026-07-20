@@ -992,5 +992,105 @@
         "legend": "You lowered your spear and spoke the wyrm's own tongue of greed: tribute and silence for gold and safety. Cindermaw keeps to its roost now, and grows — and Emberfell pays a tithe to the thing on the mountain, and does not meet your eye."
       }
     ]
+  },
+  "q_blackbanner_raids": {
+    "title": "The Burning Road",
+    "description": "Marshal Orsa of Redgate has no soldiers left and a trade road on fire. Hear Caravan-Master Deel's account of how the raiders fight now, cut down one of the outlaws working the road, and track their staging ground to the Ambush Wood.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "caravan_master_deel",
+        "required": 1,
+        "description": "Hear how the united raiders ambush the caravans"
+      },
+      {
+        "type": "kill",
+        "target": "bandit",
+        "required": 1,
+        "description": "Cut down an outlaw working the road"
+      },
+      {
+        "type": "explore",
+        "target": "The Ambush Wood",
+        "required": 1,
+        "description": "Track the raiders to the Ambush Wood"
+      }
+    ],
+    "giver_id": "marshal_orsa",
+    "reward_gold": 80,
+    "reward_xp": 150,
+    "next_quest": "q_blackbanner_muster"
+  },
+  "q_blackbanner_muster": {
+    "title": "The Muster-Roll",
+    "description": "The strength of the confederation is written on a muster-roll dropped in the wood. Recover it, then seek out Kessa Fenn — a lieutenant keeping her own uneasy watch at the wood's edge — and hear what turns a captain against her own banner, before you scout the outlaws' camp.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "blackbanner_muster",
+        "required": 1,
+        "description": "Recover Blackbanner's Muster-Roll from the wood"
+      },
+      {
+        "type": "talk",
+        "target": "lieutenant_kessa",
+        "required": 1,
+        "description": "Sound out Kessa Fenn, Blackbanner's wavering lieutenant"
+      },
+      {
+        "type": "explore",
+        "target": "The Blackbanner Camp",
+        "required": 1,
+        "description": "Scout the Blackbanner Camp"
+      }
+    ],
+    "giver_id": "marshal_orsa",
+    "prereq_quest": "q_blackbanner_raids",
+    "reward_gold": 110,
+    "reward_xp": 260,
+    "next_quest": "q_blackbanner_reckoning"
+  },
+  "q_blackbanner_reckoning": {
+    "title": "The Black Banner",
+    "description": "The confederation marches within days. Go to the Blackbanner Camp and end Vharo Blackbanner's reaving — cut the warlord down and scatter his host, turn his own captains against him so the camps melt away, or seize the black banner and make the outlaw army your own.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "vharo_blackbanner",
+        "required": 1,
+        "description": "Confront Vharo Blackbanner at his camp"
+      }
+    ],
+    "giver_id": "marshal_orsa",
+    "prereq_quest": "q_blackbanner_muster",
+    "reward_gold": 220,
+    "reward_xp": 520,
+    "reward_choices": [
+      {
+        "label": "Cut the warlord down and scatter his host",
+        "xp": 520,
+        "gold": 280,
+        "items": [
+          "blackbanner_standard"
+        ],
+        "legend": "You killed Vharo Blackbanner beneath his own standard, and with their warlord dead the confederated camps fell to squabbling and scattered before the week was out. The trade road is Marshal Orsa's again, and the black banner is yours to burn or bear."
+      },
+      {
+        "label": "Turn his captains against him",
+        "xp": 520,
+        "gold": 180,
+        "items": [],
+        "legend": "You gave Kessa Fenn the words and the moment, and one by one the camp captains struck their tents rather than march on the towns. Blackbanner raged before an empty field — a warlord of no one. The reaving ended without a battle, and some of the camp-folk even went home."
+      },
+      {
+        "label": "Seize the banner and take his army",
+        "xp": 520,
+        "gold": 500,
+        "items": [
+          "blackbanner_standard"
+        ],
+        "legend": "You struck Vharo down and lifted the black banner from the mud before his body cooled — and the outlaw host, who follow strength, roared your name instead of his. Marshal Orsa has a new and worse problem on the trade road now, and it wears your face."
+      }
+    ]
   }
 }
