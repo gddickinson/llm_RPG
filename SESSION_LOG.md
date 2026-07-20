@@ -10499,3 +10499,22 @@ Completing an adventure finale now CHANGES the world, not just the quest log:
   whitelist (it was being dropped on load).
 Verified: all 4 finales resolve (foes 6→0, bandit 1.0→0.4, wolf→0.6, the beats fire); the resolved state
 round-trips; the 12-quest playtest still passes; test_blackbanner +1 resolution test.
+
+## 2026-07-20 — NPCs pursue adventures too (George: option 1)
+
+The world's other heroes now go on adventures, not just the player:
+- `engine/npc_adventuring.py` (`NpcAdventuringSystem`, nightly): a strong-enough free AdventurerSystem hero
+  (MIN_LEVEL 5) adopts an unresolved adventure the PLAYER hasn't begun (gated on `_player_engaged` so the
+  player never loses one they're working), and works it ACT BY ACT over game-days — a `[Realm]` beat for
+  setting out and each act ("Thaddeus the Grey takes up the trail of the wyrm of Emberpeak" → "presses deeper"
+  → "closes on the lair") — until it faces the boss and RESOLVES the adventure (reusing #38's
+  `resolve_adventure`: guardians disperse, threat thins, world reshapes) under a triumphant `[Legend]`. The
+  deed grows the hero (+XP). A resolved adventure's now-impossible player quests are marked FAILED so no
+  dead-end can be accepted — the "a rival beat you to it" stake (as `lairs.claim_by_rival` does for hoards).
+- Added 3 SEASONED adventurers to `data/adventurers.json` (Dame Seraphine paladin L7 / Thaddeus the Grey wizard
+  L6 / Ulric Bearclaw warrior L8) so some heroes are actually capable of clearing an adventure (the roster was
+  all L3-4). Enriches the guild-hall recruiting pool too.
+Wired self.npc_adventuring in engine_setup + the nightly stack + save_load. Verified: an NPC works all 4
+adventures to resolution over game-days; the player keeps any adventure they started; resolved adventures fail
+the dead-end quests + the giver stops offering; state round-trips; test_npc_adventuring (6) + adventurer/
+company/adventure suites green.

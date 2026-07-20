@@ -111,6 +111,8 @@ def build_subsystems(engine, llm_model=None,
     self.adventurers = AdventurerSystem(self)
     from engine.townsfolk_venture import TownsfolkVentureSystem
     self.townsfolk_venture = TownsfolkVentureSystem(self)
+    from engine.npc_adventuring import NpcAdventuringSystem
+    self.npc_adventuring = NpcAdventuringSystem(self)
     from engine.monster_packs import MonsterPackSystem
     self.monster_packs = MonsterPackSystem(self)
     from engine.monster_tribes import MonsterTribeSystem

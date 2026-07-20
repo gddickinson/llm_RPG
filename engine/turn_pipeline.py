@@ -220,6 +220,10 @@ def run_turn(engine) -> None:
                 self.townsfolk_venture.run_day()
             except Exception as e:
                 logger.debug(f"Townsfolk venture day error: {e}")
+            try:   # the world's other heroes work adventures of their own
+                self.npc_adventuring.run_day(day)
+            except Exception as e:
+                logger.debug(f"NPC adventuring day error: {e}")
             try:   # a spouse provides; grudges harden into rivalry (P20.6)
                 self.romance.run_day()
             except Exception as e:
