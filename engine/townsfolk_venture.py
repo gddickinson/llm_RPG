@@ -28,6 +28,17 @@ logger = logging.getLogger("llm_rpg.townsfolk_venture")
 _WALKABLE = {TerrainType.GRASS, TerrainType.FOREST, TerrainType.ROAD,
              TerrainType.BRIDGE, TerrainType.FARMLAND}
 
+TRADE_LOAD = 4        # units a merchant carries on a trade run
+TRADE_MIN = 6         # a settlement must hold this many to spare a surplus
+
+
+def _store_cap() -> int:
+    try:
+        from engine.production_loop import STORE_CAP
+        return STORE_CAP
+    except Exception:
+        return 99
+
 
 def _dist(a, b) -> int:
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
@@ -140,15 +151,84 @@ class TownsfolkVentureSystem:
         if not self._is_outdoor(npc.position):
             if not self._step_outside(npc, home):
                 return False
-        npc.metadata["venture"] = {
+        v = {
             "purpose": purpose["id"], "dest": list(dest[0]),
             "dest_name": dest[1], "home": list(home),
             "phase": "out", "linger": 0, "turns": 0,
         }
+        if purpose["id"] == "trade":     # an EMBODIED caravan (P16.2 economy)
+            self._load_cargo(v, home, tuple(dest[0]))
+        npc.metadata["venture"] = v
         npc.metadata["venturing"] = True
         self._beat(purpose.get("out", "{name} sets out for {dest}."),
                    npc, dest[1])
         return True
+
+    # ---- trade cargo (a merchant venture moves real goods) ---------
+
+    def _load_cargo(self, v: dict, home, dest_pos) -> None:
+        """A trade venturer picks up a surplus good from its HOME settlement
+        store to carry to the destination — a walking caravan over the P16.2
+        stores (complements the abstract `production._arbitrage`)."""
+        prod = getattr(self.engine, "production", None)
+        if prod is None:
+            return
+        try:
+            setts = prod._settlements()
+            src = prod._nearest(setts, home)
+            dst = prod._nearest(setts, dest_pos)
+        except Exception:
+            return
+        if not src or not dst or src.name == dst.name:
+            return
+        v["home_settlement"] = src.name
+        v["dest_settlement"] = dst.name
+        cargo = self._take_surplus(prod, src.name)
+        if cargo:
+            v["cargo"] = cargo
+
+    def _take_surplus(self, prod, name: str) -> Optional[dict]:
+        store = prod.store_of(name)
+        if not store:
+            return None
+        good = max(store, key=lambda k: store[k])
+        have = store[good]
+        if have < TRADE_MIN:
+            return None
+        load = min(TRADE_LOAD, have // 2)
+        if load <= 0:
+            return None
+        store[good] = have - load
+        if store[good] <= 0:
+            del store[good]
+        return {"good": good, "qty": load}
+
+    def _deliver(self, prod, name: str, cargo: dict) -> None:
+        store = prod.store_of(name)
+        store[cargo["good"]] = min(_store_cap(),
+                                   store.get(cargo["good"], 0) + cargo["qty"])
+
+    def _trade_at_dest(self, npc, v: dict) -> None:
+        """Arrived at the destination settlement: unload the cargo into its
+        store and pick up a surplus of its own to carry home — a full trade
+        circuit that redistributes goods and a fuller purse of gossip."""
+        prod = getattr(self.engine, "production", None)
+        cargo, dst = v.get("cargo"), v.get("dest_settlement")
+        if prod is None or not cargo or not dst:
+            return
+        self._deliver(prod, dst, cargo)
+        ret = self._take_surplus(prod, dst)
+        if ret:
+            v["return_cargo"] = ret
+        self._trade_beat(npc, cargo, ret, v.get("dest_name", dst))
+
+    def _trade_beat(self, npc, cargo, ret, dest_name: str) -> None:
+        sold = f"{cargo['qty']} {cargo['good'].replace('_', ' ')}"
+        line = f"{npc.name} sold {sold} at {dest_name}"
+        if ret:
+            line += (f" and took on "
+                     f"{ret['qty']} {ret['good'].replace('_', ' ')}")
+        self._raw_beat("[Town] " + line + ".")
 
     # ---- driving ---------------------------------------------------
 
@@ -187,6 +267,7 @@ class TownsfolkVentureSystem:
         pos = tuple(npc.position)
         if v["phase"] == "out" and _dist(pos, tuple(v["dest"])) <= 2:
             v["phase"] = "linger"
+            self._trade_at_dest(npc, v)      # unload + take on return goods
         elif v["phase"] == "linger":
             v["linger"] = v.get("linger", 0) + 1
             if v["linger"] >= int(cfg.get("linger_turns", 6)):
@@ -200,6 +281,14 @@ class TownsfolkVentureSystem:
         npc.metadata.pop("_venture_trail", None)
         self.venturing.discard(npc.id)
         if v:
+            # a trade circuit brings the return goods to the home store
+            prod = getattr(self.engine, "production", None)
+            rc, hs = v.get("return_cargo"), v.get("home_settlement")
+            if prod is not None and rc and hs:
+                try:
+                    self._deliver(prod, hs, rc)
+                except Exception:
+                    pass
             purpose = next((p for p in self._cfg().get("purposes", [])
                             if p["id"] == v.get("purpose")), {})
             self._beat(purpose.get("back", "{name} comes home from {dest}."),
@@ -320,6 +409,12 @@ class TownsfolkVentureSystem:
             line = template.format(name=npc.name, dest=dest_name,
                                    home="home")
             self.engine.memory_manager.add_event("[Town] " + line)
+        except Exception:
+            pass
+
+    def _raw_beat(self, line: str) -> None:
+        try:
+            self.engine.memory_manager.add_event(line)
         except Exception:
             pass
 

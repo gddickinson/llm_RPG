@@ -91,6 +91,65 @@ class TestVentureLifecycle(unittest.TestCase):
             os.environ.pop("LLM_RPG_NO_ADVENTURERS", None)
 
 
+class TestTradeVentureMovesGoods(unittest.TestCase):
+    """A trade venture is an EMBODIED caravan over the P16.2 stores: the
+    merchant carries a home surplus to the destination and brings goods back."""
+
+    def setUp(self):
+        self._flag = os.environ.pop("LLM_RPG_NO_ADVENTURERS", None)
+        self.addCleanup(os.environ.__setitem__,
+                        "LLM_RPG_NO_ADVENTURERS", self._flag or "1")
+        self.e = GameEngine(llm_provider="heuristic",
+                            enable_npc_processes=False)
+        self.e.start_game()
+        self.tv = self.e.townsfolk_venture
+        self.prod = self.e.production
+
+    def tearDown(self):
+        try:
+            self.e.end_game()
+        except Exception:
+            pass
+
+    def test_a_trade_circuit_redistributes_store_goods(self):
+        setts = self.prod._settlements()
+        if len(setts) < 2:
+            self.skipTest("need two settlements")
+        a, b = setts[0], setts[1]
+        self.prod.store_of(a.name).clear()
+        self.prod.store_of(b.name).clear()
+        self.prod.store_of(a.name)["wheat"] = 20
+        self.prod.store_of(b.name)["pottery"] = 20
+        npc = self.tv._eligible(self.tv._cfg())[0]
+        v = {"purpose": "trade", "home": list(a.center()),
+             "dest": list(b.center()), "dest_name": b.name,
+             "phase": "out", "linger": 0, "turns": 0}
+        self.tv._load_cargo(v, a.center(), b.center())
+        self.assertIn("cargo", v, "the merchant loads a home surplus")
+        self.assertLess(self.prod.store_of(a.name)["wheat"], 20,
+                        "the good left the home store")
+        # arrive: unload at the destination, take on a return good
+        npc.metadata["venture"] = v
+        self.tv._trade_at_dest(npc, v)
+        self.assertGreater(self.prod.store_of(b.name).get("wheat", 0), 0,
+                           "the cargo reached the destination store")
+        if "return_cargo" in v:
+            self.tv._deliver(self.prod, a.name, v["return_cargo"])
+            self.assertGreater(
+                self.prod.store_of(a.name).get(v["return_cargo"]["good"], 0), 0,
+                "return goods reach the home store")
+        beats = [h["event"] for h in self.e.memory_manager.game_history
+                 if h["event"].startswith("[Town]") and "sold" in h["event"]]
+        self.assertTrue(beats, "the trade is announced")
+
+    def test_non_trade_venture_carries_no_cargo(self):
+        npc = self.tv._eligible(self.tv._cfg())[0]
+        v = {"purpose": "pilgrimage", "home": [5, 5], "dest": [40, 40],
+             "dest_name": "a shrine", "phase": "out", "linger": 0, "turns": 0}
+        # _load_cargo is only called for trade; a pilgrimage never carries goods
+        self.assertNotIn("cargo", v)
+
+
 class TestVenturePersistence(unittest.TestCase):
     def setUp(self):
         self._flag = os.environ.pop("LLM_RPG_NO_ADVENTURERS", None)

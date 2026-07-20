@@ -10422,3 +10422,17 @@ the same class of bug for NPCs) explicitly EXCLUDED the player.
 Verified: the death repro over 1500 explorer-away turns shows ZERO zombie states (was ~250 turns stuck at
 0 HP) — the hero now enters dying and recovers or dies cleanly. `tests/test_dying.py` +2 regression tests;
 dying/combat/defeat/wounds suites green.
+
+## 2026-07-19 — Trade ventures move real goods (George)
+
+The townsfolk trade venture was cosmetic (a merchant walked, but nothing moved). Now it's an EMBODIED caravan
+over the P16.2 settlement stores:
+- On a trade venture START, `_load_cargo`/`_take_surplus` pull a surplus good (up to `TRADE_LOAD`) from the
+  merchant's HOME settlement store (nearest settlement to home_spot via `production._nearest`).
+- On ARRIVAL at the destination settlement, `_trade_at_dest`/`_deliver` unload the cargo into its store and
+  take on a surplus of its own to carry home — a full trade circuit that redistributes goods (a "sold N wheat
+  at Riverside and took on 3 pottery" [Town] beat).
+- On the return home, the return goods are delivered into the home store.
+Complements `production._arbitrage` (the abstract caravan) with a real walking trader. Cargo rides the
+venture metadata (persists); a caravan lost mid-road just loses its goods (acceptable). Verified: a live
+combined-world run fires trade beats and moves goods between real stores; tests/test_townsfolk_venture.py +2.
