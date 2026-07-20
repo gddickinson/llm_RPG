@@ -275,5 +275,13 @@
     "value": 0,
     "rarity": "uncommon",
     "description": "A great scale the size of a shield, prised from the Charred Vale — its underside soft and unhardened where an old wound never re-scaled. Loremaster Yorwin would give much to study it, and more to name where such a soft place still lies on the living wyrm."
+  },
+  "curse_token": {
+    "id": "curse_token",
+    "name": "Hag's Curse-Token",
+    "item_type": "misc",
+    "value": 0,
+    "rarity": "uncommon",
+    "description": "A knot of human hair, bird-bone and blackthorn, still warm. The hag ties one to each soul she means to hollow — and it points, if you know the reading of such things, back to the hollow where the true shapes are kept. The hedge-witch Odile would know its counter."
   }
 }

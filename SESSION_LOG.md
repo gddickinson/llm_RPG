@@ -10436,3 +10436,18 @@ over the P16.2 settlement stores:
 Complements `production._arbitrage` (the abstract caravan) with a real walking trader. Cargo rides the
 venture metadata (persists); a caravan lost mid-road just loses its goods (acceptable). Verified: a live
 combined-world run fires trade beats and moves goods between real stores; tests/test_townsfolk_venture.py +2.
+
+## 2026-07-19 — Adventure #4 (data-only): "The Hex of Wychwood" witch/curse (George)
+
+A fourth complex adventure, again authored purely as data over the reusable AdventureSeeder — and the first
+to lean on the shapeshift/curse system (a genuinely different mechanic from dragon/undead/outlaw):
+- data/wychwood.json — "The Hex of Wychwood": a green hag hollows the folk of a woodland hamlet into beasts.
+  Act 1 (talk the half-cursed lad Tam / kill a hollowed beast / explore the Cursed Glade) -> Act 2 (fetch a
+  curse-token / bring it to the hedge-witch Odile for the counter-charm / find the Hag's Hollow) -> Act 3 the
+  boss Mother Yall with a branching Kill / Bind-and-free (lift every curse) / Take-the-greenstaff (dark) finale.
+  New content (data): green_hag boss (lvl 8, drops the legendary crones_greenstaff), curse_token clue,
+  crones_greenstaff (legendary staff whose USE grants the wolf-shape — ties into the shapeshift system);
+  reuses the existing hags_hexstone curse item as the dark-branch reward. Cast Granny Esk / Tam / Odile.
+Wired self.wychwood in engine_setup + save_load + the quest-giver validator + 3 playtest tests. Verified:
+content validator clean; Granny Esk offers Act 1; the greenstaff use shifts the player to a grey wolf; the
+seeded hag's real defeat completes the finale; tests/test_wychwood.py (8) + playtest/content suites green.

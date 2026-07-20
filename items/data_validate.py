@@ -387,7 +387,7 @@ def _check_quests() -> List[str]:
     try:
         from items.data_loader import load_data_file
         for _adv in ("adventure_tome.json", "ravenmoor.json",
-                     "emberfell.json", "blackbanner.json"):
+                     "emberfell.json", "blackbanner.json", "wychwood.json"):
             adv_npcs |= set((load_data_file(_adv) or {}).get("npcs", {}))
     except Exception:
         pass

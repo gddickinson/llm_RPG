@@ -106,6 +106,7 @@ def build_subsystems(engine, llm_model=None,
     from engine.adventure_seed import AdventureSeeder
     self.emberfell = AdventureSeeder(self, "emberfell.json")
     self.blackbanner = AdventureSeeder(self, "blackbanner.json")
+    self.wychwood = AdventureSeeder(self, "wychwood.json")
     from engine.adventurers import AdventurerSystem
     self.adventurers = AdventurerSystem(self)
     from engine.townsfolk_venture import TownsfolkVentureSystem
@@ -258,6 +259,7 @@ def seed_world(engine) -> None:
         ("Ravenmoor adventure", lambda: self.ravenmoor.seed()),
         ("Emberfell adventure", lambda: self.emberfell.seed()),
         ("Blackbanner adventure", lambda: self.blackbanner.seed()),
+        ("Wychwood adventure", lambda: self.wychwood.seed()),
         ("Adventurers", lambda: self.adventurers.seed()),  # P-M.6
     ):
         try:

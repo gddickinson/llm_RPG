@@ -464,5 +464,28 @@
       "damage": 2,
       "strength": 1
     }
+  },
+  "crones_greenstaff": {
+    "id": "crones_greenstaff",
+    "name": "The Crone's Greenstaff",
+    "item_type": "weapon",
+    "value": 1300,
+    "rarity": "legendary",
+    "description": "The gnarled blackthorn staff of the green hag, sap-green wood twisted with the shapes of a hundred stolen souls. In a steady hand it strikes hard and, once mastered, lends its bearer the hag's own gift of shapes — the wolf-form she wore to hunt the wood.",
+    "damage": 8,
+    "weapon_kind": "melee",
+    "damage_kind": "blunt",
+    "two_handed": true,
+    "use_effect": {
+      "shapeshift": {
+        "form": "wolf",
+        "duration": 30
+      }
+    },
+    "equip_bonuses": {
+      "intelligence": 2,
+      "wisdom": 1,
+      "damage": 1
+    }
   }
 }

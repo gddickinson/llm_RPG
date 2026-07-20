@@ -1092,5 +1092,106 @@
         "legend": "You struck Vharo down and lifted the black banner from the mud before his body cooled — and the outlaw host, who follow strength, roared your name instead of his. Marshal Orsa has a new and worse problem on the trade road now, and it wears your face."
       }
     ]
+  },
+  "q_wychwood_vanishings": {
+    "title": "The Vanishing Wood",
+    "description": "Granny Esk of Wychwood is losing her folk to the wood one by one, and beasts with human eyes prowl the eaves. Find Tam, a lad caught halfway into the curse, put down one of the hollowed beasts, and search the Cursed Glade where the changes take hold.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "cursed_lad_tam",
+        "required": 1,
+        "description": "Hear Tam's account before the curse takes his voice"
+      },
+      {
+        "type": "kill",
+        "target": "wolf",
+        "required": 1,
+        "description": "Put down one of the hollowed beasts"
+      },
+      {
+        "type": "explore",
+        "target": "The Cursed Glade",
+        "required": 1,
+        "description": "Search the Cursed Glade"
+      }
+    ],
+    "giver_id": "granny_esk",
+    "reward_gold": 70,
+    "reward_xp": 150,
+    "next_quest": "q_wychwood_charm"
+  },
+  "q_wychwood_charm": {
+    "title": "The Counter-Charm",
+    "description": "No blade alone breaks a hag's hex. Recover a curse-token from the glade, carry it to the hedge-witch Odile who works the green arts against the hag, and learn the counter-charm — then find the Hag's Hollow where the stolen shapes are kept.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "curse_token",
+        "required": 1,
+        "description": "Recover a hag's curse-token from the glade"
+      },
+      {
+        "type": "talk",
+        "target": "hedge_witch_odile",
+        "required": 1,
+        "description": "Bring the token to Odile and learn the counter-charm"
+      },
+      {
+        "type": "explore",
+        "target": "The Hag's Hollow",
+        "required": 1,
+        "description": "Track the curse-token to the Hag's Hollow"
+      }
+    ],
+    "giver_id": "granny_esk",
+    "prereq_quest": "q_wychwood_vanishings",
+    "reward_gold": 100,
+    "reward_xp": 240,
+    "next_quest": "q_wychwood_reckoning"
+  },
+  "q_wychwood_reckoning": {
+    "title": "The Green Hag",
+    "description": "Mother Yall the green hag keeps a hollow full of stolen shapes. Face her and decide Wychwood's fate — cut her down so her curses die with her, bind her with the counter-charm to lift every hex and free the hollowed folk, or take her greenstaff and the gift of shapes for your own.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "green_hag",
+        "required": 1,
+        "description": "Confront Mother Yall the Green Hag at her hollow"
+      }
+    ],
+    "giver_id": "granny_esk",
+    "prereq_quest": "q_wychwood_charm",
+    "reward_gold": 200,
+    "reward_xp": 500,
+    "reward_choices": [
+      {
+        "label": "Cut her down — her curses die with her",
+        "xp": 500,
+        "gold": 240,
+        "items": [
+          "crones_greenstaff"
+        ],
+        "legend": "You put Mother Yall down among her hanging charms, and as she died the green stones cracked one by one — across Wychwood the hollowed beasts stood up as men and women again, blinking in the dawn. You took her blackthorn staff from the wreck of the hollow."
+      },
+      {
+        "label": "Bind her with the counter-charm (free the shapes)",
+        "xp": 500,
+        "gold": 160,
+        "items": [],
+        "legend": "You spoke the counter-charm over the heart-stone and unknotted the hag's whole hoard at once — every stolen shape flew home to its owner, and Mother Yall, bound and shapeless, shrieked away into the deep wood. Wychwood is whole again, and wary of the trees."
+      },
+      {
+        "label": "Take her greenstaff and the gift of shapes",
+        "xp": 500,
+        "gold": 90,
+        "items": [
+          "crones_greenstaff",
+          "hags_hexstone"
+        ],
+        "legend": "You lifted the green hag's staff before her body cooled and felt the hundred stolen shapes turn to you as their new keeper. Some of Wychwood's lost may never come home now — but the gift of shapes is yours, and the wood knows a new name to fear."
+      }
+    ]
   }
 }

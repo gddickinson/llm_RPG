@@ -1710,5 +1710,38 @@
       "Sack the settlements and carve out a kingdom",
       "Never be a nameless thief again"
     ]
+  },
+  "green_hag": {
+    "name": "Mother Yall, the Green Hag",
+    "class": "monster",
+    "race": "troll",
+    "hp": 88,
+    "level": 8,
+    "symbol": "H",
+    "description": "The green hag of Wychwood — a stooped, moss-skinned crone with a smile of black teeth and eyes like bog-water. She steals folk one by one, knots their true shape into her charms, and lets the hollowed things she leaves behind run the wood on four legs. She fights with tooth, claw, and hex.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "spawn_terrain": [
+      "forest",
+      "swamp"
+    ],
+    "stats": {
+      "strength": 18,
+      "constitution": 18,
+      "intelligence": 16,
+      "wisdom": 15
+    },
+    "natural_damage": 13,
+    "speed": 1.0,
+    "active": "always",
+    "flee_below": 0.0,
+    "guaranteed_drops": [
+      "crones_greenstaff"
+    ],
+    "goals": [
+      "Knot the folk of Wychwood into my charms one by one",
+      "Keep my hollow hidden deep in the wood",
+      "Add every shape to my hoard"
+    ]
   }
 }
