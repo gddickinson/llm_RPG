@@ -84,7 +84,16 @@ class TestCompanions(unittest.TestCase):
         minstrel.position = (10, 10)
         wmap.place_character(minstrel, 10, 10)
         self.assertEqual(minstrel.metadata.get("order", "follow"), "follow")
-        self.engine.companion_manager.update()
+        # Isolate the roster to just the companion so no RNG-spawned bystander
+        # or hostile gives it something to fight/heal — with nothing else to do
+        # it must reach the FOLLOW branch and emerge from the building. (Without
+        # this the test flakes when the seeded world drops a brigand next door.)
+        saved = dict(self.engine.npc_manager.npcs)
+        self.engine.npc_manager.npcs = {minstrel.id: minstrel}
+        try:
+            self.engine.companion_manager.update()
+        finally:
+            self.engine.npc_manager.npcs = saved
         tx, ty = minstrel.position
         self.assertNotEqual(
             wmap.terrain[ty][tx], TerrainType.BUILDING,
