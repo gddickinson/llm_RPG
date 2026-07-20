@@ -10595,3 +10595,16 @@ LEGENDARY deeds (the branching-finale endings + slain legends) from the away per
 beats. So the player returns to: "Alara grew 2 levels… gathered a band: Ulric Bearclaw, Dame Seraphine…, took
 on 1 quest and saw 1 through / ★ You cut Vharo Blackbanner down beneath his own standard." tests/test_away_digest
 +1; suite green.
+
+## 2026-07-20 — Fix: recruited companions trapped inside the guild hall (George)
+
+George watched autoplay: the hero recruits adventurers THROUGH THE WINDOW (they gather ON the guild hall's
+BUILDING footprint), and they stayed trapped inside — the catch-up warp used `move_character`, which the wall
+guard REJECTS for a character on a building tile (it can only exit via the south door, which BFS-follow never
+found). Two fixes in `companions._companion` follow:
+- the catch-up now teleports via `place_character` (bypasses the wall guard, as a "rejoin off-screen" should);
+- `_stuck_indoors` pulls a companion on an un-walkable overworld tile (a BUILDING footprint) out to the leader
+  AT ONCE, regardless of distance — so a companion recruited through a window emerges immediately instead of
+  waiting until the hero is 12 tiles away.
+Verified: 15 turns after recruiting, all 3 companions are on GRASS following the hero (were stuck on BUILDING
+at dist 39 forever). Companion/living-agent/party suites (60) green.

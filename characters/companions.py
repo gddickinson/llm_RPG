@@ -278,11 +278,16 @@ class CompanionManager:
                 is None and getattr(self.engine, "current_dungeon", None) is None
             if on_overworld and npc.metadata.get("order", "follow") != "hold":
                 px, py = self.engine.player.position
-                if abs(npc.position[0] - px) + abs(npc.position[1] - py) \
-                        > CATCHUP_DIST:
+                far = abs(npc.position[0] - px) + abs(npc.position[1] - py) \
+                    > CATCHUP_DIST
+                # a companion RECRUITED THROUGH A WINDOW starts ON the guild
+                # hall's BUILDING footprint — it can't path out the door, so it
+                # was trapped inside forever (George). Pull a companion stuck
+                # on an un-walkable tile out to the leader at once.
+                if far or self._stuck_indoors(npc):
                     spot = self._catchup_spot(px, py)
                     if spot is not None:
-                        self.engine.world.map.move_character(npc, *spot)
+                        self.engine.world.map.place_character(npc, *spot)
                     continue
             # M.10b self-preservation comes before orders: a hurt companion
             # quaffs its OWN potion, and one still critical BREAKS OFF even
@@ -368,12 +373,23 @@ class CompanionManager:
         if d > CATCHUP_DIST:
             spot = self._catchup_spot(tx, ty)
             if spot is not None:
-                self.engine.world.map.move_character(comp, *spot)
+                self.engine.world.map.place_character(comp, *spot)
             return
         # Real pathfinding: greedy steps trap in concave terrain (the
         # historic follow flake); BFS with a greedy fallback does not.
         from engine.squad_tactics import path_step
         path_step(self.engine.world.map, comp, (tx, ty))
+
+    def _stuck_indoors(self, npc) -> bool:
+        """On an un-walkable overworld tile (a BUILDING footprint) it can't
+        path off — e.g. recruited through a window while inside the hall."""
+        from world.world_map import TerrainType
+        wmap = self.engine.world.map
+        x, y = npc.position
+        if not (0 <= x < wmap.width and 0 <= y < wmap.height):
+            return False
+        return wmap.terrain[y][x] in (TerrainType.BUILDING, TerrainType.WATER,
+                                      TerrainType.MOUNTAIN)
 
     def _catchup_spot(self, tx, ty):
         """A walkable, unoccupied tile beside the leader to rejoin at."""
