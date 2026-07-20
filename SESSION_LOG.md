@@ -10618,3 +10618,17 @@ best affordable damage spell (`agent_sense._attack_spell`) BEFORE the swarm-flee
 swarmed with no screen still flees (rule 2), but with a party near (`_party_near`) — or the foe still at range
 — it stands and blasts. Result: wizard casts 67 → 123, flee 0.58 → 0.26. The party (now the strong melee band)
 screens the caster while it throws spells. Agent/ambition/companies/building suites (85) green.
+
+## 2026-07-20 — Smarter caster: nuke the tough, conserve on the weak, AoE the cluster (George)
+
+George: "does the wizard select more powerful magic for more powerful foes — and take range effects into
+account?" It didn't — `_attack_spell` picked the most mana-EFFICIENT spell always, so it threw magic_missile
+(6) at everything and never used fireball (12/AoE) or lightning_bolt (10). Rewrote `agent_sense._attack_spell`
+to match the spell to the situation (it now takes the target + the foe list):
+- a TOUGH single foe (hp>20) → the biggest reachable hit (a nuke) to fell it fast;
+- a CLUSTER → an AREA spell, scored by how many foes its blast catches (fireball over magic_missile);
+- a lone SOFT foe → the most mana-efficient spell (don't waste a fireball on a rat);
+- RANGE/reach still filters (only spells that reach), so a foe at dist 7 gets lightning_bolt (range 8), not
+  fireball (range 6).
+Verified against a mock roster: weak→magic_missile, tough→fireball, cluster→fireball, far-tough→lightning_bolt.
+Living-agent/spells/ambition suites (71) green.

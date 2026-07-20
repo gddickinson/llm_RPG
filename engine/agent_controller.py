@@ -240,7 +240,7 @@ class AgentController:
             nearest = foes[0][0]
             eucd = math.hypot(char.position[0] - nearest.position[0],
                               char.position[1] - nearest.position[1])
-            spell = _attack_spell(char, eucd)
+            spell = _attack_spell(char, eucd, nearest, foes)
             if spell is not None \
                     and (len(adj) < 2 or self._party_near(engine, char)):
                 return ("cast", spell, nearest)
@@ -286,7 +286,7 @@ class AgentController:
             # of wasting casts on a foe just out of a spell's radius (George).
             eucd = math.hypot(char.position[0] - target.position[0],
                               char.position[1] - target.position[1])
-            spell = _attack_spell(char, eucd)
+            spell = _attack_spell(char, eucd, target, foes)
             if spell is not None:
                 return ("cast", spell, target)
             if d <= 1:

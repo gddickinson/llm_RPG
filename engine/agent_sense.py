@@ -62,10 +62,13 @@ def _can_shoot(char) -> bool:
         return False
 
 
-def _attack_spell(char, dist):
-    """The best DAMAGE spell the caster knows, can afford the mana for, and
-    that reaches `dist` — its id, or None. Lets a caster away-hero fight
-    with magic instead of trading melee blows (M.8c)."""
+def _attack_spell(char, dist, target=None, foes=None):
+    """The best DAMAGE spell to throw NOW (id, or None) — the caster must know
+    it, afford the mana, and it must REACH `dist`. It matches the spell to the
+    situation (George): a TOUGH foe (or a cluster) gets the biggest hit to fell
+    it fast; a lone SOFT foe gets the most mana-efficient spell (don't waste a
+    fireball on a rat); an AREA spell's worth scales with how many foes its
+    blast would catch. Range/reach and area both count."""
     meta = getattr(char, "metadata", {}) or {}
     known = meta.get("spells_known", [])
     if not known:
@@ -75,20 +78,35 @@ def _attack_spell(char, dist):
         from engine.spells import SPELL_REGISTRY
     except Exception:
         return None
-    # pick the most mana-EFFICIENT reachable spell (damage per mana), so
-    # the pool lasts across many fights; a bigger nuke breaks ties
-    scored = []
+    tgt_hp = getattr(target, "hp", 12) if target is not None else 12
+    cand = []
     for sid in known:
         sp = SPELL_REGISTRY.get(sid)
         if sp is None or sp.damage <= 0:
             continue
-        if sp.mana_cost > mana or sp.range < dist:
+        if sp.mana_cost > mana or sp.range < dist:   # afford it + it REACHES
             continue
-        scored.append((sp.damage / max(1, sp.mana_cost), sp.damage, sid))
-    if not scored:
+        eff = float(sp.damage)
+        # a BLAST that catches a cluster is worth the extra foes it hits
+        area = getattr(sp, "area", 0) or 0
+        if area > 0 and target is not None and foes:
+            tx, ty = target.position
+            hit = sum(1 for f, _ in foes
+                      if ((f.position[0] - tx) ** 2
+                          + (f.position[1] - ty) ** 2) ** 0.5 <= area)
+            eff *= max(1, min(hit, 4))
+        cand.append((sp, eff))
+    if not cand:
         return None
-    scored.sort(reverse=True)
-    return scored[0][2]
+    # tough single foe OR a cluster (some spell's effective dmg beats its raw)
+    # → maximise the hit; a lone soft foe → maximise mana efficiency
+    tough = tgt_hp > 20 or any(e > sp.damage for sp, e in cand)
+    if tough:
+        cand.sort(key=lambda c: (c[1], -c[0].mana_cost), reverse=True)
+    else:
+        cand.sort(key=lambda c: (c[1] / max(1, c[0].mana_cost), c[1]),
+                  reverse=True)
+    return cand[0][0].id
 
 
 def _surplus_items(char):
