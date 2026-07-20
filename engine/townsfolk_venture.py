@@ -31,6 +31,16 @@ _WALKABLE = {TerrainType.GRASS, TerrainType.FOREST, TerrainType.ROAD,
 TRADE_LOAD = 4        # units a merchant carries on a trade run
 TRADE_MIN = 6         # a settlement must hold this many to spare a surplus
 
+# notable places worth a venture (settlements are added from the production
+# layer at runtime) — matched as whole WORDS so "vale" catches "Charred Vale"
+# but NOT "Oakvale" (the world's own name), which would let every town
+# building through
+NOTABLE_KEYS = frozenset((
+    "village", "hamlet", "town", "city", "chapel", "temple", "cathedral",
+    "shrine", "abbey", "monastery", "ruin", "keep", "castle", "waystone",
+    "guildhall", "barrow", "grove", "hollow", "vale", "wood", "cleft",
+    "stair", "cave", "mine", "roost", "mire", "fen", "moor"))
+
 
 def _store_cap() -> int:
     try:
@@ -311,12 +321,21 @@ class TownsfolkVentureSystem:
                      cfg: dict) -> Optional[Tuple[Tuple[int, int], str]]:
         lo, hi = int(cfg.get("min_trip", 12)), int(cfg.get("max_trip", 110))
         prefer = [w.lower() for w in purpose.get("prefer", [])]
-        skip = ("well", "stable", "sign", "board", "gate", "tower",
-                "colosseum", "arena")
+        # a venture is a trip to a NOTABLE PLACE (a settlement, shrine, ruin,
+        # landmark), not a random house or market stall — an allowlist so the
+        # beats read evocatively ("a pilgrimage to the Cathedral", never "an
+        # errand to Bakery 15"). Settlements come from the production layer.
+        setts = set()
+        prod = getattr(self.engine, "production", None)
+        if prod is not None:
+            try:
+                setts = {s.name for s in prod._settlements()}
+            except Exception:
+                setts = set()
         far, any_far = [], []
         for loc in getattr(self.engine.world, "locations", []):
             name = getattr(loc, "name", "")
-            if not name or any(w in name.lower() for w in skip):
+            if not name or not (name in setts or self._is_notable(name)):
                 continue
             spot = self._loc_spot(loc)
             if spot is None:
@@ -331,6 +350,13 @@ class TownsfolkVentureSystem:
         if pool:
             return self.rng.choice(pool)
         return self._wild_spot(home, lo, hi)
+
+    def _is_notable(self, name: str) -> bool:
+        for w in name.lower().replace("'", " ").split():
+            base = w[:-1] if (w.endswith("s") and len(w) > 3) else w
+            if w in NOTABLE_KEYS or base in NOTABLE_KEYS:
+                return True
+        return False
 
     def _loc_spot(self, loc) -> Optional[Tuple[int, int]]:
         cx = getattr(loc, "x", None)

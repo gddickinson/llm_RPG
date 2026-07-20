@@ -10473,3 +10473,14 @@ player got NO feedback. Added a shared `_surface` helper (logs AND pushes to `me
 objective-complete / ready-to-turn-in / finale-legend beats through it, each announced ONCE (a transient
 `_announced`/`_ready_announced` flag; cleared when a repeatable quest re-arms). Confirmed bonus: the chronicle
 observes `[Legend]`, so adventure finales now enter the "Chronicle of the Age" saga. Quest suites (48) green.
+
+## 2026-07-19 — Polish: venture destinations are NOTABLE places (George)
+
+Playtest soaks showed townsfolk venturing to mundane in-town buildings ("an errand to Bakery 15", "wanders
+off toward Cottage 4"). Reworked `_destination` from a blocklist to an allowlist of NOTABLE place types
+(settlements from the production layer + a `NOTABLE_KEYS` set: village/chapel/temple/shrine/waystone/guildhall/
+ruin/keep/grove/hollow/vale/wood/moor/… — dropped "camp" so nobody pilgrimages to a bandit camp). Keys are
+matched as whole WORDS so "vale" catches "Charred Vale" but NOT "Oak-vale" (the world's own name, which had let
+every town building through). Now the beats read evocatively — "a pilgrimage to Millbrook Chapel", "wanders off
+toward Greenhollow Village". test_townsfolk_venture green; a 5-disposition soak sweep (balanced/explorer/
+valiant/greedy/sociable) runs clean with the death fix + ventures + trade + all adventures active.
