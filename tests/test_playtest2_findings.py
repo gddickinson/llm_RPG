@@ -25,7 +25,9 @@ class TestPlaytest2Findings(unittest.TestCase):
         from characters.npc_presets import NPC_SPECS
         from engine.adventure_tome import adventure_npc_ids
         from engine.ravenmoor import adventure_npc_ids as ravenmoor_npc_ids
-        adv = adventure_npc_ids() | ravenmoor_npc_ids()
+        from engine.adventure_seed import npc_ids_of
+        adv = adventure_npc_ids() | ravenmoor_npc_ids() \
+            | npc_ids_of("emberfell.json")
         for qid, quest in self.engine.quest_manager.quests.items():
             if qid.startswith("radiant_"):
                 continue

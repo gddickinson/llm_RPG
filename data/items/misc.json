@@ -144,7 +144,7 @@
     "item_type": "book",
     "value": 150,
     "rarity": "rare",
-    "description": "Alzara's teaching copy \u2014 margins full of scorch marks.",
+    "description": "Alzara's teaching copy — margins full of scorch marks.",
     "use_effect": {
       "teach_spell": "fireball"
     }
@@ -163,7 +163,7 @@
     "item_type": "misc",
     "value": 0,
     "rarity": "rare",
-    "description": "A folded cipher in the Duke's own hand \u2014 proof, if it can be read, of a plot against the heir."
+    "description": "A folded cipher in the Duke's own hand — proof, if it can be read, of a plot against the heir."
   },
   "game_hide": {
     "id": "game_hide",
@@ -171,7 +171,7 @@
     "item_type": "misc",
     "value": 12,
     "stackable": true,
-    "description": "The hide of a wild beast \u2014 a tanner's raw stock."
+    "description": "The hide of a wild beast — a tanner's raw stock."
   },
   "feathers": {
     "id": "feathers",
@@ -186,7 +186,7 @@
     "name": "Rucksack",
     "item_type": "misc",
     "value": 45,
-    "description": "A sturdy leather pack \u2014 room for a good deal more.",
+    "description": "A sturdy leather pack — room for a good deal more.",
     "metadata": {
       "carry_bonus": 8
     }
@@ -208,7 +208,7 @@
     "item_type": "misc",
     "value": 450,
     "rarity": "rare",
-    "description": "Its inside is far larger than its outside \u2014 an enchanter's marvel.",
+    "description": "Its inside is far larger than its outside — an enchanter's marvel.",
     "metadata": {
       "carry_bonus": 40
     }
@@ -218,7 +218,7 @@
     "name": "Quiver",
     "item_type": "misc",
     "value": 35,
-    "description": "A hip quiver \u2014 keeps arrows and bolts close, off your back.",
+    "description": "A hip quiver — keeps arrows and bolts close, off your back.",
     "metadata": {
       "ammo_capacity": 3
     }
@@ -245,7 +245,7 @@
     "item_type": "misc",
     "value": 40,
     "rarity": "uncommon",
-    "description": "A cold green stone. The moment you grasp it, a witch's hex takes hold \u2014 and there is no letting go until the curse is lifted.",
+    "description": "A cold green stone. The moment you grasp it, a witch's hex takes hold — and there is no letting go until the curse is lifted.",
     "use_effect": {
       "shapeshift": {
         "form": "toad",
@@ -259,7 +259,7 @@
     "item_type": "misc",
     "value": 55,
     "rarity": "uncommon",
-    "description": "A knuckle of black bone. Handle it and a hag's curse leaves you a frog \u2014 for a while.",
+    "description": "A knuckle of black bone. Handle it and a hag's curse leaves you a frog — for a while.",
     "use_effect": {
       "shapeshift": {
         "form": "frog",
@@ -267,5 +267,13 @@
         "duration": 25
       }
     }
+  },
+  "scorched_scale": {
+    "id": "scorched_scale",
+    "name": "Cindermaw's Scale",
+    "item_type": "misc",
+    "value": 0,
+    "rarity": "uncommon",
+    "description": "A great scale the size of a shield, prised from the Charred Vale — its underside soft and unhardened where an old wound never re-scaled. Loremaster Yorwin would give much to study it, and more to name where such a soft place still lies on the living wyrm."
   }
 }

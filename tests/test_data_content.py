@@ -157,8 +157,9 @@ class TestQuestAndNpcData(unittest.TestCase):
         from characters.npc_presets import NPC_SPECS
         from engine.adventure_tome import adventure_npc_ids
         from engine.ravenmoor import adventure_npc_ids as ravenmoor_npc_ids
+        from engine.adventure_seed import npc_ids_of
         known = set(NPC_SPECS) | adventure_npc_ids() \
-            | ravenmoor_npc_ids()                       # adventure NPCs count
+            | ravenmoor_npc_ids() | npc_ids_of("emberfell.json")  # adv NPCs
         for qid, factory in QUEST_TEMPLATES.items():
             quest = factory()
             if quest.giver_id:

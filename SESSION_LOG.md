@@ -10319,3 +10319,31 @@ dimensions so things are less crowded. Done:
   castle) are folded in — their world_kinds remain functional for saves/flags/tests.
 Verified: a 400-turn away-hero soak in the combined world runs clean (no crash, no freeze), with Oakvale, the
 castle, guild halls, 6 waystones and 4 lairs all present in the single map.
+
+## 2026-07-19 — Reusable adventure seeder + "The Wyrm of Emberfell" (George: rich content)
+
+George wants the game "much more detailed" with "complex adventures… multiple objectives and layers of
+detail". Two adventures now exist as bespoke seeder modules (`adventure_tome`, `ravenmoor`) — near-duplicate
+code. Distilled the shared logic into ONE reusable, fully DATA-DRIVEN seeder so future adventures are
+data-only:
+- **`engine/adventure_seed.py`** — `AdventureSeeder(engine, "<file>.json")`: reads `areas` (plants a `Location`
+  per area on the required terrain, far from spawn, spaced apart), `npcs` (seats the custom cast, kept OUT of
+  `data/npcs/`), `clues` (drops a FETCH-clue item at an area), `foes` (guards an area with monsters incl. the
+  boss), and a `rumor`. `npc_ids_of(file)` exposes the cast to the quest validators. `is_active`/`area_pos`,
+  persists via `to_dict`/`from_dict`. A NEW adventure = a JSON file + a 3-line registration.
+- **"The Wyrm of Emberfell"** (`data/emberfell.json`) — the first adventure authored purely as data. A 3-act
+  DRAGON quest for variety (vs Ravenmoor's undead):
+  - **Act 1 "The Burning Season"** (`q_emberfell_raids`): talk Shepherd Bryn → drive off a raiding
+    `dragon_whelp` → climb to the Charred Vale.
+  - **Act 2 "The Wyrm's Bane"** (`q_emberfell_weakness`): fetch `scorched_scale` from the vale → bring it to
+    the exiled dragon-scholar **Loremaster Yorwin** to learn the wyrm's soft spot → scout the Wyrm's Roost.
+  - **Act 3 "The Wyrm of Emberfell"** (`q_emberfell_reckoning`): face the named boss **Cindermaw** — a
+    branching **Slay** (claim the legendary `emberfang_spear`) / **Drive-off** / **Bargain-for-hoard** finale.
+  - New content (all data): `emberfell_wyrm` boss (young-dragon-shaped breath telegraph + terror/enrage
+    phases, `guaranteed_drops` the wyrmspear), `scorched_scale` clue, `wyrmsbane_draught` buff, `emberfang_spear`
+    legendary (two-handed pierce, +2 dmg/+1 STR, lacerate); cast Reeve Halden / Shepherd Bryn / Loremaster Yorwin.
+- Wired in `engine_setup` (`self.emberfell`, seeded with the adventurers), `save_load`, and the quest-giver
+  validator + the 3 playtest tests (fold `npc_ids_of("emberfell.json")` into the known-giver set).
+Verified: content validator clean; `tests/test_emberfell.py` (9 tests) + the ravenmoor/data-content/playtest/
+combined/castle suites all green. The wyrm's boss block matches `young_dragon` exactly, so the finale gets a
+real breath telegraph.

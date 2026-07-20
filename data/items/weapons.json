@@ -445,5 +445,24 @@
       "wisdom": 1
     },
     "description": "A holy mace that shatters the undead to dust."
+  },
+  "emberfang_spear": {
+    "id": "emberfang_spear",
+    "name": "Emberfang, the Wyrmspear",
+    "item_type": "weapon",
+    "value": 1400,
+    "rarity": "legendary",
+    "description": "A long spear forged from Cindermaw's own jaw-fang and shod in the slag of its hoard. It runs hot in the hand and bites deepest into scaled and burning things — the reward of the wyrm-slayer of Emberfell.",
+    "damage": 12,
+    "weapon_kind": "melee",
+    "damage_kind": "pierce",
+    "two_handed": true,
+    "use_effect": {
+      "weapon_action": "lacerate"
+    },
+    "equip_bonuses": {
+      "damage": 2,
+      "strength": 1
+    }
   }
 }

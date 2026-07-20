@@ -1,7 +1,7 @@
 {
   "q_tome_whisper": {
     "title": "The Whisper Beneath the Marsh",
-    "description": "Sage Ondrel of Mirefen says a drowned light stirs in the southern marsh \u2014 the failing wards of Vael'Zhur's sunken tower-library. Find the Drowned Vault, that you may learn what wakes there.",
+    "description": "Sage Ondrel of Mirefen says a drowned light stirs in the southern marsh — the failing wards of Vael'Zhur's sunken tower-library. Find the Drowned Vault, that you may learn what wakes there.",
     "objectives": [
       {
         "type": "explore",
@@ -17,7 +17,7 @@
   },
   "q_tome_keys": {
     "title": "The Scattered Keys",
-    "description": "The Vault's drowning-wards can only be safely stilled with the Warding Key \u2014 broken into three fragments, scattered to the Thornwatch Ruins, the Reedmarsh warren, and the marsh-witch Ysolde. Gather all three and bring them to Ondrel.",
+    "description": "The Vault's drowning-wards can only be safely stilled with the Warding Key — broken into three fragments, scattered to the Thornwatch Ruins, the Reedmarsh warren, and the marsh-witch Ysolde. Gather all three and bring them to Ondrel.",
     "objectives": [
       {
         "type": "fetch",
@@ -49,7 +49,7 @@
   },
   "q_tome_reckoning": {
     "title": "The Drowned Sanctum",
-    "description": "Descend the Drowned Vault to its flooded sanctum, face Vael'Zhur the lich, and decide the fate of the Sunken Tome \u2014 seal it, destroy it, or claim its power. Warden Halric would see it sealed.",
+    "description": "Descend the Drowned Vault to its flooded sanctum, face Vael'Zhur the lich, and decide the fate of the Sunken Tome — seal it, destroy it, or claim its power. Warden Halric would see it sealed.",
     "objectives": [
       {
         "type": "kill",
@@ -71,7 +71,7 @@
         "items": [
           "warding_key"
         ],
-        "legend": "With the Warding Key made whole, you bound Vael'Zhur back into his drowning-sleep and sealed the Vault forever \u2014 the marsh-light troubles Mirefen no more."
+        "legend": "With the Warding Key made whole, you bound Vael'Zhur back into his drowning-sleep and sealed the Vault forever — the marsh-light troubles Mirefen no more."
       },
       {
         "label": "Destroy the Tome",
@@ -87,7 +87,7 @@
         "items": [
           "sunken_tome"
         ],
-        "legend": "You took the Sunken Tome for your own. Its cold whisper follows you now \u2014 Vael'Zhur's soul-draining art is yours, and perhaps one day his fate."
+        "legend": "You took the Sunken Tome for your own. Its cold whisper follows you now — Vael'Zhur's soul-draining art is yours, and perhaps one day his fate."
       }
     ]
   },
@@ -255,7 +255,7 @@
   },
   "supply_run": {
     "title": "Supply Run",
-    "description": "Bram needs an iron bar carried to Hilde at the Stonepine smithy \u2014 the picks won't mend themselves.",
+    "description": "Bram needs an iron bar carried to Hilde at the Stonepine smithy — the picks won't mend themselves.",
     "objectives": [
       {
         "type": "deliver",
@@ -275,7 +275,7 @@
   },
   "the_healers_art": {
     "title": "The Healer's Art",
-    "description": "Brother Anselm offers to teach the healing prayer to one who has proven they understand herbs \u2014 brew a healing potion with your own hands first.",
+    "description": "Brother Anselm offers to teach the healing prayer to one who has proven they understand herbs — brew a healing potion with your own hands first.",
     "objectives": [
       {
         "type": "fetch",
@@ -296,7 +296,7 @@
   },
   "caer_aldwyn": {
     "title": "The Cellars of Caer Aldwyn",
-    "description": "Melody's grandmother's songs say the ruined keep's treasury was never opened. Bandits nest in the ruins now \u2014 clear them out and walk the old halls, and she'll finish the last verse at last.",
+    "description": "Melody's grandmother's songs say the ruined keep's treasury was never opened. Bandits nest in the ruins now — clear them out and walk the old halls, and she'll finish the last verse at last.",
     "objectives": [
       {
         "type": "explore",
@@ -324,7 +324,7 @@
   },
   "the_fence": {
     "title": "The Fence",
-    "description": "Karim suspects someone respectable is fencing the bandits' loot. Take stolen jewelry off a bandit and bring it to him unfenced \u2014 the engraving will name the caravan it was robbed from.",
+    "description": "Karim suspects someone respectable is fencing the bandits' loot. Take stolen jewelry off a bandit and bring it to him unfenced — the engraving will name the caravan it was robbed from.",
     "objectives": [
       {
         "type": "deliver",
@@ -347,7 +347,7 @@
   },
   "ballad_of_you": {
     "title": "The Ballad of You",
-    "description": "Melody insists your legend needs verses \u2014 and verses need witnesses. Introduce yourself to every barkeep in the region so they can corroborate her wilder claims. ('Artistic license requires signatures,' she says.)",
+    "description": "Melody insists your legend needs verses — and verses need witnesses. Introduce yourself to every barkeep in the region so they can corroborate her wilder claims. ('Artistic license requires signatures,' she says.)",
     "objectives": [
       {
         "type": "talk",
@@ -378,7 +378,7 @@
   },
   "melodys_lost_ballad": {
     "title": "The Lost Ballad",
-    "description": "Melody's masterpiece needs a finale \u2014 and inspiration is thirsty work. Bring her two bottles of wine and she'll finish it on the road with you.",
+    "description": "Melody's masterpiece needs a finale — and inspiration is thirsty work. Bring her two bottles of wine and she'll finish it on the road with you.",
     "objectives": [
       {
         "type": "fetch",
@@ -414,7 +414,7 @@
   },
   "castle_whispers": {
     "title": "Whispers in the Hall",
-    "description": "Queen Maera fears Duke Voss moves against her son. Sound out those who see and hear everything at court \u2014 the maid and the bard.",
+    "description": "Queen Maera fears Duke Voss moves against her son. Sound out those who see and hear everything at court — the maid and the bard.",
     "objectives": [
       {
         "type": "talk",
@@ -513,7 +513,7 @@
   },
   "castle_voss_gambit": {
     "title": "The Duke's Offer",
-    "description": "Duke Voss knows you hold his cipher. He offers you gold and a place at his side \u2014 betray Prince Cedric, and the throne may yet change hands.",
+    "description": "Duke Voss knows you hold his cipher. He offers you gold and a place at his side — betray Prince Cedric, and the throne may yet change hands.",
     "giver_id": "duke_voss",
     "prereq_quest": "castle_the_spy",
     "objectives": [
@@ -627,7 +627,7 @@
   },
   "main_5_the_reckoning": {
     "title": "The Reckoning",
-    "description": "The shadow over the realm has a name and a shape: the Elder Wyrm. Face it in its lair and end the darkness \u2014 or fall, and let it consume all.",
+    "description": "The shadow over the realm has a name and a shape: the Elder Wyrm. Face it in its lair and end the darkness — or fall, and let it consume all.",
     "giver_id": "tower_wizard_01",
     "prereq_quest": "main_4_the_gathering_night",
     "objectives": [
@@ -650,7 +650,7 @@
   },
   "timed_bounty": {
     "title": "Before the Trail Goes Cold",
-    "description": "A marauder was sighted at the edge of the wilds. Run it down before it slips away \u2014 you have only until dusk.",
+    "description": "A marauder was sighted at the edge of the wilds. Run it down before it slips away — you have only until dusk.",
     "giver_id": "guard_01",
     "objectives": [
       {
@@ -666,7 +666,7 @@
   },
   "q_clear_bandit_camp": {
     "title": "Break the Bandit Camp",
-    "description": "Outlaws raid the roads from a camp hidden in the forest. Find it and cut down their chief \u2014 scatter the band and the wilds will run far safer.",
+    "description": "Outlaws raid the roads from a camp hidden in the forest. Find it and cut down their chief — scatter the band and the wilds will run far safer.",
     "objectives": [
       {
         "type": "kill",
@@ -684,7 +684,7 @@
   },
   "bounty_wolves": {
     "title": "Wolf Bounty",
-    "description": "The wolves grow bold on the outskirts. The watch pays a standing bounty for every pack thinned \u2014 come back whenever they gather again.",
+    "description": "The wolves grow bold on the outskirts. The watch pays a standing bounty for every pack thinned — come back whenever they gather again.",
     "objectives": [
       {
         "type": "kill",
@@ -724,7 +724,7 @@
   },
   "cull_goblins": {
     "title": "The Goblin Menace",
-    "description": "Goblins keep creeping down from the hills to pilfer and pillage. There's coin for anyone who keeps their numbers down \u2014 a standing arrangement.",
+    "description": "Goblins keep creeping down from the hills to pilfer and pillage. There's coin for anyone who keeps their numbers down — a standing arrangement.",
     "objectives": [
       {
         "type": "kill",
@@ -764,7 +764,7 @@
   },
   "bring_brigand_to_justice": {
     "title": "Bring the Brigand to Justice",
-    "description": "The guard wants Gorkash the brigand answered for. Cut him down on the East Road \u2014 or take his bargain instead, and let him walk.",
+    "description": "The guard wants Gorkash the brigand answered for. Cut him down on the East Road — or take his bargain instead, and let him walk.",
     "objectives": [
       {
         "type": "kill",
@@ -856,7 +856,7 @@
   },
   "q_ravenmoor_reckoning": {
     "title": "The Barrow-Wight",
-    "description": "Aedelric, the barrow-king woken by Corvin's greed, hollows the living to raise the host he led in life. Face him at the Sunken Barrow and end the hollowing \u2014 destroy him and bury his crown, lay him to his rest by Sister Alenn's rite, or take the grave-crown's cold power for your own.",
+    "description": "Aedelric, the barrow-king woken by Corvin's greed, hollows the living to raise the host he led in life. Face him at the Sunken Barrow and end the hollowing — destroy him and bury his crown, lay him to his rest by Sister Alenn's rite, or take the grave-crown's cold power for your own.",
     "objectives": [
       {
         "type": "kill",
@@ -882,7 +882,7 @@
         "xp": 400,
         "gold": 120,
         "items": [],
-        "legend": "By the dawn-rite, you unmade the wight's grief instead of his body \u2014 Aedelric bowed his crowned head and passed into a true and grateful sleep. Ravenmoor mourns its dead, and honours yours."
+        "legend": "By the dawn-rite, you unmade the wight's grief instead of his body — Aedelric bowed his crowned head and passed into a true and grateful sleep. Ravenmoor mourns its dead, and honours yours."
       },
       {
         "label": "Claim the grave-crown's power",
@@ -891,7 +891,105 @@
         "items": [
           "grave_crown"
         ],
-        "legend": "You lifted the black-iron crown from the wight's brow and felt the grave's cold settle into your bones. Aedelric is ended \u2014 but Ravenmoor whispers that its saviour's eyes have gone grey and far away."
+        "legend": "You lifted the black-iron crown from the wight's brow and felt the grave's cold settle into your bones. Aedelric is ended — but Ravenmoor whispers that its saviour's eyes have gone grey and far away."
+      }
+    ]
+  },
+  "q_emberfell_raids": {
+    "title": "The Burning Season",
+    "description": "Reeve Halden of Emberfell has buried three neighbours to the wyrm's brood this season. Speak with Shepherd Bryn who lost his flock, drive off a raiding whelp, and climb to the Charred Vale to find where the great wyrm hunts.",
+    "objectives": [
+      {
+        "type": "talk",
+        "target": "shepherd_bryn",
+        "required": 1,
+        "description": "Hear Shepherd Bryn's account of the raids"
+      },
+      {
+        "type": "kill",
+        "target": "dragon_whelp",
+        "required": 1,
+        "description": "Drive off a raiding dragon whelp"
+      },
+      {
+        "type": "explore",
+        "target": "The Charred Vale",
+        "required": 1,
+        "description": "Climb to the Charred Vale, the wyrm's hunting ground"
+      }
+    ],
+    "giver_id": "reeve_halden",
+    "reward_gold": 70,
+    "reward_xp": 140,
+    "next_quest": "q_emberfell_weakness"
+  },
+  "q_emberfell_weakness": {
+    "title": "The Wyrm's Bane",
+    "description": "No common blade will pierce a wyrm's coals. Recover the great scale from the Charred Vale, carry it to the exiled dragon-scholar Yorwin in the pines, and learn where Cindermaw's hide never healed — then scout the Wyrm's Roost where it coils upon its hoard.",
+    "objectives": [
+      {
+        "type": "fetch",
+        "target": "scorched_scale",
+        "required": 1,
+        "description": "Recover Cindermaw's Scale from the Charred Vale"
+      },
+      {
+        "type": "talk",
+        "target": "loremaster_yorwin",
+        "required": 1,
+        "description": "Bring the scale to Loremaster Yorwin and learn the wyrm's weakness"
+      },
+      {
+        "type": "explore",
+        "target": "The Wyrm's Roost",
+        "required": 1,
+        "description": "Scout the Wyrm's Roost beneath Emberpeak"
+      }
+    ],
+    "giver_id": "reeve_halden",
+    "prereq_quest": "q_emberfell_raids",
+    "reward_gold": 100,
+    "reward_xp": 240,
+    "next_quest": "q_emberfell_reckoning"
+  },
+  "q_emberfell_reckoning": {
+    "title": "The Wyrm of Emberfell",
+    "description": "Cindermaw must be answered for. Face the wyrm at its roost beneath Emberpeak and decide the mountain's fate — slay it and take Emberfang from its jaw, drive the beast off to trouble Emberfell no more, or strike a dark bargain and share in its hoard.",
+    "objectives": [
+      {
+        "type": "kill",
+        "target": "emberfell_wyrm",
+        "required": 1,
+        "description": "Confront Cindermaw the Wyrm at the Roost"
+      }
+    ],
+    "giver_id": "reeve_halden",
+    "prereq_quest": "q_emberfell_weakness",
+    "reward_gold": 200,
+    "reward_xp": 500,
+    "reward_choices": [
+      {
+        "label": "Slay the wyrm and claim Emberfang",
+        "xp": 500,
+        "gold": 250,
+        "items": [
+          "emberfang_spear"
+        ],
+        "legend": "You drove the spear up beneath Cindermaw's jaw, into the old unscaled wound, and the wyrm of Emberpeak fell in a landslide of coals. From its fang you bore away Emberfang, and the terraced farms of Emberfell will green again."
+      },
+      {
+        "label": "Drive the wyrm off the mountain",
+        "xp": 500,
+        "gold": 150,
+        "items": [],
+        "legend": "Bloodied and broken of its dominance, Cindermaw took wing north over the peaks and did not return. Emberfell is spared — though somewhere the wyrm still hunts, and Yorwin scowls that a wounded wyrm is a patient one."
+      },
+      {
+        "label": "Bargain with the wyrm for a share of its hoard",
+        "xp": 500,
+        "gold": 600,
+        "items": [],
+        "legend": "You lowered your spear and spoke the wyrm's own tongue of greed: tribute and silence for gold and safety. Cindermaw keeps to its roost now, and grows — and Emberfell pays a tithe to the thing on the mountain, and does not meet your eye."
       }
     ]
   }

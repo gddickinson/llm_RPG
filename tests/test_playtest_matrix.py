@@ -45,9 +45,11 @@ class PlaytestSession(unittest.TestCase):
         from characters.npc_presets import NPC_SPECS
         from engine.adventure_tome import adventure_npc_ids
         from engine.ravenmoor import adventure_npc_ids as ravenmoor_npc_ids
+        from engine.adventure_seed import npc_ids_of
         present = set(self.engine.npc_manager.npcs)
         classes = {c.value for c in CharacterClass}
-        adv = adventure_npc_ids() | ravenmoor_npc_ids()
+        adv = adventure_npc_ids() | ravenmoor_npc_ids() \
+            | npc_ids_of("emberfell.json")
         # a preset NPC is reachable even if zone-bound (seated in its zone,
         # e.g. the P18.2 castle court); an adventure NPC (P38) is seeded too
         def reachable(actor):
