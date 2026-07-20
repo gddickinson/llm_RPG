@@ -109,11 +109,15 @@ def named_goal(ctrl, engine, char):
         if rec is not None:
             ctrl.goal_name = f"recruit {rec[0]}"
             return reachable_tile(engine, char, rec[1])
+        # then, once a band is gathered, go take a quest (a solo hero roams by
+        # its ambition/calling instead — and this keeps the ambition draw the
+        # signal when there's no party yet)
         try:
+            has_party = bool(engine.companion_manager.party)
             has_quest = bool(engine.quest_manager.active())
         except Exception:
-            has_quest = True
-        if not has_quest:
+            has_party, has_quest = False, True
+        if has_party and not has_quest:
             qg = nearest_quest_giver(engine, char)
             if qg is not None:
                 ctrl.goal_name = f"{qg[0]} — a quest"

@@ -41,6 +41,7 @@ REST_HP = 0.55                              # top up / rest when safe below this
 SWARM_HP = 0.75                             # back off a pack below this
 GREET_CAP = 3          # mere hellos per window before the hero moves ON
 SATIATE_WINDOW = 50    # turns before the hero is up for socialising again
+GATHER_COOLDOWN = 20   # turns between forages (no every-tile forest loop)
 
 
 @contextmanager
@@ -96,6 +97,7 @@ class AgentController:
         self._greets = 0          # mere hellos this window (social satiation)
         self._t = 0               # the controller's own turn clock
         self._goal_age = 0        # turns chasing the current goal (a TTL)
+        self._gather_cd = 0       # forage/gather cooldown (no every-tile loop)
 
     # ---- perception --------------------------------------------
 
@@ -335,8 +337,12 @@ class AgentController:
                 return ("enter_building", intent[0], intent[1])
 
         # 3c. gather from the land (M.8d) — a node or a rich forest/swamp we
-        # stand on: raws, and from a forest FOOD for the M.8a camp
-        if not foes and _gatherable(engine, char):
+        # stand on: raws, and from a forest FOOD for the M.8a camp. A cooldown
+        # stops the hero foraging EVERY tile as it crosses a wood (George: "he
+        # ends up in a loop trying to forage") — it gathers now and then, not
+        # at every step, so it still makes real progress toward its goal.
+        if not foes and self._gather_cd <= 0 and _gatherable(engine, char):
+            self._gather_cd = GATHER_COOLDOWN
             return ("forage",)
 
         # 3d. worship & self-betterment (M.8e) — study a tome/manual we carry
@@ -424,6 +430,8 @@ class AgentController:
         self._t += 1
         if self._t % SATIATE_WINDOW == 0:      # up for socialising again
             self._greets = 0
+        if self._gather_cd > 0:
+            self._gather_cd -= 1
         plan = self.decide(engine, char)
         # keep the hero's current aim visible to the player (reviewable)
         char.metadata["agent_goal"] = self.goal_name or (

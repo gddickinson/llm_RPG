@@ -10550,3 +10550,23 @@ Also extracted the social logic into `engine/agent_social.py` (agent_controller 
 `agent_sense.friendlies_near` (list). RESULT (balanced away-hero, combined world): recruits a FULL party of 3
 (Kestrel/Sable/Bram, turns 3/10/71), THEN takes q_blackbanner_raids and adventures — greeting, trading,
 foraging, fighting alongside its band. All agent/companion/adventurer/company suites (83) green.
+
+## 2026-07-20 — Autoplay follow-ups: forage loop + companions keep up (George)
+
+George tested automode: the hero now recruits a party and heads off on a quest (the rich-life fix works!),
+but (a) companions didn't follow — they got stranded ~190 tiles back, and (b) the hero looped foraging.
+- **Forage loop**: rule 3c foraged EVERY forageable tile as the hero crossed a wood, stalling all travel.
+  Added a `GATHER_COOLDOWN`(20) on the controller so it gathers now and then, not at every step (forage plans
+  over 1500 turns: unbounded → 9).
+- **Companions left behind**: a fast away-hero out-ran its party's 1-step BFS follow and, once out of BFS
+  range, stranded them across the map. Added a CATCH-UP (`companions.CATCHUP_DIST`=12): a companion left too
+  far behind the leader rejoins near it — checked at the TOP of `update()` (before any local flee/fight, so a
+  stranded companion teleports to the leader instead of dueling a wandering wolf where it was abandoned), and
+  gated to when the leader is on the OVERWORLD (its position is zone-local inside a building). Max stranding
+  190 → transient post-building spikes that self-correct in a turn; party ends together (dists 2-3).
+- Also fixed 8 test regressions from the rich-life change: the `named_goal` quest-giver priority now only
+  fires once the hero HAS a party (so the party-less ambition-draw tests pass + it matches the recruit-first
+  flow), and moved the new seasoned adventurer Ulric to Oakvale so the companies tests' "lone Riverside
+  seeker" (Sable) assumption holds.
+Verified: companion/agent/living-agent/party/ambition/companies suites green; forage capped; party stays
+together.
