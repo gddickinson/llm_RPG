@@ -179,10 +179,42 @@ class QuestManager:
             legend = choices[idx if 0 <= idx < len(choices)
                              else 0].get("legend", legend)
         if legend:
-            self._log(f"[Legend] {legend}")
+            # surface to the player + chronicle — without this the authored
+            # branching-finale endings were never seen (George)
+            self._surface(f"[Legend] {legend}")
+
+        # An adventure FINALE reshapes the WORLD (George): the guardian foes
+        # disperse and the theme's wilderness encounters thin
+        adv = quest.metadata.get("resolves_adventure")
+        eng = getattr(self, "engine", None)
+        if adv and eng is not None:
+            try:
+                from engine.adventure_seed import resolve_adventure
+                idx = quest.metadata.get("reward_choice", 0)
+                out = (choices[idx].get("label") if choices
+                       and 0 <= idx < len(choices) else None)
+                resolve_adventure(eng, adv, out)
+            except Exception as e:
+                logger.debug(f"adventure resolve: {e}")
+
+        self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")
+
+        # T4.5 a REPEATABLE quest (a standing bounty / delivery / cull) re-arms
+        # after each turn-in: its objectives reset and it becomes AVAILABLE
+        # again from the same giver / board, tallying how often you've run it.
+        if quest.metadata.get("repeatable"):
+            quest.metadata["times_done"] = quest.metadata.get("times_done", 0) + 1
+            for obj in quest.objectives:
+                obj.progress = 0
+                obj._announced = False
+            quest._ready_announced = False       # re-arm the beat too
+            quest.metadata.pop("reward_choice", None)
+            quest.status = QuestStatus.AVAILABLE
+            self._log(f"The board's standing task \"{quest.title}\" can be "
+                      f"taken up again.")
+            return True
 
         quest.status = QuestStatus.TURNED_IN
-        self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")
         return True
 
     def _apply_unlock(self, player, unlock: str) -> None:
@@ -278,11 +310,16 @@ class QuestManager:
     # ----- event hooks -------------------------------------------------------
 
     def _newly_completed(self, quest: Quest, obj: QuestObjective) -> None:
-        if obj.is_complete():
-            self._log(f"Objective complete: {obj.description}")
+        # announce each objective's completion ONCE (a repeat matching event
+        # after it's already done shouldn't re-spam the log)
+        if obj.is_complete() and not getattr(obj, "_announced", False):
+            obj._announced = True
+            self._surface(f"Objective complete: {obj.description}")
+        was_ready = getattr(quest, "_ready_announced", False)
         quest.update_status()
-        if quest.status == QuestStatus.COMPLETED:
-            self._log(f"Quest ready to turn in: {quest.title}")
+        if quest.status == QuestStatus.COMPLETED and not was_ready:
+            quest._ready_announced = True
+            self._surface(f"Quest ready to turn in: {quest.title}")
 
     def on_npc_defeated(self, npc_id: str, npc_class: str = "") -> None:
         hostile = npc_class in ("monster", "brigand", "troll")
@@ -376,4 +413,15 @@ class QuestManager:
         self.event_log.append(msg)
         if len(self.event_log) > 200:
             self.event_log = self.event_log[-200:]
+
+    def _surface(self, msg: str) -> None:
+        """Log AND push to the player's event log (+ the chronicle observer).
+        `_log` alone only feeds the quest manager's private list, so quest
+        progress beats — objective-complete, ready-to-turn-in, the finale
+        legend — were never SEEN by the player (George)."""
+        self._log(msg)
+        eng = getattr(self, "engine", None)
+        mm = getattr(eng, "memory_manager", None) if eng else None
+        if mm is not None:
+            mm.add_event(msg)
         logger.info(msg)

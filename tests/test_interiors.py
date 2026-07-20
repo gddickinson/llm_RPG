@@ -56,6 +56,58 @@ class TestInteriors(unittest.TestCase):
         self.assertIn("leave", msg.lower())
         self.assertIsNone(self.engine.current_interior)
 
+    def test_scale_up_roomier_interiors(self):
+        # GX.3 (George: "the scale feels small and cramped"): a footprint opens
+        # into a bigger interior — a 2x2 building is roomier than the old 8x8,
+        # and a large footprint yields a genuinely big hall (a church nave).
+        from world.interiors import fit_to_footprint
+        from world.location import Location
+
+        def fit(w, h):
+            it = Interior(name="Test", width=8, height=6)
+            it.init_grid()
+            fit_to_footprint(it, Location("Test", "", 0, 0, w, h))
+            return it.width, it.height
+
+        small = fit(2, 2)
+        self.assertGreaterEqual(small[0], 9, "a 2x2 is roomier than the old 8")
+        big = fit(5, 5)
+        self.assertGreater(big[0] * big[1], small[0] * small[1] * 3,
+                           "a big footprint gives a much bigger interior")
+        self.assertGreaterEqual(big[0], 18, "room for a church nave")
+
+    def test_oakvale_cathedral_seats_scores(self):
+        # GX.4 (George: "build a large church in oakvale with room for seating
+        # 50-100 people"): Oakvale gets a Cathedral whose interior is a grand
+        # nave filled with pews facing an altar, in the temple theme.
+        from world.world_map import TerrainType
+        from world.furnishings import theme_of
+        from world import room_plan
+
+        loc = next((l for l in self.engine.world.locations
+                    if "Cathedral" in l.name), None)
+        self.assertIsNotNone(loc, "Oakvale Cathedral should be placed")
+        self.assertEqual(room_plan.room_set_for("cathedral"),
+                         ["nave", "vestry"])
+
+        inter = self.engine.interiors.get(loc.name)
+        self.assertIsNotNone(inter, "the cathedral has a built interior")
+        # A genuinely large nave — room to seat scores.
+        self.assertGreaterEqual(inter.width * inter.height, 400,
+                                "a grand cathedral interior")
+
+        names = [f.get("name") for f in inter.furniture]
+        pews = names.count("Pew")
+        self.assertGreaterEqual(pews, 50,
+                                f"the nave seats scores of pews (got {pews})")
+        self.assertGreaterEqual(names.count("Altar"), 1, "an altar to face")
+        self.assertEqual(theme_of(inter.name), "temple",
+                         "the cathedral reads as sacred (temple theme)")
+
+        # The interior is actually enterable at the overworld footprint.
+        self.assertEqual(
+            self.engine.world.map.terrain[loc.y][loc.x], TerrainType.BUILDING)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -144,7 +144,7 @@
     "item_type": "book",
     "value": 150,
     "rarity": "rare",
-    "description": "Alzara's teaching copy \u2014 margins full of scorch marks.",
+    "description": "Alzara's teaching copy — margins full of scorch marks.",
     "use_effect": {
       "teach_spell": "fireball"
     }
@@ -163,7 +163,7 @@
     "item_type": "misc",
     "value": 0,
     "rarity": "rare",
-    "description": "A folded cipher in the Duke's own hand \u2014 proof, if it can be read, of a plot against the heir."
+    "description": "A folded cipher in the Duke's own hand — proof, if it can be read, of a plot against the heir."
   },
   "game_hide": {
     "id": "game_hide",
@@ -171,7 +171,7 @@
     "item_type": "misc",
     "value": 12,
     "stackable": true,
-    "description": "The hide of a wild beast \u2014 a tanner's raw stock."
+    "description": "The hide of a wild beast — a tanner's raw stock."
   },
   "feathers": {
     "id": "feathers",
@@ -187,7 +187,9 @@
     "item_type": "misc",
     "value": 45,
     "description": "A sturdy leather pack — room for a good deal more.",
-    "metadata": {"carry_bonus": 8}
+    "metadata": {
+      "carry_bonus": 8
+    }
   },
   "explorers_pack": {
     "id": "explorers_pack",
@@ -196,7 +198,9 @@
     "value": 130,
     "rarity": "uncommon",
     "description": "A well-made pack of many pockets and straps.",
-    "metadata": {"carry_bonus": 14}
+    "metadata": {
+      "carry_bonus": 14
+    }
   },
   "bottomless_bag": {
     "id": "bottomless_bag",
@@ -205,7 +209,9 @@
     "value": 450,
     "rarity": "rare",
     "description": "Its inside is far larger than its outside — an enchanter's marvel.",
-    "metadata": {"carry_bonus": 40}
+    "metadata": {
+      "carry_bonus": 40
+    }
   },
   "quiver": {
     "id": "quiver",
@@ -213,6 +219,69 @@
     "item_type": "misc",
     "value": 35,
     "description": "A hip quiver — keeps arrows and bolts close, off your back.",
-    "metadata": {"ammo_capacity": 3}
+    "metadata": {
+      "ammo_capacity": 3
+    }
+  },
+  "beastlord_totem": {
+    "id": "beastlord_totem",
+    "name": "Beastlord's Totem",
+    "item_type": "misc",
+    "value": 320,
+    "rarity": "rare",
+    "description": "A bone totem that lets even the unmagical take a wolf's shape for a time.",
+    "use_effect": {
+      "shapeshift": {
+        "form": "wolf",
+        "self": true,
+        "duration": 40,
+        "consume": false
+      }
+    }
+  },
+  "cursed_toadstone": {
+    "id": "cursed_toadstone",
+    "name": "Cursed Toadstone",
+    "item_type": "misc",
+    "value": 40,
+    "rarity": "uncommon",
+    "description": "A cold green stone. The moment you grasp it, a witch's hex takes hold — and there is no letting go until the curse is lifted.",
+    "use_effect": {
+      "shapeshift": {
+        "form": "toad",
+        "involuntary": true
+      }
+    }
+  },
+  "hags_hexstone": {
+    "id": "hags_hexstone",
+    "name": "Hag's Hexstone",
+    "item_type": "misc",
+    "value": 55,
+    "rarity": "uncommon",
+    "description": "A knuckle of black bone. Handle it and a hag's curse leaves you a frog — for a while.",
+    "use_effect": {
+      "shapeshift": {
+        "form": "frog",
+        "involuntary": true,
+        "duration": 25
+      }
+    }
+  },
+  "scorched_scale": {
+    "id": "scorched_scale",
+    "name": "Cindermaw's Scale",
+    "item_type": "misc",
+    "value": 0,
+    "rarity": "uncommon",
+    "description": "A great scale the size of a shield, prised from the Charred Vale — its underside soft and unhardened where an old wound never re-scaled. Loremaster Yorwin would give much to study it, and more to name where such a soft place still lies on the living wyrm."
+  },
+  "curse_token": {
+    "id": "curse_token",
+    "name": "Hag's Curse-Token",
+    "item_type": "misc",
+    "value": 0,
+    "rarity": "uncommon",
+    "description": "A knot of human hair, bird-bone and blackthorn, still warm. The hag ties one to each soul she means to hollow — and it points, if you know the reading of such things, back to the hollow where the true shapes are kept. The hedge-witch Odile would know its counter."
   }
 }

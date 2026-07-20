@@ -81,5 +81,25 @@ class TestMonsterBalance(unittest.TestCase):
                 f"a geared hero should usually win a solo {mid}")
 
 
+class TestRosterDepth(unittest.TestCase):
+    """T1.3 — mid-tier roster + dungeon depth-gating."""
+
+    def test_dungeon_pool_depth_gates_tough_foes(self):
+        from world.monsters import dungeon_pool
+        shallow = dungeon_pool(1)
+        deep = dungeon_pool(4)
+        self.assertIn("ogre", shallow, "a min_depth-1 foe is available shallow")
+        self.assertNotIn("stone_golem", shallow, "a deep foe is gated off floor 1")
+        self.assertIn("stone_golem", deep, "a deep foe appears deep")
+        self.assertGreater(len(deep), len(shallow))
+
+    def test_midtier_dead_zone_filled(self):
+        import json
+        with open("data/monsters.json") as fh:
+            d = json.load(fh)
+        mid = [k for k, v in d.items() if 7 <= v.get("level", 1) <= 11]
+        self.assertGreaterEqual(len(mid), 6, "the L7-11 dead zone is filled")
+
+
 if __name__ == "__main__":
     unittest.main()

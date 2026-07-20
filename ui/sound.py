@@ -111,6 +111,7 @@ class SoundManager:
         ("level up!", "levelup"),
         ("[Collection]", "discover"),
         ("[Legend]", "discover"),
+        ("[Codex]", "discover"),
         ("tier complete", "levelup"),
         ("You pick up", "pickup"),
         ("You forage", "pickup"),

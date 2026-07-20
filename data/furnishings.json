@@ -47,6 +47,71 @@
       {"name": "Cobweb", "n": 2, "where": "corner"},
       {"name": "Urn", "n": 1, "where": "wall"}
     ]},
+    "shop": {"props": [
+      {"name": "Crate", "n": 2, "where": "corner"},
+      {"name": "Barrel", "n": 2, "where": "corner"},
+      {"name": "Shelf", "n": 2, "where": "wall"},
+      {"name": "Table", "n": 1, "where": "center"},
+      {"name": "Urn", "n": 2, "where": "wall"},
+      {"name": "Rug", "n": 1, "where": "center"}
+    ]},
+    "bakery": {"props": [
+      {"name": "Hearth", "n": 1, "where": "wall"},
+      {"name": "Table", "n": 1, "where": "center"},
+      {"name": "Shelf", "n": 2, "where": "wall"},
+      {"name": "Barrel", "n": 2, "where": "corner"},
+      {"name": "Crate", "n": 2, "where": "scatter"}
+    ]},
+    "farmhouse": {"props": [
+      {"name": "Hearth", "n": 1, "where": "wall"},
+      {"name": "Table", "n": 1, "where": "center"},
+      {"name": "Bench", "n": 2, "where": "scatter"},
+      {"name": "Barrel", "n": 2, "where": "corner"},
+      {"name": "Chest", "n": 1, "where": "corner"}
+    ]},
+    "stable": {"props": [
+      {"name": "Barrel", "n": 2, "where": "corner"},
+      {"name": "Crate", "n": 2, "where": "scatter"},
+      {"name": "Bench", "n": 1, "where": "wall"}
+    ]},
+    "lodge": {"props": [
+      {"name": "Hearth", "n": 1, "where": "wall"},
+      {"name": "Weapon Rack", "n": 2, "where": "wall"},
+      {"name": "Bench", "n": 2, "where": "scatter"},
+      {"name": "Barrel", "n": 1, "where": "corner"},
+      {"name": "Bones", "n": 1, "where": "corner"}
+    ]},
+    "hall": {"props": [
+      {"name": "Table", "n": 2, "where": "center"},
+      {"name": "Bench", "n": 3, "where": "scatter"},
+      {"name": "Pillar", "n": 2, "where": "wall"},
+      {"name": "Tapestry", "n": 2, "where": "wall"},
+      {"name": "Brazier", "n": 2, "where": "corner"}
+    ]},
+    "watchtower": {"props": [
+      {"name": "Brazier", "n": 1, "where": "corner"},
+      {"name": "Weapon Rack", "n": 2, "where": "wall"},
+      {"name": "Barrel", "n": 1, "where": "corner"},
+      {"name": "Bench", "n": 1, "where": "wall"},
+      {"name": "Crate", "n": 1, "where": "scatter"}
+    ]},
+    "tower": {"props": [
+      {"name": "Shelf", "n": 2, "where": "wall"},
+      {"name": "Lectern", "n": 1, "where": "center"},
+      {"name": "Candelabra", "n": 2, "where": "corner"},
+      {"name": "Cauldron", "n": 1, "where": "wall"},
+      {"name": "Urn", "n": 1, "where": "corner"}
+    ]},
+    "well": {"props": [
+      {"name": "Well", "n": 1, "where": "center"},
+      {"name": "Barrel", "n": 1, "where": "corner"},
+      {"name": "Bench", "n": 1, "where": "wall"}
+    ]},
+    "storage": {"props": [
+      {"name": "Crate", "n": 3, "where": "scatter"},
+      {"name": "Barrel", "n": 3, "where": "corner"},
+      {"name": "Shelf", "n": 2, "where": "wall"}
+    ]},
     "home": {"props": [
       {"name": "Bed", "n": 1, "where": "corner"},
       {"name": "Table", "n": 1, "where": "center"},

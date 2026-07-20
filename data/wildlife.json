@@ -6,10 +6,24 @@
     "level": 1,
     "diet": "graze",
     "timid": 6,
-    "terrain": ["grass", "forest"],
+    "terrain": [
+      "grass",
+      "forest"
+    ],
     "weight": 5,
-    "loot_table": [["raw_meat", 3], ["game_hide", 2]],
-    "description": "A wary deer, ears twitching at every sound."
+    "loot_table": [
+      [
+        "raw_meat",
+        3
+      ],
+      [
+        "game_hide",
+        2
+      ]
+    ],
+    "description": "A wary deer, ears twitching at every sound.",
+    "active": "day",
+    "herd": true
   },
   "rabbit": {
     "name": "Rabbit",
@@ -18,10 +32,24 @@
     "level": 1,
     "diet": "graze",
     "timid": 5,
-    "terrain": ["grass", "forest"],
+    "terrain": [
+      "grass",
+      "forest"
+    ],
     "weight": 6,
-    "loot_table": [["raw_meat", 2], ["game_hide", 1]],
-    "description": "A small rabbit that bolts at the first footfall."
+    "loot_table": [
+      [
+        "raw_meat",
+        2
+      ],
+      [
+        "game_hide",
+        1
+      ]
+    ],
+    "description": "A small rabbit that bolts at the first footfall.",
+    "active": "day",
+    "herd": true
   },
   "boar": {
     "name": "Wild Boar",
@@ -30,10 +58,26 @@
     "level": 2,
     "diet": "root",
     "timid": 3,
-    "terrain": ["forest", "swamp"],
+    "terrain": [
+      "forest",
+      "swamp"
+    ],
     "weight": 4,
-    "loot_table": [["raw_meat", 4], ["game_hide", 2]],
-    "description": "A tusked boar — it flees, but corner it and it charges."
+    "loot_table": [
+      [
+        "raw_meat",
+        4
+      ],
+      [
+        "game_hide",
+        2
+      ]
+    ],
+    "description": "A tusked boar \u2014 it flees, but corner it and it charges.",
+    "active": "night",
+    "herd": false,
+    "charge": true,
+    "charge_damage": 4
   },
   "pheasant": {
     "name": "Pheasant",
@@ -42,10 +86,24 @@
     "level": 1,
     "diet": "graze",
     "timid": 7,
-    "terrain": ["grass", "forest"],
+    "terrain": [
+      "grass",
+      "forest"
+    ],
     "weight": 5,
-    "loot_table": [["raw_meat", 1], ["feathers", 3]],
-    "description": "A plump gamebird that breaks cover in a clatter of wings."
+    "loot_table": [
+      [
+        "raw_meat",
+        1
+      ],
+      [
+        "feathers",
+        3
+      ]
+    ],
+    "description": "A plump gamebird that breaks cover in a clatter of wings.",
+    "active": "day",
+    "herd": true
   },
   "fox": {
     "name": "Red Fox",
@@ -54,10 +112,197 @@
     "level": 1,
     "diet": "hunt",
     "timid": 6,
-    "preys_on": ["rabbit", "pheasant"],
-    "terrain": ["grass", "forest"],
+    "preys_on": [
+      "rabbit",
+      "pheasant"
+    ],
+    "terrain": [
+      "grass",
+      "forest"
+    ],
     "weight": 3,
-    "loot_table": [["game_hide", 2], ["raw_meat", 1]],
-    "description": "A russet fox, quick and clever, hunting the hedgerows."
+    "loot_table": [
+      [
+        "game_hide",
+        2
+      ],
+      [
+        "raw_meat",
+        1
+      ]
+    ],
+    "description": "A russet fox, quick and clever, hunting the hedgerows.",
+    "active": "night",
+    "herd": false
+  },
+  "wolf": {
+    "name": "Grey Wolf",
+    "symbol": "w",
+    "description": "A lean grey wolf \u2014 it hunts the herds in a pack.",
+    "hp": 12,
+    "level": 2,
+    "timid": 4,
+    "weight": 2,
+    "diet": "hunt",
+    "preys_on": [
+      "deer",
+      "rabbit",
+      "mouflon",
+      "stag"
+    ],
+    "terrain": [
+      "forest",
+      "grass"
+    ],
+    "active": "night",
+    "herd": true,
+    "loot_table": [
+      [
+        "wolf_pelt",
+        1
+      ],
+      [
+        "raw_meat",
+        2
+      ]
+    ]
+  },
+  "stag": {
+    "name": "Red Stag",
+    "symbol": "S",
+    "model": "deer",
+    "hp": 16,
+    "level": 3,
+    "diet": "graze",
+    "timid": 5,
+    "terrain": [
+      "forest",
+      "grass"
+    ],
+    "weight": 2,
+    "loot_table": [
+      [
+        "raw_meat",
+        5
+      ],
+      [
+        "game_hide",
+        3
+      ]
+    ],
+    "description": "A great antlered stag — a prized quarry that holds its ground before it bolts.",
+    "active": "day",
+    "herd": false
+  },
+  "mouflon": {
+    "name": "Mouflon",
+    "symbol": "m",
+    "model": "sheep",
+    "hp": 7,
+    "level": 1,
+    "diet": "graze",
+    "timid": 5,
+    "terrain": [
+      "grass",
+      "forest"
+    ],
+    "weight": 4,
+    "loot_table": [
+      [
+        "raw_meat",
+        3
+      ],
+      [
+        "game_hide",
+        2
+      ]
+    ],
+    "description": "A wild mountain sheep, curl-horned and sure-footed, grazing in a flock.",
+    "active": "day",
+    "herd": true
+  },
+  "mustang": {
+    "name": "Wild Mustang",
+    "symbol": "h",
+    "model": "horse",
+    "hp": 18,
+    "level": 2,
+    "diet": "graze",
+    "timid": 7,
+    "terrain": [
+      "grass"
+    ],
+    "weight": 3,
+    "loot_table": [
+      [
+        "raw_meat",
+        4
+      ],
+      [
+        "game_hide",
+        3
+      ]
+    ],
+    "description": "A free-running wild horse, mane flying — it wheels and flees at any approach.",
+    "active": "day",
+    "herd": true
+  },
+  "aurochs": {
+    "name": "Aurochs",
+    "symbol": "A",
+    "model": "cow",
+    "hp": 24,
+    "level": 3,
+    "diet": "graze",
+    "timid": 2,
+    "terrain": [
+      "grass",
+      "forest"
+    ],
+    "weight": 2,
+    "loot_table": [
+      [
+        "raw_meat",
+        6
+      ],
+      [
+        "game_hide",
+        4
+      ]
+    ],
+    "description": "A massive wild ox, horns lowered — slow to spook, but it gores what corners it.",
+    "active": "day",
+    "herd": true,
+    "charge": true,
+    "charge_damage": 6
+  },
+  "hog": {
+    "name": "Wild Hog",
+    "symbol": "g",
+    "model": "pig",
+    "hp": 11,
+    "level": 2,
+    "diet": "root",
+    "timid": 3,
+    "terrain": [
+      "forest",
+      "swamp"
+    ],
+    "weight": 3,
+    "loot_table": [
+      [
+        "raw_meat",
+        4
+      ],
+      [
+        "game_hide",
+        1
+      ]
+    ],
+    "description": "A bristled wild hog rooting through the undergrowth in a sounder.",
+    "active": "day",
+    "herd": true,
+    "charge": true,
+    "charge_damage": 3
   }
 }

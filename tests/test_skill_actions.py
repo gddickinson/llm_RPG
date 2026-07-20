@@ -1,5 +1,6 @@
 """Skill action tests (P12.8): trip, demoralize, feint, medicine."""
 
+import random
 import unittest
 
 from characters.status_effects import effect_value, has_effect
@@ -25,6 +26,11 @@ class _Rng:
 
 class TestSkillActions(unittest.TestCase):
     def setUp(self):
+        # seed the global RNG so worldgen + the built wolf's stats are stable
+        # regardless of how many tests ran before (adding test files elsewhere
+        # shifts the shared seed and used to tip the feint check — the known
+        # RNG-pollution flake). A per-test seed makes this suite reproducible.
+        random.seed(0x5C111)
         self.engine = GameEngine(
             llm_provider="heuristic", enable_npc_processes=False)
         self.engine.start_game()

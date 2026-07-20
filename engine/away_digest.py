@@ -27,13 +27,16 @@ def snapshot(engine, character) -> None:
         pass
 
 
-def _away_deeds(engine, start: int) -> List[str]:
+def _log_slice(engine, start: int) -> List[str]:
     out = []
     for e in engine.memory_manager.game_history[start:]:
-        text = e.get("event", "") if isinstance(e, dict) else str(e)
-        if "[Away]" in text:
-            out.append(text.split("]", 1)[1].strip() if "]" in text else text)
+        out.append(e.get("event", "") if isinstance(e, dict) else str(e))
     return out
+
+
+def _away_deeds(lines: List[str]) -> List[str]:
+    return [t.split("]", 1)[1].strip() if "]" in t else t
+            for t in lines if "[Away]" in t]
 
 
 def build_digest(engine, character) -> Optional[Tuple[str, List[str]]]:
@@ -43,7 +46,8 @@ def build_digest(engine, character) -> Optional[Tuple[str, List[str]]]:
     snap = meta.pop("away_snapshot", None)
     if snap is None:            # no away period to report — one-shot
         return None
-    deeds = _away_deeds(engine, snap.get("mem_len", 0))
+    log = _log_slice(engine, snap.get("mem_len", 0))
+    deeds = _away_deeds(log)
 
     lines: List[str] = []
     try:
@@ -62,16 +66,35 @@ def build_digest(engine, character) -> Optional[Tuple[str, List[str]]]:
         gained = [engine.npc_manager.npcs[n].name for n in (now - before)
                   if n in engine.npc_manager.npcs]
         if gained:
-            lines.append("Took up with: " + ", ".join(gained) + ".")
+            lines.append("Gathered a band: " + ", ".join(gained) + ".")
+        # quests worked in your absence
+        took = sum(1 for t in log if t.startswith("Quest accepted:"))
+        done = sum(1 for t in log if t.startswith("Quest turned in:"))
+        if took or done:
+            bits = []
+            if took:
+                bits.append(f"took on {took} quest(s)")
+            if done:
+                bits.append(f"saw {done} through")
+            lines.append(f"{character.name} " + " and ".join(bits) + ".")
     except Exception:
         pass
+
+    # legendary moments (the branching-finale endings + slain legends)
+    legends = [t.split("]", 1)[1].strip()
+               for t in log if "[Legend]" in t and "]" in t]
+    if legends:
+        if lines:
+            lines.append("")
+        lines.append("Legendary deeds:")
+        lines.extend(f"  ★ {d}" for d in legends[-4:])
 
     if deeds:
         if lines:
             lines.append("")
         lines.append("Deeds along the way:")
         # newest last; cap so the screen never overflows
-        lines.extend(f"  • {d}" for d in deeds[-18:])
+        lines.extend(f"  • {d}" for d in deeds[-16:])
 
     if not lines:
         return None

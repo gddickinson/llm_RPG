@@ -1,0 +1,217 @@
+{
+  "wand_of_firebolts": {
+    "name": "Wand of Firebolts",
+    "item_type": "misc",
+    "value": 90,
+    "rarity": "uncommon",
+    "use_effect": {
+      "spell": "firebolt"
+    },
+    "metadata": {
+      "charges": 12,
+      "light_source": true
+    },
+    "description": "A slim rod that spits a bolt of flame. 12 charges."
+  },
+  "wand_of_frost": {
+    "name": "Wand of Frost",
+    "item_type": "misc",
+    "value": 95,
+    "rarity": "uncommon",
+    "use_effect": {
+      "spell": "frost_ray"
+    },
+    "metadata": {
+      "charges": 12
+    },
+    "description": "An ice-blue wand that looses a ray of killing cold."
+  },
+  "wand_of_magic_missiles": {
+    "name": "Wand of Magic Missiles",
+    "item_type": "misc",
+    "value": 110,
+    "rarity": "uncommon",
+    "use_effect": {
+      "spell": "magic_missile"
+    },
+    "metadata": {
+      "charges": 14
+    },
+    "description": "Unerring darts of force leap from its tip."
+  },
+  "wand_of_lightning": {
+    "name": "Wand of Lightning",
+    "item_type": "misc",
+    "value": 210,
+    "rarity": "rare",
+    "use_effect": {
+      "spell": "lightning_bolt"
+    },
+    "metadata": {
+      "charges": 8
+    },
+    "description": "A crackling wand that hurls a stroke of lightning."
+  },
+  "wand_of_entangle": {
+    "name": "Wand of Entangling",
+    "item_type": "misc",
+    "value": 85,
+    "rarity": "uncommon",
+    "use_effect": {
+      "spell": "entangle"
+    },
+    "metadata": {
+      "charges": 10
+    },
+    "description": "Green shoots burst from the ground where it points."
+  },
+  "wand_of_fear": {
+    "name": "Wand of Fear",
+    "item_type": "misc",
+    "value": 230,
+    "rarity": "rare",
+    "use_effect": {
+      "spell": "fear"
+    },
+    "metadata": {
+      "charges": 7
+    },
+    "description": "A wand of blackened bone that fills foes with dread."
+  },
+  "staff_of_flame": {
+    "name": "Staff of Flame",
+    "item_type": "misc",
+    "value": 320,
+    "rarity": "rare",
+    "use_effect": {
+      "spell": "fireball"
+    },
+    "equip_bonuses": {
+      "max_mana": 4
+    },
+    "metadata": {
+      "charges": 8,
+      "light_source": true
+    },
+    "description": "A gnarled staff crowned with an ember that never dies."
+  },
+  "staff_of_healing": {
+    "name": "Staff of Healing",
+    "item_type": "misc",
+    "value": 300,
+    "rarity": "rare",
+    "use_effect": {
+      "spell": "greater_heal"
+    },
+    "metadata": {
+      "charges": 8
+    },
+    "description": "A white staff that mends grievous wounds."
+  },
+  "staff_of_thunder": {
+    "name": "Staff of Thunder",
+    "item_type": "misc",
+    "value": 520,
+    "rarity": "epic",
+    "use_effect": {
+      "spell": "chain_lightning"
+    },
+    "equip_bonuses": {
+      "max_mana": 6
+    },
+    "metadata": {
+      "charges": 6
+    },
+    "description": "Storms answer its call — lightning leaps foe to foe."
+  },
+  "staff_of_the_woodlands": {
+    "name": "Staff of the Woodlands",
+    "item_type": "misc",
+    "value": 340,
+    "rarity": "rare",
+    "use_effect": {
+      "spell": "plant_growth"
+    },
+    "metadata": {
+      "charges": 10
+    },
+    "description": "A living staff that grows forests at a druid's word."
+  },
+  "rod_of_conjuring": {
+    "name": "Rod of Conjuring",
+    "item_type": "misc",
+    "value": 180,
+    "rarity": "rare",
+    "use_effect": {
+      "spell": "conjure_water"
+    },
+    "metadata": {
+      "charges": 10
+    },
+    "description": "A rod that calls forth clean water from the air."
+  },
+  "wand_of_disintegration": {
+    "name": "Wand of Disintegration",
+    "item_type": "misc",
+    "value": 700,
+    "rarity": "epic",
+    "use_effect": {
+      "spell": "disintegrate"
+    },
+    "metadata": {
+      "charges": 5
+    },
+    "description": "A dread wand that reduces stone and wall to dust."
+  },
+  "staff_of_the_magi": {
+    "name": "Staff of the Magi",
+    "item_type": "misc",
+    "value": 2400,
+    "rarity": "legendary",
+    "use_effect": {
+      "spell": "meteor_swarm"
+    },
+    "equip_bonuses": {
+      "intelligence": 2,
+      "max_mana": 15,
+      "mana_regen": 2
+    },
+    "metadata": {
+      "charges": 4,
+      "artifact": true,
+      "light_source": true
+    },
+    "description": "The archmage's staff — it calls fire from the heavens and brims with power."
+  },
+  "orb_of_dragonkind": {
+    "name": "Orb of Dragonkind",
+    "item_type": "misc",
+    "value": 2000,
+    "rarity": "legendary",
+    "use_effect": {
+      "spell": "firestorm"
+    },
+    "equip_bonuses": {
+      "intelligence": 1,
+      "max_mana": 10
+    },
+    "metadata": {
+      "charges": 5,
+      "artifact": true
+    },
+    "description": "A smoldering orb that wakes a dragon's wrath."
+  },
+  "horn_of_blasting": {
+    "name": "Horn of Blasting",
+    "item_type": "misc",
+    "value": 600,
+    "rarity": "epic",
+    "use_effect": {
+      "spell": "firestorm"
+    },
+    "metadata": {
+      "charges": 4
+    },
+    "description": "A great brass horn whose note shatters the air in flame."
+  }
+}

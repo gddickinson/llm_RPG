@@ -214,5 +214,45 @@ class TestKnockouts(unittest.TestCase):
         self.assertNotIn("ko_until", wolf.metadata)
 
 
+class TestZombiePlayerReaper(unittest.TestCase):
+    """A player dropped to 0 HP by a NON-combat leak (a mis-guarded hazard)
+    must go DOWN the dying ladder, not walk the world at 0 HP — the bug an
+    away/agent hero hit deep in the wild (George)."""
+
+    def setUp(self):
+        self.engine = GameEngine(llm_provider="heuristic",
+                                 enable_npc_processes=False)
+        self.engine.start_game()
+        self.engine._has_gui = True     # survive-as-story, no headless end_game
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def test_zero_hp_player_is_routed_into_dying(self):
+        p = self.engine.player
+        p.hp = 0                        # simulate a non-combat leak to 0
+        p.metadata.pop("dying", None)
+        self.engine.advance_turn()      # the end-of-pipeline reaper runs
+        # never a 0-HP 'alive, not dying' zombie afterward
+        self.assertFalse(p.is_active() and p.hp <= 0
+                         and p.metadata.get("dying", 0) <= 0,
+                         "a 0-HP player must be dying, healed, or dead")
+
+    def test_it_resolves_within_a_few_turns(self):
+        p = self.engine.player
+        p.hp = 0
+        p.metadata.pop("dying", None)
+        for _ in range(30):
+            self.engine.advance_turn()
+            if not (p.is_active() and p.hp <= 0):
+                break
+        self.assertFalse(p.is_active() and p.hp <= 0,
+                         "the down player stabilizes, heals or dies — never "
+                         "a permanent 0-HP wanderer")
+
+
 if __name__ == "__main__":
     unittest.main()

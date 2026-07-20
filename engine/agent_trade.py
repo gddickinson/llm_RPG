@@ -67,6 +67,12 @@ def do_trade(engine, char, merchant, deed=None) -> bool:
     sm = getattr(engine, "shop_manager", None)
     if sm is None:
         return False
+    try:   # buyer & seller turn to face each other over the counter
+        from engine import anim
+        anim.face(char, merchant.position)
+        anim.face(merchant, char.position)
+    except Exception:
+        pass
     acted = False
     for it in list(junk_items(char)):
         if sm.sell_for(char, it, merchant):

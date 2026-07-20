@@ -36,6 +36,17 @@ class TestCombatDepth(unittest.TestCase):
                 ch = self.wmap.get_character_at(x, y)
                 if ch is not None:
                     self.wmap.remove_character(ch)
+        # Also purge the NPC MANAGER of anyone in the box: `adjacent_hostiles`
+        # reads the manager, so a world/pack hostile the grid-clear missed (one
+        # not on the spatial index) would linger as a PHANTOM adjacent foe and
+        # steal the primary strike — a rare full-suite flake (an interloping
+        # Bandit stealing a Cleave's primary target).
+        for npc in list(self.engine.npc_manager.npcs.values()):
+            nx, ny = npc.position
+            if (self.ox - 3 <= nx < self.ox + 8
+                    and self.oy - 3 <= ny < self.oy + 4):
+                self.wmap.remove_character(npc)
+                self.engine.npc_manager.remove_npc(npc.id)
         self.wmap.remove_character(self.player)
         self.player.position = (self.ox, self.oy)
         self.wmap.place_character(self.player, self.ox, self.oy)
@@ -158,11 +169,15 @@ class TestCombatDepth(unittest.TestCase):
         self._arm("dagger")
         foe = self._foe()
         self.engine.combat_system.rng = _Rng(roll=20)
+        # capture the event index BEFORE the action: a fixed last-N window is too
+        # small now that advance_turn emits ambient [Town]/wildlife/etc. beats
+        # (count varies with global-RNG order → a full-suite flake).
+        n0 = len(self.engine.memory_manager.game_history)
         weapon_action(self.engine)
         # the action's own turn tick may roll the flat end-check
         # (unrigged), so assert the wound bled, not that it persists
         log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-8:])
+                       self.engine.memory_manager.game_history[n0:])
         self.assertIn("red line", log)
         self.assertIn("bleeding", log.lower(),
                       "the wound bled at least once")

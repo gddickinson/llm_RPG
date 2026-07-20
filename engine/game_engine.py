@@ -27,6 +27,19 @@ from engine.game_api_mixin import GameAPIMixin
 logger = logging.getLogger("llm_rpg.engine")
 
 
+def _driven_elsewhere(npc, turn_counter) -> bool:
+    """True when the ambient NPC AI must NOT drive this NPC because another
+    system owns it this turn: a roster player-character or adventurer (its
+    controller), a townsperson away on a venture (TownsfolkVentureSystem), a
+    wildlife animal (WildlifeSystem), an arena combatant (ColosseumSystem), or
+    a hostile that already bit via the per-turn AggressionSystem."""
+    m = getattr(npc, "metadata", {}) or {}
+    return bool(m.get("player_char") or m.get("adventurer")
+                or m.get("venturing") or m.get("wildlife")
+                or m.get("arena_fighter")
+                or m.get("_aggro_turn") == turn_counter)
+
+
 class GameEngine(GameAPIMixin):
     """High-level game engine. UIs interact through this object."""
 
@@ -38,7 +51,14 @@ class GameEngine(GameAPIMixin):
                  enable_dm_bridge: bool = False,
                  world_kind: str = "default"):
         # Core systems --------------------------------------------------
-        self.world = World()
+        # OAKVALE T5b: a big-town world gets a larger map so the whole town +
+        # its countryside fit (the classic world stays its default size).
+        try:
+            from world.town_region import region_size
+            _sz = region_size(world_kind)
+        except Exception:
+            _sz = None
+        self.world = World(*_sz) if _sz else World()
         self.npc_manager = NPCManager()
         self.memory_manager = MemoryManager()
         self.llm_interface = LLMInterface(
@@ -252,7 +272,7 @@ class GameEngine(GameAPIMixin):
         last_time = getattr(self, "_npc_last_time", 0.0)
         turn_due = (self.turn_counter != last_turn and
                     self.turn_counter % config.NPC_ACTION_INTERVAL == 0)
-        idle_due = (now - last_time) >= 3.0
+        idle_due = (now - last_time) >= config.NPC_IDLE_INTERVAL
         if not (turn_due or idle_due):
             return False
         self._npc_last_turn = self.turn_counter
@@ -284,19 +304,9 @@ class GameEngine(GameAPIMixin):
                     continue
             except Exception:
                 pass
-            # roster player-characters are driven by their controller
-            # (human / M.2 agent), never the ambient NPC AI (M.1b); the same
-            # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
-            meta = getattr(npc, "metadata", {}) or {}
-            if meta.get("player_char") or meta.get("adventurer"):
-                continue
-            # neutral wildlife are driven by the WildlifeSystem (P32.3), never
-            # the ambient hostile/social AI
-            if meta.get("wildlife"):
-                continue
-            # P37.6b: a hostile that already bit via the per-turn AggressionSystem
-            # this turn doesn't also swing here (no double attack)
-            if meta.get("_aggro_turn") == self.turn_counter:
+            # NPCs another system owns this turn (controllers, ventures,
+            # wildlife, arena, the AggressionSystem) skip the ambient AI
+            if _driven_elsewhere(npc, self.turn_counter):
                 continue
             try:
                 npc_x, npc_y = npc.position
@@ -360,19 +370,9 @@ class GameEngine(GameAPIMixin):
                     continue
             except Exception:
                 pass
-            # roster player-characters are driven by their controller
-            # (human / M.2 agent), never the ambient NPC AI (M.1b); the same
-            # goes for adventurer NPCs (driven by AdventurerSystem, P-M.6)
-            meta = getattr(npc, "metadata", {}) or {}
-            if meta.get("player_char") or meta.get("adventurer"):
-                continue
-            # neutral wildlife are driven by the WildlifeSystem (P32.3), never
-            # the ambient hostile/social AI
-            if meta.get("wildlife"):
-                continue
-            # P37.6b: a hostile that already bit via the per-turn AggressionSystem
-            # this turn doesn't also swing here (no double attack)
-            if meta.get("_aggro_turn") == self.turn_counter:
+            # NPCs another system owns this turn (controllers, ventures,
+            # wildlife, arena, the AggressionSystem) skip the ambient AI
+            if _driven_elsewhere(npc, self.turn_counter):
                 continue
             nx, ny = npc.position
             if self._distance_to_player(nx, ny) > \
@@ -439,20 +439,25 @@ class GameEngine(GameAPIMixin):
         if not name_or_id:
             return None
         text = name_or_id.lower()
-        # Player keywords
-        if any(t in text for t in ("player", "adventurer", "traveler",
-                                   "stranger", "newcomer")):
-            return self.player
         # By id
         if name_or_id in self.npc_manager.npcs:
             return self.npc_manager.npcs[name_or_id]
         # By name — prefer the NEAREST active match. Names can collide now
         # (P19.2: a Wandering Troll in an overworld den and one in a crypt),
         # so "attack the Wandering Troll" must mean the one in front of you.
+        # An EXACT entity name wins before the loose player-keyword heuristic
+        # below, so casting at a real foe named "Ghost of Player" hits the
+        # GHOST, not the caster (George: away-casters froze plinking a
+        # never-dying phantom because "player" ⊂ its name).
         exact = [n for n in self.npc_manager.npcs.values()
                  if n.name.lower() == text]
         if exact:
             return self._nearest_active(exact)
+        # Player keywords — a loose LLM/NPC reference to the hero ("the
+        # traveler", "the player") when no concrete entity matched.
+        if any(t in text for t in ("player", "adventurer", "traveler",
+                                   "stranger", "newcomer")):
+            return self.player
         # Substring match
         subs = [n for n in self.npc_manager.npcs.values()
                 if n.name.lower() in text or text in n.name.lower()]

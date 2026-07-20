@@ -10,6 +10,112 @@ from typing import List
 _DATA = Path(__file__).resolve().parent.parent / "data"
 
 
+_COMBAT_KEYS = {"weapon_damage_per", "armor_ac_per", "dodge_ac_per",
+                "beast_damage_per",
+                # richer skills (weaponry/defense reuse the above)
+                "ranged_damage_per", "mana_per", "heal_per", "lock_per"}
+
+
+def check_skill_combat() -> List[str]:
+    """skills.json (T4.4): an optional `combat` block uses known keys and
+    positive-int `per` divisors (a bad tie would silently give no bonus)."""
+    path = _DATA / "skills.json"
+    if not path.exists():
+        return []
+    try:
+        skills = json.loads(path.read_text())
+    except Exception as e:
+        return [f"skills.json unparseable: {e}"]
+    problems: List[str] = []
+    for sid, spec in skills.items():
+        cfg = (spec or {}).get("combat")
+        if cfg is None:
+            continue
+        if not isinstance(cfg, dict):
+            problems.append(f"skill {sid}: combat must be an object")
+            continue
+        for key, val in cfg.items():
+            if key not in _COMBAT_KEYS:
+                problems.append(f"skill {sid}: unknown combat key '{key}'")
+            elif not isinstance(val, int) or val <= 0:
+                problems.append(f"skill {sid}: combat '{key}' must be a "
+                                f"positive int, got {val!r}")
+    return problems
+
+
+def check_worldcraft() -> List[str]:
+    """worldcraft/mutations.json (M0): valid terrain names, known skills,
+    resolvable resource/yield item ids, and a labor or magic means on each rule."""
+    path = _DATA / "worldcraft" / "mutations.json"
+    if not path.exists():
+        return []
+    try:
+        rules = json.loads(path.read_text())
+    except Exception as e:
+        return [f"worldcraft/mutations.json unparseable: {e}"]
+    from items.item_registry import create_item
+    from world.world_map import TerrainType
+    terrains = {t.value for t in TerrainType}
+    try:
+        from engine.skill_progression import all_skill_ids
+        skills = set(all_skill_ids())
+    except Exception:
+        skills = None
+    problems: List[str] = []
+    for rid, rule in rules.items():
+        for side in ("from", "to"):
+            t = rule.get(side)
+            if t not in terrains:
+                problems.append(f"mutation {rid}: bad {side} terrain '{t}'")
+        if rule.get("labor") is None and rule.get("magic") is None:
+            problems.append(f"mutation {rid}: needs a labor or magic means")
+        labor = rule.get("labor") or {}
+        if labor:
+            sk = labor.get("skill")
+            if skills is not None and sk and sk not in skills:
+                problems.append(f"mutation {rid}: unknown labor skill '{sk}'")
+            for grp in ("resources", "yields"):
+                for iid in (labor.get(grp) or {}):
+                    if create_item(iid) is None:
+                        problems.append(f"mutation {rid}: unknown {grp} '{iid}'")
+    return problems
+
+
+def check_enchantments() -> List[str]:
+    """enchantments.json (M3): valid item types, resolvable reagents + skill, and
+    a bonuses/damage_kind/use_effect payload."""
+    path = _DATA / "enchantments.json"
+    if not path.exists():
+        return []
+    try:
+        ench = json.loads(path.read_text())
+    except Exception as e:
+        return [f"enchantments.json unparseable: {e}"]
+    from items.item_registry import create_item
+    valid_types = {"weapon", "armor", "shield", "ring", "amulet", "boots"}
+    try:
+        from engine.skill_progression import all_skill_ids
+        skills = set(all_skill_ids())
+    except Exception:
+        skills = None
+    problems: List[str] = []
+    for eid, spec in ench.items():
+        for t in (spec.get("applies_to") or []):
+            if t not in valid_types:
+                problems.append(f"enchant {eid}: bad applies_to '{t}'")
+        if not spec.get("applies_to"):
+            problems.append(f"enchant {eid}: needs applies_to")
+        sk = spec.get("skill", "enchanting")
+        if skills is not None and sk not in skills:
+            problems.append(f"enchant {eid}: unknown skill '{sk}'")
+        for iid in (spec.get("reagents") or {}):
+            if create_item(iid) is None:
+                problems.append(f"enchant {eid}: unknown reagent '{iid}'")
+        if not any(spec.get(k) for k in ("bonuses", "damage_kind", "use_effect")):
+            problems.append(f"enchant {eid}: does nothing (no bonuses/kind/use)")
+    return problems
+
+
 def check_adventurers() -> List[str]:
     """adventurers.json: valid class/race and resolvable kit (P-M.6)."""
     path = _DATA / "adventurers.json"
@@ -91,6 +197,47 @@ def check_wildlife() -> List[str]:
         for prey in spec.get("preys_on", []):
             if prey not in roster:
                 problems.append(f"wildlife {sid}: preys_on unknown '{prey}'")
+        if spec.get("active", "day") not in ("day", "night"):    # B1
+            problems.append(f"wildlife {sid}: active must be day|night")
+        if "herd" in spec and not isinstance(spec["herd"], bool):  # B3
+            problems.append(f"wildlife {sid}: herd must be true|false")
+    return problems
+
+
+def check_activities() -> List[str]:
+    """activities.json (LIVING_WORLD A1): every referenced animation clip is a
+    real char_clips clip and every profession is a known producer profession."""
+    path = _DATA / "activities.json"
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text())
+    except Exception as e:
+        return [f"activities.json unparseable: {e}"]
+    problems: List[str] = []
+    try:
+        from ui.char_clips import ACTIONS as _CLIPS
+        known = set(_CLIPS.keys())
+    except Exception:
+        known = None
+    for section, label in (("activities", "activity"),
+                           ("professions", "profession"),
+                           ("class_work", "class")):
+        for key, spec in data.get(section, {}).items():
+            clip = spec.get("clip") if isinstance(spec, dict) else None
+            if clip and known is not None and clip not in known:
+                problems.append(
+                    f"activities {label} '{key}': unknown clip '{clip}'")
+    try:
+        from engine.production import all_professions
+        profs = set(all_professions())
+    except Exception:
+        profs = None
+    if profs is not None:
+        for p in data.get("professions", {}):
+            if p not in profs:
+                problems.append(
+                    f"activities profession '{p}': not a known profession")
     return problems
 
 

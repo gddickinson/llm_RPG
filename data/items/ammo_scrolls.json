@@ -7,7 +7,9 @@
     "rarity": "uncommon",
     "description": "A vellum scroll rimed with frost — the Vault's cold, captured in a rune.",
     "stackable": true,
-    "use_effect": {"spell": "frost_ray"}
+    "use_effect": {
+      "spell": "frost_ray"
+    }
   },
   "scroll_frost_armor": {
     "id": "scroll_frost_armor",
@@ -17,7 +19,9 @@
     "rarity": "uncommon",
     "description": "A warding-scroll of Vael'Zhur's own hand, sheathing its reader in protective ice.",
     "stackable": true,
-    "use_effect": {"spell": "frost_armor"}
+    "use_effect": {
+      "spell": "frost_armor"
+    }
   },
   "arrow": {
     "id": "arrow",
@@ -119,5 +123,324 @@
     "use_effect": {
       "spell": "swimmers_grace"
     }
+  },
+  "scroll_lightning_bolt": {
+    "name": "Scroll of Lightning Bolt",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "lightning_bolt"
+    },
+    "description": "A one-use scroll inscribed with Lightning Bolt."
+  },
+  "scroll_ice_shard": {
+    "name": "Scroll of Ice Shard",
+    "item_type": "scroll",
+    "value": 27,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "ice_shard"
+    },
+    "description": "A one-use scroll inscribed with Ice Shard."
+  },
+  "scroll_cure_wounds": {
+    "name": "Scroll of Cure Wounds",
+    "item_type": "scroll",
+    "value": 27,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "cure_wounds"
+    },
+    "description": "A one-use scroll inscribed with Cure Wounds."
+  },
+  "scroll_greater_heal": {
+    "name": "Scroll of Greater Heal",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "greater_heal"
+    },
+    "description": "A one-use scroll inscribed with Greater Heal."
+  },
+  "scroll_sleep": {
+    "name": "Scroll of Sleep",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "sleep"
+    },
+    "description": "A one-use scroll inscribed with Sleep."
+  },
+  "scroll_haste": {
+    "name": "Scroll of Haste",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "haste"
+    },
+    "description": "A one-use scroll inscribed with Haste."
+  },
+  "scroll_slow": {
+    "name": "Scroll of Slow",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "slow"
+    },
+    "description": "A one-use scroll inscribed with Slow."
+  },
+  "scroll_smite": {
+    "name": "Scroll of Smite",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "smite"
+    },
+    "description": "A one-use scroll inscribed with Smite."
+  },
+  "scroll_earthquake": {
+    "name": "Scroll of Earthquake",
+    "item_type": "scroll",
+    "value": 75,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "earthquake"
+    },
+    "description": "A one-use scroll inscribed with Earthquake."
+  },
+  "scroll_stone_shape": {
+    "name": "Scroll of Stone Shape",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "stone_shape"
+    },
+    "description": "A one-use scroll inscribed with Stone Shape."
+  },
+  "scroll_wall_of_stone": {
+    "name": "Scroll of Wall Of Stone",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "wall_of_stone"
+    },
+    "description": "A one-use scroll inscribed with Wall Of Stone."
+  },
+  "scroll_plant_growth": {
+    "name": "Scroll of Plant Growth",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "plant_growth"
+    },
+    "description": "A one-use scroll inscribed with Plant Growth."
+  },
+  "scroll_conjure_water": {
+    "name": "Scroll of Conjure Water",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "conjure_water"
+    },
+    "description": "A one-use scroll inscribed with Conjure Water."
+  },
+  "scroll_firestorm": {
+    "name": "Scroll of Firestorm",
+    "item_type": "scroll",
+    "value": 63,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "firestorm"
+    },
+    "description": "A one-use scroll inscribed with Firestorm."
+  },
+  "scroll_vampiric_touch": {
+    "name": "Scroll of Vampiric Touch",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "vampiric_touch"
+    },
+    "description": "A one-use scroll inscribed with Vampiric Touch."
+  },
+  "scroll_moonbeam": {
+    "name": "Scroll of Moonbeam",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "moonbeam"
+    },
+    "description": "A one-use scroll inscribed with Moonbeam."
+  },
+  "scroll_barkskin": {
+    "name": "Scroll of Barkskin",
+    "item_type": "scroll",
+    "value": 27,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "barkskin"
+    },
+    "description": "A one-use scroll inscribed with Barkskin."
+  },
+  "scroll_fear": {
+    "name": "Scroll of Fear",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "fear"
+    },
+    "description": "A one-use scroll inscribed with Fear."
+  },
+  "scroll_scorching_ray": {
+    "name": "Scroll of Scorching Ray",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "scorching_ray"
+    },
+    "description": "A one-use scroll inscribed with Scorching Ray."
+  },
+  "scroll_chain_lightning": {
+    "name": "Scroll of Chain Lightning",
+    "item_type": "scroll",
+    "value": 63,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "chain_lightning"
+    },
+    "description": "A one-use scroll inscribed with Chain Lightning."
+  },
+  "scroll_radiant_smite": {
+    "name": "Scroll of Radiant Smite",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "radiant_smite"
+    },
+    "description": "A one-use scroll inscribed with Radiant Smite."
+  },
+  "scroll_frostbite": {
+    "name": "Scroll of Frostbite",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "frostbite"
+    },
+    "description": "A one-use scroll inscribed with Frostbite."
+  },
+  "scroll_hex": {
+    "name": "Scroll of Hex",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "hex"
+    },
+    "description": "A one-use scroll inscribed with Hex."
+  },
+  "scroll_eldritch_blast": {
+    "name": "Scroll of Eldritch Blast",
+    "item_type": "scroll",
+    "value": 27,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "eldritch_blast"
+    },
+    "description": "A one-use scroll inscribed with Eldritch Blast."
+  },
+  "scroll_bone_spear": {
+    "name": "Scroll of Bone Spear",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "bone_spear"
+    },
+    "description": "A one-use scroll inscribed with Bone Spear."
+  },
+  "scroll_sanctuary": {
+    "name": "Scroll of Sanctuary",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "sanctuary"
+    },
+    "description": "A one-use scroll inscribed with Sanctuary."
+  },
+  "scroll_insect_swarm": {
+    "name": "Scroll of Insect Swarm",
+    "item_type": "scroll",
+    "value": 39,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "insect_swarm"
+    },
+    "description": "A one-use scroll inscribed with Insect Swarm."
+  },
+  "scroll_thorn_whip": {
+    "name": "Scroll of Thorn Whip",
+    "item_type": "scroll",
+    "value": 27,
+    "rarity": "common",
+    "stackable": true,
+    "use_effect": {
+      "spell": "thorn_whip"
+    },
+    "description": "A one-use scroll inscribed with Thorn Whip."
+  },
+  "scroll_blight": {
+    "name": "Scroll of Blight",
+    "item_type": "scroll",
+    "value": 51,
+    "rarity": "uncommon",
+    "stackable": true,
+    "use_effect": {
+      "spell": "blight"
+    },
+    "description": "A one-use scroll inscribed with Blight."
   }
 }

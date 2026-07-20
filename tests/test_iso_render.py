@@ -143,6 +143,105 @@ class TestRenderIso(unittest.TestCase):
             eng.player_target_id = None
 
 
+class TestCombatEffectsExpire(unittest.TestCase):
+    """Bug-fix: the iso path never AGED combat effects, so the red damage sprays
+    stayed on screen forever (George)."""
+
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+        from engine.game_engine import GameEngine
+        cls.engine = GameEngine(llm_provider="heuristic",
+                                enable_npc_processes=False)
+        cls.engine.start_game()
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            cls.engine.end_game()
+        except Exception:
+            pass
+
+    def test_iso_draw_ages_and_clears_the_sprays(self):
+        from ui.iso import IsoProjection
+        eng = self.engine
+        ce = eng.combat_effects
+        ce.damage_popups.clear()
+        ce.death_effects.clear()
+        px, py = eng.player.position
+        ce.spawn_damage_popup(px, py, 12, (255, 60, 60))     # a red spray
+        self.assertGreater(len(ce.damage_popups), 0, "spray spawned")
+        iso = IsoProjection(48, 24, 12)
+        surf = pygame.Surface((320, 240))
+        view = pygame.Rect(0, 0, 320, 240)
+        for _ in range(45):        # a DamagePopup lives ~1s = 30 frames at 1/30
+            iso_render.draw_combat_iso(surf, eng, view, iso, (160, 120),
+                                       eng.world.map, 48)
+        self.assertEqual(len(ce.damage_popups), 0,
+                         "the iso draw must age the spray away")
+
+
+class TestBuildingFootprints(unittest.TestCase):
+    """ISO.15 — buildings drawn as footprint-spanning boxes on the ground."""
+
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+
+    def test_footprint_tiles_cover_the_rect(self):
+        from ui import iso_structures
+
+        class _Loc:
+            name, x, y, width, height = "House", 5, 6, 3, 2
+
+        class _Eng:
+            interiors = {"House": object()}
+            world = type("W", (), {"locations": [_Loc()]})()
+        tiles = iso_structures.footprint_tiles(_Eng())
+        self.assertEqual(len(tiles), 6, "3x2 footprint = 6 tiles")
+        self.assertIn((5, 6), tiles)
+        self.assertIn((7, 7), tiles)
+
+    def test_furrows_paint_green_crop_rows(self):
+        # ISO.16: farmland reads as furrowed crops (green/gold rows)
+        from ui import iso_tiles
+        from ui.iso import IsoProjection
+        iso = IsoProjection(80, 40, 20)
+        surf = pygame.Surface((160, 120))
+        surf.fill((124, 92, 56))                     # the dirt base
+        iso_tiles.draw_furrows(surf, iso, 80, 60, 3, 4)
+        greenish = sum(1 for x in range(30, 130, 3) for y in range(30, 90, 3)
+                       if surf.get_at((x, y))[1] > surf.get_at((x, y))[0] + 10)
+        self.assertGreater(greenish, 8, "crop rows should add green over dirt")
+
+    def test_draw_building_paints_walls_and_roof(self):
+        from ui import iso_structures
+        from ui.iso import IsoProjection
+        iso = IsoProjection(48, 24, 14)
+        surf = pygame.Surface((300, 300))
+        surf.fill((0, 0, 0))
+        iso_structures.draw_building(surf, iso, (150, 90),
+                                     (0, 0, 2, 2, "home"), "clay", "timber")
+        painted = sum(1 for x in range(0, 300, 4) for y in range(0, 300, 4)
+                      if surf.get_at((x, y))[:3] != (0, 0, 0))
+        self.assertGreater(painted, 30, "a spanning building should paint")
+
+    def test_the_door_paints_a_light_frame(self):
+        # ISO.16b: a clearly-FRAMED entrance door (George: no door icons)
+        from ui import iso_structures
+        from ui.iso import IsoProjection
+        iso = IsoProjection(96, 48, 24)
+        surf = pygame.Surface((260, 220))
+        surf.fill((30, 34, 42))
+        iso_structures.draw_building(surf, iso, (130, 90),
+                                     (0, 0, 1, 1, "home"), "clay", "timber",
+                                     "open")
+        lintel = iso_structures._LINTEL
+        framed = sum(1 for x in range(0, 260, 2) for y in range(0, 220, 2)
+                     if surf.get_at((x, y))[:3] == lintel)
+        self.assertGreater(framed, 6, "the door frame (lintel) should show")
+
+
 class TestIsoOverlayHelpers(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

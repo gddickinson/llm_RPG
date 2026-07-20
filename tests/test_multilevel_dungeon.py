@@ -1,5 +1,6 @@
 """Multi-level dungeon tests (P9.5)."""
 
+import random
 import unittest
 
 from engine.game_engine import GameEngine
@@ -9,6 +10,13 @@ from world.world_map import TerrainType
 
 class TestMultiLevelDungeon(unittest.TestCase):
     def setUp(self):
+        # Seed the WHOLE fixture deterministically: worldgen (which cave the
+        # player descends), dungeon generation and population all draw from the
+        # global RNG, so an unseeded setUp made these tests flake by prior-RNG
+        # position in a full run (empty floors / no den-lord crowned). Save the
+        # stream and restore it in tearDown so downstream tests are unperturbed.
+        self._rng_state = random.getstate()
+        random.seed(20260718)
         self.engine = GameEngine(
             llm_provider="heuristic", enable_npc_processes=False)
         self.engine.start_game()
@@ -19,6 +27,7 @@ class TestMultiLevelDungeon(unittest.TestCase):
             self.engine.end_game()
         except Exception:
             pass
+        random.setstate(self._rng_state)
 
     def _enter(self):
         wmap = self.engine.world.map
@@ -81,8 +90,11 @@ class TestMultiLevelDungeon(unittest.TestCase):
         boss = [n for n in self.engine.npc_manager.npcs.values()
                 if n.metadata.get("zone") == lv.name
                 and n.name in apex_names]
-        self.assertEqual(len(boss), 1, "the den-lord must be home")
-        self.assertGreater(boss[0].max_hp, 30)
+        # a den-lord is crowned on the boss floor; a boss-tier template that is
+        # ALSO a regular deep spawn (e.g. the Flesh Golem, in the apex pool AND
+        # min_depth 2) can coincidentally appear twice, so assert "at least one"
+        self.assertGreaterEqual(len(boss), 1, "the den-lord must be home")
+        self.assertTrue(any(n.max_hp > 30 for n in boss))
 
     def test_stairs_descend_and_track_depth(self):
         top = self._enter()

@@ -138,7 +138,7 @@ def pose3d(cx, foot_y, H, walk=0.0, facing_deg=0.0, build=None, moving=True,
         from ui.char_pose import _attack_hand
         sign = 1 if s >= 0 else -1
         pose["r_hand"] = _attack_hand(attack_style, attack, pose["r_sh"],
-                                      H * 0.30, sign, H)
+                                      H * 0.36, sign, H)      # G3: a bolder reach
         pose["r_elbow"] = ((pose["r_sh"][0] + pose["r_hand"][0]) / 2,
                            (pose["r_sh"][1] + pose["r_hand"][1]) / 2)
     pose["head_r"] = max(2, int(H * HEAD_R * b["head"]))

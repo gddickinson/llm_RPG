@@ -46,11 +46,17 @@ def validate_all() -> List[str]:
     problems += check_building_types()
     problems += check_resource_nodes()
     from items.validate_world import (check_adventurers, check_guildhalls,
-                                       check_wildlife, check_building_styles)
+                                       check_wildlife, check_building_styles,
+                                       check_activities, check_skill_combat,
+                                       check_worldcraft, check_enchantments)
     problems += check_adventurers()
     problems += check_guildhalls()
     problems += check_wildlife()
     problems += check_building_styles()
+    problems += check_activities()
+    problems += check_skill_combat()
+    problems += check_worldcraft()
+    problems += check_enchantments()
     return problems
 
 
@@ -342,11 +348,21 @@ def _check_spells() -> List[str]:
     from engine.spells import SPELL_REGISTRY
     from characters.status_effects import VALID_EFFECTS
     from items.item_registry import ITEM_REGISTRY
+    from characters.character_types import CharacterClass
+    class_values = {c.value for c in CharacterClass}
     out = []
     for sid, spell in SPELL_REGISTRY.items():
         if spell.status_effect and spell.status_effect not in VALID_EFFECTS:
             out.append(f"spell {sid}: unknown effect "
                        f"'{spell.status_effect}'")
+        if not (1 <= spell.tier <= 5):                     # M1 tier range
+            out.append(f"spell {sid}: tier {spell.tier} out of 1-5")
+        for cv in spell.classes:
+            if cv not in class_values:
+                out.append(f"spell {sid}: unknown class '{cv}'")
+        prereq = (spell.requires or {}).get("prereq")
+        if prereq and prereq not in SPELL_REGISTRY:
+            out.append(f"spell {sid}: prereq unknown spell '{prereq}'")
     for iid, item in ITEM_REGISTRY.items():
         cast = item.use_effect.get("spell")
         if cast and cast not in SPELL_REGISTRY:
@@ -364,13 +380,15 @@ def _check_quests() -> List[str]:
     from world.monsters import MONSTER_TEMPLATES
     from characters.character_types import CharacterClass
     class_values = {c.value for c in CharacterClass}
-    # P38.3: the Sunken Tome adventure seeds its cast from data/adventure_tome.
-    # json (kept out of data/npcs/), so they are valid givers/actors too
+    # Adventure seeders keep their cast OUT of data/npcs/ (the Sunken Tome
+    # P38.3, and Ravenmoor) yet those NPCs are valid quest givers/actors at
+    # runtime, so fold their ids into the known set.
     adv_npcs = set()
     try:
         from items.data_loader import load_data_file
-        adv_npcs = set(
-            (load_data_file("adventure_tome.json") or {}).get("npcs", {}))
+        for _adv in ("adventure_tome.json", "ravenmoor.json",
+                     "emberfell.json", "blackbanner.json", "wychwood.json"):
+            adv_npcs |= set((load_data_file(_adv) or {}).get("npcs", {}))
     except Exception:
         pass
     out = []

@@ -75,6 +75,15 @@ class PantheonSystem:
         if not at_altar and not self._at_holy_place():
             return "You murmur a prayer, but this is no holy place. " \
                    "Seek a shrine or temple."
+        # A shape forced on you is unwound by divine mercy at a holy place
+        try:
+            from engine import shapeshift
+            if shapeshift.is_involuntary(player):
+                shapeshift.remove_curse(engine, player)
+                return ("You kneel at the holy place, and the god's mercy "
+                        "unwinds the curse — you are yourself again.")
+        except Exception:
+            pass
         day = engine.world.time // (24 * 60)
         meta = player.metadata
         if meta.get("last_pray_day") == day:

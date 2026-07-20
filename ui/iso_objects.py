@@ -8,35 +8,20 @@ at their tile and depth-sorts them with the terrain.
 """
 
 from ui import raster3d as r3
-from ui import roof_shapes as rs
-from ui.renderer_buildings import style_for
+from ui import iso_buildings
 
 _CACHE = {}
-_TALL = ("tower", "keep", "watchtower", "wall_tower", "mill")
 
 
-def _building_mesh(kind: str):
-    style = style_for(kind)
-    wall = rs.wall_color(style.get("wall", "timber"))
-    cover = rs.covering_color(style.get("covering", "clay"))
-    tall = kind in _TALL
-    h = 1.7 if tall else 0.95
-    w = d = 1.05
-    meshes = [r3.box(0, 0, 0, w, h, d, wall)]
-    if style.get("roof") == "flat" or tall:
-        # a parapet / crenellated cap
-        meshes.append(r3.box(0, h, 0, w + 0.12, 0.16, d + 0.12,
-                             rs._scale(cover, 1.0)))
-    else:
-        meshes.append(r3.roof(0, h, 0, w + 0.18, 0.55, d + 0.06, cover))
-    return meshes
-
-
-def building_sprite(kind: str, size: int):
-    """A cached baked 3D sprite for a building of `kind` at `size` px."""
-    key = ("bld", kind, size)
+def building_sprite(kind: str, size: int, covering: str = None,
+                    wall: str = None):
+    """A cached baked 3D sprite for a building of `kind` at `size` px, in the
+    given (covering, wall) MATERIALS (ISO.1 per-building variety). Keyed by the
+    variant so distinct looks are bounded, not one per tile."""
+    key = ("bld", kind, covering, wall, size)
     if key not in _CACHE:
-        _CACHE[key] = r3.bake(_building_mesh(kind), size=size)
+        _CACHE[key] = r3.bake(
+            iso_buildings.building_mesh(kind, covering, wall), size=size)
     return _CACHE[key]
 
 

@@ -88,5 +88,67 @@ class TestCombat(unittest.TestCase):
         self.assertEqual(red, 6)
 
 
+class _Crit:
+    """A rigged RNG: a natural 20 to-hit (crit) + max damage."""
+    def randint(self, a, b):
+        return 20 if b == 20 else b
+
+    def random(self):
+        return 0.5
+
+    def uniform(self, a, b):
+        return (a + b) / 2
+
+
+class TestCombatContact(unittest.TestCase):
+    """I5 — a decisive melee crit drives a non-player foe to the ground."""
+
+    def setUp(self):
+        self.engine = GameEngine(
+            llm_provider="heuristic", enable_npc_processes=False)
+        self.engine.start_game()
+
+    def tearDown(self):
+        try:
+            self.engine.end_game()
+        except Exception:
+            pass
+
+    def _foe(self, hp, max_hp):
+        from world.monsters import build_monster
+        from world.world_map import TerrainType
+        wm = self.engine.world.map
+        p = self.engine.player
+        for (x, y) in ((5, 5), (6, 5)):
+            wm.terrain[y][x] = TerrainType.GRASS
+            ch = wm.get_character_at(x, y)
+            if ch is not None and ch is not p:
+                wm.remove_character(ch)
+        wm.remove_character(p)
+        p.position = (5, 5)
+        wm.place_character(p, 5, 5)
+        foe = self.engine.npc_manager.create_random_npc()
+        wm.remove_character(foe)
+        foe.position = (6, 5)
+        foe.hp, foe.max_hp = hp, max_hp
+        wm.place_character(foe, 6, 5)
+        self.engine.combat_system.rng = _Crit()
+        return p, foe
+
+    def test_decisive_crit_knocks_the_foe_down(self):
+        p, foe = self._foe(hp=4, max_hp=30)      # a crit will fell it
+        self.engine.combat_system._resolve(p, foe)
+        self.assertFalse(foe.is_alive())
+        self.assertEqual(foe.metadata.get("_emote"), "knockdown")
+        self.assertEqual(p.metadata.get("_emote"), "attack")
+
+    def test_crit_on_a_hale_foe_only_recoils(self):
+        p, foe = self._foe(hp=200, max_hp=200)   # survives well above 30%
+        self.engine.combat_system._resolve(p, foe)
+        self.assertTrue(foe.is_alive())
+        self.assertEqual(foe.metadata.get("_emote"), "hurt",
+                         "a hale foe recoils, it isn't knocked down")
+
+
 if __name__ == "__main__":
     unittest.main()

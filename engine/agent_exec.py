@@ -83,6 +83,18 @@ def execute(ctrl, engine, char, plan) -> None:
                     deed(f"recruited {npc.name} to the party.")
             except Exception:
                 pass
+        elif k == "enter_building":           # T4.1 step in for an indoor task
+            from engine import agent_building as abld
+            loc, task = plan[1], plan[2]
+            try:
+                engine.enter_building(loc)
+            except Exception:
+                pass
+            if getattr(engine, "current_interior", None) is not None:
+                abld.on_entered(ctrl, engine, loc, task)
+                deed(f"stepped into the {loc.name}.")
+            else:                             # a locked door turned us back
+                abld.on_entry_failed(ctrl)
         elif k == "exit_building":
             try:
                 engine.exit_building()

@@ -1,0 +1,36 @@
+{
+  "_doc": "BLD.2 functional room typing. Maps a building's FUNCTION (building_types.function_of_kind) — or its raw kind — to an ORDERED list of room_types (data/room_templates.json). The FIRST room is the public/main room (assigned to the leaf that touches the entrance); the rest fill the remaining leaves by descending area. A set with <2 rooms means the building stays one open room. Ported from autonomous_world game/systems/interiors.py BUILDING_ROOM_SETS.",
+  "by_function": {
+    "tavern": ["common_room", "bar", "kitchen", "storeroom", "guest_room"],
+    "smithy": ["forge", "workshop", "storeroom"],
+    "temple": ["nave", "sanctuary", "vestry"],
+    "shrine": ["sanctuary", "vestry"],
+    "market": ["counter", "storeroom"],
+    "farm": ["hearth_room", "bedroom", "kitchen", "storeroom"],
+    "library": ["study", "study", "storeroom"],
+    "tower": ["study", "bedroom", "storeroom"],
+    "bakery": ["kitchen", "counter", "storeroom"],
+    "lodge": ["hearth_room", "bedroom", "storeroom"],
+    "hall": ["great_room", "kitchen", "storeroom"],
+    "stable": ["storeroom", "storeroom"],
+    "storage": ["storeroom", "storeroom", "storeroom"],
+    "watch": ["common_room", "bedroom", "storeroom"],
+    "mine": ["workshop", "storeroom"],
+    "sawmill": ["workshop", "storeroom"],
+    "mill": ["workshop", "storeroom"],
+    "dock": ["workshop", "storeroom"],
+    "well": ["storeroom"]
+  },
+  "by_kind": {
+    "cathedral": ["nave", "vestry"],
+    "church": ["nave", "vestry"],
+    "inn": ["common_room", "bar", "kitchen", "storeroom", "guest_room"],
+    "home": ["hearth_room", "bedroom"],
+    "house": ["hearth_room", "bedroom"],
+    "cottage": ["hearth_room", "bedroom"],
+    "farmhouse": ["hearth_room", "bedroom", "kitchen", "storeroom"],
+    "shop": ["counter", "storeroom"],
+    "stall": ["counter"]
+  },
+  "default": ["hearth_room"]
+}

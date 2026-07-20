@@ -1,0 +1,18 @@
+{
+  "_note": "Animal companions (George: companion & hunting animals for all). TAME an adjacent wild animal (Hunting-gated + a food lure) and it joins your party to FIGHT beside you (a guardian) or aid the HUNT (a hunter — you strike beasts harder while it runs at your side). A wild horse (mustang) is tamed as a MOUNT instead. `dc` is the taming difficulty (a food lure eases it by 4; your Hunting skill + 10 must meet it). Read by engine/animal_companions.",
+  "companions": {
+    "wolf":    {"role": "guardian", "damage": 6, "dc": 16, "desc": "a grey wolf, fierce and loyal once won"},
+    "boar":    {"role": "guardian", "damage": 5, "dc": 14, "desc": "a tusked boar that charges anything it doesn't like"},
+    "hog":     {"role": "guardian", "damage": 4, "dc": 12, "desc": "a bristly hog, all appetite and bad temper"},
+    "aurochs": {"role": "guardian", "damage": 8, "dc": 20, "desc": "a great wild ox — a walking battering ram"},
+    "stag":    {"role": "guardian", "damage": 4, "dc": 15, "desc": "a crown-antlered stag that fears nothing"},
+    "fox":     {"role": "hunter",   "damage": 2, "dc": 9,  "hunt_bonus": 2, "desc": "a russet fox with a nose for game"},
+    "deer":    {"role": "hunter",   "damage": 1, "dc": 8,  "hunt_bonus": 1, "desc": "a gentle doe that grazes ahead and startles game"},
+    "mouflon": {"role": "guardian", "damage": 3, "dc": 12, "desc": "a horned wild sheep, surprisingly game for a scrap"}
+  },
+  "as_mount": {
+    "mustang": "horse"
+  },
+  "food_items": ["bread", "meat", "raw_meat", "apple", "ration", "jerky",
+                 "fish", "cheese", "cooked_fish", "berries", "carrot", "oats"]
+}

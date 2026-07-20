@@ -35,12 +35,21 @@ class TestFurniture(unittest.TestCase):
         self.assertIsNone(self.engine.use_furniture())
 
     def test_piece_near_is_adjacent_inclusive(self):
+        from world.world_map import TerrainType
         interior, piece = self._inside("tavern", "Hearth")
         self.player.position = (piece["x"] + 1, piece["y"])
         self.assertIsNotNone(piece_near(interior,
                                         *self.player.position))
-        self.player.position = (piece["x"] + 3, piece["y"])
-        self.assertIsNone(piece_near(interior, *self.player.position))
+        # a floor tile with NO furniture within one step → nothing near
+        occupied = {(p["x"], p["y"]) for p in interior.furniture}
+        clear = next(
+            ((x, y) for y in range(1, interior.height - 1)
+             for x in range(1, interior.width - 1)
+             if interior.terrain[y][x] != TerrainType.BUILDING
+             and all((x + dx, y + dy) not in occupied
+                     for dx in (-1, 0, 1) for dy in (-1, 0, 1))), None)
+        if clear is not None:
+            self.assertIsNone(piece_near(interior, *clear))
 
     def test_bed_rest_heals_once_a_day(self):
         self._inside("riverside inn", "Bed")

@@ -64,9 +64,11 @@ def shoot_ranged(engine, target_name=None, aimed=False) -> str:
         return why
 
     from engine.effects import effective_weapon_damage_bonus
+    from engine.skill_combat import ranged_damage_bonus
     dex_bonus = max(0, (engine.player.dexterity - 10) // 2)
     damage = max(1, int(weapon.damage) + dex_bonus
-                 + effective_weapon_damage_bonus(engine.player))
+                 + effective_weapon_damage_bonus(engine.player)
+                 + ranged_damage_bonus(engine.player))   # marksmanship
     if aimed:
         damage += 2
         engine.world.advance_time(1)
@@ -74,9 +76,23 @@ def shoot_ranged(engine, target_name=None, aimed=False) -> str:
 
     if ammo_item is not None:
         _consume_one_ammo(engine, ammo_item)
+    try:   # a loosed shot trains Marksmanship (pet-roll-free — no RNG churn)
+        from engine.skill_progression import add_skill_xp
+        add_skill_xp(engine.player, "marksmanship", 4)
+    except Exception:
+        pass
 
     proj = engine.projectile_manager.spawn(
         engine.player, target, damage, weapon_type=weapon_type)
+    # face the target + play the loose (bow-arm) animation — the shooter is SEEN
+    # firing the weapon it holds (George: characters holding the correct weapon)
+    try:
+        from engine import anim
+        anim.face(engine.player, target.position)
+        engine.player.metadata["_atk_seq"] = \
+            engine.player.metadata.get("_atk_seq", 0) + 1
+    except Exception:
+        pass
     ammo_label = f" ({weapon.ammo_type} -1)" if ammo_item is not None else ""
     msg = f"You loose a {proj.weapon_type} at {target.name}{ammo_label}."
     engine.memory_manager.add_event(msg)

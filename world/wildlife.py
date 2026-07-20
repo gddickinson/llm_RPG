@@ -36,6 +36,7 @@ MAX_POPULATION = 24       # a hard cap so the herd never runs away (P32.4b)
 BREED_CHANCE = 0.5        # a fed predator / a pair of prey may bear young
 STARVE_CHANCE = 0.4       # a predator that went hungry may not see morning
 HUNT_RANGE = 22           # game this near a town feeds its larder (P32.5)
+CHARGE_COOLDOWN = 3       # B4: a cornered charger (boar) can't gore every turn
 
 
 def _load_roster() -> dict:
@@ -85,10 +86,15 @@ def build_wildlife(species: str, position: Tuple[int, int]):
         metadata={
             "wildlife": True,
             "species": species,
+            "model": spec.get("model", ""),        # #9 GLB model override
             "diet": spec.get("diet", "graze"),
             "timid": spec.get("timid", 5),
             "preys_on": spec.get("preys_on", []),
             "loot_table": spec.get("loot_table", []),
+            "active": spec.get("active", "day"),   # B1 day/night rhythm
+            "herd": spec.get("herd", False),       # B3 herds/flocks together
+            "charge": spec.get("charge", False),   # B4 cornered → charges
+            "charge_damage": spec.get("charge_damage", 0),
         },
     )
 
@@ -163,8 +169,18 @@ class WildlifeSystem:
 
     def _pick_for(self, terrain) -> Optional[str]:
         tv = terrain.value
-        pool = [(sid, s.get("weight", 3)) for sid, s in ROSTER.items()
-                if tv in s.get("terrain", [])]
+        from world import wildlife_ethology as eth
+        night = eth.is_night(self.engine)
+        # B1: the species ACTIVE now dominate the sighting (a resting one still
+        # turns up occasionally — asleep in the field), so the wild shifts day↔night
+        pool = []
+        for sid, s in ROSTER.items():
+            if tv not in s.get("terrain", []):
+                continue
+            w = s.get("weight", 3)
+            if eth.is_rest_time(s, night):
+                w = max(1, w // 4)
+            pool.append((sid, w))
         if not pool:
             return None
         total = sum(w for _, w in pool)
@@ -189,30 +205,45 @@ class WildlifeSystem:
         return None
 
     def run_turn(self) -> None:
+        from world import wildlife_ethology as eth
+        night = eth.is_night(self.engine)
         player = self.engine.player
         ppos = player.position if player else None
         for animal in self._animals():
             if ppos and self._cheb(animal.position, ppos) > SIGHT_RADIUS:
                 continue                        # off-screen animals idle (cheap)
-            self._act(animal, ppos)
+            self._act(animal, ppos, night)
+        from world import wildlife_ethology as eth
+        eth.monster_predation(self, ppos)       # C5: predator MONSTERS hunt the herd
 
-    def _act(self, animal, ppos) -> None:
+    def _act(self, animal, ppos, night=False) -> None:
         meta = animal.metadata
         timid = meta.get("timid", 5)
+        # B4: a CORNERED charger (a boar) that can't bolt turns and GORES the
+        # player instead of taking a hit lying down (the data's old promise)
+        if ppos and meta.get("charge") and self._cheb(animal.position, ppos) <= 1 \
+                and not self._can_flee(animal, ppos):
+            meta.pop("asleep", None)
+            self._charge(animal, ppos)
+            return
         # the hero always spooks a wild thing first — bolt from a person
         if ppos and self._cheb(animal.position, ppos) <= timid:
+            meta.pop("asleep", None)            # startled awake
             self._flee(animal, ppos)
             return
         # P32.4: prey flees a nearby PREDATOR too; a predator hunts its prey
         threat = self._nearest_predator(animal)
         if threat is not None:
+            meta.pop("asleep", None)
             self._flee(animal, threat.position)
             return
         if meta.get("preys_on"):
             if self._hunt(animal):
                 return                          # closed on / caught a meal
-        if self.rng.random() < 0.5:
-            self._wander(animal)                # otherwise graze/amble
+        # Area B: rest at its off-hour / drink / graze / drift with the herd —
+        # a real day, not the old 50/50 random wander
+        from world import wildlife_ethology as eth
+        eth.live(self, animal, night)
 
     def _nearest_predator(self, prey):
         """The closest live predator that eats this prey's species, within the
@@ -290,6 +321,35 @@ class WildlifeSystem:
                 self.engine.world.map.move_character(animal, x + mvx, y + mvy)
                 return
 
+    def _can_flee(self, animal, ppos) -> bool:
+        """True if the animal has an open tile to bolt to away from `ppos`."""
+        x, y = animal.position
+        sx = (x - ppos[0] > 0) - (x - ppos[0] < 0)
+        sy = (y - ppos[1] > 0) - (y - ppos[1] < 0)
+        for mvx, mvy in ((sx, sy), (sx, 0), (0, sy)):
+            if (mvx or mvy) and self._walkable(x + mvx, y + mvy):
+                return True
+        return False
+
+    def _charge(self, animal, ppos) -> None:
+        """B4: a cornered boar gores the player — a real scare (never a kill; HP
+        floored at 1), on a cooldown so it can't gore every single turn."""
+        meta = animal.metadata
+        turn = getattr(self.engine, "turn_counter", 0)
+        if turn - meta.get("_charge_turn", -CHARGE_COOLDOWN - 1) < CHARGE_COOLDOWN:
+            return
+        meta["_charge_turn"] = turn
+        player = self.engine.player
+        dmg = int(meta.get("charge_damage", 4))
+        try:
+            player.hp = max(1, player.hp - dmg)
+            from engine import anim
+            anim.face(animal, ppos)
+            self.engine.memory_manager.add_event(
+                f"[!] The cornered {animal.name} charges — {dmg} damage!")
+        except Exception:
+            pass
+
     def _wander(self, animal) -> None:
         x, y = animal.position
         mvx = self.rng.randint(-1, 1)
@@ -312,13 +372,19 @@ class WildlifeSystem:
             meta = a.metadata or {}
             if meta.get("preys_on"):                     # a PREDATOR
                 if meta.pop("fed", False):
+                    meta["pred_hunger"] = 0              # B4: a good meal resets it
                     if pop < MAX_POPULATION and self.rng.random() < BREED_CHANCE:
                         if self._breed(a):
                             pop += 1
-                elif self.rng.random() < STARVE_CHANCE:  # went hungry — it dies
-                    self.engine.world.map.remove_character(a)
-                    self.engine.npc_manager.remove_npc(a.id)
-                    pop -= 1
+                else:
+                    # B4 hunger meter: starve odds climb the longer it goes hungry
+                    # (a fed predator is safe; two lean nights are usually fatal)
+                    h = meta.get("pred_hunger", 0) + 1
+                    meta["pred_hunger"] = h
+                    if self.rng.random() < STARVE_CHANCE * min(1.0, h / 2.0):
+                        self.engine.world.map.remove_character(a)
+                        self.engine.npc_manager.remove_npc(a.id)
+                        pop -= 1
         for species, herd in by_species.items():         # PREY breed with company
             if not species or ROSTER.get(species, {}).get("preys_on"):
                 continue

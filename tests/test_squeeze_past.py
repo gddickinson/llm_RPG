@@ -43,12 +43,15 @@ class TestSqueezePast(unittest.TestCase):
                    if getattr(n.character_class, "value", "") in
                    ("merchant", "villager") and n.is_active())
         self._put_npc(npc, self.ox + 1, self.oy)
+        n_before = len(self.engine.memory_manager.game_history)
         moved = self.engine.player_actions.move(1, 0)
         self.assertTrue(moved, "friendlies must let you squeeze past")
         self.assertEqual(self.player.position, (self.ox + 1, self.oy))
         self.assertEqual(npc.position, (self.ox, self.oy))
+        # scan every beat this move produced — an ambient encounter/weather
+        # beat can crowd a small tail window (the documented pattern)
         log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-4:])
+                       self.engine.memory_manager.game_history[n_before:])
         self.assertIn("squeeze past", log)
 
     def test_hostiles_hold_the_line(self):
@@ -78,16 +81,26 @@ class TestSqueezePast(unittest.TestCase):
         self.engine.current_interior = None
 
     def test_overworld_coords_never_block_indoors(self):
+        from world.world_map import TerrainType
         interior = next(i for n, i in self.engine.interiors.items()
                         if "tavern" in n.lower())
         self.engine.current_interior = interior
         npc = self.engine.npc_manager.get_npc("tavernkeeper_01")
-        # NPC's OVERWORLD position happens to equal a zone tile;
-        # without a visitor entry it must not block
+        # find two horizontally-adjacent FLOOR tiles (the GX.3 bigger layout
+        # moved the walls, so don't hardcode a tile)
+        spot = next(
+            ((x, y) for y in range(1, interior.height - 1)
+             for x in range(1, interior.width - 2)
+             if interior.terrain[y][x] != TerrainType.BUILDING
+             and interior.terrain[y][x + 1] != TerrainType.BUILDING), None)
+        self.assertIsNotNone(spot, "two adjacent floor tiles exist")
+        px, py = spot
+        # the NPC's OVERWORLD position happens to equal the destination zone
+        # tile; without a visitor entry it must not block
         self.wmap.remove_character(npc)
-        npc.position = (3, 2)
+        npc.position = (px + 1, py)
         interior.visitors = {}
-        self.player.position = (2, 2)
+        self.player.position = (px, py)
         moved = self.engine.player_actions.move(1, 0)
         self.assertTrue(moved,
                         "phantom overworld coordinates must not block")

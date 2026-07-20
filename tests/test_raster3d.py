@@ -21,6 +21,26 @@ class TestMeshes(unittest.TestCase):
             self.assertTrue((tris < len(verts)).all())
             self.assertEqual(len(color), 3)
 
+    def test_taper_and_ball_are_valid_meshes(self):
+        # ISO.10 limb + joint primitives
+        for verts, tris, color in (
+                r3.taper((0, 0, 0), (0, 1, 0), 0.2, 0.1, (120, 120, 130)),
+                r3.ball((0, 0, 0), 0.5, (200, 180, 150))):
+            self.assertEqual(verts.shape[1], 3)
+            self.assertEqual(tris.shape[1], 3)
+            self.assertTrue((tris < len(verts)).all(), "tri indices in range")
+            self.assertEqual(len(color), 3)
+
+    def test_taper_spans_its_endpoints(self):
+        verts, _, _ = r3.taper((0, 0, 0), (0, 1.5, 0), 0.2, 0.05, (0, 0, 0))
+        self.assertLess(verts[:, 1].min(), 0.05, "starts at a")
+        self.assertGreater(verts[:, 1].max(), 1.45, "reaches b")
+
+    def test_ball_is_centred_with_radius(self):
+        verts, _, _ = r3.ball((1.0, 2.0, 0.0), 0.5, (0, 0, 0))
+        self.assertAlmostEqual(float(verts[:, 0].mean()), 1.0, places=6)
+        self.assertLess(abs(float(verts[:, 1].max()) - 2.5), 0.02, "top at c+r")
+
 
 class TestRender(unittest.TestCase):
     def test_a_box_paints_shaded_faces(self):
@@ -69,3 +89,43 @@ class TestBake(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSSAA(unittest.TestCase):
+    def test_ssaa_default_and_clamp(self):
+        import os
+        from ui import raster3d as r3
+        old = os.environ.get("LLM_RPG_ISO_SS")
+        try:
+            os.environ.pop("LLM_RPG_ISO_SS", None)
+            self.assertEqual(r3._ssaa(), 3, "default 3x supersample")
+            os.environ["LLM_RPG_ISO_SS"] = "9"
+            self.assertEqual(r3._ssaa(), 4, "clamped to 4")
+            os.environ["LLM_RPG_ISO_SS"] = "1"
+            self.assertEqual(r3._ssaa(), 2, "clamped to 2")
+            os.environ["LLM_RPG_ISO_SS"] = "junk"
+            self.assertEqual(r3._ssaa(), 3, "bad value → default")
+        finally:
+            if old is None:
+                os.environ.pop("LLM_RPG_ISO_SS", None)
+            else:
+                os.environ["LLM_RPG_ISO_SS"] = old
+
+
+class TestShadingRichness(unittest.TestCase):
+    """ANIM_REALISM R2 — richer iso shading: AO undersides + a rim highlight give
+    a baked form a wide tonal range (not a flat matte fill)."""
+
+    def test_a_ball_spans_shadow_to_rim(self):
+        import numpy as np
+        from ui import raster3d as r3
+        mesh = r3.ball((0.0, 0.5, 0.0), 0.45, (150, 150, 160), seg=10)
+        rgb, mask = r3.render([mesh], width=96, height=96)
+        lit = rgb[mask]
+        self.assertGreater(len(lit), 50, "the ball rendered")
+        lum = lit.max(axis=1)
+        # a shaded sphere has genuinely dark (AO/terminator) and bright (rim/key)
+        # regions — a wide spread, not one matte tone
+        self.assertLess(int(lum.min()), 90, "a dark shadow/AO side")
+        self.assertGreater(int(lum.max()), 170, "a bright key/rim highlight")
+        self.assertGreater(int(lum.max()) - int(lum.min()), 100, "wide tonal range")

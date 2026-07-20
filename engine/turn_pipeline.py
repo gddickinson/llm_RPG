@@ -100,9 +100,22 @@ def run_turn(engine) -> None:
         from engine.spells import rest_recover_mana, ensure_mana
         ensure_mana(self.player)
         if self.turn_counter % 5 == 0:
-            rest_recover_mana(self.player, amount=1)
+            extra = 0
+            try:   # a mana-familiar (a witch's cat) quickens the recovery
+                from engine.familiars import familiar_bonus
+                extra = familiar_bonus(self.player, "mana_regen")
+            except Exception:
+                pass
+            rest_recover_mana(self.player, amount=1 + extra)
     except Exception as e:
         logger.debug(f"Mana regen error: {e}")
+
+    # SHIFT — timed shapes (wild shape, a curse with a clock) run down + revert
+    try:
+        from engine import shapeshift
+        shapeshift.tick(self)
+    except Exception as e:
+        logger.debug(f"Shapeshift tick error: {e}")
 
     # P27.2 slow passive HP recovery between fights — a wound knits on its
     # own when safe & provided for, so chronic low HP isn't the default state
@@ -198,6 +211,19 @@ def run_turn(engine) -> None:
                 self.social_graph.run_day()
             except Exception as e:
                 logger.debug(f"Social graph error: {e}")
+            try:   # T4.2 rival companies: renown ledger, hoard race, death
+                from engine import companies
+                companies.run_day(self.adventurers, day)
+            except Exception as e:
+                logger.debug(f"Company day error: {e}")
+            try:   # ordinary townsfolk occasionally set out on a venture
+                self.townsfolk_venture.run_day()
+            except Exception as e:
+                logger.debug(f"Townsfolk venture day error: {e}")
+            try:   # the world's other heroes work adventures of their own
+                self.npc_adventuring.run_day(day)
+            except Exception as e:
+                logger.debug(f"NPC adventuring day error: {e}")
             try:   # a spouse provides; grudges harden into rivalry (P20.6)
                 self.romance.run_day()
             except Exception as e:
@@ -232,6 +258,10 @@ def run_turn(engine) -> None:
                 self.production.run_day()
             except Exception as e:
                 logger.debug(f"Production loop error: {e}")
+            try:   # M4: workers clear rubble / regrow scorched — towns rebuild
+                self.construction.run_day()
+            except Exception as e:
+                logger.debug(f"Construction error: {e}")
             try:   # logged-out groves regrow (P16.4)
                 self.resource_nodes.run_day()
             except Exception as e:
@@ -270,12 +300,16 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Nightly systems error: {e}")
 
-    # Advance in-flight projectiles
+    # Advance in-flight projectiles. When a GUI is animating them frame-by-frame
+    # (`animate_projectiles`), it ticks + resolves them so the ARROW IS SEEN in
+    # flight (George); here we only resolve them in the headless / turn-based
+    # path so a shot still lands without a renderer.
     try:
-        results = self.projectile_manager.tick(dt=1.0)
-        for r in results:
-            if r.message:
-                self.memory_manager.add_event(r.message)
+        if not getattr(self, "animate_projectiles", False):
+            results = self.projectile_manager.tick(dt=1.0)
+            for r in results:
+                if r.message:
+                    self.memory_manager.add_event(r.message)
     except Exception as e:
         logger.debug(f"Projectile tick error: {e}")
 
@@ -300,6 +334,12 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Adventurer drive error: {e}")
 
+    # Ordinary townsfolk away on a venture take their step home or afield
+    try:
+        self.townsfolk_venture.run_turn()
+    except Exception as e:
+        logger.debug(f"Townsfolk venture drive error: {e}")
+
     # The world fights its own battles (P7.1)
     try:
         self.npc_conflict.update()
@@ -320,11 +360,25 @@ def run_turn(engine) -> None:
     except Exception as e:
         logger.debug(f"Aggression error: {e}")
 
+    # the COLOSSEUM drives a staged fight every tick (combat-testing arena)
+    try:
+        if getattr(self, "colosseum", None) and self.colosseum.active:
+            self.colosseum.run_turn()
+    except Exception as e:
+        logger.debug(f"Colosseum error: {e}")
+
     # Neutral wildlife graze, wander and flee (P32.3) — the living wild
     try:
         self.wildlife.update()
     except Exception as e:
         logger.debug(f"Wildlife error: {e}")
+
+    # M2b: a nearby caster NPC / away-hero occasionally reshapes the wilderness
+    try:
+        from engine import ambient_magic
+        ambient_magic.run(self)
+    except Exception as e:
+        logger.debug(f"Ambient magic error: {e}")
 
     # Tower guards loose arrows at attackers at the walls (P31.1c)
     try:
@@ -355,6 +409,15 @@ def run_turn(engine) -> None:
         anim.update_fx(self)
     except Exception as e:
         logger.debug(f"Anim state error: {e}")
+
+    # I1 — the cast SHARES social interactions: two adjacent friendly (or
+    # feuding) neighbours embrace / shake hands / kiss / square up, so the
+    # social graph becomes visible in the world
+    try:
+        from engine import interactions
+        interactions.update_social(self)
+    except Exception as e:
+        logger.debug(f"Social interaction error: {e}")
 
     # Catch your breath — sprint stamina recovers each turn you're not sprinting
     try:
@@ -387,6 +450,27 @@ def run_turn(engine) -> None:
         water_hazard_tick(self)
     except Exception as e:
         logger.debug(f"Hazard tick error: {e}")
+
+    # Reap 0-HP "zombies": a creature dropped to 0 by a NON-combat source
+    # (poison/fire/hazard/drown — these call take_damage directly, not the
+    # combat defeat path) stays status='alive' — is_active() True but
+    # is_alive() False — so every targeting system plinks a corpse forever
+    # (George: an away-caster froze 945 turns on one). Route each through the
+    # ONE defeat handler (self-as-attacker → no spurious player XP) so it
+    # dies/KOs and drops its loot like any other death.
+    try:
+        # the PLAYER (incl. an away/agent hero) goes DOWN the dying ladder
+        # instead of walking the world at 0 HP — this runs AFTER every damage
+        # source this turn, so a mis-guarded hazard can't leave a 0-HP zombie
+        if self.player.is_active() and self.player.hp <= 0 \
+                and self.player.metadata.get("dying", 0) <= 0:
+            from engine.dying import enter_dying
+            enter_dying(self, None)
+        for ch in list(self.npc_manager.npcs.values()):
+            if ch is not self.player and ch.is_active() and ch.hp <= 0:
+                self.combat_system._handle_defeat(ch, ch, 0)
+    except Exception as e:
+        logger.debug(f"zombie reaper error: {e}")
 
     if self.turn_counter % config.NPC_ACTION_INTERVAL == 0:
         self.process_npc_turns_async()

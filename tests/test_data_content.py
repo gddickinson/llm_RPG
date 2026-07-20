@@ -156,7 +156,11 @@ class TestQuestAndNpcData(unittest.TestCase):
         from quests.quest_templates import QUEST_TEMPLATES
         from characters.npc_presets import NPC_SPECS
         from engine.adventure_tome import adventure_npc_ids
-        known = set(NPC_SPECS) | adventure_npc_ids()   # adventure NPCs count
+        from engine.ravenmoor import adventure_npc_ids as ravenmoor_npc_ids
+        from engine.adventure_seed import npc_ids_of
+        known = set(NPC_SPECS) | adventure_npc_ids() | ravenmoor_npc_ids() \
+            | npc_ids_of("emberfell.json") | npc_ids_of("blackbanner.json") \
+            | npc_ids_of("wychwood.json")
         for qid, factory in QUEST_TEMPLATES.items():
             quest = factory()
             if quest.giver_id:

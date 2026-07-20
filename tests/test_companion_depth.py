@@ -60,6 +60,10 @@ class TestCompanionDepth(unittest.TestCase):
         self.wmap.remove_character(self.player)
         self.player.position = (ox, oy)
         self.wmap.place_character(self.player, ox, oy)
+        # full HP so M.10b self-preservation (a badly-hurt companion breaks off
+        # even on hold) doesn't fire — this test is about ORDER obedience, and
+        # the preset's HP can otherwise vary by RNG order (a suite flake)
+        self.melody.hp = self.melody.max_hp
         self.melody.metadata["order"] = "hold"
         pos0 = self.melody.position
         self.engine.companion_manager.update()

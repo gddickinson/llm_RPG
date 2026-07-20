@@ -93,6 +93,32 @@ DEFAULT_LOOT = [
     ("personal_items", 1),
 ]
 
+# T1.1b level-scaled gear tiers — a strong / elite / boss foe has a chance to also
+# drop a quality item from the tier its level warrants, so beating hard things is
+# the loot-chase reward (the "power from gear" axis the steep-ish curve assumes).
+TIER_LOOT = {
+    "uncommon": [("chainmail", 3), ("brigandine", 3), ("banded_mail", 3),
+                 ("iron_shield", 2), ("wand_of_firebolts", 2),
+                 ("wand_of_frost", 2), ("elixir_of_might", 2),
+                 ("boots_of_striding", 2), ("scroll_ice_shard", 3)],
+    "rare": [("plate", 3), ("fortified_plate", 3), ("steel_shield", 2),
+             ("guardian_halberd", 1), ("thunderblade", 2), ("venomfang", 2),
+             ("frostbrand_axe", 2), ("robe_of_the_magi", 2),
+             ("ring_of_regeneration", 1), ("amulet_of_health", 2),
+             ("staff_of_flame", 1), ("wand_of_lightning", 2),
+             ("cloak_of_protection", 2), ("potion_of_haste", 2)],
+    "epic": [("dragonscale_mail", 2), ("sunderer", 2), ("titans_maul", 2),
+             ("stormcaller_bow", 2), ("warded_plate", 2), ("moonbow", 2),
+             ("stormcaller_glaive", 1), ("staff_of_thunder", 1),
+             ("boots_of_speed", 1), ("gauntlets_of_ogre_power", 2),
+             ("mace_of_disruption", 1), ("wand_of_disintegration", 1)],
+    "legendary": [("aegis_of_dawn", 1), ("doombringer", 1), ("sunblade", 1),
+                  ("soulreaver", 1), ("staff_of_the_magi", 1),
+                  ("ring_of_the_archmage", 1), ("crown_of_kings", 1),
+                  ("dragonscale_mail", 1), ("ring_of_three_wishes", 1),
+                  ("book_of_infinite_spells", 1)],
+}
+
 
 def _weighted_choice(table, rng):
     total = sum(w for _, w in table)
@@ -105,6 +131,27 @@ def _weighted_choice(table, rng):
         if upto >= pick:
             return item_id
     return table[-1][0]
+
+
+def _bonus_gear(character, rng):
+    """T1.1b: a chance for a strong/elite/boss foe to drop a QUALITY gear item from
+    a tier scaled by its effective level. Returns an Item or None."""
+    level = getattr(character, "level", 1) or 1
+    meta = getattr(character, "metadata", None) or {}
+    elite = bool(meta.get("elite") or meta.get("boss") or meta.get("nemesis_id"))
+    eff = level + (4 if elite else 0)
+    if rng.random() > min(0.55, 0.03 * eff):        # scarce, scaling with power
+        return None
+    if eff >= 12:
+        tier = rng.choice(("epic", "epic", "legendary", "rare"))
+    elif eff >= 8:
+        tier = rng.choice(("rare", "rare", "epic"))
+    elif eff >= 4:
+        tier = rng.choice(("uncommon", "rare"))
+    else:
+        tier = "uncommon"
+    item_id = _weighted_choice(TIER_LOOT.get(tier, []), rng)
+    return create_item(item_id) if item_id else None
 
 
 def generate_loot(character: Any, rng: random.Random = None,
@@ -145,5 +192,14 @@ def generate_loot(character: Any, rng: random.Random = None,
         item = create_item(item_id)
         if item:
             drops.append(item)
+
+    bonus = _bonus_gear(character, rng)             # T1.1b quality gear drop
+    if bonus is not None:
+        drops.append(bonus)
+
+    for gid in meta.get("guaranteed_drops", []):    # UNDEAD: a lich's phylactery
+        gitem = create_item(gid)
+        if gitem:
+            drops.append(gitem)
 
     return drops

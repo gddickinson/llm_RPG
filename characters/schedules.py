@@ -77,8 +77,49 @@ SCHEDULES: Dict[str, List[ScheduleEntry]] = {
 }
 
 
+# LIVING_WORLD A5 — the classes with no bespoke schedule above (wizard, rogue,
+# noble, ranger, paladin, monk, druid, sorcerer, warlock, artificer, barbarian)
+# used to fall through to a literal random cardinal walk. Map each to a
+# characterful ARCHETYPE day so they GO somewhere and perform a fitting activity
+# (the ActivitySystem's class_work then gives the clip — a wizard casts, a cleric-
+# like devout kneels). Targets use keywords that reliably resolve (village/tavern/
+# temple/home) so they never freeze; location precision is a later refinement.
+_ARCHETYPES: Dict[str, List[ScheduleEntry]] = {
+    "scholar": [(6, "wake", "home"), (7, "eat", "tavern"),
+                (8, "work", "village"), (12, "eat", "tavern"),
+                (13, "work", "village"), (19, "drink", "tavern"),
+                (23, "sleep", "home")],
+    "devout": [(5, "wake", "temple"), (6, "pray", "temple"),
+               (9, "work", "temple"), (12, "eat", "tavern"),
+               (14, "pray", "temple"), (19, "work", "temple"),
+               (21, "sleep", "temple")],
+    "wanderer": [(6, "wake", "home"), (7, "eat", "tavern"),
+                 (9, "wander", "village"), (13, "eat", "tavern"),
+                 (15, "wander", "village"), (19, "drink", "tavern"),
+                 (22, "sleep", "home")],
+    "gentry": [(8, "wake", "home"), (9, "eat", "tavern"),
+               (11, "wander", "village"), (13, "eat", "tavern"),
+               (16, "wander", "village"), (20, "drink", "tavern"),
+               (23, "sleep", "home")],
+    "shadow": [(10, "wake", "tavern"), (12, "wander", "village"),
+               (14, "drink", "tavern"), (17, "wander", "village"),
+               (20, "play", "tavern"), (2, "sleep", "home")],
+}
+_CLASS_ARCHETYPE: Dict[str, str] = {
+    "wizard": "scholar", "sorcerer": "scholar", "warlock": "scholar",
+    "artificer": "scholar", "scholar": "scholar",
+    "paladin": "devout", "monk": "devout", "druid": "devout",
+    "ranger": "wanderer", "barbarian": "wanderer",
+    "noble": "gentry",
+    "rogue": "shadow",
+}
+
+
 def schedule_for(class_value: str) -> List[ScheduleEntry]:
-    return SCHEDULES.get(class_value, [])
+    if class_value in SCHEDULES:
+        return SCHEDULES[class_value]
+    arch = _CLASS_ARCHETYPE.get(class_value)
+    return _ARCHETYPES.get(arch, []) if arch else []
 
 
 def current_entry(class_value: str, hour: int) -> Optional[ScheduleEntry]:
@@ -97,17 +138,16 @@ def current_entry(class_value: str, hour: int) -> Optional[ScheduleEntry]:
 
 def activity_to_action(activity: str, location_keyword: str
                        ) -> Tuple[str, str]:
-    """Translate a schedule activity into an engine action+target."""
-    if activity in ("work", "patrol", "wander", "play"):
-        return ("move", location_keyword)
-    if activity == "eat":
-        return ("move", location_keyword)  # going to tavern
-    if activity == "drink":
+    """Translate a schedule activity into an engine action+target. LIVING_WORLD
+    A1: the in-place activities (work/pray/play/eat/drink) all route to `move` so
+    the NPC first GOES to the location; the ActivitySystem then PERFORMS the
+    activity on arrival (the raw activity rides through `action_data["activity"]`,
+    so 'work' no longer looks identical to 'pray'). sleep/wake keep their own."""
+    if activity in ("work", "patrol", "wander", "play",
+                    "eat", "drink", "pray"):
         return ("move", location_keyword)
     if activity == "sleep":
         return ("sleep", location_keyword)
     if activity == "wake":
         return ("wait", "waking up")
-    if activity == "pray":
-        return ("wait", "praying")
     return ("wait", "thinking")

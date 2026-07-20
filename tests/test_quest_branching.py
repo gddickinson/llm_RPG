@@ -104,6 +104,24 @@ class TestRewardChoice(_Base):
         self.qm.turn_in("bounty", self.player)
         self.assertEqual(self.player.gold, g0 + 30)
 
+    def test_finale_legend_reaches_the_player_log(self):
+        # the authored branching-finale ending must be SEEN — it was only going
+        # to the quest manager's private event_log, never the player's log or
+        # the chronicle (George: dead finale content across every adventure)
+        self._q("finale", reward_choices=[
+            {"gold": 0, "label": "slay",
+             "legend": "You end the wyrm and the mountain is free."},
+            {"gold": 0, "label": "spare", "legend": "You let it fly north."}])
+        self.qm.accept_quest("finale")
+        self.qm.choose_reward("finale", 0)
+        self._complete("finale")
+        self.qm.turn_in("finale", self.player)
+        events = [h["event"] for h in
+                  self.engine.memory_manager.game_history]
+        self.assertTrue(
+            any("[Legend]" in e and "end the wyrm" in e for e in events),
+            "the chosen finale legend must reach the player's event log")
+
 
 class TestCastleFork(_Base):
     def test_the_voss_offer_exists_and_forks(self):

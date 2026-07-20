@@ -65,20 +65,55 @@ def _atk_hurt(a):
 def draw_creature(surface, char, sx, sy, tile_size, plan, is_player=False):
     if not PYGAME_OK:
         return
-    if plan == "quadruped":
-        _draw_quadruped(surface, char, sx, sy, tile_size)
-    elif plan == "slime":
-        _draw_slime(surface, char, sx, sy, tile_size)
-    elif plan == "wisp":
-        _draw_wisp(surface, char, sx, sy, tile_size)
-    elif plan == "avian":
-        _draw_avian(surface, char, sx, sy, tile_size)
-    elif plan == "arachnid":
-        _draw_arachnid(surface, char, sx, sy, tile_size)
+    # #9 — a realistic baked Quaternius GLB model where we have one for this
+    # species; else the procedural body plan.
+    if not _draw_model(surface, char, sx, sy, tile_size):
+        if plan == "quadruped":
+            _draw_quadruped(surface, char, sx, sy, tile_size)
+        elif plan == "slime":
+            _draw_slime(surface, char, sx, sy, tile_size)
+        elif plan == "wisp":
+            _draw_wisp(surface, char, sx, sy, tile_size)
+        elif plan == "avian":
+            _draw_avian(surface, char, sx, sy, tile_size)
+        elif plan == "arachnid":
+            _draw_arachnid(surface, char, sx, sy, tile_size)
     _health_bar(surface, char, sx, sy, tile_size)
     from ui import char_fx                          # P34.19 fire / wet on beasts too
     char_fx.draw_effects(surface, char, sx, sy, tile_size,
                          _anim(char).get("clock", 0.0))
+
+
+# a baked GLB model frames the animal at a per-species tile multiple
+# (`creature_glb.scale_for`); the iso bake leaves ground below the feet, so drop
+# it `_FOOT_GAP` of the frame to seat the animal on the tile.
+_FOOT_GAP = 0.16
+
+
+def _draw_model(surface, char, sx, sy, tile_size):
+    """Blit a baked Quaternius GLB model, feet-anchored. True if one was drawn."""
+    try:
+        from ui import creature_glb
+    except Exception:
+        return False
+    face = _anim(char).get("facing", (0, 1))
+    face_east = isinstance(face, (tuple, list)) and face[0] > 0
+    frame = int(tile_size * creature_glb.scale_for(char))
+    from ui import creature_anim                     # #9b an ANIMATED clip frame
+    spr = (creature_anim.animated_sprite(char, frame, face_east=face_east)
+           or creature_glb.sprite_for_char(char, frame, face_east=face_east))
+    if spr is None:
+        return False
+    cx = sx + tile_size / 2.0
+    foot_y = sy + tile_size - 2
+    shw = int(tile_size * 0.62)                     # a soft ground shadow
+    sh = pygame.Surface((shw, max(2, shw // 3)), pygame.SRCALPHA)
+    pygame.draw.ellipse(sh, (0, 0, 0, 90), sh.get_rect())
+    surface.blit(sh, (int(cx - shw / 2), int(foot_y - shw // 6)))
+    rect = spr.get_rect()
+    rect.midbottom = (int(cx), int(foot_y + frame * _FOOT_GAP))
+    surface.blit(spr, rect)
+    return True
 
 
 def _dark(c, a=28):

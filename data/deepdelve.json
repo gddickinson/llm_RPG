@@ -1,0 +1,19 @@
+{
+  "_doc": "GX.5 The Oakvale Deepdelve — ONE deep multi-level dungeon reached through SEVERAL overworld cave mouths. Every mouth Location carries dungeon_key 'deepdelve' + deep_dungeon, so game_api_mixin.enter_dungeon resolves them all to the SAME shared, persistent, DEEP (deep_levels) dungeon; dungeon_return_pos remembers which mouth you came in by. Wilderness mouths seed here; the SECRET Oakvale stair is GX.5b (deepdelve_secret.py).",
+  "dungeon_key": "deepdelve",
+  "dungeon_name": "The Deepdelve",
+  "deep_levels": 6,
+  "rumor": "Miners speak of a sunless stair beneath the hills — the old Deepdelve, they say, still runs down and down, and its lower reaches have never been mapped.",
+  "secret": {
+    "name": "The Buried Stair",
+    "near_settlement": "Oakvale",
+    "rumor": "Oakvale's elders half-remember a SEALED stair somewhere within the village itself — a hidden way down into the old Deepdelve, lost for generations. Search the ground where it rings hollow.",
+    "hint": "the ground here rings HOLLOW",
+    "reveal": "Your boot scuffs a flagstone that rings hollow — you pry it up and a worn stair spirals down into the dark. You have found Oakvale's secret way into the Deepdelve!"
+  },
+  "mouths": [
+    {"name": "Blackroot Cleft", "near": "forest", "legend": "A jagged cleft where blackroot trees claw at a cave mouth breathing cold, still air.", "guards": [{"template": "goblin", "count": 2}]},
+    {"name": "The Sunless Stair", "near": "mountain", "legend": "A worn stone stair descending into the mountain's root, its steps slick and lightless.", "guards": [{"template": "wolf", "count": 2}]},
+    {"name": "The Drowned Adit", "near": "water", "legend": "A half-flooded mine adit, the water black and still — an old way down into the Deepdelve.", "guards": [{"template": "bog_goblin", "count": 1}]}
+  ]
+}

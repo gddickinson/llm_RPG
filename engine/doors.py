@@ -125,8 +125,11 @@ class DoorManager:
         if picks is None:
             return None
         from engine.skills import Degree, Skill, check
-        result = check(player, Skill.LOCKPICKING,
-                       dc=door["lock_level"], rng=self.rng)
+        from engine.skill_combat import lock_bonus
+        from engine.skill_progression import add_skill_xp
+        dc = max(1, door["lock_level"] - lock_bonus(player))  # thievery eases it
+        result = check(player, Skill.LOCKPICKING, dc=dc, rng=self.rng)
+        add_skill_xp(player, "thievery", 10)   # every attempt hones the craft
         if result.degree is Degree.CRIT_SUCCESS:
             door["state"] = "open"
             self.engine.memory_manager.add_event(

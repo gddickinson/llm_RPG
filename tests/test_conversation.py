@@ -52,7 +52,7 @@ class TestConversationModel(unittest.TestCase):
                 self.assertIn("kind", item)
                 self.assertIn("label", item)
                 self.assertIn(item["kind"], ("accept", "turnin", "trade",
-                                             "topic", "secret"))
+                                             "topic", "secret", "social"))
 
 
 class TestConversationInGui(unittest.TestCase):

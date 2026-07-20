@@ -62,10 +62,13 @@ def _can_shoot(char) -> bool:
         return False
 
 
-def _attack_spell(char, dist):
-    """The best DAMAGE spell the caster knows, can afford the mana for, and
-    that reaches `dist` — its id, or None. Lets a caster away-hero fight
-    with magic instead of trading melee blows (M.8c)."""
+def _attack_spell(char, dist, target=None, foes=None):
+    """The best DAMAGE spell to throw NOW (id, or None) — the caster must know
+    it, afford the mana, and it must REACH `dist`. It matches the spell to the
+    situation (George): a TOUGH foe (or a cluster) gets the biggest hit to fell
+    it fast; a lone SOFT foe gets the most mana-efficient spell (don't waste a
+    fireball on a rat); an AREA spell's worth scales with how many foes its
+    blast would catch. Range/reach and area both count."""
     meta = getattr(char, "metadata", {}) or {}
     known = meta.get("spells_known", [])
     if not known:
@@ -75,20 +78,35 @@ def _attack_spell(char, dist):
         from engine.spells import SPELL_REGISTRY
     except Exception:
         return None
-    # pick the most mana-EFFICIENT reachable spell (damage per mana), so
-    # the pool lasts across many fights; a bigger nuke breaks ties
-    scored = []
+    tgt_hp = getattr(target, "hp", 12) if target is not None else 12
+    cand = []
     for sid in known:
         sp = SPELL_REGISTRY.get(sid)
         if sp is None or sp.damage <= 0:
             continue
-        if sp.mana_cost > mana or sp.range < dist:
+        if sp.mana_cost > mana or sp.range < dist:   # afford it + it REACHES
             continue
-        scored.append((sp.damage / max(1, sp.mana_cost), sp.damage, sid))
-    if not scored:
+        eff = float(sp.damage)
+        # a BLAST that catches a cluster is worth the extra foes it hits
+        area = getattr(sp, "area", 0) or 0
+        if area > 0 and target is not None and foes:
+            tx, ty = target.position
+            hit = sum(1 for f, _ in foes
+                      if ((f.position[0] - tx) ** 2
+                          + (f.position[1] - ty) ** 2) ** 0.5 <= area)
+            eff *= max(1, min(hit, 4))
+        cand.append((sp, eff))
+    if not cand:
         return None
-    scored.sort(reverse=True)
-    return scored[0][2]
+    # tough single foe OR a cluster (some spell's effective dmg beats its raw)
+    # → maximise the hit; a lone soft foe → maximise mana efficiency
+    tough = tgt_hp > 20 or any(e > sp.damage for sp, e in cand)
+    if tough:
+        cand.sort(key=lambda c: (c[1], -c[0].mana_cost), reverse=True)
+    else:
+        cand.sort(key=lambda c: (c[1] / max(1, c[0].mana_cost), c[1]),
+                  reverse=True)
+    return cand[0][0].id
 
 
 def _surplus_items(char):
@@ -190,8 +208,17 @@ def _gatherable(engine, char) -> bool:
         gm = getattr(engine, "gathering_manager", None)
         if gm is not None:
             node = gm.node_at(x, y)
+            # a node must be TOOLED and OFF COOLDOWN — a picked-clean node
+            # still "exists", so without the cooldown check a driven hero
+            # forages the same depleted spot forever (George: barbarian froze
+            # 1178 turns re-chopping one picked-clean tree)
             if node is not None and gm.has_tool_for(node):
-                return True
+                try:
+                    skill_id, spec, pos = node
+                    if gm._cooldown_ok(skill_id, spec, pos):
+                        return True
+                except Exception:
+                    return True
         from world.world_map import TerrainType
         t = engine.world.map.get_terrain_at(x, y)
         if t in (TerrainType.FOREST, TerrainType.SWAMP):
@@ -298,3 +325,57 @@ def _water_toward(engine, char, r: int = 6):
                 if d < bd:
                     best, bd = (nx, ny), d
     return best
+
+
+def nearest_loot(engine, char, r: int = 5):
+    """The nearest tile within `r` holding a real (pickable) item — skips a
+    plain-string BODY MARKER (a corpse isn't loot) and returns None when the
+    pack is FULL. Split from `agent_controller` (2026-07-19, drives round)."""
+    try:
+        from engine.carry import can_carry
+        if not can_carry(char):
+            return None
+    except Exception:
+        pass
+    x, y = char.position
+    best, bd = None, r + 1
+    try:
+        for dx in range(-r, r + 1):
+            for dy in range(-r, r + 1):
+                its = engine.world.get_items_at(x + dx, y + dy)
+                if its and any(hasattr(i, "id") for i in its):
+                    d = max(abs(dx), abs(dy))
+                    if d < bd:
+                        best, bd = (x + dx, y + dy), d
+    except Exception:
+        return None
+    return best
+
+
+def friendlies_near(engine, char, r: int = 7):
+    """Every living, non-hostile, non-player soul ON OUR GRID within `r`,
+    nearest first — the faces a hero can talk to, quest from, or recruit."""
+    from engine import agent_nav as nav
+    zone = nav.active_zone(engine)
+    zname = getattr(zone, "name", None) if zone is not None else None
+    out = []
+    for npc in engine.npc_manager.npcs.values():
+        if npc.id == char.id or not npc.is_active():
+            continue
+        if _is_hostile(npc) or (getattr(npc, "metadata", {})
+                                or {}).get("player_char"):
+            continue
+        if not _colocated(zname, npc):
+            continue
+        d = nav._dist(char.position, npc.position)
+        if d <= r:
+            out.append((d, npc))
+    out.sort(key=lambda t: t[0])
+    return [npc for _, npc in out]
+
+
+def friendly_near(engine, char, r: int = 7):
+    """The nearest living, non-hostile, non-player soul ON OUR GRID — someone
+    to talk to, take a quest from, or recruit (no chatting through walls)."""
+    fs = friendlies_near(engine, char, r)
+    return fs[0] if fs else None

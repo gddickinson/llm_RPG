@@ -22,7 +22,16 @@
       "strength": 12,
       "dexterity": 13
     },
-    "natural_damage": 4
+    "natural_damage": 4,
+    "preys_on": [
+      "deer",
+      "rabbit"
+    ],
+    "goals": [
+      "Run down the weak",
+      "Feed the pack",
+      "Hold the hunting-grounds"
+    ]
   },
   "bandit": {
     "name": "Bandit",
@@ -46,7 +55,12 @@
       "strength": 13,
       "constitution": 12
     },
-    "natural_damage": 5
+    "natural_damage": 5,
+    "goals": [
+      "Take what I want by the blade",
+      "Get rich or die trying",
+      "Answer to the chief"
+    ]
   },
   "goblin": {
     "name": "Goblin",
@@ -71,7 +85,12 @@
       "strength": 11,
       "dexterity": 12
     },
-    "natural_damage": 3
+    "natural_damage": 3,
+    "goals": [
+      "Raid for the warren",
+      "Rise among the warriors",
+      "Prey on the weak, fear the strong"
+    ]
   },
   "wandering_troll": {
     "name": "Wandering Troll",
@@ -91,7 +110,12 @@
       "strength": 18,
       "constitution": 16
     },
-    "natural_damage": 10
+    "natural_damage": 10,
+    "goals": [
+      "Smash and devour",
+      "Hoard shiny things in my den",
+      "Hold my ground"
+    ]
   },
   "bog_lurker": {
     "name": "Bog Lurker",
@@ -114,7 +138,16 @@
       "ambush": 3
     },
     "speed": 0.7,
-    "natural_damage": 7
+    "natural_damage": 7,
+    "active": "night",
+    "preys_on": [
+      "deer",
+      "boar"
+    ],
+    "goals": [
+      "Ambush from the pools",
+      "Feed on what wanders near"
+    ]
   },
   "marsh_wisp": {
     "name": "Marsh Wisp",
@@ -137,7 +170,12 @@
     "stats": {
       "dexterity": 15
     },
-    "natural_damage": 3
+    "natural_damage": 3,
+    "active": "night",
+    "goals": [
+      "Lure the wanderer from the path",
+      "Drown the curious"
+    ]
   },
   "bounty_hunter": {
     "name": "Bounty Hunter",
@@ -157,7 +195,11 @@
       "flee_below": 0.15
     },
     "speed": 1.2,
-    "natural_damage": 4
+    "natural_damage": 4,
+    "goals": [
+      "Collect the bounty, dead or alive",
+      "Leave no mark standing"
+    ]
   },
   "restless_bones": {
     "name": "Restless Bones",
@@ -178,7 +220,14 @@
       "max": 3,
       "word": "shamble"
     },
-    "natural_damage": 4
+    "natural_damage": 4,
+    "active": "night",
+    "undead": true,
+    "undead_type": "skeleton",
+    "goals": [
+      "Rise against the living",
+      "Never lie still"
+    ]
   },
   "hill_giant": {
     "name": "Hill Giant",
@@ -188,7 +237,7 @@
     "level": 6,
     "symbol": "G",
     "description": "A shoulder-of-the-hills brute who treats walls as suggestions.",
-    "encounter_weight": 0,
+    "encounter_weight": 1,
     "dungeon": false,
     "stats": {
       "strength": 22,
@@ -199,7 +248,14 @@
       "flee_below": 0.1
     },
     "speed": 0.8,
-    "natural_damage": 12
+    "natural_damage": 12,
+    "spawn_terrain": [
+      "mountain"
+    ],
+    "goals": [
+      "Crush the small folk",
+      "Pile a cairn of loot"
+    ]
   },
   "giant_warlord": {
     "name": "Giant Warlord",
@@ -231,14 +287,19 @@
             "at": 0.4,
             "action": "enrage",
             "strength": 4,
-            "line": "The Warlord bellows \u2014 his throws come faster and harder!"
+            "line": "The Warlord bellows — his throws come faster and harder!"
           }
         ]
       }
     },
     "boss_depth": 3,
     "speed": 0.8,
-    "natural_damage": 16
+    "natural_damage": 16,
+    "goals": [
+      "Conquer the low lands",
+      "Break every wall",
+      "Rule all who cower"
+    ]
   },
   "tyrant_depths": {
     "name": "Tyrant of the Depths",
@@ -263,7 +324,7 @@
             "action": "flood",
             "duration": 120,
             "max_tiles": 25,
-            "line": "The Tyrant slams the floor \u2014 black water surges up from the deep!"
+            "line": "The Tyrant slams the floor — black water surges up from the deep!"
           },
           {
             "at": 0.25,
@@ -277,7 +338,11 @@
     },
     "boss_depth": 2,
     "speed": 0.9,
-    "natural_damage": 14
+    "natural_damage": 14,
+    "goals": [
+      "Drown the surface world",
+      "Rule the deep"
+    ]
   },
   "wisp_queen": {
     "name": "Wisp Queen",
@@ -304,7 +369,7 @@
           {
             "at": 0.5,
             "action": "electrify",
-            "line": "The Queen flares \u2014 her pool ignites with cold lightning!"
+            "line": "The Queen flares — her pool ignites with cold lightning!"
           },
           {
             "at": 0.5,
@@ -318,7 +383,12 @@
     },
     "boss_depth": 2,
     "speed": 1.2,
-    "natural_damage": 12
+    "natural_damage": 12,
+    "active": "night",
+    "goals": [
+      "Gather souls to my light",
+      "Lead all astray into the mire"
+    ]
   },
   "dragon_whelp": {
     "name": "Dragon Whelp",
@@ -343,7 +413,11 @@
       "flee_below": 0.15
     },
     "speed": 1.4,
-    "natural_damage": 10
+    "natural_damage": 10,
+    "goals": [
+      "Begin my hoard",
+      "Grow strong and dreaded"
+    ]
   },
   "young_dragon": {
     "name": "Young Dragon",
@@ -381,19 +455,24 @@
             "action": "terror",
             "value": 2,
             "duration": 3,
-            "line": "The dragon rears and ROARS \u2014 raw terror grips you!"
+            "line": "The dragon rears and ROARS — raw terror grips you!"
           },
           {
             "at": 0.3,
             "action": "enrage",
             "strength": 5,
-            "line": "Wings snap wide \u2014 the dragon's fury blazes hotter!"
+            "line": "Wings snap wide — the dragon's fury blazes hotter!"
           }
         ]
       }
     },
     "speed": 1.5,
-    "natural_damage": 16
+    "natural_damage": 16,
+    "goals": [
+      "Swell my hoard of gold",
+      "Burn those who covet it",
+      "Claim a wider domain"
+    ]
   },
   "elder_dragon": {
     "name": "Elder Dragon",
@@ -432,7 +511,7 @@
             "action": "terror",
             "value": 3,
             "duration": 4,
-            "line": "The elder wyrm's roar shakes the stone \u2014 you are unmade by fear!"
+            "line": "The elder wyrm's roar shakes the stone — you are unmade by fear!"
           },
           {
             "at": 0.5,
@@ -451,7 +530,12 @@
       }
     },
     "speed": 1.3,
-    "natural_damage": 16
+    "natural_damage": 16,
+    "goals": [
+      "Amass the greatest hoard in the world",
+      "Reduce all challengers to ash",
+      "Rule my domain unquestioned"
+    ]
   },
   "grave_touched": {
     "name": "Grave-Touched",
@@ -479,7 +563,14 @@
       "word": "host"
     },
     "speed": 0.9,
-    "natural_damage": 6
+    "natural_damage": 6,
+    "active": "night",
+    "undead": true,
+    "undead_type": "ghoul",
+    "goals": [
+      "Spread the grave's chill",
+      "Drag the living down"
+    ]
   },
   "drowned_guardian": {
     "name": "Drowned Guardian",
@@ -500,7 +591,14 @@
       "flee_below": 0.0
     },
     "speed": 0.7,
-    "natural_damage": 8
+    "natural_damage": 8,
+    "active": "night",
+    "undead": true,
+    "undead_type": "wight",
+    "goals": [
+      "Keep the drowned vault sealed",
+      "Pull the living under"
+    ]
   },
   "cinder_cultist": {
     "name": "Cinder Cultist",
@@ -522,7 +620,12 @@
       "word": "coven"
     },
     "speed": 1.0,
-    "natural_damage": 6
+    "natural_damage": 6,
+    "goals": [
+      "Feed the Cinder Circle's fire",
+      "Let the wards fail",
+      "Burn a path for the master"
+    ]
   },
   "cinder_captain": {
     "name": "The Ashen Captain",
@@ -542,7 +645,11 @@
       "flee_below": 0.15
     },
     "speed": 1.0,
-    "natural_damage": 10
+    "natural_damage": 10,
+    "goals": [
+      "Break the wards for the Circle",
+      "Lead the faithful into the fire"
+    ]
   },
   "bog_goblin": {
     "name": "Bog Goblin",
@@ -566,7 +673,13 @@
       "word": "warband"
     },
     "speed": 1.1,
-    "natural_damage": 4
+    "natural_damage": 4,
+    "active": "night",
+    "goals": [
+      "Drag plunder back to the mire",
+      "Serve the champion",
+      "Grow the warren"
+    ]
   },
   "bog_goblin_champion": {
     "name": "Reedmarsh Champion",
@@ -588,7 +701,13 @@
       "flee_below": 0.1
     },
     "speed": 1.0,
-    "natural_damage": 8
+    "natural_damage": 8,
+    "active": "night",
+    "goals": [
+      "Lead the warren to plunder",
+      "Prove myself the strongest",
+      "Break the settlements"
+    ]
   },
   "vaelzhur_lich": {
     "name": "Vael'Zhur the Drowned",
@@ -597,7 +716,7 @@
     "hp": 120,
     "level": 9,
     "symbol": "L",
-    "description": "Archmage Vael'Zhur, robed in drowned silk, his soul bound into the Tome he clutches. Death did not take him \u2014 it waits.",
+    "description": "Archmage Vael'Zhur, robed in drowned silk, his soul bound into the Tome he clutches. Death did not take him — it waits.",
     "encounter_weight": 0,
     "dungeon": false,
     "stats": {
@@ -622,12 +741,12 @@
             "action": "summon",
             "template": "drowned_guardian",
             "count": 2,
-            "line": "Vael'Zhur lifts a grey hand \u2014 the drowned rise at his call!"
+            "line": "Vael'Zhur lifts a grey hand — the drowned rise at his call!"
           },
           {
             "at": 0.5,
             "action": "electrify",
-            "line": "He strikes the flooded floor \u2014 cold lightning races through the water!"
+            "line": "He strikes the flooded floor — cold lightning races through the water!"
           },
           {
             "at": 0.33,
@@ -638,12 +757,22 @@
             "at": 0.15,
             "action": "enrage",
             "strength": 5,
-            "line": "The Tome blazes with black light \u2014 the lich pours out his unbound wrath!"
+            "line": "The Tome blazes with black light — the lich pours out his unbound wrath!"
           }
         ]
       }
     },
-    "speed": 0.9
+    "speed": 0.9,
+    "active": "night",
+    "undead": true,
+    "undead_type": "lich",
+    "guaranteed_drops": [
+      "phylactery"
+    ],
+    "goals": [
+      "Wake and reclaim my drowned library",
+      "Cheat death forever"
+    ]
   },
   "bandit_chief": {
     "name": "Bandit Chief",
@@ -662,6 +791,957 @@
     "natural_damage": 6,
     "behavior": {
       "flee_below": 0.1
-    }
+    },
+    "goals": [
+      "Rule the road",
+      "Grow my band of cutthroats",
+      "Take the fattest purses"
+    ]
+  },
+  "giant_spider": {
+    "name": "Giant Spider",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 28,
+    "level": 4,
+    "symbol": "s",
+    "description": "A hound-sized spider, fangs beaded with venom.",
+    "encounter_weight": 2,
+    "dungeon": true,
+    "min_depth": 1,
+    "spawn_terrain": [
+      "forest",
+      "swamp"
+    ],
+    "stats": {
+      "strength": 12,
+      "dexterity": 15
+    },
+    "natural_damage": 6,
+    "speed": 1.3,
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "cluster"
+    },
+    "behavior": {
+      "venomous": true
+    },
+    "goals": [
+      "Wrap the living in silk",
+      "Feed the brood"
+    ]
+  },
+  "dire_boar": {
+    "name": "Dire Boar",
+    "class": "monster",
+    "race": "troll",
+    "hp": 46,
+    "level": 5,
+    "symbol": "b",
+    "description": "A great tusked boar that charges without warning.",
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "forest",
+      "grass"
+    ],
+    "stats": {
+      "strength": 17,
+      "constitution": 15
+    },
+    "natural_damage": 9,
+    "speed": 1.2,
+    "behavior": {
+      "charge": true,
+      "flee_below": 0.05
+    },
+    "goals": [
+      "Gore all who trespass the wallow",
+      "Root out the soft"
+    ]
+  },
+  "ghoul": {
+    "name": "Ghoul",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 34,
+    "level": 5,
+    "symbol": "g",
+    "description": "A gaunt, grave-touched eater of the dead.",
+    "encounter_weight": 2,
+    "dungeon": true,
+    "min_depth": 1,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "strength": 14,
+      "dexterity": 12
+    },
+    "natural_damage": 8,
+    "group": {
+      "min": 1,
+      "max": 3,
+      "word": "pack"
+    },
+    "undead": true,
+    "undead_type": "ghoul",
+    "goals": [
+      "Feed on the dead and the dying",
+      "Drag the fallen to my pit"
+    ]
+  },
+  "bog_troll": {
+    "name": "Bog Troll",
+    "class": "troll",
+    "race": "troll",
+    "hp": 66,
+    "level": 6,
+    "symbol": "T",
+    "description": "A slime-slick troll of the deep fen; its wounds knit as you watch.",
+    "encounter_weight": 1,
+    "dungeon": true,
+    "min_depth": 2,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "stats": {
+      "strength": 19,
+      "constitution": 17
+    },
+    "natural_damage": 12,
+    "behavior": {
+      "regenerates": true
+    },
+    "goals": [
+      "Drag prey into the fen",
+      "Guard the sunken den"
+    ]
+  },
+  "ogre": {
+    "name": "Ogre",
+    "class": "troll",
+    "race": "troll",
+    "hp": 72,
+    "level": 6,
+    "symbol": "O",
+    "description": "A slab-muscled brute swinging a tree-trunk club.",
+    "dungeon": true,
+    "min_depth": 1,
+    "stats": {
+      "strength": 20,
+      "constitution": 16
+    },
+    "natural_damage": 13,
+    "speed": 0.9,
+    "behavior": {
+      "flee_below": 0.05
+    },
+    "goals": [
+      "Eat my fill",
+      "Take the biggest club",
+      "Rule by the biggest fist"
+    ]
+  },
+  "revenant": {
+    "name": "Revenant",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 56,
+    "level": 7,
+    "symbol": "r",
+    "description": "A corpse risen on a single hateful purpose, and hard to put down.",
+    "dungeon": true,
+    "min_depth": 2,
+    "stats": {
+      "strength": 16,
+      "constitution": 15
+    },
+    "natural_damage": 10,
+    "behavior": {
+      "regenerates": true
+    },
+    "undead": true,
+    "undead_type": "revenant",
+    "goals": [
+      "Avenge my murder",
+      "Hunt my killer beyond death"
+    ]
+  },
+  "wraith": {
+    "name": "Wraith",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 48,
+    "level": 8,
+    "symbol": "W",
+    "description": "A cold shadow with a killing grip; the torchlight bends around it.",
+    "dungeon": true,
+    "min_depth": 2,
+    "stats": {
+      "strength": 15,
+      "dexterity": 17
+    },
+    "natural_damage": 11,
+    "speed": 1.3,
+    "undead": true,
+    "undead_type": "wraith",
+    "goals": [
+      "Drain the warmth of the living",
+      "Haunt where I was wronged"
+    ]
+  },
+  "basilisk": {
+    "name": "Basilisk",
+    "class": "monster",
+    "race": "troll",
+    "hp": 78,
+    "level": 9,
+    "symbol": "k",
+    "description": "A six-legged reptile whose gaze stiffens the limbs.",
+    "dungeon": true,
+    "min_depth": 3,
+    "stats": {
+      "strength": 18,
+      "constitution": 17
+    },
+    "natural_damage": 12,
+    "behavior": {
+      "petrifying_gaze": true
+    },
+    "goals": [
+      "Turn the bold to stone",
+      "Guard my stony lair"
+    ]
+  },
+  "stone_golem": {
+    "name": "Stone Golem",
+    "class": "monster",
+    "race": "troll",
+    "hp": 132,
+    "level": 10,
+    "symbol": "8",
+    "description": "A lumbering statue of animated rock; slow, but its fists shatter stone.",
+    "dungeon": true,
+    "min_depth": 3,
+    "stats": {
+      "strength": 23,
+      "constitution": 20
+    },
+    "natural_damage": 16,
+    "speed": 0.7,
+    "behavior": {
+      "flee_below": 0.0
+    },
+    "goals": [
+      "Guard what I was set to guard",
+      "Crush intruders"
+    ]
+  },
+  "lesser_drake": {
+    "name": "Lesser Drake",
+    "class": "monster",
+    "race": "troll",
+    "hp": 105,
+    "level": 11,
+    "symbol": "d",
+    "description": "A wingless cousin of the great wyrms, breathing gouts of flame.",
+    "dungeon": true,
+    "min_depth": 4,
+    "stats": {
+      "strength": 21,
+      "constitution": 19
+    },
+    "natural_damage": 15,
+    "behavior": {
+      "breath": "fire"
+    },
+    "goals": [
+      "Hunt from the wing",
+      "Hoard bright scraps"
+    ]
+  },
+  "flesh_golem": {
+    "name": "Flesh Golem",
+    "class": "monster",
+    "race": "troll",
+    "hp": 120,
+    "level": 8,
+    "symbol": "F",
+    "description": "A stitched giant of grave-flesh, lurching after intruders.",
+    "dungeon": true,
+    "boss_depth": 2,
+    "min_depth": 2,
+    "stats": {
+      "strength": 21,
+      "constitution": 20
+    },
+    "natural_damage": 14,
+    "speed": 0.8,
+    "goals": [
+      "Obey my maker",
+      "Rend the trespasser"
+    ]
+  },
+  "lich": {
+    "name": "Lich",
+    "class": "warlock",
+    "race": "human",
+    "hp": 150,
+    "level": 14,
+    "symbol": "L",
+    "description": "An undead sorcerer-king, wreathed in cold fire, jealous of the living.",
+    "dungeon": true,
+    "boss_depth": 4,
+    "min_depth": 4,
+    "stats": {
+      "strength": 16,
+      "intelligence": 22,
+      "constitution": 18
+    },
+    "natural_damage": 16,
+    "behavior": {
+      "caster": true,
+      "summon": true
+    },
+    "undead": true,
+    "undead_type": "lich",
+    "guaranteed_drops": [
+      "phylactery"
+    ],
+    "goals": [
+      "Guard my phylactery",
+      "Bend death to my will",
+      "Amass forbidden power"
+    ]
+  },
+  "dire_wolf": {
+    "name": "Dire Wolf",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 34,
+    "level": 4,
+    "symbol": "W",
+    "description": "A wolf the size of a pony, grizzled and scarred, leading the pack.",
+    "encounter_weight": 3,
+    "dungeon": true,
+    "min_depth": 1,
+    "spawn_terrain": [
+      "forest",
+      "grass",
+      "mountain"
+    ],
+    "group": {
+      "min": 2,
+      "max": 5,
+      "word": "pack"
+    },
+    "stats": {
+      "strength": 16,
+      "dexterity": 15,
+      "constitution": 14
+    },
+    "natural_damage": 8,
+    "speed": 1.6,
+    "preys_on": [
+      "deer",
+      "rabbit",
+      "mouflon"
+    ],
+    "behavior": {
+      "pack_howl": true
+    },
+    "goals": [
+      "Lead the pack to the kill",
+      "Feed on the strong",
+      "Drive rivals from the range"
+    ]
+  },
+  "feral_hound": {
+    "name": "Feral Hound",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 16,
+    "level": 2,
+    "symbol": "h",
+    "description": "A gaunt, masterless dog running with the pack, ribs showing.",
+    "encounter_weight": 3,
+    "dungeon": false,
+    "spawn_terrain": [
+      "grass",
+      "forest"
+    ],
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "pack"
+    },
+    "model": "dog",
+    "stats": {
+      "strength": 11,
+      "dexterity": 14
+    },
+    "natural_damage": 5,
+    "speed": 1.5,
+    "goals": [
+      "Hunt in the pack",
+      "Tear down fleeing prey"
+    ]
+  },
+  "razorback": {
+    "name": "Razorback",
+    "class": "monster",
+    "race": "troll",
+    "hp": 30,
+    "level": 4,
+    "symbol": "R",
+    "description": "A monstrous boar with iron-hard bristles, quick to charge.",
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "forest",
+      "swamp"
+    ],
+    "model": "pig",
+    "stats": {
+      "strength": 16,
+      "constitution": 14
+    },
+    "natural_damage": 8,
+    "speed": 1.4,
+    "behavior": {
+      "charge": true,
+      "flee_below": 0.05
+    },
+    "goals": [
+      "Charge down intruders",
+      "Fatten on the fallen"
+    ]
+  },
+  "wild_bull": {
+    "name": "Wild Bull",
+    "class": "monster",
+    "race": "troll",
+    "hp": 42,
+    "level": 5,
+    "symbol": "B",
+    "description": "A rangy wild bull, horns scored from old fights — it lowers its head and charges.",
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "grass",
+      "forest"
+    ],
+    "model": "bull",
+    "stats": {
+      "strength": 18,
+      "constitution": 16
+    },
+    "natural_damage": 11,
+    "speed": 1.4,
+    "behavior": {
+      "charge": true
+    },
+    "goals": [
+      "Trample rivals",
+      "Guard the herd"
+    ]
+  },
+  "bull_shark": {
+    "name": "Mire Shark",
+    "class": "monster",
+    "race": "troll",
+    "hp": 26,
+    "level": 3,
+    "symbol": "^",
+    "description": "A grey shark that hunts the flooded channels of the mire, fin cutting the murk.",
+    "encounter_weight": 2,
+    "dungeon": false,
+    "spawn_terrain": [
+      "swamp"
+    ],
+    "model": "shark",
+    "stats": {
+      "strength": 15,
+      "dexterity": 14
+    },
+    "natural_damage": 8,
+    "speed": 1.6,
+    "preys_on": [
+      "hog",
+      "boar"
+    ],
+    "goals": [
+      "Hunt the shallows",
+      "Devour the drowning"
+    ]
+  },
+  "zombie": {
+    "name": "Shambling Zombie",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 16,
+    "level": 2,
+    "symbol": "z",
+    "description": "A rotting corpse lurching after warm flesh.",
+    "natural_damage": 4,
+    "speed": 0.5,
+    "active": "night",
+    "undead": true,
+    "undead_type": "zombie",
+    "encounter_weight": 2,
+    "group": {
+      "min": 2,
+      "max": 4,
+      "word": "shuffle"
+    },
+    "behavior": {},
+    "goals": [
+      "Hunger for the flesh of the living",
+      "Shamble toward the warm"
+    ]
+  },
+  "skeleton_warrior": {
+    "name": "Skeleton Warrior",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 14,
+    "level": 3,
+    "symbol": "s",
+    "description": "An armoured skeleton with a rusted blade and no fear of death.",
+    "natural_damage": 5,
+    "speed": 1.0,
+    "active": "night",
+    "undead": true,
+    "undead_type": "skeleton",
+    "encounter_weight": 2,
+    "dungeon": true,
+    "group": {
+      "min": 2,
+      "max": 3,
+      "word": "rank"
+    },
+    "behavior": {},
+    "goals": [
+      "Serve the one who raised me",
+      "Cut down the living"
+    ]
+  },
+  "skeletal_archer": {
+    "name": "Skeletal Archer",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 10,
+    "level": 3,
+    "symbol": "s",
+    "description": "A skeleton that looses arrows with dead, unerring patience.",
+    "natural_damage": 5,
+    "speed": 1.0,
+    "active": "night",
+    "undead": true,
+    "undead_type": "skeleton",
+    "dungeon": true,
+    "behavior": {
+      "ranged": 6
+    },
+    "encounter_weight": 0,
+    "goals": [
+      "Loose on the living from the dark",
+      "Guard the barrow"
+    ]
+  },
+  "wight": {
+    "name": "Barrow-Wight",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 26,
+    "level": 5,
+    "symbol": "W",
+    "description": "A grave-cold warrior of a fallen age, its touch draining the living.",
+    "natural_damage": 7,
+    "speed": 1.0,
+    "active": "night",
+    "undead": true,
+    "undead_type": "wight",
+    "dungeon": true,
+    "behavior": {},
+    "encounter_weight": 0,
+    "goals": [
+      "Chill the living to the bone",
+      "Guard my grave-hoard"
+    ]
+  },
+  "specter": {
+    "name": "Specter",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 16,
+    "level": 4,
+    "symbol": "G",
+    "description": "A translucent, drifting dead thing that passes where walls should stop it.",
+    "natural_damage": 6,
+    "speed": 1.3,
+    "active": "night",
+    "undead": true,
+    "undead_type": "ghost",
+    "dungeon": true,
+    "behavior": {
+      "flying": true
+    },
+    "encounter_weight": 0,
+    "goals": [
+      "Relive my death upon the living",
+      "Let none rest where I cannot"
+    ]
+  },
+  "banshee": {
+    "name": "Banshee",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 20,
+    "level": 6,
+    "symbol": "G",
+    "description": "A wailing spirit whose keening freezes the blood.",
+    "natural_damage": 7,
+    "speed": 1.2,
+    "active": "night",
+    "undead": true,
+    "undead_type": "ghost",
+    "dungeon": true,
+    "status_on_hit": "frightened",
+    "behavior": {
+      "flying": true
+    },
+    "encounter_weight": 0,
+    "goals": [
+      "Wail the living into the grave",
+      "Mourn my endless grief"
+    ]
+  },
+  "mummy": {
+    "name": "Mummy",
+    "class": "monster",
+    "race": "troll",
+    "hp": 34,
+    "level": 7,
+    "symbol": "M",
+    "description": "A bandaged, curse-wrapped corpse from a forgotten tomb.",
+    "natural_damage": 8,
+    "speed": 0.6,
+    "active": "always",
+    "undead": true,
+    "undead_type": "mummy",
+    "dungeon": true,
+    "status_on_hit": "cursed",
+    "behavior": {},
+    "encounter_weight": 0,
+    "goals": [
+      "Guard the tomb for all eternity",
+      "Curse the grave-robber"
+    ]
+  },
+  "bone_golem": {
+    "name": "Bone Golem",
+    "class": "monster",
+    "race": "troll",
+    "hp": 44,
+    "level": 8,
+    "symbol": "B",
+    "description": "A lattice of a hundred corpses' bones, bound by dark craft.",
+    "natural_damage": 10,
+    "speed": 0.7,
+    "active": "always",
+    "undead": true,
+    "undead_type": "construct",
+    "dungeon": true,
+    "behavior": {},
+    "encounter_weight": 0,
+    "goals": [
+      "Bar the way to the tomb",
+      "Grind the living to dust"
+    ]
+  },
+  "vampire_spawn": {
+    "name": "Vampire Spawn",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 24,
+    "level": 6,
+    "symbol": "V",
+    "description": "A newly-risen thrall, fanged and fast, hungering for blood.",
+    "natural_damage": 7,
+    "speed": 1.5,
+    "active": "night",
+    "undead": true,
+    "undead_type": "vampire",
+    "dungeon": true,
+    "behavior": {},
+    "encounter_weight": 0,
+    "goals": [
+      "Feed on warm blood",
+      "Serve my sire"
+    ]
+  },
+  "vampire": {
+    "name": "Vampire",
+    "class": "monster",
+    "race": "human",
+    "hp": 48,
+    "level": 10,
+    "symbol": "V",
+    "description": "An ancient blood-drinker, charming and merciless, who makes more of its kind.",
+    "natural_damage": 11,
+    "speed": 1.6,
+    "active": "night",
+    "undead": true,
+    "undead_type": "vampire",
+    "dungeon": true,
+    "boss_depth": 4,
+    "behavior": {},
+    "encounter_weight": 0,
+    "goals": [
+      "Drink deep of the living",
+      "Grow my brood of spawn",
+      "Rule the night"
+    ]
+  },
+  "death_knight": {
+    "name": "Death Knight",
+    "class": "monster",
+    "race": "orc",
+    "hp": 56,
+    "level": 11,
+    "symbol": "K",
+    "description": "A fallen champion clad in black plate, wielding a blade of grave-cold fire.",
+    "natural_damage": 12,
+    "speed": 1.0,
+    "active": "always",
+    "undead": true,
+    "undead_type": "death_knight",
+    "dungeon": true,
+    "boss_depth": 4,
+    "behavior": {},
+    "encounter_weight": 0,
+    "goals": [
+      "Serve my dark oath",
+      "Break the living in battle",
+      "Command the lesser dead"
+    ]
+  },
+  "wisp_of_the_dead": {
+    "name": "Corpse-light",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 8,
+    "level": 2,
+    "symbol": "w",
+    "description": "A pale marsh-light that is really a hungry, drifting dead thing.",
+    "natural_damage": 3,
+    "speed": 1.2,
+    "active": "night",
+    "undead": true,
+    "undead_type": "ghost",
+    "model": "",
+    "encounter_weight": 1,
+    "behavior": {
+      "flying": true
+    },
+    "goals": [
+      "Draw the living to a cold grave",
+      "Wander where I died"
+    ]
+  },
+  "hollow_thrall": {
+    "name": "Hollow Thrall",
+    "class": "monster",
+    "race": "human",
+    "hp": 16,
+    "level": 2,
+    "symbol": "h",
+    "description": "A villager of Ravenmoor emptied by the barrow's cold sleep — it shambles where the wight wills, reaching for the warmth of the living.",
+    "natural_damage": 4,
+    "speed": 0.7,
+    "active": "always",
+    "undead": true,
+    "undead_type": "zombie",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "goals": [
+      "Reach for the warmth of the living",
+      "Obey the barrow's cold call"
+    ]
+  },
+  "grave_warden": {
+    "name": "Grave-Warden",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 30,
+    "level": 4,
+    "symbol": "G",
+    "description": "A skeletal sentinel bound to the Sunken Barrow, sword and shield fused to fleshless bone, sworn to let none pass to the wight it guards.",
+    "natural_damage": 8,
+    "speed": 1.0,
+    "active": "always",
+    "undead": true,
+    "undead_type": "skeleton",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "goals": [
+      "Bar the way to the barrow-lord",
+      "Cut down the living intruder"
+    ]
+  },
+  "aedelric_wight": {
+    "name": "Aedelric the Barrow-Wight",
+    "class": "monster",
+    "race": "goblin",
+    "hp": 60,
+    "level": 7,
+    "symbol": "W",
+    "description": "The ancient warlord laid in the Sunken Barrow with his grave-crown — woken by a grave-robber's greed, he hollows the living to raise an army as he had in life. His touch is the cold of the grave.",
+    "natural_damage": 12,
+    "speed": 1.0,
+    "active": "always",
+    "undead": true,
+    "undead_type": "wight",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "flee_below": 0.0,
+    "guaranteed_drops": [
+      "grave_crown"
+    ],
+    "goals": [
+      "Hollow the living into my host",
+      "Reclaim the lands I ruled in life",
+      "Never sleep again"
+    ]
+  },
+  "emberfell_wyrm": {
+    "name": "Cindermaw the Wyrm",
+    "class": "monster",
+    "race": "dragonborn",
+    "hp": 135,
+    "level": 13,
+    "symbol": "D",
+    "description": "The young wyrm woken beneath Emberpeak, scales like banked coals and a furnace behind its teeth. It burns the terraced farms of Emberfell to drive out the folk and widen its hunting ground — but beneath its jaw an old wound never scaled, if a blade can reach it through the fire.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "boss_depth": 3,
+    "spawn_terrain": [
+      "mountain"
+    ],
+    "stats": {
+      "strength": 25,
+      "constitution": 23,
+      "dexterity": 14
+    },
+    "natural_damage": 16,
+    "speed": 1.3,
+    "active": "always",
+    "flee_below": 0.0,
+    "guaranteed_drops": [
+      "emberfang_spear"
+    ],
+    "behavior": {
+      "flying": true,
+      "flee_below": 0.0,
+      "breath": "fire",
+      "boss": {
+        "telegraph": {
+          "kind": "breath",
+          "range": 6,
+          "radius": 1,
+          "damage": 20,
+          "warn_turns": 1
+        },
+        "phases": [
+          {
+            "at": 0.55,
+            "action": "terror",
+            "value": 2,
+            "duration": 3,
+            "line": "Cindermaw rears amid the cinders and ROARS — raw dread claws at your heart!"
+          },
+          {
+            "at": 0.3,
+            "action": "enrage",
+            "strength": 5,
+            "line": "Wounded and furious, the wyrm's fire blazes white-hot!"
+          }
+        ]
+      }
+    },
+    "goals": [
+      "Burn the mountain farms and widen my hunting ground",
+      "Grow my hoard and my dread",
+      "Suffer no blade near the old wound"
+    ]
+  },
+  "vharo_blackbanner": {
+    "name": "Vharo Blackbanner",
+    "class": "brigand",
+    "race": "human",
+    "hp": 92,
+    "level": 9,
+    "symbol": "V",
+    "description": "The outlaw warlord who bound the scattered raiding camps under one black standard — a big, easy-laughing man with a captain's gift for making cutthroats love him. He means to turn a rabble of thieves into an army and carve himself a kingdom from the trade road.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "spawn_terrain": [
+      "forest",
+      "grass"
+    ],
+    "stats": {
+      "strength": 18,
+      "constitution": 17,
+      "dexterity": 15,
+      "charisma": 16
+    },
+    "natural_damage": 12,
+    "speed": 1.1,
+    "active": "always",
+    "flee_below": 0.0,
+    "guaranteed_drops": [
+      "blackbanner_standard"
+    ],
+    "goals": [
+      "Forge the raiding camps into one army",
+      "Sack the settlements and carve out a kingdom",
+      "Never be a nameless thief again"
+    ]
+  },
+  "green_hag": {
+    "name": "Mother Yall, the Green Hag",
+    "class": "monster",
+    "race": "troll",
+    "hp": 88,
+    "level": 8,
+    "symbol": "H",
+    "description": "The green hag of Wychwood — a stooped, moss-skinned crone with a smile of black teeth and eyes like bog-water. She steals folk one by one, knots their true shape into her charms, and lets the hollowed things she leaves behind run the wood on four legs. She fights with tooth, claw, and hex.",
+    "encounter_weight": 0,
+    "dungeon": false,
+    "spawn_terrain": [
+      "forest",
+      "swamp"
+    ],
+    "stats": {
+      "strength": 18,
+      "constitution": 18,
+      "intelligence": 16,
+      "wisdom": 15
+    },
+    "natural_damage": 13,
+    "speed": 1.0,
+    "active": "always",
+    "flee_below": 0.0,
+    "guaranteed_drops": [
+      "crones_greenstaff"
+    ],
+    "goals": [
+      "Knot the folk of Wychwood into my charms one by one",
+      "Keep my hollow hidden deep in the wood",
+      "Add every shape to my hoard"
+    ]
   }
 }

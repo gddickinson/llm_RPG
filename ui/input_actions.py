@@ -257,6 +257,12 @@ def open_shop(handler) -> None:
         if refusal:
             engine.memory_manager.add_event(refusal)
             return
+        try:   # customer & merchant turn to face each other
+            from engine import anim
+            anim.face(engine.player, merchants[0].position)
+            anim.face(merchants[0], engine.player.position)
+        except Exception:
+            pass
         gui.show_shop(merchants[0])
     except Exception:
         pass
@@ -265,9 +271,19 @@ def open_shop(handler) -> None:
 def one_key_overlay(gui, k) -> bool:
     """Single-key overlays: collection / diaries / travel / topics / settings."""
     import pygame
+    # U fast-travel opens ONLY at a waystone (George: teleport only from a
+    # station) — elsewhere it just says where to go, no menu.
+    if k == pygame.K_u:
+        ts = getattr(gui.engine, "travel_system", None)
+        if ts is not None and not ts.at_station():
+            gui.engine.memory_manager.add_event(
+                "You can only fast-travel from a waystone — seek a "
+                "rune-circle platform.")
+            return True
+        gui.show_travel()
+        return True
     overlays = {pygame.K_o: gui.show_collection_log,
                 pygame.K_j: gui.show_diaries,
-                pygame.K_u: gui.show_travel,
                 pygame.K_y: gui.show_topics,
                 pygame.K_COMMA: gui.show_settings}
     fn = overlays.get(k)
@@ -302,3 +318,97 @@ def skill_verb(engine, k) -> bool:
     {pygame.K_t: sa.trip, pygame.K_i: sa.demoralize,
      pygame.K_b: sa.feint, pygame.K_h: sa.battle_medicine}[k](engine)
     return True
+
+
+def grapple_verb(engine, k) -> bool:
+    """SHIFT+C — clinch an adjacent foe (wrestle); press it again while still
+    clinched to THROW the foe (I3: wrestling / throwing / more contact)."""
+    import pygame
+    if k != pygame.K_c:
+        return False
+    from engine import tactics
+    if tactics.is_grappling(engine):
+        tactics.throw(engine)
+    else:
+        tactics.grapple(engine)
+    return True
+
+
+def menu_mode_key(gui, engine, event) -> bool:
+    """The numbered pop-up menus — travel (P11) / stable (P28.2d) / waystone
+    (P37.1): 1-9 picks an entry, Esc (or the opening key) leaves. Returns True
+    if handled, None if `gui.mode` isn't one of these menus."""
+    import pygame
+    mode = gui.mode
+    if mode not in ("travel", "stable", "waystone", "board", "perks",
+                    "familiar"):
+        return None
+    if event.type != pygame.KEYDOWN:
+        return True
+    exits = {"travel": (pygame.K_ESCAPE, pygame.K_u),
+             "stable": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
+             "waystone": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
+             "board": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
+             "familiar": (pygame.K_ESCAPE, pygame.K_e, pygame.K_g),
+             "perks": (pygame.K_ESCAPE,)}
+    if event.key in exits[mode]:
+        gui.mode = "play"
+        gui.overlay = None
+        return True
+    if pygame.K_1 <= event.key <= pygame.K_9:
+        idx = event.key - pygame.K_1
+        try:
+            if mode == "travel":
+                engine.travel_system.teleport(idx)
+            elif mode == "stable":
+                engine.mount_stable_buy(idx)
+            elif mode == "board":
+                engine.board_accept_index(idx)
+            elif mode == "familiar":
+                engine.familiar_bind_index(idx)
+            elif mode == "perks":
+                engine.choose_perk(idx)
+                from engine import perks
+                if perks.perk_points(engine.player) > 0:
+                    gui.show_perks()          # more points → keep choosing
+                    return True
+            else:
+                engine.memory_manager.add_event(
+                    engine.teleport_network.teleport_index(idx))
+        except Exception:
+            pass
+        gui.mode = "play"
+        gui.overlay = None
+        return True
+    return True
+
+
+def try_exit_zone(handler) -> bool:
+    """TAB leaves a building only at its DOOR and a dungeon only at the way
+    out (George: no exiting by wishing yourself outside from anywhere).
+    Deeper floors have no door — the hero climbs the stairs (by stepping on
+    them) to the floor that does. Returns True if a zone-exit was handled
+    (performed or refused with a message)."""
+    engine = handler.engine
+    if engine.current_interior:
+        inter = engine.current_interior
+        door = getattr(inter, "door", None)
+        if door is not None and tuple(engine.player.position) == tuple(door):
+            engine.exit_building()
+        else:
+            engine.memory_manager.add_event(
+                "You must stand at the door to leave.")
+        return True
+    if engine.current_dungeon:
+        dng = engine.current_dungeon
+        if getattr(dng, "level_above", None) is not None:
+            engine.memory_manager.add_event(
+                "The way out is above — take the stairs up.")
+        elif tuple(engine.player.position) \
+                == tuple(getattr(dng, "exit_pos", (-1, -1))):
+            engine.exit_dungeon()
+        else:
+            engine.memory_manager.add_event(
+                "You must reach the stairs out to leave.")
+        return True
+    return False

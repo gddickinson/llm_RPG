@@ -20,12 +20,26 @@ ACTIONS = {
     "jog": (False, None),
     "jump": (True, 0.7), "leap": (True, 0.7), "bow": (True, 1.1),
     "wave": (True, 1.0), "hurt": (True, 0.45), "cast": (True, 0.9),
-    "stoop": (True, 1.0), "cheer": (True, 1.0), "dodge": (True, 0.4),
+    "stoop": (True, 1.0), "cheer": (True, 1.0), "dodge": (True, 0.7),
     "kneel": (True, 1.6), "reach": (True, 0.7), "point": (True, 1.0),
+    # COMBAT.1 defence + hit-reaction one-shots (mocap plays them in both views)
+    "block": (True, 0.7), "crouch_block": (True, 0.8), "spellcast": (True, 0.9),
+    "hit_head": (True, 0.5), "hit_back": (True, 0.6), "hit_legs": (True, 0.6),
+    "hook": (True, 0.5), "lead_jab": (True, 0.45), "elbow": (True, 0.5),
+    "roll": (True, 0.8),
     # two-character interactions (P33.6d)
     "handshake": (True, 1.2), "hug": (True, 1.4), "kiss": (True, 1.3),
     "wrestle": (True, 1.6), "throw": (True, 0.7), "tumble": (True, 0.9),
     "knockdown": (True, 1.6),
+    # COMBAT.2 the lively expansion — snappy one-shots (mocap supplies the pose)
+    "block2": (True, 0.6), "shield_bash": (True, 0.5), "drop_kick": (True, 0.7),
+    "low_kick": (True, 0.5), "spin_kick": (True, 0.6), "sweep": (True, 0.6),
+    "spin_combo": (True, 0.9), "dive_roll": (True, 0.8), "weave": (True, 0.5),
+    "thrown": (True, 0.9), "shoved": (True, 0.5), "bow_draw": (True, 0.7),
+    "bow_loose": (True, 0.4), "hop": (True, 0.6), "flourish": (True, 0.9),
+    "sword_kick": (True, 0.5), "jump_attack": (True, 0.7),
+    "axe_chop": (True, 0.5), "axe_spin": (True, 0.7),
+    "sword_slash2": (True, 0.4), "sword_slash3": (True, 0.4),
 }
 
 

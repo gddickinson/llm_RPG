@@ -150,5 +150,132 @@ class TestLairPersistence(unittest.TestCase):
         eng.end_game()
 
 
+class TestLairHomeBehaviour(unittest.TestCase):
+    """LIVING_WORLD C1 — a lair's occupants are LEASHED to the den + given roles,
+    so a warren holds together and reads as an occupied camp (George: do
+    intelligent monsters have activities? do social ones have jobs?)."""
+
+    def setUp(self):
+        self.eng = GameEngine(llm_provider="heuristic",
+                              enable_npc_processes=False)
+        self.eng.start_game()
+        if not self.eng.lairs.lairs:
+            self.eng.lairs.seed()
+        self.lair = self.eng.lairs.lairs[0]
+        self.occ = [self.eng.npc_manager.npcs[i] for i in self.lair["occupants"]
+                    if i in self.eng.npc_manager.npcs]
+
+    def tearDown(self):
+        try:
+            self.eng.end_game()
+        except Exception:
+            pass
+
+    def test_occupants_are_leashed_with_roles(self):
+        for m in self.occ:
+            self.assertEqual(m.metadata["behavior"].get("territorial"), 6,
+                             "a territorial leash (fixes the warren scatter)")
+            self.assertEqual(m.metadata["home_pos"], self.lair["pos"],
+                             "leashed to the den centre")
+            self.assertIn(m.metadata.get("lair_role"),
+                          ("chief", "sentry", "guard", "shaman", "forager"))
+
+    def test_a_lair_has_a_chief_and_sentries(self):
+        roles = {m.metadata.get("lair_role") for m in self.occ}
+        self.assertTrue({"sentry", "guard"} & roles, "someone stands watch")
+
+    def test_the_den_holds_together(self):
+        # drive the occupants many turns with the player far off: none wander away
+        prov = self.eng.llm_interface.provider
+        cx, cy = self.lair["pos"]
+        self.eng.player.position = (cx + 40, cy)
+        ws = {"player_position": self.eng.player.position,
+              "time_of_day": "morning"}
+        maxstray = 0
+        for _ in range(40):
+            for m in self.occ:
+                if m.is_alive():
+                    self.eng.action_router.process(
+                        m, prov.get_npc_action(m, ws, {}, ""))
+            for m in self.occ:
+                maxstray = max(maxstray,
+                               abs(m.position[0] - cx) + abs(m.position[1] - cy))
+        self.assertLessEqual(maxstray, 12, "the den holds — it does not scatter")
+
+    def test_sentry_advances_the_ring_at_a_waypoint(self):
+        # _patrol_home moves toward the current ring waypoint and advances to the
+        # next once reached — waypoint 0 is (home_x + r, home_y)
+        prov = self.eng.llm_interface.provider
+        s = self.occ[0]
+        home = (50, 50)
+        s.metadata["patrol_i"] = 0
+        s.position = (53, 50)                  # standing on waypoint 0 (r=3)
+        act = prov._patrol_home(s, s.metadata, home)
+        self.assertEqual(act["action"], "move")
+        self.assertEqual(s.metadata["patrol_i"], 1, "reached wp0 → next waypoint")
+
+    def test_sentry_paces_toward_a_waypoint(self):
+        prov = self.eng.llm_interface.provider
+        s = self.occ[0]
+        home = (50, 50)
+        s.metadata["patrol_i"] = 0
+        s.position = (50, 50)                  # at the den → move toward wp0 (east)
+        act = prov._patrol_home(s, s.metadata, home)
+        self.assertEqual(act["target"], "east", "walks toward the perimeter")
+
+
+class TestMonsterDayNight(unittest.TestCase):
+    """LIVING_WORLD C2 — a nocturnal creature lies DORMANT at its den by day and
+    stirs by night (George: should monsters sleep?)."""
+
+    def setUp(self):
+        self.eng = GameEngine(llm_provider="heuristic",
+                              enable_npc_processes=False)
+        self.eng.start_game()
+        self.prov = self.eng.llm_interface.provider
+
+    def tearDown(self):
+        try:
+            self.eng.end_game()
+        except Exception:
+            pass
+
+    def _nocturnal(self):
+        from world.monsters import build_monster
+        m = build_monster("restless_bones", (30, 30))
+        m.metadata["home_pos"] = [30, 30]
+        m.metadata["lair_role"] = "sentry"
+        self.assertEqual(m.metadata["active"], "night")
+        return m
+
+    def test_nocturnal_is_dormant_by_day(self):
+        m = self._nocturnal()
+        act = self.prov._hostile_action(m, {"time_of_day": "morning"}, False)
+        self.assertEqual(act["action"], "wait")
+        self.assertTrue(m.metadata.get("asleep"))
+        self.assertEqual(m.metadata.get("_bubble"), "sleep")
+
+    def test_nocturnal_is_active_by_night(self):
+        m = self._nocturnal()
+        act = self.prov._hostile_action(m, {"time_of_day": "night"}, False)
+        self.assertEqual(act["action"], "move", "it patrols at night")
+        self.assertFalse(m.metadata.get("asleep"))
+
+    def test_survival_wakes_a_dormant_monster(self):
+        m = self._nocturnal()
+        # with the player in view even by day it engages, not sleeps
+        act = self.prov._hostile_action(
+            m, {"time_of_day": "morning", "player_position": (31, 30)}, True)
+        self.assertNotEqual(act.get("target"), "dormant in its lair")
+
+    def test_always_active_monster_never_sleeps(self):
+        from world.monsters import build_monster
+        g = build_monster("goblin", (40, 40))       # active defaults to 'always'
+        g.metadata["home_pos"] = [40, 40]
+        g.metadata["lair_role"] = "guard"
+        self.prov._hostile_action(g, {"time_of_day": "night"}, False)
+        self.assertFalse(g.metadata.get("asleep"))
+
+
 if __name__ == "__main__":
     unittest.main()

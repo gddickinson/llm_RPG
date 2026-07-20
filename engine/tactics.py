@@ -140,3 +140,141 @@ def shove(engine, rng: random.Random = None) -> str:
     engine.memory_manager.add_event(msg)
     engine.advance_turn()
     return msg
+
+
+# --------------------------------------------------------------- grapple & throw
+# I3 (George: "wrestling, throwing each other, more contact when fighting").
+# SHIFT+C clinches an adjacent foe (a STR contest — both play the wrestle clip);
+# press it again while clinched to THROW the foe (an amplified shove + a hard
+# knockdown).  A grabbed foe is left OFF-GUARD (easier to hit) so the grapple
+# pays off even if you don't follow through.
+
+def _contest(player, target, rng, mine_bonus=0):
+    """A STR-vs-(STR|DEX) opposed check; returns the player's margin (P12.1)."""
+    try:
+        from engine import stamina
+        mine_ex = stamina.exertion_penalty(player)
+        stamina.spend_action(player)
+    except Exception:
+        mine_ex = 0
+    mine = (rng.randint(1, 20) + player.get_stat_modifier("strength")
+            + mine_bonus - mine_ex)
+    resist = max(target.get_stat_modifier("strength"),
+                 target.get_stat_modifier("dexterity"))
+    return mine - (rng.randint(1, 20) + resist)
+
+
+def is_grappling(engine) -> bool:
+    """True when the player holds a still-adjacent, still-living foe in a clinch."""
+    gid = (engine.player.metadata or {}).get("grappling")
+    if not gid:
+        return False
+    px, py = engine.player.position
+    for n in engine.npc_manager.npcs.values():
+        if n.id == gid and n.is_active():
+            return max(abs(n.position[0] - px), abs(n.position[1] - py)) <= 1
+    return False
+
+
+def grapple(engine, rng: random.Random = None) -> str:
+    """Clinch the nearest adjacent hostile (a STR contest). Win → the foe is
+    GRABBED (off-guard; a firm win pins it PRONE) and the player holds the
+    clinch; a bad loss throws the player off balance."""
+    rng = rng or random.Random()
+    player = engine.player
+    hostiles = adjacent_hostiles(engine, player.position)
+    if not hostiles:
+        return "No enemy close enough to grapple."
+    target = hostiles[0]
+    from engine import anim
+    anim.interact(player, target, "wrestle")            # both grapple
+    from characters.status_effects import apply_effect
+    margin = _contest(player, target, rng)
+    if margin <= 0:
+        msg = f"You lunge for {target.name}, but they break your grip!"
+        if margin <= -10:
+            apply_effect(player, "off_guard", duration=2)
+            msg = f"{target.name} twists free and throws YOU off balance!"
+        engine.memory_manager.add_event(msg)
+        engine.advance_turn()
+        return msg
+    apply_effect(target, "off_guard", duration=3)
+    player.metadata["grappling"] = target.id
+    target.metadata["grappled_by"] = player.id
+    msg = f"You seize {target.name} in a grapple — they're off balance!"
+    if margin >= 10:
+        apply_effect(target, "prone", duration=2)
+        msg = f"You wrench {target.name} down and pin them, reeling!"
+    engine.memory_manager.add_event(msg)
+    engine.advance_turn()
+    return msg
+
+
+def throw(engine, rng: random.Random = None) -> str:
+    """Hurl a grappled (or, failing that, the nearest adjacent) foe through the
+    air — an amplified shove (up to 2 tiles) + a hard KNOCKDOWN + fall damage.
+    A grabbed foe is far easier to throw than a loose one."""
+    rng = rng or random.Random()
+    player = engine.player
+    gid = (player.metadata or {}).get("grappling")
+    target = None
+    if gid:
+        target = next((n for n in engine.npc_manager.npcs.values()
+                       if n.id == gid and n.is_active()), None)
+    if target is None:
+        hostiles = adjacent_hostiles(engine, player.position)
+        target = hostiles[0] if hostiles else None
+    if target is None:
+        return "No one in your grip to throw."
+    grabbed = (target.metadata or {}).get("grappled_by") == player.id
+    player.metadata.pop("grappling", None)
+    target.metadata.pop("grappled_by", None)
+    if _contest(player, target, rng, mine_bonus=4 if grabbed else 0) <= 0:
+        msg = f"You heave at {target.name}, but can't get the leverage!"
+        engine.memory_manager.add_event(msg)
+        engine.advance_turn()
+        return msg
+    from engine import anim
+    from characters.status_effects import apply_effect
+    from world.world_map import TerrainType
+    anim.interact(player, target, "throw")              # a hurls, b tumbles
+    dx = target.position[0] - player.position[0]
+    dy = target.position[1] - player.position[1]
+    step = ((dx > 0) - (dx < 0), (dy > 0) - (dy < 0))
+    if step == (0, 0):
+        step = (1, 0)
+    wmap = engine.world.map
+    landed = target.position
+    for _ in range(2):                                  # sail up to two tiles
+        nx, ny = landed[0] + step[0], landed[1] + step[1]
+        if not (0 <= nx < wmap.width and 0 <= ny < wmap.height):
+            break
+        if wmap.get_terrain_at(nx, ny) in (
+                TerrainType.WATER, TerrainType.MOUNTAIN, TerrainType.BUILDING):
+            break
+        if any(n.is_active() and n.position == (nx, ny)
+               for n in engine.npc_manager.npcs.values()):
+            break
+        landed = (nx, ny)
+    if landed != target.position:
+        wmap.remove_character(target)
+        target.position = landed
+        wmap.place_character(target, *landed)
+        target.metadata["shoved"] = True                # skips its next pursuit
+    apply_effect(target, "prone", duration=3)
+    dmg = max(1, 2 + player.get_stat_modifier("strength"))
+    target.take_damage(dmg)
+    try:
+        anim.launch(target, player.position)            # a tumbling arc (P34.19)
+    except Exception:
+        pass
+    msg = (f"You hurl {target.name} through the air — "
+           f"they crash down hard! (-{dmg} HP)")
+    if not target.is_alive():
+        try:
+            engine.combat_system._handle_defeat(player, target, dmg)
+        except Exception:
+            pass
+    engine.memory_manager.add_event(msg)
+    engine.advance_turn()
+    return msg

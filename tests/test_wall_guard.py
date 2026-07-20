@@ -165,8 +165,13 @@ class TestWallGuard(unittest.TestCase):
         # two adjacent floor tiles
         for y in range(zone.height):
             for x in range(1, zone.width):
+                # the move routes through the OVERWORLD wmap, so the zone-local
+                # destination coords must be free there too (else a same-coord
+                # overworld entity blocks it — a cross-space phantom)
                 if (zone.terrain[y][x] != TerrainType.BUILDING
-                        and zone.terrain[y][x - 1] != TerrainType.BUILDING):
+                        and zone.terrain[y][x - 1] != TerrainType.BUILDING
+                        and (x, y) not in self.wmap.characters
+                        and (x - 1, y) not in self.wmap.characters):
                     m = build_monster("wolf", (x - 1, y))
                     m.id = "enc_zonefloor"
                     m.metadata["zone"] = zone.name

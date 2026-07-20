@@ -195,6 +195,13 @@ class TestOffscreenSpawning(unittest.TestCase):
         em = self.engine.encounter_manager
         wmap = self.engine.world.map
         px, py = self.engine.player.position
+        # Clear any OTHER cave tiles (the worldgen caves + GX.5 Deepdelve
+        # mouths) so the cave we place is unambiguously the nearest — the
+        # mouth-picker shuffles among ALL caves in the offscreen band.
+        for y in range(wmap.height):
+            for x in range(wmap.width):
+                if wmap.terrain[y][x] == TerrainType.CAVE:
+                    wmap.terrain[y][x] = TerrainType.GRASS
         wmap.terrain[py][px + 7] = TerrainType.CAVE   # a cave just out of sight
         pos, origin = em._find_spawn_position()
         self.assertEqual(origin, "cave")

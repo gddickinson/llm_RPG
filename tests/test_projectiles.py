@@ -120,6 +120,38 @@ class TestProjectileManager(unittest.TestCase):
         joined = " ".join(events).lower()
         self.assertIn("bow", joined)
 
+    def test_animate_flag_defers_resolution_so_the_arrow_flies(self):
+        # George: arrows should be SEEN fired. With animate_projectiles the turn
+        # pipeline must NOT resolve the shot instantly — a GUI ticks it per frame.
+        eng = self.engine
+        eng.animate_projectiles = True
+        troll = eng.npc_manager.get_npc("troll_brigand_01")
+        eng.world.map.remove_character(troll)
+        troll.position = (eng.player.position[0] + 8, eng.player.position[1])
+        eng.world.map.place_character(troll, *troll.position)
+        eng.projectile_manager.spawn(eng.player, troll, damage=5,
+                                     weapon_type="bow")
+        eng.advance_turn()
+        # the arrow survives the turn (would resolve if the flag were off)
+        self.assertEqual(eng.projectile_manager.count, 1)
+        # small per-frame ticks fly it, and it eventually resolves
+        start_x = eng.projectile_manager.active[0].x
+        for _ in range(30):
+            eng.projectile_manager.tick(0.14)
+            if eng.projectile_manager.count == 0:
+                break
+        self.assertEqual(eng.projectile_manager.count, 0, "arrow arrives")
+        eng.animate_projectiles = False
+
+    def test_miss_popup(self):
+        ce = getattr(self.engine, "combat_effects", None)
+        if ce is None:
+            self.skipTest("no combat_effects")
+        before = len(ce.damage_popups)
+        ce.on_miss_at(5.0, 5.0)
+        self.assertEqual(len(ce.damage_popups), before + 1)
+        self.assertEqual(ce.damage_popups[-1].value, "miss")
+
 
 if __name__ == "__main__":
     unittest.main()

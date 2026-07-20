@@ -13,7 +13,9 @@
       "greater_potion",
       "potion_might",
       "tome_of_fireball",
-      "ring_protection"
+      "ring_protection",
+      "flaming_sword",
+      "frost_dagger"
     ],
     "gold": 400,
     "legend": "The dragon of the high roost is slain \u2014 its fire will scorch the land no more.",
@@ -36,7 +38,8 @@
       "potion",
       "potion",
       "scroll_heal",
-      "coins"
+      "coins",
+      "manual_dexterity"
     ],
     "gold": 80,
     "legend": "The goblin warren is cleared \u2014 the woods breathe easier tonight.",
@@ -58,7 +61,8 @@
     "hoard": [
       "greater_potion",
       "amulet_health",
-      "coins"
+      "coins",
+      "manual_athletics"
     ],
     "gold": 150,
     "legend": "The troll den is broken \u2014 the fens lose their terror.",

@@ -67,5 +67,44 @@
     "use_effect": {
       "teach_spell": "regrowth"
     }
+  },
+  "tome_necromancy": {
+    "id": "tome_necromancy",
+    "name": "The Pallid Codex",
+    "item_type": "book",
+    "value": 600,
+    "rarity": "rare",
+    "description": "A forbidden treatise on raising the dead. To study it is to become a necromancer — and to feel the Pale Lady's cold regard. Teaches Animate Dead.",
+    "use_effect": {
+      "teach_spell": "animate_dead",
+      "specialization": "necromancer"
+    }
+  },
+  "phylactery": {
+    "id": "phylactery",
+    "name": "Soul Phylactery",
+    "item_type": "misc",
+    "value": 2000,
+    "rarity": "legendary",
+    "description": "An iron vessel wrought to cage a living soul. A necromancer of great power may bind theirs within and cross into undeath as a lich — deathless. (Use to perform the rite.)",
+    "use_effect": {
+      "ritual": "lich_ascension"
+    }
+  },
+  "corvins_journal": {
+    "id": "corvins_journal",
+    "name": "Corvin's Journal",
+    "item_type": "book",
+    "value": 0,
+    "rarity": "uncommon",
+    "description": "The grave-robber's cramped hand grows wilder page by page: he prised open the Sunken Barrow and took a 'crown of black iron' from a sleeping king — and now the cold follows him home, and the dead will not stay down."
+  },
+  "blackbanner_muster": {
+    "id": "blackbanner_muster",
+    "name": "Blackbanner's Muster-Roll",
+    "item_type": "book",
+    "value": 0,
+    "rarity": "uncommon",
+    "description": "A grimy tally dropped in the Ambush Wood: the strength of nine raiding camps written in a bold hand, each captain's mark beside it, and beneath them all a muster-place — the Blackbanner Camp — and a date for the march on the settlements. One name, Kessa Fenn, has been struck through and written back in."
   }
 }

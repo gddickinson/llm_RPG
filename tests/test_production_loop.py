@@ -102,5 +102,31 @@ class TestProductionLoop(unittest.TestCase):
         e2.end_game()
 
 
+class TestConsumption(unittest.TestCase):
+    """T2.4 — a settlement eats its provisions; hunger pushes a real shortage."""
+
+    def test_consume_eats_food_and_reports_hunger(self):
+        from engine.production_loop import ProductionSystem
+        ps = ProductionSystem.__new__(ProductionSystem)
+        store = {"bread": 3, "meat": 2, "ore": 10}
+        # 8 people eat ~4 units — 5 food covers it (not hungry); food eaten first
+        self.assertFalse(ps._consume(store, {"f": list(range(8))}))
+        self.assertNotIn("bread", store, "bread eaten first")
+        self.assertEqual(store["ore"], 10, "non-food untouched")
+        # a scarce larder goes hungry
+        scarce = {"bread": 1}
+        self.assertTrue(ps._consume(scarce, {"f": list(range(10))}))
+        self.assertEqual(scarce, {}, "the larder is emptied")
+
+    def test_hungry_town_declares_a_shortage(self):
+        from engine.game_engine import GameEngine
+        e = GameEngine(llm_provider="heuristic", enable_npc_processes=False)
+        e.start_game()
+        e.production._maybe_shortage()
+        self.assertIn("bread", e.world_director.shortages,
+                      "a hungry town pushes a food shortage (radiant reads it)")
+        e.end_game()
+
+
 if __name__ == "__main__":
     unittest.main()

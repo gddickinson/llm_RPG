@@ -62,6 +62,14 @@ class PursuitSystem:
         player = getattr(engine, "player", None)
         if player is None or getattr(player, "hp", 1) <= 0:
             return 0
+        # A player inside an interior / dungeon lives in a SEPARATE coordinate
+        # space; an overworld hostile must not chase their interior-local
+        # position (George 2026-07-15: an invisible Mire Stalker sitting at a
+        # low overworld tile chased into — and killed the hero in — every
+        # building). Overworld pursuit only while the hero is on the overworld.
+        if getattr(engine, "current_interior", None) is not None or \
+                getattr(engine, "current_dungeon", None) is not None:
+            return 0
         ppos = tuple(player.position)
         wmap = engine.world.map
         try:
@@ -74,7 +82,16 @@ class PursuitSystem:
                 continue
             if _cheb(npc.position, ppos) > CHASE_RADIUS:
                 npc.metadata["chase_accum"] = 0.0      # out of the chase
+                npc.metadata.pop("noticed_player", None)  # lost track (GAP.3)
                 continue
+            try:   # GAP.3 a hidden (crawling, unseen) player is not chased
+                from engine import stealth
+                if stealth.evades(engine, npc):
+                    npc.metadata["chase_accum"] = 0.0
+                    continue
+                npc.metadata["noticed_player"] = True
+            except Exception:
+                pass
             steps += self._advance(npc, ppos, wmap)
         return steps
 
@@ -92,6 +109,8 @@ class PursuitSystem:
             return False
         meta = getattr(npc, "metadata", {}) or {}
         if meta.get("player_char") or meta.get("adventurer"):
+            return False
+        if meta.get("arena_fighter"):        # the colosseum drives these
             return False
         # freshly shoved this turn — staggered, doesn't step back at you (a
         # one-turn skip so a knockback isn't instantly undone by pursuit)

@@ -65,6 +65,7 @@ class NPCConflictSystem:
         wmap = engine.world.map
         npcs = [n for n in engine.npc_manager.npcs.values()
                 if n.is_active() and n.id not in party
+                and not (getattr(n, "metadata", None) or {}).get("arena_fighter")
                 and wmap.get_character_at(*n.position) is n]
         guards = [n for n in npcs if _cls(n) in GUARD_CLASSES]
         hostiles = [n for n in npcs if _cls(n) in HOSTILE_CLASSES]

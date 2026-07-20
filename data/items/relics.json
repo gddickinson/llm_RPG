@@ -6,8 +6,14 @@
     "value": 1200,
     "rarity": "legendary",
     "description": "The archmage's magnum opus, bound in drowned leather and cold to the touch. Its pages whisper. To read it is to learn the soul-draining art Vael'Zhur bound his life to — and to risk what he became.",
-    "use_effect": {"teach_spell": "drain"},
-    "metadata": {"artifact": true, "tome_of_vaelzhur": true, "corruption": true}
+    "use_effect": {
+      "teach_spell": "drain"
+    },
+    "metadata": {
+      "artifact": true,
+      "tome_of_vaelzhur": true,
+      "corruption": true
+    }
   },
   "warding_key_i": {
     "id": "warding_key_i",
@@ -16,7 +22,9 @@
     "value": 150,
     "rarity": "rare",
     "description": "A wedge of black glass etched with a binding-rune, warm where the others are cold. One of three that seal Vael'Zhur's sanctum.",
-    "metadata": {"warding_fragment": 1}
+    "metadata": {
+      "warding_fragment": 1
+    }
   },
   "warding_key_ii": {
     "id": "warding_key_ii",
@@ -25,7 +33,9 @@
     "value": 150,
     "rarity": "rare",
     "description": "A second shard of the drowning-ward, its rune half-drowned in verdigris. The Reedmarsh goblins kept it as a totem.",
-    "metadata": {"warding_fragment": 2}
+    "metadata": {
+      "warding_fragment": 2
+    }
   },
   "warding_key_iii": {
     "id": "warding_key_iii",
@@ -34,7 +44,9 @@
     "value": 150,
     "rarity": "rare",
     "description": "The last fragment of the ward, given up by the marsh-witch Ysolde. Held to the light, its rune completes the others.",
-    "metadata": {"warding_fragment": 3}
+    "metadata": {
+      "warding_fragment": 3
+    }
   },
   "warding_key": {
     "id": "warding_key",
@@ -43,7 +55,10 @@
     "value": 600,
     "rarity": "legendary",
     "description": "The three fragments made whole — a key of black glass that can open Vael'Zhur's sanctum without waking its traps, or bind the lich back into his drowning-sleep.",
-    "metadata": {"warding_key": true, "artifact": true}
+    "metadata": {
+      "warding_key": true,
+      "artifact": true
+    }
   },
   "drowned_lantern": {
     "id": "drowned_lantern",
@@ -52,7 +67,10 @@
     "value": 220,
     "rarity": "rare",
     "description": "A storm-lantern of green glass that burns underwater, its flame fed by the Vault itself. It throws back the dark of the flooded halls.",
-    "metadata": {"light_source": true, "artifact": true}
+    "metadata": {
+      "light_source": true,
+      "artifact": true
+    }
   },
   "watchman_signet": {
     "id": "watchman_signet",
@@ -61,7 +79,9 @@
     "value": 45,
     "rarity": "uncommon",
     "description": "A tarnished ring bearing the old watch's tower sigil.",
-    "metadata": {"legend_id": "watchtower"}
+    "metadata": {
+      "legend_id": "watchtower"
+    }
   },
   "vigil_candle": {
     "id": "vigil_candle",
@@ -70,7 +90,9 @@
     "value": 30,
     "rarity": "uncommon",
     "description": "A candle burned to a thumb's width, kept like a treasure.",
-    "metadata": {"legend_id": "plague"}
+    "metadata": {
+      "legend_id": "plague"
+    }
   },
   "charred_doll": {
     "id": "charred_doll",
@@ -79,7 +101,9 @@
     "value": 25,
     "rarity": "uncommon",
     "description": "A child's doll, scorched down one side. Someone loved it.",
-    "metadata": {"legend_id": "troll_farm"}
+    "metadata": {
+      "legend_id": "troll_farm"
+    }
   },
   "princes_letter": {
     "id": "princes_letter",
@@ -88,7 +112,9 @@
     "value": 60,
     "rarity": "uncommon",
     "description": "A commission letter sealed in violet wax, never collected.",
-    "metadata": {"legend_id": "silver_commission"}
+    "metadata": {
+      "legend_id": "silver_commission"
+    }
   },
   "festival_ribbon": {
     "id": "festival_ribbon",
@@ -96,7 +122,9 @@
     "item_type": "misc",
     "value": 15,
     "description": "A ribbon from the great festival, colors gone soft with years.",
-    "metadata": {"legend_id": "festival"}
+    "metadata": {
+      "legend_id": "festival"
+    }
   },
   "goblin_warhorn": {
     "id": "goblin_warhorn",
@@ -105,7 +133,9 @@
     "value": 40,
     "rarity": "uncommon",
     "description": "Split down the middle — blown once too hard at the last raid.",
-    "metadata": {"legend_id": "goblin_raid"}
+    "metadata": {
+      "legend_id": "goblin_raid"
+    }
   },
   "cracked_riverstone": {
     "id": "cracked_riverstone",
@@ -113,7 +143,9 @@
     "item_type": "misc",
     "value": 20,
     "description": "A river-polished stone split by the sun of the dry year.",
-    "metadata": {"legend_id": "dry_river"}
+    "metadata": {
+      "legend_id": "dry_river"
+    }
   },
   "druid_charm": {
     "id": "druid_charm",
@@ -122,6 +154,159 @@
     "value": 50,
     "rarity": "uncommon",
     "description": "Knotted reeds and green stone; it smells of deep forest.",
-    "metadata": {"legend_id": "druid_blessing"}
+    "metadata": {
+      "legend_id": "druid_blessing"
+    }
+  },
+  "ring_of_three_wishes": {
+    "name": "Ring of Three Wishes",
+    "item_type": "ring",
+    "value": 3000,
+    "rarity": "legendary",
+    "use_effect": {
+      "spell": "greater_heal"
+    },
+    "equip_bonuses": {
+      "charisma": 2,
+      "max_mana": 8
+    },
+    "metadata": {
+      "charges": 3,
+      "artifact": true
+    },
+    "description": "A fabled ring said to grant three wishes — its power wells up thrice, then fades."
+  },
+  "crown_of_kings": {
+    "name": "Crown of Kings",
+    "item_type": "amulet",
+    "value": 1600,
+    "rarity": "legendary",
+    "equip_bonuses": {
+      "charisma": 3,
+      "wisdom": 2,
+      "max_hp": 10
+    },
+    "metadata": {
+      "artifact": true
+    },
+    "description": "An ancient crown that lends its wearer the bearing of a sovereign."
+  },
+  "cloak_of_the_bat": {
+    "name": "Cloak of the Bat",
+    "item_type": "boots",
+    "value": 900,
+    "rarity": "legendary",
+    "equip_bonuses": {
+      "dexterity": 2,
+      "dodge": 2
+    },
+    "use_effect": {
+      "effect": "flying",
+      "duration": 10
+    },
+    "metadata": {
+      "charges": 5,
+      "artifact": true
+    },
+    "description": "A leathery cloak that unfurls into wings at need."
+  },
+  "hand_of_glory": {
+    "name": "Hand of Glory",
+    "item_type": "misc",
+    "value": 800,
+    "rarity": "legendary",
+    "use_effect": {
+      "spell": "fear"
+    },
+    "equip_bonuses": {
+      "charisma": 1
+    },
+    "metadata": {
+      "charges": 6,
+      "artifact": true,
+      "corruption": true
+    },
+    "description": "A withered hand clutching a black candle — it fills the living with terror."
+  },
+  "staff_of_withering": {
+    "name": "Staff of Withering",
+    "item_type": "misc",
+    "value": 1100,
+    "rarity": "legendary",
+    "use_effect": {
+      "spell": "blight"
+    },
+    "equip_bonuses": {
+      "max_mana": 8
+    },
+    "metadata": {
+      "charges": 6,
+      "artifact": true,
+      "corruption": true
+    },
+    "description": "A blackthorn staff that leaves blasted ash where it strikes."
+  },
+  "book_of_infinite_spells": {
+    "name": "Book of Infinite Spells",
+    "item_type": "book",
+    "value": 2200,
+    "rarity": "legendary",
+    "use_effect": {
+      "spell": "meteor_swarm"
+    },
+    "equip_bonuses": {
+      "intelligence": 2,
+      "max_mana": 12
+    },
+    "metadata": {
+      "charges": 8,
+      "artifact": true
+    },
+    "description": "A tome whose pages never empty — turn one, and a mighty spell answers."
+  },
+  "gauntlets_of_ogre_power": {
+    "name": "Gauntlets of Ogre Power",
+    "item_type": "armor",
+    "value": 500,
+    "rarity": "epic",
+    "armor": 1,
+    "equip_bonuses": {
+      "strength": 3,
+      "damage": 2
+    },
+    "description": "Iron gauntlets that lend the crushing strength of an ogre."
+  },
+  "medallion_of_thoughts": {
+    "name": "Medallion of Thoughts",
+    "item_type": "amulet",
+    "value": 420,
+    "rarity": "epic",
+    "equip_bonuses": {
+      "wisdom": 2,
+      "charisma": 1
+    },
+    "use_effect": {
+      "reveal": "settlements"
+    },
+    "metadata": {
+      "charges": 3
+    },
+    "description": "A silver medallion that whispers the secrets of the land."
+  },
+  "grave_crown": {
+    "id": "grave_crown",
+    "name": "The Grave-Crown of Aedelric",
+    "item_type": "misc",
+    "value": 900,
+    "rarity": "legendary",
+    "description": "A circlet of black barrow-iron, cold as the grave. It is said to command the hollowed dead — and to hollow, slowly, whoever dares to wear it."
+  },
+  "blackbanner_standard": {
+    "id": "blackbanner_standard",
+    "name": "The Black Banner",
+    "item_type": "misc",
+    "value": 1100,
+    "rarity": "legendary",
+    "description": "The great black standard under which Vharo bound the outlaw camps — a torn field of midnight cloth on an iron-shod haft. Men who fought beneath it still flinch to see it raised; whoever bears it inherits both the dread it carries and the reaving it answers for."
   }
 }

@@ -53,10 +53,13 @@ def encounter_table_for(terrain_value: str) -> List[Tuple[str, int]]:
     return out
 
 
-def dungeon_pool() -> List[str]:
-    """Template ids eligible for dungeon rooms."""
+def dungeon_pool(depth: int = None) -> List[str]:
+    """Template ids eligible for dungeon rooms. T1.3: a template may set
+    `min_depth` so a genuinely tough foe only appears on deep floors (a low-level
+    hero's first dungeon stays survivable); no `min_depth` = eligible anywhere."""
     return [tid for tid, t in MONSTER_TEMPLATES.items()
-            if t.get("dungeon", False)]
+            if t.get("dungeon", False)
+            and (depth is None or t.get("min_depth", 1) <= depth)]
 
 
 def group_spec(template_id: str) -> Optional[dict]:
@@ -110,11 +113,21 @@ def build_monster(template_id: str, position: Tuple[int, int]):
         symbol=spec.get("symbol", "m"),
         description=spec.get("description", ""),
         personality={"traits": ["hostile"]},
-        goals=["Attack the player"],
+        # a monster's own GOALS (George: monsters should have ambitions for
+        # themselves and their tribes) — drive-flavoured strings from the
+        # template (hunt/hoard/raid/rise/spread), read by the ambition matcher
+        # + shown in the world; falls back to the old default.
+        goals=list(spec.get("goals", ["Attack the player"])),
         inventory=[],
         metadata={"behavior": behavior,
                   "home_pos": list(position),
                   "speed": spec.get("speed", 1.0),
-                  "natural_damage": spec.get("natural_damage", 0)},
+                  "natural_damage": spec.get("natural_damage", 0),
+                  "active": spec.get("active", "always"),   # C2 day/night
+                  "model": spec.get("model", ""),           # #9 GLB model override
+                  "preys_on": spec.get("preys_on", []),     # C5 hunts wildlife
+                  "undead": spec.get("undead", False),      # UNDEAD trait carrier
+                  "undead_type": spec.get("undead_type", ""),
+                  "guaranteed_drops": spec.get("guaranteed_drops", [])},
         **stats,
     )

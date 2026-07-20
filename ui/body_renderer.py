@@ -25,117 +25,15 @@ except ImportError:  # pragma: no cover
 logger = logging.getLogger("llm_rpg.body_renderer")
 
 
-# ---------------------------------------------------------------------- palettes
-
-SKIN_TONES = {
-    "human": (210, 185, 155),
-    "elf": (220, 205, 175),
-    "half-elf": (215, 195, 165),
-    "dwarf": (195, 165, 130),
-    "halfling": (215, 190, 155),
-    "gnome": (210, 195, 165),
-    "half-orc": (140, 160, 120),
-    "orc": (120, 145, 100),
-    "tiefling": (180, 130, 130),
-    "goblin": (130, 150, 90),
-    "dragonborn": (160, 170, 150),
-    "troll": (90, 130, 70),
-}
-
-CLASS_TORSO_TINT = {
-    "warrior": (170, 175, 185),
-    "guard": (150, 155, 165),
-    "paladin": (190, 195, 210),
-    "barbarian": (140, 120, 100),
-    "ranger": (100, 130, 90),
-    "rogue": (70, 70, 80),
-    "merchant": (160, 140, 60),
-    "villager": (150, 130, 90),
-    "wizard": (90, 70, 140),
-    "sorcerer": (180, 70, 160),
-    "warlock": (110, 50, 130),
-    "cleric": (220, 220, 220),
-    "druid": (90, 130, 70),
-    "bard": (180, 100, 160),
-    "monk": (140, 130, 110),
-    "noble": (120, 90, 160),
-    "brigand": (110, 70, 50),
-    "troll": (110, 140, 80),
-    "monster": (140, 100, 100),
-}
-
-RACE_SCALE = {
-    "halfling": 0.82, "gnome": 0.82, "goblin": 0.82, "dwarf": 0.90,
-    "human": 1.0, "elf": 1.02, "half-elf": 1.0, "tiefling": 1.0,
-    "dragonborn": 1.08, "half-orc": 1.10, "orc": 1.14, "troll": 1.28,
-}
-
-# Class -> weapon kind drawn in the hand when nothing is equipped. None = unarmed.
-CLASS_WEAPON = {
-    "warrior": "sword", "guard": "sword", "paladin": "sword",
-    "barbarian": "axe", "rogue": "dagger", "ranger": "bow", "wizard": "staff",
-    "sorcerer": "staff", "warlock": "staff", "cleric": "mace", "druid": "staff",
-    "monk": "staff", "noble": "dagger", "brigand": "axe", "troll": "axe",
-    "merchant": None, "villager": None, "bard": "dagger", "monster": None,
-}
-
-HAIR_PALETTE = [(58, 40, 26), (30, 26, 24), (120, 90, 52), (150, 122, 74),
-                (162, 162, 168), (110, 62, 36), (92, 74, 58)]
-
-
-# ---------------------------------------------------------------------- helpers
-
-def _race_color(race: str) -> Tuple[int, int, int]:
-    return SKIN_TONES.get((race or "").lower(), (210, 185, 155))
-
-
-def _class_color(klass: str) -> Tuple[int, int, int]:
-    return CLASS_TORSO_TINT.get((klass or "").lower(), (170, 160, 130))
-
-
-def _race_scale(race: str) -> float:
-    return RACE_SCALE.get((race or "").lower(), 1.0)
-
-
-def _darken(color, amount=30):
-    return tuple(max(0, c - amount) for c in color)
-
-
-def _cap(x, y, tx, ty, cap):
-    """Clamp a sprung point to within `cap` px of its target: a follow-through lag
-    may settle but can NEVER detach a limb — the guard that stops any large
-    screen-space jump (a camera pan / a move between locations) from smearing."""
-    dx, dy = x - tx, y - ty
-    d = math.hypot(dx, dy)
-    if d > cap > 0:
-        s = cap / d
-        return tx + dx * s, ty + dy * s
-    return x, y
-
-
-def _hair_color(char):
-    race = getattr(getattr(char, "race", None), "value", "human")
-    if race in ("orc", "half-orc", "goblin", "troll"):
-        return (44, 50, 34)
-    h = sum(ord(c) for c in str(getattr(char, "id", "x")))
-    return HAIR_PALETTE[h % len(HAIR_PALETTE)]
-
-
-# P33.6a per-character BUILD — diverse, slightly cartoonish silhouettes
-_BUILDS = [
-    {"shoulder": 1.0, "hip": 1.0, "head": 1.0, "girth": 1.0, "h": 1.0},    # average
-    {"shoulder": 1.3, "hip": 1.05, "head": 0.95, "girth": 1.25, "h": 1.02},  # broad
-    {"shoulder": 0.85, "hip": 0.85, "head": 1.05, "girth": 0.8, "h": 1.05},  # slim
-    {"shoulder": 1.05, "hip": 1.25, "head": 1.0, "girth": 1.4, "h": 0.92},  # round
-    {"shoulder": 0.95, "hip": 0.9, "head": 0.92, "girth": 0.9, "h": 1.12},  # tall
-    {"shoulder": 1.1, "hip": 1.1, "head": 1.15, "girth": 1.15, "h": 0.84},  # short
-]
-
-
-def _body_build(char):
-    """A stable per-character build (average/broad/slim/round/tall/short)."""
-    h = sum(ord(c) for c in str(getattr(char, "id", "x"))) + 3
-    return _BUILDS[h % len(_BUILDS)]
+# palettes + pure colour/build helpers live in body_palette (T0.3 split to hold the
+# 500-line line); re-imported here so `from ui.body_renderer import CLASS_WEAPON`
+# and `body_renderer._EMPTY_HANDED` still resolve for external callers.
+from ui.body_palette import (  # noqa: E402,F401
+    SKIN_TONES, CLASS_TORSO_TINT, RACE_SCALE, CLASS_WEAPON, _EMPTY_HANDED,
+    HAIR_PALETTE, _HAIR_STYLES, _BUILDS,
+    _race_color, _class_color, _race_scale, _darken, _cap,
+    _hair_color, _hair_style, _body_build,
+)
 
 
 def _ensure_anim(char) -> dict:
@@ -160,16 +58,23 @@ def _ensure_anim(char) -> dict:
     return anim
 
 
-TWEEN_DUR = 0.16           # seconds to slide from the old tile to the new one
+# continuous tile-to-tile motion lives in char_tween (shared with the iso path);
+# re-exported here for back-compat (iso_actors imports TWEEN_DUR from body_renderer)
+from ui.char_tween import (TWEEN_DUR, NPC_TWEEN_MAX, STRIDE_PER_TILE,  # noqa: F401
+                           start_slide as _start_slide,
+                           advance_slide as _advance_slide)
 CHAR_H_FRAC = 1.5          # a character stands this many tiles tall (overflows up)
 
 
-def update_anim(char, dt: float) -> None:
+def update_anim(char, dt: float, is_player: bool = False) -> None:
     """Advance walk/idle phases, facing, the tile-to-tile TWEEN, and the strike
     timer (P33.4b). The tween is what makes the walk cycle VISIBLE — a turn-based
-    step teleports tiles, so we slide the sprite across and play the walk."""
+    step teleports tiles, so we slide the sprite across and play the walk. An
+    NPC's slide fills the gap since its last step (continuous ambient motion); the
+    player keeps the crisp fixed `TWEEN_DUR` so input stays responsive."""
     from ui import char_motion
     anim = _ensure_anim(char)
+    anim["since_move"] = anim.get("since_move", 0.0) + dt
     prev = anim["prev_pos"]
     cur = tuple(char.position)
     if prev != cur:                        # a step: start a slide from prev→cur
@@ -177,8 +82,7 @@ def update_anim(char, dt: float) -> None:
         from ui.char_pose3d import facing_from_delta
         anim["face_target"] = facing_from_delta(cur[0] - prev[0],
                                                 cur[1] - prev[1])
-        anim["tween_from"] = (prev[0] - cur[0], prev[1] - cur[1])
-        anim["tween_t"] = TWEEN_DUR
+        _start_slide(anim, prev, cur, is_player)
     anim["prev_pos"] = cur
     # ease the continuous facing angle toward the heading (P34.14) — the cast
     # TURNS to face any of 360° instead of snapping to 4 views
@@ -190,8 +94,7 @@ def update_anim(char, dt: float) -> None:
     tweening = anim.get("tween_t", 0.0) > 0
     anim["moving"] = tweening
     if tweening:
-        anim["walk_phase"] = (anim["walk_phase"] + dt * 20.0) % math.tau
-        anim["tween_t"] = max(0.0, anim["tween_t"] - dt)
+        _advance_slide(anim, dt)           # stride + tween timers a frame
     else:
         anim["walk_phase"] *= 0.85
         anim["idle_phase"] = (anim["idle_phase"]
@@ -266,6 +169,50 @@ def _update_action(char, anim, dt):
         anim["cur_action"] = "idle"
 
 
+def _cast_glow(surface, x, y, r) -> None:
+    """H2: a channel of arcane light gathered at the casting hand — so a CAST
+    reads as magic, not just a staff wave. A soft additive cyan bloom."""
+    import pygame
+    d = int(r * 4)
+    g = pygame.Surface((d, d), pygame.SRCALPHA)
+    c = d // 2
+    for rr, col in ((r * 2.0, (50, 110, 210, 34)),
+                    (r * 1.25, (110, 180, 255, 70)),
+                    (r * 0.65, (205, 238, 255, 150))):
+        pygame.draw.circle(g, col, (c, c), max(1, int(rr)))
+    surface.blit(g, (int(x - c), int(y - c)), special_flags=pygame.BLEND_RGBA_ADD)
+
+
+def _draw_ground_shadow(surface, pose, feet_x, feet_y, H) -> None:
+    """R6 — a soft contact shadow on the ground under the feet: directional (cast
+    down-right, away from the top-left key light), pose-shaped (wider on a spread
+    stance) and height-aware (it SHRINKS + fades as the body lifts off the ground
+    on a jump or a launch, so airborne reads). Concentric fading ellipses on one
+    small SRCALPHA surface → soft edge, one blit."""
+    lf, rf = pose.get("l_foot"), pose.get("r_foot")
+    if lf and rf:
+        spread = abs(lf[0] - rf[0])
+        pfy = (lf[1] + rf[1]) * 0.5
+    else:
+        spread, pfy = 0.0, feet_y
+    lift = feet_y - pfy if feet_y > pfy else 0.0        # airborne height
+    scale = max(0.4, 1.0 - lift / (H * 1.3)) if H else 1.0
+    ew = max(4, int((H * 0.30 + spread * 0.7) * scale))
+    eh = max(2, int(ew * 0.42))
+    sh = pygame.Surface((ew, eh), pygame.SRCALPHA)
+    base_a = int(96 * scale)
+    rings = 4
+    for i in range(rings, 0, -1):
+        f = i / rings                                   # 1 = outer/faint … dark
+        a = max(0, int(base_a * (1.0 - f) ** 1.05) + 6)
+        rw, rh = ew * f, eh * f
+        pygame.draw.ellipse(sh, (0, 0, 0, a),
+                            ((ew - rw) * 0.5, (eh - rh) * 0.5, rw, rh))
+    cx = feet_x + H * 0.05                               # down-right of the feet
+    cy = feet_y + H * 0.02
+    surface.blit(sh, (int(cx - ew * 0.5), int(cy - eh * 0.5)))
+
+
 # ---------------------------------------------------------------------- main draw
 
 def draw_body(surface, char, sx: int, sy: int, tile_size: int,
@@ -306,17 +253,29 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     if tw > 0:
         from ui.animation import smoothstep
         fdx, fdy = anim.get("tween_from", (0, 0))
+        dur = anim.get("tween_dur", TWEEN_DUR) or TWEEN_DUR
         # ease the slide (slow-in/out) instead of a linear crawl (P34.1)
-        frac = 1.0 - smoothstep(1.0 - tw / TWEEN_DUR)
+        frac = 1.0 - smoothstep(1.0 - tw / dur)
         ox, oy = fdx * tile_size * frac, fdy * tile_size * frac
+    atk_t = anim.get("atk_t", 0.0)
+    attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
+    if atk_t > 0:                          # G3: a strike LUNGES the whole body
+        # toward the target — so the attack reads from ANY facing, not just the
+        # arm arc (which is near-invisible head-on)
+        lunge = char_motion.attack_lunge(atk_t) * tile_size * 0.17
+        lfx, lfy = char_motion.facing(anim)
+        ox += lfx * lunge
+        oy += lfy * lunge
     feet_x = sx + tile_size / 2 + ox
     feet_y = sy + tile_size - 2 + oy
 
-    atk_t = anim.get("atk_t", 0.0)
-    attack = 1.0 - atk_t / char_motion.ATTACK_DUR if atk_t > 0 else 0.0
     from ui import char_clips, char_style, char_pose3d, char_mocap, char_injury
     action = anim.get("cur_action", "idle")
     weapon = char_motion.weapon_kind(char)
+    # I1: a warm social-contact clip busies BOTH hands (an embrace, a clasp, a
+    # kiss) — don't brandish a weapon or shield through it, or a hug reads as a
+    # sword raised.  A square-up (taunt) keeps its arms, so it stays armed.
+    bare_hands = action in _EMPTY_HANDED
     inj = char_injury.injury_state(char)          # P34.17 injuries show
     if inj["down"]:                               # unconscious / dying → lie downed
         action = "lie"
@@ -337,15 +296,35 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     # mood-driven line-of-action spine curve (proud arch / sad slump).
     from ui import char_face
     mood = char_face.EMOTE_EXPR.get(action) or char_face.expr_for(char)
+    if mood == "neutral":                        # G1: a badly-hurt body winces
+        try:
+            if char.is_alive() and char.hp <= max(1, char.max_hp) * 0.25:
+                mood = "hurt"
+        except Exception:
+            pass
     spine = char_pose3d.spine_for(mood)
     face_deg = anim.get("face_cur", 0.0)
     # P34.15 LOCOMOTION plays baked MOCAP through the depth model (real stride/timing
     # at any facing); everything else is the procedural pose + its action clip.
     loco = char_mocap.clip_for(action) if action in ("walk", "run", "idle") else None
+    # COMBAT.1 the 2D renderer plays the real combat + DEFENCE mocap too (an
+    # attack rotates the weapon's repertoire, a block/dodge/hit plays its
+    # capture); everything else stays the procedural pose below.
+    mclip, mp = loco, None
     if loco:
-        mp = (anim.get("clock", 0.0) * char_mocap.RATE.get(loco, 1.0)
-              * gait["cadence"])
-        pose = char_pose3d.pose3d_mocap(feet_x, feet_y, H, loco, mp, face_deg,
+        if action in ("walk", "run", "jog"):
+            # tie the stride to ground speed (`move_phase` advances with the
+            # tween) so the walk cycle flows with the glide, not a fixed clock
+            mp = anim.get("move_phase", 0.0) * gait["cadence"]
+        else:
+            mp = (anim.get("clock", 0.0) * char_mocap.RATE.get(loco, 1.0)
+                  * gait["cadence"])
+    else:
+        cm = char_mocap.combat_mocap(action, anim, weapon, attack)
+        if cm:
+            mclip, mp = cm
+    if mclip:
+        pose = char_pose3d.pose3d_mocap(feet_x, feet_y, H, mclip, mp, face_deg,
                                         build, pgait, spine)
         facing = pose["facing"]
     else:
@@ -369,12 +348,10 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
         if inj["arm"]:
             char_injury.apply_arm(pose, inj["arm"], H)
 
-    # shadow on the ground, under the feet (not the tweened body)
-    shw = max(4, int(H * 0.26))
-    shadow = pygame.Surface((shw, max(2, shw // 2)), pygame.SRCALPHA)
-    pygame.draw.ellipse(shadow, (0, 0, 0, 95), shadow.get_rect())
-    surface.blit(shadow, (int(sx + tile_size / 2 - shw / 2),
-                          int(sy + tile_size - shw / 2 - 1)))
+    # R6 grounding — a soft, directional, pose-shaped contact shadow under the
+    # feet (cast down-right from the top-left key light; wider on a spread stance;
+    # SHRINKS + fades as the body lifts off the ground on a jump / a launch)
+    _draw_ground_shadow(surface, pose, feet_x, feet_y, H)
 
     # P34.3 secondary motion in BODY-LOCAL space: the head lags the body and the
     # weapon tip whips behind a swing (follow-through / settle). The spring works
@@ -409,10 +386,17 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     neck_w = max(2, int(H * 0.06))
     face_visible = pose.get("face_visible", facing[1] >= 0)
 
-    # P34.5 flow: a billowing cloak + swaying hair BEHIND the body
+    # P34.5 flow: a billowing cloak + swaying hair BEHIND the body. H7: a heavy
+    # class flies a distinct heroic CAPE (crimson) rather than a muddy darkened-
+    # armour cloak; robed/light classes keep a cloak toned from their garment.
     from ui import char_flow
-    cloak_color = (_darken(torso, 55) if klass.lower() in char_flow.CLOAK_CLASSES
-                   else None)
+    kl_ = klass.lower()
+    if kl_ in bp.ARMOR_CLASSES:
+        cloak_color = (132, 32, 36)
+    elif kl_ in char_flow.CLOAK_CLASSES:
+        cloak_color = _darken(torso, 55)
+    else:
+        cloak_color = None
     char_flow.draw_back(surface, char, anim, pose, sx, sy, tile_size, H, hair,
                         cloak_color)
 
@@ -422,18 +406,30 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
     far = "l" if depth.get("l_sh", 0.0) <= depth.get("r_sh", 0.0) else "r"
     near = "r" if far == "l" else "l"
     bp.draw_legs(surface, pose, pants, boots, leg_w)
+    if klass.lower() in bp.ROBE_CLASSES:         # R5: a robe hangs over the legs
+        bp.draw_robe(surface, pose, torso, max(3, int(H * 0.05)))
     bp.draw_arm(surface, pose, far, _darken(torso, 26), _darken(skin, 26), arm_w)
-    if char_motion.has_shield(char):
+    if char_motion.has_shield(char) and not bare_hands:
         bp.draw_shield(surface, pose, (120, 110, 95), (88, 76, 60),
                        max(2, int(H * 0.13)))
     bp.draw_torso(surface, pose, torso, belt)
     bp.draw_arm(surface, pose, near, torso, skin, arm_w)
+    kl = klass.lower()
+    # G5 armored shoulder plates by class, OR H3 by WORN metal armour (any class)
+    if kl in bp.ARMOR_CLASSES or char_motion.has_metal_armor(char):
+        bp.draw_pauldrons(surface, pose, bp._lighten(torso, 22),
+                          max(2, int(H * 0.09)))
+    if kl in bp.HOOD_CLASSES:                     # G5 a cowl behind the head
+        bp.draw_hood(surface, pose, _darken(torso, 28), max(3, int(H * 0.09)))
     expr = mood                    # resolved above (fleeting action face / mood)
     bp.draw_head(surface, pose, skin, hair, race, face_visible, neck_w,
                  pose.get("profile", 0), expr, anim.get("blinking", False),
-                 sec.get("look", (0.0, 0.0)))
-    if weapon:                                   # resolved above (P34.11)
+                 sec.get("look", (0.0, 0.0)), _hair_style(char))
+    if weapon and not bare_hands:                # resolved above (P34.11)
         bp.draw_weapon(surface, weapon, pose, H * 0.42, arm_w)
+    if action in ("cast", "cast_point", "cast_staff"):   # H2 arcane channel
+        _cast_glow(surface, int(pose["r_hand"][0]), int(pose["r_hand"][1]),
+                   max(3, int(H * 0.13)))
     char_flow.draw_front(surface, anim, pose, sx, sy, tile_size, atk_t, weapon)
 
     hx, hy = int(pose["head"][0]), int(pose["head"][1])
@@ -458,43 +454,6 @@ def draw_body(surface, char, sx: int, sy: int, tile_size: int,
 SSAA_SCALE = 2                 # P34.7 oversample factor for crisp, anti-aliased art
 
 
-def draw_body_crisp(surface, char, sx: int, sy: int, tile_size: int,
-                    is_player: bool = False) -> None:
-    """P34.7 beauty pass: render the character onto a `SSAA_SCALE`× oversampled
-    scratch surface and `smoothscale` it down, so the curvy limbs read smooth and
-    anti-aliased instead of jagged pixel steps. Falls back to a direct draw when
-    oversampling is off. The logical grid + all animation are unchanged."""
-    n = SSAA_SCALE
-    if not PYGAME_OK or n <= 1:
-        return draw_body(surface, char, sx, sy, tile_size, is_player)
-    pad_x = tile_size                     # room for arms / weapon to the sides
-    pad_up = tile_size * 2                 # the body overflows ~1.5 tiles upward
-    w, h = tile_size + pad_x * 2, tile_size + pad_up
-    scratch = pygame.Surface((w * n, h * n), pygame.SRCALPHA)
-    draw_body(scratch, char, pad_x * n, pad_up * n, tile_size * n, is_player)
-    small = pygame.transform.smoothscale(scratch, (w, h))
-    surface.blit(small, (int(sx - pad_x), int(sy - pad_up)))
-
-
-def draw_glimpsed(surface, char, sx: int, sy: int, tile_size: int,
-                  is_player: bool = False) -> None:
-    """Draw a character SEEN THROUGH A WINDOW (P14.2) — dimmed and behind a
-    faint pane — so an NPC glimpsed inside a building reads as indoors rather
-    than standing on top of the wall. Reuses `draw_body` on a taller scratch
-    surface (the body overflows the tile), then glazes it."""
-    if not PYGAME_OK:
-        return
-    pad = tile_size                          # room for the overflowing body
-    glass = pygame.Surface((tile_size, tile_size + pad), pygame.SRCALPHA)
-    draw_body(glass, char, 0, pad, tile_size)
-    glass.fill((255, 255, 255, 135), special_flags=pygame.BLEND_RGBA_MULT)
-    surface.blit(glass, (sx, sy - pad))
-    pane = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
-    pygame.draw.rect(pane, (140, 170, 205, 70), pane.get_rect(),
-                     max(1, tile_size // 16))
-    surface.blit(pane, (sx, sy))
-
-
 def _draw_corpse(surface, char, sx: int, sy: int, tile_size: int) -> None:
     cx = sx + tile_size // 2
     cy = sy + tile_size // 2 + 2
@@ -504,27 +463,7 @@ def _draw_corpse(surface, char, sx: int, sy: int, tile_size: int) -> None:
     pygame.draw.ellipse(surface, (50, 10, 10), (cx - w // 2, cy, w, h), 1)
 
 
-# ---------------------------------------------------------------------- projectile sprite
-
-def draw_projectile(surface, kind: str, sx: int, sy: int,
-                    tile_size: int) -> None:
-    """Draw an in-flight projectile sprite (called by the map renderer)."""
-    if not PYGAME_OK:
-        return
-    cx = sx + tile_size // 2
-    cy = sy + tile_size // 2
-    if kind == "arrow":
-        pygame.draw.line(surface, (200, 170, 110),
-                         (cx - 4, cy), (cx + 4, cy), 2)
-        pygame.draw.polygon(surface, (220, 220, 230),
-                            [(cx + 4, cy - 2), (cx + 7, cy), (cx + 4, cy + 2)])
-    elif kind == "bolt":
-        pygame.draw.line(surface, (160, 160, 170),
-                         (cx - 3, cy), (cx + 5, cy), 3)
-    elif kind == "stone":
-        pygame.draw.circle(surface, (140, 130, 120), (cx, cy), 3)
-    elif kind == "spell":
-        pygame.draw.circle(surface, (200, 160, 255), (cx, cy), 4)
-        pygame.draw.circle(surface, (255, 220, 255), (cx, cy), 2)
-    else:
-        pygame.draw.circle(surface, (240, 240, 200), (cx, cy), 3)
+# draw_body_crisp / draw_glimpsed / draw_projectile moved to ui/body_draw.py
+# (500-line line); re-exported here so existing imports keep working.
+from ui.body_draw import (draw_body_crisp, draw_glimpsed,   # noqa: E402,F401
+                          draw_projectile)

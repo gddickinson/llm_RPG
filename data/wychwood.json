@@ -1,0 +1,175 @@
+{
+  "id": "wychwood",
+  "title": "The Hex of Wychwood",
+  "rumor": "[Realm] In the deep woods of Wychwood, folk vanish and beasts with human eyes are seen at dusk — the herbalist Granny Esk fears the old green hag has woken, and will reward any who'll walk the wood and end it.",
+  "areas": [
+    {
+      "id": "wychwood",
+      "name": "Wychwood Hamlet",
+      "kind": "village",
+      "near": "forest",
+      "legend": "A handful of moss-roofed cottages under the eaves of an old wood, shutters barred against the dusk. A charm of rowan and iron hangs on every door, and still the folk grow fewer."
+    },
+    {
+      "id": "cursed_glade",
+      "name": "The Cursed Glade",
+      "kind": "site",
+      "near": "forest",
+      "legend": "A still green clearing deep in the wood where the light falls wrong. Beasts move at its edge that watch too long and too knowingly — and a knot of hair and bone lies on the moss, still warm."
+    },
+    {
+      "id": "hags_hollow",
+      "name": "The Hag's Hollow",
+      "kind": "lair",
+      "near": "forest",
+      "legend": "A dank hollow under a fallen oak, hung with charms of hair and bone and small green stones — each a stolen shape. Mother Yall keeps her hoard of souls here, and the wood holds its breath around it."
+    }
+  ],
+  "npcs": {
+    "granny_esk": {
+      "name": "Granny Esk",
+      "class": "villager",
+      "race": "human",
+      "level": 5,
+      "stats": {
+        "wisdom": 16,
+        "constitution": 12,
+        "intelligence": 14,
+        "charisma": 12
+      },
+      "hp": 30,
+      "gold": 35,
+      "symbol": "E",
+      "area": "wychwood",
+      "faction": "villagers",
+      "inventory": [
+        "antidote",
+        "bread"
+      ],
+      "description": "The hamlet's herbalist and eldest, sharp-eyed under a shawl of drying herbs. She has hung every charm she knows and buried two grandchildren she could not save, and she knows a hag when the wood turns wrong.",
+      "personality": {
+        "traits": [
+          "canny",
+          "grieving",
+          "unbowed"
+        ],
+        "mood": "grim"
+      },
+      "goals": [
+        "See the green hag's curses broken and my folk restored",
+        "Keep what's left of Wychwood safe",
+        "Never bury another child to the wood"
+      ],
+      "metadata": {
+        "quest_giver": true,
+        "adventure": "wychwood"
+      }
+    },
+    "cursed_lad_tam": {
+      "name": "Tam",
+      "class": "villager",
+      "race": "human",
+      "level": 1,
+      "stats": {
+        "constitution": 10,
+        "dexterity": 12
+      },
+      "hp": 14,
+      "gold": 2,
+      "symbol": "t",
+      "area": "cursed_glade",
+      "faction": "neutral",
+      "inventory": [],
+      "description": "A young woodcutter caught halfway into the hag's curse — his eyes have gone amber and slitted and grey fur creeps along his arms. He can still speak, for now, and tell you how the beasts of the glade were once his neighbours.",
+      "personality": {
+        "traits": [
+          "terrified",
+          "fading",
+          "brave"
+        ],
+        "mood": "desperate"
+      },
+      "goals": [
+        "Stay a man a little longer",
+        "Warn the next fool off the wood"
+      ],
+      "metadata": {
+        "adventure": "wychwood"
+      }
+    },
+    "hedge_witch_odile": {
+      "name": "Odile the Hedge-Witch",
+      "class": "druid",
+      "race": "half-elf",
+      "level": 8,
+      "stats": {
+        "wisdom": 17,
+        "intelligence": 15,
+        "constitution": 13,
+        "dexterity": 12
+      },
+      "hp": 46,
+      "gold": 20,
+      "symbol": "O",
+      "area": "cursed_glade",
+      "faction": "neutral",
+      "inventory": [
+        "staff",
+        "restoration_elixir"
+      ],
+      "description": "A wandering hedge-witch who works the green arts the hag perverts — she came to Wychwood chasing the same evil and knows the counter to a curse-token, if you'll fetch her one. The village fears her nearly as much as the hag; she is used to that.",
+      "personality": {
+        "traits": [
+          "prickly",
+          "principled",
+          "wise"
+        ],
+        "mood": "wary"
+      },
+      "goals": [
+        "Break the green hag's curses the right way",
+        "Prove hedge-craft is not witchery",
+        "Free the shapes the hag has stolen"
+      ],
+      "metadata": {
+        "quest_giver": true,
+        "adventure": "wychwood",
+        "secret": "the counter-charm is the token unknotted at the hollow's heart-stone"
+      }
+    }
+  },
+  "clues": [
+    {
+      "area": "cursed_glade",
+      "item": "curse_token"
+    }
+  ],
+  "foes": [
+    {
+      "area": "cursed_glade",
+      "template": "wolf",
+      "count": 2
+    },
+    {
+      "area": "hags_hollow",
+      "template": "dire_wolf",
+      "count": 1
+    },
+    {
+      "area": "hags_hollow",
+      "template": "dire_boar",
+      "count": 1
+    },
+    {
+      "area": "hags_hollow",
+      "template": "green_hag",
+      "count": 1,
+      "boss": true
+    }
+  ],
+  "resolved": "With the green hag of Wychwood undone, the hollowed beasts of the wood fall quiet, and the folk who can be found come home.",
+  "resolved_name": "hag of Wychwood",
+  "suppresses": {
+    "wolf": 0.6
+  }
+}

@@ -35,4 +35,8 @@ def apply(gui, idx: int) -> None:
         if unlocked:
             gui.dialog_pending_reply = secrets.reveal(
                 gui.engine, npc, unlocked[0]["id"]) or "..."
+    elif kind == "social":
+        from engine import interactions
+        gui.dialog_pending_reply = interactions.player_social(
+            gui.engine, npc, item["social"])
     gui._refresh_dialog_menu()

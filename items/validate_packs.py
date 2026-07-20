@@ -50,8 +50,13 @@ def check_module_packs() -> List[str]:
                 out.append(f"pack {pid}: spawn needs a position or "
                            f"anchor")
         for qid, spec in pack.get("quests", {}).items():
+            # a giver is OPTIONAL — a giver-less quest is board-posted
+            # (dm_api.create_quest posts every module quest to the board), so
+            # a pack installs in worlds that lack a specific preset NPC (e.g.
+            # the procedural Oakvale town has no `guard_01`). Only a SPECIFIED
+            # giver that isn't a preset NPC is an error.
             giver = spec.get("giver_id", "")
-            if not giver or giver not in NPC_SPECS:
+            if giver and giver not in NPC_SPECS:
                 out.append(f"pack {pid}: quest {qid} giver "
                            f"'{giver}' is not a preset NPC")
             if spec.get("reward_gold", 0) > MAX_QUEST_GOLD_BASE:

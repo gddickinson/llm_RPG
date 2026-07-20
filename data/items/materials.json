@@ -143,7 +143,7 @@
     "equip_bonuses": {
       "climb": 5
     },
-    "description": "Iron claws for hands and boots \u2014 the rock face relents."
+    "description": "Iron claws for hands and boots — the rock face relents."
   },
   "regional_map": {
     "id": "regional_map",
@@ -160,9 +160,65 @@
     "name": "Explorer's Chart",
     "item_type": "misc",
     "value": 120,
-    "description": "A master cartographer's survey \u2014 the whole realm, drawn true.",
+    "description": "A master cartographer's survey — the whole realm, drawn true.",
     "use_effect": {
       "reveal": "all"
     }
+  },
+  "arcane_dust": {
+    "name": "Arcane Dust",
+    "item_type": "ingredient",
+    "value": 12,
+    "stackable": true,
+    "rarity": "common",
+    "description": "Glittering residue of raw magic, the base of every enchantment."
+  },
+  "mana_crystal": {
+    "name": "Mana Crystal",
+    "item_type": "ingredient",
+    "value": 45,
+    "stackable": true,
+    "rarity": "rare",
+    "description": "A crystal humming with stored magic."
+  },
+  "ember_core": {
+    "name": "Ember Core",
+    "item_type": "ingredient",
+    "value": 25,
+    "stackable": true,
+    "rarity": "uncommon",
+    "description": "A cinder that never cools — the heart of fire magic."
+  },
+  "frost_shard": {
+    "name": "Frost Shard",
+    "item_type": "ingredient",
+    "value": 25,
+    "stackable": true,
+    "rarity": "uncommon",
+    "description": "Ice that never melts, keen with cold."
+  },
+  "shadow_essence": {
+    "name": "Shadow Essence",
+    "item_type": "ingredient",
+    "value": 30,
+    "stackable": true,
+    "rarity": "uncommon",
+    "description": "Coiled darkness, cold to the touch."
+  },
+  "radiant_mote": {
+    "name": "Radiant Mote",
+    "item_type": "ingredient",
+    "value": 30,
+    "stackable": true,
+    "rarity": "uncommon",
+    "description": "A speck of captured daylight."
+  },
+  "vital_root": {
+    "name": "Vital Root",
+    "item_type": "ingredient",
+    "value": 18,
+    "stackable": true,
+    "rarity": "common",
+    "description": "A root that pulses with life, prized by enchanters of restoration."
   }
 }

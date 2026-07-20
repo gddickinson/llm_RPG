@@ -64,13 +64,25 @@ class CraftingPanel:
         return [(it, repair_cost(it))
                 for it in damaged_equipped_items(self.engine.player)]
 
+    def enchant_rows(self):
+        """(item, eid, ench, reason) — M3 enchantments applicable to WORN gear."""
+        from items import enchanting as en
+        from characters.equipment import equipped_items
+        out = []
+        for item in equipped_items(self.engine.player):
+            for eid in en.all_applicable(item):
+                ok, why = en.can_enchant(self.engine, item, eid)
+                out.append((item, eid, en.enchantment(eid), "" if ok else why))
+        return out
+
     # ---------------- input -----------------------------------------
 
     def handle_key(self, event) -> bool:
         if event.type != pygame.KEYDOWN:
             return False
         k = event.key
-        total = len(self.rows()) + len(self.repair_rows())
+        total = (len(self.rows()) + len(self.repair_rows())
+                 + len(self.enchant_rows()))
         if k in (pygame.K_UP, pygame.K_w):
             if total:
                 self.cursor = (self.cursor - 1) % total
@@ -84,6 +96,7 @@ class CraftingPanel:
     def _activate_selected(self) -> None:
         rows = self.rows()
         repairs = self.repair_rows()
+        enchants = self.enchant_rows()
         if self.cursor < len(rows):
             recipe, _ = rows[self.cursor]
             # engine.craft re-validates and logs the outcome either way
@@ -93,6 +106,13 @@ class CraftingPanel:
             item, _ = repairs[self.cursor - len(rows)]
             msg = repair(self.engine.player, item, at_forge=True)
             self.engine.memory_manager.add_event(msg)
+        else:
+            i = self.cursor - len(rows) - len(repairs)
+            if 0 <= i < len(enchants):
+                from items import enchanting as en
+                item, eid, _e, _r = enchants[i]
+                ok, msg = en.enchant(self.engine, item, eid)
+                self.engine.memory_manager.add_event(msg)
 
     # ---------------- render ----------------------------------------
 
@@ -142,6 +162,12 @@ class CraftingPanel:
             from engine.durability import durability_label
             entries.append((f"Repair {item.name}{durability_label(item)}",
                             f"{cost}g at the forge", True))
+        for item, eid, ench, reason in self.enchant_rows():
+            ok = not reason
+            reagents = ", ".join(f"{q}x {r.replace('_', ' ')}"
+                                 for r, q in (ench.get("reagents") or {}).items())
+            entries.append((f"Enchant {item.name} — {ench['name']}",
+                            reagents if ok else reason, ok))
         if self.cursor >= len(entries):
             self.cursor = max(0, len(entries) - 1)
 

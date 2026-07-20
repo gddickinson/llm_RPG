@@ -82,6 +82,42 @@ class QuestBoardManager:
             return False
         return self.engine.accept_quest(quest_id)
 
+    # ---- player-facing overlay (A-board) -------------------------------
+
+    def overlay_lines(self) -> List[str]:
+        """The numbered notice list the E-key board overlay shows. Also stores
+        the shown quest ids so `accept_index` can map a keypress back."""
+        board = self.board_at_player()
+        if not board:
+            self._listed = []
+            return ["There is no notice board here."]
+        quests = self.list_available(board)
+        self._listed = [q.id for q in quests[:9]]
+        if not quests:
+            return ["The board is bare — no notices posted just now.",
+                    "Come back after dawn; the town posts fresh work."]
+        lines = ["Adventurers' board — [1-9] take a notice · [Esc] leave", ""]
+        for i, q in enumerate(quests[:9], 1):
+            gold = getattr(q, "reward_gold", 0)
+            reward = f"  ({gold}g)" if gold else ""
+            lines.append(f"[{i}] {q.title}{reward}")
+            desc = (getattr(q, "description", "") or "").strip()
+            if desc:
+                lines.append(f"     {desc[:58]}")
+        return lines
+
+    def accept_index(self, i: int) -> str:
+        """Accept the i-th notice most recently listed by `overlay_lines`."""
+        listed = getattr(self, "_listed", []) or []
+        if not (0 <= i < len(listed)):
+            return "No notice there."
+        qid = listed[i]
+        if self.accept_from_board(qid):
+            q = self.engine.quest_manager.get(qid)
+            title = q.title if q else qid
+            return f"You take a notice from the board: {title}."
+        return "That notice is already spoken for."
+
     # ---- persistence (P0.1b) -------------------------------------------
 
     def to_dict(self) -> dict:

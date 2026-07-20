@@ -118,5 +118,51 @@
       60
     ],
     "description": "A busy beaver that gnaws spare pegs into shape."
+  },
+  "enchanting": {
+    "kind": "wisp familiar",
+    "name": "Glimmer",
+    "color": [
+      170,
+      150,
+      240
+    ],
+    "description": "A tiny arcane wisp that trails glowing motes as it drifts behind you."
+  },
+  "weaponry": {
+    "kind": "animated dagger",
+    "name": "Nick",
+    "color": [190, 190, 205],
+    "description": "A tiny animated dagger that spins and parries at your heel."
+  },
+  "defense": {
+    "kind": "shield turtle",
+    "name": "Bulwark",
+    "color": [110, 120, 90],
+    "description": "A stout little turtle whose shell is a miniature tower shield."
+  },
+  "marksmanship": {
+    "kind": "quiver sprite",
+    "name": "Fletch",
+    "color": [150, 115, 70],
+    "description": "A sprite that lives in your quiver and whistles when the wind is right."
+  },
+  "spellcraft": {
+    "kind": "mana wisp",
+    "name": "Cantrip",
+    "color": [120, 160, 240],
+    "description": "A curl of blue mana that orbits your shoulder, humming with power."
+  },
+  "medicine": {
+    "kind": "herb homunculus",
+    "name": "Sage",
+    "color": [120, 180, 120],
+    "description": "A palm-sized homunculus of bundled healing herbs."
+  },
+  "thievery": {
+    "kind": "pocket imp",
+    "name": "Pilfer",
+    "color": [90, 80, 110],
+    "description": "A pocket imp that can't resist jiggling every lock it passes."
   }
 }

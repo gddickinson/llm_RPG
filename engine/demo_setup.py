@@ -191,8 +191,26 @@ def initialize_demo_world(engine, player_spec=None,
     """Populate `engine` with world terrain, NPCs, player, and starter
     quests. `world_kind="castle"` plants the Bloodstone realm (P18.5)."""
     castle = (world_kind == "castle")
+    combined = (world_kind == "combined")
+    oakvale = (world_kind == "oakvale") or combined
     # World generation
-    if castle:
+    if oakvale:
+        from world.town_region import build_oakvale_region
+        engine._oakvale_region = build_oakvale_region(engine.world)
+        if combined:
+            # ONE world (George): plant a castle at a far corner and road it
+            # back to Oakvale, so the big town, the keep, and the wilds all
+            # share one large map with a single entry point (the Oakvale
+            # arrival waystone). The Bloodstone Castle STRUCTURE attaches to
+            # its Location, so it's an enterable 7-floor keep + royal court.
+            from world.castle_region import add_castle
+            wm = engine.world.map
+            oak = (engine._oakvale_region or {}).get(
+                "center", (wm.width // 2, wm.height // 2))
+            engine._combined_castle = add_castle(
+                engine.world, int(wm.width * 0.16), int(wm.height * 0.20),
+                link_to=oak)
+    elif castle:
         from world.castle_region import build_castle_region
         build_castle_region(engine.world)
     else:
@@ -204,15 +222,16 @@ def initialize_demo_world(engine, player_spec=None,
             logger.warning(f"Procedural worldgen failed ({e}); using legacy.")
             engine.world.create_simple_world()
 
-    # A realistic world begins at MORNING, not the default midnight — you wake
-    # in a sunlit town with the gates open and folk about, not a dark, shut
-    # keep (George: "started in a castle with no way out"). The P37 gate fix
-    # handles night regardless; this is the friendlier first light of day.
-    if world_kind == "realistic":
-        try:
-            engine.world.time = 8 * 60          # 08:00
-        except Exception:
-            pass
+    # EVERY new game begins at MORNING, not midnight — you wake in a sunlit
+    # town, seeing the world (and its terrain detail), not a black screen with
+    # a tiny torch-pool in a sea of unexplored fog (George 2026-07-15: "the
+    # tiles are still mainly black"). Night falls later, once you've explored
+    # and the widened torch-pool (ui/lighting.py) keeps it playable. A loaded
+    # save restores its own clock; this only sets the fresh-start time.
+    try:
+        engine.world.time = 8 * 60              # 08:00
+    except Exception:
+        pass
 
     # Revival shrine + back-references
     try:
@@ -229,17 +248,35 @@ def initialize_demo_world(engine, player_spec=None,
     except Exception:
         pass
 
-    # NPCs — placed at their home_location (auto-adjusts to world size)
-    npcs = engine.npc_manager.create_simple_npcs()
-    for npc in npcs:
-        npc.inventory = [upgrade_item_string(it) for it in npc.inventory]
-        npc.position = _resolve_npc_spawn(engine, npc)
-        engine.world.map.place_character(npc, *npc.position)
+    # NPCs — placed at their home_location (auto-adjusts to world size).
+    # OAKVALE T6: the large-town region gets its own role-based population
+    # (keepers/townsfolk/street folk) instead of the classic preset cast whose
+    # home locations don't exist in the region.
+    if oakvale:
+        from world.town.population import populate_town
+        try:
+            n = populate_town(engine, "Oakvale", seed=7)
+            from world.town.countryside import populate_villages
+            villages = (getattr(engine, "_oakvale_region", None)
+                        or {}).get("villages", [])
+            n += populate_villages(engine, villages, seed=7)
+            logger.info(f"Oakvale populated with {n} townsfolk + villagers.")
+        except Exception as e:
+            logger.warning(f"Oakvale population failed: {e}")
+    else:
+        npcs = engine.npc_manager.create_simple_npcs()
+        for npc in npcs:
+            npc.inventory = [upgrade_item_string(it) for it in npc.inventory]
+            npc.position = _resolve_npc_spawn(engine, npc)
+            engine.world.map.place_character(npc, *npc.position)
 
     # Player — at the castle gate (P18.5) or near Oakvale's center
     engine.player = create_default_player(spec=player_spec)
     spawn = None
-    if castle:
+    if oakvale:
+        from world.town_region import oakvale_spawn
+        spawn = oakvale_spawn(engine.world)
+    elif castle:
         from world.castle_region import gate_approach
         spawn = gate_approach(engine.world)
     engine.player.position = spawn or _resolve_player_spawn(engine)
@@ -251,6 +288,9 @@ def initialize_demo_world(engine, player_spec=None,
             from world.fortify import post_guards, post_towers
             oak = next((l for l in engine.world.locations
                         if l.name == "Oakvale Village"), None)
+            if oak is None:                # OAKVALE T5b region: the town marker
+                oak = next((l for l in engine.world.locations
+                            if l.get_property("town")), None)
             gates = (oak.get_property("gates") if oak else None) or []
             post_guards(engine, [tuple(g) for g in gates])
             towers = (oak.get_property("towers") if oak else None) or []
@@ -261,6 +301,11 @@ def initialize_demo_world(engine, player_spec=None,
     engine.memory_manager.add_event(
         "You stand before the gates of Bloodstone Castle." if castle
         else "You arrive at the outskirts of Oakvale Village.")
+    # T3.1 a one-time welcome nudge — orient a brand-new player toward the three
+    # things they need: the controls, the pinned main goal, and the townsfolk
+    engine.memory_manager.add_event(
+        "Welcome, hero. Press [?] for the controls, follow the ★ MAIN goal in "
+        "your Quests panel, and talk to the townsfolk to find work and lodging.")
 
     # Offer every authored quest (locked ones hide behind their prereqs)
     if engine.quest_manager:

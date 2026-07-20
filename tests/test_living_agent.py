@@ -500,15 +500,25 @@ class TestNoLoops(_Base):
         self.engine.world.map.terrain[10][11] = TerrainType.BUILDING
         self.assertFalse(nav.walkable(self.engine, self.p, (11, 10)))
 
-    def test_a_closing_pack_is_a_retreat(self):
-        # three foes within four tiles = a lair; withdraw, don't wade in
-        for i, pos in enumerate([(13, 10), (12, 12), (13, 12)]):
-            f = build_monster("goblin", pos)
-            f.id = f"pack_{i}"
-            self.engine.npc_manager.add_npc(f)
-            self.engine.world.map.place_character(f, *pos)
-        plan = self.ac.decide(self.engine, self.p)
-        self.assertEqual(plan[0], "flee")
+    def test_a_beatable_pack_is_a_fight_a_deadly_one_a_retreat(self):
+        # A healthy hero WADES INTO a beatable rabble (three level-1 goblins)
+        # instead of fleeing every cluster — else it never levels (George:
+        # "amass experience and advance levels"). The anti-death-loop retreat
+        # is preserved for a pack that genuinely OUTMATCHES the hero.
+        def spawn(level):
+            for nid in [n for n in self.engine.npc_manager.npcs
+                        if n.startswith("pack_")]:
+                self.engine.npc_manager.remove_npc(nid)
+            for i, pos in enumerate([(13, 10), (12, 12), (13, 12)]):
+                f = build_monster("goblin", pos)
+                f.id, f.level = f"pack_{i}", level
+                self.engine.npc_manager.add_npc(f)
+                self.engine.world.map.place_character(f, *pos)
+
+        spawn(1)                                  # a weak rabble
+        self.assertNotEqual(self.ac.decide(self.engine, self.p)[0], "flee")
+        spawn(6)                                  # a seasoned warband
+        self.assertEqual(self.ac.decide(self.engine, self.p)[0], "flee")
 
 
 class TestColocation(unittest.TestCase):

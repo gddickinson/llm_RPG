@@ -16,12 +16,14 @@ pipeline (advance_turn re-entrancy-guarded against nested ticks).
 """
 
 import logging
+import math
 import random
 from contextlib import contextmanager
 
 from engine import agent_nav as nav
 from engine import agent_goals as agoals
 from engine import agent_trade as agtrade
+from engine import agent_sense as sense
 from engine.agent_nav import _dist, _toward
 from engine.agent_sense import (_is_hostile, _colocated, _healing_item,
                                 _knows_heal, _can_shoot, _provisioned,
@@ -37,6 +39,9 @@ RANGED = 5                                  # tiles a bow can reach
 LOW_HP = 0.4                                # heal / flee at or below this
 REST_HP = 0.55                              # top up / rest when safe below this
 SWARM_HP = 0.75                             # back off a pack below this
+GREET_CAP = 3          # mere hellos per window before the hero moves ON
+SATIATE_WINDOW = 50    # turns before the hero is up for socialising again
+GATHER_COOLDOWN = 20   # turns between forages (no every-tile forest loop)
 
 
 @contextmanager
@@ -87,6 +92,12 @@ class AgentController:
         self._gd = None           # last distance to goal, to notice a stall
         self._stall = 0           # turns without getting closer to the goal
         self.social = True        # False for adventurer NPCs (no player state)
+        self.indoor = None        # T4.1 an active enter→act→exit building task
+        self._indoor_cd = 0       # cooldown so it never bounces in and out
+        self._greets = 0          # mere hellos this window (social satiation)
+        self._t = 0               # the controller's own turn clock
+        self._goal_age = 0        # turns chasing the current goal (a TTL)
+        self._gather_cd = 0       # forage/gather cooldown (no every-tile loop)
 
     # ---- perception --------------------------------------------
 
@@ -95,7 +106,9 @@ class AgentController:
         zname = getattr(zone, "name", None) if zone is not None else None
         out = []
         for npc in engine.npc_manager.npcs.values():
-            if npc.id == char.id or not npc.is_active():
+            # skip a hp<=0 "zombie" (status 'alive' but really dead — a
+            # non-combat kill): targeting it loops on a corpse (George)
+            if npc.id == char.id or not npc.is_active() or npc.hp <= 0:
                 continue
             if not _is_hostile(npc) or not _colocated(zname, npc):
                 continue
@@ -116,47 +129,21 @@ class AgentController:
         return foes[0][0] if foes else None
 
     def _nearest_loot(self, engine, char, r: int = 5):
-        try:   # a full pack can't pick anything up — don't loop on it
-            from engine.carry import can_carry
-            if not can_carry(char):
-                return None
+        from engine.agent_sense import nearest_loot
+        return nearest_loot(engine, char, r)
+
+    def _party_near(self, engine, char, r: int = 6) -> bool:
+        """A living companion within `r` — someone to screen a fragile caster
+        so it can stand and cast instead of fleeing."""
+        try:
+            for mid in engine.companion_manager.party:
+                m = engine.npc_manager.get_npc(mid)
+                if m is not None and m.is_active() \
+                        and _dist(char.position, m.position) <= r:
+                    return True
         except Exception:
             pass
-        x, y = char.position
-        best, bd = None, r + 1
-        try:
-            for dx in range(-r, r + 1):
-                for dy in range(-r, r + 1):
-                    its = engine.world.get_items_at(x + dx, y + dy)
-                    # real items only — a plain-string BODY MARKER is not
-                    # loot (rob_body leaves it), so pursuing it loops forever
-                    if its and any(hasattr(i, "id") for i in its):
-                        d = max(abs(dx), abs(dy))
-                        if d < bd:
-                            best, bd = (x + dx, y + dy), d
-        except Exception:
-            return None
-        return best
-
-    def _friendly_near(self, engine, char, r: int = 7):
-        """The nearest living, non-hostile, non-player soul ON OUR GRID —
-        someone to talk to, take a quest from, or recruit (no chatting
-        with folk sealed behind a building's walls)."""
-        zone = nav.active_zone(engine)
-        zname = getattr(zone, "name", None) if zone is not None else None
-        best, bd = None, r + 1
-        for npc in engine.npc_manager.npcs.values():
-            if npc.id == char.id or not npc.is_active():
-                continue
-            if _is_hostile(npc) or (getattr(npc, "metadata", {})
-                                    or {}).get("player_char"):
-                continue
-            if not _colocated(zname, npc):
-                continue
-            d = _dist(char.position, npc.position)
-            if d < bd:
-                best, bd = npc, d
-        return best
+        return False
 
     def _room_in_party(self, engine) -> bool:
         try:
@@ -214,19 +201,49 @@ class AgentController:
         foes = self._foes_in_sight(engine, char)
         adj = [f for f, d in foes if d <= 1]
 
-        # 1. survive — heal if we can, else run from the nearest threat
+        # T4.1: mid a building visit (rest/trade inside) — do it, then leave;
+        # a hard cooldown ticks down so the hero never bounces in and out
+        from engine import agent_building as abld
+        abld.tick_cooldown(self)
+        if self.indoor is not None and nav.active_zone(engine) is not None \
+                and not adj:
+            plan = abld.inside_plan(self, engine, char)
+            if plan is not None:
+                return plan
+
+        # 1. survive. At low HP with a foe IN OUR FACE, break off (cornered,
+        # fight) rather than heal-loop; heal only when clear of melee (George).
         if hp <= LOW_HP:
-            pot = _healing_item(char)
-            if pot is not None:
-                return ("heal_potion", pot)
-            if _knows_heal(char):
-                return ("heal_spell",)
-            if foes:
-                step = nav.flee_step(engine, char, foes[0][0].position,
+            if adj:
+                step = nav.flee_step(engine, char, adj[0].position,
                                      self.recent)
                 if step is not None:
-                    return ("flee", step)
-                # cornered with no heals — fall through and fight for it
+                    return ("flee", step)   # cornered → fall through to fight
+            else:
+                pot = _healing_item(char)
+                if pot is not None:
+                    return ("heal_potion", pot)
+                if _knows_heal(char):
+                    return ("heal_spell",)
+                if foes:
+                    step = nav.flee_step(engine, char, foes[0][0].position,
+                                         self.recent)
+                    if step is not None:
+                        return ("flee", step)
+
+        # 1b. a CASTER leads with MAGIC: blast a foe in range before it comes
+        # to melee or flight, so a wizard actually FIGHTS with spells (George:
+        # "the hero doesn't use magic much"). A lone caster swarmed (2+ adjacent
+        # with no party to screen it) still flees via rule 2; but with allies
+        # near to soak the blows — or the foe still at range — it casts.
+        if foes and hp > LOW_HP and disp != "cautious":
+            nearest = foes[0][0]
+            eucd = math.hypot(char.position[0] - nearest.position[0],
+                              char.position[1] - nearest.position[1])
+            spell = _attack_spell(char, eucd, nearest, foes)
+            if spell is not None \
+                    and (len(adj) < 2 or self._party_near(engine, char)):
+                return ("cast", spell, nearest)
 
         # 2. don't stand and trade blows when swarmed in melee
         if len(adj) >= 2 and hp < SWARM_HP:
@@ -234,13 +251,21 @@ class AgentController:
             if step is not None:
                 return ("flee", step)
 
-        # 2b. a PACK closing in (a lair/warband) — withdraw before it boxes
-        # us in and butchers us; only a valiant hero at full health wades in
+        # 2b. a PACK closing in (a lair/warband) — withdraw ONLY when it
+        # genuinely OUTMATCHES us. A healthy hero wades into a beatable pack
+        # (else it flees every cluster of goblins forever and never levels —
+        # George: the away-hero must amass XP). Rules 1 & 2 still bail us out
+        # once the fight turns against us, so this can't death-loop.
         pack = [f for f, d in foes if d <= 4]
-        if len(pack) >= 3 and not (disp == "valiant" and hp > SWARM_HP):
-            step = nav.flee_step(engine, char, pack[0].position, self.recent)
-            if step is not None:
-                return ("flee", step)
+        if len(pack) >= 3:
+            valiant = disp == "valiant" and hp > SWARM_HP
+            cautious = disp == "cautious"
+            if not valiant and (cautious
+                                or agoals.pack_outmatches(char, pack, engine)):
+                step = nav.flee_step(engine, char, pack[0].position,
+                                     self.recent)
+                if step is not None:
+                    return ("flee", step)
 
         # a CAUTIOUS hero avoids a fight it hasn't been forced into
         avoid = disp == "cautious"
@@ -255,22 +280,43 @@ class AgentController:
                 if step is not None:
                     return ("flee", step)
                 # backed into a corner — a cautious hero still defends itself
-            # a caster fights with MAGIC (M.8c): the best damage spell it
-            # knows, can pay for, and that reaches — before blade or bow
-            spell = _attack_spell(char, d)
+            # a caster fights with MAGIC (M.8c): the best damage spell it can
+            # afford that reaches — using the EUCLIDEAN gap the spell system
+            # checks (not Chebyshev `d`), so it closes to TRUE range instead
+            # of wasting casts on a foe just out of a spell's radius (George).
+            eucd = math.hypot(char.position[0] - target.position[0],
+                              char.position[1] - target.position[1])
+            spell = _attack_spell(char, eucd, target, foes)
             if spell is not None:
                 return ("cast", spell, target)
             if d <= 1:
-                return ("attack", target)
+                bail = agoals.stalemate_flee(self, engine, char, target)
+                return ("flee", bail) if bail else ("attack", target)
             if _can_shoot(char) and d <= RANGED:
                 return ("shoot", target)
-            self.goal = target.position
-            return ("move", nav.safe_step(engine, char, target.position,
-                                          self.recent))
+            step = nav.safe_step(engine, char, target.position, self.recent)
+            if step is not None:
+                self.goal = target.position
+                return ("move", step)
+            # can't hit it and can't reach it (unreachable / it kites) — DROP
+            # the fixation and carry on (explore/quest) instead of staring.
+            self.target_id = None
 
         # grab loot right at our feet before wandering off to socialize
         if self._nearest_loot(engine, char, r=0) == tuple(char.position):
             return ("loot",)
+
+        # loot a step or two away is worth taking BEFORE chasing a quest or a
+        # chat — else the hero visibly strolls past items on the ground
+        # (George: "players don't pick up items"). Not mid-fight.
+        if not foes:
+            near_loot = self._nearest_loot(engine, char, r=2)
+            if near_loot is not None:
+                if near_loot == tuple(char.position):
+                    return ("loot",)
+                step = nav.safe_step(engine, char, near_loot, self.recent)
+                if step is not None:
+                    return ("move", step)
 
         # 3b. tend the body between fights (M.8a + M.10a needs) — a SAFE hero
         # acts on a NEED before it's dire: slake thirst (a drink, or step to
@@ -310,9 +356,21 @@ class AgentController:
                     and _provisioned(char):
                 return ("rest",)
 
+        # T4.1: step into a nearby building for a proper indoor task — a
+        # well-rested INN sleep when badly hurt, or selling junk to an INDOOR
+        # merchant — that the building-skirting hero could never reach before
+        if not foes:
+            intent = abld.enter_intent(self, engine, char)
+            if intent is not None:
+                return ("enter_building", intent[0], intent[1])
+
         # 3c. gather from the land (M.8d) — a node or a rich forest/swamp we
-        # stand on: raws, and from a forest FOOD for the M.8a camp
-        if not foes and _gatherable(engine, char):
+        # stand on: raws, and from a forest FOOD for the M.8a camp. A cooldown
+        # stops the hero foraging EVERY tile as it crosses a wood (George: "he
+        # ends up in a loop trying to forage") — it gathers now and then, not
+        # at every step, so it still makes real progress toward its goal.
+        if not foes and self._gather_cd <= 0 and _gatherable(engine, char):
+            self._gather_cd = GATHER_COOLDOWN
             return ("forage",)
 
         # 3d. worship & self-betterment (M.8e) — study a tome/manual we carry
@@ -362,11 +420,17 @@ class AgentController:
                 return ("loot",)
             return ("move", nav.safe_step(engine, char, loot, self.recent))
 
-        # 7. explore a class-flavoured place; abandon one we can't close on
-        if self.goal is None or char.position == self.goal or self._stall > 8:
+        # 7. explore a class-flavoured place; abandon one we ARRIVE at (within
+        # a couple of tiles — you can't stand on a building), can't close on
+        # (stall), or have chased too long (a hard TTL so it never fixates —
+        # George's "wanders in a circle"). SEEK COMPANIONS rides this too.
+        self._goal_age += 1
+        reached = self.goal is not None and _dist(char.position, self.goal) <= 2
+        if self.goal is None or reached or self._stall > 8 or self._goal_age > 45:
             if self.goal_name is not None:
                 self.visited.add(self.goal_name)
-            self.goal_name, self._stall, self._gd = None, 0, None
+            self.goal_name, self._stall, self._gd, self._goal_age = \
+                None, 0, None, 0
             self.goal = agoals.named_goal(self, engine, char) \
                 or agoals.pick_goal(self, engine, char)
         gd = _dist(char.position, self.goal)
@@ -376,57 +440,8 @@ class AgentController:
         return ("move", step) if step != (0, 0) else ("wait",)
 
     def _social_plan(self, engine, char, disp):
-        """Near someone? Take their quest, recruit them, or say hello —
-        biased by disposition (a SOCIABLE hero seeks people out)."""
-        outgoing = disp == "sociable" or agoals.ambition(char) == "fellowship"
-        reach = 8 if outgoing else 4
-        friend = self._friendly_near(engine, char, r=reach)
-        if friend is None:
-            return None
-        adjacent = _dist(char.position, friend.position) <= 1
-        if adjacent:
-            # deal with a merchant we're standing by (M.8b): clear junk for
-            # coin, buy the potion/ammo we're short of
-            from engine.conversation import is_merchant
-            if is_merchant(friend) \
-                    and agtrade.wants_to_trade(engine, char, friend):
-                return ("trade", friend)
-            qm = getattr(engine, "quest_manager", None)
-            offered = qm.offered_by(friend.id) if qm else []
-            if offered:
-                return ("accept_quest", offered[0], friend)
-            if self._room_in_party(engine):
-                try:
-                    if engine.companion_manager.can_recruit(friend) == "":
-                        return ("recruit", friend)
-                except Exception:
-                    pass
-            if friend.id not in self.greeted:
-                return ("talk", friend)
-            return None
-        # walk over to a NEW face worth meeting — but once greeted, leave
-        # them be (re-approaching a greeted friend forever oscillated)
-        if friend.id not in self.greeted or self._offers(engine, char, friend):
-            return ("move", nav.safe_step(engine, char, friend.position,
-                                          self.recent))
-        return None
-
-    def _offers(self, engine, char, friend) -> bool:
-        """Still a reason to walk over — an untaken quest, a recruitable
-        ally, or a merchant we've goods to trade — even after we've said
-        hello."""
-        qm = getattr(engine, "quest_manager", None)
-        if qm and qm.offered_by(friend.id):
-            return True
-        try:
-            from engine.conversation import is_merchant
-            if is_merchant(friend) \
-                    and agtrade.wants_to_trade(engine, char, friend):
-                return True
-            return self._room_in_party(engine) and \
-                engine.companion_manager.can_recruit(friend) == ""
-        except Exception:
-            return False
+        from engine import agent_social
+        return agent_social.social_plan(self, engine, char, disp)
 
     # ---- act (execute through the real player-action route) -----
 
@@ -440,6 +455,11 @@ class AgentController:
 
     def take_turn(self, engine, char) -> str:
         self.recent = (self.recent + [tuple(char.position)])[-3:]
+        self._t += 1
+        if self._t % SATIATE_WINDOW == 0:      # up for socialising again
+            self._greets = 0
+        if self._gather_cd > 0:
+            self._gather_cd -= 1
         plan = self.decide(engine, char)
         # keep the hero's current aim visible to the player (reviewable)
         char.metadata["agent_goal"] = self.goal_name or (

@@ -14,6 +14,7 @@ from typing import List, Optional
 logger = logging.getLogger("llm_rpg.companions")
 
 BANTER_EVERY = 45
+CATCHUP_DIST = 12         # a companion this far behind the leader rejoins near
 SELF_HEAL_HP = 0.5        # M.10b: a companion below half HP quaffs its potion
 AID_HP = 0.6              # M.10c: a healer mends an ally below this HP
 HEAL_MANA = 3             # mana a mending costs
@@ -266,6 +267,24 @@ class CompanionManager:
         for npc in self.members():
             if not npc.is_active():
                 continue
+            # REJOIN FIRST if left far behind — before any local flee/fight, so
+            # a companion stranded far back (a fast away-hero out-ran it)
+            # teleports to the leader instead of dueling a wandering wolf where
+            # it was abandoned (George: "companions don't follow / get stuck").
+            # Only warp when the leader is on the OVERWORLD — its position is
+            # zone-local inside a building, and warping to those coords would
+            # fling companions to the wrong place.
+            on_overworld = getattr(self.engine, "current_interior", None) \
+                is None and getattr(self.engine, "current_dungeon", None) is None
+            if on_overworld and npc.metadata.get("order", "follow") != "hold":
+                px, py = self.engine.player.position
+                far = abs(npc.position[0] - px) + abs(npc.position[1] - py) \
+                    > CATCHUP_DIST
+                if far:
+                    spot = self._catchup_spot(px, py)
+                    if spot is not None:
+                        self.engine.world.map.place_character(npc, *spot)
+                    continue
             # M.10b self-preservation comes before orders: a hurt companion
             # quaffs its OWN potion, and one still critical BREAKS OFF even
             # without the /order flee — no fighting on to the death.
@@ -312,10 +331,21 @@ class CompanionManager:
             # Attack any adjacent enemy
             if self._companion_attack_nearby_enemy(npc):
                 continue
-            # Otherwise, follow — unless holding ground (P15.5)
+            # Otherwise, follow — unless holding ground (P15.5).
+            # A companion RECRUITED THROUGH A WINDOW starts trapped ON the
+            # guild-hall BUILDING footprint — it can't path out the door, so it
+            # was stuck inside forever (George). By here it has nothing to fight
+            # or heal, so pull it out to the leader instead of pathing uselessly
+            # against the wall. (Self-heal/combat above still run for a member
+            # transiently standing on a building tile — they need no movement.)
             if order != "hold":
-                self._companion_step_toward(
-                    npc, self.engine.player.position)
+                if on_overworld and self._stuck_indoors(npc):
+                    spot = self._catchup_spot(*self.engine.player.position)
+                    if spot is not None:
+                        self.engine.world.map.place_character(npc, *spot)
+                else:
+                    self._companion_step_toward(
+                        npc, self.engine.player.position)
 
     def _companion_attack_nearby_enemy(self, comp) -> bool:
         """If a hostile is adjacent, attack it. Return True if did."""
@@ -343,10 +373,45 @@ class CompanionManager:
         d = ((cx - tx) ** 2 + (cy - ty) ** 2) ** 0.5
         if d <= 1.5:  # Already adjacent — stay put
             return
+        # CATCH UP when left far behind (George: a fast away-hero out-ran its
+        # party across the map and stranded them ~100 tiles back). Like any
+        # RPG, a companion that falls out of sight rejoins near the leader
+        # instead of pathing forever across the whole world.
+        if d > CATCHUP_DIST:
+            spot = self._catchup_spot(tx, ty)
+            if spot is not None:
+                self.engine.world.map.place_character(comp, *spot)
+            return
         # Real pathfinding: greedy steps trap in concave terrain (the
         # historic follow flake); BFS with a greedy fallback does not.
         from engine.squad_tactics import path_step
         path_step(self.engine.world.map, comp, (tx, ty))
+
+    def _stuck_indoors(self, npc) -> bool:
+        """On an un-walkable overworld tile (a BUILDING footprint) it can't
+        path off — e.g. recruited through a window while inside the hall."""
+        from world.world_map import TerrainType
+        wmap = self.engine.world.map
+        x, y = npc.position
+        if not (0 <= x < wmap.width and 0 <= y < wmap.height):
+            return False
+        return wmap.terrain[y][x] in (TerrainType.BUILDING, TerrainType.WATER,
+                                      TerrainType.MOUNTAIN)
+
+    def _catchup_spot(self, tx, ty):
+        """A walkable, unoccupied tile beside the leader to rejoin at."""
+        from world.world_map import TerrainType
+        block = (TerrainType.BUILDING, TerrainType.WATER, TerrainType.MOUNTAIN)
+        wmap = self.engine.world.map
+        for r in range(1, 5):
+            for dx in range(-r, r + 1):
+                for dy in range(-r, r + 1):
+                    x, y = tx + dx, ty + dy
+                    if 0 <= x < wmap.width and 0 <= y < wmap.height \
+                            and wmap.terrain[y][x] not in block \
+                            and wmap.get_character_at(x, y) is None:
+                        return (x, y)
+        return None
 
     # ---- save / load ------------------------------------------------
 

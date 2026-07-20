@@ -161,3 +161,91 @@ def _announce(advsys, leader, band) -> None:
             f"{leader.name} leads {names} out to seek their fortune.")
     except Exception:
         pass
+
+
+# ---- T4.2 the fortune arc: a win-ledger, hoard competition, and death ----
+
+CLAIM_CADENCE = 6              # every N days the top company claims a far lair
+RENOWN_TO_CLAIM = 40          # a company must be this renowned to raid a lair
+
+
+def _ledger(advsys) -> dict:
+    """The persisted renown record keyed by leader id (rides the save on
+    the player's metadata) — the seed of a real renown race."""
+    return advsys.engine.player.metadata.setdefault("company_ledger", {})
+
+
+def _strongest(advsys):
+    best, br = None, -1
+    for lid in companies(advsys):
+        r = renown(advsys, lid)
+        if r > br:
+            best, br = lid, r
+    return best, br
+
+
+def run_day(advsys, day: int = 0) -> None:
+    """Nightly: refresh each company's peak renown, mark a WIPED company
+    fallen (its renown passes into memory), and — periodically — let the
+    strongest company beat the player to a far hoard."""
+    ledger = _ledger(advsys)
+    npcs = _npcs(advsys)
+    # 0. band the day's still-seeking adventurers into rival companies (moved
+    # off the per-turn drive so the player has a day to recruit one first)
+    form(advsys)
+    # 1. register + refresh standing companies
+    for lid in companies(advsys):
+        adv = npcs.get(lid)
+        name = adv.metadata.get("company_name", company_name(adv))
+        e = ledger.setdefault(lid, {"name": name, "peak": 0, "fate": "active"})
+        e["name"] = name
+        e["peak"] = max(e["peak"], renown(advsys, lid))
+        if not members(advsys, lid):
+            e["fate"] = "active"          # a leader with no band yet still forms
+    # 2. a company that HAD a banner but has no living members left has DIED
+    for lid, e in ledger.items():
+        if e.get("fate") != "active":
+            continue
+        leader = npcs.get(lid)
+        if leader is None or not leader.is_active():
+            if not members(advsys, lid):
+                e["fate"] = "fallen"
+                _announce_fall(advsys, e["name"])
+    # 3. compete for hoards — the renown race with the player
+    if day and day % CLAIM_CADENCE == 0:
+        lid, r = _strongest(advsys)
+        if lid is not None and r >= RENOWN_TO_CLAIM:
+            lairs = getattr(advsys.engine, "lairs", None)
+            name = npcs[lid].metadata.get("company_name", "A rival company")
+            if lairs is not None:
+                try:
+                    lairs.claim_by_rival(name)
+                except Exception:
+                    pass
+
+
+def _announce_fall(advsys, name: str) -> None:
+    try:
+        advsys.engine.memory_manager.add_event(
+            f"[Realm] {name} is wiped out to the last — its renown passes "
+            f"into memory, a cautionary tale in the tap-rooms.")
+    except Exception:
+        pass
+
+
+def ledger_lines(advsys) -> list:
+    """The renown race, for the Y-journal / realm digest."""
+    ledger = _ledger(advsys)
+    if not ledger:
+        return []
+    active = sorted((e for e in ledger.values() if e.get("fate") == "active"),
+                    key=lambda e: -e.get("peak", 0))
+    out = []
+    if active:
+        out.append("Rival companies (the renown race):")
+        for e in active[:3]:
+            out.append(f"  {e['name']} — renown {e.get('peak', 0)}")
+    fallen = [e for e in ledger.values() if e.get("fate") == "fallen"]
+    if fallen:
+        out.append(f"  Companies fallen: {len(fallen)}")
+    return out

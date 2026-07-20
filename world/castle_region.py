@@ -153,6 +153,23 @@ def gate_approach(world):
     return (gx, castle.y + castle.height - 1)   # on the gate itself
 
 
+def add_castle(world, cx, cy, link_to=None) -> dict:
+    """Stamp a STANDALONE castle (fortress + a small gate town) at (cx, cy) —
+    for the COMBINED world, which plants Oakvale as its base and adds the
+    castle at a far corner. Optionally roads it back to `link_to` (Oakvale's
+    centre). Returns {'castle','town','pos'}."""
+    w, h = world.map.width, world.map.height
+    cx, cy = _clamp(cx, 20, w - 20), _clamp(cy, 16, h - 16)
+    gate = _fortress(world, cx, cy, 16, 12)
+    town_x, town_y = cx - 5, gate[1] + 2
+    _town(world, town_x, town_y)
+    _road(world, gate[0], gate[1], cx, town_y)
+    if link_to is not None:
+        _road(world, town_x + 3, town_y + 3, link_to[0], link_to[1])
+    logger.info("Castle planted at (%d,%d) for the combined world", cx, cy)
+    return {"castle": CASTLE_NAME, "town": TOWN_NAME, "pos": (cx, cy)}
+
+
 def build_castle_region(world) -> dict:
     """Plant the castle, its town and the supply villages; link them by
     road. Returns {'castle','town','villages',...} for the caller."""

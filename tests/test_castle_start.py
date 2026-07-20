@@ -74,12 +74,20 @@ class TestMenuRouting(unittest.TestCase):
         pygame.display.init()
         return StartMenu(width=800, height=600)
 
-    def test_the_castle_option_is_on_the_new_game_menu(self):
+    def test_new_game_drops_into_the_one_combined_world(self):
+        # George folded the per-world options (incl. the castle) into ONE
+        # combined world; Quick Start / Customize both use it.
+        import pygame
         from ui.start_menu import NEW_GAME_OPTIONS
         codes = [c for _, c in NEW_GAME_OPTIONS]
-        self.assertIn("castle", codes)
+        self.assertNotIn("castle", codes)
+        menu = self._menu()
+        menu.state = "new_game"
+        menu.selected = codes.index("quick")
+        result = menu._newgame_key(pygame.K_RETURN)
+        self.assertEqual(result["start"], "combined")
 
-    def test_choosing_the_castle_routes_through_creation_with_the_flag(self):
+    def test_customize_routes_through_creation_into_the_combined_world(self):
         import pygame
         from ui.start_menu import NEW_GAME_OPTIONS
 
@@ -89,17 +97,17 @@ class TestMenuRouting(unittest.TestCase):
 
         menu = self._menu()
         menu.state = "new_game"
-        menu.selected = [c for _, c in NEW_GAME_OPTIONS].index("castle")
+        menu.selected = [c for _, c in NEW_GAME_OPTIONS].index("customize")
         menu._newgame_key(pygame.K_RETURN)
-        self.assertEqual(menu.pending_start, "castle")
+        self.assertEqual(menu.pending_start, "combined")
         self.assertEqual(menu.state, "customize", "you still make a hero")
-        # finishing character creation carries the castle start out
+        # finishing character creation carries the combined start out
         menu.creator = MagicMock()
         menu.creator.handle_key.return_value = True
         menu.creator.build_spec.return_value = "SPEC"
         result = menu._handle_key(_Ev())
         self.assertEqual(result,
-                         {"action": "new", "spec": "SPEC", "start": "castle"})
+                         {"action": "new", "spec": "SPEC", "start": "combined"})
         self.assertEqual(menu.pending_start, "default", "flag resets")
 
 

@@ -17,9 +17,10 @@ try:
 except ImportError:                                     # pragma: no cover
     PYGAME_OK = False
 
-# robed / caped callings get a cloak
+# robed / caped callings get a cloak — H7 adds heroic martial CAPES
 CLOAK_CLASSES = {"wizard", "sorcerer", "warlock", "cleric", "druid", "rogue",
-                 "noble", "ranger", "bard", "monk", "paladin"}
+                 "noble", "ranger", "bard", "monk", "paladin",
+                 "warrior", "knight", "fighter", "barbarian"}
 TRAIL_MAX = 6
 
 

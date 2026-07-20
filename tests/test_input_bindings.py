@@ -35,9 +35,11 @@ class FakeGUI:
         self.inventory_panel = None
         self.shop_panel = None
         self.show_shop = MagicMock()
+        self.show_build_planner = MagicMock()   # M5: B off a merchant = build
         self.show_inventory = MagicMock()
         self.show_quests = MagicMock()
         self.show_character_sheet = MagicMock()
+        self.show_player_screen = MagicMock()
         self.show_help = MagicMock()
         self.start_dialog = MagicMock()
 
@@ -122,6 +124,8 @@ class TestShopBinding(unittest.TestCase):
                 npc.position = (50, 50)
         self.handler.handle_event(FakeEvent(pygame.K_b))
         self.gui.show_shop.assert_not_called()
+        # M5: away from a merchant, B opens the build/terraform tool instead
+        self.gui.show_build_planner.assert_called_once()
 
 
 class TestDiagonalMovement(unittest.TestCase):
@@ -166,6 +170,14 @@ class TestDiagonalMovement(unittest.TestCase):
                 wmap.remove_character(n)
 
     def _press(self, key):
+        # the world ticks between presses (advance_turn), so a distant NPC can
+        # wander onto a step-target tile; re-clear the immediate ring each time
+        # so the movement key — not a bodyblock — is what we're testing
+        wmap = self.engine.world.map
+        for n in list(self.engine.npc_manager.npcs.values()):
+            if abs(n.position[0] - self.ox) <= 1 and \
+                    abs(n.position[1] - self.oy) <= 1:
+                wmap.remove_character(n)
         self.engine.player.position = (self.ox, self.oy)
         self.handler.handle_event(FakeEvent(key))
         return self.engine.player.position

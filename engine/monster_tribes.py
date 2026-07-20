@@ -30,13 +30,53 @@ DEFEAT_HIT = 5           # a slain raider beats the tribe back this much
 RAID_DRAIN = 10          # food a successful raid strips from the larder
 SEE_RANGE = 22           # a raid this close to the player spills onto the map
 
+# A tribe's AGENDA (George: monsters have goals for their tribes) — a shifting
+# collective goal, fortune-driven, that shapes the nightly loop. Mirrors the
+# faction agendas (P20.3): a broken tribe digs in, a fed one swarms out.
+AGENDA_VERB = {
+    "expand": "swells its numbers in the wilds",
+    "raid": "sharpens its spears for the raid",
+    "fortify": "digs in and mans its totems",
+    "plunder": "hungers for a richer hoard",
+}
+
 
 class MonsterTribeSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
         self.rng = random.Random(seed)
         self.strength: Dict[str, int] = {}
+        self.agenda: Dict[str, str] = {}      # tid -> current collective goal
         self._loaded = False
+
+    def agenda_of(self, tid: str) -> str:
+        """The tribe's current collective goal (expand/raid/fortify/plunder)."""
+        return self.agenda.get(tid, "expand")
+
+    def _shift_agenda(self, tid: str, spec: dict) -> Optional[str]:
+        """Re-aim the tribe by its fortunes: beaten low it FORTIFIES, war-ready
+        it RAIDS, dominant it turns to PLUNDER a richer hoard, else it EXPANDS.
+        Returns a `[Realm]` beat when the goal changes."""
+        s = self.strength.get(tid, 0)
+        thr = spec.get("raid_threshold", 55)
+        if s < 25:
+            goal = "fortify"
+        elif s >= 80:
+            goal = "plunder"
+        elif s >= thr:
+            goal = "raid"
+        else:
+            goal = "expand"
+        if goal != self.agenda.get(tid):
+            self.agenda[tid] = goal
+            name = self._camp_or_name(tid, spec)
+            return f"[Realm] {name} {AGENDA_VERB[goal]}."
+        return None
+
+    def _camp_or_name(self, tid: str, spec: dict) -> str:
+        tc = getattr(self.engine, "tribe_camps", None)
+        camp = tc.camp_name(tid) if tc is not None else None
+        return camp or spec.get("name", "A wild tribe")
 
     # ---- data ------------------------------------------------------
 
@@ -67,9 +107,23 @@ class MonsterTribeSystem:
         tribes = self._tribes()
         notes = []
         for tid, spec in tribes.items():
-            self.strength[tid] = min(
-                STRENGTH_CAP, self.strength.get(tid, 0) + spec.get("growth", 3))
-            if self.strength[tid] >= spec.get("raid_threshold", 55):
+            shift = self._shift_agenda(tid, spec)     # re-aim, then act on it
+            if shift:
+                notes.append(shift)
+            goal = self.agenda_of(tid)
+            # the AGENDA shapes the night: EXPAND breeds faster, PLUNDER seizes
+            # spoils (a strength surge), RAID swarms out sooner, FORTIFY digs in
+            growth = spec.get("growth", 3)
+            if goal == "expand":
+                growth = int(growth * 1.6) + 1
+            self.strength[tid] = min(STRENGTH_CAP,
+                                     self.strength.get(tid, 0) + growth)
+            if goal == "plunder" and self.rng.random() < 0.5:
+                self.strength[tid] = min(STRENGTH_CAP, self.strength[tid] + 8)
+                notes.append(f"[Realm] {self._camp_or_name(tid, spec)} "
+                             f"plunders the wilds for a richer hoard.")
+            thr = spec.get("raid_threshold", 55) - (10 if goal == "raid" else 0)
+            if self.strength[tid] >= thr:
                 note = self._raid(tid, spec)
                 if note:
                     notes.append(note)
@@ -81,8 +135,14 @@ class MonsterTribeSystem:
         drained = self._drain(target)
         self.strength[tid] = max(0, self.strength[tid] - spec.get("raid_cost", 15))
         terrain = spec.get("terrain", "wilds")
-        line = (f"[Realm] {spec['name']} swarm out of the {terrain} "
-                f"to raid {name}!")
+        # C3: credit the tribe's CAMP — the raid is its warband marching out
+        camp = None
+        tc = getattr(self.engine, "tribe_camps", None)
+        if tc is not None:
+            camp = tc.camp_name(tid)
+        line = (f"[Realm] The warband of {camp} swarms out to raid {name}!"
+                if camp else
+                f"[Realm] {spec['name']} swarm out of the {terrain} to raid {name}!")
         self.engine.memory_manager.add_event(line)
         if drained:
             self.engine.memory_manager.add_event(
@@ -128,6 +188,14 @@ class MonsterTribeSystem:
         wmap = self.engine.world.map
         count = 2 + (1 if self.strength[tid] >= spec.get("raid_threshold", 55)
                      + 20 else 0)
+        # C3: the raiders ARE the camp's warband — a camp you scouted + thinned
+        # sends fewer (a WIPED camp sends none: no warriors left to march)
+        tc = getattr(self.engine, "tribe_camps", None)
+        if tc is not None and tc.has_camp(tid):
+            warriors = tc.living_warriors(tid)
+            if warriors <= 0:
+                return
+            count = min(count, warriors)
         spots = self._free_spots(px, py, count + 1)
         templates = [spec.get("raider", "goblin")] * count
         if self.strength[tid] >= spec.get("raid_threshold", 55) + 20:
@@ -170,7 +238,9 @@ class MonsterTribeSystem:
         if not tid or tid not in self.strength:
             return
         was = self.strength[tid]
-        self.strength[tid] = max(0, was - DEFEAT_HIT)
+        # a FORTIFIED tribe is dug in — a slain raider costs it less
+        hit = DEFEAT_HIT // 2 if self.agenda_of(tid) == "fortify" else DEFEAT_HIT
+        self.strength[tid] = max(0, was - hit)
         spec = self._tribes().get(tid, {})
         thr = spec.get("raid_threshold", 55)
         if was >= thr and self.strength[tid] < thr:
@@ -181,9 +251,11 @@ class MonsterTribeSystem:
     # ---- persistence -----------------------------------------------
 
     def to_dict(self) -> dict:
-        return {"strength": dict(self.strength), "loaded": self._loaded}
+        return {"strength": dict(self.strength), "agenda": dict(self.agenda),
+                "loaded": self._loaded}
 
     def from_dict(self, d: dict) -> None:
         d = d or {}
         self.strength = {k: int(v) for k, v in d.get("strength", {}).items()}
+        self.agenda = {k: str(v) for k, v in d.get("agenda", {}).items()}
         self._loaded = d.get("loaded", bool(self.strength))

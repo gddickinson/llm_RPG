@@ -81,10 +81,11 @@ def _detonate(engine, boss, pos, tele) -> None:
         engine.memory_manager.add_event(
             f"{boss.name}'s strike cracks the empty ground where "
             f"you stood.")
-    try:   # the world takes the hit too (P10.2)
+    try:   # the world takes the hit too (P10.2). A dragon's BREATH is dragonfire
+        # — it tears through stone a siege ram would only crack (George)
         if engine.active_zone() is None:
-            engine.tile_damage.damage_radius(x, y, dmg, radius,
-                                             "siege")
+            atk = "dragonfire" if tele.get("kind") == "breath" else "siege"
+            engine.tile_damage.damage_radius(x, y, dmg, radius, atk)
     except Exception:
         pass
     if tele.get("kind") == "breath":   # dragonfire leaves the ground ablaze

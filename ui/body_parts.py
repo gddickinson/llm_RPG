@@ -8,6 +8,11 @@ stays orchestration and every file holds under 500 lines.
 
 import math
 
+# R1 realism: a screen-space KEY LIGHT from the top-left. Every body part is shaded
+# as a rounded form against it — a dark side away from the light, a lit core, and a
+# bright edge toward it — so limbs read as cylinders and the head as a sphere.
+_LIGHT = (-0.72, -0.69)
+
 
 def _pt(p):
     return (int(round(p[0])), int(round(p[1])))
@@ -17,11 +22,34 @@ def _dark(c, a=40):
     return tuple(max(0, x - a) for x in c[:3])
 
 
+def _lighten(c, a=45):
+    return tuple(min(255, x + a) for x in c[:3])
+
+
 def _limb(surface, p0, p1, color, w):
+    """R1: a SHADED CYLINDER — a full-width dark underside, the core shifted toward
+    the light (leaving a shadow rim), and a bright highlight stripe on the lit edge.
+    A limb reads round, not a flat stick."""
     import pygame
     a, b = _pt(p0), _pt(p1)
-    pygame.draw.line(surface, color, a, b, max(1, w))
-    pygame.draw.circle(surface, color, b, max(1, w // 2))
+    w = max(2, int(w))
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    L = math.hypot(dx, dy) or 1.0
+    px, py = -dy / L, dx / L                        # perpendicular to the limb
+    if px * _LIGHT[0] + py * _LIGHT[1] < 0:         # point it toward the light
+        px, py = -px, -py
+    off = w * 0.30
+    pygame.draw.line(surface, _dark(color, 46), a, b, w)     # 1) dark underside
+    pygame.draw.circle(surface, _dark(color, 46), b, max(1, w // 2))
+    ca = _pt((a[0] + px * off * 0.45, a[1] + py * off * 0.45))
+    cb = _pt((b[0] + px * off * 0.45, b[1] + py * off * 0.45))
+    cw = max(1, int(w * 0.80))
+    pygame.draw.line(surface, color, ca, cb, cw)            # 2) lit core
+    pygame.draw.circle(surface, color, cb, max(1, cw // 2))
+    ha = _pt((a[0] + px * off, a[1] + py * off))
+    hb = _pt((b[0] + px * off, b[1] + py * off))
+    pygame.draw.line(surface, _lighten(color, 42), ha, hb,  # 3) highlight stripe
+                     max(1, int(w * 0.32)))
 
 
 def _bow(p0, pj, p1, amt):
@@ -39,8 +67,46 @@ def draw_legs(surface, pose, pants, boots, w):
         _limb(surface, pose[hip], kn, pants, w)
         _limb(surface, kn, pose[foot], pants, w)
         fx, fy = _pt(pose[foot])
-        pygame.draw.ellipse(surface, boots,
-                            (fx - w, fy - max(1, w // 2), w * 2, w))
+        # G4 a directional BOOT — the toe extends toward the facing (a clear
+        # silhouette cue), rounder + toward-camera when facing front
+        prof = pose.get("fdir", 0) or pose.get("profile", 0)
+        toe = int(w * 0.85)
+        if prof > 0:                                  # facing screen-right
+            rect = (fx - w // 2, fy - max(1, w // 2), w + toe, w)
+        elif prof < 0:                                # facing screen-left
+            rect = (fx - w // 2 - toe, fy - max(1, w // 2), w + toe, w)
+        else:                                         # facing the camera
+            rect = (fx - w, fy - max(1, w // 2), w * 2, int(w * 1.25))
+        pygame.draw.ellipse(surface, boots, rect)
+        pygame.draw.ellipse(surface, _lighten(boots, 20), rect, 1)
+
+
+# R5: classes that wear a robe/gown — the legs read as a hanging SKIRT, not pants
+ROBE_CLASSES = {"wizard", "sorcerer", "warlock", "cleric", "druid", "monk",
+                "necromancer", "priest"}
+
+
+def draw_robe(surface, pose, color, w):
+    """R5: a flared, shaded SKIRT from the hips to the ankles — a robe reads as
+    hanging cloth (lit flank, shadow flank, a dark hem, a couple of folds) that
+    sways a little with the feet, instead of bare legs."""
+    import pygame
+    lh, rh = pose["l_hip"], pose["r_hip"]
+    lf, rf = pose["l_foot"], pose["r_foot"]
+    hem_y = max(lf[1], rf[1])
+    flare = abs(rh[0] - lh[0]) * 0.6 + w
+    hemL = (min(lf[0], lh[0]) - flare, hem_y)
+    hemR = (max(rf[0], rh[0]) + flare, hem_y)
+    pts = [_pt(lh), _pt(hemL), _pt(hemR), _pt(rh)]
+    pygame.draw.polygon(surface, color, pts)
+    pygame.draw.line(surface, _lighten(color, 26), _pt(lh), _pt(hemL), max(2, w))
+    pygame.draw.line(surface, _dark(color, 34), _pt(rh), _pt(hemR), max(2, w))
+    pygame.draw.line(surface, _dark(color, 30), _pt(hemL), _pt(hemR),
+                     max(2, w // 2 + 1))
+    for t in (0.34, 0.66):                              # fold lines
+        top = (lh[0] + (rh[0] - lh[0]) * t, lh[1])
+        bot = (hemL[0] + (hemR[0] - hemL[0]) * t, hem_y)
+        pygame.draw.line(surface, _dark(color, 22), _pt(top), _pt(bot), 1)
 
 
 def draw_torso(surface, pose, color, belt):
@@ -55,7 +121,12 @@ def draw_torso(surface, pose, color, belt):
     right = (max(rh[0], rs[0]) + bulge, my)
     pts = [_pt(lh), _pt(left), _pt(ls), _pt(rs), _pt(right), _pt(rh)]
     pygame.draw.polygon(surface, color, pts)
-    pygame.draw.polygon(surface, _dark(color, 55), pts, 1)
+    # R1 form: the lit (screen-left) flank catches light, the far flank falls to
+    # shadow — the barrel reads round; a dark rim seats it
+    th = max(2, int(abs(lh[1] - ls[1]) * 0.32))
+    pygame.draw.line(surface, _lighten(color, 30), _pt(left), _pt(ls), th)
+    pygame.draw.line(surface, _dark(color, 34), _pt(right), _pt(rs), th)
+    pygame.draw.polygon(surface, _dark(color, 62), pts, 1)
     pygame.draw.line(surface, belt, _pt(lh), _pt(rh), max(2, int(bulge)))
 
 
@@ -66,21 +137,63 @@ def draw_arms(surface, pose, sleeve, skin, w):
 
 def draw_arm(surface, pose, side, sleeve, skin, w):
     """One arm (P34.14 depth-sort: the far arm is drawn behind the torso;
-    P34.6: the elbow bows so the arm arcs)."""
+    P34.6: the elbow bows so the arm arcs). G4: a small HAND caps the wrist."""
+    import pygame
     sh, el, ha = side + "_sh", side + "_elbow", side + "_hand"
     eb = _bow(pose[sh], pose[el], pose[ha], 0.30)
     _limb(surface, pose[sh], eb, sleeve, w)
     _limb(surface, eb, pose[ha], skin, max(1, w - 1))
+    hx, hy = _pt(pose[ha])                       # G4 a rounded hand + a lit knuckle
+    hr = max(2, int(w * 0.72))
+    pygame.draw.circle(surface, skin, (hx, hy), hr)
+    pygame.draw.circle(surface, _lighten(skin, 26),
+                       (hx - max(1, hr // 3), hy - max(1, hr // 3)), max(1, hr // 2))
+
+
+# G5: gear layers keyed off class — heavy fighters get shoulder plates, skulkers
+# a hood; casters already wear the R5 robe.
+ARMOR_CLASSES = {"warrior", "paladin", "guard", "knight", "fighter",
+                 "barbarian"}
+HOOD_CLASSES = {"rogue", "ranger", "assassin", "thief", "druid", "warlock"}
+
+
+def draw_pauldrons(surface, pose, metal, w):
+    """G5: armored shoulder caps that catch the light (heavy classes)."""
+    import pygame
+    for s in ("l_sh", "r_sh"):
+        sx_, sy_ = _pt(pose[s])
+        rect = (sx_ - w, sy_ - max(1, w // 2), w * 2, w + 1)
+        pygame.draw.ellipse(surface, metal, rect)
+        pygame.draw.ellipse(surface, _lighten(metal, 34), rect, 1)
+
+
+def draw_hood(surface, pose, color, w):
+    """G5: a cloth cowl framing the head (skulker classes). Drawn BEFORE the head
+    so the face sits inside it."""
+    import pygame
+    hx, hy = _pt(pose["head"])
+    hr = int(max(w, pose.get("head_r", w)) * 1.34)
+    pygame.draw.circle(surface, color, (hx, hy - hr // 4), hr)
+    pygame.draw.circle(surface, _lighten(color, 16), (hx, hy - hr // 4), hr, 1)
+    pygame.draw.polygon(surface, color, [(hx - hr // 2, hy - hr // 2),
+                                         (hx + hr // 2, hy - hr // 2),
+                                         (hx, hy - hr - hr // 3)])  # a hood peak
 
 
 def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
-              expr="neutral", blink=False, look=(0.0, 0.0)):
+              expr="neutral", blink=False, look=(0.0, 0.0), hair_style="short"):
     import pygame
     hx, hy = _pt(pose["head"])
     r = pose["head_r"]
     pygame.draw.line(surface, skin, _pt(pose["neck"]), (hx, hy), max(2, neck_w))
-    pygame.draw.circle(surface, skin, (hx, hy), r)
-    pygame.draw.circle(surface, _dark(skin, 55), (hx, hy), r, 1)
+    # R1 spherical head: a dark base, the core shifted toward the light (leaving a
+    # shadow crescent), and a highlight — so the head reads as a ball, not a disc
+    pygame.draw.circle(surface, _dark(skin, 42), (hx, hy), r)
+    pygame.draw.circle(surface, skin,
+                       (hx - int(r * 0.15), hy - int(r * 0.15)), max(1, int(r * 0.90)))
+    pygame.draw.circle(surface, _lighten(skin, 40),
+                       (hx - int(r * 0.34), hy - int(r * 0.36)), max(1, int(r * 0.32)))
+    pygame.draw.circle(surface, _dark(skin, 62), (hx, hy), r, 1)
     if race in ("elf", "half-elf"):
         for s in (-1, 1):
             pygame.draw.polygon(surface, skin, [
@@ -93,8 +206,22 @@ def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
     if not face_visible:
         pygame.draw.circle(surface, hair, (hx, hy), r)      # back of the head
         return
-    # hair cap on top; the lower face stays skin
-    pygame.draw.circle(surface, hair, (hx, hy - max(1, r // 2)), r)
+    # hair cap on top; the lower face stays skin (R1: a lit sheen on the crown)
+    if hair_style == "bald":                         # a bare crown (redraw skin)
+        pygame.draw.circle(surface, skin, (hx, hy - max(1, r // 2)), r)
+    else:
+        if hair_style == "long":                     # H4 hair falls past the neck
+            pygame.draw.ellipse(surface, hair,
+                                (hx - r, hy - r // 3, r * 2, int(r * 2.3)))
+        pygame.draw.circle(surface, hair, (hx, hy - max(1, r // 2)), r)
+        pygame.draw.circle(surface, _lighten(hair, 34),
+                           (hx - int(r * 0.30), hy - int(r * 0.55)),
+                           max(1, int(r * 0.30)))
+        if hair_style == "bun":                      # H4 a topknot
+            pygame.draw.circle(surface, hair, (hx, hy - r - r // 3),
+                               max(2, int(r * 0.5)))
+            pygame.draw.circle(surface, _lighten(hair, 30),
+                               (hx - r // 6, hy - r - r // 2), max(1, r // 4))
     if profile:
         pygame.draw.circle(surface, skin,
                            (hx + profile * (r // 3), hy + r // 3),
@@ -108,9 +235,16 @@ def draw_head(surface, pose, skin, hair, race, face_visible, neck_w, profile=0,
     draw_face(surface, hx, hy, r, expr, profile, blink, look)
 
 
+def _catchlight(surface, x, y):
+    """A 1px specular glint in the eye (bounds-checked)."""
+    if 0 <= x < surface.get_width() and 0 <= y < surface.get_height():
+        surface.set_at((x, y), (250, 250, 250))
+
+
 def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False,
               look=(0.0, 0.0)):
-    """P34.2 the expressive face — brows + eyes + mouth from a 3-param spec."""
+    """G1 the expressive face — brows + eyes (sclera + iris + catchlight, not a
+    black void) + a subtle nose + a mouth, all from a 3-param spec (P34.2)."""
     import pygame
     from ui import char_face
     sp = char_face.spec(expr_name)
@@ -129,14 +263,22 @@ def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False,
         elif mode == "wide":
             pygame.draw.circle(surface, (245, 245, 245), (ex, ey), e + 1)
             pygame.draw.circle(surface, ink, (px, py), max(1, e - 1))
+            _catchlight(surface, px - 1, py - 1)
         elif mode == "arch":                       # ‿ happy squint
             pygame.draw.arc(surface, ink, (ex - e, ey - e, e * 2, e * 2 + 1),
                             3.4, 6.0, 1)
         elif mode == "x":
             pygame.draw.line(surface, ink, (ex - e, ey - e), (ex + e, ey + e), 1)
             pygame.draw.line(surface, ink, (ex - e, ey + e), (ex + e, ey - e), 1)
-        else:                                      # dot
-            pygame.draw.circle(surface, ink, (px, py), e)
+        else:                                      # open eye — sclera + iris + glint
+            es = max(2, e)
+            pygame.draw.ellipse(surface, (247, 245, 238),
+                                (ex - es, ey - max(1, es - 1),
+                                 es * 2, max(2, (es - 1) * 2)))
+            ir = max(1, es - 1)
+            pygame.draw.circle(surface, ink, (px, py), ir)
+            if es >= 3:
+                _catchlight(surface, px - 1, py - 1)
         # brow — inner end nudged by the expression's brow tilt
         bx = ex
         by = ey - max(2, r // 2)
@@ -144,9 +286,18 @@ def draw_face(surface, hx, hy, r, expr_name, profile=0, blink=False,
         pygame.draw.line(surface, ink,
                          (bx - e, by + inner * sp["brow"] * -1),
                          (bx + e, by - inner * sp["brow"] * -1), 1)
+    # nose — a soft 1px shadow between the eyes and the mouth (a little depth),
+    # nudged with the gaze; skipped on a very small head where it'd just be noise
+    my = hy + r // 2
+    if r >= 6:
+        nose_ink = (108, 84, 74)
+        nx = hx + max(1, r // 9) + int(round(look[0] * r * 0.15))
+        n0 = ey + max(1, r // 4)
+        n1 = my - max(1, r // 8)
+        if n1 > n0:
+            pygame.draw.line(surface, nose_ink, (nx, n0), (hx, n1), 1)
     # mouth — an arc curved by the expression (>0 up = smile)
     mc = sp["mouth"]
-    my = hy + r // 2
     mw = max(2, r // 2)
     if abs(mc) < 0.15:
         pygame.draw.line(surface, ink, (hx - mw // 2, my), (hx + mw // 2, my), 1)
@@ -218,7 +369,9 @@ def draw_shield(surface, pose, face, rim, r):
 
 
 def draw_weapon(surface, weapon, pose, length, w):
-    """Draw the weapon from the RIGHT hand, aligned along the forearm."""
+    """Draw the weapon from the RIGHT hand, aligned along the forearm. R4: metal
+    reads two-tone (a lit edge over a shadowed spine), a blade has a grip + pommel,
+    and a staff's orb is a glowing bead — not a flat floating dot."""
     import pygame
     hand = pose["r_hand"]
     elbow = pose["r_elbow"]
@@ -226,43 +379,63 @@ def draw_weapon(surface, weapon, pose, length, w):
     d = math.hypot(dx, dy) or 1.0
     ux, uy = dx / d, dy / d                      # forearm direction (out of hand)
     hx, hy = _pt(hand)
-    tip = (int(hand[0] + ux * length), int(hand[1] + uy * length))
     px, py = -uy, ux                             # perpendicular
-    steel, wood = (222, 224, 232), (140, 100, 62)
+    if px * _LIGHT[0] + py * _LIGHT[1] < 0:      # ... pointed toward the light
+        px, py = -px, -py
+    tip = (int(hand[0] + ux * length), int(hand[1] + uy * length))
+    steel, wood = (196, 200, 210), (140, 100, 62)
     if weapon in ("sword", "dagger"):
         blade = length if weapon == "sword" else length * 0.55
         tip = (int(hand[0] + ux * blade), int(hand[1] + uy * blade))
-        pygame.draw.line(surface, steel, (hx, hy), tip, max(2, w))
-        g = int(length * 0.18)
-        pygame.draw.line(surface, (120, 90, 55),
-                         (hx - int(px * g), hy - int(py * g)),
-                         (hx + int(px * g), hy + int(py * g)), max(2, w))
+        bw = max(2, w)
+        pygame.draw.line(surface, _dark(steel, 62), (hx, hy), tip, bw)     # spine
+        e = bw * 0.34
+        pygame.draw.line(surface, _lighten(steel, 40),                     # lit edge
+                         _pt((hx + px * e, hy + py * e)),
+                         _pt((tip[0] + px * e, tip[1] + py * e)),
+                         max(1, int(bw * 0.42)))
+        g = int(blade * 0.18)
+        pygame.draw.line(surface, (118, 92, 56),                           # crossguard
+                         _pt((hx - px * g, hy - py * g)),
+                         _pt((hx + px * g, hy + py * g)), max(2, bw))
+        pygame.draw.circle(surface, (150, 116, 60), (hx, hy), max(2, int(bw * 0.7)))
+        pygame.draw.circle(surface, (206, 172, 98), (hx, hy), max(1, int(bw * 0.34)))
     elif weapon == "axe":
         pygame.draw.line(surface, wood, (hx, hy), tip, max(2, w))
         b = int(length * 0.30)
-        pygame.draw.polygon(surface, (205, 208, 214), [
-            tip, (int(tip[0] + px * b), int(tip[1] + py * b)),
-            (int(tip[0] - ux * b), int(tip[1] - uy * b))])
+        head = [tip, _pt((tip[0] + px * b, tip[1] + py * b)),
+                _pt((tip[0] - ux * b, tip[1] - uy * b))]
+        pygame.draw.polygon(surface, steel, head)
+        pygame.draw.polygon(surface, _lighten(steel, 34), head, 1)         # lit rim
     elif weapon == "mace":
         pygame.draw.line(surface, wood, (hx, hy), tip, max(2, w))
-        pygame.draw.circle(surface, (188, 190, 200), tip, max(2, int(length * 0.2)))
+        r = max(2, int(length * 0.2))
+        pygame.draw.circle(surface, _dark(steel, 34), tip, r)
+        pygame.draw.circle(surface, _lighten(steel, 36),
+                           _pt((tip[0] + px * r * 0.4, tip[1] + py * r * 0.4)),
+                           max(1, int(r * 0.55)))                           # highlight
     elif weapon == "spear":
         tip = (int(hand[0] + ux * length * 1.4), int(hand[1] + uy * length * 1.4))
         pygame.draw.line(surface, wood, (hx, hy), tip, max(2, w))
-        pygame.draw.polygon(surface, steel, [
-            tip, (int(tip[0] - ux * 5 + px * 3), int(tip[1] - uy * 5 + py * 3)),
-            (int(tip[0] - ux * 5 - px * 3), int(tip[1] - uy * 5 - py * 3))])
+        head = [tip, _pt((tip[0] - ux * 5 + px * 3, tip[1] - uy * 5 + py * 3)),
+                _pt((tip[0] - ux * 5 - px * 3, tip[1] - uy * 5 - py * 3))]
+        pygame.draw.polygon(surface, steel, head)
+        pygame.draw.polygon(surface, _lighten(steel, 34), head, 1)
     elif weapon == "staff":
         tip = (int(hand[0] + ux * length * 1.2), int(hand[1] + uy * length * 1.2))
         pygame.draw.line(surface, (120, 86, 52), (hx, hy), tip, max(2, w))
-        pygame.draw.circle(surface, (120, 190, 255), tip, max(2, int(length * 0.16)))
+        # a GLOWING bead: a faint aura → a bright core, so it reads magical + fixed
+        for rr, cc in ((max(2, int(length * 0.26)), (48, 96, 176)),
+                       (max(2, int(length * 0.17)), (108, 172, 250)),
+                       (max(1, int(length * 0.09)), (224, 244, 255))):
+            pygame.draw.circle(surface, cc, tip, rr)
     elif weapon == "bow":
         r = max(3, int(length * 0.42))
         base = math.atan2(uy, ux)
         rect = (hx - r, hy - r, r * 2, r * 2)
-        pygame.draw.arc(surface, (150, 100, 55), rect,
-                        base - 1.1, base + 1.1, max(2, w))
-        # bowstring across the arc's ends
+        pygame.draw.arc(surface, (120, 82, 44), rect, base - 1.1, base + 1.1, max(2, w))
+        pygame.draw.arc(surface, (176, 128, 74), rect, base - 1.1, base + 1.1,
+                        max(1, w // 2))                                     # lit belly
         p1 = (hx + int(r * math.cos(base - 1.1)), hy + int(r * math.sin(base - 1.1)))
         p2 = (hx + int(r * math.cos(base + 1.1)), hy + int(r * math.sin(base + 1.1)))
         pygame.draw.line(surface, (225, 220, 195), p1, p2, 1)

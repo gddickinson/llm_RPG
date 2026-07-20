@@ -19,6 +19,7 @@ ISO_CAM = (2.6, 3.0, -3.0)
 ISO_LOOK = (0.0, 0.45, 0.0)
 ISO_VFOV = 40.0
 LIGHT_DIR = (-0.5, -1.0, -0.35)
+FILL_DIR = (0.7, -0.25, 0.55)          # ISO.3 a soft fill from the other side
 
 
 def box(cx, cy, cz, w, h, d, color):
@@ -46,6 +47,51 @@ def roof(cx, cy, cz, w, h, d, color):
     return v, t, color
 
 
+def taper(a, b, r0, r1, color, seg=8):
+    """A tapered round tube (frustum) from point `a` (radius r0) to `b` (r1) —
+    a limb segment that swells at the joint and narrows toward the end. ISO.10."""
+    a = np.asarray(a, float)
+    b = np.asarray(b, float)
+    axis = b - a
+    d = axis / (np.linalg.norm(axis) or 1e-6)
+    up = np.array([0, 0, 1.0]) if abs(d[1]) > 0.9 else np.array([0, 1.0, 0])
+    p1 = np.cross(d, up)
+    p1 /= (np.linalg.norm(p1) or 1.0)
+    p2 = np.cross(d, p1)
+    ang = 2 * math.pi * np.arange(seg) / seg
+    ring = np.cos(ang)[:, None] * p1 + np.sin(ang)[:, None] * p2
+    v = np.vstack([a + ring * r0, b + ring * r1, a, b])
+    t = []
+    for i in range(seg):
+        j = (i + 1) % seg
+        t += [[i, j, seg + i], [j, seg + j, seg + i],
+              [2 * seg, j, i], [2 * seg + 1, seg + i, seg + j]]
+    return v, np.array(t), tuple(int(c) for c in color)
+
+
+def ball(c, r, color, seg=6):
+    """A low-res UV sphere — a joint, a head, a hand. ISO.10."""
+    c = np.asarray(c, float)
+    v = []
+    rings = []
+    for iy in range(seg + 1):
+        phi = math.pi * iy / seg
+        y, rr = math.cos(phi), math.sin(phi)
+        row = []
+        for ix in range(seg):
+            th = 2 * math.pi * ix / seg
+            row.append(len(v))
+            v.append(c + r * np.array([rr * math.cos(th), y, rr * math.sin(th)]))
+        rings.append(row)
+    t = []
+    for iy in range(seg):
+        for ix in range(seg):
+            a, b = rings[iy][ix], rings[iy][(ix + 1) % seg]
+            cc, dd = rings[iy + 1][ix], rings[iy + 1][(ix + 1) % seg]
+            t += [[a, b, cc], [b, dd, cc]]
+    return np.array(v), np.array(t), tuple(int(x) for x in color)
+
+
 def render(meshes, cam_pos=ISO_CAM, look=ISO_LOOK, up=(0.0, 1.0, 0.0),
            vfov_deg=ISO_VFOV, width=64, height=64, light_dir=LIGHT_DIR):
     """meshes: [(verts Nx3, tris Mx3, rgb)] -> (rgb uint8, mask bool)."""
@@ -62,6 +108,8 @@ def render(meshes, cam_pos=ISO_CAM, look=ISO_LOOK, up=(0.0, 1.0, 0.0),
     aspect = width / height
     ld = np.array(light_dir, float)
     ld /= (np.linalg.norm(ld) or 1.0)
+    fd = np.array(FILL_DIR, float)                 # ISO.3 soft fill light
+    fd /= (np.linalg.norm(fd) or 1.0)
     for verts, tris, color in meshes:
         verts = np.asarray(verts, float)
         tris = np.asarray(tris)
@@ -79,14 +127,31 @@ def render(meshes, cam_pos=ISO_CAM, look=ISO_LOOK, up=(0.0, 1.0, 0.0),
         nrm[good] /= nl[good][:, None]
         centre = (a + b + c) / 3.0
         facing = np.einsum("ij,ij->i", nrm, cam - centre) > 0
-        lam = np.clip(-(nrm @ ld), 0.25, 1.0)
+        lam = np.clip(-(nrm @ ld), 0.0, 1.0)       # key light
+        lam2 = np.clip(-(nrm @ fd), 0.0, 1.0)      # ISO.3 soft fill light
+        # ANIM_REALISM R2: richer shading so the figure pops — more key contrast +
+        # AMBIENT OCCLUSION (down-facing undersides sink to shadow) + a white RIM on
+        # the silhouette edge (a back-light kicker that lifts the form off the bg).
+        view = cam - centre
+        view /= (np.linalg.norm(view, axis=1, keepdims=True) + 1e-9)
+        rim = np.clip(1.0 - np.abs(np.einsum("ij,ij->i", nrm, view)),
+                      0.0, 1.0) ** 3
+        # G2 iso EXPOSURE — the figures were murky (dark class colours sinking
+        # into a dark ground). Lift the ambient floor + fill + the AO floor so the
+        # SHADOW side reads (~0.16→~0.30) while the lit side still clips near max,
+        # and warm + strengthen the rim a touch for separation from the background.
+        ao = 0.82 + 0.18 * np.clip(nrm[:, 1], 0.0, 1.0)
+        base = np.clip((0.34 + 0.72 * lam + 0.18 * lam2) * ao, 0.0, 1.06)
+        col = np.array(color, float)
+        rimc = np.array((72.0, 68.0, 58.0))            # a faintly warm back-light
+        tri_rgb = np.clip(col[None, :] * base[:, None] + rim[:, None] * rimc[None, :],
+                          0.0, 255.0)
         valid = good & facing & (zc[tris[:, 0]] > 0.02) \
             & (zc[tris[:, 1]] > 0.02) & (zc[tris[:, 2]] > 0.02)
-        col = np.array(color, float)
         for ti in np.nonzero(valid)[0]:
             i, j, k = tris[ti]
             _fill(rgb, mask, zbuf, sx, sy, zc, i, j, k, width, height,
-                  col * (0.32 + 0.68 * lam[ti]))
+                  tri_rgb[ti])
     return rgb, mask
 
 
@@ -117,11 +182,22 @@ def _fill(rgb, mask, zbuf, sx, sy, zc, i, j, k, w, h, shade):
     mask[miny:maxy + 1, minx:maxx + 1][upd] = True
 
 
+# ISO.5 supersample factor for the bake — renders at SSAA× then smoothscales
+# down for crisper silhouettes + finer detail (cost is one-time per cache key).
+# Overridable via LLM_RPG_ISO_SS (clamped 2..4).
+def _ssaa() -> int:
+    import os
+    try:
+        return max(2, min(4, int(os.environ.get("LLM_RPG_ISO_SS", "3"))))
+    except Exception:
+        return 3
+
+
 def bake(meshes, size=64, **cam):
     """Render `meshes` once at the iso camera → a pygame RGBA sprite (cached by
-    the caller). Antialiased by rendering at 2× and smooth-scaling down."""
+    the caller). Antialiased by rendering at SSAA× and smooth-scaling down."""
     import pygame
-    ss = size * 2
+    ss = size * _ssaa()
     rgb, mask = render(meshes, width=ss, height=ss, **cam)
     rgba = np.zeros((ss, ss, 4), np.uint8)
     rgba[..., :3] = rgb

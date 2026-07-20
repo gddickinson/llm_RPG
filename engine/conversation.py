@@ -27,22 +27,32 @@ def is_merchant(npc) -> bool:
     return _class_of(npc) in MERCHANT_CLASSES
 
 
+def _has_own_response(npc, tid: str) -> bool:
+    """True when this NPC has an AUTHORED response to the topic (not just the
+    shared default) — the thing they're personally an authority on."""
+    from engine.topics import TOPICS
+    return getattr(npc, "id", None) in (TOPICS.get(tid, {})
+                                        .get("responses", {}))
+
+
 def askable_topics(engine, npc) -> List[str]:
-    """Topics the player has heard of that THIS NPC can speak to."""
+    """Topics the player has heard of that THIS NPC can speak to. A topic the
+    NPC has their OWN authored answer for (a quest-giver on their own quest's
+    subject) is surfaced FIRST, so the menu cap never hides the one thing they
+    most want to talk about."""
     try:
         known = engine.topic_journal.known()
     except Exception:
         return []
-    out = []
+    speakable = []
     for tid in known:
         try:
             if engine.topic_journal.npc_response(npc, tid):
-                out.append(tid)
+                speakable.append(tid)
         except Exception:
             pass
-        if len(out) >= _TOPIC_CAP:
-            break
-    return out
+    speakable.sort(key=lambda tid: 0 if _has_own_response(npc, tid) else 1)
+    return speakable[:_TOPIC_CAP]
 
 
 def _topic_name(tid: str) -> str:
@@ -70,4 +80,10 @@ def menu(engine, npc) -> List[dict]:
     if _secrets.unlocked_secrets(engine, npc):
         items.append({"kind": "secret",
                       "label": "Press them — what aren't they saying?"})
+    # PUX.6 / I2 a warm gesture — greet / embrace / kiss by your standing
+    from engine import interactions
+    social = interactions.player_social_option(engine, npc)
+    if social:
+        items.append({"kind": "social", "label": social[1],
+                      "social": social[0]})
     return items

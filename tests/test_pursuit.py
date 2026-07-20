@@ -84,6 +84,20 @@ class TestPursuit(_Base):
             self.engine.pursuit.update()
         self.assertLess(self._dist(foe), start)
 
+    def test_no_chase_while_the_hero_is_indoors(self):
+        # George 2026-07-15: a hostile at a low overworld tile chased the hero's
+        # INTERIOR-local position into every building. A player in an interior /
+        # dungeon is a separate coordinate space — no overworld pursuit.
+        foe = self._spawn("wolf", (self.px + 6, self.py), speed=2.0)
+        start = foe.position
+        self.engine.current_interior = object()
+        try:
+            for _ in range(6):
+                self.assertEqual(self.engine.pursuit.update(), 0)
+            self.assertEqual(foe.position, start, "the foe never moved")
+        finally:
+            self.engine.current_interior = None
+
     def test_a_slow_creature_barely_gains(self):
         slow = self._spawn("restless_bones", (self.px + 8, self.py), speed=0.5)
         fast = self._spawn("wolf", (self.px + 8, self.py - 3), speed=1.5)

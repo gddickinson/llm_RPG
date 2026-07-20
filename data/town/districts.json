@@ -1,0 +1,23 @@
+{
+  "_doc": "Town districts (OAKVALE T1). A large town's wards are classified by distance RING from the centre: the INNER core holds market/civic/temple/guild (walled, defended), the MIDDLE ring residential + craft, the OUTER ring residential + stables + farming (suburbs, outside the wall). `district_buildings` maps a district TYPE to the building KINDs its lots draw from (weighted by repetition). Seed counts scale with town size. Consumed by world/town/wards.py + (T4) lots.py.",
+  "ward_seeds": {"village": 8, "town": 22, "city": 40},
+  "rings": {
+    "inner": ["market", "civic", "temple", "guild", "commercial", "market"],
+    "middle": ["residential", "craft_metal", "craft", "commercial", "residential", "bakery"],
+    "outer": ["residential", "residential", "stable", "farming", "craft", "storage"]
+  },
+  "district_buildings": {
+    "market": ["stall", "stall", "shop", "shop", "well"],
+    "civic": ["hall", "bank", "watchtower", "library"],
+    "temple": ["temple", "cathedral", "chapel", "shrine"],
+    "guild": ["guildhall", "guildhall", "library", "tower"],
+    "commercial": ["shop", "tavern", "inn", "shop", "bakery"],
+    "residential": ["home", "home", "home", "cottage", "home"],
+    "craft": ["shop", "bakery", "workshop", "sawmill", "mill"],
+    "craft_metal": ["smithy", "forge", "armoury", "smithy"],
+    "bakery": ["bakery", "shop", "home"],
+    "stable": ["stable", "warehouse", "home"],
+    "storage": ["warehouse", "granary", "storage"],
+    "farming": ["farmhouse", "granary", "home"]
+  }
+}

@@ -5650,6 +5650,74 @@ remove certain encounters — clearing a bandit camp reduces bandit spawns in an
   **This closes George's 2026-07-15 combat-difficulty message end to end** (P37.6a XP 10x +
   P37.6b aggressive/tougher monsters + P37.6c camp-clearing).
 
+## Phase AUDIT — unsurfaced / unimplemented code (George, 2026-07-15)
+
+George: "review the entire codebase and determine if there is unimplemented code that needs to
+be surfaced." A three-agent audit (engine reachability, dead data content, half-wired
+features) found the following "built but unreachable" gaps. Verified; ranked by impact.
+
+- [x] **A-items: ~11 stranded ITEMS now obtainable + hill_giant spawnable.** The audit found
+  high-value items with NO acquisition path: `flaming_sword`, `plate`, `silent_boots`,
+  `ring_strength`, `manual_athletics`/`manual_dexterity` (the only permanent-stat items!),
+  `frost_dagger`, `holy_mace`, `explorers_chart`, `crossbow`+`sling` (their AMMO was sold but
+  not the weapons), `thrown_knife`. Surfaced via data edits — shops (`data/shop_catalogs.json`:
+  plate→blacksmith, crossbow/sling/thrown_knife/explorers_chart→general, holy_mace→priest,
+  ring_strength→wizard, silent_boots→ranger) + lair hoards (`data/lairs.json`:
+  flaming_sword/frost_dagger→dragon roost, manuals→troll den/goblin warren). `hill_giant`
+  (was `encounter_weight:0`, unspawnable) → weight 1 on mountains. `tests/test_content_
+  reachability.py` (+4) locks it in.
+- [x] **A-trap: home-chest WITHDRAWAL (item-loss trap) — FIXED.** The inventory panel now
+  shows a "-- Home Chest ([H] take back) --" section listing stored goods (when you have a
+  finished home), and `[H]` is context-aware — it DEPOSITS a highlighted bag item and WITHDRAWS
+  a highlighted chest item (`InventoryPanel.rows`/`_store` → `engine.home_withdraw`). Stashed
+  items are visible and recoverable; `homestead.withdraw` now stacks (P25.1). `tests/test_home_
+  chest.py` (+4: stored items show, panel-withdraw returns them, round-trip preserves quantity,
+  no chest section without a home). (Also: E on the home chest still takes the top item.)
+- [x] **A-train: guild-hall TRAINING — reachable via /train.** A `/train <skill>` dialog
+  command (in `engine/dialog_system.py`, mirroring `/hire`) now calls `guildhalls.train(skill)`
+  when you're at a hall talking to anyone; a bare `/train` lists the trainable skills + fees
+  (`guildhalls.training_summary`). Advertised in the dialog prompt + a hint-bar cue at a hall
+  (`guildhalls.hall_here`). Also advertised the previously-hidden `/bond` `/spend` `/order` in
+  the dialog prompt (part of A-disc). `tests/test_guild_training.py` (+5). (Collapsed the thin
+  gui `show_*` overlay methods into a shared `_open` helper to hold gui.py < 500.)
+- [x] **A-board: quest BOARD — reachable via [E] at the tavern notice board.** The board
+  hangs INSIDE the tavern (`board_at_player` is interior-aware); standing there, [E] now opens
+  a numbered "Adventurers' Board" overlay (`gui.show_quest_board`, mode `board`) that lists the
+  posted AVAILABLE notices (`quest_board.overlay_lines`) and takes one on a 1-9 keypress
+  (`board_accept_index` → `accept_from_board`). Engine wrappers `board_overlay_lines`/
+  `board_accept_index`; `input_actions.menu_mode_key` handles the `board` mode; a hint-bar cue
+  advertises it. Radiant + starter notices are no longer stranded. `tests/test_quest_board_
+  reach.py` (+5). (Compacted `gui.py` back under 500 via an `_OVERLAY_MODES` const + tighter
+  `show_quests`/`show_collection_log`/character-sheet goals.)
+- [x] **A-disc: discoverability — DONE (audit CLOSED).** (a) **Tutorial Island** is now a New
+  Game menu option (`ui/start_menu.py` NEW_GAME_OPTIONS → `start:"tutorial"`, which `main.py`
+  routes to the `start_tutorial` engine flag on the default world) — a newcomer no longer needs
+  the `--tutorial` CLI flag. (b) **Left-click-to-target** is documented in the FIGHT controls
+  help (`ui/controls.py`, "L-CLICK — lock the target under the cursor"). (The `/bond` `/spend`
+  `/order` dialog prompt was already advertised in the A-train round.) `tests/test_start_menu_
+  tutorial.py` (+4).
+
+## Phase 28.2d — SURFACE the mount feature (George, 2026-07-15)
+
+George: "implement horses, pack mules and rider/mount feature — we started this previously
+but it has NOT surfaced. There should be a stable near Oakvale where the rider can get a horse
+to ride." The mount CODE existed (`engine/mounts.py` roster + buy/ride/care) but was
+unreachable — no stable was seeded and the mount never drew.
+
+- [x] **A stable beside every town.** New `engine/stables.py` `StableSystem.seed()` plants a
+  `Stable` `Location` (`type:"stable"`) beside each settlement at world start (like the guild
+  halls) — a stable stands by Oakvale. Registered in `engine_setup` + the seed stack + save.
+- [x] **Buy & ride, from the stable.** The E-key at a stable opens a numbered STABLE MENU
+  (`gui.show_stable` / `mode="stable"`; `mounts.stable_overlay_lines`/`buy_index`; engine
+  `at_stable`/`mount_stable_lines`/`mount_stable_buy`) — pick a horse / mule / donkey /
+  war-horse and you buy AND ride it (road 2× + carry bonus, the existing `buy_mount`). Hint
+  bar cue. The travel/stable/waystone menu key-handlers were extracted to `input_actions`
+  (`menu_mode_key`) to hold input_handler under 500.
+- [x] **The mount RENDERS.** A trailing quadruped (`renderer_overlays.draw_mount`) now draws
+  behind the rider in BOTH the top-down and iso views (`iso_render._draw_mount_iso`), hide-
+  coloured by kind. `tests/test_stables.py` (+8). (Remainder from P28.2: per-mount road-speed
+  nuance, a war-mount fighting in combat.)
+
 ## Phase 38 — "The Sunken Tome of Vael'Zhur" — a substantial adventure module (George, 2026-07-14)
 
 George: a substantial, themed campaign — a lost wizard's tome to discover & explore, booby
@@ -5729,15 +5797,494 @@ gfx_poc.png) shows a night-and-day jump: flat noise → shaded grass with blades
 water with depth+ripples+sparkle. Subsumes the old P39.6 world-polish round.
 
 - [x] **P40.0 Plan + proof-of-concept** (docs/GRAPHICS.md + gfx_poc.png).
-- [ ] **P40.1 gfx foundation** — `ui/gfx.py` (supersample/gradient/shade_ramp/soft_shadow/
-  outline/mottle) + route the sprite builders through it.
-- [ ] **P40.2 High-detail TERRAIN** (biggest win) — rebuild tile_variants recipes with the
-  full layer stack, supersampled; compose with P33.2 edges.
-- [ ] **P40.3 High-detail OBJECTS** — richer prop/furniture sprites (shading/texture/outline).
-- [ ] **P40.4 High-detail BUILDINGS** — brick/stone coursing, roof-tile texture, framed
-  windows, weathering, AO.
+- [x] **P40.1 gfx foundation — DONE.** New `ui/gfx.py` (187 lines): `supersample(build_fn,
+  size,ss)` (build at size·ss → smoothscale down, the char-`draw_body_crisp` technique for the
+  world), `ss_factor` (LLM_RPG_SS env), `vgradient`/`rgradient`, `shade_ramp`, `mottle` (multi-
+  tone soft-blob texture), `directional_light`, `soft_shadow`, `outline`, and `apply_ssaa_
+  setting(engine)` (the "Smooth sprites" setting → char + terrain SSAA). `tests/test_gfx.py`
+  (+12, all headless).
+- [x] **P40.2 High-detail TERRAIN — DONE (biggest win).** `tile_variants.build_tile` is now a
+  LAYER STACK built at size·SSAA and smoothscaled: gradient base + multi-tone mottle + dense
+  S-proportional detail (blades/ripple-arcs/canopy/rock/reeds/…) + a directional light — the
+  flat 3-tone dither is gone. SSAA=3 when "Smooth sprites" is on, 1 off (renderer sets it; env
+  overrides); the loader cache keys on it. Before/after: scratchpad/gfx_before.png vs gfx_after
+  .png (scene) + gfx_tiles_compare.png (tile strip — night-and-day). Built once + cached (36
+  tiles in 0.02s). Composes with the P33.2 edge/coastline pass (unchanged).
+- [x] **P40.3 High-detail OBJECTS — DONE.** Every decorative PROP (`prop_sprites.render_prop`)
+  and overworld SCATTER piece (`scatter_sprites.scatter_sprite`) is now SUPERSAMPLED (built at
+  ts·SSAA via `gfx.supersample`, curves anti-alias) and GROUNDED with a soft `gfx.contact_shadow`
+  so it stops floating — wall/ceiling pieces (tapestry/banner/cobweb/torch/sconce/chandelier)
+  skip the ground shadow. Wired through `sprite_loader.furniture` (SSAA in the cache key, follows
+  the "Smooth sprites" setting). Before/after: scratchpad/gfx_props_compare.png (a prop+scatter
+  strip — floating flat icons → crisp, shadow-grounded pieces). `tests/test_gfx.py` +1,
+  `test_prop_sprites.py` +4, `test_overworld_scatter.py` +1.
+- [x] **P40.4 High-detail BUILDINGS — DONE.** Buildings read as MATERIAL, not flat blocks:
+  `roof_shapes.wall_courses(quad, wall, ts)` lays masonry COURSING (horizontal courses +
+  staggered running-bond joints) on stone/brick walls and half-timber framing on timber/wood;
+  `roof_shapes.roof_courses(pts, covering, ts)` draws tile/shingle ROWS parallel to the eaves on
+  each roof face. Both are pure quad geometry (a bilinear `_bilerp` follows the face's
+  perspective) drawn as 1px lines from a thin loop in `renderer_buildings._draw_block` +
+  `_draw_footprint` (gated ts≥12). Before/after: scratchpad/gfx_buildings_compare.png (flat
+  blocks → coursed walls + tiled roofs; the tower reads as brick). `tests/test_roof_shapes.py`
+  +5. (Windows already framed via P39.5 `openings`; mullions/panelled doors deferred to P40.5.)
 - [ ] **P40.5 Lighting & atmosphere polish** — soft shadows, AO, colour grading, light bloom.
+  - [x] Night torch-pool WIDENED (George live feedback: "night is too dark"): player radius
+    4.5→7.5 tiles, companion 3.0→5.0, `_radial_light` falloff ^2→^1.5, night floor 170→148 —
+    night is playable now (scratchpad/gfx_night_after.png). `test_lighting_and_weather_overlay` +2.
 - [ ] **P40.6 Characters** — richer body shading/outlines/gear (only if needed).
+
+## Phase GX — George's rapid-fire requests (2026-07-15) — see memory `george-requests-queue-2026-07-15`
+
+Interleaved with Phase BLD; process one per round, priority order:
+- [x] **GX.1 Ranged/miss EFFECTS — arrows seen fired + shooter holds the weapon.** `ui/projectile_
+  anim.py` (frame_tick) + `engine.animate_projectiles` (turn_pipeline defers resolution) so a shot
+  FLIES ~0.3s and resolves on arrival; `combat_effects.on_miss_at` (grey "miss" popup); `shoot_
+  ranged` faces the target + bumps `_atk_seq` (loose motion). `tests/test_projectiles.py` +2.
+- [x] **GX.2 Teleport platforms — raised glowing DIAS.** A waystone was an invisible `Location`
+  marker (no tile art). New `ui/dais.py` (pure `dais_tiers`/`rune_circle` + a thin `draw_dais`/
+  `draw_all`): each waystone now renders as a stepped stone DAIS (~1.5 tiles wide, so it reads
+  bigger than the ground) with an arcane cyan RUNE-CIRCLE glowing on top + an upward GLOW beam —
+  unmistakable from a distance. Drawn thinly from `renderer_buildings.draw_buildings` (renderer.py
+  untouched at 499). Before/after: scratchpad/gx2_dais.png. `tests/test_dais.py` (+5). (Top-down;
+  an iso-projected dais is a follow-up.)
+- [x] **GX.3 Building SCALE-UP (interiors) — DONE.** Root cause of "cramped": `interiors.fit_to_
+  footprint` gave a 2×2 building only an 8×8 interior. Raised the scaling — ×4 footprint multiplier
+  + far bigger caps (`tw = clamp(loc.width*4+2, 7..28)`, `th = clamp(loc.height*4+2, 6..22)`): a 2×2
+  building now opens into a roomy 10×10, and a 5×5 footprint yields a 22×22 hall (400 inner tiles —
+  a church nave that seats scores). Small buildings stay modest; the room typing + torch decoration
+  scale up (a tavern reads roomier with more tables/seating — scratchpad/gx3_tavern_roomy.png). All
+  97 interior tests still green (BLD.2/3 already made them size-robust). `tests/test_interiors.py`
+  +1. **Remainder GX.3b (deferred):** bump the OVERWORLD footprints of major buildings (needs a
+  village re-layout in `world_generator._add_village` — buildings are packed 2 rows apart).
+- [x] **GX.4 A large CHURCH in Oakvale seating 50-100 — DONE.** `world_generator._add_village`
+  plants a 6×5 "Oakvale Cathedral" below the village core (terrain cleared to grass, south door
+  onto open ground, no footprint overlap), tagged `type: "cathedral"`; `building_room_sets.json`
+  by_kind → `[nave, vestry]`; `interiors.build_interiors_for_world` builds it via
+  `make_temple_interior`, which GX.3 scale-up fits to a **26×22 nave** that `furnish_features.pew_rows`
+  fills with **114 pews facing an altar** (temple theme, torchlit) — room to seat scores. Arched
+  grand door (`facade._ARCHED += cathedral/church`). Taverns/other buildings accommodate far more
+  people (falls out of the scale-up).
+- [x] **GX.5 Deep DUNGEON/CAVE via a secret Oakvale entrance + other regional entrances/exits — DONE**
+  (5a + 5b below; 5c cross-mouth traversal is an optional stretch).
+  - [x] **GX.5a — the DEEP shared dungeon + wilderness mouths — DONE.** `enter_dungeon` now keys
+    the dungeon cache on a Location `dungeon_key` (not just its name) + reads `deep_dungeon`/
+    `deep_levels`, so several mouths open ONE shared, persistent, DEEP dungeon; `generate_multilevel`
+    took a `depth` param. `engine/deepdelve.py` (`DeepdelveSystem`) over `data/deepdelve.json` seeds 3
+    wilderness CAVE mouths (Blackroot Cleft / The Sunless Stair / The Drowned Adit) at wooded/rocky/
+    waterside sites far from spawn + spread apart, all sharing `dungeon_key:"deepdelve"` → a 6-floor
+    delve; guards + a rumor + per-mouth `[Legend]`; hint bar names the mouth. Persisted (engine_setup
+    + save_load). tests/test_deepdelve.py (9).
+  - [x] **GX.5b — the SECRET Oakvale entrance — DONE.** `DeepdelveSystem` seeds a HIDDEN "The Buried
+    Stair" `Location` a few tiles off the Oakvale core (ordinary ground, `hidden` + `dungeon_key:
+    "deepdelve"`, no CAVE stamp). `secret_near(pos)` (within 1 tile) drives a HIGH-priority hint-bar
+    search cue; the E/G key `reveal_secret()` stamps the CAVE mouth (+ `deepdelve_mouth`) so [TAB]
+    descends into the SAME shared 6-floor Deepdelve. A pointer `[Realm]` rumor + a reveal `[Legend]`
+    beat. Persisted (the secret + revealed state ride the save). Also fixed a real UX bug — the
+    Deepdelve search/descend cues were low-priority and got crowded out of the 3-hint cap by ambient
+    talk/barter in town; promoted them to lead. tests/test_deepdelve.py +6.
+  - [ ] **GX.5c (stretch) — true cross-mouth traversal.** Per-mouth up-stairs so you descend one
+    mouth and surface at a distant one (a wilderness short-cut), instead of returning to your entry.
+
+## Phase BLD — Buildings elaboration (George, 2026-07-15) — see `docs/BUILDINGS.md`
+
+George (after the P40 graphics + black-tile fix landed): buildings "are still very basic and
+need elaboration" — MUCH better/more realistic FRONTAGE, LAYOUTS, FURNISHING, DECORATION.
+Research-first: 3 parallel audits (exterior, interior, and mining `building-gen` +
+`autonomous_world`) → full design + plan in **`docs/BUILDINGS.md`**. Core finding: rooms are
+ANONYMOUS (BSP makes untyped cells; furnishing themes the whole interior by NAME, no `shop`
+theme → shops get a bed). `autonomous_world` shares llm_RPG's tile paradigm so its
+ROOM_TEMPLATES / feature-composition furnishing / decoration passes port nearly verbatim.
+
+- [x] **BLD.0 Research + design doc** — `docs/BUILDINGS.md` (3-agent synthesis + phased plan).
+- [x] **BLD.1 Data quick-wins — DONE.** Added 10 missing interior themes (shop/bakery/farmhouse/
+  stable/lodge/hall/watchtower/tower/well/storage) to `data/interior_themes.json` +
+  `data/furnishings.json` — so a shop/market/barn/bakery stops falling through to the "home" theme
+  (bed + hearthrug) and furnishes as what it IS. `world/furnishings.theme_of(name, kind)` now falls
+  back through the building KIND's FUNCTION (`_FUNCTION_THEME` via `building_types.function_of_kind`)
+  when the name carries no theme keyword; `interiors.py` threads the kind. And `hearth`/`forge`/
+  `fireplace`/`oven` joined `prop_sprites.LIT_PROPS`, so a home's hearth / a smithy's forge /
+  a bakery's oven now cast a warm light pool (scratchpad/bld1_smithy.png) instead of an unlit room.
+  `tests/test_furnishings.py` +5, `test_prop_sprites.py`/`test_interior_theme.py` updated.
+- [x] **BLD.2 Functional room plans — DONE (the unlock).** Rooms are no longer anonymous. New
+  `data/room_templates.json` (16 room_types → furniture kit `[name,min,max]` + size) +
+  `data/building_room_sets.json` (function/kind → ordered room list, ported from aw
+  ROOM_TEMPLATES/BUILDING_ROOM_SETS) + new `world/room_plan.py`: after `room_gen.subdivide`, the
+  leaf touching the entrance becomes the building's PUBLIC room (`room_set[0]`) and the rest are
+  typed by descending area, each furnished with its kit (wall pieces hug walls, tables/rugs/anvils
+  centre, capped at ⅓ the room's free cells so it stays roomy). `interiors._furnish_rooms` now
+  delegates here (interiors.py 432→422). BSP gate retuned (`min_room=2`, footprint-scaled depth):
+  subdivide when the FUNCTION wants ≥2 rooms (a small tavern still splits) OR the footprint is big
+  (`tw≥11 and th≥8`, so a large building is multi-room whatever its kind); a tiny kindless hut
+  stays open. So a tavern reads common-room + bar + kitchen, a smithy forge + workshop + storeroom,
+  a shop counter + storeroom (scratchpad/bld2_tavern.png). `tests/test_room_plan.py` (+11);
+  `test_furniture`/`test_room_gen`/`test_carry` made robust to the denser typed layout (they had
+  hardcoded a specific furniture tile).
+- [x] **BLD.3 Feature-composition furnishing + placement hardening — DONE.** New
+  `world/furnish_features.py`: named COMPOSITIONS instead of scattered props — `bar_counter`
+  (an L of counter-tables in the bar), `pew_rows` (rows of pews with a central aisle in a nave),
+  `pillar_row` (a colonnade in a great hall), `carpet_runner` (a rug runner down the aisle),
+  `altar_end` (an altar centred on the far wall). Each room_type lists its `features[]` in
+  `data/room_templates.json`; `room_plan.furnish_typed` stamps them before the fill pass. Plus a
+  DOOR-APRON exclusion (`furnish_features.doorways`/`apron` — a doorway gap + the floor in front)
+  so furniture never blocks a passage, wired into both `furnish_typed` and `furnishings._buckets`.
+  A tavern gets a real bar counter (scratchpad/bld3_tavern.png). `tests/test_furnish_features.py`
+  (+7). (Grand compositions shine in big buildings; small 8×8 rooms constrain them but they read.)
+- [x] **BLD.4 Facade doors — DONE.** New `ui/facade.py` (pure `door_style_for`/`door_shapes` +
+  a thin `draw_door`, headless-testable): a real entrance chosen by building KIND — PANELLED (4
+  panels + knob) for homes/shops, PLANKED (plank seams + diagonal brace + studs) for smithy/barn/
+  stores, ARCHED (rounded top) for temple/library/tower, DOUBLE (two arched leaves) for hall/inn/
+  keep — each with a lintel above and a step below, preserving the lock-state colour (open/closed/
+  locked/broken). `door_glyphs.draw_door_glyphs` now delegates here per building (door_glyphs
+  45→35, `renderer_buildings` untouched at 417). Before/after: scratchpad/bld4_doors_compare.png
+  (identical flat rects → distinct per-kind doors) + bld4_street.png (an arched temple door + a
+  panelled home door in an Oakvale street). `tests/test_facade.py` (+8).
+- [x] **BLD.5 Shopfronts & signage — DONE.** Commercial/civic buildings now read from the STREET
+  (before, only the door differed). Extended `ui/facade.py`: `shopfront_for(kind)` names the motifs
+  and `draw_shopfront` lays them on the south face (before the door) — a striped AWNING (colour per
+  trade) + a projecting HANGING SIGN with a trade EMBLEM (mug=tavern/inn, coin=shop, loaf=bakery,
+  anvil=smithy), a DISPLAY window for a shop/market, a forge-GLOW for a smithy/forge, an oven-glow
+  for a bakery; a plain home shows none. Wired thinly through `door_glyphs` (draws the shopfront
+  then the door). Before/after: scratchpad/bld5_shopfronts_compare.png (tavern awning+mug / smithy
+  anvil+forge-glow / shop coin+awning+display / bakery loaf+oven / inn mug). `tests/test_facade.py`
+  (+4). facade.py 224, door_glyphs 36 — under 500.
+- [x] **BLD.6 Decoration pass (torches + hearthrugs) — DONE.** New `furnish_features.decorate_pass`
+  (ported from autonomous_world's Stage-5 decoration), run after furnishing in
+  `interiors.build_interiors_for_world`: wall TORCHES spaced ≥5 tiles apart (they're in `LIT_PROPS`,
+  so they immediately cast P39.4 warm light POOLS — an interior went from 1 light source to ~3,
+  legible + atmospheric) + a hearthRUG on the floor in front of each hearth/forge; never on a
+  doorway apron; deterministic. Before/after: scratchpad/bld6_tavern_lit.png (three warm pools
+  lighting the whole tavern vs one lonely hearth). `tests/test_furnish_features.py` (+5). (Occupant
+  clutter + interior tile-render recipes remain for a later slice.)
+- [x] **BLD.7 Window trim, shutters & architectural trim — DONE.** New `ui/facade_trim.py` (pure
+  geometry + thin draws, in the `gate_shapes`/`openings` mould): SHUTTERS flanking each window, a
+  stone SILL under it (+ a LINTEL over it on grand buildings), CORNICE band riding the eave, and
+  QUOINS stepping up the front corners. `trim_style_for(kind)` dresses grand sacred/civic buildings
+  fully, a plain home just with shutters + a sill. Wired into `renderer_buildings._draw_block`
+  (per-tile) + `_draw_footprint` (span-aware `draw_span_corner_trim`/`span_quoin_blocks`); windows
+  now read as shuttered bays on sills (scratchpad/bld7_closeup.png). tests/test_facade_trim.py (11).
+- [x] **BLD.8 Roof relief, depth & weathering — DONE.** New `ui/roof_relief.py` (pure geometry +
+  thin draws): an EAVES/soffit-shadow band so the roof visibly overhangs the wall top, a RIDGE CAP
+  (a bright capping course over a wider shadow), simple gabled DORMERS on a grand building's front
+  slope, and deterministic WEATHERING — moss patches + rain-streak stains scattered by the building's
+  WORLD position via a pure integer hash (no RNG, no per-frame flicker), so two buildings of the same
+  kind never look identical (George's "clones differ"). Wired into `renderer_buildings._draw_block`
+  (seeded by `wx,wy`) + `_draw_footprint` (seeded by `loc.x,loc.y`, dormers on grand non-flat roofs)
+  — scratchpad/bld8_closeup.png shows moss-flecked roofs with soffit depth, each wall segment weathered
+  differently. tests/test_roof_relief.py (11).
+
+## Phase OAKVALE — a large, living, walled town + countryside (George, 2026-07-16) — see `docs/OAKVALE.md`
+
+George: "Oakvale should be redesigned, enlarged and given much greater depth… a large town with
+multiple districts with a central defended region surrounded with a wall with multiple gates…
+guilds, shops, taverns, blacksmith and crafts, wizards crafts, libraries, cathedral, churches, pubs,
+numerous dwellings… populated by townsfolk (NPCs for all the roles)… farmers farming the nearby
+lands… villages to support them… a detailed living countryside… rivers and roads that make sense,
+with bridges and a water supply." Researched `autonomous_world` (Voronoi wards, street templates,
+wall-polygon gates, A* terrain roads, role pools) + `building-gen` (roof/type/interior data). New
+reusable `world/town/` generator; full design in `docs/OAKVALE.md`.
+
+- [x] **T1 District wards — DONE.** `world/town/wards.py` over `data/town/districts.json`: sunflower
+  seeds → numpy Voronoi → 3× Lloyd relaxation → ring classification (inner market/civic/temple/guild,
+  middle residential/craft, outer residential/stable/farming). `plan_districts` → a `DistrictPlan`
+  (`type_at`/`ring_at`/`tiles_of_type`), deterministic. scratchpad/oakvale_t1_districts.png shows
+  organic even wards with a civic core + suburbs. tests/test_town_wards.py (10).
+- [x] **T2 Street network — DONE.** `world/town/streets.py`: size-scaled templates — main BOULEVARDS
+  crossing the centre + a polygonal RING road (~0.6 r) + RADIAL lanes spoking to the edge + a core
+  GRID (cities) + a reserved central MARKET SQUARE plaza; road hierarchy (main/ring/lane/grid → width).
+  `plan_streets` → a `StreetPlan`; `road_tiles()` rasterises (Bresenham + width, denser road wins,
+  clipped to the disc) to `{(x,y): kind}`. scratchpad/oakvale_t2_streets.png: boulevards + ring +
+  radials + plaza over the wards. tests/test_town_streets.py (11).
+- [x] **T3 Town wall & gates — DONE.** `world/town/town_wall.py`: an organic, Laplacian-smoothed
+  wall POLYGON around the inner core (~0.5 r), rasterised to WALL tiles; GATES placed where a MAIN
+  boulevard crosses a wall edge (`_seg_intersect`) so a road always runs through a gate (≥3, fallback
+  to compass extremes); TOWERS spaced around the vertices. `CoreWall` (`.wall`/`.gates`/`.towers`/
+  `.encloses`) — a gate is a GAP in the wall so the boulevard passes through; `encloses` (even-odd ray
+  cast) tells core from suburb. scratchpad/oakvale_t3_wall.png: a defended civic/market/temple core,
+  4 boulevard gates, towers, suburbs outside. tests/test_town_wall.py (12).
+- [x] **T4 Building lots & placement — DONE.** `world/town/lots.py` (3 passes: LANDMARKS place the
+  grand singletons first — cathedral/temple/hall/bank/guildhalls/libraries/inns/taverns/armoury/tower
+  in matching wards; FRONTAGE lines the streets densely on both sides; INTERIOR FILL scatters
+  district buildings into the pockets) → `BuildingLot`s keyed to their district's KIND, none
+  overlapping/on-street/on-wall/off-disc. `world/town/town_gen.py` `plan_town(cx,cy,radius,size,seed)`
+  → a `TownPlan` (districts+streets+wall+lots; `building_count`/`kind_counts`/`core_lots`/`gates`).
+  A radius-40 town → **~177 buildings across ~26 KINDs** with every landmark present (scratchpad/
+  oakvale_t4_town.png: a dense walled town, civic/temple/market core + residential/craft/farm suburbs).
+  tests/test_town_lots.py (9). Next: T5 stamps a `TownPlan` onto the world.
+- [x] **T5 Integration — DONE** (George chose a dedicated large-town region). T5a `world/town/stamp.py`
+  `stamp_town` stamps a `TownPlan` onto the world (disc→grass keeping rivers, streets→ROAD/WATER→BRIDGE,
+  wall→WALL, gates→ROAD, lots→BUILDING+`Location` with `kind`/`type`/`forge` + unique names; a town
+  marker records gates+towers); `renderer_buildings._kind_at` reads `loc.kind`; landmarks GUARANTEED.
+  T5b `world/town_region.py` `build_oakvale_region` — a `world_kind="oakvale"` region on a bigger
+  **190×140** map (`region_size` sizes it in `game_engine`): grass basin + forest ring + a river +
+  mountain shoulder, then the big walled Oakvale (radius 42) at centre; `oakvale_spawn` wakes the
+  player in the market square. Wired into `demo_setup` (build + spawn + gate/tower guards) +
+  `start_menu` ("Large Town (Oakvale)") + main.py routing. `interiors.build_interiors_for_world` made
+  KIND-AWARE so EVERY building (homes/halls/guildhalls/libraries incl.) is enterable — a 222-building
+  town, all 214 non-marker buildings with interiors. Rendered IN-ENGINE: scratchpad/oakvale_t5b_region
+  .png — a large living walled town, player in the market square, boulevards/ring/radials, a river with
+  bridges, forest borders. tests/test_town_stamp.py (8) + test_town_region.py (7).
+- [x] **T6 Role population — DONE.** `world/town/population.py` `populate_town(engine)` over
+  `data/town/roles.json` seats a keeper of the right calling at every service/civic building (shop→
+  shopkeeper, tavern→tavernkeeper, smithy→blacksmith, armoury→armourer, temple→priest, hall→MAYOR,
+  guildhall→guildmaster, bank→banker, library→scholar, tower→wizard), fills a capped share of
+  dwellings with townspeople, and roams the streets with thieves/urchins/vagrants/guards. A keeper's
+  `home_location` = its building NAME → `shop._category_for_npc` stocks the right wares (a smithy sells
+  weapons — `_category_for_npc` now checks `home` for smith/forge/armoury) + the P9A.7 presence seats
+  them INDOORS. Wired into `demo_setup` (oakvale branch). ~169 townsfolk across 27 roles, one mayor.
+  Fixed the "Oakvale **Town**house" name matching settlement scanners (stables/production/teleport) →
+  renamed to "House" + `kind`-skip in stables. Guaranteed a smithy landmark. tests/test_town_
+  population.py (7).
+- [x] **T7 Living countryside — DONE.** `world/road_astar.py` — terrain-aware ROAD routing (A* over a
+  cost-field: grass cheap, forest dearer, mountains dear, water crossable-but-costly so a road BRIDGES
+  a river at its narrowest); `find_road_path`/`lay_road` (ROAD on land, BRIDGE over water)/`connect`.
+  `world/town/countryside.py` `build_countryside` plants 3 supporting farming VILLAGES (farmhouses +
+  cottages + a chapel + a well + FARMLAND fields) ringing Oakvale, each roaded back to the nearest town
+  gate (A*, bridging the river), plus farm belts outside the town wall; `populate_villages` seats the
+  Farmers/Chaplains. Wired into `build_oakvale_region` + `demo_setup`. In-engine: 3 villages, ~500
+  farmland tiles, 42 bridge tiles, 21 farmers (scratchpad/oakvale_t7_region.png). tests/test_
+  countryside.py (7).
+- [x] **T8 Building variety & decoration — DONE.** `ui/building_variety.py`: a per-building STYLE
+  picked from a KIND-appropriate palette (humble/trade/civic/sacred classes → covering + wall +
+  window-shape palettes), seeded by the building's WORLD position via a pure integer hash so clones
+  differ but each is stable + in-character (a cottage → thatch + tudor timber, a cathedral → stone +
+  slate + lancet windows). `variant_style` (overrides covering/wall, keeps roof shape) + `window_shape`,
+  wired into `renderer_buildings._draw_block` (seeded wx,wy) + `_draw_footprint` (seeded loc.x,loc.y).
+  Oakvale now reads as a real town — golden thatch, red clay tile, grey slate, brown shingle roofs over
+  timber/stone/brick walls, no two neighbours alike (scratchpad/oakvale_t8_variety.png). tests/test_
+  building_variety.py (7). (Roof-SHAPE variety mansard/gambrel deferred — the material variety carries
+  the look.)
+- [x] **T9 Manual review, DEEPDELVE entrance & playtest — DONE.** Reviewing the built region I found
+  the Deepdelve SECRET ENTRANCE wasn't planting in the big town (its `_secret_site` in `engine/deepdelve
+  .py` required a grass tile with no Location, but the 84×84 Oakvale town MARKER covers every tile) —
+  fixed by widening the search + skipping only building FOOTPRINTS (a big area marker is fine). Now
+  "The Buried Stair" plants 12 tiles from the market-square start, inside the town → search it out and
+  delve the shared 6-floor Deepdelve right from Oakvale (plus 3 wilderness mouths in the countryside).
+  Scripted PLAYTEST passes: player moves, 258 NPCs advance 6 turns without crash, 96 tradeable merchants,
+  the secret reveals + descends 6 floors, exits clean. The in-town thieves/urchins (T6) + the Deepdelve
+  are the "adventures right in the town". (Authored in-town quests can layer on later.)
+
+## Phase ISO — realistic isometric graphics (George, 2026-07-16) — see `docs/ISO_GRAPHICS.md`
+
+George: "make the iso graphics more realistic — tiles, buildings, characters; better character
+animation (movieMaker inspiration); scale may need larger." Research: an audit of the iso renderer + a
+study of `/claude_test/movieMaker`. Core finding: iso bakes crude boxes/flat diamonds and IGNORES the
+rich top-down modules (roof_shapes/facade_trim/roof_relief/building_variety/tile_variants/char_pose/
+char_mocap); the fix is richer meshes + reusing that data. `raster3d` already ported movieMaker's
+rasterizer/camera/SSAA.
+
+- [x] **ISO.1 Realistic BUILDINGS — DONE.** `ui/iso_buildings.py` builds a believable structure from
+  the same style data: storey-driven HEIGHT (a tower towers), a real roof SHAPE (gable ridge / hip
+  `pyramid` / flat parapet), recessed WINDOW boxes per storey on the two camera walls, a DOOR, a
+  CHIMNEY — in per-building VARIETY materials (`building_variety` covering/wall, cache-keyed).
+  `iso_objects.building_sprite(kind,size,covering,wall)`; `iso_render._variant_materials` picks the
+  variant per world pos. scratchpad/iso1_{buildings,closeup}.png: real houses vs old flat grey boxes.
+  tests/test_iso_buildings.py (7).
+- [x] **ISO.2 Richer TILES — DONE.** `ui/iso_tiles.py` `tile_diamond(name,wx,wy,tw,th)` bakes the rich
+  top-down `tile_variants` terrain TEXTURE (grass blades / water ripples / farmland furrows / road
+  pebbles / rock / swamp reeds — same recipes), squashes it to the 2:1 diamond + CLIPS it to the
+  diamond shape (cached per (name,variant,size); no-recipe → None → flat fallback). Wired into
+  `iso_render.draw_diamond`/`_draw_tile` (+ the terrain name added to the tile payload). The iso ground
+  now reads as real terrain (scratchpad/iso2_tiles.png: textured grass/water/farmland vs flat colour).
+  tests/test_iso_tiles.py (4).
+- [x] **ISO.3 Character bodies: proportions + stance + shading — DONE.** `ui/iso_chars._figure` is now
+  an anthropometric humanoid — two legs, a tapered torso (waist + shoulders), hanging ARMS, a proper
+  head — in a seeded CONTRAPPOSTO stance (lateral weight-shift + head tilt via `_rot_z_about` + a
+  forward-carried arm; `_stance_of` gives a stable 0-2 per person). `raster3d.render` gained a soft
+  FILL light (key + fill + ambient) so all baked 3D reads with softer, deeper shading. Figures now
+  read as little people with arms + natural weight, not stiff symmetric box-stacks (scratchpad/iso3_
+  chars.png + iso3_world.png). tests/test_iso_chars.py (5).
+- [x] **ISO.4 Character ANIMATION — DONE.** The iso figure now MOVES. `iso_chars._pose(parts, action,
+  phase)` animates the rest humanoid: a WALK stride (legs swing fore/aft about the hips via
+  `_rot_x_about`, arms counter-swing, the torso bobs), an ATTACK swing (the weapon arm arcs up/over),
+  and a breathing IDLE (subtle bob + arm sway). `_frame_state(char)` picks the action + frame from a
+  real-time clock (`pygame.time.get_ticks`) + transient per-character tracking on `metadata` — WALK
+  while the character moves tile-to-tile, ATTACK on a fresh `_atk_seq` strike, else IDLE; folk desync by
+  stance. `char_sprite` bakes/caches per (…, action, frame). scratchpad/iso4_anim.png: a clear walk
+  cycle (striding legs + swinging arms) + an attack (arm arcing overhead). tests/test_iso_chars.py +5.
+- [x] **ISO.5 Scale & fidelity polish — DONE.** `raster3d.bake` now supersamples at 3× (was 2×) via a
+  clamped `_ssaa()` (`LLM_RPG_ISO_SS` override, 2..4) for crisper silhouettes + finer detail on every
+  baked iso sprite (buildings/characters/objects); cost is one-time per cache key, steady-state frame
+  unchanged (~0.1s, cached blits). scratchpad/iso5_crisp.png. This completes Phase ISO (1-5): the
+  isometric world now has real buildings, textured terrain, and bodied + animated characters.
+- [x] **ISO.6 RIGGED SKELETON + Mixamo mocap (George 2026-07-16) — DONE.** The iso characters now use a
+  real jointed SKELETON driven by the game's 18 MIXAMO clips (`data/anim/*.json`), not procedural swings.
+  New `ui/iso_skeleton.py`: `char_mocap.sample_norm(clip,phase)` gives 15-joint 2D side-view mocap →
+  `pose3d` lifts it to 3D (nx→fore-aft depth, ny→height, l_/r_ joints spread laterally for width + facing
+  rotation) → `_bone(a,b,r,c)` lays an oriented box between every connected joint (legs hip→knee→foot,
+  spine pelvis→chest→neck, clavicles + arms shoulder→elbow→hand) + a head + hair. `sample_figure` maps
+  action→clip (walk/run/idle/kick) sampled per phase; `iso_chars.char_sprite` bakes it (box figure as a
+  fallback). A movieMaker research pass CONFIRMED the approach (positions→bone-boxes = their
+  `anatomical_frames`; skip quaternions/FK — strictly simpler for rigid boxes). Real natural gait /
+  knee-bend / arm-swing (scratchpad/iso6_{proto,anim,world}.png). tests/test_iso_skeleton.py (8).
+  (Possible polish: idle contrapposto, sex-driven shoulder width, foot-lock for cross-tile walks — the
+  mocap already reads well without them.)
+- [x] **ISO.7 360° FACING + sword-swing attack (George 2026-07-16) — DONE.** George: "make the iso
+  figures FACE THE DIRECTION THEY MOVE + 360° animations + all the polish." Root cause of the
+  everyone-faces-south bug: `iso_chars.facing_of` compared a `(dx,dy)` TUPLE (from `char_motion.facing`)
+  against STRING dict keys, so it always fell through to south. Fix: `facing_dir(char, n=16)` quantises
+  the `_anim['facing']` movement tuple to 16 evenly-spaced directions (cardinals at 0/4/8/12) and
+  `dir_angle` maps that to radians; `iso_skeleton.pose3d/figure/sample_figure` take an ANGLE and rotate
+  the WHOLE skeleton about the vertical, so a figure turns smoothly through 360°. Attack polish: no Mixamo
+  sword clip ships, so ATTACK now rides the idle base + `_attack_overlay` (arcs the right elbow/hand
+  overhead → a melee SWING) instead of the odd leg-'kick'. Silhouette polish: `iso_skeleton.build_of`
+  gives each person a stable seeded BUILD (slight/average/broad shoulders) so the crowd reads apart —
+  the practical stand-in for the "sex-driven shoulder width" polish idea (Character has no sex field).
+  scratchpad/iso7_{facing,attack,builds}.png, iso8_world.png. tests/test_iso_chars.py TestFacing (+5),
+  tests/test_iso_skeleton.py build tests (+2).
+- [x] **ISO.8 MOVEMENT CONTINUITY (George 2026-07-16) — DONE.** George: "NPC & monster movements are a
+  bit jerky — they wait a long time between tiles. Is this the tick rate? Can they move more
+  continuously?" Two causes fixed: (1) the iso render path NEVER called `body_renderer.update_anim`, so
+  it both left the facing stale AND teleported each character tile-to-tile with no slide — now
+  `iso_render.render_iso` + `iso_zone.render_zone_iso` call `update_anim(char,_DT)` and draw at the
+  FRACTIONAL `_tween_world_pos` (eases the previous tile → current over `TWEEN_DUR=0.16s`), the exact
+  smooth-slide the top-down renderer already had. (2) `config.NPC_IDLE_INTERVAL` (new; 3.0→1.5s), read by
+  `game_engine._npc_turns_due`, so idle NPCs take a turn twice as often (livelier, more continuous ambient
+  movement) while still bounded against log-flood. Full suite green.
+- [x] **ISO.9 FACING CALIBRATION — the real fix (George 2026-07-16) — DONE.** George: "the iso figures are
+  NOT facing the correct directions as they move." ISO.7's mapping was wrong: it rotated the skeleton by
+  the raw WORLD azimuth, but the figure is baked through a fixed, TILTED perspective camera, so the body's
+  forward (+z) projects to a screen direction that is a NON-LINEAR function of the rotation (perspective
+  foreshortening) — pointing the wrong way. Root-caused by measuring both analytically and empirically
+  (a forward "nub" swept over 0-360° and its projected screen direction read from pixels — the two agreed).
+  Fix: `iso_skeleton._fwd_screen_angle(a)` projects the forward through CAM, `angle_for_delta(dx,dy)` picks
+  the rotation whose forward lands on the move's iso-screen heading (dx-dy, dx+dy); `iso_chars.move_delta`
+  reads the sign tuple and `char_sprite` uses the calibrated angle (cache-keyed by delta). Verified
+  in-world: NE walks right in profile, SW mirrors left, N/W show backs (up/away), S/E show fronts
+  (down/toward) — scratchpad/iso_realwalk.png, iso9_big.png, iso9_inworld.png. tests assert the chosen
+  rotation's forward projects within 12° of the move heading (test_iso_chars TestFacing rewritten).
+- [x] **ISO.10 SCALE + DETAIL + REALISM (George 2026-07-16) — DONE.** George: "add more detail to the iso
+  world and figures, increase the scale and zoom in so more details can be seen, make the characters more
+  realistic." (1) REALISTIC BODY: `raster3d` gains `taper` (a round tapered tube) + `ball` (a low-res UV
+  sphere); `iso_skeleton.figure` rebuilds the character over the same mocap joints as a believable
+  low-poly body — tapered limbs swelling at ball joints, real hands + booted feet, a tunic torso in the
+  character's colour with a belt, a shaped head with hair + a FACE (eyes, nose) — replacing the uniform
+  grey boxes. Segs tuned (1110 tris, ~20ms bake, cached). (2) SCALE: the map-zoom setting gains an 80
+  level and its DEFAULT rises 48→64; `settings_panel.init_zoom` (called from `main.py`) applies the saved
+  / default zoom AT BOOT so the bigger scale takes effect from the start (was stuck at the CLI default).
+  Verified in-world: at zoom 80 the townsfolk read as distinct little 3D people with faces + class-colour
+  tunics, facing correctly (scratchpad/iso10_scale_80.png, iso10_tuned.png, iso10_world_t72.png). Full
+  suite green.
+- [x] **ISO.11 THE FULL MOCAP LIBRARY (George 2026-07-16) — DONE.** George: "keep adding more animations
+  — fighting, jumping, swimming, dancing, idling etc. use and adapt the Mixamo animations." The iso chars
+  had only played walk/run/idle/attack. Now they play EVERYTHING: `iso_chars._frame_state` reads the same
+  `cur_action` the top-down `body_renderer.update_anim` already computes (it's called for iso chars since
+  ISO.8), so a one-shot (jump/leap/bow/wave/cast/cheer/stoop/dodge/hurt/kick/attack) arcs through its
+  timer and a looping action (walk/run/dance/sit/climb/talk/swim/guard/argue/…) cycles on a per-person-
+  desynced clock. `iso_skeleton._CLIP`/`clip_for(action,seed)` map every action to one of the 18 Mixamo
+  clips, with a seeded idle/dance VARIANT (idle/idle2/idle3, dance/breakdance/hiphop) so a crowd doesn't
+  loop in lockstep. No Mixamo swim clip ships, so `swim_figure` is procedural — the climb clip's
+  arm-over-arm stroke + the whole body pitched to horizontal at the water surface (a front crawl). Figure
+  split into `_body(P,…)` so a pose can be pitched before the mesh is laid. Verified: a montage of all
+  actions renders as the ISO.10 body (scratchpad/iso11_montage.png, iso11_swim.png, iso11_inworld.png).
+  Full suite green.
+- [x] **ISO.12 CHARACTER VARIETY (George 2026-07-16) — DONE.** George: "add variety to the iso characters
+  — different body types, different weapons, different clothing and armour." New `ui/iso_gear.py` builds
+  the worn GEAR as meshes baked into the same cached sprite: `weapon_mesh` (sword/dagger/axe/mace/spear/
+  staff/bow — held up-and-forward in a ready stance so it tracks the hand through the animation),
+  `headgear_mesh` (metal helmet / wizard's pointed hat / drawn hood / noble's circlet), `shield_mesh` (a
+  round off-hand shield). `iso_chars.kit_of(char)` derives a hashable (weapon, head, shield, height) tuple
+  from the equipped weapon (`char_motion.weapon_kind`), class headgear, a shield flag, and a seeded
+  body-type HEIGHT; `iso_skeleton.body_of` extends the seeded build to (shoulder, height) so a crowd has
+  short/tall + slight/broad folk. Threaded through `figure`/`sample_figure`/`char_sprite` (cache-keyed).
+  Verified in-world: a wizard reads a hat + staff, a guard a helmet + sword, a cleric a mace, plain
+  merchants, varied heights (scratchpad/iso12_kit.png, iso12_weapons2.png, iso12_world.png). Full suite
+  green.
+- [x] **iso combat-effects BUG-FIX + ISO.13 NATURALISM (George 2026-07-16) — DONE.** George: "the iso red
+  damage sprays don't disappear after a hit; keep improving all character animations + bodies — smoother,
+  more gestures, more combat moves, more variation, better proportions + realistic stances." (1) BUG: the
+  top-down renderer calls `combat_effects.update(dt)` each frame to AGE effects, but the iso paths
+  (`iso_render.draw_combat_iso` + `iso_zone`) only DREW them — so damage popups/particles never expired.
+  Both now `ce.update(1/30)` before drawing (regression test: the spray clears after ~45 iso frames).
+  (2) COMBAT MOVES: iso attacks were one generic swing; now `iso_skeleton._swing_arm`/`attack_figure` play
+  a real 3D strike chosen by `atk_style` — an OVERHEAD chop / a horizontal SLASH / a forward THRUST — and
+  `iso_chars` reads the rotating per-weapon combo the top-down already computes, so a fight varies
+  swing-to-swing (scratchpad/iso13_combat*.png). (3) GESTURES: the ambient P34.4 idle-life fidgets
+  (shrug/ponder/yawn/stretch/wave/nod) now map to gesture clips (talk/nod/argue/climb) + are in the frame
+  maps, so idle NPCs visibly LIVE instead of freezing. (4) SMOOTHER: the common actions bake at higher
+  frame counts (walk/run 8->12, idle 6->8, dance 8->10). (5) PROPORTIONS: `_body` slimmed to a more
+  athletic silhouette (narrower waist, slimmer limbs, less pauldron-like shoulders) — iso13_refined.png.
+  Retired the 2D `_attack_overlay`. Full suite green.
+- [x] **ISO.14 BAKE IN MORE MIXAMO CAPTURES (George 2026-07-16) — DONE.** George: "yes, please bake in
+  more mixamo captures." The game shipped only 18 baked clips though movieMaker holds hundreds of Mixamo
+  FBX. Reused the existing pipeline: a Blender headless dump (`mm/engine/blender/scripts/dump_clip.py`) →
+  pose-cache → `tools/bake_mocap.py` (added 14 entries to its `CLIPS`) → `data/anim/*.json` (now 32 clips).
+  Baked real COMBAT — jab (Body Jab Cross), stab (Double Dagger Stab), block, charge, fight_idle (Bouncing
+  Fight Idle) — and GESTURES — acknowledge, point, ask, beckon, bored, look, pray, no, silly. Wired in:
+  `iso_skeleton.attack_figure` now throws a real fist JAB unarmed and a dagger STAB (else the ISO.13
+  procedural swing for a blade); the idle-life fidgets route to the distinct gesture captures (ponder→
+  bored, shrug→ask, wave→beckon, salute→acknowledge, kneel→pray); and `iso_chars._ambient_idle` drifts an
+  idle character through calm glances/bored shifts so a standing crowd never freezes. Dropped 2 unclean
+  captures (Big Body Blow = a horizontal haymaker, Boxing = a low crouch). scratchpad/iso14_newclips.png,
+  iso14_combat.png, iso14_fightidle.png. tests: the new clips load + weapon picks the combat clip
+  (test_iso_skeleton), ambient idle stays calm (test_iso_chars). Full suite green.
+- [x] **ISO.15 FOOTPRINT-SPANNING BUILDINGS (George 2026-07-16) — DONE.** George: "the buildings don't
+  seem to match their footprints very well." In iso a building was ONE fixed baked sprite (tile*2.2) parked
+  at its front tile, so anything bigger than ~1 tile left the footprint as a raised BROWN pedestal with an
+  undersized house floating on it. New `ui/iso_structures.py` draws each enterable building as a real 3D
+  BOX projected through the SAME `iso.world_to_screen` as the ground: `building_infos` (the full loc rect +
+  kind), `footprint_tiles` (drawn as flat GROUND, no pedestal), and `draw_building` (two camera-facing
+  WALLS with a door + per-storey windows rising the whole footprint to a real ROOF — gable ridge / hip
+  pyramid / flat parapet — in the style materials). Because it shares the tile projection, the box lands
+  EXACTLY on its footprint and depth-sorts with the cast. `iso_render` now draws footprint tiles as ground
+  + one building box each (front-tile keyed), retiring the baked-sprite path + the `_building_anchors`
+  helper. scratchpad/bldg_fixed.png, bldg_zoom.png. tests: footprint tiles cover the rect, draw paints
+  walls+roof (test_iso_render), building_infos exposes footprints (test_iso_objects). Full suite green.
+- [x] **ISO.16 SWIM FACING FIX + FURROWED FARMLAND + MORE MIXAMO (George 2026-07-16) — DONE.** George:
+  "iso characters don't face the right way when swimming; check all animation directions; make farmland
+  read as furrowed crops; add more animations." (1) SWIM: the pitch-to-horizontal ran AFTER the facing
+  rotation, so a swimmer lay the SAME way whatever the heading — fixed by pitching at facing 0 then YAWING
+  to the heading (now head-first in the swim direction). A full action×direction audit confirmed every
+  other action (walk/run/dance/sit/climb/talk/jab/attack) already faces correctly via the ISO.9
+  calibration. (2) FARMLAND: `iso_tiles.draw_furrows` overlays green/gold CROP rows (varied per tile,
+  continuous across a field) on each farmland diamond so it reads as cultivated crops, not flat dirt.
+  (3) MORE MIXAMO: baked 5 more captures via the Blender pipeline — real SWORD swings (sword_attack +
+  sword_attack2, used for sword/axe/mace, alternating by strike style), a `spellcast` (the `cast` emote a
+  caster fires), a `hit` recoil (the `hurt` emote combat fires on a struck body), and a `die` fall (a
+  downed/dying body now LIES via an injury check). data/anim now 37 clips. scratchpad/iso16_swim_after.png,
+  iso16_dir_audit.png, farm_synth.png, iso16_combat_wired.png. tests: swim faces its heading, sword uses
+  the mocap, new clips load, furrows paint green, a downed char lies. Full suite green.
+
+## Phase COL — the Colosseum (combat-testing arena, George 2026-07-16)
+
+George: "a battle colosseum for staging combat between two or more opponents (like autonomous_world) — a
+simple environment for testing combat, particularly combat graphics and seeing how well they work,
+including the battle tactics." Researched autonomous_world's colosseum (arena terrain + duel/team/beast
+presets + tactical AI) and built a focused version on llm_RPG's own combat.
+
+- [x] **COL.1 ColosseumSystem — DONE.** `engine/colosseum.py` + `data/colosseum.json`. `seed()` plants a
+  walled sand ring (ROAD floor + BUILDING wall + a gate) with a `Colosseum` Location near spawn;
+  `stage(preset)`/`stage_next` spawn two TEAMS of real Characters (class→NPC, monster template→build_monster,
+  buffed, tagged `arena_fighter`) at opposite ends; `run_turn()` (from the turn pipeline when active) drives
+  every fighter to close on + strike the nearest enemy via the real `combat_system.npc_attack` (rangers
+  shoot, casters cast, else melee), so the fight runs the FULL combat pipeline + the character GRAPHICS
+  (attack swings, hurt recoils, deaths, the ISO.12 class/weapon variety); `over`/`winner`/`_finish` end on a
+  wipeout. `enter(matchup)` seats the player as a SPECTATOR + stages — the `--colosseum [matchup]` flag and
+  the E-key at the arena gate (+ a hint). Fighters are skipped by the ambient AI / pursuit / aggression /
+  npc_conflict. Wired into engine_setup (seed) + turn_pipeline (run_turn) + save_load (arena persists).
+  8 presets (duels, mage duel, melee-vs-ranged, mixed skirmish, beast brawl, gladiators-vs-troll,
+  guards-vs-bandits) — all resolve in ~15-35 turns. scratchpad/colosseum_showcase.png, colosseum_iso.png.
+  tests/test_colosseum.py (8). Full suite green. (Remainder: an overlay pick-a-fight MENU + a spectator
+  HUD/betting; wiring the P17 tactical battle simulator as a colosseum mode.)
+
+## Phase COMBAT — as many attacks + defence moves as possible (George 2026-07-16)
+
+George: "add as many combat attacks and defence moves to the animations as possible, both 2D and
+isometric." Baked 12 more Mixamo captures via the Blender pipeline (data/anim now 49 clips) and wired them
+into BOTH renderers.
+
+- [x] **COMBAT.1 — DONE.** New captures: 3 more sword swings (sword_attack3/4, sword_slash), boxing blows
+  (hook, lead_jab, elbow), DEFENCES (shield_block, crouch_block, a dodge roll), and hit reactions
+  (hit_head, hit_back, hit_legs). ISO: `iso_skeleton._BLADE_POOL`/`_FIST_POOL` — `attack_figure` ROTATES
+  the weapon's repertoire strike-to-strike (`seq`, read from the combat strike counter), so a melee is
+  never the same blow twice (5 sword swings for a blade, 4 boxing blows unarmed, a dagger stab, a
+  procedural thrust for polearms); block/crouch-block/dodge/hit variants registered in `_CLIP` + the frame
+  maps. 2D: `char_mocap.attack_clip`/`combat_mocap` + `body_renderer` now play the SAME real combat +
+  defence mocap in the top-down view (previously procedural-only) — attacks rotate, blocks/dodges/hits play
+  their captures. The colosseum AI fires an occasional GUARD/dodge so the defences show in a bout. Split
+  `body_draw.py` off `body_renderer` (SSAA/glimpse/projectile) to hold the 500-line line.
+  scratchpad/combat_moves.png, combat_iso_rotation.png, combat_2d.png. tests: attack_clip rotates +
+  combat_mocap picks defences (test_char_mocap), iso attack rotates + the defence moves build
+  (test_iso_skeleton). Full suite green.
 
 ## Phase 41 — Isometric 3D-look world (George's choice, 2026-07-14)
 

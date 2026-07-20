@@ -79,9 +79,12 @@ class TestShortcuts(unittest.TestCase):
         if step is None:
             self.skipTest("no reachable shoreline")
         self.engine.traversal.rng = _FixedRng(1)   # wading never rolls
+        n_before = len(self.engine.memory_manager.game_history)
         self.assertTrue(self.engine.move_player(*step))
+        # scan every beat this move produced — ambient world beats (a distant
+        # collapse, an NPC's world spell) can crowd a small tail window
         log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-3:])
+                       self.engine.memory_manager.game_history[n_before:])
         self.assertIn("wade", log.lower())
 
 
@@ -92,6 +95,10 @@ class TestTeleports(unittest.TestCase):
         self.engine.start_game()
         self.player = self.engine.player
         self.travel = self.engine.travel_system
+        # these exercise teleport MECHANICS (landing/cooldown/toll), not the
+        # waystone-only gate — bypass it so they teleport from anywhere; the
+        # gate itself is covered by test_exit_teleport_gating.
+        self.travel.at_station = lambda: True
 
     def tearDown(self):
         try:

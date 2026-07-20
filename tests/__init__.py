@@ -25,6 +25,15 @@ atexit.register(shutil.rmtree, _packs, ignore_errors=True)
 # clears this flag to exercise the band.
 os.environ.setdefault("LLM_RPG_NO_ADVENTURERS", "1")
 
+# Determinism: seed the global RNG at session start so the suite is REPRODUCIBLE
+# (tests/__init__ is imported once before any test). Python otherwise seeds from
+# system entropy per run, so worldgen + the default player's class + spawn
+# placement shift every run — the root of the B2 procedural flakes (a test that
+# passes in isolation fails ~1/run in the full suite). A fixed seed + unittest's
+# deterministic order means each test sees the same global-RNG state every run.
+import random as _random
+_random.seed(0xA17E5)
+
 
 def clean_dm_library():
     """Wipe the per-run DM library (tests that define ids call this in

@@ -38,7 +38,6 @@
         {"type": "kill", "target": "monster", "required": 1,
          "description": "Slay the Mire Stalker"}
       ],
-      "giver_id": "guard_01",
       "reward_gold": 45,
       "reward_xp": 80
     }

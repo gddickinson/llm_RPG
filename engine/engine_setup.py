@@ -81,22 +81,44 @@ def build_subsystems(engine, llm_model=None,
     self.faction_ticker = FactionTicker(self)
     from engine.production_loop import ProductionSystem
     self.production = ProductionSystem(self)
+    from engine.construction import ConstructionSystem     # M4 workers rebuild
+    self.construction = ConstructionSystem(self)
     from world.resource_nodes import ResourceNodeSystem
     self.resource_nodes = ResourceNodeSystem(self)
     from engine.lairs import LairSystem
     self.lairs = LairSystem(self)
+    from engine.deepdelve import DeepdelveSystem
+    self.deepdelve = DeepdelveSystem(self)
     from engine.guildhalls import GuildHallSystem
     self.guildhalls = GuildHallSystem(self)
+    from engine.stables import StableSystem
+    self.stables = StableSystem(self)
+    from engine.colosseum import ColosseumSystem
+    self.colosseum = ColosseumSystem(self)
+    from engine.activities import ActivitySystem   # LIVING_WORLD A1
+    self.activities = ActivitySystem(self)
     from engine.teleport_network import TeleportNetwork
     self.teleport_network = TeleportNetwork(self)
     from engine.adventure_tome import AdventureTome
     self.adventure_tome = AdventureTome(self)
+    from engine.ravenmoor import Ravenmoor
+    self.ravenmoor = Ravenmoor(self)
+    from engine.adventure_seed import AdventureSeeder
+    self.emberfell = AdventureSeeder(self, "emberfell.json")
+    self.blackbanner = AdventureSeeder(self, "blackbanner.json")
+    self.wychwood = AdventureSeeder(self, "wychwood.json")
     from engine.adventurers import AdventurerSystem
     self.adventurers = AdventurerSystem(self)
+    from engine.townsfolk_venture import TownsfolkVentureSystem
+    self.townsfolk_venture = TownsfolkVentureSystem(self)
+    from engine.npc_adventuring import NpcAdventuringSystem
+    self.npc_adventuring = NpcAdventuringSystem(self)
     from engine.monster_packs import MonsterPackSystem
     self.monster_packs = MonsterPackSystem(self)
     from engine.monster_tribes import MonsterTribeSystem
     self.monster_tribes = MonsterTribeSystem(self)
+    from engine.tribe_camps import TribeCampSystem   # LIVING_WORLD C3
+    self.tribe_camps = TribeCampSystem(self)
     from engine.nemesis import NemesisSystem
     self.nemesis = NemesisSystem(self)
     from engine.ambitions import AmbitionSystem
@@ -110,6 +132,11 @@ def build_subsystems(engine, llm_model=None,
     from engine.chronicle import Chronicle
     self.chronicle = Chronicle(self)
     self.memory_manager.add_observer(self.chronicle.record)
+    from engine.codex import CodexSystem       # GAP.2 the self-teaching journal
+    self.codex = CodexSystem(self)
+    self.memory_manager.add_observer(self.codex.on_event)
+    from engine import world_memory        # T2.1 NPCs ingest world beats
+    self.memory_manager.add_observer(world_memory.make_observer(self))
     from engine.romance import RomanceSystem
     self.romance = RomanceSystem(self)
     self.dm = DMApi(self)
@@ -190,6 +217,8 @@ def build_subsystems(engine, llm_model=None,
     self.structures = StructureBuilder(self)
     from engine.tile_damage import TileDamage
     self.tile_damage = TileDamage(self)
+    from engine.wards import WardSystem          # magical protection by power
+    self.wards = WardSystem(self)
     from engine.surfaces import SurfaceLayer
     self.surfaces_layer = SurfaceLayer(self)
     from engine.flood import FloodSystem
@@ -222,9 +251,17 @@ def seed_world(engine) -> None:
         ("Resource nodes", lambda: self.resource_nodes.seed()),
         ("Structures", lambda: self.structures.build()),
         ("Lairs", lambda: self.lairs.seed()),           # P19.2
+        ("Tribe camps", lambda: self.tribe_camps.seed()),  # LIVING_WORLD C3
+        ("Deepdelve", lambda: self.deepdelve.seed()),   # GX.5
         ("Guild halls", lambda: self.guildhalls.seed()),  # M.7b
+        ("Stables", lambda: self.stables.seed()),        # P28.2d mounts
+        ("Colosseum", lambda: self.colosseum.seed()),    # combat testing arena
         ("Teleport network", lambda: self.teleport_network.seed()),  # P28.1a
         ("Sunken Tome adventure", lambda: self.adventure_tome.seed()),  # P38
+        ("Ravenmoor adventure", lambda: self.ravenmoor.seed()),
+        ("Emberfell adventure", lambda: self.emberfell.seed()),
+        ("Blackbanner adventure", lambda: self.blackbanner.seed()),
+        ("Wychwood adventure", lambda: self.wychwood.seed()),
         ("Adventurers", lambda: self.adventurers.seed()),  # P-M.6
     ):
         try:

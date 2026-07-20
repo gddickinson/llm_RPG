@@ -179,7 +179,8 @@ class HeuristicProvider(LLMProvider):
                         _GREETINGS.get(klass, _GREETINGS["villager"]))
                     return self._wrap(character, "greet", "player",
                                       greet, "calm")
-                return self._wrap(character, act, tgt, "", emotion)
+                return self._wrap(character, act, tgt, "", emotion,
+                                  activity=activity)
         except Exception:
             pass
 
@@ -223,6 +224,20 @@ class HeuristicProvider(LLMProvider):
             return "east" if dx > 0 else "west"
         return "south" if dy > 0 else "north"
 
+    def _patrol_home(self, character, meta, home):
+        """C1: a lair SENTRY paces an 8-point ring around the den, advancing to
+        the next waypoint as it reaches the last — a visible perimeter watch."""
+        import math
+        r = meta.get("patrol_r", 3)
+        i = meta.get("patrol_i", 0)
+        ang = 2.0 * math.pi * i / 8.0
+        wp = (int(home[0] + r * math.cos(ang)), int(home[1] + r * math.sin(ang)))
+        mypos = tuple(character.position)
+        if abs(mypos[0] - wp[0]) + abs(mypos[1] - wp[1]) <= 1:
+            meta["patrol_i"] = (i + 1) % 8
+        return self._wrap(character, "move", self._dir_between(mypos, wp),
+                          "", "watchful")
+
     def _hostile_action(self, character, world_state, player_in_view):
         meta = getattr(character, "metadata", {}) or {}
         behavior = meta.get("behavior", {})
@@ -254,6 +269,30 @@ class HeuristicProvider(LLMProvider):
                 return self._wrap(character, "move", back,
                                   "(lumbers back toward its lair)",
                                   "sullen")
+
+        # LIVING_WORLD C2: a nocturnal creature (undead / bog things / wisps) lies
+        # DORMANT at its den by day, a diurnal one by night, while no prey is about
+        # — survival still wakes it (the flee/attack branches ran first).
+        active = meta.get("active")
+        if active in ("day", "night") and home and not player_in_view:
+            night = (world_state or {}).get("time_of_day") == "night"
+            if (night if active == "day" else not night):
+                meta["asleep"] = True
+                meta["_bubble"] = "sleep"
+                return self._wrap(character, "wait", "dormant in its lair",
+                                  "", "dormant")
+        meta.pop("asleep", None)
+
+        # LIVING_WORLD C1: an occupied den — while no prey is in sight a SENTRY
+        # paces the perimeter, a CHIEF/SHAMAN holds the hoard, the rest mill about
+        # (they're already leashed home above), so a lair reads as lived-in
+        role = meta.get("lair_role")
+        if role and home and not player_in_view:
+            if role == "sentry":
+                return self._patrol_home(character, meta, tuple(home))
+            if role in ("chief", "shaman"):
+                return self._wrap(character, "wait", "over the hoard",
+                                  "", "watchful")
 
         # Ambusher: lie motionless until prey comes close
         ambush = behavior.get("ambush", 0)
@@ -318,7 +357,7 @@ class HeuristicProvider(LLMProvider):
                           self.rng.choice(["north", "south", "east",
                                            "west"]), "", "wary")
 
-    def _wrap(self, character, action, target, dialog, emotion):
+    def _wrap(self, character, action, target, dialog, emotion, activity=""):
         return {
             "action": action,
             "target": target,
@@ -326,6 +365,9 @@ class HeuristicProvider(LLMProvider):
             "thoughts": f"({character.name} acts on instinct.)",
             "emotion": emotion,
             "goal_update": "",
+            # LIVING_WORLD A1: the raw schedule activity rides through so the
+            # ActivitySystem can PERFORM it (hammer/pray/…) on arrival, not loiter
+            "activity": activity,
         }
 
     def _parse_hour(self, world_state: Dict[str, Any]) -> int:

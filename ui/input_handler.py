@@ -45,6 +45,15 @@ class InputHandler:
             self.gui.running = False
             return True
 
+        # F12 — save a screenshot, in ANY mode (play, menus, overlays, death)
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_F12:
+            try:
+                from ui.screenshot import save_screenshot
+                save_screenshot(self.gui)
+            except Exception:
+                pass
+            return True
+
         # Click-to-target (P8.7 UX): left-click a visible enemy
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 \
                 and self.gui.mode == "play":
@@ -92,44 +101,12 @@ class InputHandler:
             from ui.dialog_input import handle_dialog_input
             return handle_dialog_input(self.gui, event)
 
-        # Travel menu: 1-9 teleports, Esc cancels
-        if self.gui.mode == "travel":
-            if event.type != pygame.KEYDOWN:
-                return True
-            if event.key in (pygame.K_ESCAPE, pygame.K_u):
-                self.gui.mode = "play"
-                self.gui.overlay = None
-                return True
-            if pygame.K_1 <= event.key <= pygame.K_9:
-                idx = event.key - pygame.K_1
-                try:
-                    self.engine.travel_system.teleport(idx)
-                except Exception:
-                    pass
-                self.gui.mode = "play"
-                self.gui.overlay = None
-                return True
-            return True
-
-        # Waystone menu (P37.1): 1-9 travel to a destination, Esc cancels
-        if self.gui.mode == "waystone":
-            if event.type != pygame.KEYDOWN:
-                return True
-            if event.key in (pygame.K_ESCAPE, pygame.K_e, pygame.K_g):
-                self.gui.mode = "play"
-                self.gui.overlay = None
-                return True
-            if pygame.K_1 <= event.key <= pygame.K_9:
-                idx = event.key - pygame.K_1
-                try:
-                    msg = self.engine.teleport_network.teleport_index(idx)
-                    self.engine.memory_manager.add_event(msg)
-                except Exception:
-                    pass
-                self.gui.mode = "play"
-                self.gui.overlay = None
-                return True
-            return True
+        # The numbered pop-up menus (travel / stable / waystone) live in
+        # input_actions to hold the 500-line line
+        from ui.input_actions import menu_mode_key
+        _mm = menu_mode_key(self.gui, self.engine, event)
+        if _mm is not None:
+            return _mm
 
         # Menu mode (text overlay — help / character sheet / quest log)
         if self.gui.mode == "menu":
@@ -178,6 +155,47 @@ class InputHandler:
                 return True
             if self.gui.crafting_panel is not None:
                 return self.gui.crafting_panel.handle_key(event)
+            return True
+
+        # Build / terraform planner (M5)
+        if self.gui.mode == "build":
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.gui.mode = "play"
+                return True
+            if self.gui.build_planner is not None:
+                return self.gui.build_planner.handle_key(event)
+            return True
+
+        # World map (GAP.4) — M or Esc closes
+        if self.gui.mode == "worldmap":
+            if event.type == pygame.KEYDOWN and event.key in \
+                    (pygame.K_ESCAPE, pygame.K_m):
+                self.gui.mode = "play"
+            return True
+
+        # Victory (T4.3) — New Game+, keep playing, or lay it to rest
+        if self.gui.mode == "victory":
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_n:
+                    self.gui.restart_ng_plus()
+                elif event.key == pygame.K_c:
+                    self.gui.mode = "play"
+                elif event.key in (pygame.K_ESCAPE, pygame.K_q):
+                    self.gui.mode = "confirm_quit"
+            return True
+
+        # Cold-open prologue (GAP.7) — any key or click begins the game
+        if self.gui.mode == "intro":
+            if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+                self.gui.dismiss_intro()
+            return True
+
+        # Character hub (GAP.6) — mouse + keys routed to the tabbed screen
+        if self.gui.mode == "player":
+            ps = getattr(self.gui, "player_screen", None)
+            if ps is not None:
+                return ps.handle_event(event)
+            self.gui.mode = "play"
             return True
 
         if event.type != pygame.KEYDOWN:
@@ -260,15 +278,26 @@ class InputHandler:
             return True
 
         # Bank deposit all (N) / withdraw all (M)
-        if k in (pygame.K_n, pygame.K_m):
+        if k == pygame.K_n:                      # deposit at a bank
             try:
-                if k == pygame.K_n:
-                    self.engine.deposit_gold(self.engine.player.gold)
-                else:
-                    self.engine.withdraw_gold(
-                        self.engine.bank_balance())
+                self.engine.deposit_gold(self.engine.player.gold)
             except Exception:
                 pass
+            return True
+
+        if k == pygame.K_m:                      # M = world map, unless
+            at_bank = False                      # standing at a bank (then
+            try:                                 # it withdraws, as before)
+                at_bank = self.engine.bank.is_at_bank()[0]
+            except Exception:
+                at_bank = False
+            if at_bank:
+                try:
+                    self.engine.withdraw_gold(self.engine.bank_balance())
+                except Exception:
+                    pass
+            else:
+                self.gui.show_world_map()
             return True
 
         if k == pygame.K_l:   # look around; SHIFT+L: log detail
@@ -285,8 +314,17 @@ class InputHandler:
                 1 if k == pygame.K_RIGHTBRACKET else -1)
             return True
 
-        if k == pygame.K_b:   # barter (S is shadowed by move-down)
-            input_actions.open_shop(self)
+        if k == pygame.K_b:   # barter by a merchant, else the build/terraform tool
+            try:
+                from engine.shop import merchants_near
+                near = merchants_near(self.engine, self.engine.player,
+                                      radius=2.0)
+            except Exception:
+                near = None
+            if near:
+                input_actions.open_shop(self)
+            else:
+                self.gui.show_build_planner()
             return True
 
         if k == pygame.K_k:   # crafting overlay
@@ -311,16 +349,27 @@ class InputHandler:
 
         # single-key overlays, play-mode number keys (guard / quick-cast), and
         # the SHIFT skill verbs live in input_actions to hold the 500-line line
-        from ui.input_actions import (one_key_overlay, number_key, skill_verb)
+        from ui.input_actions import (one_key_overlay, number_key, skill_verb,
+                                       grapple_verb)
         if one_key_overlay(self.gui, k):
             return True
         if number_key(self.engine, k):
             return True
         if shift and skill_verb(self.engine, k):
             return True
+        if shift and grapple_verb(self.engine, k):
+            return True
 
         # Talk to adjacent NPC
         if k == pygame.K_t:
+            try:
+                from engine import shapeshift
+                if shapeshift.restricted(self.engine.player, "no_speak"):
+                    self.engine.memory_manager.add_event(
+                        "You can only growl and snap in this shape.")
+                    return True
+            except Exception:
+                pass
             npc = self._find_adjacent_npc()
             if npc:
                 self.gui.start_dialog(npc.id)
@@ -339,6 +388,23 @@ class InputHandler:
                     and tn.platform_at(self.engine.player.position) is not None:
                 self.gui.show_teleport()
                 return True
+            col = getattr(self.engine, "colosseum", None)   # combat-test arena
+            if col is not None and not self.engine.current_interior \
+                    and col.at_entrance(self.engine.player.position):
+                col.enter()                       # stage the next matchup
+                return True
+            # GX.5b: search out Oakvale's hidden Deepdelve stair where the
+            # ground rings hollow (nothing underfoot to pick up instead)
+            dd = getattr(self.engine, "deepdelve", None)
+            if dd is not None and not self.engine.current_interior \
+                    and dd.secret_near(self.engine.player.position) is not None:
+                try:
+                    underfoot = self.engine.world.get_items_at(
+                        *self.engine.player.position)
+                except Exception:
+                    underfoot = []
+                if not underfoot and dd.reveal_secret():
+                    return True
             if self.engine.current_interior:
                 try:
                     here = self.engine.world.get_items_at(
@@ -349,7 +415,47 @@ class InputHandler:
                     msg = self.engine.use_furniture() or self.engine.home_action()
                     if msg:
                         return True
-            from engine.mount import try_buy_at_stable   # P15.8b mule
+            # P28.2d a stable: open the buy-and-ride menu (nothing underfoot)
+            try:
+                if not self.engine.current_interior \
+                        and self.engine.at_stable() \
+                        and not self.engine.world.get_items_at(
+                            *self.engine.player.position):
+                    self.gui.show_stable()
+                    return True
+            except Exception:
+                pass
+            # A-board: a tavern notice board — view & take posted quests
+            try:
+                if self.engine.quest_board_at_player() is not None \
+                        and not self.engine.world.get_items_at(
+                            *self.engine.player.position):
+                    self.gui.show_quest_board()
+                    return True
+            except Exception:
+                pass
+            # A place of magical study — a caster binds a familiar here
+            try:
+                if self.engine.can_bind_familiar() \
+                        and not self.engine.world.get_items_at(
+                            *self.engine.player.position):
+                    from engine import training
+                    prof = training.trainer_here(self.engine)
+                    if prof is not None and prof.get("teaches_spells"):
+                        self.gui.show_familiars()
+                        return True
+            except Exception:
+                pass
+            # A wild animal beside you, and food to lure it — tame it
+            try:
+                if self.engine.tameable_animal_near() is not None \
+                        and not self.engine.world.get_items_at(
+                            *self.engine.player.position):
+                    self.engine.tame_animal()
+                    return True
+            except Exception:
+                pass
+            from engine.mount import try_buy_at_stable   # P15.8b mule (legacy)
             if try_buy_at_stable(self.engine):
                 return True
             msg = self.engine.pickup_item()
@@ -369,9 +475,9 @@ class InputHandler:
             self.gui.show_quests()
             return True
 
-        # Character sheet
+        # Character hub (GAP.6) — the "one place" for the player
         if k == pygame.K_c:
-            self.gui.show_character_sheet()
+            self.gui.show_player_screen()
             return True
 
         # Save / load
@@ -472,11 +578,10 @@ class InputHandler:
                 msg = tm.try_depart()
                 self.engine.memory_manager.add_event(msg)
                 return
-            if self.engine.current_interior:
-                self.engine.exit_building()
-                return
-            if self.engine.current_dungeon:
-                self.engine.exit_dungeon()
+            # You leave through the DOOR / stairs, not by wishing yourself out
+            # from anywhere (George) — gated in input_actions.try_exit_zone.
+            from ui.input_actions import try_exit_zone
+            if try_exit_zone(self):
                 return
             # Cave?
             from world.world_map import TerrainType

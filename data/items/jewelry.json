@@ -6,8 +6,14 @@
     "value": 320,
     "rarity": "rare",
     "description": "A silver ring set with a bead of never-drying seawater. Worn, the deep parts around you — you swim like an otter and hold your breath far longer.",
-    "equip_bonuses": {"swim": 3, "climb": 1},
-    "metadata": {"artifact": true, "long_breath": true}
+    "equip_bonuses": {
+      "swim": 3,
+      "climb": 1
+    },
+    "metadata": {
+      "artifact": true,
+      "long_breath": true
+    }
   },
   "ring_strength": {
     "id": "ring_strength",
@@ -149,5 +155,189 @@
     "metadata": {
       "teleport_access": true
     }
+  },
+  "amulet_of_warding": {
+    "id": "amulet_of_warding",
+    "name": "Amulet of Warding",
+    "item_type": "amulet",
+    "value": 180,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "armor": 1,
+      "max_hp": 6
+    },
+    "description": "A rune-etched amulet that turns aside harm."
+  },
+  "mage_ring": {
+    "id": "mage_ring",
+    "name": "Ring of the Magi",
+    "item_type": "ring",
+    "value": 200,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "max_mana": 6,
+      "mana_regen": 1,
+      "intelligence": 1
+    },
+    "description": "A silver band humming with arcane power."
+  },
+  "ring_of_spell_storing": {
+    "name": "Ring of Spell Storing",
+    "item_type": "ring",
+    "value": 260,
+    "rarity": "rare",
+    "use_effect": {
+      "spell": "magic_missile"
+    },
+    "metadata": {
+      "charges": 6
+    },
+    "description": "A ring that holds a caged spell, loosed at a thought. 6 charges."
+  },
+  "ring_of_regeneration": {
+    "name": "Ring of Regeneration",
+    "item_type": "ring",
+    "value": 420,
+    "rarity": "epic",
+    "equip_bonuses": {
+      "hp_regen": 2,
+      "max_hp": 6
+    },
+    "description": "Wounds close on their own while it is worn."
+  },
+  "ring_of_the_archmage": {
+    "name": "Ring of the Archmage",
+    "item_type": "ring",
+    "value": 900,
+    "rarity": "legendary",
+    "equip_bonuses": {
+      "intelligence": 2,
+      "max_mana": 10,
+      "mana_regen": 1
+    },
+    "use_effect": {
+      "spell": "lightning_bolt"
+    },
+    "metadata": {
+      "charges": 5,
+      "artifact": true
+    },
+    "description": "A ring of the great mages — it swells your power and stores a bolt of lightning."
+  },
+  "ring_of_fire_resistance": {
+    "name": "Ring of Fire Resistance",
+    "item_type": "ring",
+    "value": 180,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "max_hp": 4
+    },
+    "metadata": {
+      "resist": "fire"
+    },
+    "description": "A ruby ring that turns flame to a warm caress."
+  },
+  "amulet_of_health": {
+    "name": "Amulet of Health",
+    "item_type": "amulet",
+    "value": 300,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "constitution": 2,
+      "max_hp": 10
+    },
+    "description": "A jade amulet that fortifies the body."
+  },
+  "amulet_of_the_planes": {
+    "name": "Amulet of the Planes",
+    "item_type": "amulet",
+    "value": 700,
+    "rarity": "legendary",
+    "equip_bonuses": {
+      "intelligence": 1
+    },
+    "metadata": {
+      "teleport_access": true,
+      "artifact": true
+    },
+    "description": "A shifting amulet said to fold the very roads of the world."
+  },
+  "circlet_of_intellect": {
+    "name": "Circlet of Intellect",
+    "item_type": "amulet",
+    "value": 260,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "intelligence": 2,
+      "max_mana": 6
+    },
+    "description": "A silver circlet that sharpens the mind to a razor."
+  },
+  "boots_of_speed": {
+    "name": "Boots of Speed",
+    "item_type": "boots",
+    "value": 320,
+    "rarity": "epic",
+    "equip_bonuses": {
+      "dexterity": 2,
+      "dodge": 1
+    },
+    "use_effect": {
+      "effect": "hasted",
+      "duration": 6
+    },
+    "metadata": {
+      "charges": 3
+    },
+    "description": "Winged boots that blur the wearer into a haste. 3 charges."
+  },
+  "boots_of_striding": {
+    "name": "Boots of Striding",
+    "item_type": "boots",
+    "value": 150,
+    "rarity": "uncommon",
+    "equip_bonuses": {
+      "dexterity": 1
+    },
+    "metadata": {
+      "climb": 2,
+      "swim": 1
+    },
+    "description": "Sturdy boots that make hard country easy going."
+  },
+  "amulet_of_mana": {
+    "name": "Amulet of the Deep Well",
+    "item_type": "amulet",
+    "value": 280,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "max_mana": 12,
+      "mana_regen": 1
+    },
+    "description": "A sapphire amulet brimming with a bottomless well of magic."
+  },
+  "ring_of_the_ram": {
+    "name": "Ring of the Ram",
+    "item_type": "ring",
+    "value": 300,
+    "rarity": "rare",
+    "use_effect": {
+      "spell": "eldritch_blast"
+    },
+    "metadata": {
+      "charges": 8
+    },
+    "description": "A ring that punches a battering blow of force."
+  },
+  "cloak_of_elvenkind": {
+    "name": "Cloak of Elvenkind",
+    "item_type": "boots",
+    "value": 240,
+    "rarity": "rare",
+    "equip_bonuses": {
+      "dexterity": 1,
+      "dodge": 2
+    },
+    "description": "A grey-green cloak that blurs its wearer into the shadows."
   }
 }

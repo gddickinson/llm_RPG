@@ -285,7 +285,7 @@ def withdraw(engine, item_name: str) -> str:
             if not can_carry(p):
                 return "Your pack is full — no room to take that."
             from items.item import Item
-            p.inventory.append(Item.from_dict(d))
+            p.add_item(Item.from_dict(d))      # stacks (P25.1)
             store.remove(d)
             msg = f"[Home] You take {d.get('name')} from your chest."
             engine.memory_manager.add_event(msg)

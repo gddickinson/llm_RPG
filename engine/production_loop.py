@@ -34,6 +34,18 @@ GATHER_YIELD = 3        # raw units a gatherer pulls per day
 CRAFT_CAP = 2           # goods a crafter makes per day, per good
 STORE_CAP = 99          # a larder only holds so much
 CARAVAN_LOAD = 4        # goods a caravan shifts between settlements/day
+
+# T2.4 consumption — a settlement EATS its provisions daily, so the larder trends
+# toward scarcity instead of sitting at cap and real shortages emerge (feeding the
+# director shortage -> radiant fetch-quest chain).
+_FOOD_KEYS = ("fish", "bread", "meat", "ration", "stew", "food", "apple",
+              "cheese", "berries", "vegetable", "grain", "wheat", "loaf", "pie")
+_STAPLE = "bread"       # the shortage a hungry town declares (a valid item id)
+
+
+def _is_food(item_id) -> bool:
+    k = (item_id or "").lower()
+    return any(f in k for f in _FOOD_KEYS)
 CARAVAN_MIN_GAP = 8     # only when the glut vs scarcity gap is real (P16.2b)
 SETTLEMENT_KEYS = ("village", "hamlet", "town")
 
@@ -124,12 +136,50 @@ class ProductionSystem:
                 continue
             store = self.store_of(s.name)
             made = self._work(pr, store, profs)
+            if self._consume(store, profs):     # T2.4 the town eats; short → shortage
+                self._maybe_shortage()
             if made:
                 summaries.append((s.name, made))
         moves = self._arbitrage(settlements)     # P16.2b caravans
         notes = self._announce(summaries)
         self._announce_caravan(moves)
         return notes
+
+    def _consume(self, store, profs) -> bool:
+        """T2.4: the settlement EATS — daily demand drains provisions so the larder
+        trends toward scarcity instead of sitting at STORE_CAP. Returns True if the
+        town ran short of food (an emergent hunger that pushes a real shortage)."""
+        pop = sum(len(v) for v in profs.values())
+        if pop <= 0:
+            return False
+        need = max(1, pop // 2)                 # folk eat ~1 per 2 people/day
+        food = sorted((k for k in list(store) if _is_food(k)),
+                      key=lambda k: -store.get(k, 0))
+        for k in food:
+            if need <= 0:
+                break
+            take = min(store.get(k, 0), need)
+            store[k] = store.get(k, 0) - take
+            need -= take
+            if store[k] <= 0:
+                del store[k]
+        return need > 0                          # still hungry → a real shortfall
+
+    def _maybe_shortage(self) -> None:
+        """A hungry settlement pushes a real food shortage → prices up + a radiant
+        fetch quest, rate-limited so a lean spell doesn't spam."""
+        d = getattr(self.engine, "world_director", None)
+        if d is None:
+            return
+        try:
+            now = self.engine.world.time
+            if d.shortages.get(_STAPLE, 0) > now:    # a bread shortage is live
+                return
+            msg = d._apply_shortage({"item_id": _STAPLE})
+            if msg:
+                self.engine.memory_manager.add_event("[Realm] " + msg)
+        except Exception:
+            pass
 
     def _arbitrage(self, settlements) -> List[tuple]:
         """P16.2b: a caravan carries a settlement's GLUT of a good to

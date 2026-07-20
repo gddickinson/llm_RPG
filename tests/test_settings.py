@@ -18,7 +18,7 @@ def _player():
 class TestSettingsModel(unittest.TestCase):
     def test_defaults(self):
         p = _player()
-        self.assertEqual(settings.get_setting(p, "zoom"), 48)
+        self.assertEqual(settings.get_setting(p, "zoom"), 64)
         self.assertEqual(settings.get_setting(p, "hints"), "on")
         self.assertTrue(settings.enabled(p, "minimap"))
 
@@ -31,9 +31,9 @@ class TestSettingsModel(unittest.TestCase):
     def test_cycle_wraps(self):
         p = _player()
         seen = [settings.get_setting(p, "zoom")]
-        for _ in range(3):
+        for _ in range(4):
             seen.append(settings.cycle_setting(p, "zoom"))
-        self.assertEqual(seen, [48, 64, 24, 32])   # wraps round
+        self.assertEqual(seen, [64, 80, 24, 32, 48])   # wraps round
 
     def test_cycle_backwards(self):
         p = _player()
@@ -70,7 +70,9 @@ class TestSettingsAndQuitInGui(unittest.TestCase):
         gui = self._gui()
         gui.show_settings()
         self.assertEqual(gui.mode, "settings")
-        gui.settings_panel.cursor = 4          # the zoom row
+        # find the zoom row (its index shifts as options are added)
+        gui.settings_panel.cursor = [o["key"] for o in
+                                     settings.all_options()].index("zoom")
         gui.settings_panel.handle_key(self._key(pygame.K_RIGHT))
         self.assertEqual(gui.renderer.tile_size,
                          settings.get_setting(gui.engine.player, "zoom"))

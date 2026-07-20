@@ -66,6 +66,12 @@ class PlayerActions:
         if not candidates:
             return f"You can't find {item_name} here."
 
+        # a real ITEM (has an id) before a plain-string BODY MARKER, so a
+        # blind pickup grabs the loot, not the corpse on top of it — else a
+        # tile with a body + loot loops forever "leaving it in peace" while
+        # the real loot is never reached (George: away-hero looted 737×).
+        candidates.sort(key=lambda it: 0 if hasattr(it, "id") else 1)
+
         item = candidates[0]
         item_name_str = item.name if hasattr(item, "name") else str(item)
         # Plain-string ground entries are body markers — they belong
@@ -297,6 +303,11 @@ class PlayerActions:
         try:   # the mount trails a step behind (P15.8b mule / P28.2a roster)
             from engine.mounts import mount_follow
             mount_follow(self.engine, old_pos)
+        except Exception:
+            pass
+        try:   # a familiar trails the caster too
+            from engine.familiars import follow
+            follow(self.engine.player, old_pos)
         except Exception:
             pass
 

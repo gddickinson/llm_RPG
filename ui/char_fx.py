@@ -24,6 +24,60 @@ def draw_effects(surface, char, sx, sy, tile_size, clock):
         _fire(surface, sx, sy, tile_size, clock)
     if md.get("_fx_wet", 0) > 0:
         _wet(surface, sx, sy, tile_size, clock)
+    draw_status(surface, char, sx, sy, tile_size, clock)
+
+
+# H5: status conditions shown ON the body — a blessing haloes gold, poison bubbles
+# green, a curse smokes dark violet. Read from the character's active effects.
+_STATUS_FX = (("blessed", (255, 224, 130), "aura"),
+              ("poisoned", (96, 205, 96), "wisps"),
+              ("cursed", (156, 74, 190), "aura"))
+
+
+def draw_status(surface, char, sx, sy, ts, t):
+    """Overlay a soft cue for each active magical condition (H5)."""
+    if not PYGAME_OK:
+        return
+    try:
+        from characters.status_effects import has_effect
+    except Exception:
+        return
+    for name, col, kind in _STATUS_FX:
+        try:
+            if not has_effect(char, name):
+                continue
+        except Exception:
+            continue
+        (_aura if kind == "aura" else _wisps)(surface, sx, sy, ts, t, col)
+
+
+def _aura(surface, sx, sy, ts, t, col):
+    """A soft pulsing glow RING that hugs the body (blessing / curse) — an outline,
+    not a filled blob, so it frames the figure instead of washing it out."""
+    pulse = 0.55 + 0.45 * (0.5 + 0.5 * math.sin(t * 3.0))
+    d = int(ts * 2.0)
+    g = pygame.Surface((d, d), pygame.SRCALPHA)
+    c = d // 2
+    ew, eh = int(d * 0.26), int(d * 0.46)              # a tall, body-shaped ring
+    for i, a in enumerate((26, 46, 70)):               # concentric fading edges
+        pygame.draw.ellipse(g, (col[0], col[1], col[2], int(a * pulse)),
+                            (c - ew - 2 + i * 2, c - eh - 2 + i * 2,
+                             (ew + 2 - i * 2) * 2, (eh + 2 - i * 2) * 2), 2)
+    surface.blit(g, (int(sx + ts / 2 - c), int(sy + ts * 0.30 - c)))
+
+
+def _wisps(surface, sx, sy, ts, t, col):
+    """Rising bubbles/wisps (poison)."""
+    cx = sx + ts / 2.0
+    for i in range(5):
+        p = (t * 1.1 + i / 5.0) % 1.0
+        wx = cx + math.sin((t * 2 + i) * 1.7) * ts * 0.26
+        wy = sy + ts * 0.9 - p * ts * 0.85
+        r = max(1, int(ts * 0.06 * (1.0 - p * 0.5)))
+        a = int(150 * (1.0 - p))
+        g = pygame.Surface((r * 2 + 2, r * 2 + 2), pygame.SRCALPHA)
+        pygame.draw.circle(g, (col[0], col[1], col[2], a), (r + 1, r + 1), r)
+        surface.blit(g, (int(wx - r), int(wy - r)))
 
 
 def _fire(surface, sx, sy, ts, t):

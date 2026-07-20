@@ -48,8 +48,18 @@ class MapRenderer:
         # Lighting + weather overlays (lazy)
         self._lighting = None
         self._weather_overlay = None
-        self._dim_shade = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
-        self._dim_shade.fill((10, 10, 20, 130))   # cached fog-dim (P33.2)
+        self._dim_shade = None      # cached fog-dim overlay, sized to tile_size
+
+    def _dim_surface(self):
+        """The explored-but-out-of-sight fog-dim overlay, sized to the CURRENT
+        tile_size. Rebuilt when the zoom changes — else the overlay stays at the
+        construction size and only darkens a corner of a bigger tile (George
+        2026-07-18: "a smaller darker tile is placed over out-of-sight tiles")."""
+        ts = self.tile_size
+        if self._dim_shade is None or self._dim_shade.get_width() != ts:
+            self._dim_shade = pygame.Surface((ts, ts), pygame.SRCALPHA)
+            self._dim_shade.fill((10, 10, 20, 130))   # P33.2 fog-dim
+        return self._dim_shade
 
     @staticmethod
     def active_zone(engine):
@@ -61,10 +71,9 @@ class MapRenderer:
     def render(self, target: "pygame.Surface", engine, view_rect: "pygame.Rect"
                ) -> None:
         """Render the map into `target` within `view_rect`."""
-        try:   # P34.7 the "Smooth sprites" (SSAA) setting toggles oversampling
-            from engine import settings
-            from ui import body_renderer as _br
-            _br.SSAA_SCALE = 2 if settings.enabled(engine.player, "smooth") else 1
+        try:   # P34.7/P40.2 "Smooth sprites" toggles character + terrain SSAA
+            from ui import gfx
+            gfx.apply_ssaa_setting(engine)
         except Exception:
             pass
         zone = self.active_zone(engine)
@@ -117,7 +126,7 @@ class MapRenderer:
                 surf = self.sprites.tile_variant(sprite_name, wx, wy)
                 target.blit(surf, dest)
                 if dim:
-                    target.blit(self._dim_shade, dest)
+                    target.blit(self._dim_surface(), dest)
 
         ts = self.tile_size
         try:   # edge-blend seams + water coast (P33.2) then 2.5D blocks (P16.5)
@@ -174,31 +183,25 @@ class MapRenderer:
         for char in all_chars:
             if hasattr(char, "is_active") and not char.is_active():
                 continue
-            # No seeing through walls (P9A.7) — unless keen_sight pierces
-            # them (P14.2 magical sight)
-            try:
-                if hidden_by_walls(engine, char):
-                    continue
-            except Exception:
-                pass
-            # Fog (P15.11): actors on unseen tiles aren't drawn
+            # No seeing through walls (P9A.7, unless keen_sight pierces them —
+            # P14.2) + fog (P15.11): actors on unseen tiles aren't drawn
             try:
                 from engine.discovery import actor_hidden
-                if char.id != engine.player.id and \
-                        actor_hidden(engine, char):
+                if hidden_by_walls(engine, char):
+                    continue
+                if char.id != engine.player.id and actor_hidden(engine, char):
                     continue
             except Exception:
                 pass
             cx, cy = char.position
             if not (cam_x <= cx < cam_x + cols and cam_y <= cy < cam_y + rows):
                 continue
-            update_anim(char, 1.0 / 30.0)
+            update_anim(char, 1.0 / 30.0, is_player=char.id == engine.player.id)
             sx = view_rect.x + (cx - cam_x) * self.tile_size
             sy = view_rect.y + (cy - cam_y) * self.tile_size
             # heroes draw as heroes; an NPC glimpsed through a window is glazed
-            is_player = char.id == engine.player.id or \
-                (getattr(char, "metadata", {}) or {}).get("player_char",
-                                                          False)
+            is_player = char.id == engine.player.id or bool(
+                (getattr(char, "metadata", {}) or {}).get("player_char"))
             try:
                 glimpsed = not is_player and bool(is_indoors(engine, char))
             except Exception:
@@ -222,6 +225,34 @@ class MapRenderer:
                 psx = view_rect.x + (pos[0] - cam_x) * self.tile_size
                 psy = view_rect.y + (pos[1] - cam_y) * self.tile_size
                 self._draw_pet(target, pet, psx, psy)
+        except Exception:
+            pass
+
+        # Familiar follower (a caster's magical companion)
+        try:
+            from engine.familiars import active
+            from ui.renderer_overlays import draw_familiar
+            fam = active(engine.player)
+            fpos = fam.get("pos") if fam else None
+            if fpos and cam_x <= fpos[0] < cam_x + cols \
+                    and cam_y <= fpos[1] < cam_y + rows:
+                fsx = view_rect.x + (fpos[0] - cam_x) * self.tile_size
+                fsy = view_rect.y + (fpos[1] - cam_y) * self.tile_size
+                draw_familiar(target, fam, fsx, fsy, self.tile_size)
+        except Exception:
+            pass
+
+        # Trailing mount (P28.2d): a horse/mule that follows the rider
+        try:
+            from engine.mounts import mount_position, active_mount
+            from ui.renderer_overlays import draw_mount
+            mp = mount_position(engine)
+            if mp and cam_x <= mp[0] < cam_x + cols \
+                    and cam_y <= mp[1] < cam_y + rows:
+                mx = view_rect.x + (mp[0] - cam_x) * self.tile_size
+                my = view_rect.y + (mp[1] - cam_y) * self.tile_size
+                draw_mount(target, active_mount(engine.player) or "horse",
+                           mx, my, self.tile_size)
         except Exception:
             pass
 
@@ -441,7 +472,7 @@ class MapRenderer:
             if visible is not None and (cx, cy) not in visible and \
                     char.id != engine.player.id:
                 continue
-            update_anim(char, 1.0 / 30.0)
+            update_anim(char, 1.0 / 30.0, is_player=char.id == engine.player.id)
             draw_body_crisp(target, char,
                       view_rect.x + (cx - cam_x) * self.tile_size,
                       view_rect.y + (cy - cam_y) * self.tile_size,

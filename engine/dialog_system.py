@@ -64,6 +64,16 @@ class DialogSystem:
             self.engine.advance_turn()
             return result
 
+        if lowered.startswith("/train"):        # M.7c guild-hall skill training
+            parts = message.split(maxsplit=1)
+            skill = parts[1].strip().lower() if len(parts) > 1 else ""
+            if not skill:
+                return self.engine.guildhalls.training_summary(
+                    self.engine.player)
+            result = self.engine.guildhalls.train(skill)
+            self.engine.advance_turn()
+            return result
+
         if lowered.startswith("/order"):
             if npc.id not in self.engine.companion_manager.party:
                 return f"{npc.name} doesn't take orders from you."

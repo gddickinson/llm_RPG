@@ -8053,3 +8053,2607 @@ Validator green; full suite green.
 **This closes George's whole 2026-07-15 combat-difficulty message**: P37.6a (10x XP/level),
 P37.6b (aggressive + tougher monsters), P37.6c (camp-clearing quests). Plus the earlier P22.6
 (non-blocking quick-cast + side-rail spellbook) for his spellcasting message.
+
+## 2026-07-15 — BUGFIX: file-sync conflict copies crashed the game on launch
+
+George hit `DataError: Duplicate content id 'king_bloodstone' (again in bloodstone_castle 2
+.json)` on launch. Cause: a file-sync service (iCloud/Dropbox) had dropped 40 CONFLICT COPIES
+across data/ — "monsters 2.json", "npcs/bloodstone_castle 2.json", etc. (the classic
+"name N.ext" pattern). They carried the same content ids, so `data_loader.load_data_dir`
+globbed them in and errored on the duplicate. All 40 were UNTRACKED junk (never committed).
+Fix: (1) deleted the 40 stray copies; (2) HARDENED `items/data_loader.py` to skip any file
+whose stem ends in a sync-conflict marker (` N` / ` copy` / ` Copy N`, via `_SYNC_DUP`) with a
+warning — so a reappearing sync copy can never crash the game again; a GENUINE duplicate id in
+two real files still errors. `tests/test_data_loader.py` (+3). Validator green; a headless
+start_game loads 57 NPCs cleanly.
+
+## 2026-07-15 — P28.2d: SURFACE the mount feature — a stable near Oakvale (George)
+
+George: horses/mules/riding "we started this but it never surfaced — there should be a stable
+near Oakvale where the rider can get a horse to ride." The mount CODE existed (engine/mounts.py
+— roster, buy_mount, mount_follow, dismount/remount, carry/speed bonuses) but was UNREACHABLE:
+no stable Location was ever seeded (so `_seller_nearby("stable")` never found one), and the
+mount never rendered. Fixes:
+- **New `engine/stables.py`** `StableSystem.seed()` plants a `Stable` Location (type:"stable")
+  beside each settlement at world start (mirrors the guild halls) — a stable stands by Oakvale
+  (+ Riverside etc.). Registered in engine_setup + the seed stack + save_load; persists.
+- **The E-key at a stable opens a numbered STABLE MENU** (`gui.show_stable` → mode="stable";
+  `mounts.stable_overlay_lines`/`buy_index`; engine wrappers `at_stable`/`mount_stable_lines`/
+  `mount_stable_buy`) listing horse/mule/donkey/war-horse with prices + your purse — pick one
+  and you BUY AND RIDE it (the existing buy_mount gives 2× road pace + the carry bonus). Hint
+  bar cue ("[E] stable — buy & ride a mount").
+- **The mount RENDERS** — a trailing quadruped (`renderer_overlays.draw_mount`, hide-coloured
+  by kind) behind the rider, in BOTH the top-down and iso renderers (`_draw_mount_iso`).
+- Extracted the travel/stable/waystone pop-up-menu key handlers into `input_actions.
+  menu_mode_key` to hold input_handler under 500 (473).
+
+Screenshots: the horse trailing the hero (top-down + iso). `tests/test_stables.py` (+8: stable
+seeds near Oakvale, marker is a stable Location, buying a horse mounts you + lifts carry,
+can't buy away from a stable, the menu lists the mounts, save round-trip, the mount draws).
+Validator green; full suite next. Next queued (George): platform-gated travel + spawn on a
+platform.
+
+## 2026-07-15 — AUDIT: unsurfaced-code review + surface the stranded items (George)
+
+George: "review the entire codebase and determine if there is unimplemented code that needs to
+be surfaced." Ran a THREE-AGENT audit (engine reachability / dead data content / half-wired
+features), each verifying every claim by grepping for the actual trigger. Findings (all "built
+but unreachable"):
+- CRITICAL: home-chest WITHDRAWAL missing — you can deposit into a home chest but never take
+  items back (`home_withdraw` has no caller) — an item-LOSS trap.
+- HIGH: guild-hall TRAINING (`guildhalls.train`) has no key/dialog/GUI trigger; the quest BOARD
+  (`quest_board_at_player`/`accept_quest_from_board`) has no caller so radiant quests posted
+  each morning are STRANDED.
+- HIGH (quick data wins): ~11 items with no acquisition path (flaming_sword, plate,
+  silent_boots, ring_strength, manual_athletics/dexterity — the only permanent-stat items,
+  frost_dagger, holy_mace, explorers_chart, crossbow+sling — ammo sold but not the weapons,
+  thrown_knife), and hill_giant (encounter_weight 0 → unspawnable).
+- MED: Tutorial Island absent from the GUI New Game menu; /bond /spend /order undiscoverable;
+  left-click-to-target not in the help.
+- Verified CLEAN: all 15 GUI panels are key-bound; every engine_setup subsystem is seeded/
+  updated; all spells/recipes/quests are reachable; all slash-commands dispatch.
+
+THIS ROUND surfaced the quick, low-risk data wins: the ~11 stranded items are now sold by
+fitting merchants / dropped in lair hoards, and hill_giant is a rare mountain encounter (data
+edits only). `tests/test_content_reachability.py` (+4) locks it in. Validator green.
+The audit is recorded in DEVELOPMENT_PLAN "Phase AUDIT"; the item-loss trap + guild-hall
+training + quest board are queued (trap FIRST). Full audit detail:
+scratchpad-style notes were kept during the review.
+
+## 2026-07-15 — AUDIT-fix A-trap: home-chest item-loss trap fixed + 495-file sync-junk cleanup
+
+George: "fix the home-chest withdrawal item-loss trap first." The audit flagged that you could
+DEPOSIT into a home chest but never take items back. On inspection the real `engine/furniture.py`
+DOES wire `chest_interact` (E on the chest takes the TOP item), so it wasn't fully lost — but
+the chest contents were INVISIBLE (not shown anywhere) and withdrawal was top-item-only, which
+reads as a trap. Fixed properly: `ui/inventory_panel.rows()` now appends a "-- Home Chest ([H]
+take back) --" section listing the stored items when you have a finished home, and `_store`
+([H]) is context-aware — DEPOSIT a highlighted bag item, WITHDRAW a highlighted chest item (via
+`engine.home_withdraw`). `homestead.withdraw` now stacks (P25.1). `tests/test_home_chest.py` (+4).
+
+ALSO — while investigating I found George's file-sync service had committed **495 " N.py"/
+" N.md" conflict copies** into the repo (exact duplicates of real files, swept in by
+`git add -A`). Deleted all 495 and added `.gitignore` patterns ("* [0-9].py", "* [0-9].md",
+"* [0-9].json", …) so a sync copy is never staged again (verified it ignores "name 2.py" but not
+"name.py"). Pairs with the earlier data_loader hardening. Committed separately; the game still
+starts cleanly. Validator green; full suite next.
+
+## 2026-07-15 — AUDIT-fix A-train: guild-hall training reachable (+ graphics research)
+
+George: "continue with the guild-hall training and further rounds." The audit found
+`guildhalls.train(skill_id)` — a complete pay-gold→skill-XP service at a seeded hall — had NO
+player trigger. Surfaced via a `/train <skill>` DIALOG command (`engine/dialog_system.py`,
+mirroring `/hire`): at a hall, talking to anyone, `/train mining` pays a level-scaled fee and
+grants skill XP; a bare `/train` lists the trainable skills + fees (new `guildhalls.training_
+summary`). Hint-bar cue at a hall ("[T] talk · /train a skill here", `guildhalls.hall_here`),
+and the dialog prompt now advertises `/train` PLUS the previously-hidden `/bond /spend /order`
+(the audit's A-disc discoverability). Collapsed the five thin gui `show_*` overlay methods into
+a shared `_open(title, mode, fn, fallback)` helper to hold gui.py under 500 (498).
+`tests/test_guild_training.py` (+5). Full suite next.
+
+In parallel, commissioned a research agent on TOP-DOWN GRAPHICS (George: "still very primitive,
+higher quality needed, cartoonish ok"). Verdict: the terrain is the primitive part (flat
+per-pixel dither, no supersampling/gradient/AO), while CHARACTERS already use the good technique
+(supersampled beauty pass). Recommendation: REVIVE the shelved P40 plan (docs/GRAPHICS.md —
+supersample + layered shading via a new ui/gfx.py) for top-down, terrain first (biggest win),
+staying 100% procedural/offline/cached; a CC0 PNG tileset only as an opt-in skin (default would
+kill the animated-character system). Full report captured for George's decision.
+
+## 2026-07-15 — AUDIT-fix A-board: the tavern quest BOARD is reachable
+
+Continuing the audit sweep. The board was the last stranded find: `quest_board_manager`
+posted starter + nightly RADIANT notices, `quest_board_at_player()`/`accept_from_board()`
+existed — but nothing called them, so posted work was invisible to the player. Now the
+tavern's "Adventurers' Board" opens with [E]. The board hangs INSIDE the tavern
+(`board_at_player` is interior-aware, PT3.1), so the E-key branch (`ui/input_handler.py`,
+after the stable check) fires when `quest_board_at_player()` is set and nothing's underfoot,
+opening a numbered overlay (`gui.show_quest_board`, mode `board`). `quest_board.overlay_lines`
+lists the AVAILABLE + unlocked posted notices (title + reward + blurb) and stashes their ids;
+a 1-9 keypress routes through `input_actions.menu_mode_key` → `engine.board_accept_index` →
+`accept_index` → `accept_from_board`, starting the quest. Hint-bar cue "[E] read the
+adventurers' board" when notices are posted. `tests/test_quest_board_reach.py` (+5) enters the
+tavern, lists notices, accepts one (→ ACTIVE), and guards the out-of-range/away cases.
+Compacted gui.py back under 500 (499) with an `_OVERLAY_MODES` const + tighter show_quests/
+show_collection_log/character-sheet goals. Validator clean; full suite green.
+
+## 2026-07-15 — AUDIT-fix A-disc: Tutorial Island in the menu + L-CLICK target doc (audit CLOSED)
+
+The final audit item — two small discoverability gaps. (a) Tutorial Island was reachable ONLY
+via the `--tutorial` CLI flag, so a GUI newcomer never saw the teach-every-system start. It's
+now a New Game menu option (`ui/start_menu.py` — NEW_GAME_OPTIONS gains `("Tutorial Island",
+"tutorial")`, `_newgame_key` returns `start:"tutorial"` with a quick-start hero); `main.py`
+routes a `"tutorial"` start to the engine's `start_tutorial=True` on the default world (the
+tutorial isn't a world_kind of its own). (b) Left-click already locked the target under the
+cursor (`input_handler` MOUSEBUTTONDOWN → `targeting.lock_tile`) but wasn't in the help — added
+"L-CLICK — lock the target under the cursor" to the FIGHT section of `ui/controls.py`.
+`tests/test_start_menu_tutorial.py` (+4). Screenshot: the New Game menu now lists Tutorial
+Island second. This CLOSES the codebase audit (A-items/A-trap/A-train/A-board/A-disc all done);
+next up is GRAPHICS Phase 1 (revive the shelved P40 top-down fidelity plan).
+
+## 2026-07-15 — GRAPHICS Phase 1 (P40.1/P40.2): the gfx foundation + high-detail terrain
+
+George: the top-down world "still very primitive, higher quality needed, cartoonish ok." Revived
+the shelved P40 plan (docs/GRAPHICS.md). Root cause: terrain was drawn FLAT — a 2–3 tone dither
+at NATIVE tile size, so the ground read as repeated TV static. Fix (the technique characters
+already use via draw_body_crisp): supersample + layer + shade.
+
+New `ui/gfx.py` (187 lines) — the reusable primitives: `supersample(build_fn,size,ss)` (build at
+size·ss then smoothscale down = anti-alias + sub-pixel detail), `ss_factor` (LLM_RPG_SS env),
+`vgradient`/`rgradient`, `shade_ramp`, `mottle` (multi-tone soft-blob texture), `directional_
+light`, `soft_shadow` (contact shadow for Phase 2), `outline`, and `apply_ssaa_setting(engine)`
+(the "Smooth sprites" setting drives char + terrain SSAA). All headless (tests/test_gfx.py +12).
+
+`tile_variants.build_tile` is now a LAYER STACK (`_paint_tile`) built at size·SSAA and smoothscaled:
+gradient base + multi-tone mottle + dense S-proportional detail (blades / ripple ARCS / canopy
+clumps with highlights / rock dots / reed tufts / pebbles / furrows) + a directional light. SSAA=3
+when "Smooth sprites" is on (renderer sets it; env overrides), 1 off; the loader cache keys on it.
+Built once + cached (36 tiles in 0.02s → zero per-frame cost). Composes with the P33.2 edge pass.
+
+Before/after: scratchpad/gfx_before.png vs gfx_after.png (Oakvale scene) and gfx_tiles_compare.png
+(a tile strip — the flat speckle becomes gradient depth + readable ripples/canopy/rock/blades, a
+night-and-day jump). Kept ui/renderer.py UNDER 500 (499, was a pre-existing 506) by extracting the
+SSAA block into gfx.apply_ssaa_setting + merging two hidden-actor guards. Next: P40.3 props/scatter
+(shading + contact shadows) then P40.4 building material texture.
+
+## 2026-07-15 — Night lighting: widen the torch pool (George live feedback)
+
+While playing the new terrain, George: "Most of the ground renders black now… night is
+too dark, widen the light radius." Diagnosed: not the terrain upgrade (new tiles measured
+BRIGHTER than old at midnight, 103 vs 85) — it was the NIGHT lighting (the game starts at
+00:00), whose torch-pool was a tight 4.5 tiles with a steep ^2 falloff, leaving most of the
+screen black. Fix in `ui/lighting.py`: player torch radius 4.5→7.5 tiles (floor 2.0→4.0),
+companion torch 3.0→5.0, the `_radial_light` falloff softened ^2→^1.5 (so MORE of the disc
+reads lit, not just the innermost tiles), and the ambient night floor lifted (TOD_DARKNESS
+night 170→148, evening 80→66) so the ground beyond the pool stays dim-but-visible instead of
+pure black. Same midnight scene is now clearly playable (scratchpad/gfx_night_after.png vs
+gfx_default.png — a tight bright circle → a wide lit play area). `tests/test_lighting_and_
+weather_overlay.py` +2 (the lifted floor + the wider pool lighting more than a corner).
+
+## 2026-07-15 — GRAPHICS Phase 3 (P40.4): building material texture
+
+Continuing the fidelity work. Buildings were flat-filled 2.5D blocks (a solid wall colour, a
+solid roof colour). Now they read as MATERIAL. Two pure quad-geometry helpers in
+`ui/roof_shapes.py`: `wall_courses(quad, wall, ts)` lays masonry COURSING — horizontal courses
++ staggered running-bond vertical joints — on stone/brick walls, and half-timber framing beams
+on timber/wood; `roof_courses(pts, covering, ts)` draws tile/shingle ROWS parallel to the eaves
+across each roof face. A bilinear `_bilerp` makes the rows/joints follow the face's 2.5D
+perspective, so it works for both the per-tile block front (a rectangle) and the footprint span
+front (a parallelogram). `renderer_buildings._draw_block` + `_draw_footprint` draw the returned
+(colour, p1, p2) segments as 1px lines right after the flat fill (gated ts≥12 so distant tiles
+skip it). Before/after: scratchpad/gfx_buildings_compare.png — flat blocks become coursed walls
++ tiled roofs; the tower reads as brick with a running-bond pattern. `tests/test_roof_shapes.py`
++5 (courses + joints, running-bond stagger, timber≠brick, roof rows follow the face, tiny-face
+safety). Files stay under 500 (roof_shapes 236, renderer_buildings 417).
+
+## 2026-07-15 — Fix "the tiles are still mainly black": new games start at MORNING
+
+George, twice: the ground renders "mainly black." Root cause found: the friendly MORNING start
+(`engine.world.time = 8*60`) in `demo_setup` was gated to `world_kind == "realistic"` ONLY — the
+DEFAULT Oakvale world (what a normal new game uses) started at MIDNIGHT (00:00). So a fresh game
+was a tiny torch-pool in a sea of unexplored black fog — which reads as "mainly black," and looks
+like the new terrain graphics broke. (Measured: explored tiles at night are actually visible,
+avg 155; the black is the midnight + fresh-fog first impression.) Fix: EVERY new game now starts
+at 08:00 — you wake in a sunlit town and see the world (and its new terrain/building detail).
+Night still falls later, kept playable by the earlier widened torch-pool (1c564ab). A loaded
+save restores its own clock. `demo_setup.py` (drop the `world_kind == "realistic"` guard);
+`tests/test_morning_start.py` (+2: default game starts after dawn / not night). Proof:
+scratchpad/gfx_startfix.png (bright daylight town vs the midnight gfx_default.png).
+
+## 2026-07-15 — FIX black ground tiles (real bug): 32-bit tile surfaces + escape hatch + guard
+
+George, a THIRD time: "the ground tiles are still mainly black — please fix." My night/morning
+explanations were wrong — it's a real render bug, present in DAYLIGHT, on his display (my headless
+dummy-driver renders never reproduced it). Root cause found by contrast with the WORKING character
+path: `draw_body_crisp` builds on an explicit `Surface(..., SRCALPHA)` (guaranteed 32-bit) before
+`smoothscale`; the terrain path used `gfx.vgradient` → a BARE `Surface((size,size))` that inherits
+the DISPLAY's pixel format. `pygame.transform.smoothscale` can render BLACK on some display formats
+but is reliable on explicit 32-bit surfaces — so characters drew fine while ground tiles went black.
+
+Four layers of defence (ui/gfx.py + ui/sprite_loader.py):
+1. ROOT FIX — `gfx.vgradient`/`rgradient` now build 32-bit `SRCALPHA` surfaces (opaque fills),
+   matching the working character path, so smoothscale is safe.
+2. DEFENSIVE `supersample` — forces a 24/32-bit source and falls back to plain `scale` if
+   `smoothscale` ever raises.
+3. SAFETY GUARD — `sprite_loader._looks_broken` samples a built tile vs the flat reference; an
+   anomalously-black tile auto-falls-back to the known-good flat tile (ground is NEVER black,
+   whatever the cause). Scorched/dark terrain isn't falsely flagged (its flat tile is dark too).
+4. ESCAPE HATCH — with "Smooth sprites" OFF (or LLM_RPG_SS=1) tiles use the classic flat path,
+   no gfx/smoothscale at all — a manual known-good override the player controls.
+
+`tests/test_tile_variants.py` +3 (smooth-off→flat, 32-bit build, broken-tile fallback). No visual
+regression (scratchpad/gfx_srcalpha_check.png). Full suite green.
+
+## 2026-07-15 — BLD.0: buildings-elaboration RESEARCH + design doc (docs/BUILDINGS.md)
+
+George (after the top-down graphics + black-tile fix; confirmed "tiles are good now"): buildings
+"are still very basic and need elaboration" — wants MUCH better/more realistic FRONTAGE, LAYOUTS,
+FURNISHING, DECORATION (Ultrathink). Research-first, like the P40 work. Commissioned 3 parallel
+research agents: (1) exterior/frontage audit, (2) interior/layout/furnishing audit, (3) mining the
+on-disk building-gen + autonomous_world projects. Synthesized into docs/BUILDINGS.md — a full
+current-state analysis + an 8-phase plan (BLD.1-BLD.8) + concrete reference-technique ports.
+
+Core findings: EXTERIOR — flat 2.5D blocks, doors are a disconnected flat rect, no shopfronts/
+signage/trim so smithy≈bakery≈house; doesn't compose with gfx.py. INTERIOR — rooms are ANONYMOUS
+(BSP cells furnished by size-rank not purpose), furniture is a non-blocking scatter, theme keyed
+off NAME with no `shop` theme (shops get a bed+hearthrug), hearth/forge unlit (not in LIT_PROPS),
+occupant ignored. KEY LEVER: autonomous_world shares llm_RPG's exact tile paradigm, so its
+ROOM_TEMPLATES/BUILDING_ROOM_SETS, feature-composition furnishing (bar_counter/pew_rows/carpet_
+runner), placement hardening (door-apron exclusion), and decoration pass (corridor torches feed
+P39.4 lighting) port nearly verbatim; building-gen gives StyleParams/grid-templates/adjacency
+rules (it already gave us roof_shapes.py). Plan added to DEVELOPMENT_PLAN.md as Phase BLD.
+Next: BLD.1 (pure-data theme/lighting quick-wins), then BLD.2 (functional room typing — the unlock).
+
+## 2026-07-15 — BLD.1: buildings data quick-wins (theme coverage + hearth lighting)
+
+First implementation round of the buildings-elaboration plan (docs/BUILDINGS.md). The research
+found ~23 building kinds collapsing to just 8 interior themes — anything without a matching theme
+keyword (shop, bakery, farmhouse, stable, lodge, hall, tower, watchtower, well, warehouse) fell
+through to the "home" theme and got a bed + hearthrug (a shop with a bed). And hearth/forge/oven
+cast no light (missing from LIT_PROPS). Fixed both, cheaply:
+- data/interior_themes.json + data/furnishings.json: +10 themes (shop/bakery/farmhouse/stable/
+  lodge/hall/watchtower/tower/well/storage) each with palette + light + a fitting prop list
+  (a shop gets crates/barrels/shelves/urns/a counter + rug, NOT a bed). Keyword order handles
+  collisions (watchtower before tower; 'general store'/'market'/'stall' for shop, no bare 'store').
+- world/furnishings.theme_of(name, kind): keyword match first, then fall back through the building
+  KIND's FUNCTION (_FUNCTION_THEME over building_types.function_of_kind) so an oddly-named building
+  still furnishes by what it IS; interiors.py threads the kind (bp.kind or the location type).
+- ui/prop_sprites.LIT_PROPS += hearth/forge/fireplace/oven/firepit → interior_light._sources now
+  finds them, so a smithy's forge / a home's hearth / a bakery's oven cast a warm light pool
+  (scratchpad/bld1_smithy.png shows the forge glow; bld1_shop.png shows the shop furnishing).
+`tests/test_furnishings.py` +5 (new themes resolve, shop≠home, kind fallback, every theme has
+props, watchtower-beats-tower); test_prop_sprites + test_interior_theme updated for the new
+behavior. Validator clean. Next: BLD.2 (functional room typing — the unlock).
+
+## 2026-07-15 — BLD.2: functional room typing (the interior unlock)
+
+The core buildings finding: interior rooms are ANONYMOUS — BSP (room_gen) makes untyped cells
+and the old _furnish_rooms filled them by SIZE RANK (a tavern's 2nd room and a temple's 2nd room
+both got bed+chest). Fixed by porting autonomous_world's room-template system:
+- NEW data/room_templates.json — 16 room_types (hearth_room/bedroom/kitchen/common_room/bar/
+  storeroom/counter/forge/workshop/nave/sanctuary/vestry/guest_room/study/great_room/stall), each
+  a furniture KIT [name,min,max] + size hints, using llm_RPG's existing furniture/prop names.
+- NEW data/building_room_sets.json — building FUNCTION (or kind) → an ORDERED room list (tavern=
+  common_room+bar+kitchen+storeroom+guest_room; smithy=forge+workshop+storeroom; temple=nave+
+  sanctuary+vestry; shop=counter+storeroom; home/default=hearth_room+bedroom+storeroom).
+- NEW world/room_plan.py (162 lines, pure/seeded): room_set_for(kind) (by kind → function →
+  default), assign_types (the leaf touching the entrance = the PUBLIC room = room_set[0]; the rest
+  typed by descending area), furnish_typed (lay each room's kit — wall pieces on wall-adjacent
+  cells, tables/rugs/anvils/pews centre, capped at ⅓ the room's free cells; discards the stale
+  blueprint furniture the BSP layout invalidated; seats the NPC in the public room).
+- world/interiors._furnish_rooms now delegates to room_plan (432→422 lines). The BSP gate was
+  retuned — min_room=2 + footprint-scaled depth + tw>=8/th>=7 + a >=2-room program — so MEDIUM
+  buildings subdivide (an 8x8 tavern is now 2-3 functional rooms, not one open box). A single-room
+  program (a well) stays one room.
+Result: a tavern reads common-room + bar + kitchen, a smithy forge + workshop + storeroom, a shop
+counter + storeroom, at ~35% furniture density (scratchpad/bld2_tavern.png; the hearth glows via
+BLD.1). tests/test_room_plan.py (+11). Validator clean. Next: BLD.3 (feature-composition furnishing
+— a real L-shaped bar counter, pew rows, carpet runners — + door-apron placement hardening).
+
+## 2026-07-15 — BLD.3: feature-composition furnishing + door-apron hardening
+
+BLD.2 typed each room but still filled it with SCATTERED single props. BLD.3 adds named
+COMPOSITIONS (ported from autonomous_world's ROOM_FURNISHINGS): new world/furnish_features.py —
+bar_counter (an L-shaped run of counter-tables in the bar's corner), pew_rows (rows of pews every
+other tile with a central aisle in a nave), pillar_row (a colonnade down a great hall), carpet_
+runner (a rug runner down the aisle), altar_end (an altar centred on the far wall). Each room_type
+lists its features[] in data/room_templates.json; room_plan.furnish_typed stamps the compositions
+BEFORE the fill pass. Plus placement HARDENING: furnish_features.doorways/apron detect doorway gaps
+(a floor tile walled on opposite sides) + the building entrance + the floor directly in front, and
+furnish_typed AND furnishings._buckets exclude that apron, so furniture never blocks a passage.
+A tavern now gets a real bar counter (scratchpad/bld3_tavern.png); the grand compositions (pews/
+colonnade) shine in big buildings — the default world's 8x8 temples/halls constrain them but they
+read. tests/test_furnish_features.py (+7: each composition's shape, the aisle stays clear, the apron
+covers doorways, furnish_typed never blocks one). Files: furnish_features 141, room_plan 170,
+furnishings 150 — all <500. Validator clean. Next: BLD.4/5 (facade doors + shopfronts, new ui/facade.py).
+
+## 2026-07-15 — BLD.4: facade doors (exterior track begins)
+
+Interior track (BLD.1-3) done; starting the EXTERIOR. The building door was a flat coloured rect,
+identical for every kind. New ui/facade.py (pure geometry + thin pygame draw, roof_shapes.py mould):
+a real entrance chosen by building KIND — door_style_for maps kind → PANELLED (homes/shops: a framed
+door with 4 raised panels + a knob), PLANKED (smithy/forge/barn/stable/stores: vertical plank seams
++ a diagonal brace + corner studs), ARCHED (temple/chapel/library/tower: a rounded top), or DOUBLE
+(hall/inn/keep/castle: two arched leaves with a meeting line). door_shapes(x,y,w,h,style) returns the
+frame (jambs/lintel/step) + per-style detail; draw_door renders it with the lock-state colour
+(open/closed/locked/broken from door_glyphs.DOOR_STATE_COLORS) preserved — open shows a dark opening,
+locked a lock stud, broken a crack. ui/door_glyphs.draw_door_glyphs now just iterates enterable
+buildings, reads the kind (loc type property) + lock state, and delegates to facade.draw_door
+(door_glyphs 45→35 lines; renderer_buildings untouched at 417). Before/after: scratchpad/bld4_doors_
+compare.png (identical flat rects → distinct per-kind doors: panelled/planked/arched/double) +
+bld4_street.png (an arched temple door + a panelled home door read on the Oakvale street).
+tests/test_facade.py (+8: style per kind, geometry per style, all lock states draw, the state colour
+paints the leaf, door_glyphs integration). Files under 500 (facade 126). Validator clean.
+Next: BLD.5 (shopfronts + signage: awnings, hanging signs, display windows, forge-glow, oven).
+
+## 2026-07-15 — BUGFIX (George): invisible mire stalker attacks the hero in EVERY building
+
+George: "Everytime the hero goes into any building he is attacked by an invisible mire stalker
+until dead." Root-caused: a Mire Stalker (from the mire_beacon module pack, anchor:wilderness)
+had spawned at overworld tile (1,1) — the top-left corner, INSIDE interior-coordinate range. When
+the hero enters a building, `player.position` becomes an INTERIOR-LOCAL coordinate (e.g. (4,7)),
+and the every-turn PURSUIT (engine/pursuit.py) + AGGRESSION (engine/aggression.py) systems targeted
+that position with RAW overworld coordinates — so the corner stalker chased the hero's interior
+coords across the grid (verified: it stepped (1,1)→(2,3) toward an interior player) and, on reaching
+adjacency in coordinate space, bit the hero every turn THROUGH the building's walls, invisibly,
+until dead. Both systems checked the CREATURE's zone but never the PLAYER's. Fix: pursuit.update AND
+aggression.update now early-return 0 when `current_interior`/`current_dungeon` is set — a hero in a
+separate coordinate space is simply unreachable by an overworld hostile. Verified: with a stalker
+forced adjacent in coord-space, an indoor hero takes 0 damage over 8 turns; overworld aggression
+still bites (acted=1). This is the general fix for ANY overworld-hostile phantom-attack in an
+interior/dungeon, not just this stalker. tests/test_aggression.py + test_pursuit.py (+2 regression
+tests). (The (1,1) spawn itself is a separate, now-harmless placement oddity.)
+
+## 2026-07-15 — BLD.5: shopfronts + signage (street identity)
+
+After BLD.4 doors, buildings still only differed by their door. BLD.5 gives commercial/civic
+buildings a STREET IDENTITY. Extended ui/facade.py: shopfront_for(kind) → a motif set; draw_shopfront
+lays them on the building's south face (before the door): a striped AWNING (colour per trade) + a
+projecting HANGING SIGN on a bracket carrying a trade EMBLEM (a mug for tavern/inn, a coin for shop/
+market/stall, a loaf for bakery, an anvil for smithy/forge), a DISPLAY window (a glazed pane beside
+the door) for a shop, a forge-GLOW for a smithy/forge, an oven-glow for a bakery; a plain home/temple
+shows nothing. Wired thinly through door_glyphs (draw_shopfront then draw_door). Verified the real
+buildings resolve: Oakvale Tavern→awning+mug, Durgan's Forge→anvil+forge-glow, General Store→awning+
+coin+display. Before/after: scratchpad/bld5_shopfronts_compare.png (each business reads distinctly).
+tests/test_facade.py (+4: shopfront_for per kind, plain home has none, draw all kinds no-crash, it
+paints for a shop but not a home). facade.py 224 / door_glyphs 36 — under 500. Validator clean.
+Next: BLD.6 (decoration pass: corridor torches feed P39.4 light + occupant clutter + interior render
+polish — window light-pool/mortar walls/detailed bed+table recipes from autonomous_world).
+
+## 2026-07-15 — BUGFIX (George): interior wall/floor too similar to distinguish
+
+George: "The graphics inside some of the buildings make it difficult to distinguish walls and
+floor — can you make them all different enough to see clearly?" Measured every theme in
+data/interior_themes.json: nearly all had floor and wall within ~10 luminance (dLum) — a tavern
+floor [124,84,48] vs wall [116,84,52] is a 2-luminance gap, invisible as a boundary. Fixed: pushed
+each theme's WALL a strong, consistent luminance gap (dLum≈46) from its FLOOR while preserving the
+wall's hue — DARKER for a light floor (tavern/shop/home/hall walls now clearly dark), LIGHTER for a
+dark floor (a tomb/cave/smithy gets lit stone walls framing a dark floor). Now every room's edges
+read plainly (scratchpad/contrast_tavern.png, contrast_shop.png — dark wall dividers over a light
+floor). Data-only (53 wall-value lines in interior_themes.json); interior_theme.tile_surface renders
+it unchanged. tests/test_interior_theme.py +1 (every theme's wall differs from its floor by >=30
+luminance, so this can't silently regress). Validator clean. Then continuing BLD rounds (BLD.6 next).
+
+## 2026-07-15 — BLD.6: interior decoration pass (torches + hearthrugs)
+
+Interiors had a single light source (the hearth) — one warm pool, the rest dark. BLD.6 adds an
+atmosphere pass (ported from autonomous_world's Stage-5 decoration). New furnish_features.decorate_
+pass(inter, seed), run after furnish in interiors.build_interiors_for_world: (1) a hearthRUG on the
+floor tile in front of every Hearth/Forge; (2) wall TORCHES on wall-adjacent floor tiles, evenly
+spaced (>=5 Chebyshev apart, so lit but not a bonfire). Torches are in prop_sprites.LIT_PROPS, so
+interior_light._sources finds them and casts P39.4 warm light POOLS immediately — a tavern went from
+1 lit prop to 3, and the whole room reads (composes with the wall/floor contrast fix). Nothing lands
+on a doorway apron (reuses furnish_features.apron); deterministic (seeded off the location name).
+Before/after: scratchpad/bld6_tavern_lit.png (three warm pools lighting the tavern vs one lonely
+hearth). tests/test_furnish_features.py (+5: torches emit light + are spaced, hearthrug in front of
+the hearth, never on a doorway, deterministic). furnish_features 202 / interiors 432 — under 500.
+Validator clean. Next: BLD.7 (window trim/shutters/bays + quoins/cornice/gutters in facade/roof_shapes).
+
+## 2026-07-15 — GX.1: ranged/miss effects — arrows SEEN in flight + shooter looses the bow
+
+George (mid-buildings-loop burst of requests): "There should be effects for miss/ranged attacks with
+the characters holding the correct weapon (bow for example) and arrows etc seen fired." Root cause:
+shoot_ranged spawned a projectile then called advance_turn, whose turn_pipeline ticked it dt=1.0 and
+RESOLVED it in the same call — so the arrow was never rendered mid-flight (the renderer draws
+projectile_manager.active, but it was already empty). Fix: decouple the VISUAL from the turn-based
+resolution. New ui/projectile_anim.py: enable(engine) sets engine.animate_projectiles=True; frame_
+tick(engine) advances arrows ~0.14 turns/frame (a ~0.3s visible flight) and resolves the hit on
+ARRIVAL. turn_pipeline now skips projectile resolution when animate_projectiles is set (headless /
+turn-based play still resolves instantly — tests, away-mode). The GUI enables it in __init__ and
+calls frame_tick once per rendered frame. combat_effects.on_miss_at(x,y) = a grey "miss" popup when
+a shot goes wide. engine/ranged.shoot_ranged now faces the target (anim.face) + bumps _atk_seq (the
+loose/attack motion) so the shooter is SEEN firing; the correct weapon (bow) already draws via
+char_motion.weapon_kind (reads the worn weapon). Verified: an arrow survives advance_turn and flies
+x=45.8→51 over 7 frames then resolves (goblin 20→9 HP + a damage popup). gui.py kept <500 (498; moved
+the tick to the new module + removed the dead update() shim). tests/test_projectiles.py +2 (animate
+flag defers resolution + the arrow arrives; miss popup). Validator clean.
+George also queued (planned in DEVELOPMENT_PLAN Phase GX + memory): GX.2 bigger teleport dais, GX.3
+building scale-up, GX.4 a large Oakvale church seating 50-100, GX.5 a deep dungeon via a secret
+Oakvale entrance. Next round: GX.2 (teleport dais).
+
+## 2026-07-15 — GX.2: teleport waystones as raised glowing daises
+
+George: "Please make the teleportation platforms larger (on a raised dias?) and easy to see."
+Found the waystones (engine/teleport_network.py) were invisible — a 1x1 Location with a `waystone`
+property and NO tile art at all; only the hint bar signalled one. New ui/dais.py (pure geometry +
+thin pygame draw, headless-testable): dais_tiers (3 stepped ellipse tiers, ~1.5 tiles wide so the
+dais reads BIGGER than the ground, each narrower + higher) + rune_circle (the top ring); draw_dais
+lays a stepped STONE platform + an arcane cyan RUNE circle with spokes on top + a soft radial glow +
+an upward GLOW beam (a gently pulsing phase) so it's visible from a distance; draw_all iterates the
+in-view waystone Locations and draws each. Wired thinly from renderer_buildings.draw_buildings (which
+had line headroom — renderer.py stays 499). Before/after: scratchpad/gx2_dais.png (an invisible tile
+becomes a raised glowing arcane platform beside Oakvale). tests/test_dais.py (+5: tiers stepped,
+dais bigger than a tile, rune on the top tier, draw paints stone+glow, draw_all marks waystones).
+dais.py 100 / renderer_buildings 422 — under 500. Validator clean. (Top-down; an iso-projected dais
+is a follow-up.) Next: GX.3 (building scale-up).
+
+## 2026-07-15 — GX.3: building SCALE-UP (roomier interiors)
+
+George: "The size of all the buildings seems a little off — everything needs to be larger... The
+scale of everything feels small and cramped." Root cause: interiors.fit_to_footprint scaled a
+building's interior at loc.width*3+2 capped 6..16 / loc.height*3+2 capped 5..12, so a 2x2 building
+(the common village footprint) opened into a cramped 8x8 (which is exactly why the BLD.2/3 room
+compositions felt tight). Raised it: a x4 multiplier + much bigger caps — tw=clamp(loc.width*4+2,
+7..28), th=clamp(loc.height*4+2, 6..22). So a 2x2 building now opens into a roomy 10x10 (was 8x8),
+a 3x3 into 14x14, and a 5x5 footprint into a 22x22 hall (400 inner tiles) — big enough for a church
+nave to seat scores (pew_rows every 2 tiles over a ~18-wide room = dozens of seats). Small buildings
+stay modest; big footprints get genuinely big. The BLD.2 room typing + BLD.6 torch decoration scale
+with it — the tavern reads noticeably roomier with more open floor + more torch-lit pools + more
+tables (scratchpad/gx3_tavern_roomy.png). The BLD.2/3-hardened interior tests stayed green, but 3
+tests that hardcoded the OLD scaling/layout broke and were made robust: test_footprint_fit (→ the
+new ×4 formula), test_blueprints (tavern is now ≥10×10, not 8×8), test_squeeze_past (find two
+adjacent floor tiles instead of a now-walled hardcoded tile). tests/test_interiors.py +1 (a
+footprint yields a bigger interior; a big footprint a much bigger one). Validator clean. Remainder
+GX.3b (deferred, needs a village re-layout): bump the OVERWORLD footprints of major buildings.
+Next: GX.4 (a large Oakvale church seating 50-100 — now feasible with the 22x22 nave).
+
+## 2026-07-15 — GX.4: a large Oakvale CHURCH seating scores (a grand nave)
+
+George: "please build a large church in oakvale with room for seating 50-100 people." Done on top of
+the GX.3 scale-up. `world_generator._add_village` now plants a 6×5 "Oakvale Cathedral" below the
+village core — it first clears the footprint (+ its south door tile) to GRASS so the great door opens
+onto open ground, then `_building(...)` raises it; a collision check confirmed no overlap with the
+tavern/forge/store/temple and it sits within the 120×80 map. `_building`'s type-tag chain tags a
+"cathedral"/"church" name as `type: "cathedral"`; `data/building_room_sets.json` by_kind maps
+cathedral/church → `[nave, vestry]`; and `interiors.build_interiors_for_world` grew a
+cathedral/church branch that builds it via `make_temple_interior` (+ the "cathedral" ltype in the
+default-interior fallback). With GX.3, the 6×5 footprint fits to a **26×22 nave (572 inner tiles)**
+that `furnish_features.pew_rows` fills with **114 pews facing an altar**, pillars down the aisle,
+torchlit in the temple theme (`theme_of("Oakvale Cathedral") == "temple"` via the temple keyword
+'cathedral') — far more than the 50-100 asked. Grand ARCHED door (`facade._ARCHED += cathedral,
+church`). Rendered scratchpad/gx4_cathedral.png (a nave full of pews + central aisle + warm
+torchlight) + gx4_street.png (the arched cathedral door on the Oakvale street). tests/test_interiors.py
++1 (`test_oakvale_cathedral_seats_scores`: the location exists, room_set is [nave, vestry], the
+interior is ≥400 tiles, ≥50 pews + an altar, temple theme, enterable footprint). Validator clean.
+Next: GX.5 (a deep dungeon/cave via a secret Oakvale entrance + regional entrances/exits).
+
+## 2026-07-15 — GX.5a: the DEEP Oakvale Deepdelve + wilderness cave mouths (shared dungeon)
+
+George: "add a deep dungeon/cave system accessible via a secret entrance in oakvale — with other
+entrances/exits in the surrounding area." Split into GX.5a (the deep dungeon + its wilderness mouths,
+this round) and GX.5b (the secret Oakvale stair, next). Research (Explore agent) found the key lever:
+`enter_dungeon` caches a generated dungeon keyed by the entrance LOCATION — so same-keyed mouths
+share one dungeon. Built on that: (1) `enter_dungeon` now keys `engine.dungeons` on a Location
+`dungeon_key` property (falling back to the name) and reads `deep_dungeon`/`deep_levels`/
+`dungeon_name`, and `world.dungeon.generate_multilevel` took a `depth` param (omitted = the classic
+2-3 roll; set = exactly N floors). (2) New `engine/deepdelve.py` `DeepdelveSystem` over
+`data/deepdelve.json` seeds 3 wilderness CAVE mouths — Blackroot Cleft (forest), The Sunless Stair
+(mountain), The Drowned Adit (waterside) — at sites ≥16 from spawn and ≥12 apart, each a `Location`
+tagged `dungeon_key:"deepdelve"` + `deep_dungeon`/`deep_levels:6`/`dungeon_name:"The Deepdelve"` +
+`deepdelve_mouth`, with a couple of guards and a per-mouth `[Legend]`; a starting `[Realm]` rumor
+points to the delve. All three mouths open the SAME shared, persistent, 6-floor dungeon (verified:
+one 'deepdelve' cache entry however you enter), and `dungeon_return_pos` surfaces you at the mouth you
+descended by. `ui/hints.py` names a mouth ("[TAB] descend into Blackroot Cleft (the Deepdelve)").
+Wired into `engine_setup` (seed, beside the lairs) + `save_load` (persist). Rendered
+scratchpad/gx5_deepdelve_l1.png (a dark, echoing cave with the hero at the entrance + a lurking
+goblin). tests/test_deepdelve.py (9: forced/default depth, mouths are deep cave Locations, spread +
+far from start, entering yields ≥5 floors, all mouths share ONE dungeon, return-to-entry-mouth,
+persistence). Validator clean; `world_generator.py` had spilled to 594 lines in GX.4 so its extra-
+civic/wilderness passes were shed into `world/worldgen_extras.py` (mixin) to hold the 500-line line.
+Next: GX.5b (the SECRET Oakvale entrance — a searchable trapdoor into the same Deepdelve).
+
+## 2026-07-15 — GX.5b: the SECRET Oakvale entrance (a searchable trapdoor)
+
+The headline of George's dungeon ask, and it completes GX.5. `DeepdelveSystem._place_secret` seeds a
+HIDDEN "The Buried Stair" `Location` a few tiles off the Oakvale core — ordinary ground (NO cave
+stamp, `hidden` + `dungeon_key:"deepdelve"` + `deep_dungeon`), so it reads as nothing until searched
+out. `secret_near(pos)` (player within 1 tile of the unrevealed stair) drives the discovery; the E/G
+key path in `input_handler` calls `reveal_secret()`, which stamps the CAVE mouth (+ `deepdelve_mouth`,
+drops `hidden`) so [TAB] then descends into the SAME shared 6-floor Deepdelve the wilderness mouths
+open (verified: one 'deepdelve' cache entry). A pointer `[Realm]` rumor at seed ("elders half-remember
+a SEALED stair… search where it rings hollow") + a reveal `[Legend]` beat + flavor prose. Persisted
+(the `secret` dict + `revealed` flag ride the save; the CAVE tile rides the world map save). Rendered
+scratchpad/gx5b_secret_hidden.png (adjacent, hidden — the search cue) + gx5b_secret_revealed.png (the
+stair found, [TAB] descend cue leading the hint bar in a busy village). Fixed a REAL UX bug along the
+way: the Deepdelve search + descend cues sat in the low-priority terrain block and got crowded out of
+the 3-hint `MAX_HINTS` cap by ambient talk/barter when the stair sits among NPCs — meaning the sole
+discovery cue could go unseen; promoted both to lead the overworld hints. tests/test_deepdelve.py +6
+(TestDeepdelveSecret: hidden seed near Oakvale, secret_near adjacency, reveal stamps a descendable
+cave + idempotent, opens the shared deepdelve, search→descend hint hand-off, persistence). Validator
+clean. GX.5 complete (5c per-mouth cross-map short-cut is an optional stretch). Next: the queue is
+CLEAR — resume BLD exterior polish (BLD.7 window trim/shutters, BLD.8 roof relief).
+
+## 2026-07-15 — BLD.7: window trim, shutters & architectural dress
+
+George's whole rapid-fire queue is done; resumed the deferred BLD exterior polish. New
+`ui/facade_trim.py` (pure geometry + thin pygame draws, in the `gate_shapes`/`openings` mould) adds
+the fine detail that makes a 2.5D building front read as BUILT: SHUTTERS flanking each window, a stone
+SILL under it (+ a LINTEL over it on grand buildings), a CORNICE band riding the roof eave, and QUOINS
+(dressed corner stones) stepping up the front corners. `trim_style_for(kind)` gives grand sacred/civic
+buildings (temple/cathedral/hall/keep/library/inn/tower…) the full dress and a plain home just
+shutters + a sill. Wired into `renderer_buildings._draw_block` (per-tile block: `draw_corner_trim` +
+`draw_window_trim` per window, drawn UNDER the glazing) and `_draw_footprint` (the footprint-spanning
+enterable buildings: `draw_span_corner_trim` across the full width + outer-corner `span_quoin_blocks`).
+Rendered scratchpad/bld7_closeup.png — the Oakvale Cathedral front now reads as a row of shuttered
+windows on stone sills (brown shutters flanking blue-glazed panes), a clear step up from blank walls.
+`renderer_buildings.py` 415→431 (under 500; the heavy geometry lives in the new module).
+tests/test_facade_trim.py (11: grand-vs-plain style, shutters flank without covering, sill-below/
+lintel-above, cornice rides the eave + None on tiny blocks, quoins climb both corners, span quoins at
+outer corners, headless draws don't crash). No data change; validator unaffected. Next: BLD.8 (roof
+relief — eaves/soffit/ridge caps/dormers + weathering).
+
+## 2026-07-15 — BLD.8: roof relief, depth & weathering (clones differ)
+
+Continued the buildings-polish thread (autonomous loop tick). New `ui/roof_relief.py` (pure geometry
++ thin pygame draws) gives the roofs depth + age: an EAVES/soffit-shadow band (`draw_eaves` — a
+translucent dark band along the wall top + a lit overhang lip, so the roof reads as sitting ON the
+wall, not painted flush), a RIDGE CAP (`draw_ridge_cap` — a bright capping course over a wider shadow),
+gabled DORMERS (`dormer_boxes`/`draw_dormers` — 1-2 little roof-windows on a grand building's front
+slope), and — the headline — DETERMINISTIC WEATHERING: `weathering_spots` scatters moss patches +
+rain-streak stains over a roof, seeded by the building's WORLD position via a pure integer hash (`_hash`
+— no RNG object, so the same building weathers identically every frame with zero flicker, but two
+buildings of the same KIND differ). Wired into `renderer_buildings._draw_block` (seeded `wx,wy`, passed
+down from `draw_buildings`) + `_draw_footprint` (seeded `loc.x,loc.y`; dormers gated to grand non-flat
+roofs via `facade_trim.trim_style_for`). `draw_weathering` saves/restores the caller's clip so blobs
+stay on the roof. Rendered scratchpad/bld8_closeup.png — the Oakvale roofs are moss-flecked with soffit
+depth, each wall segment weathered differently (George's "clones differ"). `renderer_buildings.py`
+431→444 (under 500; the geometry lives in the new module). tests/test_roof_relief.py (11: weathering
+deterministic + clones differ + in-bounds + empty on tiny, soffit band, dormers none-on-narrow/1-2-on-
+wide/on-the-slope, headless draws + clip restored). No data change. This clears the BLD phase
+(BLD.0-8 done). Next: pick the next DEVELOPMENT_PLAN item (Phase 41 iso polish, or a playtest pass).
+
+## 2026-07-16 — OAKVALE T1: district wards (the large-town generator begins)
+
+George's new directive: redesign & ENLARGE Oakvale into a large multi-district town with a walled
+defended core + multiple gates, all the building types (guilds/shops/taverns/pubs/smiths/armourers/
+wizard crafts/libraries/cathedral/churches/dwellings), a full role-based population, and a living
+countryside (supporting villages, farmers, terrain-sensible roads + bridges, wells). "Ultrathink,
+research" both `/autonomous_world` (settlement layout) + `/building-gen` (building design). Two Explore
+agents mined both repos; key portable ideas — Voronoi wards + Lloyd relaxation + radial ring
+classification for districts; "gate = where a main street crosses the wall polygon" for a defended
+core; A* over a terrain cost-field (+MST) for terrain-aware roads; size-scaled street templates with a
+market square; specialization-weighted profession pools for population. building-gen turned out to be a
+DATA mine (its code only builds rectangles); roofs/fixtures/room-templates/building-types/facade-trim
+are already ported. Design + 8-phase plan written to `docs/OAKVALE.md`; new reusable `world/town/`
+subpackage. T1 lands the DISTRICT ENGINE: `world/town/wards.py` over `data/town/districts.json` —
+`sunflower_seeds` (golden-angle spiral) → numpy `assign_wards` (nearest-seed Voronoi) → `lloyd_relax`
+(3× centroid relaxation, even organic wards) → `classify_wards` (by distance ring → district type);
+`plan_districts` → a `DistrictPlan` (`type_at`/`ring_at`/`types_present`/`tiles_of_type`),
+deterministic in seed. A radius-24 town yields ~1800 tiles across ~10 district types — a civic/market/
+temple core, residential/craft middle, farming/stable/storage suburbs (scratchpad/oakvale_t1_
+districts.png: organic even Voronoi wards). Purely additive (no game code touched); game starts clean.
+tests/test_town_wards.py (10). Next: T2 (street network templates + market square).
+
+## 2026-07-16 — OAKVALE T2: the street network (boulevards, ring, radials, market square)
+
+`world/town/streets.py` lays a town's streets by SIZE TEMPLATE (adapted from autonomous_world's
+street_layout): main BOULEVARDS crossing the centre (N-S + E-W, slight angle jitter), a polygonal RING
+road at ~0.6 radius (12-gon), RADIAL lanes spoking from the ring out to the disc edge, a small core
+GRID for cities, and a reserved central MARKET SQUARE plaza the civic core sits around. Roads carry a
+hierarchy (main/ring/lane/grid) → a rasterised width. `plan_streets(cx,cy,radius,size,seed)` → a
+`StreetPlan` of `Segment`s + the square; `road_tiles()` rasterises every segment (`_line_tiles`
+Bresenham + `_thicken` square brush) to a `{(x,y): kind}` map, a denser road winning on a shared tile,
+clipped to the town disc. Rendered scratchpad/oakvale_t2_streets.png over the T1 wards — reads as a
+real medieval town: crossing boulevards, a ring road, radial streets, a market square at the crossroads,
+the inner civic core (which T3 walls) surrounded by district suburbs; streets reach the edge where the
+gates will meet them. Pure + deterministic; 153 lines. tests/test_town_streets.py (11). Next: T3 (the
+defended-core wall + gates where main streets cross it).
+
+## 2026-07-16 — OAKVALE T3: the defended core (wall polygon + boulevard gates)
+
+`world/town/town_wall.py` walls the inner core (adapted from autonomous_world's wall_generation): an
+organic wall POLYGON around ~0.5 radius (jittered ring, 2× Laplacian `_smooth` so it reads as a
+medieval enceinte, not a circle), rasterised to WALL tiles. The elegant part — GATES are placed exactly
+where a MAIN BOULEVARD crosses a wall edge (`_seg_intersect` segment×segment), so a road always runs
+THROUGH a gate, never into a blank wall (≥3 gates, falling back to the polygon's compass extremes if too
+few boulevards cross). TOWERS stand at spaced wall vertices. `build_core_wall(...)` → a `CoreWall` whose
+`.wall` set has the gate tiles (+ neighbours) carved out as GAPs the boulevard passes through, `.gates`/
+`.towers` lists, and `.encloses(x,y)` (even-odd ray cast) telling the central defended region from the
+suburbs. Rendered scratchpad/oakvale_t3_wall.png over the T1 wards + T2 streets: a walled civic/market/
+temple core with 4 gates on the N/S/E/W boulevards, towers round the wall, and the residential/craft/
+farming districts as suburbs OUTSIDE — exactly George's "central defended region surrounded with a wall
+with multiple gates". Pure geometry + deterministic; 166 lines. tests/test_town_wall.py (12). The T5
+integration will stamp `.wall`→WALL(BUILDING) / `.gates`→ROAD reusing the P31.1 fortify + P37.3 gate
+machinery. Next: T4 (building lots along the streets → Locations by district).
+
+## 2026-07-16 — OAKVALE T4: building lots + the town-generator orchestrator
+
+`world/town/lots.py` seats the town's buildings in THREE passes (adapted from autonomous_world's
+plan_building_lots + lot_subdivision): (1) LANDMARKS — the grand singletons placed FIRST so they always
+exist and get room (cathedral + temple in the sacred ward, town hall + bank in the civic core,
+guildhalls + libraries in the guild ward, inns + taverns in commercial, an armoury in metal-craft, a
+tower); (2) FRONTAGE — walk each street's centre-line seating lots set back on BOTH sides so buildings
+front the street; (3) INTERIOR FILL — scatter district-appropriate buildings into the pockets between
+streets. Each is a `BuildingLot(x,y,w,h,kind,district)` keyed to its ward's KIND (from districts.json,
+`_SIZE` footprints — cathedral 6×5 … home 2×2 … stall/well 1×1), rejected if it leaves the disc or
+overlaps a street/plaza/wall/another lot (a 1-tile yard gap keeps lots from fusing). `world/town/
+town_gen.py` `plan_town(cx,cy,radius,size,seed)` runs the whole pipeline (districts→streets→wall→lots)
+→ a `TownPlan` (`building_count`/`kind_counts`/`core_lots`/`gates`/`lots_of_kind`). A radius-40 town
+yields ~177 buildings across ~26 KINDs with EVERY landmark present — a walled civic/temple/market/guild
+core (41 buildings inside the wall incl. the cathedral/hall) surrounded by dense residential/craft/
+farming suburbs (scratchpad/oakvale_t4_town.png). First cut was sparse (47, home/stall-heavy, no grand
+buildings); the landmark pass + denser frontage + interior fill fixed it. Pure + deterministic; lots.py
+207 / town_gen.py 52 lines. tests/test_town_lots.py (9: rich count, all landmarks, no overlaps, none on
+street/wall, all in-disc, core lots walled, deterministic). Next: T5 — stamp a `TownPlan` onto the real
+world map (streets→ROAD, wall→WALL, gates→ROAD, lots→BUILDING+`Location`) + wire interiors/fortify; and
+the enlarge-in-place vs dedicated-region choice George steers.
+
+## 2026-07-16 — OAKVALE T5a: stamping the town into the engine (it renders in-game!)
+
+`world/town/stamp.py` `stamp_town(world, plan, name)` turns a pure `TownPlan` into real world state:
+`clear_disc` clears the town disc to grass (keeping water so rivers survive as bridges), streets →
+ROAD (WATER → BRIDGE), the core wall → WALL(BUILDING) with its gates left ROAD, and every building lot
+→ a BUILDING footprint + a `Location` carrying its `kind` (+ `type`/`forge` tags + a UNIQUE name so the
+interiors dict — keyed on name — never collides), plus a town-marker `Location` recording the gates +
+towers (so `town_gates`/`fortify`/`tower_defense` can defend it). `renderer_buildings._kind_at` now
+reads an explicit `loc.kind` first (existing Locations unaffected), so a town-generated building draws
+in its per-kind 2.5D style. Fixed a robustness gap — landmarks were skipped when their ideal ward type
+didn't appear that seed; now `_place_landmarks` falls back to the inner core, so a cathedral/hall/
+guildhall/tavern/inn is GUARANTEED (0 missing across 20 seeds). Stamped a radius-30 town onto a real
+GameEngine world and rendered it with the ACTUAL game renderer: scratchpad/oakvale_t5_ingame.png — a
+dense 104-building walled town, the boulevard/ring/radial street network, the market square, 4 gates, 9
+towers, varied roof materials/colours, the player standing in it, the minimap showing a circular walled
+settlement with the river running through. The generator produces a real, playable large town in-engine.
+tests/test_town_stamp.py (8). Next: T5b — wire `stamp_town` into `world_generator` (replace the small
+Oakvale), size the map, build interiors for the town buildings (the enlarge-in-place vs dedicated-region
+choice George steers), then T6 population / T7 countryside / T8 building variety / T9 Deepdelve+playtest.
+
+## 2026-07-16 — OAKVALE T5b: the PLAYABLE large-town region (George chose dedicated region)
+
+George: "Go ahead with the dedicated large-town region." `world/town_region.py` builds a
+`world_kind="oakvale"` world — a dedicated, BIGGER map (`REGION_SIZE` 190×140; `region_size` sizes the
+`World()` in `game_engine.__init__` for this kind only, classic world untouched) whose centrepiece is
+the big procedurally-generated Oakvale. `build_oakvale_region(world)` lays the setting (grass basin +
+broken forest ring + a meandering river the town's streets BRIDGE + a mountain shoulder) then
+`plan_town`+`stamp_town`s Oakvale (radius 42) at the centre; `oakvale_spawn` wakes the player in the
+central market square. Wired into `demo_setup` (an `oakvale` branch: build the region, spawn the player,
+post gate/tower guards off the town marker), `ui/start_menu` (a new "Large Town (Oakvale)" option →
+`start:"oakvale"` → `world_kind` via main.py). Made `interiors.build_interiors_for_world` KIND-AWARE (a
+factory by `loc.kind` — tavern/forge/shop/temple specifics, else the default interior; 1×1 wells/stalls
+stay open markers) so EVERY town building — homes/halls/guildhalls/libraries included — is ENTERABLE.
+Result: a 222-building town, all 214 non-marker buildings with interiors (225 total), player on the
+market-square road. Rendered IN-ENGINE: scratchpad/oakvale_t5b_region.png — a large living walled town
+of many districts, boulevards/ring/radial streets, the market square, a river with bridges down the
+west, forest borders, varied roofs, a circular walled minimap. interiors.py 454 / town_region.py 122.
+tests/test_town_region.py (7). Next: T6 role population, then T7 countryside / T8 variety / T9
+Deepdelve+playtest.
+
+## 2026-07-16 — OAKVALE T6: the living town (role population)
+
+`world/town/population.py` `populate_town(engine)` over `data/town/roles.json` makes Oakvale LIVE:
+a keeper of the right calling seats at every service/civic building (shop→Shopkeeper, tavern→
+Tavernkeeper, inn→Innkeeper, smithy/forge→Blacksmith, armoury→Armourer, bakery→Baker, temple→Priest,
+cathedral→High Priest, hall→the MAYOR, guildhall→Guildmaster, bank→Banker, library→Scholar, tower→
+Wizard, mill→Miller, …), a capped share of dwellings gets a Townsperson, and the streets get their
+Thieves/Street Urchins/Vagrants/roaming Town Guards. A keeper's `home_location` is set to its BUILDING
+NAME so `shop._category_for_npc` stocks the right wares AND the P9A.7 presence system seats them INDOORS
+(you meet them when you step inside). Wired into `demo_setup` (the oakvale branch calls it instead of
+the classic preset cast, whose homes don't exist in the region). Result: ~169 townsfolk across 27
+roles, exactly one mayor, a 236-NPC living town (scratchpad/oakvale_t6_populated.png). Fixes: the
+building title "Oakvale **Town**house N" was matching the settlement scanners (stables/production_loop/
+teleport_network all match "town" in a name) → one stable per house + log spam; renamed the title to
+"House" + added a `kind`-skip to `stables._settlements` + a `town`-property match. Made
+`shop._category_for_npc` check `home_location` for smith/forge/armoury (not just the id) so a town smith
+actually sells weapons. Guaranteed a smithy in the landmark pass (George wants blacksmiths). Advancing 3
+turns with 236 NPCs is fine (no hang). tests/test_town_population.py (7: populated, all roles, one
+mayor, keepers workplace-bound, a smith reads as a blacksmith shop, no stable spam, survives turns).
+population.py 124 lines. Next: T7 living countryside (villages/farms/roads/bridges/wells), then T8
+building variety, T9 Deepdelve entrance + in-town adventures + playtest.
+
+## 2026-07-16 — OAKVALE T7: the living countryside (villages, farms, terrain roads + bridges)
+
+`world/road_astar.py` — terrain-aware ROAD routing (adapted from autonomous_world's road_pathfinder):
+A* over a per-terrain cost-field (grass 1.0, forest 2.4, mountain 12, water 6 — crossable-but-costly so
+a road BRIDGES a river at its narrowest rather than detouring for miles); `find_road_path` (octile-
+heuristic A*, never through a BUILDING), `lay_road` (ROAD on land, BRIDGE over water), `connect`.
+`world/town/countryside.py` `build_countryside(world, center, radius, seed)` rings Oakvale with 3
+supporting farming VILLAGES (each a cluster of farmhouses + cottages + a chapel + a well, with FARMLAND
+fields south of the houses), places broad farm belts just outside the town wall, and roads each village
+back to the NEAREST town gate via `road_astar.connect` (bridging the river as needed); `populate_villages`
+seats the Farmers + a village Chaplain. Wired into `build_oakvale_region` (returns the village list) +
+`demo_setup` (populates them after the town). In-engine: 3 villages (Wheatfield/Millbrook/Greenhollow),
+~500 farmland tiles, 42 bridge tiles, 21 farmers, 258 total NPCs — the town is fed by a real hinterland
+(scratchpad/oakvale_t7_region.png: the walled town, a river with road bridges, farm belts, villages,
+mountains). Also noticed the P19.2 Deepdelve system already seeds its cave mouths + the secret
+Oakvale stair in this region (its `_place_secret` finds the big "Oakvale" town marker) — a head start on
+T9. road_astar.py 98 / countryside.py 163 lines. tests/test_countryside.py (7: A* connects, bridges
+water, routes around mountains, never through buildings; villages/farmland/bridges/farmers in-region).
+Next: T8 building variety (tudor/thatch/tile/windows/doors), T9 Deepdelve entrance + in-town adventures
++ playtest.
+
+## 2026-07-16 — OAKVALE T8: per-building style variety (tudor/thatch/tile/slate)
+
+George: "Buildings should have varied designs and decorations (tudor beams, tiles, thatched roofs,
+various styles of windows and doors)." `ui/building_variety.py` gives every building a per-building
+STYLE picked from a KIND-appropriate palette — buildings group into style CLASSES (humble = homes/
+cottages/farms → thatch/shingle/clay coverings × timber/wood/brick walls for the tudor half-timber
+look; trade = shops/taverns/craft; civic = hall/bank/library/guild → slate/lead/stone × stone/brick;
+sacred = temple/cathedral/chapel → slate/stone × stone) — seeded by the building's WORLD position via a
+pure integer hash (`_hash`, like BLD.8 weathering) so two neighbours differ but each is stable across
+frames and in-character (a cathedral never becomes a thatched hut). `variant_style(base, kind, wx, wy)`
+overrides the base style's covering + wall (roof SHAPE kept), `window_shape` varies the opening (a
+cathedral gets lancet/rose, a home square/arched). Wired into `renderer_buildings._draw_block` (seeded
+wx,wy) + `_draw_footprint` (seeded loc.x,loc.y). Oakvale now reads as a real medieval town — golden
+thatch cottages beside red clay-tile houses beside grey-slate civic halls, timber/stone/brick walls,
+no two neighbours alike (scratchpad/oakvale_t8_variety.png). Pure; building_variety.py 78 lines.
+tests/test_building_variety.py (7: deterministic, clones differ, humble/sacred stay in-palette, roof
+shape preserved, window shape from palette). Roof-SHAPE variety (mansard/gambrel) deferred — the
+material variety carries the look. Next: T9 — verify the Deepdelve secret entrance works IN Oakvale +
+a few in-town adventures + a scripted playtest.
+
+## 2026-07-16 — OAKVALE T9: Deepdelve entrance in town + a scripted playtest
+
+Manual review of the built region turned up the key gap George called out: the Deepdelve SECRET ENTRANCE
+wasn't planting inside the big Oakvale. The P19.2 deepdelve system DOES run in the region (3 wilderness
+mouths + the secret-stair machinery), and `_place_secret` found the "Oakvale" town marker — but
+`_secret_site` required a GRASS tile whose `get_location_at` is None, and the 84×84 town-marker Location
+covers EVERY town tile, so no site was ever found. Fixed `engine/deepdelve.py._secret_site`: widened the
+ring search (2→20) and skip only a building FOOTPRINT (a Location with a `kind`) — a big town/village
+AREA marker is fine, since the secret should sit in a yard WITHIN the town. Now "The Buried Stair"
+plants ~12 tiles from the market-square player start, INSIDE the town → the player wakes in Oakvale,
+follows the rumor, searches out the hidden stair and delves the shared 6-floor Deepdelve right from town
+(the P19.2 wilderness mouths give the other regional entrances). Scripted headless PLAYTEST passes:
+player moves in the square, 258 NPCs advance 6 turns with no crash/hang, 96 tradeable merchants present,
+the secret reveal → enter_dungeon descends the full 6 floors → exit clean. So Oakvale plays as a real
+game setting with adventures right in the town (the T6 street thieves/urchins + the Deepdelve). The
+classic-world deepdelve is unaffected (test_deepdelve 15 green). Next: final full suite + commit the
+T7-T9 stretch; the Oakvale overhaul (T1-T9) is essentially complete.
+
+## 2026-07-16 — OAKVALE region polish (George): safe town, arrival waystone, visible sewer grate
+
+Three fixes to the playable Oakvale region from George's feedback:
+1. **Safe walled town** ("too many monster encounters inside Oakvale near the start; inside the walled
+   area should be relatively safe so the player can equip + learn"). Root cause: `encounters._nearest_
+   settlement_dist` only recognised names containing village/hamlet/town (the "Oakvale" MARKER matches
+   none) and `SAFE_RADIUS`=7 is tiny vs a radius-42 town. Fixed: `_is_settlement` also accepts a
+   `town`/`village` PROPERTY, and a new `_in_safe_zone(pos)` treats the whole settlement FOOTPRINT (+ a
+   SAFE_RADIUS margin) as no-spawn — so the entire walled Oakvale is safe (verified: 0 spawns in 300
+   attempts at the square; the far wild still spawns). `maybe_spawn` uses it.
+2. **Arrive on a teleport platform** ("the hero spawn should be onto a teleport platform, as if just
+   arrived"). `town_region._plant_arrival_waystone` plants an "Oakvale Waystone" (a GX.2 glowing DIAS)
+   at the market square; `oakvale_spawn` now returns its tile so the hero wakes ON it. `teleport_network
+   .seed` restructured to ALWAYS adopt pre-planted waystone Locations (even under the suite's
+   LLM_RPG_NO_ADVENTURERS gate) into `platforms`, so the arrival dais is a usable network platform (the
+   hint bar shows "[E] waystone — travel the Wayfarer network").
+3. **Visible sewer-grate Deepdelve entrance** ("make the DeepDelve entrance more obvious — a visible
+   grate/sewer entrance"). `town_region._plant_sewer_grate` plants "The Oakvale Sewers" — a CAVE tile a
+   few paces off the square, tagged `sewer_grate` + `dungeon_key:"deepdelve"` — so it's an OBVIOUS,
+   always-visible way down into the shared 6-floor Deepdelve (no searching). New `ui/grate.py` draws a
+   rusted IRON GRATE in a stone kerb over a dark shaft (`grate_geometry`/`draw_grate`/`draw_all`), wired
+   into `renderer_buildings.draw_buildings` beside the dais. Rendered scratchpad/oakvale_arrival_grate
+   .png: the hero on the glowing arrival dais with the sewer grate a few tiles off. tests/test_grate.py
+   (3) + test_town_region.py +3 (arrive-on-platform, town-is-safe, visible-grate-descends). All green.
+## 2026-07-16 — ISO.1: realistic isometric BUILDINGS (real houses, not boxes)
+
+George: "next round for the isometric graphics — make them more realistic... buildings... characters...
+better animation (movieMaker inspiration)... scale might need to be larger." Research-first (two Explore
+agents): an AUDIT of the iso renderer + a study of /claude_test/movieMaker's 3D character stack. Core
+finding — the iso path (ui/iso_*.py) BAKES numpy-software-rasterized 3D into cached sprites (a sound
+architecture; raster3d already ported movieMaker's rasterizer/camera/2×SSAA) but renders CRUDE boxes +
+flat diamonds and IGNORES every rich top-down module (roof_shapes/facade_trim/roof_relief/building_
+variety/tile_variants/char_pose/char_mocap). Plan in docs/ISO_GRAPHICS.md (ISO.1 buildings, ISO.2 tiles,
+ISO.3 char proportions/stance/shading, ISO.4 char animation, ISO.5 scale). ISO.1 lands the buildings —
+the single biggest gap. New `ui/iso_buildings.py` `building_mesh(kind, covering, wall)` builds a
+believable little structure from the SAME building_styles.json data the top-down uses: storey-driven
+HEIGHT (`storeys_for` — a tower/mill towers over a cottage), a real roof SHAPE (gable `roof` ridge / hip
+`pyramid` (new helper) / flat parapet + a crown block for towers), recessed WINDOW boxes per storey on
+the +z (front) and +x (right) camera-facing walls, a DOOR, and a CHIMNEY+cap for a hearthed building —
+all in the building's WALL + COVERING material colours, VARIED per-building via `building_variety`
+(cache-keyed on (kind,covering,wall,size) so distinct looks stay bounded, not one per tile).
+`iso_objects.building_sprite(kind,size,covering,wall)` bakes/caches it; `iso_render._variant_materials`
+picks each building's covering/wall variant by world position (like the top-down BLD.8 variety). Result
+(scratchpad/iso1_buildings.png + iso1_closeup.png): real houses with pitched gable roofs, storey
+windows, doors, chimneys, and varied thatch/tile/slate + timber/stone/brick materials — a dramatic
+lift over the old uniform flat grey boxes; a tower genuinely towers with windows up its storeys.
+iso_buildings.py 86 / iso_objects.py 45 lines. tests/test_iso_buildings.py (7) + fixed test_iso_objects
+(the old `_building_mesh` moved). Next: ISO.2 (richer textured tiles), then ISO.3/4 (characters).
+
+## 2026-07-16 — ISO.2: textured isometric TILES (real terrain, not flat diamonds)
+
+`ui/iso_tiles.py` `tile_diamond(name, wx, wy, tw, th)` bakes the SAME rich `tile_variants` terrain
+texture the top-down world uses (grass blades / water ripples / farmland furrows / road pebbles / rock /
+swamp reeds), `smoothscale`s it to the 2:1 diamond footprint and CLIPS it to the diamond shape via a
+per-size alpha mask (`_diamond_mask`), cached per (base-name, variant, tw, th); a terrain with no recipe
+returns None so the caller keeps the flat shaded diamond. `_base_name` strips a trailing variant digit
+('grass2'→'grass'). Wired into `iso_render.draw_diamond` (tries the texture, falls back to the flat
+P41.7 diamond) + `_draw_tile` (unpacks the name) + the tile payload (terrain name added). Result
+(scratchpad/iso2_tiles.png): the iso ground reads as real terrain — textured grass, rippling blue water,
+furrowed farmland, pebbled roads — instead of flat colour diamonds; combined with the ISO.1 pitched-roof
+buildings the iso world looks markedly more realistic. iso_tiles.py 56 lines; iso_render.py 493.
+tests/test_iso_tiles.py (4: base-name strip, textured→diamond surface, unknown→None, cached). Next:
+ISO.3 (character proportions + stance + shading — movieMaker), then ISO.4 (character animation).
+
+## 2026-07-16 — ISO.3: richer isometric CHARACTER bodies (proportions, arms, stance, shading)
+
+`ui/iso_chars._figure` — the iso character was 5 stacked boxes (legs/torso/head/hair/nose, NO arms,
+stiff + symmetric). Reworked into an anthropometric humanoid (movieMaker's proportions + stance ideas):
+TWO legs, a tapered torso (a waist box + a wider chest/shoulder box), hanging ARMS (shaded darker so
+they read apart), a proper head + hair + a nose facing-cue — total ~1.6 units tall. A seeded
+CONTRAPPOSTO stance gives natural asymmetric weight: `_stance_of(char)` → a stable 0-2 per person
+(weight-left / neutral / weight-right) driving a lateral body lean + a head TILT (`_rot_z_about` about
+the neck) + one arm carried forward — so folk read as bodies with weight, not identical mannequins.
+Cache key gained `stance` (×3, bounded). `raster3d.render` gained a soft FILL light (`FILL_DIR`): shade
+= 0.30 ambient + 0.55 key + 0.15 fill (was a single key light + 0.25 floor), so EVERY baked 3D object
+(chars + buildings) reads with softer, deeper, less-harsh shading. Rendered scratchpad/iso3_chars.png
+(8 classes — varied torso colours, arms, slight stance leans) + iso3_world.png (the hero as a proper
+little figure among the textured tiles + pitched-roof buildings). The iso world now reads markedly more
+realistic across terrain + buildings + characters. iso_chars.py 106 / raster3d.py 135. tests/test_iso_
+chars.py (5: figure has arms+legs+head, stance shifts the body, stance stable per person, sprite
+drawn+cached). Next: ISO.4 (character ANIMATION — a bone/FK puppet + baked walk/attack pose-frames from
+char_mocap), ISO.5 (scale/fidelity polish).
+
+## 2026-07-16 — ISO.4: isometric character ANIMATION (they walk, strike, breathe)
+
+George: "Can the characters be better animated?" The iso figure was a static baked pose. ISO.4 makes it
+MOVE. `ui/iso_chars` refactored into `_rest_parts` (the ISO.3 humanoid) + `_pose(parts, action, phase)`
+which animates it: a WALK stride (the legs swing fore/aft about their hip pivots via a new `_rot_x_about`
+sagittal rotation, the arms counter-swing, the torso bobs twice per stride), an ATTACK swing (the weapon
+arm arcs up and over — `_rot_x_about` the shoulder), and a breathing IDLE (a subtle torso bob + arm sway
+so even standing folk are alive). `_frame_state(char)` chooses the action + frame from a real-time clock
+(`pygame.time.get_ticks`) + transient per-character render state on `metadata`: WALK for a short window
+after the character's tile position changes, ATTACK for a window after a fresh `_atk_seq` strike (bumped
+by combat_system), else IDLE; a per-stance time offset desyncs the crowd so they don't march in lockstep.
+`char_sprite` bakes/caches per (tint,hair,size,facing,stance,action,frame) — the frame count is quantized
+(walk 6 / attack 4 / idle 4) so the cache stays bounded. Procedural (not the 2D-side mocap clips, which
+don't map onto the 3D box puppet) — controllable + reads clearly at box resolution. Rendered
+scratchpad/iso4_anim.png: a legible walk cycle (striding legs, swinging arms) + an attack (arm arcing
+overhead). In-engine: idle→walk on a move→attack on a strike, verified. iso_chars.py 215 lines.
+tests/test_iso_chars.py +5 (walk moves the legs, stride extremes differ, attack raises the arm,
+frame-state transitions idle→walk→attack, action frames bake distinct sprites). Phase ISO now has real
+buildings (ISO.1) + textured tiles (ISO.2) + bodied (ISO.3) + ANIMATED (ISO.4) characters. Remaining:
+ISO.5 (scale/fidelity polish).
+
+## 2026-07-16 — ISO.5: iso scale/fidelity polish (crisper sprites) — Phase ISO complete
+
+George: "the scale might need to be larger for more detail." `raster3d.bake` now supersamples at 3× (was
+2×) via a clamped `_ssaa()` helper (`LLM_RPG_ISO_SS` env override, 2..4), so every baked iso sprite —
+buildings, characters, objects — renders with crisper silhouettes + finer detail. The cost is one-time
+per cache key (measured: first frame ~0.38s while baking, steady-state frame ~0.096s UNCHANGED — the
+bakes are cached, so no per-frame regression). Chose the SSAA bump over a global tile_size change (which
+would disrupt the whole game's layout + the top-down view); the user's own Map-zoom setting handles
+size. scratchpad/iso5_crisp.png: the full iso Oakvale — textured terrain, pitched-roof varied buildings,
+bodied+animated characters — rendered crisp. tests/test_raster3d.py +1 (SSAA default 3 + clamp 2..4 +
+bad-value fallback). This COMPLETES Phase ISO (docs/ISO_GRAPHICS.md): ISO.1 real buildings, ISO.2
+textured tiles, ISO.3 character bodies (proportions/arms/stance/two-light shading), ISO.4 character
+ANIMATION (walk/attack/idle), ISO.5 fidelity — the isometric world is now markedly more realistic across
+tiles, buildings and animated characters, per George's request.
+
+## 2026-07-16 — ISO.6: rigged SKELETON + Mixamo mocap for iso characters
+
+George: "make the iso characters even more realistic using a rigged skeleton and mixamo animations —
+ultrathink, see movieMaker." The game already ships 18 MIXAMO clips (`data/anim/*.json`, baked from
+Mixamo by tools/bake_mocap.py) as 15-joint 2D SIDE-VIEW `[nx,ny]` keyframes, sampled by
+`char_mocap.sample_norm(clip,phase)`. New `ui/iso_skeleton.py` lifts that into a real jointed 3D
+skeleton: `pose3d` maps each joint's (nx,ny) → (fore-aft depth z = nx·D, height y = ny·H) and spreads
+the left/right joints laterally (`_lat`: hips/legs ±0.11, shoulders/arms ±0.17) for body WIDTH, then
+rotates to the 4-dir facing; `_bone(a,b,r,color)` lays an axis-aligned box ORIENTED along each connected
+joint pair (Gram-Schmidt frame) — legs hip→knee→foot (+ a foot box), spine pelvis→chest→neck, clavicles
+chest→l/r_sh, arms shoulder→elbow→hand — plus a head + hair box. `sample_figure(action,phase,…)` maps
+the game action→a clip (walk→walk, run→run, idle→idle, attack→kick) and builds the mesh; `iso_chars.
+char_sprite` bakes it per (tint,hair,size,facing,action,frame) with the ISO.3/4 box figure as a
+fallback if a clip is missing. So the iso figure is now a rigged skeleton animated by REAL Mixamo mocap
+— natural walk gait with knee-bend + arm counter-swing, a settling idle, a dynamic kick — a dramatic
+lift over the procedural box-swing (scratchpad/iso6_proto.png the walk-cycle prototype, iso6_anim.png
+walk/idle/attack strips, iso6_world.png in-engine). A focused movieMaker research pass (full report in
+the task log) CONFIRMED this is the right approach: positions→bone-boxes is exactly their
+`mixamo_rig.anatomical_frames`, and for rigid boxes I correctly SKIP the quaternion/FK/skinning stack
+(that exists only to drive a proportion-mismatched skinned MESH); my hip half-width is ANSUR-accurate,
+the clips are already in-place (root stripped). Noted-but-not-needed polish: idle contrapposto, sex-
+driven shoulder width, `motion_qc.stride_advance` foot-lock (only for cross-tile walking, not in-place
+bakes). iso_skeleton.py 118 / iso_chars.py 220. tests/test_iso_skeleton.py (8: bone box along a segment
++ any axis, lateral l/r spread, pose3d maps joints, sample from a real clip, missing-clip→None, walk
+frames differ). Frame counts bumped for smoother mocap (walk 8 / idle 6 / attack 6). Toggle iso:
+LLM_RPG_RENDER=iso.
+
+## 2026-07-16 — ISO.7 + ISO.8: 360° facing, sword-swing, smooth continuous movement
+
+George: "Make the isometric figures FACE THE DIRECTION THEY MOVE — and have 360° animations, then add all
+your listed polish. Also, NPC and monster movements are a bit jerky — they wait a long time between
+tiles. Is this the tick rate? Can they move more continuously?"
+
+**ISO.7 — 360° facing + a real melee swing.** Root-caused the everyone-faces-south bug: `iso_chars.
+facing_of` compared the `(dx,dy)` TUPLE from `char_motion.facing` against a STRING-keyed direction dict,
+so it silently fell through to south for every character. Replaced with `facing_dir(char, n=16)` — it
+quantises the `_anim['facing']` movement tuple to one of 16 evenly-spaced directions (cardinals landing
+exactly on 0/4/8/12) and `dir_angle` maps that to radians. `iso_skeleton.pose3d/figure/sample_figure`
+now take an ANGLE and rotate the whole skeleton about the vertical (a single Y-rotation matrix) instead
+of snapping to 4 baked views, so a figure turns smoothly through the full circle — verified with an
+8-way walk strip (scratchpad/iso7_facing.png) and an in-engine frame where the player, stepped west,
+renders as a west-facing profile while a still NPC faces the camera (scratchpad/iso8_world.png). The
+"add all the polish" ask: no Mixamo SWORD clip ships (the melee action had been mapped to the leg
+'kick', which read wrong), so ATTACK now rides the idle base pose + `_attack_overlay` — it arcs the
+right elbow/hand up and forward over the swing into a proper overhead melee slash (scratchpad/iso7_
+attack.png). And the silhouette-variety polish: `iso_skeleton.build_of(char)` gives each person a stable
+seeded BUILD (0.88 slight / 1.0 average / 1.14 broad) that scales the shoulder spread, so a crowd of iso
+figures reads apart instead of clones — the practical stand-in for the "sex-driven shoulder width" idea
+(Character has no sex field) (scratchpad/iso7_builds.png). tests/test_iso_chars.py grows a TestFacing
+class (cardinals→0/4/8/12, diagonals between, still→camera, dir_angle spans the circle, north vs south
+bake apart); test_iso_skeleton.py adds build tests (broad > slight shoulders, stable per person).
+
+**ISO.8 — continuous movement (the jerkiness).** Two real causes. (1) The iso render path NEVER called
+`body_renderer.update_anim`, which top-down calls every frame — so in iso mode the facing was never
+refreshed AND every character TELEPORTED tile-to-tile with no slide. Fixed by calling
+`update_anim(char,_DT)` in both `iso_render.render_iso` and `iso_zone.render_zone_iso` and drawing each
+figure at the FRACTIONAL `_tween_world_pos(char,cx,cy)` — it eases the previous tile → the current one
+over the same `TWEEN_DUR=0.16s` the top-down renderer uses, so an iso step now SLIDES. (2) The
+"they wait a long time between tiles" cadence: `game_engine._npc_turns_due` ticked idle NPCs on a 3.0s
+wall-clock; extracted that to `config.NPC_IDLE_INTERVAL` and halved it to 1.5s, so ambient NPCs act
+twice as often when the player is standing still — livelier, more continuous — while the anti-flood
+bound stays. Both the top-down and iso views now read smooth. Full suite green; validator clean.
+
+## 2026-07-16 — ISO.9: iso facing CALIBRATION (the real fix)
+
+George: "The isometric figures are NOT facing the correct directions as they move — investigate and fix."
+ISO.7 was wrong. It rotated the skeleton by the raw WORLD azimuth of the movement (atan2(dx,-dy)), but a
+character is baked ONCE through a fixed, TILTED perspective camera (raster3d) — so the body's forward
+(+z), after that camera's projection, lands on a screen direction that is a NON-LINEAR function of the
+rotation angle (perspective foreshortening). Rotating by the world azimuth therefore pointed the figure
+the wrong way in the iso view.
+
+Root-caused it two ways that agreed: (a) analytically projecting the forward vector through the character
+CAM, and (b) empirically — baking the figure with a bright red "nub" at its forward, sweeping the rotation
+0-360°, and reading the nub-vs-body screen direction straight from the pixels. Both gave the same
+non-linear angle→screen-facing curve (e.g. skeleton angle 0° → the forward projects to ~205° screen, not
+0°). The right model: for a world move (dx,dy) whose iso-screen direction is (dx-dy, dx+dy), pick the
+rotation whose projected forward matches that screen heading.
+
+Fix: `iso_skeleton._fwd_screen_angle(a)` projects the body-forward through CAM to a screen angle, cached
+into `_face_table`; `angle_for_delta(dx,dy)` inverts it (nearest table entry to the move's screen
+heading). `iso_chars` drops the broken `facing_dir`/`dir_angle` for `move_delta(char)` (the movement sign
+tuple) + `char_sprite` baking at `angle_for_delta(*delta)`, cache-keyed by the delta. Verified in-world at
+scale: NE walks right in a clean side profile, SW mirrors it left, N/W show the figure's BACK (moving
+up/away), S/E show the FRONT (moving down/toward) — scratchpad/iso_realwalk.png (isolated 8-way),
+iso9_big.png (150px player per direction + heading arrow), iso9_inworld.png (real renderer). The tests now
+assert the chosen rotation's forward projects within 12° of the true move heading, and that E vs W face
+>120° apart (TestFacing rewritten). Full suite green. This also made George's scale point concrete: at
+64px the facing is invisible, at 150px it's obvious — the ISO.10 scale/detail/realism round follows.
+
+## 2026-07-16 — ISO.10: realistic iso character BODIES + bigger scale
+
+George: "Add more detail to the iso world and figures, increase the scale and zoom in so more details can
+be seen. Make the characters more realistic." Two parts.
+
+**Realistic body.** The iso characters had been a stack of uniform grey BOXES (bones between mocap joints).
+Added two general primitives to `raster3d` — `taper(a,b,r0,r1,color,seg)` (a round tapered tube = a limb
+that swells at the joint and narrows at the end) and `ball(c,r,color,seg)` (a low-res UV sphere = a joint,
+a head, a hand). `iso_skeleton.figure` now rebuilds the character OVER THE SAME mocap joints as a
+believable low-poly body: tapered thighs/shins to ball knees + booted feet, a tunic torso (the character's
+class/armour colour) tapering waist→shoulders with a belt band, shoulder balls + sleeved upper arms +
+bare skin forearms + hands, and a shaped head with a hair cap and a FACE — two eyes and a nose on the
+front, so a character seen from the front reads a face and from the back shows only hair (which also
+reinforces the ISO.9 facing at a glance). Colours derive from the existing `_tint` (class/armour) + `_hair`
+plus fixed skin/trouser/boot tones. Prototyped in scratch (iso10_proto{,2,3}.png) then ported; segs tuned
+to 1110 tris / ~20ms per bake (baked once, cached, so per-frame cost is unchanged). `_bone` retired in
+favour of `raster3d.taper` — its test moves to a taper/ball test in test_raster3d, and test_iso_skeleton
+asserts the body is many-parted and spans foot→head.
+
+**Bigger scale.** The map-zoom setting gains an 80 level and its default rises 48→64. The catch: the GUI
+started at the CLI `--tile-size` default (48) and only ever applied the zoom SETTING when the settings
+overlay was opened — so the persisted/default zoom was ignored at boot. Fixed with
+`settings_panel.init_zoom(gui)` (reads the player's zoom setting → `apply_setting`), called from `main.py`
+right after the GUI is built (kept out of `gui.py`, which sits on the 500-line line). So a new game starts
+at 64 and a player's chosen 80 sticks across reloads. Verified in-world: at zoom 80 the townsfolk read as
+distinct little 3D people — faces, class-colour tunics, hands, boots — facing the way they move
+(scratchpad/iso10_scale_80.png, iso10_world_t72.png, iso10_tuned.png). Settings tests updated for the new
+default + cycle order. Full suite green.
+
+## 2026-07-16 — ISO.11: the FULL Mixamo animation library for iso characters
+
+George: "Keep adding more animations and details — fighting, jumping, swimming, dancing, idling etc. use
+and adapt the animations from Mixamo." The iso characters had only ever played walk/run/idle/attack, even
+though the game ships 18 Mixamo clips and the whole top-down action state machine.
+
+The unlock was cheap because the top-down `body_renderer.update_anim` — which ISO.8 already calls for iso
+characters every frame — computes `anim["cur_action"]` from the SAME signals the whole game uses
+(`_emote` one-shots, `_stance` holds, `_atk_seq`, movement). So `iso_chars._frame_state` now just READS
+`cur_action` instead of re-deriving walk/attack: a one-shot (jump/leap/bow/wave/cast/cheer/stoop/dodge/
+hurt/kick/attack) arcs through its `action_t`/`atk_t` timer, and a looping action (walk/run/jog/dance/sit/
+climb/talk/swim/guard/argue/sneak/crawl) cycles on a per-person-desynced clock — with a table of frame
+counts + loop periods per action. `iso_skeleton._CLIP`/`clip_for(action,seed)` map every game action to
+one of the 18 clips (walk/run/dance/sit/climb/talk/nod/argue/stagger/jump/kick/…), and a seeded idle/dance
+picks a VARIANT (idle/idle2/idle3, dance/breakdance/hiphop) so a crowd of townsfolk doesn't idle or dance
+in lockstep. No Mixamo SWIM clip ships, so `swim_figure` is procedural: the climb clip drives an
+arm-over-arm STROKE while the whole body is pitched ~74° to horizontal about the pelvis and dropped to
+lie at the water surface — a convincing front crawl (scratchpad/iso11_swim.png). `figure` split into
+`_body(P,…)` so a pose can be transformed (pitched) before the mesh is laid over it. Verified with an
+all-actions montage on the ISO.10 body (iso11_montage.png) and an in-world pass driving the player through
+each stance/emote (iso11_inworld.png) — dance, sit, climb, talk, jump, swim all flow engine→cur_action→iso.
+Tests: `_frame_state` reads cur_action (driven via update_anim), a stance reaches iso, dance/sit/jump/swim
+bake distinct meshes. Full suite green.
+
+## 2026-07-16 — ISO.12: iso character VARIETY (body types, weapons, armour)
+
+George: "Add variety to the iso characters — different body types, different weapons, different clothing
+and armour." A crowd of identical grey figures becomes a mix of callings.
+
+New `ui/iso_gear.py` builds the worn GEAR as pure `raster3d` geometry, baked into the same cached sprite
+as the body (zero per-frame cost). `weapon_mesh(kind, hand, fwd)` covers all seven `char_motion.weapon_
+kind` categories — sword (dark hilt + gold crossguard + steel blade), dagger, axe (haft + a wedge head),
+mace (haft + a steel ball), spear (a long shaft + a point), staff (a rod + a gold tip), bow (a vertical
+limb + string in the off-hand). The weapon is held UP-and-FORWARD from the grip (a ready stance) rather
+than along the forearm, so it reads at any pose and TRACKS the hand through walk/attack (verified across
+idle/walk/attack — iso12_swordanim.png). `headgear_mesh` gives a metal helmet (with a nasal guard), a
+wizard's pointed hat, a drawn hood, or a noble's circlet; `shield_mesh` a round off-hand shield.
+
+`iso_chars.kit_of(char)` derives a hashable `(weapon, head, shield, height)` tuple: the equipped weapon
+kind, class headgear (`_headgear_for`: warrior/guard/paladin→helmet, wizard/sorcerer→hat, rogue/ranger/
+druid→hood, noble→circlet), a shield flag, and a body-type HEIGHT. `iso_skeleton.body_of(char)` extends
+the ISO.7 seeded build to a `(shoulder, height)` pair so folk are short/tall AND slight/broad; the height
+scales the pose before the mesh is laid, the kit adds the gear (`iso_skeleton.figure`/`sample_figure`
+thread it, `swim_figure` keeps the headgear but stows the weapon). All cache-keyed. Verified in a real
+Oakvale crowd (iso12_world.png): the wizard reads a purple robe + pointed hat + staff, the guard a helmet
++ sword, the cleric a mace, warriors a helmet + shield, merchants plain — each derived automatically from
+class + equipment + a seed. tests/test_iso_gear.py (weapons/headgear/shield/accessories) + kit tests in
+test_iso_chars. Full suite green.
+
+## 2026-07-16 — iso combat-effects bug-fix + ISO.13: character naturalism pass
+
+George: "In the iso view during fighting the red damage sprays don't disappear after a hit. And keep
+improving all character animations and bodies — smoother motion, more gestures, more combat moves, much
+more variation to look as alive as possible, better body proportions and realistic stances."
+
+**Bug-fix — the damage sprays that wouldn't clear.** `combat_effects.update(dt)` is what AGES the damage
+popups / hit flashes / death particles and drops the expired ones; the top-down renderer calls it every
+frame. The iso paths (`iso_render.draw_combat_iso` + `iso_zone`'s effect block) only ever called
+`draw_with` — never `update` — so in iso mode the red sprays aged 0 and stayed on screen forever. Both now
+`ce.update(1/30)` before drawing. In iso mode `dispatch()` skips the top-down update, so this is the
+single per-frame tick (no double-age). Regression test: a spawned spray clears after ~45 iso draws.
+
+**ISO.13 naturalism.** Five improvements toward "as alive as possible":
+- COMBAT MOVES. The iso attack had been one generic overhead swing. Now `iso_skeleton._swing_arm` /
+  `attack_figure` play a real 3D strike chosen by the character's `atk_style`: an OVERHEAD chop (arm arcs
+  up-back → down-front), a horizontal SLASH sweeping across the body (rotated about the vertical), or a
+  forward THRUST/stab — the weapon, attached at r_hand, follows the swing. `iso_chars` reads
+  `anim["atk_style"]`, which `body_renderer.update_anim` already rotates through the weapon's combo
+  (`char_style.attack_variants`) per strike — so a fight varies swing-to-swing for free
+  (scratchpad/iso13_combat.png, iso13_combat_kit.png). Retired the old 2D `_attack_overlay`.
+- GESTURES / "alive". The P34.4 idle-life system (`anim.update_idle_life`, wired in turn_pipeline) already
+  makes idle folk play ambient fidgets (shrug/ponder/yawn/stretch/wave/nod), but iso normalised every
+  unmapped action to idle, so they stood frozen. Mapped the fidgets to gesture clips (talk/nod/argue/climb)
+  and added them to the frame + one-shot maps, so a standing crowd now shrugs, ponders, stretches and nods.
+- SMOOTHER. The common actions bake at higher frame counts (walk/run/jog 8→12, idle 6→8, dance/climb→10),
+  so the cached animation reads smoother (still one-time bakes, cached).
+- PROPORTIONS. `_body` was slimmed to a more athletic, less blocky silhouette — a narrower waist, slimmer
+  arms/legs, and smaller shoulder joints (they'd read as pauldrons) — scratchpad/iso13_refined.png.
+- STANCES / variation. The per-character seeded idle/dance VARIANT (ISO.11) + the new visible gestures give
+  a crowd varied stances and life.
+tests: combat-effects expire in iso (regression); the three strike styles hold the hand apart + the swing
+moves over its arc (test_iso_skeleton TestCombatMoves). Full suite green.
+
+## 2026-07-16 — ISO.14: bake in MORE Mixamo captures (combat moves + gestures)
+
+George: "yes, please bake in more mixamo captures." The game shipped 18 baked clips, but movieMaker holds
+hundreds of raw Mixamo FBX. Rather than hand-author, I reused the exact existing pipeline end to end:
+a Blender headless dump (`mm/engine/blender/scripts/dump_clip.py` — loads an FBX, writes per-frame bone
+WORLD matrices to a pose-cache JSON), then `tools/bake_mocap.py` (projects the 65-bone rig to our 15-joint
+2D side-view, removes root motion, normalises to standing-height=1, downsamples to K keyframes → `data/
+anim/<key>.json`). Proved it on one clip (Bouncing Fight Idle → fight_idle, a boxing guard bob), then
+batch-dumped 15 more via Blender and added 14 to bake_mocap's `CLIPS`. `data/anim` is now 32 clips; the
+existing 18 re-bake byte-identical (deterministic).
+
+Baked and KEPT: combat — jab (Body Jab Cross), stab (Double Dagger Stab), block (Center Block), charge,
+fight_idle (Bouncing Fight Idle); gestures — acknowledge, point (Angry Point), ask (Asking Question),
+beckon (Beckoning), bored, look (Looking Around), pray (Praying), no (a head shake), silly (Silly Dancing).
+Dropped two that rendered badly: Big Body Blow (a full-body horizontal haymaker — the figure went
+upside-down) and Boxing (an unflattering low crouch); fight_idle already covers the combat idle.
+
+Wired into the iso characters: `iso_skeleton.attack_figure` now picks a real Mixamo COMBAT clip by weapon
+— a fist JAB when unarmed, a dagger STAB — and falls back to the ISO.13 procedural swing (overhead/slash/
+thrust) for a blade, so a brawler punches, a rogue stabs and a knight swings (scratchpad/iso14_combat.png).
+The idle-life fidgets route to the distinct new GESTURE captures (ponder→bored, shrug→ask, wave→beckon,
+salute→acknowledge, yawn→bored, kneel→pray, laugh→silly, point→point, guard→fight_idle). And
+`iso_chars._ambient_idle` drifts an idle character through calm ambient gestures over a slow per-person
+cycle — an occasional glance-around (look) or bored shift — so a standing crowd looks alive rather than
+frozen. All new clips registered in `_CLIP` + the frame/one-shot maps. tests: the 14 new clips load, the
+weapon picks the right combat clip (test_iso_skeleton TestBakedClips), the ambient idle stays calm
+(test_iso_chars). Full suite green.
+
+## 2026-07-16 — ISO.15: footprint-spanning iso buildings (they match their footprints now)
+
+George: "try to improve the buildings, they don't seem to match their footprints very well." In the iso
+view a building was drawn as ONE fixed baked sprite (size tile*2.2) parked at its front-centre tile, while
+the footprint tiles were LIFTED to a raised brown block — so a building bigger than about a tile sat on a
+brown pedestal with a too-small house floating on part of it, the rest of the footprint bare brown apron.
+
+New `ui/iso_structures.py` draws each enterable building as a real 3D BOX projected through the SAME
+`iso.world_to_screen` the ground tiles use, so it can't help but land on its footprint. `building_infos`
+returns each enterable building's full `loc` rect + kind; `footprint_tiles` are now drawn as flat GROUND
+(no lifted pedestal) so the box sits on the earth; `draw_building` projects the footprint's outer corners
+at ground + eaves height and fills the two camera-facing WALLS (south + east, shaded), a centred DOOR and a
+pair of per-storey WINDOWS on each, then a real ROOF by the building's style — a gable RIDGE along the
+longer axis, a hip PYRAMID for a square plan, or a flat PARAPET — all in the same `roof_shapes` materials
+(varied per building via `building_variety`). `iso_render` draws the footprint tiles as ground and adds one
+building box per structure, depth-keyed on its FRONT tile so it occludes what's behind and is occluded by
+the cast in front; the old baked-sprite building draw + the `_building_anchors` helper are retired
+(iso_render back under 500). Verified in the demo world (scratchpad/bldg_fixed.png at zoom 72, bldg_zoom.png
+at 96): a 2x2 cottage, a 6x5 hall, a stone watchtower each fill their tiles with walls + windows + a gabled
+roof, sitting on the grass. tests: footprint tiles cover the rect + the draw paints walls+roof
+(test_iso_render TestBuildingFootprints), building_infos exposes footprints (test_iso_objects). Full suite green.
+
+## 2026-07-16 — ISO.16: swim facing fix, furrowed farmland, more Mixamo captures
+
+George: "the iso characters don't face the right way when swimming — check all animation directions. Make
+farmland read as furrowed crops. Add more animations, running?"
+
+**Swim facing bug.** `swim_figure` pitched the body to horizontal about the world-X axis AFTER `pose3d`
+had already applied the facing rotation — so the pitch always tilted the head toward a FIXED world
+direction and the swimmer lay the same way no matter which way it swam (all 8 directions pointed head
+up-left — scratchpad/iso16_swim_before.png). Fixed by reordering: build the pose at facing 0, PITCH it
+face-down (head → +z), THEN YAW by the facing angle about the vertical, so the head points the swim
+heading. All 8 now point head-first at their movement arrow (iso16_swim_after.png).
+
+**Direction audit.** Rendered every action × the four cardinal headings (iso16_dir_audit.png). walk/run/
+dance/sit/climb/talk/jab/attack all already face correctly — the ISO.9 calibration rotates the whole body
+by the heading-derived angle, so any `figure(pose, angle)` faces right; swim was the only one that added a
+second transform out of order. No other fixes needed.
+
+**Furrowed farmland.** In iso a farm field was a flat dirt diamond (the subtle tile_variants furrow texture
+didn't read at scale). `iso_tiles.draw_furrows` now overlays parallel CROP rows — green (young) to gold
+(ripening), chosen per tile so a field varies, running along an iso axis and continuous across neighbours,
+with a lit ridge on each row for a hint of 3D furrow. `iso_render._draw_tile` calls it on farmland
+(farm_synth.png — a patchwork of green + gold rows).
+
+**More Mixamo captures.** Baked 5 more via the Blender dump → bake_mocap pipeline (data/anim now 37): real
+SWORD swings `sword_attack` + `sword_attack2` (from the Sword and Shield Pack) which `attack_figure` uses
+for sword/axe/mace, alternating by strike style, so a knight swings real mocap while a spear/staff keeps
+the procedural thrust; `spellcast` (the sword-and-shield casting) for the `cast` emote a caster fires in
+combat_system; `hit` (Hit To Body) for the `hurt` emote combat fires on a struck defender — a real recoil;
+and `die` (Flying Back Death) for a downed body, which `iso_chars._frame_state` now shows (its final prone
+frame) when `char_injury.injury_state` reports the character down. Running already shipped (the run clip).
+scratchpad/iso16_newanims.png, iso16_combat_wired.png (sword swings + hurt recoil + a wizard casting).
+tests: swim faces its heading + sword uses the mocap + the new clips load (test_iso_skeleton), furrows
+paint green (test_iso_render), a downed char lies (test_iso_chars). Full suite green.
+
+## 2026-07-16 — iso building DOORS restored (George)
+
+George: "the buildings no longer have any door icons." A regression from ISO.15: the footprint-spanning
+building drew a door, but it was a small dark quad the same tone as the shadowed wall AND the low, dominant
+roof swallowed the short front wall, so the door didn't read. Fix: taller walls (`_STOREY_Z` 0.62→0.74) +
+lower roofs (less overhang), and a clearly-FRAMED entrance door — a light stone lintel/jambs around a
+panel coloured by the lock STATE (open/closed/locked/broken, from `door_manager` via the top-down
+`DOOR_STATE_COLORS`) with a knob — so an enterable door reads at a glance, like the top-down glyph.
+`building_infos` now carries the loc name, `iso_structures.door_state(engine,name)` fetches the state, and
+`iso_render` threads it into `draw_building`. scratchpad/door_fixed.png, bldg_doors.png. tests: the door
+frame paints (test_iso_render). Full suite green.
+
+## 2026-07-16 — the COLOSSEUM: a combat-testing arena
+
+George: "a battle colosseum for staging combat between two or more opponents (like autonomous_world) — a
+simple environment for testing combat, particularly combat graphics and seeing how well they work,
+including the battle tactics in the battle simulator." I researched autonomous_world's colosseum (a rich
+suite — arena terrain, duel/team/beast presets, boids+influence-map tactical AI) and built a focused
+version on llm_RPG's OWN combat, so it exercises the real pipeline + the character graphics I've been
+building.
+
+`engine/colosseum.py` (`ColosseumSystem`) over `data/colosseum.json`. `seed()` plants a walled sand ring —
+a ROAD floor inside a BUILDING-wall ring with one gate — and a `Colosseum` Location near the player start.
+`stage(preset)` spawns two TEAMS of real game Characters at opposite ends: a class name becomes a fresh NPC
+(create_random_npc), a monster template becomes a build_monster, each buffed a little (×1.4 HP + level) so
+the bout lasts long enough to watch, and tagged `metadata['arena_fighter']`. `run_turn()` — called from the
+turn pipeline every tick while a fight is active — drives every living fighter to close on and strike the
+NEAREST enemy through the real `combat_system.npc_attack` (rangers shoot, casters cast, everyone else swings
+a blade), so the fight uses the same d20 combat, the same positional handling, and the same character
+GRAPHICS: the attack swings (ISO.13/16 sword/jab/stab mocap), the hurt recoils, the deaths, and the ISO.12
+per-class weapon/armour variety all play out in a real melee (scratchpad/colosseum_showcase.png — a mixed
+skirmish of warriors/rangers/a casting wizard/a paladin, blood pools and all). `over`/`winner`/`_finish`
+end the bout on a wipeout with an `[Arena]` beat.
+
+Entry: `enter(matchup)` seats the player as a SPECTATOR at the arena gate (revealing the ring) and stages a
+fight — reached by the new `--colosseum [matchup]` CLI flag (a one-command combat-graphics test bench) and
+by the E-key at the gate, which cycles through the matchups (a hint-bar cue advertises it). Eight presets:
+Warriors' Duel, Paladin vs Rogue, Mages' Duel, Shields vs Bows, Mixed Skirmish, Beast Brawl, Gladiators vs
+the Troll, Guards vs Bandits — every one resolves in ~15-35 turns.
+
+Integration: the arena combatants are skipped by the ambient NPC AI (`process_npc_turns`), pursuit,
+aggression and `npc_conflict` (via `metadata['arena_fighter']` / `is_fighter`), so only the colosseum
+drives them — they never march off to fight the spectator. Wired into engine_setup (create + seed),
+turn_pipeline (run_turn), save_load (the arena rect persists; a live fight is transient). tests/test_
+colosseum.py (8): seeded at startup, two teams spawn, a duel + a team battle resolve to a winner, clear
+removes the fighters, enter seats the spectator, the arena persists, a fighter is skipped by pursuit. Full
+suite green. This gives George exactly the ask — a simple, repeatable arena to stage a fight and watch the
+combat + its graphics actually work. (Left for later: an overlay pick-a-fight menu + spectator HUD, and
+hooking the P17 tactical battle simulator in as a second colosseum mode.)
+
+## 2026-07-16 — COMBAT.1: a full attack + defence repertoire, both 2D and iso
+
+George: "add as many combat attacks and defence moves to the animations as possible both 2D and
+isometric." Baked 12 more Mixamo captures through the Blender→bake_mocap pipeline (data/anim now 49):
+three more sword swings (sword_attack3/4, sword_slash from the Sword and Shield Pack), boxing blows (hook,
+lead_jab, elbow), DEFENCES (sword-and-shield block → shield_block, crouch_block, Falling To Roll → a dodge
+roll), and directional hit reactions (Hit To Head/Back/Legs → hit_head/back/legs).
+
+ISO: a fighter now ROTATES through its weapon's whole repertoire strike-to-strike. `iso_skeleton._BLADE_
+POOL` (sword_attack, _attack2/3/4, _slash) + `_FIST_POOL` (jab, hook, lead_jab, elbow) — `attack_figure`
+picks the clip by `seq` (the strike counter the combat system already bumps and `update_anim` exposes as
+atk_seen), so five distinct sword swings cycle for a blade, four boxing blows for a bare fist, a dagger
+stab, and the ISO.13 procedural thrust for a polearm. The block / crouch-block / dodge-roll / hit-head/
+back/legs are registered in `_CLIP` + the frame/one-shot maps, so they play when fired (combat_iso_
+rotation.png shows all five swings + the defences).
+
+2D: the top-down renderer had done attacks PROCEDURALLY (char_clips overhead/slash/thrust). Now
+`char_mocap.attack_clip(weapon, seq)` + `combat_mocap(action, anim, weapon, progress)` feed the real Mixamo
+combat, and `body_renderer` plays it: an attack rotates the repertoire, a block/crouch-block/dodge/hit-
+reaction plays its capture (over its one-shot duration), a guard idle loops — the same rich combat the iso
+view has, for the primary sideways combat facing (combat_2d.png). The combat one-shots (block/crouch_block/
+hit_head/…/hook/elbow/roll) were registered in char_clips.ACTIONS so the action state machine actually
+starts them.
+
+To make the DEFENCES visible in a real fight, the colosseum AI now fires an occasional guard/dodge/crouch-
+block (deterministic, ~1 in 6 melee turns) instead of striking. And to hold the 500-line line after the
+additions, split `ui/body_draw.py` off `body_renderer` (the SSAA beauty pass, the glimpsed-through-a-window
+glaze, the projectile sprite — re-exported for back-compat), taking body_renderer from 539 back to 482.
+tests: attack_clip rotates the repertoire + combat_mocap picks the defence clips + a hit progresses over
+its duration (test_char_mocap); the iso attack rotates strike-to-strike + every defence move builds a mesh
+(test_iso_skeleton). Full suite green.
+
+
+## 2026-07-16 — COMBAT.2: the lively repertoire + a natural-pace arena
+
+George: "What more can you add — shield blows, different shield blocks, rolls, jumps, sword-fighting, cuts,
+jabs, flourishes, punches, blocks, wrestling, throws, knock-downs, different ranged weapons, slides,
+sweeps. Keep going to make it as lively and entertaining as possible. Can you speed up the action so it
+feels more natural?"
+
+Baked 22 more Mixamo captures through the Blender→bake_mocap pipeline (data/anim now 71): more sword cuts
+(sword_slash2/3), a sword_kick, a leaping jump_attack, a flourish; axe moves (axe_chop, axe_spin); a body-
+block (shield_bash) + a second block (block2); capoeira kicks & sweeps (drop_kick, low_kick, spin_kick,
+sweep, spin_combo); a dive_roll + a weave; wrestling (throw / thrown / shoved); archery (bow_draw,
+bow_loose); and a hop. All render cleanly in the iso camera (combat2_iso.png) and through the 2D pose path.
+
+Wiring — both renderers now draw from the fuller pools. iso `_BLADE_POOL` grows to 9 sword swings (cuts +
+slashes + kick + flourish), a new `_AXE_POOL` gives an axe its own chops/spins, `_FIST_POOL` grows to 8
+(boxing + capoeira kicks/sweeps); `attack_figure` routes by weapon. All 22 standalone moves are registered
+in `iso_skeleton._CLIP` + `iso_chars._ACT_FRAMES`/`_ONESHOT`, and mirrored in `char_mocap._BLADE`/`_AXE`/
+`_FIST` + `ACTION_CLIP` + `_COMBAT` and `char_clips.ACTIONS` (one-shot durations) so the 2D renderer plays
+them too. So a melee bout now cycles nine sword swings, an axe its own moves, a bare fist boxing + kicks —
+never the same blow twice.
+
+The arena shows the new moves: the colosseum AI mixes cosmetic showcase beats into an adjacent melee — a
+wrestling THROW (fighter heaves, foe is knocked down), a defensive beat (dodge/block/crouch-block/block2/
+weave/shield-bash/roll), or a flashy flourish (spin/sweep/leaping kick); an archer draws before the loose.
+
+Speed-up — a live Colosseum bout otherwise only ticked on a player action or the slow ~1.5s ambient-NPC
+interval, so it crawled when spectating. New `away_mode.colosseum_tick(gui)` auto-advances the world ~6
+ticks/sec while `colosseum.active` (independent of the away-hero heartbeat), called from the gui loop — the
+fight now plays at a natural, watchable pace. tests: the expanded sword/axe/unarmed repertoires + every
+standalone showcase move routes to its capture + is a registered one-shot (test_char_mocap TestCombat2);
+the arena's defence/showcase pools are registered one-shots + a live bout auto-advances then stops
+(test_colosseum). Full suite green.
+
+## 2026-07-17 — Combat Arena as a start-menu item (George)
+
+George: "How do I play in the combat arena — can you add it as a startup menu item?" The colosseum was
+only reachable via the `--colosseum` CLI flag or by walking to the arena gate in-game and pressing E; now
+it's a first-class title-screen option.
+
+`engine/colosseum.list_matchups()` — an engine-free `[(id,name,desc)]` (mirrors `battle_scenario.
+list_scenarios`) so the menu can list the fights before a world is built. `ui/start_menu.py`: a new "Combat
+Arena" TITLE_OPTION opens an `arena_menu` state — a keyboard-navigable list of the 8 matchups (Warriors'
+Duel, Mages' Duel, Shields vs Bows, Beast Brawl, Gladiators vs the Troll, Guards vs Bandits…) with the
+selected one's blurb; Enter returns `{"action":"arena","matchup":<id>,"spec":<default hero>,"start":
+"default"}`. `main.py` handles the new action like "new" (default world + a quick-start hero) then
+`engine.enter_colosseum(matchup)` seats the player as a spectator at the gate and stages the fight — the
+COMBAT.2 `colosseum_tick` runs it at a natural pace. The `--colosseum` flag now shares the same
+`arena_matchup` path. Once a bout ends the player stands at the arena gate in a normal world and can press
+E to stage the next matchup (cycles), or walk off and play on.
+
+tests/test_arena_menu.py (7): matchups load engine-free, Combat Arena is a title option that opens the
+list, renders without crashing, navigation stays in bounds, Enter returns the pick (with a hero spec),
+Esc returns to the title. Full suite green.
+
+## 2026-07-17 — Continuous NPC motion (no more jerky stop/start) — George
+
+George: "NPCs and characters and monsters move with a jerky stop/start motion, stopping briefly between
+rounds. Can you make their motion more continuous?" Root cause: an NPC steps on the slow world cadence
+(every NPC_IDLE_INTERVAL=1.5s while the player idles) but the sprite slid across a tile in a fixed 0.16s —
+so it DARTED then froze ~1.3s (measured: 77% of frames frozen).
+
+Fix — the slide now STRETCHES to fill the gap. New `ui/char_tween.py` (shared by both renderers):
+`start_slide` sizes each NPC's tile-slide to the measured time since its last step (clamped to
+NPC_TWEEN_MAX=0.85s), so a walking NPC glides tile-to-tile continuously; the actively-controlled hero keeps
+the crisp fixed 0.16s step (`is_player=True`) so input stays responsive. `advance_slide` advances a
+`move_phase` in proportion to ground speed (STRIDE_PER_TILE cycles/tile) so the legs cycle at the glide's
+pace — no fast shuffle over a slow slide. Both `body_renderer.update_anim` (top-down) and the iso path read
+the per-char `tween_dur` (`iso_actors.tween_world_pos`, `body_renderer` slide offset, `iso_chars._frame_state`
+walk/run frames from `move_phase`). `is_player` threaded through the 4 update_anim call sites (renderer world
++ zone, iso_render, iso_zone).
+
+Paired with `config.NPC_IDLE_INTERVAL` 1.5→0.7s (a natural ~0.7s/tile walk, and ≤ the tween cap so the glide
+fills the whole gap) — verified COSMETIC-ONLY: `process_npc_turns` moves NPCs but does NOT advance the
+calendar or spawn encounters (that's `advance_turn`, on a player action), so faster ambient stepping has no
+gameplay impact. Result: a realistic stand-then-walk is 0% frozen (was 77%), gliding every frame at a steady
+pace. Split the motion math into `char_tween` to hold `body_renderer`/`renderer` under the 500-line line.
+tests/test_char_tween.py (10): the slide fills/caps the gap, the player stays crisp, a short gap never dips
+below the base, the stride advances with ground speed, and the iso tween uses the per-char duration. Full
+suite green.
+
+## 2026-07-17 — Idle NPCs mill about (they stop freezing on their tile) — George
+
+George (follow-up to the continuous-motion fix): "when the player isn't doing anything the NPCs & monsters
+still spend most of their time not moving — they move to a tile and hang around too long. Tick rate?"
+
+Two causes: (1) the tick/round rate — already lowered NPC_IDLE_INTERVAL 1.5→0.7s so NPCs ACT ~1.4×/sec; and
+(2) the real one — the AI DECIDES to stand still once arrived. Most schedule activities map (via
+`schedules.activity_to_action`) to `("move", <location>)`, and `action_router._interpret_direction` returns
+(0,0) — "if already at the target, don't move" — so scheduled NPCs converge on their spot and FREEZE.
+
+Fix: an arrived NPC now STROLLS around its location instead of freezing. `action_router._handle_move`: when
+the target resolves to a LOCATION and the NPC is within `LOITER_RADIUS`(3) of it, `_loiter_step` picks a
+wander POINT within the area and walks toward it (directed motion — reads far livelier than random adjacent
+jitter), picking a fresh point on arrival; it falls back to ANY in-radius neighbour when the directed step is
+blocked (robust in crowded/tight spots) and never backtracks onto the tile just left, with a small
+`LOITER_PAUSE_CHANCE`(0.15) so it occasionally stops. Direction moves (a guard's N/S/E/W patrol) and
+toward-target approaches are untouched — loiter is location-arrival-only. Silent (no event-log spam).
+
+Investigation clarified the two levers: the tick rate (only NPCs within `effective_visibility()*2` of the
+player are processed — 90% of them DECIDE to move, at the morning hour) and the arrival-freeze (now fixed).
+Measured over 4 seeds: of the NPCs near the player, ~38% step each 0.7s tick and 98% move at least once over
+30 ticks (≈ nobody freezes for good) — a town in constant ambient motion, gliding smoothly (the gap-filling
+tween). tests/test_npc_movement.py: an arrived NPC strolls (moves >15/80, stays ≤ radius) + a compass move is
+NOT loitered. Full suite green.
+
+## 2026-07-17 — LIVING_WORLD Area A: professions ALIVE (A1/A2/A5/A6) — George
+
+George: "start with A1 — build the activity framework and keep going." Built the visible-behaviour layer so
+nearby NPCs PERFORM their role instead of milling. Grounded in the audit + docs/LIVING_WORLD.md.
+
+**A1 — the ActivitySystem** (`engine/activities.py` + `data/activities.json`): when a scheduled NPC has
+REACHED its work location, it PERFORMS the activity — a fitting animation clip + expression + an occasional
+sparse `[Town]` beat — instead of loitering. The clip is resolved by ACTIVITY (pray→kneel, play→dance,
+eat/drink) and, for `work`, refined by the NPC's PROFESSION (its `home_location` building's kind →
+`building_types.profession_of_kind` → smith→hammer, cook→stir, farmer→stoop, woodcutter→axe_chop…), else its
+class (`class_work`: cleric→kneel, wizard→cast…). Reuses the existing `ui/char_clips` library via the
+pygame-free `engine/anim` triggers; nearby-only, heuristic, no per-tick LLM. `schedules.activity_to_action`
+stops flattening (pray/play now ROUTE to their location so they can perform there), the raw activity rides
+through `action_data["activity"]` (heuristic `_wrap`), and `action_router._handle_move` calls `perform` on
+arrival — a non-work activity still strolls (the loiter fallback), so nothing regresses. In the demo world
+Goren the tavernkeeper resolves as a `cook` and visibly stirs a pot.
+
+**A5 — scheduleless classes get day-plans** (`characters/schedules.py`): wizard/rogue/noble/ranger/paladin/
+monk/druid/sorcerer/warlock/artificer/barbarian used to fall to a literal random cardinal walk. Now mapped
+to characterful ARCHETYPE schedules (scholar/devout/wanderer/gentry/shadow) so a wizard studies (cast), a
+noble promenades, a cleric-like devout kneels — targets use keywords that reliably resolve so they never
+freeze.
+
+**A2 — guard patrol routes** (`activities.patrol_step`): a guard on patrol walks a real BEAT — the
+settlement's GATES when it has them (else a ring around the centre), stepping waypoint to waypoint via a BFS
+`squad_tactics.path_step` (routes around buildings), sticky once started so the beat can range past the
+loiter radius. Measured: a guard covers ~13 tiles ranging 8 from centre over 80 ticks (gate-to-gate), where
+before it loitered on the spot.
+
+**A6 — fixed the dead `_handle_work`** (`action_router`): the LLM-path craft/forge handler was mis-gated to
+`klass == "merchant"` (no such smith class) and never reached from the heuristic. Now it forges gated on the
+worker's real PROFESSION (via `activities.profession_of`).
+
+Validator gains `check_activities` (clips are real char_clips clips; professions are known). tests/
+test_activities.py (23): profession→clip resolution, perform-vs-loiter routing, archetype day-plans, the
+patrol beat, the work handler. Full suite green.
+
+## 2026-07-17 — LIVING_WORLD A3/A4: worksite spread, a bard's crowd, work feeds the store
+
+Continued Area A (George: "keep going with A3 and A4").
+
+**A3 worksite SPREAD** (`activities._goto_worksite`/`_worksite_for`): a working NPC now walks to a stable
+per-person tile (centre ± `WORKSITE_SPREAD`=2) at its workplace and works THERE, so a crowd of workers fans
+out across the yard instead of stacking on one point (the crowding that left many "idle" in the earlier
+measurement). `perform` takes the location `center` (threaded from `action_router._handle_move`); it commutes
+via `squad_tactics.greedy_step`, then animates on arrival — but if the ideal tile is unreachable (a wall in
+the way), it SETTLES where it is after `COMMUTE_MAX`=6 steps and works there, so a worker never gets stuck
+sliding forever instead of performing.
+
+**A3 bard AUDIENCE** (`_draw_crowd`): a performing bard turns nearby idle folk to FACE the show (cosmetic —
+they keep their own behaviour), so a tune gathers a little crowd.
+
+**A4 work feeds the store** (`_work_yield`): a GATHERER's visible work (miner/woodcutter/fisher/hunter/
+farmer/forager — those with a `production.primary_raw`) stocks 1 unit of its raw into the nearest
+settlement's `production` store every `WORK_YIELD_PERIOD`=16 performs (capped at STORE_CAP) — so watching a
+miner actually adds ore, and the per-turn performance agrees with the nightly economy. CRAFTERS (smith/cook/
+alchemist — `primary_raw` None) stay cosmetic: no minting finished goods from nothing; the nightly
+`production_loop` still turns the accumulated raws into goods.
+
+tests/test_activities.py grows to 30 (worksite fan-out, gatherer stocks the store, crafter mints nothing,
+bard audience); the A1 arrived-worker test updated for the commute-then-work behaviour. Deferred: farmer
+field-harvest (needs farmers routed to the fields). Full suite green.
+
+## 2026-07-17 — LIVING_WORLD Area B: wildlife ETHOLOGY (B1–B4) — George
+
+George: "keep going with Area B." Animals now live a real day instead of the old 50/50 stand-or-random-step
+wander. New `world/wildlife_ethology.py` (pure over the animal metadata + `WildlifeSystem` map helpers);
+`wildlife._act` calls `live()` after its survival/hunt checks; `wildlife.py` stays under 500 by the split.
+
+**B1 day/night** — each species has an `active` day|night. A DIURNAL animal (deer/rabbit/pheasant) BEDS DOWN
+at night (stops, a sleep bubble); a NOCTURNAL one (boar/fox/wolf) rests by day and roams at night. Survival
+still overrides — an approaching player/predator STARTLES it awake and it flees (the flee checks run first).
+`_pick_for` reweights spawns toward the species active now, so the wild shifts day↔night (a resting one still
+turns up occasionally, asleep in the field).
+
+**B2 graze & thirst** — a grazer moves toward its DIET terrain (graze→grass/forest, root→swamp/forest) and
+FEEDS in place (a grazing pause, hunger reset) on a hunger drive; any animal SEEKS and DRINKS at WATER on a
+thirst drive — replacing the random wander with purposeful feeding.
+
+**B3 herding** — herd species (`herd:true` — deer/rabbit/pheasant + the wolf PACK) drift together via
+boids-lite cohesion + separation (`_herd_vector`), so a herd moves as one; solitary species free-amble.
+
+**B4 richer predators** — a new **wolf** pack predator (hunts deer/rabbit, nocturnal, flocks); a **cornered
+boar CHARGES** the player (`_charge`/`_can_flee` — the data's old promise, real damage floored at 1 HP so it's
+a scare not a kill, on a `CHARGE_COOLDOWN`); and a predator **hunger meter** (`pred_hunger`) so nightly starve
+odds climb the longer it goes hungry (a fed one is safe, two lean nights usually fatal) instead of a coin-flip.
+
+`data/wildlife.json` gains `active`/`herd` on every species + the wolf + boar `charge`; `check_wildlife`
+validates them. tests/test_wildlife_ethology.py (17). Deferred B5 (herds actively avoiding a predator's area —
+proximity-flee already covers the core). Full suite green.
+
+## 2026-07-17 — LIVING_WORLD Area C (C1): lair home behaviour — George
+
+George: "keep going with Area C." Started the last area (monster & tribe life). The audit found lair
+occupants get a `home_pos` but NOT the `territorial` leash, so a goblin warren SCATTERS — occupants wander
+off and idle until the player arrives, no roles, no community.
+
+**C1 — Lair home behaviour** (`engine/lairs._place_lair` + `heuristic._hostile_action`): every lair occupant
+now gets a `territorial` leash (`HOME_RADIUS`=6, so the warren HOLDS TOGETHER) with `home_pos` = the DEN
+centre, plus a `lair_role` — the lone/last special group is the CHIEF, the rest split into SENTRIES and
+GUARDS (a `role` in the occupant data overrides). The idle-hostile AI gained a role branch (fires only while
+no prey is in sight, so combat is untouched): a SENTRY paces an 8-point ring around the den
+(`_patrol_home`), a CHIEF/SHAMAN holds the hoard, guards mill (the leash already keeps them home). So a lair
+now reads as an OCCUPIED, watched camp instead of scattered wanderers. Measured: occupants stray ≤ ~7 tiles
+from the den over 40 turns (was scattering). tests/test_lairs.py (+5). Next: C3 tribe camps (the marquee —
+a visible camp with chief/warriors/foragers/shaman), reusing this role infrastructure.
+
+## 2026-07-17 — LIVING_WORLD Area C (C3): visible TRIBE CAMPS (the marquee) — George
+
+The audit's biggest gap: a monster tribe was an ABSTRACT `strength` int that raided nightly and only ever
+spilled a combat raid-party — you never met the tribe "at home", no roles, no community.
+
+**C3 — Tribe camps** (`engine/tribe_camps.py`): `seed()` plants a visible CAMP for each tribe near its
+territory (forest/swamp/mountain affinity, ≥22 tiles from spawn, spaced apart), seated with a role-tagged
+CAST scaled by the tribe's strength — a CHIEF (the champion template) at the totem, a SHAMAN, a FORAGER, and
+a band of WARRIORS split into SENTRIES + GUARDS (2 + strength//25, capped at MAX_WARRIORS). Members reuse the
+C1 lair infrastructure — a `territorial` leash to the camp centre + a `lair_role` → the idle-hostile AI paces
+the sentries / holds the chief, so the camp HOLDS TOGETHER and reads as a lived community; they're tagged
+`lair:tribe:<tid>` so the P19.3 pack brain bands them under their champion when the player closes in. A
+`tribe_camp` `Location` marks each camp on the map (findable). Registered in `engine_setup` (create + seed
+after Lairs) + `save_load` (persists, `to_dict`/`from_dict`); the demo world plants 3 (Gorge Goblins / Crag
+Trolls / Reedmarsh Warren) with 5-6 members each, holding within ~8 tiles of the totem. tests/
+test_tribe_camps.py (7) + a full save/load round-trip. Full suite green.
+
+Area C now has C1 (lair home behaviour) + C3 (tribe camps). Remaining/optional: C2 (monster day/night —
+reuse Area B), C4 (packs roam together off-combat), C5 (monsters hunt wildlife — ties B↔C).
+
+## 2026-07-17 — LIVING_WORLD Area C (C2) + flaky-test fixes — George
+
+George: "complete leftovers and fix flaky tests."
+
+**C2 — monster day/night** (`world/monsters.build_monster` + `heuristic._hostile_action`): a monster
+template carries `active: day|night|always` (undead/bog/wisp things — restless_bones, grave_touched,
+marsh_wisp, bog_lurker, bog_goblin(+champion), drowned_guardian, vaelzhur_lich, wisp_queen — tagged NIGHT).
+While no prey is in sight and it's at its den, a NOCTURNAL creature lies DORMANT by day (a `wait` + a sleep
+bubble), a diurnal one by night; survival still wakes it (the flee/attack branches run first) and an
+`always`-active monster never sleeps. So an undead lair is quiet by day and astir by night. tests/
+test_lairs.py TestMonsterDayNight (+4).
+
+**Flaky-test fixes** (George's suite occasionally fails on a DIFFERENT test each full run — global-`random`
+order pollution): (1) `test_companion_depth.test_holding_companions_do_not_follow` — the preset's HP can roll
+low, tripping M.10b self-preservation (a badly-hurt companion breaks off even on HOLD), so the "held ground
+is held" assertion flaked; pinned the companion to full HP (the test is about order obedience). Verified 0
+failures across 12 seeds. (2) `test_iso_chars.test_frame_state_reads_cur_action` — an idle char drifts
+through ambient gestures (look/bored) on a WALL-CLOCK timer (ISO.14), so the `== "idle"` assertion flaked
+~⅓ of the time; froze `_clock_ms` to 0 (ambient slot = idle). (Earlier this arc also fixed the agent_ammo
+assertion + the colosseum duel STALL.) The other CLAUDE.md-listed candidates (test_tactics/conditions/
+input_bindings/encounters) pass 5× in isolation.
+
+## 2026-07-17 — LIVING_WORLD leftovers: C5 monsters-hunt-wildlife, A3 farmer-fields, C3 raid-from-camp
+
+George: "go ahead with C5 then A3 and C3." Built the deferred leftovers with the infrastructure each needed.
+
+**C5 — monsters hunt wildlife** (`world/wildlife_ethology.monster_predation`, called from `WildlifeSystem.
+run_turn`): predatory MONSTERS (`preys_on` in data/monsters.json — the wolf hunts deer/rabbit, the bog lurker
+deer/boar) that aren't busy with the player run down the nearest wildlife they eat, joining the food web.
+The idle-monster AI lives in the pygame-free heuristic provider with no engine handle, so the hunt runs from
+the WildlifeSystem (which has the roster + engine + runs BEFORE process_npc_turns) and sets `_aggro_turn` so
+the ambient AI doesn't also move the hunter that turn — no double-drive. Split into wildlife_ethology to hold
+wildlife.py under 500. tests/test_wildlife_ethology.py (+2).
+
+**A3 — farmer field-harvest** (`activities.farm_step`, `action_router._handle_move`): a FARMER now walks to
+the FIELDS (nearest `farm_manager` FARMLAND plot, a ripe one first) and works the soil there — reaping a
+mature plot into the settlement store with a `[Town]` beat — instead of milling at the village square. Routed
+at the top of `_handle_move` (a farmer's "work" delegates to `farm_step`); `_store_add` refactored out of
+`_work_yield` and shared. tests/test_activities.py (+2). Fixed a shared-engine crowding flake the new tests
+exposed (test_workers_fan_out now clears its work area).
+
+**C3 — raid-from-camp** (`tribe_camps.living_warriors`/`camp_name`/`has_camp` + `monster_tribes`): a raid is
+now the CAMP'S warband — the `[Realm]` beat credits the camp ("The warband of The Gorge Goblins swarms out to
+raid …!"), and `_maybe_spill` draws the raid party from the camp's LIVING warriors, so a camp you scouted +
+thinned sends fewer raiders and a WIPED camp sends NONE. (Killing camp members already beats the tribe back
+via the `tribe` tag → `on_defeat`; this makes the tie direct + visible.) tests/test_tribe_camps.py (+2).
+Full suite green. LIVING_WORLD (Areas A/B/C) is now COMPLETE — every planned phase built.
+
+## 2026-07-17 — ANIM_REALISM R1–R6: realistic character animation & graphics — George
+
+George: "keep improving the realism of character animation and graphics, both 2D and iso — in rounds of
+upgrades." Audit rendered the current output (2D flat, iso matte); plan in `docs/ANIM_REALISM.md`. Built in
+tested rounds, each with a before/after render to `scratchpad/anim/`.
+
+**R1 — 2D form shading** (`body_parts`): limbs are shaded CYLINDERS (dark underside, lit core shifted toward
+a top-left key light, highlight stripe), the torso has lit/shadow flanks, the head is a shaded SPHERE. Limbs
+read round, not flat sticks. **R2 — iso shading richness** (`raster3d.render`): ambient occlusion on
+down-faces, a white RIM kicker on the silhouette, more key contrast — the baked figures gain form + pop.
+**R3 — foot planting**: measured as already largely solved by `char_tween.move_phase` (deferred). **R4 —
+weapons** (`body_parts.draw_weapon`): shaded metal (lit blade edge over a shadowed spine, grip + gold pommel),
+the staff orb a glowing BEAD not a floating dot. **R5 — 2D cloth** (`body_parts.draw_robe`): robed classes
+wear a flared, folded, shaded SKIRT; **R5b iso robes** (`iso_skeleton._robe_mesh`): a flared frustum gown in
+iso (parity). **R6 — grounding** (`body_renderer._draw_ground_shadow`): a soft, DIRECTIONAL (cast away from
+the key light), POSE-SHAPED (wider on a spread stance), HEIGHT-AWARE (shrinks + fades when airborne) contact
+shadow replaces the flat black ellipse — characters read grounded, a leap looks like a leap. Tests across
+`test_body_renderer`/`test_raster3d`/`test_iso_skeleton`/`test_iso_chars`. Full suite green each round.
+
+## 2026-07-17 — Character INTERACTIONS I1–I4: social + combat contact — George
+
+George: "create ways for characters to better interact — wrestling, hugging, throwing each other, more
+contact when fighting, shaking hands, kissing." The `anim.interact` two-character primitive + the clips
+(handshake/hug/kiss/wrestle/throw/tumble/knockdown) already existed but nothing TRIGGERED them. Plan in
+`docs/INTERACTIONS.md`; built in 4 tested rounds.
+
+**I1 — ambient social** (`engine/interactions.py`): `social_kind(a,b)` reads two adjacent idle neighbours'
+standing — a romance PARTNER → kiss, friends/social-FRIEND → hug, friendly acquaintances → handshake, a
+feud/cold pair → square up — and `perform_social` plays it via `anim.interact` with a small regard nudge + a
+sparse `[Town]` beat. `update_social` (per-turn, deduped, 24-turn cooldown) wired into `turn_pipeline`, so the
+social graph is now VISIBLE. Weapon fix: a hand-busy social clip (`body_renderer._EMPTY_HANDED`) draws no
+weapon/shield (a hug isn't a raised sword). **I2 — player-initiated**: the conversation menu offers a warm
+gesture by standing (`player_social_option`/`player_social`) — kiss a sweetheart, embrace a friend, clasp a
+hand, with a fond memory + reply. **I3 — combat grapple & throw** (`tactics.grapple`/`throw`/`is_grappling`):
+SHIFT+C clinches the nearest foe (STR-vs-(STR|DEX), both wrestle; win → off-guard, firm win → prone), press
+again while clinched to HURL it (amplified shove + prone knockdown + fall damage). One two-stage key
+(`input_actions.grapple_verb`), documented + hint-bar advertised. **I4 — iso parity**: the interaction clips
+map to nearest baked iso mocap (`iso_skeleton._CLIP`) instead of freezing to idle, and `iso_chars.kit_of`
+drops the weapon during a social clip (parity with `_EMPTY_HANDED`).
+
+Tests: `test_interactions` (22), `test_tactics.TestGrappleThrow` (7), `test_iso_chars.TestInteractionParity`.
+En route, root-caused + fixed two full-suite flakes (phantom `npc_manager` foe in `test_cleave`; ID-hash
+worksite collision in `test_workers_fan_out`) and recorded the flake pattern to memory. Full suite green.
+
+## 2026-07-18 — #9 Realistic animal/monster graphics (Quaternius GLB) + bigger roster — George
+
+George: "improve animal and monster graphics to make them more realistic … use the movieMaker Quaternius
+animals … Also, further expand the animal and monster roster with far more creatures."
+
+**The GLB pipeline** (`ui/creature_glb.py`, new): a Quaternius CC0 `.glb` (12 copied into `data/creatures/`)
+loads to per-primitive `(verts, tris, rgb)` meshes — `raster3d`'s own mesh format — with each mesh's node
+WORLD transform applied (`_mesh_world_matrices`/`_local_matrix`/`_quat_matrix`). This was the crux: the
+Quaternius rigs park the body mesh under a `−90°X, ×100` armature node, so reading raw POSITION accessors
+(as movieMaker does for humans) gives a tiny near-cubic bind pose that renders reared-up and mis-scaled;
+applying the node transforms yields a correctly-proportioned standing quadruped (Z body-length dominant).
+`_normalise` seats feet on the ground, centres, scales to fill the frame, and yaws to `_FACING`=45° (a clean
+front-3/4 view facing screen-left); `raster3d.bake` renders it once to a cached iso sprite. `species_of`
+(model-hint → name → id → GLB key), `sprite_for_char` (h-flip when heading east), `has_model`. Graceful
+fallback everywhere: no pygltflib / unmodelled species → None → the existing procedural creature.
+
+**Wired** into `ui/creature_render.draw_creature`: it now tries `_draw_model` first (feet-anchored + soft
+ground shadow, facing-flipped) and only falls back to the procedural quadruped/slime/wisp/avian/arachnid when
+no model exists. `creature_pose.body_plan` gives any creature with a `model` hint a non-humanoid plan so it
+dispatches here (else `body_renderer` keeps it a puppet). `world/wildlife.build_wildlife` +
+`world/monsters.build_monster` pass a JSON `model` field through to `metadata["model"]`.
+
+**Roster expansion** — new modelled creatures (all spawn-eligible + terrain-gated):
+- wildlife (`data/wildlife.json`): Red Stag (deer), Mouflon (sheep), Wild Mustang (horse), Aurochs (cow,
+  charges), Wild Hog (pig, charges) — wolves now prey on mouflon/stag.
+- monsters (`data/monsters.json`): Dire Wolf (wolf pack), Feral Hound (dog pack), Razorback (pig, charges),
+  Wild Bull (bull, charges), Mire Shark (shark, swamp predator preying on hog/boar).
+
+`SPECIES_GLB` maps deer/fox/wolf/pig/sheep/horse/cow/bull/dog/donkey/husky/shark (boar→pig, mule→donkey,
+war_horse→horse). Tests: `tests/test_creature_glb.py` (12 — loader node-transform check, species resolution,
+bake, facing flip, dispatch, roster models exist). `pygltflib` added to `requirements.txt` (optional); the
+Quaternius CC0 license copied to `data/creatures/LICENSE.txt`. Content validator + related suites green.
+
+**Iso parity** (same feature, follow-up round): the isometric renderer drew every actor — beasts
+included — as a humanoid iso puppet. Since the GLB models bake at the iso camera, `ui/iso_actors.draw_actor`
+now centralises the iso actor draw (shadow + sprite) and uses `beast_sprite` (the baked GLB model, gated to
+non-humanoid body plans, feet-anchored + facing-flipped) for beasts, else the humanoid figure;
+`iso_render._draw_char` + `iso_zone._char` both delegate to it. Tests: `test_creature_glb.TestIsoParity`.
+
+**Mount models** (same feature, round 3): the trailing player mount was a procedural four-legged
+silhouette; `ui/renderer_overlays.draw_mount` now blits the baked Quaternius GLB model where one exists
+(horse/war-horse→horse, mule/donkey→donkey), feet-anchored, else the procedural fallback (elephant,
+magic-carpet). Shared by the top-down + iso mount draw. Tests: `test_creature_glb.TestMountModels`.
+
+## 2026-07-18 — T4.4 skills feed combat power — GAME_REVIEW roadmap
+
+The review's T4.4: the 12-skill lattice gated only gathering/traversal — no path from "L40 smith" to
+"stronger in a fight". New `engine/skill_combat.py` (pure, data-driven over each skill's optional `combat`
+block in `data/skills.json`): **smithing** hones your gear (+weapon damage, +AC — a keen edge + sound
+armour), **agility** makes you harder to hit (+dodge AC), **hunting** fells beasts harder (+damage vs a
+monster/animal quarry). Each tie is `+1 per N skill levels` (smithing 12/16, agility 12, hunting 10 → a
+modest handful of points at the L50 cap, so power still leans on gear + companions per the P37.5 rebalance).
+Wired into `effects.effective_ac` + `effective_weapon_damage_bonus` (so it flows through the existing combat
+math) and `combat_math.damage_type_modifier` (the beast bonus, kept OUT of the already-500-line
+`combat_system`). Surfaced on the character sheet (`skill_combat.combat_summary`). Validated by
+`items/validate_world.check_skill_combat` (known keys + positive-int divisors) + `tests/test_skill_combat.py`
+(9 — scaling, beast-vs-person, effects integration, and a seeded combat resolve proving a hunter lands
+exactly +bonus more on a beast than a person). Content validator + combat suites green.
+
+## 2026-07-18 — #9b ANIMATED creatures (George: "they look good — but they aren't animated")
+
+The baked GLB models rendered as one FROZEN bind pose while everything else moved. The Quaternius GLBs, it
+turns out, ship RIGGED with full skeletal clips (Walk/Idle/Gallop/Attack/Eating/Death) + a skin — so new
+`ui/creature_anim.py` SKINS the mesh properly (each joint's animated world matrix × its inverse-bind matrix ×
+the vertex's 4 bone weights, keyframe-sampled with nlerp'd rotations) at 8 phases of a clip and bakes each to
+a cached iso sprite. `_action_and_phase` reads the shared `_anim` state (walk ← `move_phase`, idle ←
+`idle_phase`, attack ← `atk_t`, hurt, dead), `clip_for` picks the species' best clip, and `animated_sprite`
+returns the live frame (h-flipped east). Wired into `creature_render._draw_model` (top-down) +
+`iso_actors.beast_sprite` (iso), preferred over the static bind-pose sprite; graceful fallback throughout.
+A deer now STRIDES (legs cycling), idles (breathing), headbutts and dies. Perf: warm calls ~µs (cached);
+the first sighting of a species bakes its clip frames (~50 ms each, triangle-bound at ~3.7k tris) ONCE,
+SHARED across every instance (a whole herd reuses the cache). Tests: `tests/test_creature_anim.py` (12 —
+action/phase mapping, clip selection, distinct walk frames, facing flip, top-down + iso integration).
+
+**Creature SCALE + a dungeon flake root-cause** (with #9b): George — "many animals look too small — they
+should take up multiple tiles to be scaled correctly with the characters." Added `creature_glb.SPECIES_SCALE`
+/ `scale_for` — a per-species on-screen size (tile multiple ~2.2–3.2) so a beast is scaled to the ~1.5-tile
+characters: a horse/ox towers over a person, a deer stands antler-tall, a fox is knee-high. Wired into the
+top-down (`creature_render._draw_model`), iso (`iso_actors.beast_sprite`) and mount (`renderer_overlays.
+draw_mount`) size. En route, root-caused the recurring `test_multilevel_dungeon` full-suite flake: `enter_dungeon`
+seeded `generate_multilevel` with `hash(name)` — but Python RANDOMISES string hashing per process
+(`PYTHONHASHSEED`), so a named dungeon generated a DIFFERENT layout + population every session (empty floors /
+no den-lord → flake). Fixed with a STABLE `zlib.crc32(name)` seed — the Deepdelve is now one consistent place
+across sessions, and the dungeon tests are deterministic (setUp seeds worldgen + save/restore; the apex test
+asserts "≥1 den-lord" since a boss-tier template can also be a regular deep spawn). 0/25 flakes after.
+
+## 2026-07-18 — fog-of-war dim overlay bug (George: "a smaller darker tile over out-of-sight tiles")
+
+The explored-but-out-of-sight fog-dim overlay (`renderer._dim_shade`) was a `pygame.Surface` cached ONCE in
+`MapRenderer.__init__` at the CONSTRUCTION `tile_size` (the GUI builds it at 48) — but `settings_panel.
+apply_setting('zoom', …)` / `init_zoom` change `renderer.tile_size` at runtime, and the DEFAULT zoom is 64.
+So on a fresh boot the 48×48 dim overlay was blitted at each 64×64 out-of-sight tile's top-left, darkening
+only a corner and leaving a bright L — a checkerboard of small dark squares (the user's exact report). Fixed
+with a size-aware `_dim_surface()` that rebuilds the overlay whenever `tile_size` changes (handles every
+zoom/resize path, not just the settings one). Confirmed the interior/dungeon dim (built per-render at the
+current size) was already correct, and swept the UI — `_dim_shade` was the ONLY construction-cached,
+tile-sized surface of this class (sprite caches are size-keyed or cleared on zoom). Regression test
+`tests/test_fog_dim.py` (4 — size tracking + an end-to-end blit-size check). Before/after verified visually.
+
+## 2026-07-18 — Magic & Worldcraft: research + plan + M0.1 (keystone) — George
+
+George requested a major magic + world-crafting expansion (deeper spells with schools/tiers/per-caster
+learning; world-altering magic; magic-item crafting/imbuing; guilds trading magic; consistent rules for
+NON-magical world change; workers who gather→build; a player build/terraform planner with persistent,
+cross-game blueprints). Approach: research (5 parallel agents surveyed spells / crafting-items / world-
+alteration / guilds-workers / UI-save) → a research-grounded plan (`docs/MAGIC_AND_WORLDCRAFT.md`, phases
+M0–M6) → phased data-first implementation.
+
+**Keystone insight:** the request centers on CONSISTENT rules for magical AND non-magical world change → build
+ONE worldcraft mutation layer that spells, workers, the build tool and the DM all call. Research confirmed the
+substrate: `WorldMap.set_terrain` is the intended chokepoint (with an idle P10.0 callback bus, zero consumers)
+but ~15 systems bypass it; terrain persists free (grid snapshot); `tile_damage`/`surfaces`/`structures` give
+the destroy/build primitives; `dm_api` is the de-facto (DM-only, budgeted) world-edit API.
+
+**M0.1 shipped:** `engine/worldcraft.py` (207 lines) + `data/worldcraft/mutations.json` (14 rules) — a
+validated facade over `set_terrain`. A rule is `{from,to,verb,labor?,magic?}`; `labor={skill,tool?,resources?,
+effort,yields?}`, `magic={tag}` (a means absent ⇒ can't do it that way). `can_mutate` checks rule+means+bounds+
+`protected()` (typed-POI tiles, reusing the DM charter rule)+the labor gate (tool/skill/resources); `mutate`
+consumes resources, drops by-products (clearing a forest yields logs), sets terrain, emits a `[Build]` beat.
+Magic mana stays the spell system's job. Persistence FREE. Validator `check_worldcraft` + `tests/test_worldcraft`
+(11). Full suite green. Next: M0.2 (route earthworks/resource_nodes through it, activate the callback bus,
+add `remove_location`), then M1 magic depth.
+
+## 2026-07-18 — M1 Magic depth (schools / tiers / learning routes + far more spells)
+
+The `Spell` dataclass gained `school` (evocation/restoration/nature/necromancy/divine/…), `tier` (1 novice →
+5 master), an optional `requires` block (`min_level`/`min_int`/`min_wis`/`prereq`), and an M2-ready
+`world_effect` (all backward-compatible — unknown JSON keys were already ignored). A fresh caster now begins
+with only NOVICE (tier-1) class spells (`starting_spells_for`), not the whole list; higher tiers are earned by
+LEVELLING (`learn_new_spells`, fired from `leveling.check_level_up` — a caster who climbs a tier learns the
+class spells they now qualify for) or STUDIED from tomes (`teach_spell(force=True)` bypasses the gate — the
+wizard's shortcut, and it keeps the existing tome/adventure content working). `can_learn(char,spell)` is the
+ONE gate (tier-by-level via `max_tier_for_level` {1:1,2:3,3:5,4:8,5:12} + the `requires` block). The catalogue
+grew 23→43 spells across the schools/tiers/caster types (evocation ice-shard→meteor-swarm, restoration
+cure/greater-heal/aid/sanctuary, radiant smite, nature thorn-whip/barkskin/moonbeam/insect-swarm, necromancy
+vampiric-touch/bone-spear/fear, enchantment sleep). The X-spellbook shows each spell's tier + school; the
+validator checks tier range / classes / prereq. Tests: `tests/test_spell_progression.py` (14); no regression
+in the existing spell/level/quick/panel suites. Next: M2 world-altering spells (the `world_effect` block →
+`worldcraft.mutate`), then M3 magic-item crafting + imbuing.
+
+## 2026-07-18 — M2 World-altering spells (magic that reshapes the world)
+
+Spells now physically change the world through the SAME M0 worldcraft ruleset a mason or the player's build
+tool will use (the "consistency" keystone paying off). `engine/spell_world.py` dispatches a spell's optional
+`world_effect` block: `{"worldcraft":{"to":…}}` → `worldcraft.mutate(means="magic")`, `{"tile_damage":{…}}` →
+raze terrain + structures, `{"surface":{kind:fire/shock/…}}` → ignite/electrify. A PURE world spell (no
+damage/heal) targets the tile the caster FACES (`resolve_tile` — you build/terraform where you look, not at a
+locked enemy); a damage spell that also carries a `world_effect` applies it at the struck tile. Overworld only;
+protected (typed-POI) ground resists — no griefing the towns. 8 new spells: Stone Shape (level rock / drain a
+pool → grass), Wall of Stone (raise a wall), Plant Growth (grow forest), Conjure Water (flood), Blight (→
+scorched), Disintegrate (wall → rubble), Earthquake (tile_damage siege ring), Firestorm (area damage + raze +
+ignite). Catalogue 43→51. Wired into `spells.cast` (two hooks); `spell_world.py` kept separate to hold the
+500-line line. Tests: `tests/test_spell_world.py` (9). Next: M3 magic-item crafting + imbuing.
+
+## 2026-07-18 — M3 Magic-item crafting + IMBUING
+
+The recipe system makes a fresh item and only consumes the base, so it can't "make THIS sword flaming" —
+enchanting is the one new mechanic. `items/enchanting.py` over `data/enchantments.json` (8 enchantments):
+`enchant(engine,item,eid)` merges an enchantment's deltas straight into the item INSTANCE — `equip_bonuses`
+(summed by `effects._gather_bonuses` → combat/AC), `damage_kind`, `use_effect`, a name prefix/suffix, a
+rarity bump, and a `metadata["enchantments"]` provenance tag — so the enchanted item is simply stronger and
+persists for FREE (`Item.to_dict/from_dict` already round-trips every field; verified by a save/load test).
+`can_enchant` gates on the item type, a forge station, the new 13th skill `enchanting`, and reagents
+(`arcane_dust`/`mana_crystal`/`ember_core`/`frost_shard`/`shadow_essence`/`radiant_mote`/`vital_root`, added to
+materials). Flametongue/Frostbrand/Keen Edge/Vampiric/Holy/Warding/of Vitality/of the Magi. Reachable via the
+K-crafting panel's new ENCHANT rows (enchant worn gear). Also: `min_skill` on recipes for TIERED magic crafting;
+craftable magic items (amulet_of_warding, mage_ring) + magic recipes (refine mana_crystal, scribe a fireball
+scroll). Validator `check_enchantments`. Tests: `tests/test_enchanting.py` (16). Next: M4 guilds + worker build
+economy.
+
+## 2026-07-18 — M2b world-altering spells for NPCs + away-heroes (George)
+
+George: "NPCs and away-heroes should be able to cast world-altering spells." M2 made them player-only; this
+opens them up. Fixed the overworld guard to be CASTER-relative (`spell_world._caster_in_zone` — an NPC casts
+in the open even while the player is in a dungeon; before, `active_zone()` read the player's zone and wrongly
+blocked it). New `spell_world.world_spells_for(caster)` (its KNOWN world spells, else its class's INNATE ones)
++ `ambient_shape(engine,caster)` (picks a fitting adjacent overworld tile via `worldcraft.can_mutate`, grants
+an NPC the spell + funds one cast, faces the tile, casts through the real `SpellSystem`). New
+`engine/ambient_magic.py` `run(engine)` (turn-pipeline, deterministic time-throttle + rare RNG roll only when a
+caster is near) lets a nearby druid grow a woodland / warlock blight the ground / mage raise a wall — the world
+visibly shaped by others, protected-ground-safe (worldcraft refuses typed-POI tiles), skipping indoor/mid-fight
+casters. Away-heroes are driven NPCs, so the same path covers them. Also folded in the M3 fix: the new 13th
+`enchanting` skill needed a skilling pet (Glimmer, a wisp familiar) in `data/pets.json`. Tests:
+`test_spell_world.TestAmbientCasters` (6). Full suite green.
+
+## 2026-07-18 — M4 Workers build + magic in the economy
+
+**Workers build** (`engine/construction.py`): `ConstructionSystem.run_day` (nightly, in the pipeline) — each
+settlement with a builder among its folk clears its SCARS through the SAME `worldcraft` ruleset the player and
+spells use (George's consistency ask, now closed both ways): rubble left by a raid/siege becomes open ground
+again, scorched earth regrows (capped `MAX_PER_NIGHT`, within `RADIUS`, protected-ground-safe), so a sacked
+town slowly rebuilds itself with a `[Realm]` beat. No own state — the terrain edits persist for free (map
+snapshot). Reuses the production loop's settlement list (minus stable/waystone markers for clean beats).
+**Magic in the economy**: an `enchanter` profession (→`enchanting`, `rune_table` workstation) + a `sanctum`
+building kind in `data/production.json`/`building_types.json`, and reagents (arcane_dust/mana_crystal/ember_core
+/…) + the craftable magic items (amulet_of_warding, mage_ring) added to the wizard shop catalogue so the player
+can actually BUY reagents and magic gear. Tests: `test_construction.py` (5). Next: M5 the player build/terraform
+planner UI, then M6 the cross-game blueprint library.
+
+## 2026-07-18 — M5 the player BUILD / TERRAFORM planner
+
+George wanted "specialized pop-up windows that allow them to plan and implement their changes to the world,
+which persist." `ui/build_planner.py`: a cursor moves over the ground near the hero (within REACH), the player
+paints tiles from a brush palette (level / till farmland / plant forest / lay road / raise wall / dig water /
+demolish) into a PLAN shown as translucent GHOSTS over the still-rendered live map (the GUI draws the world in
+every mode, so it reads as an in-world editor, not a modal box); pressing C COMMITS the whole plan through the
+M0 `worldcraft` ruleset — so every placement obeys the SAME skill/tool/resource/protected-ground rules a mason
+does (a wall costs 2 stone, you can't build on yourself or on the town), and the result persists for free (map
+snapshot). `open_planner(gui)` (outdoors-only) + a `gui.mode="build"` panel (cursor/brush/place/erase/commit +
+a ghost/cursor/HUD draw with a live validity tint). Opened by the `B` key on open ground (context-sensitive:
+barter when a merchant is near, build otherwise); documented in the controls help + a low-priority hint-bar cue.
+Tests: `test_build_planner.py` (5). Next: M6 the cross-game blueprint library (save a design, reload it in any
+game).
+
+**M5 gating fix** (George playtest: "the hero terraforms with no equipment/skill/magic, and grows instant
+forest by hand"): the M0 mutation rules had 5 ungated labor entries. Fixed `data/worldcraft/mutations.json` —
+(1) INSTANT CREATION from nothing is now MAGIC-ONLY (plant_forest, flood_tile/water, scorch_earth lost their
+labor blocks — you grow a woodland with Plant Growth, not a shovel); (2) every remaining labor mutation now
+requires a TOOL and/or a min SKILL LEVEL and/or MATERIALS (clear_forest: axe+woodcutting; level_mountain:
+pickaxe+mining5+stone; raise_wall: carpentry3+3stone; demolish/clear_rubble: pickaxe+carpentry; pave_road/
+bridge/drain: carpentry+stone/logs). So a fresh hero (all skills level 1, no tools) can build nothing
+meaningful; a skilled, equipped, supplied one can. The build-tool palette dropped the magic-only Forest/Water
+brushes (now 5 labour brushes: Level/Clear, Till, Road, Wall, Demolish). Workers (construction, actor=None)
+still repair towns; spells still shape the world via the magic rules. Updated `test_input_bindings` (B off a
+merchant now opens the build tool) + the worldcraft/build tests for the new gates.
+
+## 2026-07-18 — Magical PROTECTION by power (George)
+
+George: "magically-protected terrain tiles, and buildings and objects (weapons, equipment, magical items)
+that can't be altered by spellcasters unless they are more powerful than the creator." New `engine/wards.py`:
+`caster_power(char)` = level + the better of the INT/WIS modifier; `WardSystem` is a sparse `{(x,y): power}`
+layer. `worldcraft.mutate` STAMPS a tile with the caster's power on a MAGIC mutation and `can_mutate` consults
+it before another — a weaker caster's magic is refused ("warded by a greater power") and ALL mundane labour is
+refused ("mundane tools can't touch it"); only a caster at least as powerful as the creator may alter it
+(`actor=None` system/DM bypasses, so towns still rebuild). The same power gate protects ENCHANTED ITEMS:
+`enchant` stamps `metadata["ward_power"]` with the enchanter's power, and `can_enchant` refuses a weaker mage
+re-working a mightier one's item ("warded by a mightier enchanter"). Registered in engine_setup + save_load
+(persists — verified by a save/load test). Emergent in the living world: ambient NPC casters ward their
+creations, so a hedge-wizard can't undo an archmage's wall. Tests: `test_wards.py` (13). Next: M6 blueprints.
+
+## 2026-07-18 — M6 the cross-game BLUEPRINT library (magic-&-worldcraft arc complete)
+
+The final phase: `engine/blueprint_library.py` (mirrors `engine/dm_library`) writes `data/dm_library/
+blueprints.json` — env-overridable via `LLM_RPG_DM_LIBRARY`, gitignored, plain PORTABLE JSON (copy the file to
+share a design). A blueprint is a NORMALISED pattern (`plan_to_spec` → `[dx,dy,terrain]` offsets from the
+design's own corner), so `stamp(spec,cx,cy)` reproduces it at any cursor tile. The build planner's `V` saves
+the current plan as a named design and `L` loads the next saved one and ghosts it at the cursor — so a keep or
+farm laid out in one game can be re-stamped in ANY future game (George: "save designs for other sessions and
+games"). Dedup + cap + atomic write. Tests: `test_blueprint_library.py` (8, tmp library root). Full suite green.
+
+**Magic & Worldcraft arc COMPLETE** (M0–M6 + wards): unified worldcraft mutation layer → magic depth
+(schools/tiers/learning, 23→51 spells) → world-altering spells (player + NPCs/away-heroes) → magic-item
+crafting + imbuing → guilds/workers building → player build/terraform planner → cross-game blueprints → magical
+protection by power. All in `docs/MAGIC_AND_WORLDCRAFT.md`.
+
+## 2026-07-18 — Building STRUCTURAL integrity (George)
+
+George: wall damage should propagate outside↔inside; buildings collapse past enough damage; rubble from
+knocked-down walls (clearable/transformable); siege damages walls in battle; materials respond differently
+(wood burns, stone doesn't but dragon-fire/magic destroys it). Much of the substrate existed (`tile_damage`
+materials + walls→rubble, `earthworks` breach-sync outside↔inside, `giants` smash/rebuild). New work:
+- **Materials**: added `magic` (1.3×) + `dragonfire` (2.5×) damage types to `tile_damage.MATERIALS` — stone
+  still shrugs off ordinary fire (0.3×) but a dragon's breath or magic blast tears it down. `bosses._detonate`
+  now sends `dragonfire` for a breath telegraph (a wyrm razes a keep a siege ram only cracks).
+- **`engine/building_integrity.py`**: `on_wall_destroyed` (called by `tile_damage` AND `worldcraft` the moment
+  a BUILDING tile becomes rubble) mirrors the breach INSIDE in real time (`sync_interior`, not just on entry)
+  and COLLAPSES the whole building once ≥50% of its footprint walls are rubble — every standing wall drops at
+  once with a `[!]` beat + `properties["collapsed"]`. Scoped to enterable buildings (a lone town rampart isn't
+  one). Rubble stays clearable/transformable via the M0 worldcraft rules.
+Tests: `test_building_integrity.py` (6). Full suite green. (The tactical P17 battle layer already breaches
+walls via `battle_fire`/siege engines in its own field; this covers the overworld.)
+
+## 2026-07-18 — A large range of magical objects (George)
+
+George: "add a large range of magical objects to the game — many of them should be able to replicate spells,
+or spell effects. Add items across all categories of object, including legendary powerful items with unusual
+magic." ~89 new items across every category:
+- **`data/items/wands.json`** (NEW, 15) — charged wands/staves/orbs that CAST a spell. New in `item_use`: the
+  `use_effect.spell` path reads `metadata["charges"]` — a wand spends one per use and CRUMBLES when spent
+  (charges persist through saves), where a bare scroll still burns away one-shot. Wand of Firebolts (12),
+  legendary Staff of the Magi (meteor_swarm ×4 + equip bonuses), Orb of Dragonkind, Wand of Disintegration…
+- **`ammo_scrolls.json`** — +30 spell scrolls (one-shot, stackable) spanning lightning_bolt/ice_shard/
+  cure_wounds/greater_heal/sleep/haste/earthquake/… so any spell is reachable as a consumable.
+- **`weapons.json`** +10 (thunderblade, venomfang, frostbrand_axe, legendary sunblade & soulreaver, …),
+  **`armor.json`** +7 (robe_of_the_magi, warded_plate, dragonscale_mail, spellguard_shield, …),
+  **`jewelry.json`** +12 (ring_of_spell_storing, ring_of_the_archmage, amulet_of_health, boots_of_speed, …),
+  **`consumables.json`** +7 elixirs (of_might, of_haste, of_flight, of_true_sight, …),
+  **`relics.json`** (NEW) +8 legendary artifacts with unusual magic (ring_of_three_wishes, crown_of_kings,
+  book_of_infinite_spells, gauntlets_of_ogre_power, staff_of_withering, cloak_of_the_bat, …).
+- **Distribution**: `loot_tables.TIER_LOOT` seeds the new gear by rarity (uncommon→legendary); the wizard shelf
+  in `data/shop_catalogs.json` now sells 46 wands/scrolls/staves/robes/rings (cleric + general got a few).
+Registry grew 69→235 items. Tests: `test_magic_items.py` (7 — charge burn-down, scroll one-shot, charge save
+round-trip, every spell-item references a real spell, legendaries are potent). Full suite green.
+
+## 2026-07-18 — "What is the game missing?" → the GAP program
+
+Ultrathink review of a mechanically vast game (~150 systems, 3400+ tests): the gaps aren't more simulation,
+they're what the player SENSES, DISCOVERS and FEELS. Confirmed by code inspection: no music (only SFX + rain),
+no codex/field-journal (150 systems are "dark matter" the player never finds), no stealth gameplay (STEALTH
+skill vestigial, no sneak attacks), no world-map screen (only a minimap), no combat juice (no screen shake),
+no cold-open. Implementing these as tested rounds.
+
+**GAP.1 — Procedural adaptive music.** True to the procedural-audio ethos (no assets): `ui/music_synth.py`
+synthesizes moods with numpy (modal/pentatonic scales → a breathing pad + a seeded arpeggio + a bass pulse,
+mixed into a seamless loop). `ui/music.py`'s `MusicManager` renders each mood (`data/music.json`: explore/
+town/night/dungeon/tension/combat) on first use and CROSSFADES between them as the game state changes — the
+open-road theme tightens to a pulse of tension as a hostile nears, breaks into a driving combat bed when blades
+cross, thins to a sparse night motif after dark. `select_mood` is the pure policy; `read_state` reads the
+nearest-hostile distance / dungeon / safe-zone / night. Wired into `gui` (ticked in the main loop), gated by a
+new "Music" setting. Tests: `test_music.py` (12 — synth shape/range/determinism/seamless-loop, mood policy
+priority, headless manager). Full suite green.
+
+**GAP.2 — Field Guide / Codex (discoverability).** The game's #1 design problem: ~150 systems, most of them
+"dark matter" a player never finds. `engine/codex.py` (`CodexSystem` over `data/codex.json`, 30 authored
+entries) is registered as an event-log observer — the first time a trigger phrase appears (a spell cast, a
+craft, a haggle, a cave rumor…) it unlocks the matching entry and drops a `[Codex]` beat that teaches the
+system in one line + names the key. The Y-journal gained a "Field Guide" section listing everything discovered
+(by category + a creatures/places tally + an "N ways yet undiscovered" hook); a `[Y] journal — N new` hint-bar
+nudge + a discover chime announce fresh entries. `start:true` entries (journal/collection/fast-travel) are
+known from the off. State on `player.metadata["codex"]` (rides the save free). Even the opening world rumors
+teach relevant systems immediately (Dungeons, Waystones). Tests: `test_codex.py` (7 — auto-unlock, no
+self-trigger recursion, silent start unlocks, save round-trip). Full suite green.
+
+**GAP.3 — Stealth & sneak attacks.** The STEALTH skill was vestigial — no detection, no sneak attacks.
+`engine/stealth.py` adds both, ENTIRELY gated on the opt-in CRAWL stance (`.`-key `_move_mode=="crawl"`), so
+default play and every existing pursuit/aggression/combat test is untouched (verified). While crawling, a
+hostile only NOTICES the player inside a detection radius that shrinks with DEX, level, a rogue calling and the
+dark (a level-6 rogue crawling drops it to 1 — near invisible); an un-noticed hostile is skipped by pursuit +
+aggression, so you creep up or slip past. A strike on an UNAWARE foe is a SNEAK ATTACK (+60%..+250% damage, a
+"from the shadows" beat that unlocks the codex entry). Awareness (`npc.metadata["noticed_player"]`) is set when
+blows are exchanged / a pursuer engages, and cleared when a foe loses you past chase range. Combat captures
+"unaware" BEFORE marking the fight joined, so any attack (hit or miss) alerts but only a hit on the caught foe
+gets the bonus. Wired into `combat_system._resolve`, `pursuit`, `aggression`, and a crawl hint cue. Tests:
+`test_stealth.py` (8). Full suite green.
+
+**GAP.4 — Openable world map (M).** A sprawling world had only a corner minimap. `ui/world_map_screen.py`
+draws the whole terrain grid over the persistent EXPLORED mask (fog of war respected) into a 1px-per-tile
+surface scaled to fit the screen, then overlays discovered landmarks (labels de-cluttered by collision-skip,
+waystones picked out in cyan, the player + party marked). The map fills in as you explore. Bound to a
+CONTEXTUAL M in `input_handler` — the world map away from a bank, gold-withdraw when standing at one (so the
+n/m banking still works where it matters). `notable_locations`/`terrain_color` are pure + headless-testable;
+added to `controls.py` + a start:true codex entry. Tests: `test_world_map.py` (6 — fog-respecting landmark
+list, headless draw, M/Esc open+close). Full suite green.
+
+**GAP.5 — Combat juice (screen shake).** The game had damage popups + hit flashes but no impact FEEL.
+`ui/screen_shake.py` adds a trauma-based screen shake (Eiserloh's model): impactful event beats add trauma, the
+on-screen offset scales with trauma² and decays fast, so a killing blow / fireball / SNEAK ATTACK punches and
+settles in ~⅓s. Pure + deterministic (fixed oscillation, no RNG). Fed by the event log; `gui._render` renders
+the map to an offscreen surface and blits it at the offset (all sprites/effects shake together, HUD stays put),
+only when actively shaking (no cost otherwise). Gated by a new "Screen shake" setting (accessibility). Tests:
+`test_screen_shake.py` (6). Full suite green.
+
+**GAP.6 — Unified Character Hub (George's request).** "A separate player screen … all attributes, skills,
+backstory, quests, history explained in detail, with better equipment management (drag-and-drop onto a
+mannequin), bags, spellbooks, skills and all player options in one multi-tabbed window." Built exactly that,
+opened on **C** (upgrading the old text character-sheet):
+- `ui/player_screen.py` — `PlayerScreen`, a 7-tab window (Character/Equipment/Skills/Spells/Quests/Journal/
+  Options) switched by click / `[` `]` / Tab / 1-7, closed by Esc/C; mouse + keyboard.
+- `ui/hub_data.py` (pure) — the text tabs: Character (identity + attributes-with-mods + condition + a
+  synthesized backstory + goals), Skills (every skill with a progress bar), Spells (the known spellbook by
+  tier/school), Quests (active objectives + completed), Journal (deeds/chronicle/collection).
+- `ui/hub_paperdoll.py` — the Equipment tab: a paper-doll mannequin with the six worn slots + the bag grid and
+  DRAG-AND-DROP between them (drag a bag item onto a slot to equip, a slot to the bag to unequip; a click does
+  the same). Geometry + drop logic are pure/testable; drawing shows rarity-bordered icons, quantities, a hover
+  tooltip. The Options tab consolidates every game setting, cycled live.
+Wired into `gui`/`input_handler` (C repointed from `show_character_sheet` to `show_player_screen`); controls +
+`test_input_bindings` FakeGUI updated. Tests: `test_player_hub.py` (12 — builders, drop logic equip/unequip/
+reject, open/close/switch, every tab draws headless). Full suite green.
+
+**GAP.7 — Cold-open prologue.** A new game just dropped you into the world with no framing. `engine/intro.py`
+composes a short, class- and world-aware prologue from `data/intro.json` (who you are + where you've arrived +
+a first goal + a call to adventure); `ui/intro_screen.py` draws it as a quiet full-screen serif framing before
+the first step. Shown once per hero (an `intro_seen` metadata flag that rides the save), only for a NEW game
+(`main.py` sets `gui._intro_pending`, gated after `start_game` builds the player). Any key begins the game.
+Tests: `test_intro.py` (4). Full suite green.
+
+**"What is the game missing?" — the GAP program complete (GAP.1–7).** The gaps in a mechanically-vast game
+weren't more simulation but what the player SENSES, DISCOVERS and FEELS: adaptive **music**, a self-teaching
+**codex**, **stealth & sneak attacks**, an openable **world map**, combat **screen-shake**, a unified
+**character hub** (George's ask — tabs + drag-and-drop paper-doll), and a **cold-open** prologue. Seven tested,
+green, pushed rounds.
+
+## 2026-07-18 — T4: finish half-built features & deepen replay (docs/GAME_REVIEW.md)
+
+**T4.1 — Away-hero enters buildings.** The away/agent hero SKIRTS buildings (the 2026-07-12b
+freeze-proofing), so shipped indoor autoplay — a well-rested INN sleep, trading with an INDOOR merchant —
+never fired. `engine/agent_building.py` gives the SOCIAL active away-hero (which IS `engine.player`, so its
+interior state is real and unmasked by `acting_as`; adventurer NPCs `social=False` are skipped) a tight,
+LOOP-PROOF enter→act→exit: badly hurt beside an inn → step in, sleep (well-rested), step out; carrying junk
+beside a shop → step in, sell to an indoor merchant, step out. A hard `INDOOR_COOLDOWN`(30) + a `visited` mark
+make enter/exit bounce IMPOSSIBLE. Isolated in its own module to contain the risk in the freeze-prone agent;
+wired as 3 hooks in `agent_controller.decide` + an `enter_building` action in `agent_exec`. Tests:
+`test_agent_building.py` (8, incl. a full enter→rest→exit no-loop cycle). 120 away-agent tests stay green.
+
+**T4.5 — Repeatable + branching quests.** The `excludes`/`reward_choices`/`sets_flag` branching machinery
+existed but only 2 quests used it and NONE were repeatable. Added repeatable support: a `metadata["repeatable"]`
+quest re-arms on turn-in (objectives reset → status AVAILABLE, a `times_done` tally), so a standing task can be
+run again from the same giver. `data/quests.json` gains 3 repeatable standing tasks (Wolf Bounty, Standing
+Order: Healing Herbs, The Goblin Menace) + a lawful-vs-outlaw `excludes` FORK (bring the brigand to justice OR
+take his bargain — each shuts the door on the other, one with a `reward_choices` payout). `repeatable`
+whitelisted in `quest_templates`. Tests: `test_repeatable_quests.py` (5). Validator clean.
+
+**T4.3 — Endgame payoff + New Game+.** Winning the 5-act campaign fired one `[Legend]` line and play just
+carried on. Added a real ENDING + replay: `ui/victory_screen.py` pops a full-screen VICTORY overlay (the
+chronicle of the age you wrote, from `campaign.summary`) the moment `campaign.is_won`, with a choice — [N]
+begin New Game+, [C] keep playing this won realm, [Esc] lay it to rest. `engine/newgame_plus.py` carries the
+won hero's legend (level/xp/gold/stats/inventory/equipment/skills/spells) into a FRESH, tougher world:
+`capture`→rebuild→`apply`, with `ng_plus`++ scaling `encounters.danger_multiplier` (×1+0.4·ng_plus) so the
+wilds run fiercer (and the carried high level crowns tougher elites/apexes). Wired into `gui` (a `"victory"`
+mode + `restart_ng_plus`) + `input_handler`. Tests: `test_newgame_plus.py` (6 — carry-over, danger scaling,
+victory draw + the N/C flows).
+
+**T4.2 — Rival companies compete & die.** The "other heroes" banded into companies (M.6b) but never competed
+or died. Added the fortune arc: `companies.run_day(advsys, day)` (nightly) keeps a persisted RENOWN LEDGER
+(`player.metadata["company_ledger"]` — peak renown + fate per company), marks a WIPED company (no living
+members) as `fallen` with a `[Realm]` death beat, and every 6 days lets the strongest renowned company BEAT THE
+PLAYER to a far hoard — a new `LairSystem.claim_by_rival` clears the farthest uncleared lair off-screen
+(occupants routed, encounter-suppression applied, hoard taken, a `[Realm]` beat), denying you the prize.
+`ledger_lines` surfaces the renown race in the `realm_digest` "State of the Realm" (Y-journal). Wired into the
+nightly stack. Tests: `test_company_fortune.py` (4). This closes TIER 4 (T4.1–T4.5 all done; T4.4 shipped
+earlier as skill_combat).
+
+## 2026-07-18 — Richer item art
+
+The paper-doll hub + ground drops used `sprite_loader.item`, which drew almost everything as one flat brown
+box. `ui/item_icons.py` replaces it with a proper, TYPE + RARITY-aware icon library: `_classify` maps an item
+to one of 31 recognizable archetypes (sword/dagger/axe/mace/bow/spear/staff/wand, breastplate/robe/shield/
+boots/helmet, ring/amulet, flask/food/bandage/scroll/book/arrow, ore/herb/log/gem/coins/key/bag/pouch/orb/
+crate) — keyword-first (short keywords match a WHOLE WORD so "hat" ⊄ "whatsit"), falling back to the item TYPE.
+`icon(item, size)` draws the glyph with a rarity frame + an epic/legendary glow, supersampled + cached; the
+name-only `icon_by_name` backs `sprite_loader.item`. Wired into `hub_paperdoll` (full rarity) + the world
+sprite loader (ground drops/shops). Every equipped item + bag item now reads at a glance, rarity-coloured.
+Tests: `test_item_icons.py` (6). Full suite green.
+
+## 2026-07-19 — Skills & Training: richer roster + level-up training (George)
+
+George: level-up should let you IMPROVE skills / learn spells by going to a class-appropriate TRAINER and
+choosing (via the character screen); upgrade the skills characters/NPCs can have and integrate with items/
+features. A major depth upgrade, built in rounds.
+
+**SKILLS.A — Richer skill roster.** The 12→13 skills were all gathering/crafting. Added 6 combat/magic/utility
+skills, each INTEGRATED with real power: **weaponry** (+melee damage, via skill_combat.weapon_damage_bonus),
+**defense** (+AC), **marksmanship** (+ranged damage, wired into `ranged`), **spellcraft** (+max mana,
+reconciled delta-safe in `spells.ensure_mana` so it's a no-op at skill 0), **medicine** (+battle-medicine
+healing), **thievery** (lowers a lock's effective DC in `doors`). Each trains BY DOING through pet-roll-free
+`add_skill_xp` at the melee/ranged/cast/heal/lockpick sites (no RNG churn), plus a pet each. `combat_summary`
+shows every tie. Validator's combat-key whitelist extended. Tests: `test_richer_skills.py` (6).
+
+**SKILLS.B/C — Training & advancement (the core of George's ask).** A level-up now grants TRAINING POINTS
+(3/level, `engine/training.award_training_points`, hooked into `leveling.check_level_up`) — a deliberate
+advancement currency you SPEND at a class-appropriate TRAINER, via the character screen. `engine/training.py`
++ `data/trainers.json` define 5 trainer profiles (combat/arcane/divine/nature/trade), each a set of location
+kinds + mentor role tokens + a `for_classes` gate, so a warrior can't study at a mage tower; `trainer_here`
+detects a suitable trainer at the player's spot (location kind OR a nearby mentor's role tokens — a
+`blacksmith_01` is class `merchant`, so the role is read from the id too). `skill_options` teaches skills toward
+a `skill_cap` = level×3 (directed growth up to your understanding; mastery beyond comes from DOING);
+`spell_options` teaches cross-school BREADTH (eligible spells of the trainer's schools your class's innate list
+doesn't cover — leaving the auto-learn tier progression intact). `train_skill`/`learn_spell` spend the points
+(1 / 2). The character hub gained a **Training tab** (`ui/hub_training.py`, an 8th tab): points + trainer +
+selectable skill/spell rows, Up/Down + Enter/click to train; a start:true codex entry teaches it. Tests:
+`test_training.py` (11). This closes the skills-&-training upgrade.
+
+**SKILLS.D — Seed NPCs with calling skills (George).** The richer skill roster feeds combat/magic power for
+ANY character, but NPCs started at 0. `engine/npc_skills.py` + `data/npc_skills.json` seed each NPC's skills
+from its CLASS + ROLE (role read from the id/name — a `blacksmith_01` is class `merchant`, so its craft is only
+legible from the name → smithing), scaled by level, ONCE at creation (hooked in `npc_manager.add_npc`).
+Deliberately CONSERVATIVE (primary ~level+2, secondary ~level−1) so a weak NPC stays below the `+1 per N`
+threshold (combat maths unchanged) while seasoned NPCs pull ahead — a veteran guard hits harder, a wizard has a
+deeper mana well. Monsters/animals/trolls + player-chars skipped. Verified live: all 78 world NPCs seeded
+calling-appropriately (blacksmith→smithing+weaponry, priest→spellcraft+medicine, guard→weaponry+defense).
+Tests: `test_npc_skills.py` (9).
+
+## 2026-07-19 — Familiars & animal companions (George)
+
+George: wizards & witches should have familiars; all characters should have pets/companion/hunting animals
+(incl. horses/pack animals as mounts). Mounts (`mounts.py` — horse/mule/donkey/…), pack-carry, and cosmetic
+skilling pets (`pets.py`) already exist; the gaps are FAMILIARS and working animal companions. Built in rounds.
+
+**FAM — Familiars for casters.** `engine/familiars.py` + `data/familiars.json`: a caster binds ONE familiar
+(cat/owl/raven/toad/serpent, + a warlock's imp, + a druid/bard's hare — `classes`-gated) that trails a step
+behind and grants a passive magical GIFT: `mana_regen` (a witch's cat quickens the mana tick), `mana_max` (an
+owl's deeper well, delta-reconciled in `spells.ensure_mana` so it's a no-op at none — verified: bind owl → +6,
+rebind raven → back to base), or `sight` (a raven scouts → +visibility). Bound with the E-key at a place of
+magical study (an arcane/divine trainer); the follower renders with an arcane glow. A start-triggered codex
+entry teaches it. Tests: `test_familiars.py` (9).
+
+**ANI — Animal companions (fight/hunt) for all.** `engine/animal_companions.py` + `data/animal_companions.json`:
+TAME an adjacent WILD animal (a Hunting check `hunting+10 ≥ dc`, eased 4 by a food lure) and it joins your
+PARTY — a GUARDIAN (wolf/boar/aurochs/stag/hog/mouflon) that fights at your side, or a HUNTER (fox/deer, whose
+`owner_hunting_bonus` gives you +damage vs beasts). A wild horse (mustang) breaks to the saddle as a MOUNT
+instead (satisfying "horses as mounts" through taming). Reuses everything: the tamed beast IS the same ANIMAL
+Character (already rendered + in `npc_manager`) — re-flagged friendly, stripped of its wildlife instincts, given
+`natural_damage`, dropped from the WildlifeSystem, and added to `companion_manager.party`, so the companion AI
+walks + fights it for free. Bound to the E key beside a tameable beast (+ a hint cue + a codex entry). `BEAST_CAP`
+= 2. Tests: `test_animal_companions.py` (8). Together with the earlier FAM familiars + existing mounts/pack/pets,
+this completes George's animal-companion request.
+
+## 2026-07-19 — Shapeshifting (George)
+
+George: characters should be able to shapeshift (players/NPCs/monsters) with the right magic/items/abilities,
+or be turned into another creature against their will (curses, items). Built `engine/shapeshift.py` +
+`data/forms.json`: a form OVERRIDES how a character RENDERS (sets `metadata["body_plan"]`+`model` → the existing
+`creature_pose`/`creature_render` path draws the beast for FREE — a shifted human is a wolf on screen, verified),
+FIGHTS (`natural_damage` claws/fangs; `_best_weapon_damage` drops held weapons under `no_wield`), ENDURES
+(`hp_mult`, fraction-preserved through shift↔revert), MOVES (a `flying` flag), and what it can DO
+(`no_cast`/`no_wield`/`no_speak`/`helpless`). Routes: VOLUNTARY — a druid's `wild_shape` spell (a toggle:
+cast to shift, cast to revert), `beast_shape_bear`, and a `beastlord_totem` item so even non-casters can shift;
+INVOLUNTARY — a `baleful_polymorph` spell on a foe, a `cursed_toadstone` (permanent) / `hags_hexstone` (timed)
+that leave YOU a frog against your will. CURES — a `remove_curse` spell (an ally/self, gated by no_cast so a
+frog needs help), a `restoration_elixir`, a shrine's prayer, or the curse's own clock (`tick`). Works on any
+Character (a wizard can toad a goblin). Codex entry teaches it. Tests: `test_shapeshift.py` (12).
+
+## 2026-07-19 — The Undead world (George)
+
+George: "expand the undead world… all sorts of undead, some created by necromancers and other magical routes;
+many routes to become undead (vampires/zombies/liches/ghosts/ghouls); integrate with the gods; certain classes
+having powers to create/destroy/command undead… subclasses such as necromancy."
+
+**Round 1 — the un-living + their traits + Turn Undead.** `engine/undead.py` + `data/undead.json` give the
+dead true traits: IMMUNE to poison/plague/fear/bleed (gated in `status_effects.apply_effect`), WEAK to
+holy/radiant/fire (a mace crushes brittle bone, silver+fire scourge a vampire, fire 2.2× a dry mummy), and
+RESISTANT to necrotic (and physical, for the incorporeal) — all folded FIRST into
+`combat_math._type_multiplier`. Expanded `data/monsters.json` to **20 undead** (flagged the 8 existing +
+zombie/skeleton_warrior/skeletal_archer/wight/specter/banshee/mummy/bone_golem/vampire_spawn/vampire/death_knight/
+wisp_of_the_dead), the `undead`/`undead_type` flag carried through `build_monster`. The cleric/paladin's bane:
+`turn_undead(engine, caster)` sears every undead within radius, the frail crumble to dust, the rest rout — cast
+via the new `turn_undead` radiant spell.
+
+**Round 2 — necromancy (create/command) + routes to undeath + gods.** `engine/necromancy.py`: `animate_dead`
+raises a nearby corpse as a zombie (else conjures a skeleton from the earth) into a friendly minion added to the
+party (the companion AI walks + fights it for free); `command_undead` enthralls a weaker hostile undead or mends
+your risen; `minion_cap` scales with level. Routes to become undead: `become_undead`/`lich_ascension` (a
+`phylactery` soul-binding rite — necromancer + level ≥ 10 → a deathless lich, +20 max mana) / `vampire_embrace`,
+plus a `combat_system._handle_defeat` hook that rises a vampire's victim as a spawn (vampirism spreads). Spells
+`animate_dead`/`command_undead` (wizard/warlock/sorcerer, necromancy school, level-gated); items the
+`tome_necromancy` "Pallid Codex" (study it → become a necromancer, sold under the arcane counter) and the
+`phylactery` (a lich's guaranteed drop, via new `guaranteed_drops` loot support). The GODS take note — raising
+the dead warms the Pale Lady (death) and cools Solara (the sun). Tests: `test_undead.py` (14).
+
+## 2026-07-19 — Autoplay QA (George)
+
+George watched the game on autoplay and flagged two problems: heroes don't pick up items, and characters
+don't face each other when interacting. Reproduced headlessly and fixed both.
+- **Pickup**: the away-agent grabbed loot on its own tile but strolled PAST items a step or two away while
+  chasing a quest/chat. Added a higher-priority nearby-loot grab (`_nearest_loot` r=2, not mid-fight) in
+  `agent_controller.decide` right after the feet-grab, so the hero collects the loot around it before wandering.
+- **Facing**: combat only faced the ATTACKER — now `combat_system._resolve` turns the DEFENDER to meet its
+  attacker too (both `face_toward`). Trade gained facing on both sides — `agent_trade.do_trade` (away-hero) and
+  `input_actions.open_shop` (human) turn buyer + merchant to face over the counter. (Dialog already faced both.)
+- **Robustness** (found while hunting for other problems): a preset NPC's inventory holds bare item-NAME
+  strings, not `Item` objects, so when an away-agent drove such an NPC its trade logic crashed on
+  `is_junk` → `str.item_type` (swallowed by `drive_agents`, leaving the NPC idle that turn). Guarded
+  `trade_info.is_junk` to skip non-Item entries.
+Tests: `test_autoplay_qa.py` (5).
+
+## 2026-07-19 — Extensive autoplay testing & hardening (George)
+
+George: play long autoplay games across all classes, amass XP / level up, find magic items, form parties; fix
+every problem surfaced; build screenshots into the GUI. Built an F12 SCREENSHOT feature (`ui/screenshot.py`,
+hooked at the top of `input_handler.handle_event` so it fires in any mode; saves to a gitignored `screenshots/`
+with a context-tagged name) and a headless soak-test harness that runs long away-hero games per class and
+captures swallowed agent exceptions (via `traceback.format_exc()` in a log handler — the agent swallow logs
+inside the `except`) plus per-game anomalies (freeze streaks, deaths, XP/level/party/loot). Ran dozens of
+1000–1500-turn games; no crashes, no exceptions — but several FREEZE/behaviour bugs surfaced and were fixed:
+
+- **Targeting collision** (`game_engine.find_character`): "Ghost of Player" (a P12.13 bones ghost) contains
+  "player", so the loose player-keyword heuristic resolved it to the HERO — an away-caster cast at itself
+  forever (frozen ~945 turns). Fixed: an EXACT entity name (and id) now wins before the player-keyword fallback.
+- **0-HP "zombies"** (`turn_pipeline` reaper + `agent_controller._foes_in_sight`): a creature dropped to 0 by a
+  NON-combat source (poison/fire/hazard call `take_damage` directly, not the defeat path) stayed `status='alive'`
+  — `is_active()` True but `is_alive()` False — so every targeting system plinked a corpse forever. Added a
+  pipeline reaper that routes any active 0-HP NPC through the ONE defeat handler (self-as-attacker → no spurious
+  player XP), and the agent skips `hp<=0` foes.
+- **Depleted-node forage loop** (`agent_sense._gatherable`): it returned True for any tooled node WITHOUT
+  checking the cooldown, so a hero re-chopped one picked-clean tree forever (barbarian froze 1178 turns). Now it
+  checks `_cooldown_ok`.
+- **Never levels** (`agent_controller` rule 2b + `_pack_outmatches`): the away-hero fled EVERY 3+ pack unless a
+  valiant hero at full HP, so it never fought → never levelled. Now it weighs its level+HP against the pack's
+  strength and FIGHTS a beatable rabble (flees only a deadly warband). Combat classes now reach level 2–4 over a
+  long game. Updated the `test_living_agent` retreat test to the new winnability behaviour.
+- **Caster fixation** (`agent_controller`): the agent's Chebyshev `_dist` didn't match the spell system's
+  EUCLIDEAN range, so a caster stood plinking a foe just out of true range; and when a target was unreachable it
+  returned a no-op move. Now it uses the Euclidean gap for the spell-range decision and ABANDONS an unreachable
+  target (falls through to explore) instead of staring.
+- **Log noise** (`npc_manager.remove_npc`): a benign double-remove (a predator kill + the despawn sweep) cried a
+  WARNING; downgraded to debug.
+
+Freezes went from ~945-turn pathological loops to occasional ≤90-turn stretches that are legitimate prolonged
+combat/healing. Tests: `test_autoplay_hardening.py` (5) + the updated `test_living_agent`.
+
+## 2026-07-19 — Autoplay world-sweep: giver-less pack quests
+
+Soaking away-heroes across all world types (oakvale/castle/realistic/default) surfaced one content-robustness
+bug: the **Mire Beacon** module pack refused to install in the procedural Oakvale town because its quest's
+`giver_id: "guard_01"` isn't seeded there — and a pack install is atomic, so the WHOLE adventure (monster/items/
+spawns/quest) was lost. But `dm_api.create_quest` already board-posts every module quest, so a giver is
+optional. Dropped the `giver_id` (the quest is now board-posted, reachable in every world) and relaxed
+`validate_packs` to accept a giver-less quest (only a SPECIFIED-but-unknown giver is an error). The pack now
+installs everywhere. Tests: `test_autoplay_hardening` giver-less cases. All world types soak clean (no crashes).
+
+## 2026-07-19 — Autoplay: seek companions + a loot-loop fix (George)
+
+George: tune heroes to seek adventure and companions more. Explored an aggressive "strike out for the nearest
+monster lair" drive, but it charged fragile solo heroes into dens that back onto mountains/water — the pathing
+dead-ended (heroes froze) or the pack overwhelmed them (deaths). Pulled it back to the SAFE, high-value parts:
+- **Seek companions**: a partyless hero with party-room is now DRAWN to a guild hall (folded into
+  `agent_goals.named_goal`, so it rides rule 7's proven stall-and-abandon roaming rather than a dedicated
+  cross-map march that dead-ended). It gathers a band via the existing adjacent-recruit, so parties form more.
+- **Loot-loop fix** (a real bug, hits human players too): a ground tile often holds a plain-string BODY MARKER
+  ("Wolf's body") FIRST, then the real loot under it. A blind `pickup_item()` grabbed the marker, "left it in
+  peace", and never reached the loot — so `nearest_loot` kept returning the tile and an away-hero looted it 737×
+  in place. `player_actions.pickup` now sorts real items (with an id) ahead of body-marker strings.
+- **Refactor** to hold the 500-line line: moved the pure sensing helpers `nearest_loot`/`friendly_near` to
+  `agent_sense` and `pack_outmatches` to `agent_goals` (agent_controller back under 500).
+Tests green; soak shows parties forming and the big loot/zombie/gather freezes gone.
+
+## 2026-07-19 — Monsters with goals & tribal ambitions (George)
+
+George: monsters should have goals and ambitions for themselves and their tribes (and NPCs/monsters should
+explore + go on quests like the player). Delivered the monster-goals half:
+- **Individual monster goals** (`data/monsters.json` + `world/monsters.build_monster`): every one of the 52
+  monster templates now carries drive-flavoured `goals` instead of the bare "Attack the player" — a wolf runs
+  down the weak and feeds the pack, a dragon amasses the greatest hoard and reduces challengers to ash, a
+  goblin raids for the warren and schemes to rise among the warriors, a vampire grows its brood and rules the
+  night, a mummy guards its tomb for eternity. Read by the ambition matcher + shown in the world.
+- **Tribal agendas** (`engine/monster_tribes.py`): each wild tribe pursues a shifting collective goal that
+  re-aims on its fortunes and shapes the nightly loop — beaten low it FORTIFIES (dug in, a slain raider costs
+  it half), war-ready it RAIDS (swarms out sooner), dominant it turns to PLUNDER (a strength surge for a
+  richer hoard), else it EXPANDS (breeds faster) — mirroring the P20.3 faction agendas, each shift a `[Realm]`
+  beat. Persists. (NPC adventurers already explore/fight/loot/quest/recruit via the AgentController — and
+  Round 1's guild-hall drive makes them gather bands too; extending exploration to ordinary townsfolk is a
+  later round.) Tests: `test_monster_goals.py` (7).
+
+## 2026-07-19 — A complex adventure: "The Hollowing of Ravenmoor" (George)
+
+George: adventures should be complex, with multiple objectives and layers of detail. Authored a full new
+3-act undead-mystery adventure (`engine/ravenmoor.py` + `data/ravenmoor.json`, modelled on the Sunken Tome),
+tying into the new undead systems. A moorland village is being hollowed out — its folk fall to a deathless
+sleep and rise as thralls — after the grave-robber Corvin Vane woke an ancient barrow-wight by stealing its
+grave-crown.
+- **Areas + cast** seed at world start: Ravenmoor village, Corvin's Cottage, The Sunken Barrow; Elder Maeve
+  (the grieving quest-giver, hiding that she knew the barrow was cursed) and Sister Alenn (a wandering cleric
+  who tends the fallen). Kept out of `data/npcs/` so they never leak into the general roster.
+- **3 new undead** (`data/monsters.json`): hollow_thrall (a villager turned), grave_warden (a skeletal
+  guardian), and the boss **Aedelric the Barrow-Wight** (drops the legendary `grave_crown`). New items: Corvin's
+  Journal (the Act-2 clue) + the grave-crown.
+- **3-act quest chain** (`data/quests.json`, `q_ravenmoor_hollow`→`_barrow`→`_reckoning`), each with MULTIPLE
+  layered objectives (talk to Alenn, put down a thrall, search the croft → recover the journal, find the barrow,
+  fell the grave-warden → confront Aedelric), chained by `prereq_quest`, given by Elder Maeve. The finale
+  BRANCHES three ways — **Destroy** him and bury the crown, **Lay him to rest** by Alenn's rite, or **Claim**
+  the grave-crown's cold power — each a distinct `[Legend]` ending. Seeder drops the journal, guards the sites,
+  posts a rumor. Wired into engine_setup + save_load; the validator knows its NPC ids. Tests:
+  `test_ravenmoor.py` (7).
+
+## 2026-07-19 — Adventure-seeking freezes + door/waystone gating (George)
+
+George: fix the "safe_step dead-end" so heroes can seek adventure; and two exploits — TAB out of a
+building/dungeon from anywhere, and fast-travel from anywhere.
+
+Diagnosed the "safe_step dead-end": pure `safe_step` marching NEVER freezes (it always routes or, boxed in,
+waits) — the away-hero freezes were the earlier LOOT-loop (already fixed) plus two combat loops, now fixed:
+- **Heal loop** (`agent_controller` rule 1): a hero at low HP with a foe chipping it in melee healed a
+  potion-a-turn forever (an artificer chugged 860). Now it BREAKS OFF (flees) at low HP with a foe in its
+  face — cornered, it fights — and heals only when clear of melee.
+- **Combat stalemate** (`agent_goals.stalemate_flee`): grinding a foe whose HP won't drop (a regenerating troll
+  a barbarian can't out-damage) is an endless in-place fight (700 turns). After ~30 fruitless swings on one
+  target it disengages and drops the fixation.
+- **Seek adventure**: a battle-ready hero is now drawn (via `named_goal`) to the nearest MANAGEABLE uncleared
+  lair — a den it can clear (total- and toughest-defender gates keep it from a suicidal delve) — riding rule
+  7's safe stall-and-abandon roaming, so it can never dead-end. Level-1 heroes (no beatable den) level up on
+  the wandering wild first.
+
+Exploits:
+- **Door/stairs exit** (`input_actions.try_exit_zone`, from the TAB handler): you leave a building only at its
+  DOOR and a dungeon only at the way out — deeper floors have no door, so you climb the stairs (by stepping on
+  them) to the floor that does. No more exiting by wishing yourself outside from anywhere.
+- **Waystone-only fast-travel** (`travel.at_station` + the U-key): the diary-unlocked fast-travel now departs
+  ONLY from a waystone (a rune-circle platform), like the teleport network — no teleporting to anywhere from
+  anywhere. Tests: `test_exit_teleport_gating` (3). (Known minor: a swallowed shopkeeper-NPC action error
+  "string indices…" — an action returned as a string; doesn't affect play.)
+
+## 2026-07-19 — One combined world, bigger + less crowded (George)
+
+George: combine all the start-menu world options into ONE world with one entry point; expand the world's
+dimensions so things are less crowded. Done:
+- **One world** (`world_kind="combined"`, `demo_setup`): plants the big procedural Oakvale town as the base
+  (its terrain + town + countryside villages), then ADDS the Bloodstone Castle at a far corner via a new
+  `castle_region.add_castle(world, cx, cy, link_to=)` (the fortress + a gate town, roaded back to Oakvale). The
+  castle's P18 STRUCTURE attaches to its Location, so it's an enterable 7-floor keep with the royal court. All
+  the seeded content — guild halls, waystones, lairs, the Deepdelve, the Sunken Tome + Ravenmoor adventures,
+  the colosseum — already seed into this one world.
+- **Bigger** (`COMBINED_SIZE = 240x170` vs the old 190x140 / 120x80): far more room, so the town, keep, villages
+  and wilds aren't crowded together.
+- **One entry point**: the hero wakes on the Oakvale arrival waystone (the market-square dais), as before.
+- **Simplified start menu** (`ui/start_menu`): Quick Start / Customize Character both drop you into the ONE
+  combined world; Tutorial Island stays as a learning start. The old per-world options (realistic / oakvale /
+  castle) are folded in — their world_kinds remain functional for saves/flags/tests.
+Verified: a 400-turn away-hero soak in the combined world runs clean (no crash, no freeze), with Oakvale, the
+castle, guild halls, 6 waystones and 4 lairs all present in the single map.
+
+## 2026-07-19 — Reusable adventure seeder + "The Wyrm of Emberfell" (George: rich content)
+
+George wants the game "much more detailed" with "complex adventures… multiple objectives and layers of
+detail". Two adventures now exist as bespoke seeder modules (`adventure_tome`, `ravenmoor`) — near-duplicate
+code. Distilled the shared logic into ONE reusable, fully DATA-DRIVEN seeder so future adventures are
+data-only:
+- **`engine/adventure_seed.py`** — `AdventureSeeder(engine, "<file>.json")`: reads `areas` (plants a `Location`
+  per area on the required terrain, far from spawn, spaced apart), `npcs` (seats the custom cast, kept OUT of
+  `data/npcs/`), `clues` (drops a FETCH-clue item at an area), `foes` (guards an area with monsters incl. the
+  boss), and a `rumor`. `npc_ids_of(file)` exposes the cast to the quest validators. `is_active`/`area_pos`,
+  persists via `to_dict`/`from_dict`. A NEW adventure = a JSON file + a 3-line registration.
+- **"The Wyrm of Emberfell"** (`data/emberfell.json`) — the first adventure authored purely as data. A 3-act
+  DRAGON quest for variety (vs Ravenmoor's undead):
+  - **Act 1 "The Burning Season"** (`q_emberfell_raids`): talk Shepherd Bryn → drive off a raiding
+    `dragon_whelp` → climb to the Charred Vale.
+  - **Act 2 "The Wyrm's Bane"** (`q_emberfell_weakness`): fetch `scorched_scale` from the vale → bring it to
+    the exiled dragon-scholar **Loremaster Yorwin** to learn the wyrm's soft spot → scout the Wyrm's Roost.
+  - **Act 3 "The Wyrm of Emberfell"** (`q_emberfell_reckoning`): face the named boss **Cindermaw** — a
+    branching **Slay** (claim the legendary `emberfang_spear`) / **Drive-off** / **Bargain-for-hoard** finale.
+  - New content (all data): `emberfell_wyrm` boss (young-dragon-shaped breath telegraph + terror/enrage
+    phases, `guaranteed_drops` the wyrmspear), `scorched_scale` clue, `wyrmsbane_draught` buff, `emberfang_spear`
+    legendary (two-handed pierce, +2 dmg/+1 STR, lacerate); cast Reeve Halden / Shepherd Bryn / Loremaster Yorwin.
+- Wired in `engine_setup` (`self.emberfell`, seeded with the adventurers), `save_load`, and the quest-giver
+  validator + the 3 playtest tests (fold `npc_ids_of("emberfell.json")` into the known-giver set).
+Verified: content validator clean; `tests/test_emberfell.py` (9 tests) + the ravenmoor/data-content/playtest/
+combined/castle suites all green. The wyrm's boss block matches `young_dragon` exactly, so the finale gets a
+real breath telegraph.
+
+## 2026-07-19 — Second data-only adventure: "The Blackbanner Reaving" (George: rich content)
+
+Proving the reusable seeder pays off — a SECOND complex adventure authored purely as data (no new seeder
+module), with a distinct HUMAN-antagonist theme (vs Emberfell's dragon and Ravenmoor's undead):
+- **"The Blackbanner Reaving"** (`data/blackbanner.json`) — an outlaw warlord, Vharo Blackbanner, binds the
+  scattered raiding camps into one host to sack the settlements. 3 acts with a socially-distinct branch:
+  - **Act 1 "The Burning Road"** (`q_blackbanner_raids`): talk Caravan-Master Deel → cut down a raiding
+    `bandit` → track them to the Ambush Wood.
+  - **Act 2 "The Muster-Roll"** (`q_blackbanner_muster`): fetch `blackbanner_muster` from the wood → sound out
+    **Kessa Fenn**, a wavering (neutral, `swayable`) lieutenant → scout the Blackbanner Camp.
+  - **Act 3 "The Black Banner"** (`q_blackbanner_reckoning`): the named boss **Vharo Blackbanner** — a branching
+    **Kill / Turn-the-captains (a bloodless social win) / Seize-the-banner (become the outlaw lord)** finale.
+  - New content (data): `vharo_blackbanner` boss (lvl 9 brigand, drops the legendary `blackbanner_standard`),
+    `blackbanner_muster` clue, `blackbanner_standard` relic; cast Marshal Orsa / Caravan-Master Deel / Kessa Fenn.
+- Wired `self.blackbanner` in `engine_setup` + `save_load`; folded the cast into the quest-giver validator +
+  the 3 playtest tests (same 4-line pattern as Emberfell).
+Verified: content validator clean; both new adventures survive a save/load round-trip; the seeded warlord's
+REAL defeat (id `enc_vharo_blackbanner_<hash>` → template match) completes the finale; `tests/test_blackbanner.py`
+(8 tests) + `tests/test_emberfell.py` + the playtest/content/save-load suites all green.
+
+## 2026-07-19 — Adventure topics + signature-topic priority (George: layers of detail)
+
+Adding a layer of conversational detail to the two new adventures — and a general conversation win:
+- **Adventure topics** (`data/topics.json`): `wyrm_of_emberpeak` and `blackbanner_reaving` — each with a vague
+  shared `default_response` (ask any townsperson and they mumble + point you to the giver) and RICH authored
+  answers for the key NPCs (Reeve Halden names Cindermaw and the raids; Yorwin tells you the soft spot beneath
+  the jaw and to bring the scale; Marshal Orsa explains the confederation; Kessa reveals the camp are fed
+  farmers she'd lead away). The starting rumors carry the keywords, so the topics are learned from turn one.
+- **Signature-topic priority** (`engine/conversation.askable_topics`): the conversation menu's `_TOPIC_CAP`(3)
+  was crowding a quest-giver's OWN subject out behind generic town topics (Marshal Orsa couldn't be asked about
+  the Blackbanner Reaving). Now a topic the NPC has an AUTHORED response for (`_has_own_response`) sorts FIRST,
+  so every giver leads with the thing they most want to talk about. General — it also lifts the existing
+  gorkash/silver_blade authored topics for their own experts.
+Verified: content validator clean; each giver's askable topics lead with their signature topic; the
+conversation/topics/dialog suites + both adventure suites green.
+
+## 2026-07-19 — Townsfolk ventures: ordinary folk get a life beyond work (George: option a)
+
+George: the adventurer NPCs already roam/fight/quest — extend that to ORDINARY townsfolk as a fresh round.
+Ordinary folk mostly work their schedules and go home; this gives them the OCCASIONAL trip:
+- **`engine/townsfolk_venture.py`** (`TownsfolkVentureSystem`, data `data/townsfolk_venture.json`): now and
+  then a townsperson leaves on a VENTURE with a mundane, story-shaped PURPOSE — visit kin in another
+  settlement, a pilgrimage to a shrine, a trade run, wanderlust to a ruin — walks the roads there, lingers, and
+  comes home with road-tales, each a `[Town]` beat. Cautious travel via the proven `agent_nav.safe_step`/
+  `flee_step` (they FLEE danger and only defend when cornered — a baker is no hero), NOT the fighter brain.
+  `run_day` starts a few (per-day chance + `max_venturing` cap so the town never empties; excludes the
+  adventure cast / quest-givers / mayors / hirelings so key NPCs stay findable); `run_turn` drives them
+  (out→linger→home, a `max_turns` cap GUARANTEES termination — never a wanderer stuck oscillating). A venturer
+  carries `metadata["venturing"]` so the ambient AI hands it off.
+- **`game_engine._driven_elsewhere`**: the two `process_npc_turns` paths each carried an identical 14-line
+  ambient-AI skip cascade (player_char/adventurer/wildlife/arena/aggro); folded BOTH into one shared helper
+  (+ the new `venturing` skip). Removed the duplication AND brought `game_engine.py` back under 500 (was 519
+  after the venture wiring → 496).
+Wired: `engine_setup` (`self.townsfolk_venture`), `turn_pipeline` (nightly `run_day` + per-turn `run_turn`),
+`save_load` (persist the venturing set; the venture state rides each NPC's metadata). Verified: content
+validator clean; `tests/test_townsfolk_venture.py` (8 tests) green; a venturing townsperson survives a REAL
+save/load; a 1500-turn combined-world soak ran clean (no crash/freeze/death, zero swallowed errors) with
+ventures firing and returning (Cora traded at Greenhollow, Aldo's pilgrimage to the Temple of the Crown) and
+the cap holding.
+
+## 2026-07-19 — Away-hero death edge: no more 0-HP "zombie" (George)
+
+Soak-testing surfaced an away/agent hero that hit 0 HP deep in the wild and then kept being DRIVEN at 0 HP
+for hundreds of turns instead of dying or being left for dead. Root cause: some non-combat damage paths call
+`take_damage` directly (which clamps to 0) and, unlike the combat path, don't route the PLAYER into the dying
+ladder — leaving a status=alive, hp=0, not-dying "zombie". The existing end-of-turn zombie-reaper (which fixes
+the same class of bug for NPCs) explicitly EXCLUDED the player.
+- **`turn_pipeline` reaper**: now also routes the player — if the player is active, hp<=0, and not already
+  dying, `enter_dying(self, None)` puts them DOWN. It runs AFTER every damage source in the turn, so no
+  end-of-turn zombie can survive. The dying ladder then resolves normally (stabilize → robbed / left-for-dead,
+  or Dying 4 → the full defeat table incl. slain).
+Verified: the death repro over 1500 explorer-away turns shows ZERO zombie states (was ~250 turns stuck at
+0 HP) — the hero now enters dying and recovers or dies cleanly. `tests/test_dying.py` +2 regression tests;
+dying/combat/defeat/wounds suites green.
+
+## 2026-07-19 — Trade ventures move real goods (George)
+
+The townsfolk trade venture was cosmetic (a merchant walked, but nothing moved). Now it's an EMBODIED caravan
+over the P16.2 settlement stores:
+- On a trade venture START, `_load_cargo`/`_take_surplus` pull a surplus good (up to `TRADE_LOAD`) from the
+  merchant's HOME settlement store (nearest settlement to home_spot via `production._nearest`).
+- On ARRIVAL at the destination settlement, `_trade_at_dest`/`_deliver` unload the cargo into its store and
+  take on a surplus of its own to carry home — a full trade circuit that redistributes goods (a "sold N wheat
+  at Riverside and took on 3 pottery" [Town] beat).
+- On the return home, the return goods are delivered into the home store.
+Complements `production._arbitrage` (the abstract caravan) with a real walking trader. Cargo rides the
+venture metadata (persists); a caravan lost mid-road just loses its goods (acceptable). Verified: a live
+combined-world run fires trade beats and moves goods between real stores; tests/test_townsfolk_venture.py +2.
+
+## 2026-07-19 — Adventure #4 (data-only): "The Hex of Wychwood" witch/curse (George)
+
+A fourth complex adventure, again authored purely as data over the reusable AdventureSeeder — and the first
+to lean on the shapeshift/curse system (a genuinely different mechanic from dragon/undead/outlaw):
+- data/wychwood.json — "The Hex of Wychwood": a green hag hollows the folk of a woodland hamlet into beasts.
+  Act 1 (talk the half-cursed lad Tam / kill a hollowed beast / explore the Cursed Glade) -> Act 2 (fetch a
+  curse-token / bring it to the hedge-witch Odile for the counter-charm / find the Hag's Hollow) -> Act 3 the
+  boss Mother Yall with a branching Kill / Bind-and-free (lift every curse) / Take-the-greenstaff (dark) finale.
+  New content (data): green_hag boss (lvl 8, drops the legendary crones_greenstaff), curse_token clue,
+  crones_greenstaff (legendary staff whose USE grants the wolf-shape — ties into the shapeshift system);
+  reuses the existing hags_hexstone curse item as the dark-branch reward. Cast Granny Esk / Tam / Odile.
+Wired self.wychwood in engine_setup + save_load + the quest-giver validator + 3 playtest tests. Verified:
+content validator clean; Granny Esk offers Act 1; the greenstaff use shifts the player to a grey wolf; the
+seeded hag's real defeat completes the finale; tests/test_wychwood.py (8) + playtest/content suites green.
+
+## 2026-07-19 — Playtest fix: branching-finale legends were DEAD content (George)
+
+Directed playtest (finish 12 quests across the 4 adventures through the real engine) surfaced a real bug: the
+authored branching-finale ENDINGS ("You drove the spear up beneath Cindermaw's jaw…", the Kill/Spare/Claim
+conclusions of every adventure) NEVER reached the player. `quest_manager.turn_in` emitted the `[Legend]` line
+via `_log`, which only appends to the quest manager's PRIVATE `event_log` — never surfaced to the player's
+event log or the chronicle observer.
+- Fix: the finale `[Legend]` now ALSO goes to `engine.memory_manager.add_event`, so the chosen ending is SEEN
+  and the chronicle records it in the saga. Affects every adventure with a `reward_choices` finale (the Tome,
+  Ravenmoor, Emberfell, Blackbanner, Wychwood, the castle fork).
+Verified: the playtest now shows all four finale legends firing (was 0); `tests/test_quest_branching.py` +1
+regression test; branching/adventure suites green.
+
+## 2026-07-19 — Upgrade: surface quest progress to the player (George)
+
+Following the finale-legend fix, the same `_log`-only gap hid ALL quest progress: "Objective complete: …" and
+"… ready to turn in" went only to the quest manager's private event_log, so during a multi-objective quest the
+player got NO feedback. Added a shared `_surface` helper (logs AND pushes to `memory_manager`) and routed the
+objective-complete / ready-to-turn-in / finale-legend beats through it, each announced ONCE (a transient
+`_announced`/`_ready_announced` flag; cleared when a repeatable quest re-arms). Confirmed bonus: the chronicle
+observes `[Legend]`, so adventure finales now enter the "Chronicle of the Age" saga. Quest suites (48) green.
+
+## 2026-07-19 — Polish: venture destinations are NOTABLE places (George)
+
+Playtest soaks showed townsfolk venturing to mundane in-town buildings ("an errand to Bakery 15", "wanders
+off toward Cottage 4"). Reworked `_destination` from a blocklist to an allowlist of NOTABLE place types
+(settlements from the production layer + a `NOTABLE_KEYS` set: village/chapel/temple/shrine/waystone/guildhall/
+ruin/keep/grove/hollow/vale/wood/moor/… — dropped "camp" so nobody pilgrimages to a bandit camp). Keys are
+matched as whole WORDS so "vale" catches "Charred Vale" but NOT "Oak-vale" (the world's own name, which had let
+every town building through). Now the beats read evocatively — "a pilgrimage to Millbrook Chapel", "wanders off
+toward Greenhollow Village". test_townsfolk_venture green; a 5-disposition soak sweep (balanced/explorer/
+valiant/greedy/sociable) runs clean with the death fix + ventures + trade + all adventures active.
+
+## 2026-07-20 — Finales reshape the world (George: option 3)
+
+Completing an adventure finale now CHANGES the world, not just the quest log:
+- `AdventureSeeder` tracks the guardian foes it plants (`foe_ids`, boss tagged `adventure_boss`). A finale quest
+  tagged `resolves_adventure: "<id>"` calls `resolve_adventure(engine, id, outcome)` from `quest_manager.turn_in`
+  → the matching seeder's `resolve()` → the shared `apply_resolution`: the surviving minions DISPERSE (removed
+  from the map, the area is safe now), the theme's wilderness encounters THIN (the data's `suppresses` fed
+  through the lair-suppression the encounters already read — Blackbanner cuts `bandit` to 0.4×, Wychwood `wolf`
+  to 0.6×), and a lasting `resolved` `[Realm]` beat is posted. Idempotent; the resolved state persists.
+- Wired all 4 playable adventures: Emberfell / Blackbanner / Wychwood (AdventureSeeder) + Ravenmoor (its
+  bespoke seeder shares `apply_resolution`). Added `resolves_adventure` to the quest-template metadata
+  whitelist (it was being dropped on load).
+Verified: all 4 finales resolve (foes 6→0, bandit 1.0→0.4, wolf→0.6, the beats fire); the resolved state
+round-trips; the 12-quest playtest still passes; test_blackbanner +1 resolution test.
+
+## 2026-07-20 — NPCs pursue adventures too (George: option 1)
+
+The world's other heroes now go on adventures, not just the player:
+- `engine/npc_adventuring.py` (`NpcAdventuringSystem`, nightly): a strong-enough free AdventurerSystem hero
+  (MIN_LEVEL 5) adopts an unresolved adventure the PLAYER hasn't begun (gated on `_player_engaged` so the
+  player never loses one they're working), and works it ACT BY ACT over game-days — a `[Realm]` beat for
+  setting out and each act ("Thaddeus the Grey takes up the trail of the wyrm of Emberpeak" → "presses deeper"
+  → "closes on the lair") — until it faces the boss and RESOLVES the adventure (reusing #38's
+  `resolve_adventure`: guardians disperse, threat thins, world reshapes) under a triumphant `[Legend]`. The
+  deed grows the hero (+XP). A resolved adventure's now-impossible player quests are marked FAILED so no
+  dead-end can be accepted — the "a rival beat you to it" stake (as `lairs.claim_by_rival` does for hoards).
+- Added 3 SEASONED adventurers to `data/adventurers.json` (Dame Seraphine paladin L7 / Thaddeus the Grey wizard
+  L6 / Ulric Bearclaw warrior L8) so some heroes are actually capable of clearing an adventure (the roster was
+  all L3-4). Enriches the guild-hall recruiting pool too.
+Wired self.npc_adventuring in engine_setup + the nightly stack + save_load. Verified: an NPC works all 4
+adventures to resolution over game-days; the player keeps any adventure they started; resolved adventures fail
+the dead-end quests + the giver stops offering; state round-trips; test_npc_adventuring (6) + adventurer/
+company/adventure suites green.
+
+## 2026-07-20 — Upgrade: Adventure Leads in the journal (discoverability)
+
+With rival heroes now racing to clear adventures (NPC adventuring), the player needs to SEE what's abroad.
+`engine/adventure_log.py` (`leads`/`lines`) lists each seeded adventure in the Y-journal — OPEN (seek the
+giver), UNDERWAY (you've begun it), a RIVAL closing in (hurry!), or ENDED — with the giver's name and a compass
+bearing from the hero. Added a `title` to each adventure's data. Wired into `gui.show_topics` beside the topics
+and chronicle. Validated by `tests/test_adventure_log.py`.
+
+## 2026-07-20 — Autoplay: the away-hero lives a RICH life, not circles (George)
+
+George: "when I use autoplay the hero just wanders around in a circle... I want to see the hero interacting
+with NPCs, going on quests, forming parties." Diagnosed + fixed the whole chain:
+1. **The circling** — exploration goals were set to a location's CENTRE, often a BUILDING tile the hero can't
+   stand on, so the goal never "arrived" and the hero circled the wall forever. `agent_goals.reachable_tile`
+   snaps every goal to the nearest walkable tile; rule 7 counts a goal REACHED within 2 tiles + a hard TTL
+   (`_goal_age`) so it never fixates. (Alone this lifted exploration from ~100 to 330-433 unique tiles.)
+2. **Never getting out of town** — in the 169-townsfolk Oakvale an ungreeted face is always within reach, so
+   the social rule preempted quest/recruit/explore forever. Added SOCIAL SATIATION (`agent_social`, GREET_CAP
+   per SATIATE_WINDOW) so the hero greets a few folk then moves on.
+3. **Never forming a party** — (a) all adventurers gathered at a far corner (a stray guildhalls-system marker);
+   `adventurers._guild_hall_near` now seats them at the accessible town guild hall ~10 tiles from spawn. (b)
+   `companies.form` ran EVERY turn, banding seekers into rival companies by turn 2 so a fresh hero could never
+   recruit one — moved it to NIGHTLY (`companies.run_day`), giving a full day's window. (c) the hero now
+   ACTIVELY seeks recruits: `agent_goals.nearest_recruitable` + `agent_social._seek_recruit` walk it to the
+   adventurer's LIVE position and it recruits when adjacent; `_pick_friend` prefers a friendly with BUSINESS.
+4. **Never questing** — `agent_goals.nearest_quest_giver` makes a quest-less hero head to a giver to TAKE one;
+   `_should_recruit_first` defers a dangerous quest until it has a band.
+Also extracted the social logic into `engine/agent_social.py` (agent_controller 514→461, under 500) and added
+`agent_sense.friendlies_near` (list). RESULT (balanced away-hero, combined world): recruits a FULL party of 3
+(Kestrel/Sable/Bram, turns 3/10/71), THEN takes q_blackbanner_raids and adventures — greeting, trading,
+foraging, fighting alongside its band. All agent/companion/adventurer/company suites (83) green.
+
+## 2026-07-20 — Autoplay follow-ups: forage loop + companions keep up (George)
+
+George tested automode: the hero now recruits a party and heads off on a quest (the rich-life fix works!),
+but (a) companions didn't follow — they got stranded ~190 tiles back, and (b) the hero looped foraging.
+- **Forage loop**: rule 3c foraged EVERY forageable tile as the hero crossed a wood, stalling all travel.
+  Added a `GATHER_COOLDOWN`(20) on the controller so it gathers now and then, not at every step (forage plans
+  over 1500 turns: unbounded → 9).
+- **Companions left behind**: a fast away-hero out-ran its party's 1-step BFS follow and, once out of BFS
+  range, stranded them across the map. Added a CATCH-UP (`companions.CATCHUP_DIST`=12): a companion left too
+  far behind the leader rejoins near it — checked at the TOP of `update()` (before any local flee/fight, so a
+  stranded companion teleports to the leader instead of dueling a wandering wolf where it was abandoned), and
+  gated to when the leader is on the OVERWORLD (its position is zone-local inside a building). Max stranding
+  190 → transient post-building spikes that self-correct in a turn; party ends together (dists 2-3).
+- Also fixed 8 test regressions from the rich-life change: the `named_goal` quest-giver priority now only
+  fires once the hero HAS a party (so the party-less ambition-draw tests pass + it matches the recruit-first
+  flow), and moved the new seasoned adventurer Ulric to Oakvale so the companies tests' "lone Riverside
+  seeker" (Sable) assumption holds.
+Verified: companion/agent/living-agent/party/ambition/companies suites green; forage capped; party stays
+together.
+
+## 2026-07-20 — The party fights adventures decisively (George)
+
+George: "let the party fight adventures more decisively." The away-hero was fleeing ~43% of the time because
+the flee check (`pack_outmatches`) weighed the HERO ALONE — and it recruited the WEAKEST nearest adventurers.
+Two changes:
+- **Recruit a capable band**: `agent_goals.nearest_recruitable` + `agent_social._pick_friend` now prefer the
+  STRONGEST recruitable adventurer (they all gather at the same hall). The party is now the seasoned trio
+  (Ulric L8 / Seraphine L7 / Thaddeus L6) instead of three L3-4 nobodies.
+- **A capable party stands and fights**: `pack_outmatches(char, pack, engine)` adds each nearby COMPANION's
+  level+HP to the hero's strength, so the flee line is SELF-CALIBRATING — a strong band holds against a pack it
+  could clear (a weak/scattered one still flees a superior warband). Full ally strength is safe now that the
+  band is genuinely strong.
+Result: flee dropped 0.43 → 0.22, the party fights hard (attack 49 → 230+), and the hero survives. (An earlier
+full-strength attempt on a WEAK party made it fearless and it died — the strong-recruit change is what makes
+decisive fighting safe.) Agent/companion/ambition/living-agent/npc-adventuring suites (91) green.
+
+## 2026-07-20 — Rich away-return digest (capstone of the autoplay work)
+
+The "While You Were Away" digest (shown when the human takes the reins back from autoplay) now reflects the
+rich life the hero led: beyond days/levels/purse/new-companions, it tallies QUESTS taken & seen through and
+LEGENDARY deeds (the branching-finale endings + slain legends) from the away period, above the `[Away]` deed
+beats. So the player returns to: "Alara grew 2 levels… gathered a band: Ulric Bearclaw, Dame Seraphine…, took
+on 1 quest and saw 1 through / ★ You cut Vharo Blackbanner down beneath his own standard." tests/test_away_digest
++1; suite green.
+
+## 2026-07-20 — Fix: recruited companions trapped inside the guild hall (George)
+
+George watched autoplay: the hero recruits adventurers THROUGH THE WINDOW (they gather ON the guild hall's
+BUILDING footprint), and they stayed trapped inside — the catch-up warp used `move_character`, which the wall
+guard REJECTS for a character on a building tile (it can only exit via the south door, which BFS-follow never
+found). Two fixes in `companions._companion` follow:
+- the catch-up now teleports via `place_character` (bypasses the wall guard, as a "rejoin off-screen" should);
+- `_stuck_indoors` pulls a companion on an un-walkable overworld tile (a BUILDING footprint) out to the leader
+  AT ONCE, regardless of distance — so a companion recruited through a window emerges immediately instead of
+  waiting until the hero is 12 tiles away.
+Verified: 15 turns after recruiting, all 3 companions are on GRASS following the hero (were stuck on BUILDING
+at dist 39 forever). Companion/living-agent/party suites (60) green.
+
+## 2026-07-20 — Fix: a caster away-hero fights with MAGIC (George)
+
+George: "when playing a wizard the hero doesn't seem to use magic much." The wizard DID cast when it engaged
+(67 casts vs 14 melee — 82% magic in combat) but it FLED 58% of the time (a fragile caster gets swarmed and
+rule 2 flees before it can cast). Added rule 1b — a CASTER LEADS WITH MAGIC: with a foe in range it casts its
+best affordable damage spell (`agent_sense._attack_spell`) BEFORE the swarm-flee, gated so a lone caster
+swarmed with no screen still flees (rule 2), but with a party near (`_party_near`) — or the foe still at range
+— it stands and blasts. Result: wizard casts 67 → 123, flee 0.58 → 0.26. The party (now the strong melee band)
+screens the caster while it throws spells. Agent/ambition/companies/building suites (85) green.
+
+## 2026-07-20 — Smarter caster: nuke the tough, conserve on the weak, AoE the cluster (George)
+
+George: "does the wizard select more powerful magic for more powerful foes — and take range effects into
+account?" It didn't — `_attack_spell` picked the most mana-EFFICIENT spell always, so it threw magic_missile
+(6) at everything and never used fireball (12/AoE) or lightning_bolt (10). Rewrote `agent_sense._attack_spell`
+to match the spell to the situation (it now takes the target + the foe list):
+- a TOUGH single foe (hp>20) → the biggest reachable hit (a nuke) to fell it fast;
+- a CLUSTER → an AREA spell, scored by how many foes its blast catches (fireball over magic_missile);
+- a lone SOFT foe → the most mana-efficient spell (don't waste a fireball on a rat);
+- RANGE/reach still filters (only spells that reach), so a foe at dist 7 gets lightning_bolt (range 8), not
+  fireball (range 6).
+Verified against a mock roster: weak→magic_missile, tough→fireball, cluster→fireball, far-tough→lightning_bolt.
+Living-agent/spells/ambition suites (71) green.
+
+## 2026-07-20 — Docs refresh + new README (George: "update all docs and create a new README")
+
+After the round of autoplay/companion/caster improvements, updated the docs and wrote a fresh README to match
+the current project. INTERFACE.md / CLAUDE.md test counts corrected to 3650+. New `README.md` (framed as an
+*introduction to building an RPG with an LLM*) covers what the game actually is now: one combined 240×170 world
+entered at the big walled Oakvale; the living world / society / heroes pillars; the systems-overview table; the
+FIVE authored adventures (Sunken Tome + Emberfell/Blackbanner/Wychwood/Ravenmoor) with world-reshaping branching
+finales built on the reusable `AdventureSeeder`; the living-heroes/autoplay loop (recruit a band → quest →
+casters lead with magic → companions catch up → rich away-return digest); magic & worldcraft; the optional iso
+renderer; refreshed controls; and a current-state summary. Figures regenerated headless (SDL dummy → `gui._render`
+→ `pygame.image.save`): `docs/img/gameplay.png` (party-of-3 + Blackbanner quest, top-down), `iso_world.png`
+(party in iso), `adventure_leads.png` (Y-journal), retaining `battle.png`.
+
+## 2026-07-20 — Fix: trapped-companion warp no longer preempts self-heal/combat (regression)
+
+The full suite caught 3 regressions from the guild-hall-window fix: it warped a companion off ANY building tile
+at the TOP of `update()`, before self-heal/desert/flee/heal-ally/combat — so a member transiently on a building
+tile (the minstrel is seeded at its tavern) skipped self-healing and fighting (`test_party_survival` ×2,
+`test_playtest_matrix` companion-fights). Kept the original `>CATCHUP_DIST` "far" warp at the top (it must
+preempt a duel where a companion was abandoned), but moved the stuck-indoors rescue to the FOLLOW branch:
+self-heal and combat need no movement, so they run first; only a member with nothing to fight/heal that would
+otherwise path uselessly against a wall gets pulled out to the leader. Still fixes George's
+recruited-through-a-window trapped-inside bug — new regression test (`test_companion_trapped_on_building_emerges`)
+asserts both directions. Full suite re-run green.

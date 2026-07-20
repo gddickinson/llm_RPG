@@ -26,6 +26,13 @@ class AggressionSystem:
         player = getattr(eng, "player", None)
         if player is None or getattr(player, "hp", 1) <= 0:
             return 0
+        # A player inside an interior / dungeon is in a SEPARATE coordinate
+        # space — an overworld hostile sharing their interior-local coordinates
+        # must NOT bite them (George 2026-07-15: an invisible Mire Stalker
+        # attacked the hero in every building until dead).
+        if getattr(eng, "current_interior", None) is not None or \
+                getattr(eng, "current_dungeon", None) is not None:
+            return 0
         ppos = tuple(player.position)
         wmap = eng.world.map
         try:
@@ -41,6 +48,12 @@ class AggressionSystem:
                 continue
             if pursuit is not None and not pursuit._is_pursuer(npc, party, wmap):
                 continue
+            try:   # GAP.3 a hidden (crawling, unseen) player is not bitten
+                from engine import stealth
+                if stealth.evades(eng, npc):
+                    continue
+            except Exception:
+                pass
             try:
                 msg = cs._resolve(npc, player, "attack")
                 if msg:

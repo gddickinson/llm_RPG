@@ -191,6 +191,10 @@ def _kind_at(engine, x: int, y: int):
     # blueprint (it has no interior blueprint, just the marker)
     if (loc.properties or {}).get("wall_tower"):
         return "wall_tower"
+    # OAKVALE T5: a town-generated building carries its KIND explicitly
+    k = (loc.properties or {}).get("kind")
+    if k:
+        return k
     try:
         from world.blueprints import blueprint_for_location
         bp = blueprint_for_location(loc.name)
@@ -296,7 +300,17 @@ def draw_buildings(target, engine, view_rect, cam_x, cam_y,
                 continue
             kind = _kind_at(engine, wx, wy)
             h = block_height(kind, tile_size)      # storey-driven (P33.3b)
-            _draw_block(target, kind, px, py, tile_size, h)
+            _draw_block(target, kind, px, py, tile_size, h, wx, wy)
+    try:   # GX.2 teleport waystones as raised glowing daises
+        from ui import dais
+        dais.draw_all(target, engine, view_rect, cam_x, cam_y, tile_size)
+    except Exception:
+        pass
+    try:   # OAKVALE a visible iron SEWER GRATE over the Deepdelve way down
+        from ui import grate
+        grate.draw_all(target, engine, view_rect, cam_x, cam_y, tile_size)
+    except Exception:
+        pass
 
 
 def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
@@ -305,7 +319,8 @@ def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
     footprint, storey bands + windows along the front, and chimneys."""
     import pygame
     from ui import roof_shapes as rs
-    style = style_for(kind)
+    from ui.building_variety import variant_style   # OAKVALE T8 per-building style
+    style = variant_style(style_for(kind), kind, loc.x, loc.y)
     px = view_rect.x + (loc.x - cam_x) * ts
     py = view_rect.y + (loc.y - cam_y) * ts
     w = loc.width * ts
@@ -316,29 +331,49 @@ def _draw_footprint(target, kind, loc, view_rect, cam_x, cam_y, ts) -> None:
     sh.fill((0, 0, 0, 70))
     target.blit(sh, (px + off, py + off))
     front = rs.front_color(style["wall"])
-    pygame.draw.polygon(target, front, rs.span_faces(px, py, w, d, h)["front"])
+    front_quad = rs.span_faces(px, py, w, d, h)["front"]
+    pygame.draw.polygon(target, front, front_quad)
+    if ts >= 12:                                   # P40.4 masonry/timber texture
+        for col, a, b in rs.wall_courses(front_quad, style["wall"], ts):
+            pygame.draw.line(target, col, a, b, 1)
     shades = rs.roof_shades(style["covering"])
     rp = rs.span_roof(style["roof"], px, py, w, d, h, style.get("parapet", False))
     for pts, key in rp["polys"]:
         pygame.draw.polygon(target, shades[key], pts)
+        if ts >= 12:                               # P40.4 roof tile rows
+            for col, a, b in rs.roof_courses(pts, style["covering"], ts):
+                pygame.draw.line(target, col, a, b, 1)
+    fy = py + d - h                                   # top of the front wall
+    from ui import roof_relief as rr              # BLD.8 relief + weathering
+    from ui import facade_trim as ft
+    rr.draw_weathering(
+        target, rr.weathering_spots(loc.x, loc.y, px, py - h, w, d, n=8),
+        (px, py - h, w, d))
+    if style["roof"] != "flat" and ft.trim_style_for(kind)["cornice"]:
+        rr.draw_dormers(target,
+                        rr.dormer_boxes(px, py - h, fy, w, ts), shades, ts)
+    rr.draw_eaves(target, px, fy, w, ts, front)
     if rp["ridge"]:
-        pygame.draw.line(target, shades["ridge"],
-                         rp["ridge"][0], rp["ridge"][1], max(1, ts // 20))
+        rr.draw_ridge_cap(target, rp["ridge"][0], rp["ridge"][1], shades, ts)
     if rp["parapet"]:
         pygame.draw.lines(target, shades["ridge"], True, rp["parapet"], 1)
-    fy = py + d - h                                   # top of the front wall
     storeys = max(1, int(h / max(4, int(ts * FLOOR_FRAC))))
     for i in range(1, storeys):                       # floor bands
         by = fy + round(h * i / storeys)
         pygame.draw.line(target, _scale(front, 0.7), (px, by), (px + w, by), 1)
     ww = max(3, ts // 4)                              # a row of windows/floor
     from ui.openings import draw_window, window_shape_for
-    shape = window_shape_for(kind)
+    from ui.building_variety import window_shape
+    shape = window_shape(kind, window_shape_for(kind), loc.x, loc.y)
+    tstyle = ft.trim_style_for(kind)                  # BLD.7 architectural dress
+    ft.draw_span_corner_trim(target, px, fy, py + d, w, ts, tstyle)
     for i in range(storeys):
         by = fy + round(h * (i + 0.35) / storeys)
         for c in range(loc.width):
             wx0 = px + c * ts + (ts - ww) // 2
-            draw_window(target, (wx0, by, ww, max(2, ww)), shape,
+            wr = (wx0, by, ww, max(2, ww))
+            ft.draw_window_trim(target, wr, tstyle, ts)   # sill/lintel/shutters
+            draw_window(target, wr, shape,
                         frame=WINDOW, glass=WINDOW_GLASS)
     for (cx, cy, cw, ch) in rs.span_chimneys(px, py, w, h, style["chimneys"]):
         pygame.draw.rect(target, rs.CHIMNEY, (cx, cy, cw, ch))
@@ -365,34 +400,53 @@ def _draw_gate(target, px, py, ts, h, locked: bool = False) -> None:
         pygame.draw.line(target, gs.IRON_HI, a, b, max(1, ts // 22))
 
 
-def _draw_block(target, kind, px, py, ts, h) -> None:
+def _draw_block(target, kind, px, py, ts, h, wx=0, wy=0) -> None:
     """One building tile as a material-styled 2.5D block (P33.3): a drop
     shadow, a wall front in the wall material, a roof of the descriptor's
     SHAPE and COVERING colour, chimneys, storey lines, and (a wall tower) a
-    roof guard."""
+    roof guard. BLD.8 adds eaves/soffit depth, a ridge cap and per-building
+    weathering (seeded by world pos `wx`,`wy`)."""
     import pygame
     from ui import roof_shapes as rs
-    style = style_for(kind)
+    from ui.building_variety import variant_style   # OAKVALE T8 per-building style
+    style = variant_style(style_for(kind), kind, wx, wy)
     off = max(1, ts // 7)
     target.blit(_shadow(ts), (px + off, py + off))     # grounds the block
     front = rs.front_color(style["wall"])
-    pygame.draw.polygon(target, front, cube_faces(px, py, ts, h)["front"])
+    front_quad = cube_faces(px, py, ts, h)["front"]
+    pygame.draw.polygon(target, front, front_quad)
+    if ts >= 12:                                   # P40.4 masonry/timber texture
+        for col, a, b in rs.wall_courses(front_quad, style["wall"], ts):
+            pygame.draw.line(target, col, a, b, 1)
     shades = rs.roof_shades(style["covering"])
     rp = rs.roof_polys(style["roof"], px, py, ts, h, style.get("parapet", False))
     for pts, key in rp["polys"]:
         pygame.draw.polygon(target, shades[key], pts)
+        if ts >= 12:                               # P40.4 roof tile rows
+            for col, a, b in rs.roof_courses(pts, style["covering"], ts):
+                pygame.draw.line(target, col, a, b, 1)
+    from ui import roof_relief as rr              # BLD.8 relief + weathering
+    eave_y = py + ts - h
+    rr.draw_weathering(
+        target, rr.weathering_spots(wx, wy, px, py - h, ts, ts),
+        (px, py - h, ts, ts))
+    rr.draw_eaves(target, px, eave_y, ts, ts, front)
     if rp["ridge"]:
-        pygame.draw.line(target, shades["ridge"],
-                         rp["ridge"][0], rp["ridge"][1], 1)
+        rr.draw_ridge_cap(target, rp["ridge"][0], rp["ridge"][1], shades, ts)
     if rp["parapet"]:
         pygame.draw.lines(target, shades["ridge"], True, rp["parapet"], 1)
     storeys = storeys_for(kind)
     for (a, b) in storey_lines(px, py, ts, h, storeys):
         pygame.draw.line(target, _scale(front, 0.7), a, b, 1)
-    # per-floor windows make the storeys READ (P33.3b)
+    # per-floor windows make the storeys READ (P33.3b); BLD.7 dresses them
     from ui.openings import draw_window, window_shape_for
-    shape = window_shape_for(kind)
+    from ui import facade_trim as ft
+    from ui.building_variety import window_shape
+    shape = window_shape(kind, window_shape_for(kind), wx, wy)
+    tstyle = ft.trim_style_for(kind)
+    ft.draw_corner_trim(target, px, py, ts, h, tstyle)   # cornice + quoins
     for (wx, wy, ww, wh) in wall_windows(px, py, ts, h, storeys):
+        ft.draw_window_trim(target, (wx, wy, ww, wh), tstyle, ts)  # sill/shutters
         draw_window(target, (wx, wy, ww, wh), shape,
                     frame=WINDOW, glass=WINDOW_GLASS)
     for (cx, cy, cw, ch) in rs.chimney_rects(px, py, ts, h, style["chimneys"]):

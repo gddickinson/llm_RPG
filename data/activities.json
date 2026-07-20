@@ -1,0 +1,35 @@
+{
+  "_doc": "LIVING_WORLD A1 — the per-turn ACTIVITY library. When a scheduled NPC has REACHED its work location, engine/activities.ActivitySystem PERFORMS the activity (a fitting animation clip + facial expression + an occasional [Town] beat) instead of loitering, so a smith visibly hammers and a cleric prays. `activities` = the base spec per schedule activity; `professions` overrides the 'work' clip/beat by the NPC's WORKPLACE building profession (world/building_types.profession_of_kind); `class_work` overrides 'work' by NPC class when the building has no profession. `clip` names an existing ui/char_clips animation. Pure content — add a profession/class here, no code.",
+  "activities": {
+    "work":  {"clip": "stoop", "expr": "neutral", "beat": "gets on with the day's work", "period": 10},
+    "pray":  {"clip": "kneel", "expr": "serene",  "beat": "bows in quiet prayer",        "period": 10},
+    "play":  {"clip": "dance", "expr": "happy",   "beat": "strikes up a lively tune",     "period": 8},
+    "eat":   {"clip": "eat",   "expr": "content", "beat": "eats a meal",                  "period": 14},
+    "drink": {"clip": "drink", "expr": "content", "beat": "nurses a drink",               "period": 14}
+  },
+  "professions": {
+    "smith":      {"clip": "hammer",   "beat": "hammers glowing steel at the forge"},
+    "cook":       {"clip": "stir",     "beat": "tends a bubbling pot"},
+    "farmer":     {"clip": "stoop",    "beat": "works the soil"},
+    "miner":      {"clip": "hammer",   "beat": "swings a pick at the rock face"},
+    "woodcutter": {"clip": "axe_chop", "beat": "fells timber"},
+    "fisher":     {"clip": "reach",    "beat": "casts a line"},
+    "hunter":     {"clip": "reach",    "beat": "dresses the day's game"},
+    "alchemist":  {"clip": "stir",     "beat": "mixes a bubbling draught"},
+    "carpenter":  {"clip": "hammer",   "beat": "saws and hammers a joint"}
+  },
+  "class_work": {
+    "cleric":  {"clip": "kneel", "beat": "tends the shrine"},
+    "guard":   {"clip": "guard", "beat": "stands watch"},
+    "scholar": {"clip": "reach", "beat": "pores over a tome"},
+    "wizard":  {"clip": "cast",  "beat": "studies the arcane"},
+    "sorcerer":{"clip": "cast",  "beat": "practises a cantrip"},
+    "warlock": {"clip": "cast",  "beat": "pores over a grimoire"},
+    "artificer":{"clip": "hammer","beat": "tinkers with a contraption"},
+    "bard":    {"clip": "dance", "beat": "rehearses a ballad"},
+    "paladin": {"clip": "kneel", "beat": "keeps a solemn vigil"},
+    "monk":    {"clip": "kneel", "beat": "meditates"},
+    "druid":   {"clip": "kneel", "beat": "tends a sacred grove"},
+    "noble":   {"clip": "reach", "beat": "reviews the ledgers"}
+  }
+}

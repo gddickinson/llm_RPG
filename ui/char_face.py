@@ -25,8 +25,9 @@ DEFAULT_EXPR = "neutral"
 # an emote/clip implies a fleeting expression
 EMOTE_EXPR = {
     "hurt": "hurt", "cheer": "happy", "dance": "happy", "wave": "happy",
-    "kiss": "happy", "hug": "happy", "knockdown": "hurt", "tumble": "scared",
-    "guard": "angry", "cast": "surprised", "bow": "neutral",
+    "kiss": "happy", "hug": "happy", "handshake": "happy", "knockdown": "hurt",
+    "tumble": "scared", "guard": "angry", "cast": "surprised", "bow": "neutral",
+    "attack": "angry", "wrestle": "angry", "taunt": "angry", "throw": "angry",
 }
 
 BUBBLES = ("alert", "question", "sleep", "love", "angry", "note")

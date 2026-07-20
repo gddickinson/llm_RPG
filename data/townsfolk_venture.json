@@ -1,0 +1,43 @@
+{
+  "daily_start_chance": 0.6,
+  "max_venturing": 3,
+  "max_driven": 3,
+  "min_trip": 12,
+  "max_trip": 110,
+  "linger_turns": 6,
+  "max_turns": 400,
+  "flee_radius": 5,
+  "classes": ["villager", "merchant", "bard", "noble"],
+  "purposes": [
+    {
+      "id": "kin",
+      "prefer": ["village", "hamlet", "town", "oakvale", "riverside", "kingsgate"],
+      "out": "{name} sets out for {dest} to visit kin.",
+      "back": "{name} comes home from {dest}, glad of family."
+    },
+    {
+      "id": "pilgrimage",
+      "prefer": ["temple", "shrine", "cathedral", "chapel"],
+      "out": "{name} sets off on a pilgrimage to {dest}.",
+      "back": "{name} returns from a pilgrimage to {dest}, at peace."
+    },
+    {
+      "id": "trade",
+      "prefer": ["village", "town", "market", "hamlet"],
+      "out": "{name} loads a pack and heads to {dest} to trade.",
+      "back": "{name} returns from {dest} with a fuller purse and fresh gossip."
+    },
+    {
+      "id": "wanderlust",
+      "prefer": ["ruin", "stair", "hollow", "cleft", "barrow", "peak", "wood", "vale"],
+      "out": "{name} wanders off toward {dest}, restless for once.",
+      "back": "{name} wanders back from {dest}, full of road-tales."
+    },
+    {
+      "id": "errand",
+      "prefer": [],
+      "out": "{name} leaves on an errand toward {dest}.",
+      "back": "{name} finishes an errand to {dest} and comes home."
+    }
+  ]
+}

@@ -72,6 +72,10 @@ def parse_args():
                    help="Start on Tutorial Island (learn every system)")
     p.add_argument("--no-menu", action="store_true",
                    help="Skip the start menu and go straight to the game")
+    p.add_argument("--colosseum", nargs="?", const="skirmish", default=None,
+                   metavar="MATCHUP",
+                   help="Jump into the combat-testing colosseum (a matchup id, "
+                        "e.g. melee_vs_ranged; default 'skirmish')")
     p.add_argument("--debug", action="store_true",
                    help="Enable debug logging")
     return p.parse_args()
@@ -92,6 +96,9 @@ def main() -> int:
     player_spec = None
     world_kind = "default"
     load_save_name = args.load
+    arena_matchup = None                  # a Combat Arena matchup to stage
+    if args.colosseum:                    # --colosseum flag pre-selects one
+        arena_matchup = args.colosseum
     if args.ui == "gui" and has_pygame and not args.no_menu \
             and not args.load:
         try:
@@ -110,11 +117,19 @@ def main() -> int:
                 return 0
             if choice["action"] == "load":
                 load_save_name = choice["save_name"]
-            elif choice["action"] == "new":
+            elif choice["action"] in ("new", "arena"):
                 player_spec = choice.get("spec")
                 world_kind = choice.get("start", "default")
+                if choice["action"] == "arena":   # stage the picked matchup
+                    arena_matchup = choice.get("matchup")
         except Exception as e:
             logger.warning(f"Start menu failed, skipping: {e}")
+
+    # A-disc: the menu's "Tutorial Island" start routes to the tutorial flag
+    # (the tutorial runs on the default world, not a world_kind of its own)
+    start_tutorial = args.tutorial or world_kind == "tutorial"
+    if world_kind == "tutorial":
+        world_kind = "default"
 
     # Build engine
     engine = GameEngine(
@@ -124,7 +139,7 @@ def main() -> int:
                               and args.provider != "heuristic"),
         enable_quests=(not args.no_quests),
         player_spec=player_spec,
-        start_tutorial=args.tutorial,
+        start_tutorial=start_tutorial,
         enable_dm_bridge=args.dm_bridge,
         world_kind=world_kind,
     )
@@ -136,6 +151,15 @@ def main() -> int:
         else:
             logger.warning(f"Could not load save: {load_save_name}")
 
+    # Combat Arena (menu / --colosseum): seat the player as a spectator at the
+    # arena gate and stage a matchup, for watching combat + its graphics
+    if arena_matchup:
+        try:
+            engine.enter_colosseum(arena_matchup)
+            logger.info(f"Colosseum: staged {arena_matchup}")
+        except Exception as e:
+            logger.warning(f"Colosseum start failed: {e}")
+
     # UI selection
     if args.ui == "gui":
         if not has_pygame:
@@ -144,6 +168,12 @@ def main() -> int:
         else:
             ui = GameGUI(engine, width=args.width, height=args.height,
                          tile_size=args.tile_size)
+            # ISO.10: honour the player's saved / default map-zoom from boot
+            from ui.settings_panel import init_zoom
+            init_zoom(ui)
+            # GAP.7: a fresh game opens with a cold-open prologue (not a load)
+            if not load_save_name and not arena_matchup:
+                ui._intro_pending = True
     else:
         ui = TerminalUI(engine)
 

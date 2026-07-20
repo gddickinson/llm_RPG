@@ -11,6 +11,8 @@ from typing import List
 logger = logging.getLogger("llm_rpg.hints")
 
 MAX_HINTS = 3
+COMBAT_HINTS = 6        # T3.3 a fight is dense with verbs (trip/feint/grapple/…) —
+#                         show more when a foe is adjacent so they aren't starved
 
 
 def _adjacent_npcs(engine, radius: float = 1.5):
@@ -49,6 +51,16 @@ def context_hints(engine) -> List[str]:
     except Exception:
         pass
 
+    # The combat-testing colosseum — stage a fight at the arena gate
+    try:
+        col = getattr(engine, "colosseum", None)
+        if col is not None and not engine.current_interior \
+                and col.at_entrance((x, y)):
+            hints.append("[Arena] the bout rages — [E] a new matchup"
+                         if col.active else "[E] stage a colosseum matchup")
+    except Exception:
+        pass
+
     # Unclaimed bloodstain — your loot is out there (soulslike)
     try:
         from engine.checkpoint import bloodstain_pos
@@ -65,6 +77,55 @@ def context_hints(engine) -> List[str]:
         hints.extend(hint_lines(engine))
     except Exception:
         pass
+
+    # GAP.2 a freshly-unlocked Field Guide entry — nudge them to read it (Y)
+    try:
+        n = engine.codex.unseen()
+        if n > 0:
+            hints.append(f"[Y] journal — {n} new entr"
+                         + ("ies" if n > 1 else "y"))
+    except Exception:
+        pass
+
+    # GAP.3 crawling = sneaking: advertise the sneak-attack payoff
+    try:
+        from engine import stealth
+        if stealth.is_sneaking(player):
+            hints.append("Sneaking — a strike on an unaware foe is a "
+                         "SNEAK ATTACK")
+    except Exception:
+        pass
+
+    # a wild animal beside you + food to lure it — tame a companion / mount
+    try:
+        if engine.tameable_animal_near() is not None:
+            from engine.animal_companions import has_food
+            hints.append("[E] tame the wild animal" if has_food(player)
+                         else "a wild animal — carry food to tame it")
+    except Exception:
+        pass
+
+    # GX.5 the Deepdelve — its cues lead: finding the secret stair (the sole
+    # discovery mechanism) and descending a mouth must NOT be crowded out of
+    # the capped hint bar by ambient talk/barter prompts when it sits in town.
+    if not getattr(engine, "current_interior", None) and \
+            not getattr(engine, "current_dungeon", None):
+        try:
+            from world.world_map import TerrainType
+            x, y = engine.player.position
+            dd = getattr(engine, "deepdelve", None)
+            if engine.world.map.get_terrain_at(x, y) == TerrainType.CAVE:
+                loc = engine.world.get_location_at(x, y)
+                if loc and loc.get_property("deepdelve_mouth"):
+                    hints.append(
+                        f"[TAB] descend into {loc.name} (the Deepdelve)")
+            elif dd is not None:
+                sec = dd.secret_near((x, y))
+                if sec is not None:
+                    hints.append(
+                        f"[E] search — {sec.get('hint', 'it rings hollow')}")
+        except Exception:
+            pass
 
     # Inside somewhere? Leaving is the dominant hint
     if getattr(engine, "current_interior", None):
@@ -100,10 +161,34 @@ def context_hints(engine) -> List[str]:
     elif getattr(engine, "current_dungeon", None):
         hints.append("[TAB] climb back to the surface")
 
-    try:   # a stable sells a pack mule (P15.8b)
-        from engine.mount import stable_nearby, has_mule, MULE_COST
-        if stable_nearby(engine) and not has_mule(engine.player):
-            hints.append(f"[E] buy a pack mule ({MULE_COST}g)")
+    try:   # P28.2d a stable sells horses & mules to ride
+        from engine import mounts
+        if mounts.stable_here(engine) and not mounts.active_mount(engine.player):
+            hints.append("[E] stable — buy & ride a mount")
+    except Exception:
+        pass
+
+    try:   # M.7c a guild hall trains skills (talk to someone → /train)
+        gh = getattr(engine, "guildhalls", None)
+        if gh is not None and gh.hall_here(engine):
+            hints.append("[T] talk · /train a skill here")
+    except Exception:
+        pass
+
+    try:   # A-board a tavern notice board posts adventuring work
+        board = engine.quest_board_at_player()
+        if board is not None and engine.quest_board_manager.list_available(board):
+            hints.append("[E] read the adventurers' board")
+    except Exception:
+        pass
+
+    try:   # M5 the build/terraform tool — outdoors, away from a merchant (B there
+        # barters). Low priority: shows only when the hint bar has room.
+        if not getattr(engine, "current_interior", None) \
+                and not getattr(engine, "current_dungeon", None):
+            from engine.shop import merchants_near
+            if not merchants_near(engine, player, radius=2.0):
+                hints.append("[B] build & terraform the land")
     except Exception:
         pass
 
@@ -167,6 +252,14 @@ def context_hints(engine) -> List[str]:
         except Exception:
             pass
         hints.append("[SHIFT+T/I/B] trip · demoralize · feint")
+        try:   # I3 grapple → throw (wrestling / throwing)
+            from engine import tactics
+            if tactics.is_grappling(engine):
+                hints.append("[SHIFT+C] THROW the foe in your grip")
+            else:
+                hints.append("[SHIFT+F/C] shove · grapple")
+        except Exception:
+            pass
     try:
         tid = getattr(engine, "player_target_id", None)
         lock = engine.npc_manager.npcs.get(tid) if tid else None
@@ -208,7 +301,10 @@ def context_hints(engine) -> List[str]:
             from world.world_map import TerrainType
             terrain = engine.world.map.get_terrain_at(x, y)
             if terrain == TerrainType.CAVE:
-                hints.append("[TAB] descend into the cave")
+                loc = engine.world.get_location_at(x, y)
+                # A Deepdelve mouth's descend cue is added high-priority above.
+                if not (loc and loc.get_property("deepdelve_mouth")):
+                    hints.append("[TAB] descend into the cave")
         except Exception:
             pass
         try:
@@ -369,13 +465,15 @@ def context_hints(engine) -> List[str]:
     hints.append("[SHIFT+move] run  ·  [`] jump  ·  [.] pace")
     hints.append("[?] all controls")
 
-    # Dedup preserving order, cap
+    # Dedup preserving order, cap (T3.3: a wider cap mid-fight so the combat
+    # verbs — trip/demoralize/feint/grapple/shove/weapon-action — actually show)
+    cap = COMBAT_HINTS if enemies else MAX_HINTS
     seen = set()
     out = []
     for h in hints:
         if h not in seen:
             seen.add(h)
             out.append(h)
-        if len(out) >= MAX_HINTS:
+        if len(out) >= cap:
             break
     return out

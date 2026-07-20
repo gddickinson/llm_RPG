@@ -30,6 +30,11 @@ class NPCManager:
                 npc.faction = faction_of_class(npc.character_class.value).value
         except Exception:
             pass
+        try:   # seed calling-appropriate skills once (a guard gets Weaponry,
+            from engine import npc_skills      # a cleric Medicine…) — lazy import
+            npc_skills.seed(npc)               # avoids a characters->engine cycle
+        except Exception:
+            pass
         self.npcs[npc.id] = npc
         logger.info(f"Added NPC: {npc.name} (ID: {npc.id}, faction: {getattr(npc, 'faction', '?')})")
 
@@ -61,7 +66,10 @@ class NPCManager:
             del self.npcs[npc_id]
             logger.info(f"Removed NPC: {npc.name} (ID: {npc_id})")
             return True
-        logger.warning(f"Failed to remove NPC: ID {npc_id} not found")
+        # a benign no-op: two paths can retire the same dead thing (a predator
+        # kill + the despawn sweep, a nemesis death + loot cleanup). Not an
+        # error — debug, not warning, so it doesn't cry wolf.
+        logger.debug(f"remove_npc: ID {npc_id} already gone")
         return False
 
     def create_random_npc(self, location=None, char_class=None, race=None) -> Character:

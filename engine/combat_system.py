@@ -89,6 +89,35 @@ class CombatSystem:
             m["_atk_seq"] = m.get("_atk_seq", 0) + 1
             from ui import char_motion              # pure, pygame-free
             char_motion.face_toward(attacker, defender.position)
+            # the defender turns to meet its attacker (George: combatants
+            # should FACE each other, not fight side-on)
+            char_motion.face_toward(defender, attacker.position)
+        except Exception:
+            pass
+
+        # GAP.3 note whether this strike lands on an UNAWARE foe (a sneak
+        # attack) — captured BEFORE marking the fight joined; ANY attack,
+        # hit or miss, alerts the target.
+        sneak_ready = False
+        try:
+            from engine import stealth
+            sneak_ready = (attacker is self.engine.player
+                           and defender is not self.engine.player
+                           and stealth.is_sneaking(attacker)
+                           and stealth.is_unaware(defender))
+            stealth.mark_combat_awareness(self.engine, attacker, defender)
+        except Exception:
+            sneak_ready = False
+
+        # a martial exchange hones the player's skill — Weaponry when they
+        # swing, Defense when they weather a blow (pet-roll-free, no RNG churn)
+        try:
+            from engine.skill_progression import add_skill_xp
+            pl = self.engine.player
+            if attacker is pl and defender is not pl:
+                add_skill_xp(pl, "weaponry", 4)
+            elif defender is pl and attacker is not pl:
+                add_skill_xp(pl, "defense", 4)
         except Exception:
             pass
 
@@ -201,14 +230,45 @@ class CombatSystem:
         if natural_crit:
             damage *= 2
 
-        # Damage-type vs target weakness (e.g. silver vs trolls)
+        # Damage-type vs target weakness (silver vs trolls) + a hunter's edge
+        # vs beasts (T4.4) — both fold into damage_type_modifier
         from engine.combat_math import damage_type_modifier
         damage = damage_type_modifier(attacker, defender, damage)
+
+        try:   # a HUNTER animal at your side helps you fell beasts
+            if attacker is self.engine.player:
+                from engine.animal_companions import owner_hunting_bonus
+                damage += owner_hunting_bonus(self.engine, defender)
+        except Exception:
+            pass
+
+        # GAP.3 sneak attack — a hit on the foe we caught unaware lands hard
+        if sneak_ready:
+            try:
+                from engine import stealth
+                damage = stealth.apply_sneak_bonus(attacker, damage)
+                self.engine.memory_manager.add_event(
+                    f"You strike from the shadows — a SNEAK ATTACK "
+                    f"on {defender.name}!")
+            except Exception:
+                pass
 
         defender.take_damage(damage)
         try:   # the struck body recoils (P33.6b)
             from ui import char_motion
             char_motion.emote(defender, "hurt")
+        except Exception:
+            pass
+        try:   # I5: a decisive melee CRIT drives a foe to the ground — physical
+            # contact in every fight (the player's kills AND NPC-vs-NPC clashes),
+            # not just swings. Cosmetic; gated to a crit that fells or nearly
+            # fells a non-player defender, so it always reads as a real beatdown.
+            if (action_type == "attack" and natural_crit
+                    and defender is not self.engine.player):
+                frac = defender.hp / max(1, getattr(defender, "max_hp", 1))
+                if (not defender.is_alive()) or frac <= 0.3:
+                    from engine import anim
+                    anim.interact(attacker, defender, "knockdown")
         except Exception:
             pass
         try:   # damage forces the keep-it check (P12.7)
@@ -269,6 +329,26 @@ class CombatSystem:
                     return escape
             except Exception:
                 pass
+
+        # UNDEAD — a vampire's victim may RISE as a spawn (vampirism spreads)
+        try:
+            from engine import necromancy, undead as _ud
+            atype = (getattr(attacker, "metadata", None) or {}).get(
+                "undead_type", "")
+            if atype.startswith("vamp") and not _ud.is_undead(defender) \
+                    and self.rng.random() < 0.25:
+                from engine.dying import is_person as _isp
+                if _isp(defender):
+                    necromancy.become_undead(
+                        self.engine, defender, "vampire_spawn",
+                        source=f"slain by {attacker.name}")
+                    defender.hp = max(1, defender.max_hp // 2)
+                    msg = (f"{attacker.name} drains {defender.name} dry — and "
+                           f"{defender.name} rises again, a vampire spawn!")
+                    self.engine.memory_manager.add_event(msg)
+                    return msg
+        except Exception:
+            pass
 
         # People are knocked out; monsters die (P12.4, Kenshi)
         try:
@@ -458,6 +538,14 @@ class CombatSystem:
             pass
 
     def _best_weapon_damage(self, char) -> int:
+        # A shapeshifted beast has no hands for a weapon — it rends with
+        # claws/fangs (the form's natural attack), whatever it "carries".
+        try:
+            from engine import shapeshift
+            if shapeshift.restricted(char, "no_wield"):
+                return max(1, shapeshift.form_natural_damage(char))
+        except Exception:
+            pass
         # Prefer equipped weapon
         try:
             from characters.equipment import equipped_weapon

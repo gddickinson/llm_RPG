@@ -1,0 +1,40 @@
+{
+  "_note": "Familiars (George: wizards & witches). A caster binds ONE familiar that trails them and grants a passive magical benefit — mana_regen (faster mana between casts), mana_max (a deeper well), or sight (see further). `classes` gates who may bind it ('*' = any caster). Read by engine/familiars.",
+  "species": {
+    "cat": {
+      "name": "a black cat", "classes": ["*"], "color": [40, 40, 48],
+      "effect": {"mana_regen": 1},
+      "desc": "A witch's cat — all-knowing eyes and idle grace. It steadies the flow of your mana."
+    },
+    "owl": {
+      "name": "a horned owl", "classes": ["*"], "color": [150, 120, 80],
+      "effect": {"mana_max": 6},
+      "desc": "A silent owl of deep wisdom. It widens the well you draw your magic from."
+    },
+    "raven": {
+      "name": "a raven", "classes": ["*"], "color": [34, 32, 44],
+      "effect": {"sight": 2},
+      "desc": "A sharp-eyed raven that scouts ahead — you see further with it aloft."
+    },
+    "toad": {
+      "name": "a warty toad", "classes": ["*"], "color": [92, 122, 72],
+      "effect": {"mana_regen": 1},
+      "desc": "A phlegmatic toad on your shoulder; its slow, patient pulse feeds your own."
+    },
+    "serpent": {
+      "name": "a jade serpent", "classes": ["wizard", "warlock", "druid", "sorcerer"],
+      "color": [80, 130, 96], "effect": {"mana_regen": 1, "sight": 1},
+      "desc": "A coiling jade serpent, patient and watchful — a little sight, a little power."
+    },
+    "imp": {
+      "name": "a chittering imp", "classes": ["warlock"], "color": [140, 62, 62],
+      "effect": {"mana_regen": 1, "mana_max": 4},
+      "desc": "A warlock's bound imp, greedy and clever — it feeds your pact its stolen mana."
+    },
+    "hare": {
+      "name": "a moon-hare", "classes": ["druid", "bard"], "color": [176, 166, 154],
+      "effect": {"sight": 1},
+      "desc": "A silver hare of the wildwood — quick eyes for a quick friend."
+    }
+  }
+}

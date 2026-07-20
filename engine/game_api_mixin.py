@@ -161,6 +161,48 @@ class GameAPIMixin:
                 f"Accepted quest from board: {quest_id}")
         return ok
 
+    def board_overlay_lines(self) -> list:
+        """A-board: the numbered notice list for the E-key board overlay."""
+        return self.quest_board_manager.overlay_lines()
+
+    def board_accept_index(self, index: int) -> str:
+        """A-board: accept the i-th notice the board overlay listed."""
+        msg = self.quest_board_manager.accept_index(index)
+        self.memory_manager.add_event(msg)
+        return msg
+
+    # ---- perks (T1.2 level-up build choice) -------------------------
+
+    def perk_overlay_lines(self) -> list:
+        """The numbered perk-choice list (empty when there's nothing to spend)."""
+        from engine import perks
+        pts = perks.perk_points(self.player)
+        avail = perks.available_perks(self.player)
+        if pts <= 0 or not avail:
+            return []
+        allp = perks.all_perks()
+        lines = [f"Perk points to spend: {pts}", ""]
+        for i, pid in enumerate(avail[:9], 1):
+            spec = allp.get(pid, {})
+            lines.append(f"  [{i}] {spec.get('name', pid)} — {spec.get('desc', '')}")
+        lines.append("")
+        lines.append("  Pick a perk  ·  [Esc] decide later")
+        return lines
+
+    def choose_perk(self, index: int) -> str:
+        """Grant the i-th perk the overlay listed (spends a point)."""
+        from engine import perks
+        avail = perks.available_perks(self.player)
+        if not (0 <= index < len(avail)) or perks.perk_points(self.player) <= 0:
+            return ""
+        pid = avail[index]
+        if perks.grant_perk(self.player, pid):
+            name = perks.all_perks().get(pid, {}).get("name", pid)
+            msg = f"[Perk] You gain {name}."
+            self.memory_manager.add_event(msg)
+            return msg
+        return ""
+
     # ---- spells -----------------------------------------------------
 
     def cast_spell(self, spell_id: str, target_name: str = None) -> str:
@@ -305,6 +347,52 @@ class GameAPIMixin:
         from engine.furniture import interact
         return interact(self)
 
+    # ---- Stable / mounts (P28.2d) -------------------------------------
+
+    def at_stable(self) -> bool:
+        from engine import mounts
+        return mounts.stable_here(self)
+
+    def mount_stable_lines(self) -> list:
+        from engine import mounts
+        return mounts.stable_overlay_lines(self)
+
+    def mount_stable_buy(self, index: int) -> str:
+        from engine import mounts
+        msg = mounts.buy_index(self, index)
+        self.memory_manager.add_event(msg)
+        return msg
+
+    # ---- Familiars (casters) ------------------------------------------
+
+    def can_bind_familiar(self) -> bool:
+        from engine import familiars
+        return familiars.can_bind(self.player)
+
+    def familiar_overlay_lines(self) -> list:
+        from engine import familiars
+        return familiars.overlay_lines(self)
+
+    def familiar_bind_index(self, index: int) -> str:
+        from engine import familiars
+        msg = familiars.bind_index(self, index)
+        if msg:
+            self.memory_manager.add_event(msg)
+        return msg
+
+    # ---- Animal companions (tame a wild beast) ------------------------
+
+    def tameable_animal_near(self):
+        from engine import animal_companions
+        return animal_companions.nearest_tameable(self)
+
+    def tame_animal(self) -> str:
+        from engine import animal_companions
+        msg = animal_companions.try_tame(self)
+        if msg:
+            self.memory_manager.add_event(msg)
+        return msg
+
     # ---- Claim a home (P15.7) -----------------------------------------
 
     def home_action(self) -> Optional[str]:
@@ -344,7 +432,19 @@ class GameAPIMixin:
             mod = self.weather_system.visibility_modifier()
         except Exception:
             mod = 1.0
-        return max(2, round(base * mod))
+        sight = 0
+        try:   # a raven familiar scouts ahead — you see further
+            from engine.familiars import familiar_bonus
+            sight = familiar_bonus(self.player, "sight")
+        except Exception:
+            pass
+        return max(2, round(base * mod) + sight)
+
+    def enter_colosseum(self, matchup=None) -> bool:
+        """Seat the player as a spectator + stage a colosseum matchup (the
+        combat-testing arena) — the --colosseum flag + the E-key at the gate."""
+        col = getattr(self, "colosseum", None)
+        return bool(col and col.enter(matchup))
 
     def enter_dungeon(self) -> str:
         from world.world_map import TerrainType
@@ -354,12 +454,27 @@ class GameAPIMixin:
         if terrain != TerrainType.CAVE:
             return "There's no cave entrance here."
         loc = self.world.get_location_at(x, y)
-        name = loc.name if loc else f"cave_{x}_{y}"
+        # GX.5: several mouths sharing one `dungeon_key` resolve to ONE shared
+        # persistent dungeon (so the Deepdelve's distinct cave mouths — and its
+        # secret Oakvale stair — all open into the SAME complex). Fall back to
+        # the Location name for a plain, single-mouth cave.
+        key = (loc.get_property("dungeon_key") if loc else None)
+        name = key or (loc.name if loc else f"cave_{x}_{y}")
         if name not in self.dungeons:
             from world.dungeon import generate_multilevel
+            # A `deep_dungeon` mouth forces a deep 5-6 floor delve (vs 2-3).
+            deep = bool(loc and loc.get_property("deep_dungeon"))
+            disp = ((loc.get_property("dungeon_name") if loc else None)
+                    or f"{name} (Depths)")
+            # a STABLE seed from the name (zlib.crc32, not the process-random
+            # hash()) so a named dungeon generates the SAME layout every session
+            # — the Deepdelve is one consistent place, and dungeon tests don't
+            # flake on a per-process hash
+            import zlib
             dungeon = generate_multilevel(
-                name=f"{name} (Depths)",
-                seed=hash(name) & 0xFFFFFFFF, engine=self)
+                name=disp, seed=zlib.crc32(name.encode()) & 0xFFFFFFFF,
+                engine=self,
+                depth=(loc.get_property("deep_levels", 5) if deep else None))
             self.dungeons[name] = dungeon
         self.current_dungeon = self.dungeons[name]
         self._sync_ground_items()

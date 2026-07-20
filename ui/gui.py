@@ -16,9 +16,12 @@ except ImportError:  # pragma: no cover
 from ui.renderer import MapRenderer
 from ui.hud import HUD
 from ui.input_handler import InputHandler
+from ui import projectile_anim
 
 logger = logging.getLogger("llm_rpg.gui")
 
+# numbered pop-up overlays that render through the shared menu path
+_OVERLAY_MODES = ("menu", "travel", "waystone", "stable", "board", "perks")
 # below this the side/bottom panels stop leaving a usable map
 MIN_W, MIN_H = 900, 640
 
@@ -57,6 +60,7 @@ class GameGUI:
         if not PYGAME_OK:
             raise RuntimeError("pygame is not installed")
         self.engine = engine
+        projectile_anim.enable(engine)      # arrows animate in flight (George)
         self.width = width
         self.height = height
         self.tile_size = tile_size
@@ -78,6 +82,10 @@ class GameGUI:
         self.crafting_panel = None
         self.spell_panel = None
         self.settings_panel = None
+        self.build_planner = None      # M5 build/terraform tool
+        self.player_screen = None      # GAP.6 the unified character hub
+        self._intro_pending = False    # GAP.7 show the cold-open on a new game
+        self._victory_shown = False    # T4.3 pop the ending once, on a win
 
         # Init pygame
         pygame.init()
@@ -101,6 +109,28 @@ class GameGUI:
         except Exception as e:
             logger.debug(f"Sound unavailable: {e}")
             self.sound = None
+        # Adaptive procedural music (crossfades by game state)
+        try:
+            from ui.music import MusicManager
+            self.music = MusicManager()
+        except Exception as e:
+            logger.debug(f"Music unavailable: {e}")
+            self.music = None
+        # Screen shake — combat juice (GAP.5)
+        try:
+            from ui.screen_shake import ScreenShake
+            self.shake = ScreenShake()
+            try:
+                from engine import settings
+                self.shake.enabled = settings.get_setting(
+                    engine.player, "shake") != "off"
+            except Exception:
+                pass
+            engine.memory_manager.add_observer(self.shake.on_event)
+            self._shake_surf = None
+        except Exception as e:
+            logger.debug(f"Screen shake unavailable: {e}")
+            self.shake = None
 
         # Layout
         self._compute_layout()
@@ -138,6 +168,13 @@ class GameGUI:
         # Mark engine so combat_system knows there's a GUI to show death popup
         self.engine._has_gui = True
         self.engine.start_game()
+        if self._intro_pending:            # GAP.7 cold-open, once, new game only
+            try:
+                from engine import intro
+                if intro.should_show(self.engine):
+                    self.show_intro()
+            except Exception:
+                pass
         self.running = True
         self._loop()
         self.shutdown()
@@ -147,6 +184,15 @@ class GameGUI:
             # Auto-enter death mode when the player has been defeated
             if getattr(self.engine, "player_dead", False) and self.mode != "death":
                 self.mode = "death"
+            # T4.3 the campaign is won — pop the ending once
+            elif not self._victory_shown and self.mode == "play":
+                try:
+                    from engine.campaign import is_won
+                    if is_won(self.engine):
+                        self._victory_shown = True
+                        self.mode = "victory"
+                except Exception:
+                    pass
             for event in pygame.event.get():
                 if event.type == pygame.VIDEORESIZE:
                     self.resize(event.w, event.h)
@@ -190,8 +236,9 @@ class GameGUI:
                     input_actions.auto_walk(self.input_handler)
                 except Exception as e:
                     logger.debug(f"auto-walk error: {e}")
-            from ui.away_mode import heartbeat
+            from ui.away_mode import heartbeat, colosseum_tick
             heartbeat(self)               # M.3 tick the world while away
+            colosseum_tick(self)          # COMBAT.2 run a live arena bout at pace
             # Drive NPC processes only while alive
             if self.mode != "death":
                 try:
@@ -204,21 +251,32 @@ class GameGUI:
                         self.engine.current_weather())
                 except Exception:
                     pass
+            if self.music is not None:
+                try:
+                    dt = 1.0 / 30.0
+                    self.music.update_mood(self.engine, dt)
+                    self.music.update(dt)
+                except Exception:
+                    pass
+            if self.shake is not None:
+                try:
+                    self.shake.update(1.0 / 30.0)
+                except Exception:
+                    pass
             if getattr(self.engine, "dm_bridge", None) is not None:
                 try:
                     self.engine.dm_bridge.tick()
                 except Exception:
                     pass
+            projectile_anim.frame_tick(self.engine)   # arrows/bolts in flight
             self._render()
             self.clock.tick(30)
-
-    def update(self) -> None:
-        """Compat shim for terminal-style loops."""
-        pass
 
     def shutdown(self) -> None:
         if self.sound is not None:
             self.sound.shutdown()
+        if getattr(self, "music", None) is not None:
+            self.music.shutdown()
         try:
             self.engine.end_game()
         except Exception:
@@ -231,8 +289,27 @@ class GameGUI:
     # ---- rendering ---------------------------------------------------
 
     def _render(self) -> None:
+        self._maybe_prompt_perk()             # T1.2 pop the perk chooser on level-up
         self.screen.fill((15, 15, 20))
-        self.renderer.render(self.screen, self.engine, self.layout["map"])
+        # GAP.5 screen shake — render the map to an offscreen surface and blit
+        # it at the trauma offset (all sprites/effects shake together; HUD
+        # stays put). Only when actively shaking, so no cost in the common case.
+        shk = self.shake.offset() if self.shake is not None else (0, 0)
+        rect = self.layout["map"]
+        if shk != (0, 0):
+            try:
+                if (self._shake_surf is None
+                        or self._shake_surf.get_size() != rect.size):
+                    self._shake_surf = pygame.Surface(rect.size)
+                self._shake_surf.fill((15, 15, 20))
+                self.renderer.render(self._shake_surf, self.engine,
+                                     pygame.Rect(0, 0, rect.width, rect.height))
+                self.screen.blit(self._shake_surf,
+                                 (rect.x + shk[0], rect.y + shk[1]))
+            except Exception:
+                self.renderer.render(self.screen, self.engine, rect)
+        else:
+            self.renderer.render(self.screen, self.engine, rect)
         self.hud.draw(self.screen, self.engine, self.layout)
 
         if self.mode == "dialog":
@@ -242,12 +319,13 @@ class GameGUI:
                 self.screen, self.screen.get_rect(),
                 name,
                 self.dialog_pending_reply or "",
-                prompt=(f"> {self.dialog_input}_   (Enter send, Esc leave, "
-                        f"/persuade /intimidate /deceive /court /hire)"),
+                prompt=(f"> {self.dialog_input}_   (Enter/Esc · /persuade "
+                        f"/intimidate /deceive · /court /hire /train · "
+                        f"/bond /spend /order)"),
                 menu=self.dialog_menu,
             )
 
-        if self.mode in ("menu", "travel", "waystone") and self.overlay:
+        if self.mode in _OVERLAY_MODES and self.overlay:
             title, lines = self.overlay
             self.hud.draw_text_overlay(
                 self.screen, self.screen.get_rect(), title, lines)
@@ -273,11 +351,44 @@ class GameGUI:
         if self.mode == "shop" and self.shop_panel is not None:
             self.shop_panel.draw(self.screen, self.screen.get_rect())
 
+        if self.mode == "build" and self.build_planner is not None:
+            try:
+                self.build_planner.draw(self.screen, self.layout["map"],
+                                        self.renderer.tile_size)
+            except Exception:
+                pass
         if self.mode == "crafting" and self.crafting_panel is not None:
             self.crafting_panel.draw(self.screen, self.screen.get_rect())
 
         if self.mode == "spells" and self.spell_panel is not None:
             self.spell_panel.draw(self.screen, self.screen.get_rect())
+
+        if self.mode == "worldmap":
+            try:
+                from ui.world_map_screen import draw_world_map
+                draw_world_map(self)
+            except Exception as e:
+                logger.debug(f"world map draw error: {e}")
+
+        if self.mode == "player" and self.player_screen is not None:
+            try:
+                self.player_screen.draw(self.screen)
+            except Exception as e:
+                logger.debug(f"player screen draw error: {e}")
+
+        if self.mode == "intro":
+            try:
+                from ui.intro_screen import draw_intro
+                draw_intro(self)
+            except Exception as e:
+                logger.debug(f"intro draw error: {e}")
+
+        if self.mode == "victory":
+            try:
+                from ui.victory_screen import draw_victory
+                draw_victory(self)
+            except Exception as e:
+                logger.debug(f"victory draw error: {e}")
 
         if self.mode == "death":
             self._draw_death_popup()
@@ -320,7 +431,45 @@ class GameGUI:
         self.dialog_pending_reply = None
         self.dialog_input = ""
 
+    def restart_ng_plus(self) -> None:
+        """T4.3 New Game+ — carry the won hero's legend into a fresh,
+        tougher world."""
+        payload = None
+        try:
+            from engine import newgame_plus
+            payload = newgame_plus.capture(self.engine)
+        except Exception as e:
+            logger.debug(f"NG+ capture failed: {e}")
+        self.restart()                     # a clean fresh world
+        self._victory_shown = False
+        if payload is not None:
+            try:
+                from engine import newgame_plus
+                newgame_plus.apply(self.engine, payload)
+            except Exception as e:
+                logger.debug(f"NG+ apply failed: {e}")
+
     # ---- overlays ---------------------------------------------------
+
+    def show_world_map(self) -> None:      # GAP.4 the full-screen map (M)
+        self.mode = "worldmap"
+
+    def show_player_screen(self) -> None:  # GAP.6 the unified character hub (C)
+        if self.player_screen is None:
+            from ui.player_screen import PlayerScreen
+            self.player_screen = PlayerScreen(self)
+        self.player_screen.open()
+
+    def show_intro(self) -> None:          # GAP.7 the cold-open prologue
+        self.mode = "intro"
+
+    def dismiss_intro(self) -> None:
+        try:
+            from engine import intro
+            intro.mark_seen(self.engine)
+        except Exception:
+            pass
+        self.mode = "play"
 
     def show_inventory(self) -> None:
         from ui.inventory_panel import InventoryPanel
@@ -338,6 +487,10 @@ class GameGUI:
         if self.crafting_panel is None:
             self.crafting_panel = CraftingPanel(self.engine)
         self.mode = "crafting"
+
+    def show_build_planner(self) -> None:
+        from ui.build_planner import open_planner   # M5 build/terraform tool
+        open_planner(self)
 
     def show_spellbook(self) -> None:
         from ui.spell_panel import SpellPanel
@@ -359,54 +512,92 @@ class GameGUI:
             lines += self.engine.chronicle.lines()
         except Exception:
             pass
+        try:   # active adventure leads (find them before a rival does)
+            from engine import adventure_log
+            lines += adventure_log.lines(self.engine)
+        except Exception:
+            pass
+        try:   # T2.3 the live State of the Realm (faction/tribe/nemesis state)
+            from engine import realm_digest
+            lines += realm_digest.lines(self.engine)
+        except Exception:
+            pass
         try:   # the ending, once the age is won (P21.2)
             from engine.campaign import is_won, summary
             if is_won(self.engine):
                 lines += summary(self.engine)
         except Exception:
             pass
-        self.overlay = ("Journal — Topics, Legends & Chronicle", lines)
+        try:   # GAP.2 the self-teaching Field Guide (discovered systems)
+            lines += self.engine.codex.overlay_lines()
+        except Exception:
+            pass
+        self.overlay = ("Journal — Topics, Legends, Chronicle & Field Guide",
+                        lines)
         self.mode = "menu"
+
+    def _open(self, title: str, mode: str, fn, fallback: str) -> None:
+        """Set a titled overlay from `fn()`, falling back on error."""
+        try:
+            lines = fn()
+        except Exception:
+            lines = [fallback]
+        self.overlay = (title, lines)
+        self.mode = mode
 
     def show_travel(self) -> None:
-        try:
-            lines = self.engine.travel_system.overlay_lines()
-        except Exception:
-            lines = ["Travel unavailable."]
-        self.overlay = ("Travel", lines)
-        self.mode = "travel"
+        self._open("Travel", "travel",
+                   self.engine.travel_system.overlay_lines, "Travel unavailable.")
 
-    def show_teleport(self) -> None:
-        """P37.1 the Wayfarer's Waystone destination menu (E on a platform)."""
+    def show_teleport(self) -> None:   # P37.1 Wayfarer's Waystone (E on a platform)
+        self._open("Wayfarer's Waystone", "waystone",
+                   self.engine.teleport_network.overlay_lines,
+                   "The waystone is dormant.")
+
+    def show_stable(self) -> None:     # P28.2d Stable (E at a stable) — buy/ride
+        self._open("Stable", "stable", self.engine.mount_stable_lines,
+                   "The stable is quiet.")
+
+    def show_familiars(self) -> None:  # bind a familiar at a place of power
+        self._open("Bind a Familiar", "familiar",
+                   self.engine.familiar_overlay_lines,
+                   "No familiar answers here.")
+
+    def show_quest_board(self) -> None:   # A-board (E at a tavern notice board)
+        self._open("Adventurers' Board", "board",
+                   self.engine.board_overlay_lines, "The board is bare.")
+
+    def show_perks(self) -> None:         # T1.2 level-up build choice
+        self._open("Choose a Perk", "perks",
+                   self.engine.perk_overlay_lines, "No perk points to spend.")
+
+    def _maybe_prompt_perk(self) -> None:
+        """Auto-open the perk chooser when a level-up leaves unspent points (the
+        keyspace is full, so a fresh point pops the menu instead of a new key)."""
         try:
-            lines = self.engine.teleport_network.overlay_lines()
+            from engine import perks
+            pts = perks.perk_points(self.engine.player)
+            if (self.mode == "play" and not self.overlay and pts > 0
+                    and pts != getattr(self, "_perk_seen", -1)):
+                self._perk_seen = pts
+                self.show_perks()
+            elif pts == 0:
+                self._perk_seen = -1
         except Exception:
-            lines = ["The waystone is dormant."]
-        self.overlay = ("Wayfarer's Waystone", lines)
-        self.mode = "waystone"
+            pass
 
     def show_diaries(self) -> None:
-        try:
-            lines = self.engine.diary_manager.overlay_lines()
-        except Exception:
-            lines = ["Diaries unavailable."]
-        self.overlay = ("Achievement Diaries", lines)
-        self.mode = "menu"
+        self._open("Achievement Diaries", "menu",
+                   self.engine.diary_manager.overlay_lines, "Diaries unavailable.")
 
     def show_collection_log(self) -> None:
-        try:
-            lines = self.engine.collection_log.overlay_lines()
-        except Exception:
-            lines = ["Collection log unavailable."]
-        self.overlay = ("Collection Log", lines)
-        self.mode = "menu"
+        self._open("Collection Log", "menu",
+                   self.engine.collection_log.overlay_lines, "Unavailable.")
 
     def show_quests(self) -> None:
         qm = self.engine.quest_manager
-        if not qm:
-            self.overlay = ("Quests", ["Quest system disabled."])
-        else:
-            self.overlay = ("Quests", qm.summary().split("\n"))
+        lines = qm.summary().split("\n") if qm else ["Quest system disabled."]
+        self.overlay = ("Quests", lines)
         self.mode = "menu"
 
     def show_character_sheet(self) -> None:
@@ -432,11 +623,11 @@ class GameGUI:
             for line in skill_summary(p):
                 lines.append(f"  {line}")
             lines.append(f"  {'Total':<14} {total_skill_level(p):>3}")
+            from engine.skill_combat import combat_summary       # T4.4
+            lines += [f"  {t}" for t in combat_summary(p)]
         except Exception:
             lines.append("  (unavailable)")
-        lines += ["", "Goals:"]
-        for g in p.goals:
-            lines.append(f"  * {g}")
+        lines += ["", "Goals:"] + [f"  * {g}" for g in p.goals]
         self.overlay = ("Character Sheet", lines)
         self.mode = "menu"
 

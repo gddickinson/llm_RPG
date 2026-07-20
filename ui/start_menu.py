@@ -27,15 +27,20 @@ logger = logging.getLogger("llm_rpg.start_menu")
 TITLE_OPTIONS = [
     ("New Game", "new"),
     ("Load Game", "load"),
+    ("Combat Arena", "arena"),                 # the colosseum — watch a matchup
     ("Battle Testbed", "battle"),
     ("Quit", "quit"),
 ]
 
+# George: ONE world with one entry point — Quick Start / Customize both drop
+# you into the single COMBINED world (the big Oakvale town + the Bloodstone
+# castle + the wilds on one large map). Tutorial Island stays as a learning
+# start. (The old per-world options — realistic / oakvale / castle — are folded
+# into the one world; their world_kinds remain for saves/flags/tests.)
 NEW_GAME_OPTIONS = [
     ("Quick Start", "quick"),
     ("Customize Character", "customize"),
-    ("Realistic World", "realistic"),          # P36.1 heightmap landscape
-    ("Begin at the Castle", "castle"),
+    ("Tutorial Island", "tutorial"),           # A-disc: learn every system
     ("Back", "back"),
 ]
 
@@ -61,6 +66,7 @@ class StartMenu:
         self.save_dir = save_dir or config.SAVE_DIRECTORY
         self.saves = []
         self.scenarios = []
+        self.matchups = []                 # colosseum matchups (Combat Arena)
         self.creator: Optional[CharacterCreator] = None
         self.pending_start = "default"     # "castle" for the P18.5 start
 
@@ -100,6 +106,9 @@ class StartMenu:
         if self.state == "battle_menu":
             return self._battle_key(k)
 
+        if self.state == "arena_menu":
+            return self._arena_key(k)
+
         if self.state == "customize":
             done = self.creator.handle_key(event)
             if done:
@@ -128,16 +137,14 @@ class StartMenu:
             self.selected = (self.selected + 1) % len(NEW_GAME_OPTIONS)
         elif k in (pygame.K_RETURN, pygame.K_SPACE):
             label, code = NEW_GAME_OPTIONS[self.selected]
-            if code == "quick":
+            if code == "quick":                # the ONE combined world
                 return {"action": "new", "spec": default_quick_start_spec(),
-                        "start": "default"}
-            if code == "realistic":            # P36.1 a heightmap-generated world
+                        "start": "combined"}
+            if code == "tutorial":             # A-disc: Tutorial Island start
                 return {"action": "new", "spec": default_quick_start_spec(),
-                        "start": "realistic"}
-            if code in ("customize", "castle"):
-                # both make a hero; the castle option starts them at the gate
-                self.pending_start = "castle" if code == "castle" \
-                    else "default"
+                        "start": "tutorial"}
+            if code == "customize":            # a made hero, same combined world
+                self.pending_start = "combined"
                 self.creator = CharacterCreator(
                     self.screen, self.font, self.big_font)
                 self.state = "customize"
@@ -193,6 +200,28 @@ class StartMenu:
             self.selected = 0
         return None
 
+    def _arena_key(self, k) -> Optional[dict]:
+        if not self.matchups:
+            if k == pygame.K_ESCAPE:
+                self.state = "title"
+                self.selected = 0
+            return None
+        n = len(self.matchups)
+        if k in (pygame.K_UP, pygame.K_w):
+            self.selected = (self.selected - 1) % n
+        elif k in (pygame.K_DOWN, pygame.K_s):
+            self.selected = (self.selected + 1) % n
+        elif k in (pygame.K_RETURN, pygame.K_SPACE):
+            mid = self.matchups[self.selected][0]
+            # a Combat Arena fight seats a default hero as spectator in a normal
+            # world and stages the matchup at the arena gate (main.py stages it)
+            return {"action": "arena", "matchup": mid,
+                    "spec": default_quick_start_spec(), "start": "default"}
+        elif k == pygame.K_ESCAPE:
+            self.state = "title"
+            self.selected = 0
+        return None
+
     def _pick_title(self) -> Optional[dict]:
         label, code = TITLE_OPTIONS[self.selected]
         if code == "new":
@@ -207,6 +236,11 @@ class StartMenu:
         if code == "battle":
             self._refresh_scenarios()
             self.state = "battle_menu"
+            self.selected = 0
+            return None
+        if code == "arena":
+            self._refresh_matchups()
+            self.state = "arena_menu"
             self.selected = 0
             return None
         if code == "quit":
@@ -226,6 +260,10 @@ class StartMenu:
         from engine.battle.battle_scenario import list_scenarios
         self.scenarios = list_scenarios()
 
+    def _refresh_matchups(self) -> None:
+        from engine.colosseum import list_matchups
+        self.matchups = list_matchups()
+
     # --------------------------------------------------------- render
 
     def _render(self) -> None:
@@ -240,6 +278,8 @@ class StartMenu:
             self._render_save_list()
         elif self.state == "battle_menu":
             self._render_scenario_list()
+        elif self.state == "arena_menu":
+            self._render_arena_list()
         elif self.state == "customize" and self.creator:
             self.creator.render()
         pygame.display.flip()
@@ -375,3 +415,40 @@ class StartMenu:
         self.screen.blit(
             hint, (self.width // 2 - hint.get_width() // 2,
                    self.height - 32))
+
+    def _render_arena_list(self) -> None:
+        title_surf = self.big_font.render(
+            "Combat Arena", True, (240, 220, 140))
+        self.screen.blit(
+            title_surf, (self.width // 2 - title_surf.get_width() // 2, 80))
+        sub = self.sub_font.render(
+            "Watch real fighters brawl with full combat + graphics",
+            True, (170, 170, 200))
+        self.screen.blit(sub, (self.width // 2 - sub.get_width() // 2, 128))
+
+        if not self.matchups:
+            msg = self.font.render("No matchups found. Press Esc to go back.",
+                                   True, (200, 160, 160))
+            self.screen.blit(msg, (self.width // 2 - msg.get_width() // 2, 250))
+            return
+
+        y = 200
+        for i, (_mid, name, _desc) in enumerate(self.matchups):
+            selected = (i == self.selected)
+            color = (255, 255, 120) if selected else (175, 175, 195)
+            text = ("> " if selected else "  ") + name
+            surf = self.font.render(text, True, color)
+            self.screen.blit(
+                surf, (self.width // 2 - surf.get_width() // 2, y))
+            y += 34
+
+        # the selected matchup's blurb, pinned below the list
+        _mid, name, desc = self.matchups[self.selected]
+        dsurf = self.sub_font.render(desc, True, (150, 175, 150))
+        self.screen.blit(
+            dsurf, (self.width // 2 - dsurf.get_width() // 2, self.height - 62))
+        hint = self.sub_font.render(
+            "Arrows move  ·  Enter to watch  ·  Esc to go back",
+            True, (130, 130, 150))
+        self.screen.blit(
+            hint, (self.width // 2 - hint.get_width() // 2, self.height - 34))

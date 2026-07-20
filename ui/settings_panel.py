@@ -22,6 +22,19 @@ except ImportError:  # pragma: no cover
 logger = logging.getLogger("llm_rpg.settings_panel")
 
 
+def init_zoom(gui) -> None:
+    """ISO.10: sync the live tile size to the player's saved / default map-zoom
+    setting at startup — not only when the settings overlay is opened, so the
+    chosen zoom (and the bigger new default) applies from boot."""
+    try:
+        from engine import settings
+        z = settings.get_setting(gui.engine.player, "zoom")
+        if isinstance(z, int) and z > 0:
+            apply_setting(gui, "zoom", z)
+    except Exception:
+        pass
+
+
 def apply_setting(gui, key, value) -> None:
     """Push a changed setting into the live GUI where it needs it."""
     if key == "zoom":
@@ -36,6 +49,21 @@ def apply_setting(gui, key, value) -> None:
     elif key == "sound":
         try:
             gui.sound.enabled = (value == "on")
+        except Exception:
+            pass
+    elif key == "music":
+        try:
+            if value == "off":
+                gui.music.enabled = False
+                gui.music._silence()
+            # re-enable is handled live by MusicManager.update_mood
+        except Exception:
+            pass
+    elif key == "shake":
+        try:
+            gui.shake.enabled = (value == "on")
+            if value == "off":
+                gui.shake.trauma = 0.0
         except Exception:
             pass
     elif key == "autoplay":            # M.3: hand the hero to an agent

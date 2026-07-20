@@ -26,9 +26,9 @@
         90
       ],
       "wall": [
-        26,
-        34,
-        44,
+        70,
+        91,
+        118,
         150
       ],
       "mood": [
@@ -68,9 +68,9 @@
         60
       ],
       "wall": [
-        196,
-        186,
-        158,
+        156,
+        148,
+        126,
         110
       ],
       "mood": [
@@ -108,9 +108,9 @@
         100
       ],
       "wall": [
+        120,
+        90,
         74,
-        56,
-        46,
         120
       ],
       "mood": [
@@ -147,9 +147,9 @@
         80
       ],
       "wall": [
-        116,
-        84,
-        52,
+        59,
+        42,
+        26,
         100
       ],
       "mood": [
@@ -186,9 +186,9 @@
         70
       ],
       "wall": [
-        124,
-        96,
-        62,
+        106,
+        82,
+        53,
         100
       ],
       "mood": [
@@ -227,9 +227,9 @@
         75
       ],
       "wall": [
-        122,
-        122,
-        134,
+        66,
+        66,
+        72,
         110
       ],
       "mood": [
@@ -270,9 +270,9 @@
         95
       ],
       "wall": [
-        30,
-        28,
-        30,
+        90,
+        84,
+        90,
         150
       ],
       "mood": [
@@ -292,6 +292,416 @@
       },
       "stair": "stone"
     },
+    "shop": {
+      "keywords": [
+        "shop",
+        "general store",
+        "market",
+        "stall",
+        "emporium",
+        "mercantile",
+        "trading post",
+        "apothecary",
+        "wares"
+      ],
+      "fill": [
+        26,
+        20,
+        14
+      ],
+      "floor": [
+        122,
+        98,
+        64,
+        80
+      ],
+      "wall": [
+        66,
+        53,
+        38,
+        100
+      ],
+      "mood": [
+        236,
+        202,
+        142,
+        20
+      ],
+      "light": {
+        "dark": 36,
+        "glow": [
+          255,
+          190,
+          110
+        ]
+      }
+    },
+    "bakery": {
+      "keywords": [
+        "bakery",
+        "bakehouse",
+        "baker",
+        "oven"
+      ],
+      "fill": [
+        28,
+        22,
+        15
+      ],
+      "floor": [
+        150,
+        120,
+        82,
+        72
+      ],
+      "wall": [
+        92,
+        76,
+        55,
+        92
+      ],
+      "mood": [
+        255,
+        212,
+        150,
+        24
+      ],
+      "light": {
+        "dark": 38,
+        "glow": [
+          255,
+          182,
+          92
+        ]
+      }
+    },
+    "farmhouse": {
+      "keywords": [
+        "farmhouse",
+        "farmstead",
+        "farm",
+        "croft",
+        "homestead"
+      ],
+      "fill": [
+        24,
+        19,
+        13
+      ],
+      "floor": [
+        118,
+        92,
+        58,
+        80
+      ],
+      "wall": [
+        59,
+        48,
+        34,
+        96
+      ],
+      "mood": [
+        232,
+        196,
+        130,
+        24
+      ],
+      "light": {
+        "dark": 42,
+        "glow": [
+          255,
+          185,
+          100
+        ]
+      }
+    },
+    "stable": {
+      "keywords": [
+        "stable",
+        "stables",
+        "barn",
+        "paddock",
+        "byre"
+      ],
+      "fill": [
+        22,
+        18,
+        12
+      ],
+      "floor": [
+        110,
+        88,
+        54,
+        90
+      ],
+      "wall": [
+        53,
+        43,
+        29,
+        112
+      ],
+      "mood": [
+        214,
+        182,
+        122,
+        26
+      ],
+      "light": {
+        "dark": 60,
+        "glow": [
+          255,
+          175,
+          90
+        ],
+        "dust": 6
+      }
+    },
+    "lodge": {
+      "keywords": [
+        "lodge",
+        "huntsman",
+        "hunter",
+        "gamekeeper",
+        "ranger"
+      ],
+      "fill": [
+        22,
+        17,
+        12
+      ],
+      "floor": [
+        96,
+        72,
+        46,
+        90
+      ],
+      "wall": [
+        38,
+        28,
+        18,
+        112
+      ],
+      "mood": [
+        230,
+        180,
+        110,
+        28
+      ],
+      "light": {
+        "dark": 50,
+        "glow": [
+          255,
+          170,
+          80
+        ]
+      }
+    },
+    "hall": {
+      "keywords": [
+        "guildhall",
+        "guild hall",
+        "town hall",
+        "village hall",
+        "moot",
+        "meeting hall",
+        "assembly"
+      ],
+      "fill": [
+        22,
+        18,
+        14
+      ],
+      "floor": [
+        100,
+        90,
+        74,
+        100
+      ],
+      "wall": [
+        50,
+        44,
+        36,
+        120
+      ],
+      "mood": [
+        232,
+        202,
+        152,
+        26
+      ],
+      "light": {
+        "dark": 56,
+        "glow": [
+          255,
+          186,
+          106
+        ]
+      }
+    },
+    "watchtower": {
+      "keywords": [
+        "watchtower",
+        "watch tower",
+        "guard tower",
+        "gatehouse",
+        "barracks"
+      ],
+      "fill": [
+        18,
+        18,
+        20
+      ],
+      "floor": [
+        92,
+        90,
+        88,
+        100
+      ],
+      "wall": [
+        45,
+        44,
+        43,
+        120
+      ],
+      "mood": [
+        204,
+        204,
+        214,
+        22
+      ],
+      "light": {
+        "dark": 62,
+        "glow": [
+          255,
+          175,
+          90
+        ]
+      }
+    },
+    "tower": {
+      "keywords": [
+        "tower",
+        "spire",
+        "wizard",
+        "mage",
+        "arcanum",
+        "observatory"
+      ],
+      "fill": [
+        16,
+        16,
+        24
+      ],
+      "floor": [
+        74,
+        70,
+        88,
+        100
+      ],
+      "wall": [
+        27,
+        25,
+        33,
+        120
+      ],
+      "mood": [
+        150,
+        150,
+        232,
+        28
+      ],
+      "light": {
+        "dark": 66,
+        "glow": [
+          200,
+          180,
+          255
+        ],
+        "dust": 6
+      }
+    },
+    "well": {
+      "keywords": [
+        "wellhouse",
+        "village well",
+        "town well",
+        "draw well",
+        "old well"
+      ],
+      "fill": [
+        16,
+        18,
+        20
+      ],
+      "floor": [
+        88,
+        90,
+        92,
+        100
+      ],
+      "wall": [
+        42,
+        43,
+        45,
+        120
+      ],
+      "mood": [
+        172,
+        192,
+        212,
+        26
+      ],
+      "light": {
+        "dark": 78,
+        "glow": [
+          200,
+          200,
+          224
+        ]
+      }
+    },
+    "storage": {
+      "keywords": [
+        "warehouse",
+        "granary",
+        "storehouse",
+        "silo",
+        "depot",
+        "storeroom"
+      ],
+      "fill": [
+        20,
+        17,
+        13
+      ],
+      "floor": [
+        104,
+        86,
+        60,
+        100
+      ],
+      "wall": [
+        49,
+        41,
+        29,
+        116
+      ],
+      "mood": [
+        202,
+        176,
+        132,
+        24
+      ],
+      "light": {
+        "dark": 70,
+        "glow": [
+          255,
+          175,
+          90
+        ],
+        "dust": 8
+      }
+    },
     "home": {
       "keywords": [],
       "fill": [
@@ -306,9 +716,9 @@
         70
       ],
       "wall": [
-        142,
-        116,
-        86,
+        66,
+        54,
+        40,
         90
       ],
       "mood": [

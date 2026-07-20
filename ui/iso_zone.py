@@ -103,11 +103,16 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
         items.append((iso.depth_key(fx, fy, 0.25, 1), "furn",
                       (f.get("name", "?"), int(sx), int(sy))))
 
+    from ui.body_renderer import update_anim
+    from ui.iso_actors import DT, tween_world_pos
     for char, (cx, cy) in _zone_chars(engine, zone):
         if not (0 <= cx < W and 0 <= cy < H) or not _seen(cx, cy):
             continue
-        sx, sy = iso.world_to_screen(cx, cy, 0, origin)
-        items.append((iso.depth_key(cx, cy, 0, 2), "char",
+        update_anim(char, DT,                     # ISO.8 facing + tween indoors
+                    is_player=char.id == engine.player.id)
+        fx, fy = tween_world_pos(char, cx, cy)
+        sx, sy = iso.world_to_screen(fx, fy, 0, origin)
+        items.append((iso.depth_key(fx, fy, 0, 2), "char",
                       (char, int(sx), int(sy))))
 
     items.sort(key=lambda t: t[0])
@@ -139,6 +144,7 @@ def render_zone_iso(target, engine, view_rect, zone, tile_size, sprites) -> None
             def _cs(x, y):
                 sx2, sy2 = iso.world_to_screen(x, y, 0, origin)
                 return int(sx2), int(sy2)
+            ce.update(1.0 / 30.0)          # AGE them (else sprays never expire)
             ce.draw_with(target, view_rect, _cs, tile_size)
     except Exception:
         pass
@@ -182,11 +188,6 @@ def _furn(target, sprites, data, tile_size):
 
 
 def _char(target, iso_chars, data, tile_size):
+    from ui import iso_actors
     char, sx, sy = data
-    th = max(6, tile_size // 3)
-    sh = pygame.Surface((tile_size, th), pygame.SRCALPHA)
-    pygame.draw.ellipse(sh, (0, 0, 0, 95), (0, 0, tile_size, th))
-    target.blit(sh, (sx - tile_size // 2, sy - th // 2))
-    spr = iso_chars.char_sprite(char, int(tile_size * 1.5))
-    w, h = spr.get_size()
-    target.blit(spr, (sx - w // 2, sy - int(h * 0.72)))
+    iso_actors.draw_actor(target, char, sx, sy, tile_size)

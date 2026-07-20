@@ -9,7 +9,12 @@
       "disposition": "explorer",
       "home": "Oakvale",
       "gold": 40,
-      "inventory": ["bow", "arrow", "arrow", "potion"],
+      "inventory": [
+        "bow",
+        "arrow",
+        "arrow",
+        "potion"
+      ],
       "flavor": "a sharp-eyed scout after a band to run the deep woods with"
     },
     {
@@ -21,7 +26,10 @@
       "disposition": "valiant",
       "home": "Oakvale",
       "gold": 30,
-      "inventory": ["sword", "potion"],
+      "inventory": [
+        "sword",
+        "potion"
+      ],
       "flavor": "a broad axeman itching for a lair to crack open"
     },
     {
@@ -33,8 +41,58 @@
       "disposition": "balanced",
       "home": "Riverside Hamlet",
       "gold": 55,
-      "inventory": ["potion"],
+      "inventory": [
+        "potion"
+      ],
       "flavor": "a hedge-wizard chasing lost lore out among the ruins"
+    },
+    {
+      "id": "adv_seraphine",
+      "name": "Dame Seraphine",
+      "class": "paladin",
+      "race": "human",
+      "level": 7,
+      "disposition": "valiant",
+      "home": "Oakvale",
+      "gold": 120,
+      "inventory": [
+        "sword",
+        "potion",
+        "potion"
+      ],
+      "flavor": "a scarred paladin who has cleared more lairs than she can name, seeking a worthy company"
+    },
+    {
+      "id": "adv_thaddeus",
+      "name": "Thaddeus the Grey",
+      "class": "wizard",
+      "race": "half-elf",
+      "level": 6,
+      "disposition": "cautious",
+      "home": "Oakvale",
+      "gold": 90,
+      "inventory": [
+        "staff",
+        "scroll_fireball",
+        "potion"
+      ],
+      "flavor": "a hedge-wizard grown grey in the field, worth any three swords"
+    },
+    {
+      "id": "adv_ulric",
+      "name": "Ulric Bearclaw",
+      "class": "warrior",
+      "race": "half-orc",
+      "level": 8,
+      "disposition": "valiant",
+      "home": "Oakvale",
+      "gold": 70,
+      "inventory": [
+        "sword",
+        "potion",
+        "potion"
+      ],
+      "flavor": "a mountain of a man who hunts monsters for the joy of it"
     }
   ]
 }

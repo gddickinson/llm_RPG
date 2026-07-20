@@ -20,6 +20,14 @@ _DIRECTIONS = {
     "forwards": (0, -1), "backwards": (0, 1),
 }
 
+# When a scheduled NPC has arrived at its location it ambles around it (mills
+# about) rather than freezing, so idle towns keep moving (George). Bounded so it
+# never wanders off its post; an occasional pause keeps the amble natural.
+LOITER_RADIUS = 3
+LOITER_PAUSE_CHANCE = 0.15
+_LOITER_DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1),
+                (1, 1), (-1, -1), (1, -1), (-1, 1)]
+
 
 class ActionRouter:
     """Route LLM-decided actions to the right handler."""
@@ -71,7 +79,7 @@ class ActionRouter:
 
         # Action dispatch
         if action in ("move", "walk", "run", "approach", "go", "patrol"):
-            return self._handle_move(npc, target)
+            return self._handle_move(npc, target, action_data.get("activity", ""))
         if action in ("attack", "fight", "strike", "slash", "stab", "shoot", "cast"):
             return self.engine.combat_system.npc_attack(npc, target, action)
         if action in ("buy", "sell", "trade", "offer", "pay", "gift", "give"):
@@ -118,7 +126,28 @@ class ActionRouter:
 
     # --------------- movement ----------------------------------------
 
-    def _handle_move(self, npc, target: str) -> bool:
+    def _handle_move(self, npc, target: str, activity: str = "") -> bool:
+        acts = getattr(self.engine, "activities", None)
+        if activity == "work" and acts is not None and acts.farm_step(npc):
+            return True                        # A3: a FARMER works the FIELDS
+        text = (target or "").lower()
+        # An arrived NPC PERFORMS its scheduled activity (A1: a smith hammers, a
+        # cleric prays) or, for a non-work activity, MILLS ABOUT its spot.
+        if not any(w in text for w in _DIRECTIONS):
+            loc = self._resolve_location_target(npc, text)
+            if loc is not None:
+                d2 = (loc[0] - npc.position[0]) ** 2 + \
+                     (loc[1] - npc.position[1]) ** 2
+                # A2: a guard patrols a real beat — sticky once started (the beat
+                # ranges past the loiter radius, so re-engage by its route, not d2)
+                if activity == "patrol" and acts is not None and \
+                        (npc.metadata.get("_patrol_center") == list(loc)
+                         or d2 <= LOITER_RADIUS * LOITER_RADIUS):
+                    return acts.patrol_step(npc, loc)
+                if d2 <= LOITER_RADIUS * LOITER_RADIUS:
+                    if activity and acts is not None and acts.is_perform(activity):
+                        return acts.perform(npc, activity, loc)  # A1/A3: perform
+                    return self._loiter_step(npc, loc)
         direction = self._interpret_direction(npc, target)
         if direction == (0, 0):
             return False
@@ -136,6 +165,58 @@ class ActionRouter:
                     f"{npc.name} takes an alternate path.")
                 return True
         return False
+
+    def _loiter_step(self, npc, center) -> bool:
+        """Stroll toward a wander POINT within LOITER_RADIUS of `center`, picking a
+        fresh one on arrival — so an idle NPC continuously ambles around its spot
+        (directed motion reads far livelier than random adjacent jitter) instead
+        of standing frozen. An occasional pause keeps it natural."""
+        meta = getattr(npc, "metadata", None)
+        if meta is None:
+            return False
+        if random.random() < LOITER_PAUSE_CHANCE:
+            return False                       # a natural pause between strolls
+        pos = npc.position
+        r2 = LOITER_RADIUS * LOITER_RADIUS
+        last = meta.get("_loiter_prev")
+        tgt = meta.get("_loiter_target")
+        # (re)pick when there's no target, we've arrived, or it's a stale point
+        # from another spot (outside this location's loiter area)
+        if not tgt or tuple(pos) == tuple(tgt) or \
+                (tgt[0] - center[0]) ** 2 + (tgt[1] - center[1]) ** 2 > r2:
+            tgt = self._pick_loiter_target(center)
+            meta["_loiter_target"] = tgt
+        # try the directed step toward the wander point first (purposeful stroll),
+        # then ANY in-radius neighbour (robust in crowded/tight spots), never
+        # backtracking onto the tile just left (so it covers ground, not jitters)
+        cands = []
+        if tgt:
+            dx = (tgt[0] > pos[0]) - (tgt[0] < pos[0])
+            dy = (tgt[1] > pos[1]) - (tgt[1] < pos[1])
+            cands = [(dx, dy), (dx, 0), (0, dy)]
+        others = list(_LOITER_DIRS)
+        random.shuffle(others)
+        for sx, sy in cands + others:
+            if (sx, sy) == (0, 0):
+                continue
+            nx, ny = pos[0] + sx, pos[1] + sy
+            if (nx, ny) == last or \
+                    (nx - center[0]) ** 2 + (ny - center[1]) ** 2 > r2:
+                continue
+            if self.engine.world.map.move_character(npc, nx, ny):
+                meta["_loiter_prev"] = tuple(pos)
+                return True
+        meta["_loiter_target"] = None          # blocked → a fresh point next time
+        return False
+
+    @staticmethod
+    def _pick_loiter_target(center):
+        for _ in range(6):
+            ox = random.randint(-LOITER_RADIUS, LOITER_RADIUS)
+            oy = random.randint(-LOITER_RADIUS, LOITER_RADIUS)
+            if (ox or oy) and ox * ox + oy * oy <= LOITER_RADIUS * LOITER_RADIUS:
+                return (center[0] + ox, center[1] + oy)
+        return None
 
     def _interpret_direction(self, npc, target: str) -> Tuple[int, int]:
         text = (target or "").lower()
@@ -305,16 +386,21 @@ class ActionRouter:
     # --------------- work --------------------------------------------
 
     def _handle_work(self, npc, target: str, action: str) -> bool:
-        # Crafting: blacksmith forges items
+        # LIVING_WORLD A6: a craft/forge action (LLM backends) produces a good
+        # gated on the worker's real PROFESSION, not the old `klass=="merchant"`;
+        # the heuristic path performs work visibly via the ActivitySystem (A1).
         from items.item_registry import create_item
-        klass = getattr(getattr(npc, "character_class", None), "value", "")
-        if action in ("forge", "craft", "smith") and klass == "merchant":
+        acts = getattr(self.engine, "activities", None)
+        prof = acts.profession_of(npc) if acts is not None else None
+        forge = action in ("forge", "craft", "smith") or prof in ("smith",
+                                                                   "carpenter")
+        if forge:
             forge_targets = {
                 "sword": "sword", "blade": "sword", "weapon": "dagger",
-                "armor": "leather", "shield": "shield",
+                "armor": "leather", "shield": "shield", "dagger": "dagger",
             }
             for keyword, item_id in forge_targets.items():
-                if keyword in target.lower():
+                if keyword in (target or "").lower():
                     item = create_item(item_id)
                     if item:
                         npc.add_item(item)

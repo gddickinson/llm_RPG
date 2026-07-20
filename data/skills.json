@@ -17,7 +17,11 @@
   },
   "smithing": {
     "name": "Smithing",
-    "description": "Smelt ore and forge weapons and armor at a forge."
+    "description": "Smelt ore and forge weapons and armor at a forge.",
+    "combat": {
+      "weapon_damage_per": 12,
+      "armor_ac_per": 16
+    }
   },
   "alchemy": {
     "name": "Alchemy",
@@ -29,7 +33,10 @@
   },
   "agility": {
     "name": "Agility",
-    "description": "Move fast and far; unlocks shortcuts across the land."
+    "description": "Move fast and far; unlocks shortcuts across the land.",
+    "combat": {
+      "dodge_ac_per": 12
+    }
   },
   "swimming": {
     "name": "Swimming",
@@ -41,10 +48,53 @@
   },
   "hunting": {
     "name": "Hunting",
-    "description": "Track and fell wild beasts; the wilds yield to a hunter."
+    "description": "Track and fell wild beasts; the wilds yield to a hunter.",
+    "combat": {
+      "beast_damage_per": 10
+    }
   },
   "carpentry": {
     "name": "Carpentry",
     "description": "Raise beams and shore up walls; timber and stone made whole."
+  },
+  "enchanting": {
+    "name": "Enchanting",
+    "description": "Imbue items with magical power and craft enchanted gear at a forge or rune table."
+  },
+  "weaponry": {
+    "name": "Weaponry",
+    "description": "Mastery of blades, axes and hafted arms in the press of melee — every stroke bites deeper.",
+    "category": "combat",
+    "combat": {"weapon_damage_per": 8}
+  },
+  "defense": {
+    "name": "Defense",
+    "description": "Turning blows with shield and stance, armour worn like a second skin.",
+    "category": "combat",
+    "combat": {"armor_ac_per": 10}
+  },
+  "marksmanship": {
+    "name": "Marksmanship",
+    "description": "A steady eye and a sure loose with bow, sling and thrown steel.",
+    "category": "combat",
+    "combat": {"ranged_damage_per": 8}
+  },
+  "spellcraft": {
+    "name": "Spellcraft",
+    "description": "The discipline of shaping raw mana — a deeper well and a surer hand for every working.",
+    "category": "magic",
+    "combat": {"mana_per": 3}
+  },
+  "medicine": {
+    "name": "Medicine",
+    "description": "Binding wounds and brewing remedies; a healer's hands pull the dying back from the brink.",
+    "category": "support",
+    "combat": {"heal_per": 5}
+  },
+  "thievery": {
+    "name": "Thievery",
+    "description": "Nimble fingers for locks and traps — and the odd unattended purse.",
+    "category": "roguish",
+    "combat": {"lock_per": 6}
   }
 }

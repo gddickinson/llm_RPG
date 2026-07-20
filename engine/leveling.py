@@ -1,20 +1,23 @@
 """Leveling system — XP thresholds, level-up effects.
 
-XP curve (cumulative XP needed to reach level N) — P37.5 rebalanced much STEEPER
-so the hero climbs slowly and power comes more from gear + companions than from
-raw levels (George, twice: "advances too quickly" / "the XP for the levels is
-still far too low"):
+XP curve (cumulative XP needed to reach level N) — a slow, deliberate climb where
+power leans on gear + companions as much as raw levels:
     level 1: 0        (starting level)
-    level 2: 3000
-    level 3: 9000
-    level 4: 18000
-    level N: XP_CURVE_COEFF * N * (N - 1)   (XP_CURVE_COEFF = 1500)
+    level 2: 300
+    level 3: 900
+    level 5: 3000
+    level 8: 8400
+    level N: XP_CURVE_COEFF * N * (N - 1)   (XP_CURVE_COEFF = 150)
 
-P37.6 (George: "level increases need much more XP — 10x more") takes the curve
-10x steeper. With the bumped kill award (25 + 15*foe_level) that is ~75 kills of a
-same-level L1 foe for the first level — but a TOUGHER foe pays far more (an L5 foe
-= 100 XP), so leveling is a slow, deliberate climb that rewards fighting hard
-things over grinding weak ones. Power still leans on gear + party, not XP.
+BALANCE FIX (T0.1, 2026-07-18): P37.6 took the curve 10x steeper (COEFF 150→1500)
+"for much more XP per level", but that OVERSHOT catastrophically — the entire
+35-quest authored questbook awards ~10,000 XP total, which at COEFF=1500 reaches
+only LEVEL 2, leaving the L12/L16 campaign-finale dragon mathematically unreachable
+without thousands of grind kills. Reverting to COEFF=150 restores the intended
+pace (~8 same-level kills for the first level; a tougher foe pays far more —
+25 + 15*foe_level) AND lands a hero who finishes the questline near ~L8, so the
+finale is a reachable, aspirational fight rather than a wall. Power still leans on
+gear + party, not XP.
 
 Per level-up the character gains:
     +5 max_hp (and full heal)
@@ -29,7 +32,8 @@ from characters.character_types import CharacterClass
 logger = logging.getLogger("llm_rpg.leveling")
 
 MAX_LEVEL = 20
-XP_CURVE_COEFF = 1500    # xp_threshold(L) = COEFF * L * (L-1); P37.6 (150→1500, 10x)
+XP_CURVE_COEFF = 150     # xp_threshold(L) = COEFF*L*(L-1); T0.1 revert of the P37.6
+#                          1500 overshoot that made the campaign finale unreachable
 
 # Stats favored by each class (gain +1 each on level-up)
 CLASS_STAT_FAVORS: Dict[CharacterClass, Tuple[str, str]] = {
@@ -111,9 +115,26 @@ def check_level_up(character) -> List[str]:
         for stat in favors:
             setattr(character, stat, getattr(character, stat, 10) + 1)
 
+        # T1.2: a level-up also grants a PERK POINT to spend on a build choice —
+        # so a level is a decision, not just +5 HP (the review's build-agency fix)
+        try:
+            from engine.perks import award_perk_point
+            award_perk_point(character)
+        except Exception:
+            pass
+
+        # SKILLS: a level-up grants TRAINING POINTS to spend at a class-suitable
+        # trainer on skills + spells (deliberate advancement, via the C screen)
+        try:
+            from engine.training import award_training_points, TP_PER_LEVEL
+            award_training_points(character)
+        except Exception:
+            TP_PER_LEVEL = 3
+
         msg = (
             f"** Level up! {character.name} reaches level {character.level} "
-            f"(+5 HP, +1 {favors[0].upper()[:3]}, +1 {favors[1].upper()[:3]}) **"
+            f"(+5 HP, +1 {favors[0].upper()[:3]}, +1 {favors[1].upper()[:3]}, "
+            f"+1 perk point, +{TP_PER_LEVEL} training) **"
         )
         msgs.append(msg)
         logger.info(msg)
@@ -124,6 +145,17 @@ def check_level_up(character) -> List[str]:
             v = getattr(character, stat, 10)
             if v > 30:
                 setattr(character, stat, 30)
+
+    # M1: a caster who has climbed a tier learns the class spells they now
+    # qualify for (the innate/trained route; wizards ALSO study from tomes)
+    if msgs:
+        try:
+            from engine.spells import learn_new_spells
+            learnt = learn_new_spells(character)
+            if learnt:
+                msgs.append(f"** New magic mastered: {', '.join(learnt)}. **")
+        except Exception:
+            pass
 
     return msgs
 

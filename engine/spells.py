@@ -30,6 +30,25 @@ class Spell:
     area: float = 0.0          # blast radius in tiles (P10.1)
     concentration: bool = False    # one sustained spell max (P12.7)
     classes: Tuple[str, ...] = ()   # who can learn it
+    school: str = ""           # M1 evocation/restoration/nature/… (flavour+UI)
+    tier: int = 1              # M1 1 (novice) … 5 (master); gates learning
+    requires: Dict[str, Any] = field(default_factory=dict)   # M1 min_level/min_int/…
+    world_effect: Dict[str, Any] = field(default_factory=dict)  # M2 tile/build/…
+    shapeshift: Dict[str, Any] = field(default_factory=dict)  # SHIFT {form,self,duration,involuntary,cure}
+    special: str = ""          # UNDEAD a named handler: turn_undead / animate_dead / …
+
+
+# M1 — a spell TIER unlocks at a caster level; higher tiers need more levels
+_TIER_MIN_LEVEL = {1: 1, 2: 3, 3: 5, 4: 8, 5: 12}
+
+
+def max_tier_for_level(level: int) -> int:
+    """The highest spell tier a caster of `level` may learn."""
+    best = 1
+    for tier, req in _TIER_MIN_LEVEL.items():
+        if level >= req:
+            best = max(best, tier)
+    return best
 
 
 # Spell registry — loaded from data/spells.json --------------------------
@@ -51,6 +70,12 @@ def _build_spells() -> Dict[str, Spell]:
             area=entry.get("area", 0.0),
             concentration=entry.get("concentration", False),
             classes=tuple(entry.get("classes", ())),
+            school=entry.get("school", ""),
+            tier=int(entry.get("tier", 1)),
+            requires=entry.get("requires", {}) or {},
+            world_effect=entry.get("world_effect", {}) or {},
+            shapeshift=entry.get("shapeshift", {}) or {},
+            special=entry.get("special", ""),
         )
     return out
 
@@ -58,9 +83,84 @@ def _build_spells() -> Dict[str, Spell]:
 SPELL_REGISTRY: Dict[str, Spell] = _build_spells()
 
 
+def class_spells(class_value: str) -> List[Spell]:
+    """Every spell on `class_value`'s list, any tier (the full learnable set)."""
+    return [s for s in SPELL_REGISTRY.values() if class_value in s.classes]
+
+
 def starting_spells_for(class_value: str) -> List[Spell]:
-    return [s for s in SPELL_REGISTRY.values()
-            if class_value in s.classes]
+    """The NOVICE (tier-1) spells a fresh caster of this class begins with — no
+    longer the whole list, so higher tiers are earned by levelling / study (M1)."""
+    return [s for s in class_spells(class_value) if s.tier <= 1]
+
+
+def _stat(character, name: str) -> int:
+    try:
+        from engine.effects import effective_stat
+        return effective_stat(character, name)
+    except Exception:
+        return getattr(character, name, 10)
+
+
+def can_learn(character, spell) -> Tuple[bool, str]:
+    """Could `character` learn `spell` now? Checks the tier-by-level gate + the
+    spell's `requires` block (min_level, min_int/wis/cha, a prereq spell). The
+    single chokepoint for level-up grants AND tome study (M1)."""
+    if isinstance(spell, str):
+        spell = SPELL_REGISTRY.get(spell)
+        if spell is None:
+            return False, "unknown spell"
+    lvl = getattr(character, "level", 1)
+    req = spell.requires or {}
+    if lvl < req.get("min_level", 0):
+        return False, f"requires level {req['min_level']}"
+    if spell.tier > max_tier_for_level(lvl):
+        return False, f"a tier-{spell.tier} spell — too advanced yet"
+    for stat in ("intelligence", "wisdom", "charisma"):
+        need = req.get(f"min_{stat}")
+        if need and _stat(character, stat) < need:
+            return False, f"requires {stat} {need}"
+    prereq = req.get("prereq")
+    known = (getattr(character, "metadata", None) or {}).get("spells_known", [])
+    if prereq and prereq not in known:
+        pn = SPELL_REGISTRY.get(prereq)
+        return False, f"master {pn.name if pn else prereq} first"
+    return True, ""
+
+
+def learn_new_spells(character) -> List[str]:
+    """Grant every class spell the caster now qualifies for but doesn't know —
+    the innate/trained route fired on level-up. Returns the newly-learnt names."""
+    ensure_mana(character)
+    klass = getattr(getattr(character, "character_class", None), "value", "")
+    known = character.metadata.setdefault("spells_known", [])
+    learnt = []
+    for spell in class_spells(klass):
+        if spell.id in known:
+            continue
+        ok, _ = can_learn(character, spell)
+        if ok:
+            known.append(spell.id)
+            learnt.append(spell.name)
+    return learnt
+
+
+def teach_spell(character, spell_id: str, force: bool = False) -> Tuple[bool, str]:
+    """Learn ONE spell (a tome/trainer). Honours `can_learn` unless `force` (a
+    powerful artifact tome may bypass the gate). Returns (ok, message)."""
+    spell = SPELL_REGISTRY.get(spell_id)
+    if spell is None:
+        return False, "unknown spell"
+    ensure_mana(character)
+    known = character.metadata.setdefault("spells_known", [])
+    if spell_id in known:
+        return False, f"already knows {spell.name}"
+    if not force:
+        ok, why = can_learn(character, spell)
+        if not ok:
+            return False, f"can't learn {spell.name} — {why}"
+    known.append(spell_id)
+    return True, f"learned {spell.name}"
 
 
 def starting_mana(character) -> int:
@@ -77,6 +177,26 @@ def starting_mana(character) -> int:
     return max(0, base + bonus)
 
 
+def _apply_spellcraft(character) -> None:
+    """Fold the SPELLCRAFT skill's mana bonus into max mana, reconciling only
+    the DELTA (tracked in `spellcraft_mana`) so it's idempotent and a no-op at
+    skill 0 — no change for anyone who hasn't studied spellcraft."""
+    try:
+        from engine.skill_combat import spellcraft_mana_bonus
+        want = int(spellcraft_mana_bonus(character))
+    except Exception:
+        return
+    meta = character.metadata
+    have = int(meta.get("spellcraft_mana", 0))
+    if want == have:
+        return
+    delta = want - have
+    meta["max_mana"] = max(0, int(meta.get("max_mana", 0)) + delta)
+    meta["mana"] = max(0, min(int(meta.get("mana", 0)) + delta,
+                              meta["max_mana"]))
+    meta["spellcraft_mana"] = want
+
+
 def ensure_mana(character) -> None:
     """Ensure character has mana/max_mana initialized on metadata."""
     meta = getattr(character, "metadata", None)
@@ -90,6 +210,27 @@ def ensure_mana(character) -> None:
         klass = getattr(getattr(character, "character_class", None),
                         "value", "")
         meta["spells_known"] = [s.id for s in starting_spells_for(klass)]
+    _apply_spellcraft(character)
+    _apply_familiar_mana(character)
+
+
+def _apply_familiar_mana(character) -> None:
+    """Fold a familiar's `mana_max` gift into the pool, delta-reconciled
+    (tracked in `familiar_mana`) so it's a no-op with no such familiar."""
+    try:
+        from engine.familiars import familiar_bonus
+        want = int(familiar_bonus(character, "mana_max"))
+    except Exception:
+        return
+    meta = character.metadata
+    have = int(meta.get("familiar_mana", 0))
+    if want == have:
+        return
+    delta = want - have
+    meta["max_mana"] = max(0, int(meta.get("max_mana", 0)) + delta)
+    meta["mana"] = max(0, min(int(meta.get("mana", 0)) + delta,
+                              meta["max_mana"]))
+    meta["familiar_mana"] = want
 
 
 def get_mana(character) -> Tuple[int, int]:
@@ -123,6 +264,56 @@ class SpellSystem:
         if spell_id not in caster.metadata.get("spells_known", []):
             return f"You don't know {spell.name}."
 
+        # SHIFT — a beast can't weave an ordinary spell (but MAY toggle its own
+        # shape back). Shapeshift spells (wild shape / polymorph / remove curse)
+        # resolve here — a self/cure one needs no enemy target.
+        try:
+            from engine import shapeshift as _ss
+            if _ss.restricted(caster, "no_cast") and not spell.shapeshift:
+                return "You cannot weave a spell in this shape."
+            if spell.shapeshift:
+                blk = spell.shapeshift
+                tgt = caster
+                if not blk.get("self") and not blk.get("cure"):
+                    tgt = self._resolve_target(caster, target_name, spell)
+                    if tgt is None:
+                        return f"No valid target for {spell.name}."
+                    if self._distance(caster, tgt) > spell.range:
+                        return f"{spell.name}: target out of range."
+                caster.metadata["mana"] = mana - spell.mana_cost
+                msg = _ss.cast_shapeshift(self.engine, caster, spell, tgt)
+                self.engine.memory_manager.add_event(msg)
+                return msg
+        except Exception as e:
+            logger.debug(f"shapeshift spell error: {e}")
+
+        # UNDEAD — named special handlers (turn undead, animate the dead)
+        if spell.special:
+            try:
+                from engine import shapeshift as _ss2
+                if _ss2.restricted(caster, "no_cast"):
+                    return "You cannot weave a spell in this shape."
+            except Exception:
+                pass
+            caster.metadata["mana"] = mana - spell.mana_cost
+            if spell.special == "turn_undead":
+                from engine import undead
+                return undead.turn_undead(self.engine, caster)
+            if spell.special == "animate_dead":
+                from engine import necromancy
+                tgt = self._resolve_target(caster, target_name, spell) \
+                    if target_name else None
+                return necromancy.animate_dead(self.engine, caster, tgt)
+            if spell.special == "command_undead":
+                from engine import necromancy
+                return necromancy.command_undead(self.engine, caster)
+
+        # M2 — a PURE world spell shapes a tile, not a character
+        if spell.world_effect and not (spell.damage or spell.heal
+                                       or spell.status_effect):
+            from engine import spell_world
+            return spell_world.cast_tile_spell(self, caster, spell)
+
         # Resolve target
         target = self._resolve_target(caster, target_name, spell)
         if target is None:
@@ -144,6 +335,12 @@ class SpellSystem:
 
         # Pay mana
         caster.metadata["mana"] = mana - spell.mana_cost
+        try:   # working magic trains Spellcraft (pet-roll-free — no RNG churn)
+            if caster.id == getattr(self.engine.player, "id", None):
+                from engine.skill_progression import add_skill_xp
+                add_skill_xp(caster, "spellcraft", 5)
+        except Exception:
+            pass
 
         # Apply effects
         results = []
@@ -200,6 +397,18 @@ class SpellSystem:
             if not target.is_alive():
                 results.append(f"{target.name} is slain by the {spell.name}!")
                 self._on_kill(caster, target, spell.damage)
+        # M2 — a damage spell may ALSO carry a world_effect (a firestorm razes +
+        # ignites the struck ground); applied at the impact tile, overworld only
+        if spell.world_effect:
+            try:
+                if self.engine.active_zone() is None:
+                    from engine import spell_world
+                    tx, ty = target.position
+                    results += spell_world.apply(self.engine, caster,
+                                                 spell, tx, ty)
+            except Exception:
+                pass
+
         if spell.heal:
             healed = min(spell.heal, target.max_hp - target.hp)
             target.heal(spell.heal)

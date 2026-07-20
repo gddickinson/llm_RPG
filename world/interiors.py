@@ -154,33 +154,13 @@ def make_default_interior(name: str) -> Interior:
     )
 
 
-def _furnish_rooms(inter, rooms, seed) -> None:
-    """P36.4 furnish a subdivided interior room by room (biggest = the main room),
-    keeping the source furniture where it lands on floor and adding a little more."""
-    import random
-    rng = random.Random(seed ^ 0x2f3d)
-    kept = [f for f in inter.furniture
-            if inter.terrain[f.get("y", 1)][f.get("x", 1)] != TerrainType.BUILDING]
-    taken = {(f["x"], f["y"]) for f in kept} | {inter.door}
-    rooms = sorted(rooms, key=lambda r: -r[2] * r[3])
-    kits = (["Table", "Chair", "Hearth"], ["Bed", "Chest"], ["Shelf", "Barrel"],
-            ["Chest", "Chair"], ["Barrel"], ["Shelf"])
-    extra, spots = [], []
-    for i, (rx, ry, rw, rh) in enumerate(rooms):
-        kit = kits[i] if i < len(kits) else ["Barrel"]
-        cells = [(rx + rw // 2, ry + rh // 2), (rx + 1, ry + 1),
-                 (rx + rw - 2, ry + rh - 2)]
-        for item, (fx, fy) in zip(kit, cells):
-            if (0 < fx < inter.width - 1 and 0 < fy < inter.height - 1
-                    and inter.terrain[fy][fx] != TerrainType.BUILDING
-                    and (fx, fy) not in taken):
-                taken.add((fx, fy))
-                extra.append({"name": item, "x": fx, "y": fy})
-        if i == 0:
-            spots.append((rx + rw // 2, max(ry + 1, ry + rh // 2 - 1)))
-    inter.furniture = kept + extra
-    if spots:
-        inter.npc_spots = spots
+def _furnish_rooms(inter, rooms, seed, kind="") -> None:
+    """BLD.2: furnish a subdivided interior by ROOM FUNCTION — each leaf is
+    tagged a room_type from the building's room-set and gets that type's kit
+    (`world/room_plan.py`), so a tavern reads common-room + bar + kitchen and a
+    smithy forge + workshop, not a size-ranked bed-and-chest in every room."""
+    from world import room_plan
+    room_plan.furnish_typed(inter, rooms, kind, seed)
 
 
 def make_from_blueprint(loc_name: str, bp) -> Interior:
@@ -239,8 +219,12 @@ def fit_to_footprint(inter: Interior, loc) -> Interior:
     hut, a hall into a hall), the interior door sits at the south-face
     center — the same edge as the exterior door glyph — and furniture
     keeps its relative layout, remapped proportionally."""
-    tw = max(6, min(16, loc.width * 3 + 2))
-    th = max(5, min(12, loc.height * 3 + 2))
+    # GX.3 SCALE-UP (George: "the scale of everything feels small and cramped").
+    # A ×4 footprint multiplier + far bigger caps, so a 2×2 building opens into a
+    # roomy 10×10 (was 8×8) and a large footprint yields a genuinely big hall —
+    # room enough for a church nave to seat scores. Small buildings stay modest.
+    tw = max(7, min(28, loc.width * 4 + 2))
+    th = max(6, min(22, loc.height * 4 + 2))
     old_w, old_h = inter.width, inter.height
 
     def remap(x: int, y: int) -> Tuple[int, int]:
@@ -261,19 +245,34 @@ def fit_to_footprint(inter: Interior, loc) -> Interior:
     inter.door = (tw // 2, th - 1)
     inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
 
-    # P36.4: a roomy building becomes MULTI-ROOM (BSP subdivision); a hut stays
-    # one open room so its authored layout survives
-    if tw >= 11 and th >= 8:
+    # BLD.2: a building whose function has a MULTI-ROOM program becomes multi-
+    # room (BSP subdivision + functional room typing); a single-room building
+    # (a well) or a tiny footprint stays one open room so its layout survives.
+    kind = loc.get_property("type", "") if hasattr(loc, "get_property") else ""
+    from world import room_plan
+    room_set = room_plan.room_set_for(kind)
+    # subdivide when the building's FUNCTION wants ≥2 rooms (a small tavern still
+    # gets a common-room + bar), OR its footprint is simply big enough (a large
+    # building is multi-room whatever its kind); a tiny kindless hut stays open.
+    has_program = len(room_set) >= 2
+    big_footprint = tw >= 11 and th >= 8
+    if (has_program and tw >= 8 and th >= 7) or big_footprint:
         from world import room_gen
         seed = sum(ord(c) for c in inter.name) + old_w * 7 + old_h * 13
-        grid, rooms = room_gen.subdivide(tw, th, seed)
+        # min_room=2 so a medium building (8x8 → 6x6 inner) still splits; depth
+        # scales with footprint so a small building gets a couple of rooms, not
+        # a warren of 1-tile closets
+        big = tw >= 12 and th >= 10
+        depth = 3 if (big and len(room_set) > 3) else 2
+        grid, rooms = room_gen.subdivide(tw, th, seed,
+                                         min_room=2, max_depth=depth)
         grid[th - 2][tw // 2] = room_gen.FLOOR       # keep the entrance clear
         for y in range(th - 1):
             for x in range(1, tw - 1):
                 if grid[y][x] == room_gen.WALL:
                     inter.terrain[y][x] = TerrainType.BUILDING
         inter.terrain[th - 1][tw // 2] = TerrainType.ROAD
-        _furnish_rooms(inter, rooms, seed)
+        _furnish_rooms(inter, rooms, seed, kind)
         return inter
 
     # Remap furniture, nudging collisions to the next free tile
@@ -384,6 +383,7 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
         inter = None
 
         # Try blueprint first
+        bp = None
         if blueprint_for_location is not None:
             bp = blueprint_for_location(loc.name)
             if bp is not None:
@@ -397,10 +397,28 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
                 inter = make_forge_interior()
             elif "store" in name_l or "shop" in name_l:
                 inter = make_shop_interior()
-            elif "temple" in name_l or "shrine" in name_l:
-                inter = make_temple_interior()
-            elif ltype in ("tavern", "shop", "temple", "forge"):
+            elif ("temple" in name_l or "shrine" in name_l
+                    or "cathedral" in name_l or "church" in name_l):
+                inter = make_temple_interior()   # GX.4 rescaled to a big nave
+            elif ltype in ("tavern", "shop", "temple", "forge", "cathedral"):
                 inter = make_default_interior(loc.name)
+            elif loc.get_property("kind"):
+                # OAKVALE T5b: a town-generated building — a factory by KIND so
+                # every home/hall/guildhall/library is enterable (1x1 markers
+                # like wells/stalls stay open, no interior)
+                k = loc.get_property("kind")
+                if k in ("well", "stall"):
+                    continue
+                if k in ("tavern", "inn"):
+                    inter = make_tavern_interior()
+                elif k in ("forge", "smithy", "armoury"):
+                    inter = make_forge_interior()
+                elif k in ("shop", "bakery", "bank"):
+                    inter = make_shop_interior()
+                elif k in ("temple", "cathedral", "chapel", "shrine"):
+                    inter = make_temple_interior()
+                else:
+                    inter = make_default_interior(loc.name)
             else:
                 continue
 
@@ -409,11 +427,16 @@ def build_interiors_for_world(world) -> Dict[str, Interior]:
             fit_to_footprint(inter, loc)
         except Exception as e:
             logger.debug(f"footprint fit for {loc.name}: {e}")
-        try:   # P39.3 decorate it in-theme (braziers, pillars, rugs, …)
-            from world.furnishings import furnish
-            furnish(inter, loc.name)
+        try:   # P39.3 decorate it in-theme (braziers, pillars, rugs, …);
+            from world.furnishings import furnish   # BLD.1 kind-aware fallback
+            furnish(inter, loc.name, kind=(getattr(bp, "kind", None) or ltype))
         except Exception as e:
             logger.debug(f"furnish {loc.name}: {e}")
+        try:   # BLD.6 atmosphere: wall torches (light pools) + hearthrugs
+            from world.furnish_features import decorate_pass
+            decorate_pass(inter, seed=sum(ord(c) for c in loc.name))
+        except Exception as e:
+            logger.debug(f"decorate {loc.name}: {e}")
         interiors[loc.name] = inter
 
     # Multi-level pass (P9A.5): bedrooms above taverns and inns,
