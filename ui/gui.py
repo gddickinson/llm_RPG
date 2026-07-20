@@ -512,6 +512,11 @@ class GameGUI:
             lines += self.engine.chronicle.lines()
         except Exception:
             pass
+        try:   # active adventure leads (find them before a rival does)
+            from engine import adventure_log
+            lines += adventure_log.lines(self.engine)
+        except Exception:
+            pass
         try:   # T2.3 the live State of the Realm (faction/tribe/nemesis state)
             from engine import realm_digest
             lines += realm_digest.lines(self.engine)

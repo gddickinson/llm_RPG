@@ -1,4 +1,5 @@
 {
+  "title": "The Hollowing of Ravenmoor",
   "_doc": "'The Hollowing of Ravenmoor' — a 3-act undead-mystery adventure (areas + custom cast, kept OUT of data/npcs/). Seeded by engine/ravenmoor.py at world start like the Sunken Tome. The quest chain (q_ravenmoor_hollow -> q_ravenmoor_barrow -> q_ravenmoor_reckoning) lives in data/quests.json, given by Elder Maeve, with a branching Destroy/Lay-to-Rest/Claim finale.",
   "areas": [
     {

@@ -10518,3 +10518,11 @@ Wired self.npc_adventuring in engine_setup + the nightly stack + save_load. Veri
 adventures to resolution over game-days; the player keeps any adventure they started; resolved adventures fail
 the dead-end quests + the giver stops offering; state round-trips; test_npc_adventuring (6) + adventurer/
 company/adventure suites green.
+
+## 2026-07-20 — Upgrade: Adventure Leads in the journal (discoverability)
+
+With rival heroes now racing to clear adventures (NPC adventuring), the player needs to SEE what's abroad.
+`engine/adventure_log.py` (`leads`/`lines`) lists each seeded adventure in the Y-journal — OPEN (seek the
+giver), UNDERWAY (you've begun it), a RIVAL closing in (hurry!), or ENDED — with the giver's name and a compass
+bearing from the hero. Added a `title` to each adventure's data. Wired into `gui.show_topics` beside the topics
+and chronicle. Validated by `tests/test_adventure_log.py`.
