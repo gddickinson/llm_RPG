@@ -455,6 +455,13 @@ def run_turn(engine) -> None:
     # ONE defeat handler (self-as-attacker → no spurious player XP) so it
     # dies/KOs and drops its loot like any other death.
     try:
+        # the PLAYER (incl. an away/agent hero) goes DOWN the dying ladder
+        # instead of walking the world at 0 HP — this runs AFTER every damage
+        # source this turn, so a mis-guarded hazard can't leave a 0-HP zombie
+        if self.player.is_active() and self.player.hp <= 0 \
+                and self.player.metadata.get("dying", 0) <= 0:
+            from engine.dying import enter_dying
+            enter_dying(self, None)
         for ch in list(self.npc_manager.npcs.values()):
             if ch is not self.player and ch.is_active() and ch.hp <= 0:
                 self.combat_system._handle_defeat(ch, ch, 0)

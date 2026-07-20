@@ -10407,3 +10407,18 @@ validator clean; `tests/test_townsfolk_venture.py` (8 tests) green; a venturing 
 save/load; a 1500-turn combined-world soak ran clean (no crash/freeze/death, zero swallowed errors) with
 ventures firing and returning (Cora traded at Greenhollow, Aldo's pilgrimage to the Temple of the Crown) and
 the cap holding.
+
+## 2026-07-19 — Away-hero death edge: no more 0-HP "zombie" (George)
+
+Soak-testing surfaced an away/agent hero that hit 0 HP deep in the wild and then kept being DRIVEN at 0 HP
+for hundreds of turns instead of dying or being left for dead. Root cause: some non-combat damage paths call
+`take_damage` directly (which clamps to 0) and, unlike the combat path, don't route the PLAYER into the dying
+ladder — leaving a status=alive, hp=0, not-dying "zombie". The existing end-of-turn zombie-reaper (which fixes
+the same class of bug for NPCs) explicitly EXCLUDED the player.
+- **`turn_pipeline` reaper**: now also routes the player — if the player is active, hp<=0, and not already
+  dying, `enter_dying(self, None)` puts them DOWN. It runs AFTER every damage source in the turn, so no
+  end-of-turn zombie can survive. The dying ladder then resolves normally (stabilize → robbed / left-for-dead,
+  or Dying 4 → the full defeat table incl. slain).
+Verified: the death repro over 1500 explorer-away turns shows ZERO zombie states (was ~250 turns stuck at
+0 HP) — the hero now enters dying and recovers or dies cleanly. `tests/test_dying.py` +2 regression tests;
+dying/combat/defeat/wounds suites green.
