@@ -179,7 +179,15 @@ class QuestManager:
             legend = choices[idx if 0 <= idx < len(choices)
                              else 0].get("legend", legend)
         if legend:
-            self._log(f"[Legend] {legend}")
+            line = f"[Legend] {legend}"
+            self._log(line)
+            # surface it to the PLAYER's event log + the chronicle observer —
+            # `_log` only feeds the quest manager's own list, so without this
+            # the authored branching-finale endings were never seen (George)
+            eng = getattr(self, "engine", None)
+            mm = getattr(eng, "memory_manager", None) if eng else None
+            if mm is not None:
+                mm.add_event(line)
 
         self._log(f"Quest turned in: {quest.title} (+{quest.reward_gold}g, +{quest.reward_xp}xp)")
 

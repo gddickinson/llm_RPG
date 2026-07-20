@@ -10451,3 +10451,16 @@ to lean on the shapeshift/curse system (a genuinely different mechanic from drag
 Wired self.wychwood in engine_setup + save_load + the quest-giver validator + 3 playtest tests. Verified:
 content validator clean; Granny Esk offers Act 1; the greenstaff use shifts the player to a grey wolf; the
 seeded hag's real defeat completes the finale; tests/test_wychwood.py (8) + playtest/content suites green.
+
+## 2026-07-19 — Playtest fix: branching-finale legends were DEAD content (George)
+
+Directed playtest (finish 12 quests across the 4 adventures through the real engine) surfaced a real bug: the
+authored branching-finale ENDINGS ("You drove the spear up beneath Cindermaw's jaw…", the Kill/Spare/Claim
+conclusions of every adventure) NEVER reached the player. `quest_manager.turn_in` emitted the `[Legend]` line
+via `_log`, which only appends to the quest manager's PRIVATE `event_log` — never surfaced to the player's
+event log or the chronicle observer.
+- Fix: the finale `[Legend]` now ALSO goes to `engine.memory_manager.add_event`, so the chosen ending is SEEN
+  and the chronicle records it in the saga. Affects every adventure with a `reward_choices` finale (the Tome,
+  Ravenmoor, Emberfell, Blackbanner, Wychwood, the castle fork).
+Verified: the playtest now shows all four finale legends firing (was 0); `tests/test_quest_branching.py` +1
+regression test; branching/adventure suites green.
