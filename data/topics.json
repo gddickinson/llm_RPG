@@ -1,7 +1,9 @@
 {
   "gorkash": {
     "name": "Gorkash",
-    "keywords": ["gorkash"],
+    "keywords": [
+      "gorkash"
+    ],
     "hint": "A troll brigand terrorizing the east road.",
     "responses": {
       "guard_01": "Gorkash has ambushed three caravans this season. I've been ordered to organize a hunt — I'd pay good coin to see him finished.",
@@ -12,7 +14,10 @@
   },
   "silver_blade": {
     "name": "The Silver Blade",
-    "keywords": ["silver blade", "silver sword"],
+    "keywords": [
+      "silver blade",
+      "silver sword"
+    ],
     "hint": "A masterwork weapon that cuts troll-hide like cloth.",
     "responses": {
       "blacksmith_01": "Aye, I can forge one — my finest pattern. Bring me a plain sword, a troll's tooth, and silver enough: that stolen jewelry the bandits fence would smelt down nicely.",
@@ -22,7 +27,10 @@
   },
   "ruined_keep": {
     "name": "The Ruined Keep",
-    "keywords": ["ruined keep", "old keep"],
+    "keywords": [
+      "ruined keep",
+      "old keep"
+    ],
     "hint": "A crumbling fortress in the north-east wilds; its cellars may be unlooted.",
     "responses": {
       "minstrel_01": "My grandmother's songs name it Caer Aldwyn. The last verse says the lord sealed his treasury before the siege — and no verse says anyone opened it.",
@@ -32,7 +40,9 @@
   },
   "mithril": {
     "name": "Mithril",
-    "keywords": ["mithril"],
+    "keywords": [
+      "mithril"
+    ],
     "hint": "A rare, feather-light ore said to lie in the deep shafts.",
     "responses": {
       "camp_foreman_01": "We found a vein of silver last month, but mithril runs deeper — past the sealed east shaft. Master miners only.",
@@ -42,7 +52,10 @@
   },
   "east_shaft": {
     "name": "The East Shaft",
-    "keywords": ["east shaft", "sealed shaft"],
+    "keywords": [
+      "east shaft",
+      "sealed shaft"
+    ],
     "hint": "A sealed mine tunnel at Stonepine where two miners vanished.",
     "responses": {
       "camp_foreman_01": "Two good men went down and didn't come up. Goblins, maybe worse. I sealed it — and I'd think twice before unsealing it for anyone.",
@@ -52,7 +65,11 @@
   },
   "bandits": {
     "name": "The Bandits",
-    "keywords": ["bandit", "brigand", "outlaws"],
+    "keywords": [
+      "bandit",
+      "brigand",
+      "outlaws"
+    ],
     "hint": "Outlaws working the roads — someone inside a settlement fences their loot.",
     "responses": {
       "guard_01": "They're organized — too organized. Someone tips them off about caravans. Watch who suddenly has coin to spend.",
@@ -62,7 +79,9 @@
   },
   "plague_years": {
     "name": "The Plague Years",
-    "keywords": ["plague"],
+    "keywords": [
+      "plague"
+    ],
     "hint": "A sickness that swept the river hamlet years ago.",
     "responses": {
       "hamlet_priest_01": "I kept vigil forty nights. We buried too many, but the hamlet endured. The druid's blessed hollow gave us the herbs that saved the rest.",
@@ -72,11 +91,47 @@
   },
   "blessed_hollow": {
     "name": "The Blessed Hollow",
-    "keywords": ["blessed hollow", "druid's hollow", "herb hollow"],
+    "keywords": [
+      "blessed hollow",
+      "druid's hollow",
+      "herb hollow"
+    ],
     "hint": "A forest hollow south of the chapel where herbs grow unnaturally thick.",
     "responses": {
       "hamlet_priest_01": "An old druid blessed it before my time. The herbs there never fail, even in winter. Take only what you need."
     },
     "default_response": "Herbs grow strange and strong in some corners of the forest."
+  },
+  "wyrm_of_emberpeak": {
+    "name": "The Wyrm of Emberpeak",
+    "keywords": [
+      "wyrm",
+      "cindermaw",
+      "emberpeak",
+      "emberfell"
+    ],
+    "hint": "A young dragon woken beneath Emberpeak, its brood burning the mountain village of Emberfell.",
+    "responses": {
+      "reeve_halden": "Cindermaw, the old shepherds call it. It sleeps beneath Emberpeak and sends its whelps to burn my fields and drive my folk off the mountain. End the raids and Emberfell will not forget you.",
+      "loremaster_yorwin": "A wyrm is a fortress of coals — but no fortress is whole. Cindermaw took a wound beneath the jaw as a whelp, and the scales there never grew back. Bring me its shed scale and I'll show you the killing place.",
+      "shepherd_bryn": "It came out of the sun over the high pasture — I only saw the shadow and the fire. Half my flock, gone in a breath. Don't go up there alone."
+    },
+    "default_response": "The wyrm? Smoke on the peaks and burnt farms below. Talk to Reeve Halden in Emberfell if you mean to do something about it."
+  },
+  "blackbanner_reaving": {
+    "name": "The Blackbanner Reaving",
+    "keywords": [
+      "blackbanner",
+      "reaving",
+      "vharo",
+      "muster"
+    ],
+    "hint": "An outlaw warlord, Vharo Blackbanner, binding the raiding camps into one host to sack the settlements.",
+    "responses": {
+      "marshal_orsa": "Blackbanner's done what no outlaw's managed in my twenty years — got the camps to fight as one. Redgate was just the first. Break the confederation before it musters, or the whole road burns.",
+      "lieutenant_kessa": "You think we're all cutthroats? Half the camp are farmers Blackbanner fed when the lords wouldn't. I'd walk away tomorrow — and take the other captains with me — if I thought there was a way out that didn't end with our folk starving.",
+      "caravan_master_deel": "They hit us to a plan, friend — flankers, a blocking line, whistles for signals. That's not thieving, that's soldiering. Someone taught them, and his name's on every lip in the camps: Blackbanner."
+    },
+    "default_response": "The reaving? Keep off the trade road and hope the marshal finds someone mad enough to walk into the outlaws' camp."
   }
 }

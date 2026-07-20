@@ -48,6 +48,21 @@ class TestEmberfellSeed(unittest.TestCase):
         self.assertTrue(any(getattr(i, "id", "") == "scorched_scale"
                             for items in gi.values() for i in items))
 
+    def test_givers_lead_with_their_signature_topic(self):
+        # the starting rumor teaches the 'wyrm' topic; the giver's own
+        # authored answer must surface FIRST past the menu's topic cap
+        from engine.conversation import askable_topics
+        self.assertIn("wyrm_of_emberpeak", self.e.topic_journal.known())
+        halden = self.e.npc_manager.get_npc("reeve_halden")
+        topics = askable_topics(self.e, halden)
+        self.assertTrue(topics, "the reeve can be asked about something")
+        self.assertEqual(topics[0], "wyrm_of_emberpeak",
+                         "the reeve leads with the wyrm, not a generic topic")
+        # and his authored answer is richer than the shared default
+        self.assertIn("Cindermaw",
+                      self.e.topic_journal.npc_response(halden,
+                                                        "wyrm_of_emberpeak"))
+
     def test_persists_and_stays_seeded_once(self):
         from engine.adventure_seed import AdventureSeeder
         d = self.emb.to_dict()

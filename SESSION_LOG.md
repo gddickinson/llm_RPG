@@ -10367,3 +10367,19 @@ module), with a distinct HUMAN-antagonist theme (vs Emberfell's dragon and Raven
 Verified: content validator clean; both new adventures survive a save/load round-trip; the seeded warlord's
 REAL defeat (id `enc_vharo_blackbanner_<hash>` → template match) completes the finale; `tests/test_blackbanner.py`
 (8 tests) + `tests/test_emberfell.py` + the playtest/content/save-load suites all green.
+
+## 2026-07-19 — Adventure topics + signature-topic priority (George: layers of detail)
+
+Adding a layer of conversational detail to the two new adventures — and a general conversation win:
+- **Adventure topics** (`data/topics.json`): `wyrm_of_emberpeak` and `blackbanner_reaving` — each with a vague
+  shared `default_response` (ask any townsperson and they mumble + point you to the giver) and RICH authored
+  answers for the key NPCs (Reeve Halden names Cindermaw and the raids; Yorwin tells you the soft spot beneath
+  the jaw and to bring the scale; Marshal Orsa explains the confederation; Kessa reveals the camp are fed
+  farmers she'd lead away). The starting rumors carry the keywords, so the topics are learned from turn one.
+- **Signature-topic priority** (`engine/conversation.askable_topics`): the conversation menu's `_TOPIC_CAP`(3)
+  was crowding a quest-giver's OWN subject out behind generic town topics (Marshal Orsa couldn't be asked about
+  the Blackbanner Reaving). Now a topic the NPC has an AUTHORED response for (`_has_own_response`) sorts FIRST,
+  so every giver leads with the thing they most want to talk about. General — it also lifts the existing
+  gorkash/silver_blade authored topics for their own experts.
+Verified: content validator clean; each giver's askable topics lead with their signature topic; the
+conversation/topics/dialog suites + both adventure suites green.
