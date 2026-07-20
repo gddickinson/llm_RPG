@@ -1,5 +1,6 @@
 """The Murkfen swamp region (P4.5 — regional identity)."""
 
+import random
 import unittest
 
 from engine.game_engine import GameEngine
@@ -8,6 +9,12 @@ from world.world_map import TerrainType
 
 class TestMurkfen(unittest.TestCase):
     def setUp(self):
+        # Seed the GLOBAL RNG so worldgen + spawns are deterministic: the
+        # passable-swamp test steps onto an adjacent swamp tile, and an
+        # RNG-spawned creature landing on that tile (or a bad traversal roll)
+        # flakes the move under accumulated cross-test RNG state (the
+        # documented global-RNG-pollution pattern). Isolation is enough here.
+        random.seed(0x5EEDBEE)
         self.engine = GameEngine(
             llm_provider="heuristic", enable_npc_processes=False)
         self.engine.start_game()
