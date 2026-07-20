@@ -10632,3 +10632,28 @@ to match the spell to the situation (it now takes the target + the foe list):
   fireball (range 6).
 Verified against a mock roster: weak→magic_missile, tough→fireball, cluster→fireball, far-tough→lightning_bolt.
 Living-agent/spells/ambition suites (71) green.
+
+## 2026-07-20 — Docs refresh + new README (George: "update all docs and create a new README")
+
+After the round of autoplay/companion/caster improvements, updated the docs and wrote a fresh README to match
+the current project. INTERFACE.md / CLAUDE.md test counts corrected to 3650+. New `README.md` (framed as an
+*introduction to building an RPG with an LLM*) covers what the game actually is now: one combined 240×170 world
+entered at the big walled Oakvale; the living world / society / heroes pillars; the systems-overview table; the
+FIVE authored adventures (Sunken Tome + Emberfell/Blackbanner/Wychwood/Ravenmoor) with world-reshaping branching
+finales built on the reusable `AdventureSeeder`; the living-heroes/autoplay loop (recruit a band → quest →
+casters lead with magic → companions catch up → rich away-return digest); magic & worldcraft; the optional iso
+renderer; refreshed controls; and a current-state summary. Figures regenerated headless (SDL dummy → `gui._render`
+→ `pygame.image.save`): `docs/img/gameplay.png` (party-of-3 + Blackbanner quest, top-down), `iso_world.png`
+(party in iso), `adventure_leads.png` (Y-journal), retaining `battle.png`.
+
+## 2026-07-20 — Fix: trapped-companion warp no longer preempts self-heal/combat (regression)
+
+The full suite caught 3 regressions from the guild-hall-window fix: it warped a companion off ANY building tile
+at the TOP of `update()`, before self-heal/desert/flee/heal-ally/combat — so a member transiently on a building
+tile (the minstrel is seeded at its tavern) skipped self-healing and fighting (`test_party_survival` ×2,
+`test_playtest_matrix` companion-fights). Kept the original `>CATCHUP_DIST` "far" warp at the top (it must
+preempt a duel where a companion was abandoned), but moved the stuck-indoors rescue to the FOLLOW branch:
+self-heal and combat need no movement, so they run first; only a member with nothing to fight/heal that would
+otherwise path uselessly against a wall gets pulled out to the leader. Still fixes George's
+recruited-through-a-window trapped-inside bug — new regression test (`test_companion_trapped_on_building_emerges`)
+asserts both directions. Full suite re-run green.
