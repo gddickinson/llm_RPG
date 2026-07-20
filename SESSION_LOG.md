@@ -10586,3 +10586,12 @@ Two changes:
 Result: flee dropped 0.43 → 0.22, the party fights hard (attack 49 → 230+), and the hero survives. (An earlier
 full-strength attempt on a WEAK party made it fearless and it died — the strong-recruit change is what makes
 decisive fighting safe.) Agent/companion/ambition/living-agent/npc-adventuring suites (91) green.
+
+## 2026-07-20 — Rich away-return digest (capstone of the autoplay work)
+
+The "While You Were Away" digest (shown when the human takes the reins back from autoplay) now reflects the
+rich life the hero led: beyond days/levels/purse/new-companions, it tallies QUESTS taken & seen through and
+LEGENDARY deeds (the branching-finale endings + slain legends) from the away period, above the `[Away]` deed
+beats. So the player returns to: "Alara grew 2 levels… gathered a band: Ulric Bearclaw, Dame Seraphine…, took
+on 1 quest and saw 1 through / ★ You cut Vharo Blackbanner down beneath his own standard." tests/test_away_digest
++1; suite green.

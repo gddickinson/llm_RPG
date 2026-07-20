@@ -50,6 +50,19 @@ class TestAwayDigest(unittest.TestCase):
         self.assertIn("+30 gold", blob)
         self.assertIn("2 day", blob)
 
+    def test_reports_quests_and_legendary_deeds(self):
+        self.engine.roster.set_away(self.p, True)
+        self.engine.memory_manager.add_event("Quest accepted: The Burning Road")
+        self.engine.memory_manager.add_event(
+            "Quest turned in: The Burning Road (+80g, +150xp)")
+        self.engine.memory_manager.add_event(
+            "[Legend] You cut Vharo Blackbanner down beneath his own standard.")
+        blob = " ".join(build_digest(self.engine, self.p)[1])
+        self.assertIn("took on 1 quest", blob)
+        self.assertIn("saw 1 through", blob)
+        self.assertIn("Legendary deeds", blob)
+        self.assertIn("Vharo Blackbanner", blob)
+
     def test_digest_is_one_shot(self):
         self.engine.roster.set_away(self.p, True)
         self._deed("did a thing.")
