@@ -39,6 +39,8 @@ RANGED = 5                                  # tiles a bow can reach
 LOW_HP = 0.4                                # heal / flee at or below this
 REST_HP = 0.55                              # top up / rest when safe below this
 SWARM_HP = 0.75                             # back off a pack below this
+GREET_CAP = 3          # mere hellos per window before the hero moves ON
+SATIATE_WINDOW = 50    # turns before the hero is up for socialising again
 
 
 @contextmanager
@@ -91,6 +93,9 @@ class AgentController:
         self.social = True        # False for adventurer NPCs (no player state)
         self.indoor = None        # T4.1 an active enter→act→exit building task
         self._indoor_cd = 0       # cooldown so it never bounces in and out
+        self._greets = 0          # mere hellos this window (social satiation)
+        self._t = 0               # the controller's own turn clock
+        self._goal_age = 0        # turns chasing the current goal (a TTL)
 
     # ---- perception --------------------------------------------
 
@@ -381,14 +386,17 @@ class AgentController:
                 return ("loot",)
             return ("move", nav.safe_step(engine, char, loot, self.recent))
 
-        # 7. explore a class-flavoured place; abandon one we can't close on.
-        # (SEEK COMPANIONS — George — is folded into `named_goal`: a partyless
-        # hero is DRAWN to a guild hall, reusing this rule's safe stall-and-
-        # abandon machinery, so it never dead-ends marching to a far goal.)
-        if self.goal is None or char.position == self.goal or self._stall > 8:
+        # 7. explore a class-flavoured place; abandon one we ARRIVE at (within
+        # a couple of tiles — you can't stand on a building), can't close on
+        # (stall), or have chased too long (a hard TTL so it never fixates —
+        # George's "wanders in a circle"). SEEK COMPANIONS rides this too.
+        self._goal_age += 1
+        reached = self.goal is not None and _dist(char.position, self.goal) <= 2
+        if self.goal is None or reached or self._stall > 8 or self._goal_age > 45:
             if self.goal_name is not None:
                 self.visited.add(self.goal_name)
-            self.goal_name, self._stall, self._gd = None, 0, None
+            self.goal_name, self._stall, self._gd, self._goal_age = \
+                None, 0, None, 0
             self.goal = agoals.named_goal(self, engine, char) \
                 or agoals.pick_goal(self, engine, char)
         gd = _dist(char.position, self.goal)
@@ -398,57 +406,8 @@ class AgentController:
         return ("move", step) if step != (0, 0) else ("wait",)
 
     def _social_plan(self, engine, char, disp):
-        """Near someone? Take their quest, recruit them, or say hello —
-        biased by disposition (a SOCIABLE hero seeks people out)."""
-        outgoing = disp == "sociable" or agoals.ambition(char) == "fellowship"
-        reach = 8 if outgoing else 4
-        friend = sense.friendly_near(engine, char, r=reach)
-        if friend is None:
-            return None
-        adjacent = _dist(char.position, friend.position) <= 1
-        if adjacent:
-            # deal with a merchant we're standing by (M.8b): clear junk for
-            # coin, buy the potion/ammo we're short of
-            from engine.conversation import is_merchant
-            if is_merchant(friend) \
-                    and agtrade.wants_to_trade(engine, char, friend):
-                return ("trade", friend)
-            qm = getattr(engine, "quest_manager", None)
-            offered = qm.offered_by(friend.id) if qm else []
-            if offered:
-                return ("accept_quest", offered[0], friend)
-            if self._room_in_party(engine):
-                try:
-                    if engine.companion_manager.can_recruit(friend) == "":
-                        return ("recruit", friend)
-                except Exception:
-                    pass
-            if friend.id not in self.greeted:
-                return ("talk", friend)
-            return None
-        # walk over to a NEW face worth meeting — but once greeted, leave
-        # them be (re-approaching a greeted friend forever oscillated)
-        if friend.id not in self.greeted or self._offers(engine, char, friend):
-            return ("move", nav.safe_step(engine, char, friend.position,
-                                          self.recent))
-        return None
-
-    def _offers(self, engine, char, friend) -> bool:
-        """Still a reason to walk over — an untaken quest, a recruitable
-        ally, or a merchant we've goods to trade — even after we've said
-        hello."""
-        qm = getattr(engine, "quest_manager", None)
-        if qm and qm.offered_by(friend.id):
-            return True
-        try:
-            from engine.conversation import is_merchant
-            if is_merchant(friend) \
-                    and agtrade.wants_to_trade(engine, char, friend):
-                return True
-            return self._room_in_party(engine) and \
-                engine.companion_manager.can_recruit(friend) == ""
-        except Exception:
-            return False
+        from engine import agent_social
+        return agent_social.social_plan(self, engine, char, disp)
 
     # ---- act (execute through the real player-action route) -----
 
@@ -462,6 +421,9 @@ class AgentController:
 
     def take_turn(self, engine, char) -> str:
         self.recent = (self.recent + [tuple(char.position)])[-3:]
+        self._t += 1
+        if self._t % SATIATE_WINDOW == 0:      # up for socialising again
+            self._greets = 0
         plan = self.decide(engine, char)
         # keep the hero's current aim visible to the player (reviewable)
         char.metadata["agent_goal"] = self.goal_name or (

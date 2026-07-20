@@ -10526,3 +10526,27 @@ With rival heroes now racing to clear adventures (NPC adventuring), the player n
 giver), UNDERWAY (you've begun it), a RIVAL closing in (hurry!), or ENDED — with the giver's name and a compass
 bearing from the hero. Added a `title` to each adventure's data. Wired into `gui.show_topics` beside the topics
 and chronicle. Validated by `tests/test_adventure_log.py`.
+
+## 2026-07-20 — Autoplay: the away-hero lives a RICH life, not circles (George)
+
+George: "when I use autoplay the hero just wanders around in a circle... I want to see the hero interacting
+with NPCs, going on quests, forming parties." Diagnosed + fixed the whole chain:
+1. **The circling** — exploration goals were set to a location's CENTRE, often a BUILDING tile the hero can't
+   stand on, so the goal never "arrived" and the hero circled the wall forever. `agent_goals.reachable_tile`
+   snaps every goal to the nearest walkable tile; rule 7 counts a goal REACHED within 2 tiles + a hard TTL
+   (`_goal_age`) so it never fixates. (Alone this lifted exploration from ~100 to 330-433 unique tiles.)
+2. **Never getting out of town** — in the 169-townsfolk Oakvale an ungreeted face is always within reach, so
+   the social rule preempted quest/recruit/explore forever. Added SOCIAL SATIATION (`agent_social`, GREET_CAP
+   per SATIATE_WINDOW) so the hero greets a few folk then moves on.
+3. **Never forming a party** — (a) all adventurers gathered at a far corner (a stray guildhalls-system marker);
+   `adventurers._guild_hall_near` now seats them at the accessible town guild hall ~10 tiles from spawn. (b)
+   `companies.form` ran EVERY turn, banding seekers into rival companies by turn 2 so a fresh hero could never
+   recruit one — moved it to NIGHTLY (`companies.run_day`), giving a full day's window. (c) the hero now
+   ACTIVELY seeks recruits: `agent_goals.nearest_recruitable` + `agent_social._seek_recruit` walk it to the
+   adventurer's LIVE position and it recruits when adjacent; `_pick_friend` prefers a friendly with BUSINESS.
+4. **Never questing** — `agent_goals.nearest_quest_giver` makes a quest-less hero head to a giver to TAKE one;
+   `_should_recruit_first` defers a dangerous quest until it has a band.
+Also extracted the social logic into `engine/agent_social.py` (agent_controller 514→461, under 500) and added
+`agent_sense.friendlies_near` (list). RESULT (balanced away-hero, combined world): recruits a FULL party of 3
+(Kestrel/Sable/Bram, turns 3/10/71), THEN takes q_blackbanner_raids and adventures — greeting, trading,
+foraging, fighting alongside its band. All agent/companion/adventurer/company suites (83) green.

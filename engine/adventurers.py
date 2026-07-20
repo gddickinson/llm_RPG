@@ -75,12 +75,17 @@ class AdventurerSystem:
     def _gathering_spot(self, home: str) -> Optional[Tuple[int, int]]:
         """Where an adventurer loiters seeking a band: its home's GUILD HALL
         (M.7b) if there is one, else a walkable tile beside a tavern/inn."""
+        # prefer a guild-hall LOCATION near home — the guildhalls-system marker
+        # can strand adventurers in a far corner of a combined world, where no
+        # hero ever finds them to recruit (George: parties never form)
+        spot = self._guild_hall_near(home)
+        if spot is not None:
+            return spot
         gh = getattr(self.engine, "guildhalls", None)
         if gh is not None:
-            spot = gh.hall_spot(settlement=home)
-            if spot is not None:
-                near = self._walkable_beside(spot[0], spot[1])
-                return near or spot
+            s = gh.hall_spot(settlement=home)
+            if s is not None:
+                return self._walkable_beside(s[0], s[1]) or tuple(s)
         locs = getattr(self.engine.world, "locations", [])
         taverns = [l for l in locs
                    if any(w in l.name.lower() for w in ("tavern", "inn"))]
@@ -93,6 +98,30 @@ class AdventurerSystem:
                 return spot
         # fallback: any walkable tile a little way from the player
         return self._any_walkable()
+
+    def _guild_hall_near(self, home: str) -> Optional[Tuple[int, int]]:
+        """A walkable tile by the guild-hall LOCATION nearest to `home` (the
+        town generator names its halls "<Town> Guildhall") — so Oakvale's
+        adventurers gather at Oakvale's hall, not a stray corner marker."""
+        locs = getattr(self.engine.world, "locations", [])
+        halls = [l for l in locs if l.get_property("guildhall")
+                 or any(k in l.name.lower()
+                        for k in ("guildhall", "guild hall", "mercenar"))]
+        if not halls:
+            return None
+        anchor = None
+        for l in locs:                      # a place named like the home town
+            if home and home.lower() in l.name.lower():
+                anchor = (l.x, l.y)
+                break
+        if anchor is None:
+            try:
+                anchor = tuple(self.engine.player.position)
+            except Exception:
+                anchor = (halls[0].x, halls[0].y)
+        hall = min(halls, key=lambda l: (l.x - anchor[0]) ** 2
+                   + (l.y - anchor[1]) ** 2)
+        return self._walkable_beside(hall.x, hall.y) or (hall.x, hall.y)
 
     def _walkable_beside(self, cx: int, cy: int) -> Optional[Tuple[int, int]]:
         wmap = self.engine.world.map
@@ -181,7 +210,9 @@ class AdventurerSystem:
         company's followers trail their leader as a party of their own."""
         from engine import companies
         companies.dissolve(self)
-        companies.form(self)
+        # NOTE: companies FORM nightly (companies.run_day), not every turn —
+        # else seeking adventurers band up instantly and a fresh away-hero can
+        # never recruit one (George: parties never form). A full day's window.
         party = getattr(getattr(self.engine, "companion_manager", None),
                         "party", {})
         driven = 0

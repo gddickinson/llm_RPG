@@ -190,6 +190,9 @@ def run_day(advsys, day: int = 0) -> None:
     strongest company beat the player to a far hoard."""
     ledger = _ledger(advsys)
     npcs = _npcs(advsys)
+    # 0. band the day's still-seeking adventurers into rival companies (moved
+    # off the per-turn drive so the player has a day to recruit one first)
+    form(advsys)
     # 1. register + refresh standing companies
     for lid in companies(advsys):
         adv = npcs.get(lid)

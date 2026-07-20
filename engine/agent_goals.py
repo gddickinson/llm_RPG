@@ -100,6 +100,24 @@ def named_goal(ctrl, engine, char):
     # and the manageable-lair gate keeps it from a suicidal delve. If it can't
     # reach the den (stalls out), rule 7 marks the name visited and it moves
     # on to the next one — so seeking a fight can never freeze it.
+    # LIVE A RICH LIFE (George) — before roaming, a social hero forms a party
+    # and takes on a quest: head to the nearest recruitable adventurer (gather
+    # a band), then to the nearest quest-giver (go adventuring). These use the
+    # SAME safe stall/TTL roaming as any goal, so a far target never freezes it.
+    if getattr(ctrl, "social", False):
+        rec = nearest_recruitable(ctrl, engine, char)
+        if rec is not None:
+            ctrl.goal_name = f"recruit {rec[0]}"
+            return reachable_tile(engine, char, rec[1])
+        try:
+            has_quest = bool(engine.quest_manager.active())
+        except Exception:
+            has_quest = True
+        if not has_quest:
+            qg = nearest_quest_giver(engine, char)
+            if qg is not None:
+                ctrl.goal_name = f"{qg[0]} — a quest"
+                return reachable_tile(engine, char, qg[1])
     try:
         if battle_ready(char):
             al = adventure_lair(engine, char, ctrl.visited)
@@ -136,7 +154,7 @@ def named_goal(ctrl, engine, char):
     pool.sort(key=lambda t: t[0])
     loc = pool[0][1]
     ctrl.goal_name = loc.name
-    return loc.center()
+    return reachable_tile(engine, char, loc.center())
 
 
 def disposition(char) -> str:
@@ -171,6 +189,74 @@ def stalemate_flee(ctrl, engine, char, target):
             ctrl.target_id = None    # drop the fixation so we don't re-lock it
             return step
     return None
+
+
+def nearest_quest_giver(engine, char):
+    """The nearest NPC with a quest ON OFFER — a social hero with no quest of
+    its own heads there to TAKE one (so it actually goes adventuring)."""
+    qm = getattr(engine, "quest_manager", None)
+    if qm is None:
+        return None
+    px, py = char.position
+    best, bd = None, 1e18
+    for npc in engine.npc_manager.npcs.values():
+        if not npc.is_active():
+            continue
+        try:
+            if not qm.offered_by(npc.id):
+                continue
+        except Exception:
+            continue
+        d = (npc.position[0] - px) ** 2 + (npc.position[1] - py) ** 2
+        if d < bd:
+            best, bd = npc, d
+    return (best.name, tuple(best.position)) if best else None
+
+
+def nearest_recruitable(ctrl, engine, char):
+    """The nearest adventurer a PARTYLESS hero (with room) could recruit — so
+    it goes to a guild hall and gathers a band instead of adventuring alone."""
+    try:
+        if not ctrl._room_in_party(engine) or engine.companion_manager.party:
+            return None
+    except Exception:
+        return None
+    cm = engine.companion_manager
+    px, py = char.position
+    best, bd = None, 1e18
+    for npc in engine.npc_manager.npcs.values():
+        if not npc.is_active() or not npc.metadata.get("adventurer"):
+            continue
+        try:
+            if cm.can_recruit(npc) != "":
+                continue
+        except Exception:
+            continue
+        d = (npc.position[0] - px) ** 2 + (npc.position[1] - py) ** 2
+        if d < bd:
+            best, bd = npc, d
+    return (best.name, tuple(best.position)) if best else None
+
+
+def reachable_tile(engine, char, pos):
+    """A WALKABLE tile at/near a location's centre. A hero can't stand ON a
+    building, so an exploration goal set to a building CENTRE never 'arrives' —
+    the hero circles the wall forever (George: "wanders in a circle"). Snap the
+    goal to the nearest open tile so it actually reaches the place and moves on."""
+    from engine import agent_nav as nav
+    cx, cy = int(pos[0]), int(pos[1])
+    if nav.walkable(engine, char, (cx, cy)):
+        return (cx, cy)
+    for r in range(1, 7):
+        best = None
+        for dx in range(-r, r + 1):
+            for dy in range(-r, r + 1):
+                if max(abs(dx), abs(dy)) != r:
+                    continue
+                t = (cx + dx, cy + dy)
+                if nav.walkable(engine, char, t):
+                    return t
+    return (cx, cy)
 
 
 def pack_outmatches(char, pack) -> bool:

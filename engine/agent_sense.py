@@ -334,14 +334,13 @@ def nearest_loot(engine, char, r: int = 5):
     return best
 
 
-def friendly_near(engine, char, r: int = 7):
-    """The nearest living, non-hostile, non-player soul ON OUR GRID — someone
-    to talk to, take a quest from, or recruit (no chatting through walls).
-    Split from `agent_controller` (2026-07-19, drives round)."""
+def friendlies_near(engine, char, r: int = 7):
+    """Every living, non-hostile, non-player soul ON OUR GRID within `r`,
+    nearest first — the faces a hero can talk to, quest from, or recruit."""
     from engine import agent_nav as nav
     zone = nav.active_zone(engine)
     zname = getattr(zone, "name", None) if zone is not None else None
-    best, bd = None, r + 1
+    out = []
     for npc in engine.npc_manager.npcs.values():
         if npc.id == char.id or not npc.is_active():
             continue
@@ -351,6 +350,14 @@ def friendly_near(engine, char, r: int = 7):
         if not _colocated(zname, npc):
             continue
         d = nav._dist(char.position, npc.position)
-        if d < bd:
-            best, bd = npc, d
-    return best
+        if d <= r:
+            out.append((d, npc))
+    out.sort(key=lambda t: t[0])
+    return [npc for _, npc in out]
+
+
+def friendly_near(engine, char, r: int = 7):
+    """The nearest living, non-hostile, non-player soul ON OUR GRID — someone
+    to talk to, take a quest from, or recruit (no chatting through walls)."""
+    fs = friendlies_near(engine, char, r)
+    return fs[0] if fs else None
