@@ -10464,3 +10464,12 @@ event log or the chronicle observer.
   Ravenmoor, Emberfell, Blackbanner, Wychwood, the castle fork).
 Verified: the playtest now shows all four finale legends firing (was 0); `tests/test_quest_branching.py` +1
 regression test; branching/adventure suites green.
+
+## 2026-07-19 — Upgrade: surface quest progress to the player (George)
+
+Following the finale-legend fix, the same `_log`-only gap hid ALL quest progress: "Objective complete: …" and
+"… ready to turn in" went only to the quest manager's private event_log, so during a multi-objective quest the
+player got NO feedback. Added a shared `_surface` helper (logs AND pushes to `memory_manager`) and routed the
+objective-complete / ready-to-turn-in / finale-legend beats through it, each announced ONCE (a transient
+`_announced`/`_ready_announced` flag; cleared when a repeatable quest re-arms). Confirmed bonus: the chronicle
+observes `[Legend]`, so adventure finales now enter the "Chronicle of the Age" saga. Quest suites (48) green.
