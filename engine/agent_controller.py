@@ -132,6 +132,19 @@ class AgentController:
         from engine.agent_sense import nearest_loot
         return nearest_loot(engine, char, r)
 
+    def _party_near(self, engine, char, r: int = 6) -> bool:
+        """A living companion within `r` — someone to screen a fragile caster
+        so it can stand and cast instead of fleeing."""
+        try:
+            for mid in engine.companion_manager.party:
+                m = engine.npc_manager.get_npc(mid)
+                if m is not None and m.is_active() \
+                        and _dist(char.position, m.position) <= r:
+                    return True
+        except Exception:
+            pass
+        return False
+
     def _room_in_party(self, engine) -> bool:
         try:
             cm = engine.companion_manager
@@ -217,6 +230,20 @@ class AgentController:
                                          self.recent)
                     if step is not None:
                         return ("flee", step)
+
+        # 1b. a CASTER leads with MAGIC: blast a foe in range before it comes
+        # to melee or flight, so a wizard actually FIGHTS with spells (George:
+        # "the hero doesn't use magic much"). A lone caster swarmed (2+ adjacent
+        # with no party to screen it) still flees via rule 2; but with allies
+        # near to soak the blows — or the foe still at range — it casts.
+        if foes and hp > LOW_HP and disp != "cautious":
+            nearest = foes[0][0]
+            eucd = math.hypot(char.position[0] - nearest.position[0],
+                              char.position[1] - nearest.position[1])
+            spell = _attack_spell(char, eucd)
+            if spell is not None \
+                    and (len(adj) < 2 or self._party_near(engine, char)):
+                return ("cast", spell, nearest)
 
         # 2. don't stand and trade blows when swarmed in melee
         if len(adj) >= 2 and hp < SWARM_HP:

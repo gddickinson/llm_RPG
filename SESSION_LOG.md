@@ -10608,3 +10608,13 @@ found). Two fixes in `companions._companion` follow:
   waiting until the hero is 12 tiles away.
 Verified: 15 turns after recruiting, all 3 companions are on GRASS following the hero (were stuck on BUILDING
 at dist 39 forever). Companion/living-agent/party suites (60) green.
+
+## 2026-07-20 — Fix: a caster away-hero fights with MAGIC (George)
+
+George: "when playing a wizard the hero doesn't seem to use magic much." The wizard DID cast when it engaged
+(67 casts vs 14 melee — 82% magic in combat) but it FLED 58% of the time (a fragile caster gets swarmed and
+rule 2 flees before it can cast). Added rule 1b — a CASTER LEADS WITH MAGIC: with a foe in range it casts its
+best affordable damage spell (`agent_sense._attack_spell`) BEFORE the swarm-flee, gated so a lone caster
+swarmed with no screen still flees (rule 2), but with a party near (`_party_near`) — or the foe still at range
+— it stands and blasts. Result: wizard casts 67 → 123, flee 0.58 → 0.26. The party (now the strong melee band)
+screens the caster while it throws spells. Agent/ambition/companies/building suites (85) green.
