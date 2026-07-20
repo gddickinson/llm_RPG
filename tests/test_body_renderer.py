@@ -362,5 +362,28 @@ class TestGroundShadow(unittest.TestCase):
         self.assertLess(a, g, "an airborne figure's contact shadow shrinks")
 
 
+class TestPartialAnimBackfill(unittest.TestCase):
+    """A PARTIAL `_anim` dict is minted elsewhere before a body is ever
+    rendered — a world-spell caster does `setdefault("_anim", {})["facing"]=…`
+    (engine/spell_world). `_ensure_anim` must backfill the missing keys so the
+    render loop never KeyErrors on `prev_pos` / `walk_phase`."""
+
+    def test_ensure_anim_backfills_a_partial_dict(self):
+        c = _new_char()
+        c.metadata["_anim"] = {"facing": (1, 0)}       # only 'facing', as cast
+        anim = _ensure_anim(c)
+        self.assertIn("prev_pos", anim)
+        self.assertIn("walk_phase", anim)
+        self.assertEqual(anim["facing"], (1, 0), "the existing key is kept")
+
+    def test_update_anim_survives_a_partial_dict(self):
+        c = _new_char()
+        c.metadata["_anim"] = {"facing": (0, 1)}       # partial, no prev_pos
+        # Previously KeyError: 'prev_pos' — must not raise now.
+        update_anim(c, 1.0 / 30.0)
+        update_anim(c, 1.0 / 30.0)
+        self.assertIn("prev_pos", c.metadata["_anim"])
+
+
 if __name__ == "__main__":
     unittest.main()

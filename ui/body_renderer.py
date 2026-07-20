@@ -43,18 +43,26 @@ def _ensure_anim(char) -> dict:
         char.metadata = meta
     anim = meta.get("_anim")
     if not isinstance(anim, dict):
+        anim = {}
+        meta["_anim"] = anim
+    # Backfill any MISSING keys rather than assume a fully-formed dict: a
+    # PARTIAL `_anim` can be minted elsewhere (a world-spell caster does
+    # `setdefault("_anim", {})["facing"] = …` before it's ever rendered), so
+    # `update_anim` must not KeyError on `prev_pos`/`walk_phase` in the render
+    # loop. `prev_pos` is the sentinel — present ⇒ the dict is fully seeded.
+    if "prev_pos" not in anim:
         # P34.4 individuality: seed the idle breath PHASE + SPEED from the id so a
         # crowd never breathes in lockstep (each body has its own rhythm).
         seed = sum(ord(c) for c in str(getattr(char, "id", "x")))
-        anim = {
+        for _k, _v in {
             "walk_phase": 0.0,
             "idle_phase": (seed % 100) / 100.0 * math.tau,
             "idle_rate": 0.80 + (seed % 11) / 11.0 * 0.5,     # 0.80–1.30×
             "prev_pos": tuple(char.position), "moving": False,
             "facing": (0, 1), "atk_t": 0.0, "atk_seen": None,
             "tween_from": (0, 0), "tween_t": 0.0,
-        }
-        meta["_anim"] = anim
+        }.items():
+            anim.setdefault(_k, _v)
     return anim
 
 
