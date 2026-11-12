@@ -33,3 +33,6 @@ scratchpad/
 * copy.md
 * copy.json
 screenshots/
+
+# Web interface: static site build output
+site/
