@@ -49,6 +49,19 @@ class TestTopicJournal(unittest.TestCase):
             self.karim.id, "What can you tell me about Gorkash?")
         self.assertIn("hunt", reply.lower())
 
+    def test_greeting_does_not_replay_an_earlier_question(self):
+        # A plain greeting (no message) must not answer the topic the
+        # player last raised with SOMEONE ELSE
+        self.tj.known().append("gorkash")
+        px, py = self.player.position
+        self.karim.position = (px + 1, py)
+        self.engine.dialog_system.player_to_npc(
+            self.karim.id, "What can you tell me about Gorkash?")
+        self.karim.position = (px + 30, py + 30)
+        self.goren.position = (px + 1, py)
+        greeting = self.engine.dialog_system.player_to_npc(self.goren.id)
+        self.assertNotIn("keep your voice down", greeting.lower())
+
     def test_unknown_topic_gets_no_answer(self):
         px, py = self.player.position
         self.karim.position = (px + 1, py)
