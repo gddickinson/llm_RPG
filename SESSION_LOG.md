@@ -10683,3 +10683,6 @@ asserts both directions. Full suite re-run green.
   marsh adventures always fall back. `MemoryManager.add_observer` holds the history-trim code that belongs in
   `add_event`, so `game_history` is never trimmed. The `smugglers_cache` sample pack is refused on the combined world
   (no "Old Farmhouse").
+- **Fix (tests only):** `pytest tests` had 13 order-dependent failures on `main` too (DM-library env leaked by
+  `test_blueprint_library`, a too-narrow log window in `test_earthworks`, RNG-pre-taught topics in `test_topics`).
+  Fixed; full suite 3687 passed, 2 skipped, 0 failed.
