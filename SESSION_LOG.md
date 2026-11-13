@@ -10686,3 +10686,23 @@ asserts both directions. Full suite re-run green.
 - **Fix (tests only):** `pytest tests` had 13 order-dependent failures on `main` too (DM-library env leaked by
   `test_blueprint_library`, a too-narrow log window in `test_earthworks`, RNG-pre-taught topics in `test_topics`).
   Fixed; full suite 3687 passed, 2 skipped, 0 failed.
+
+## 2026-11-12 — Follow-up (George delegated): bounded history, reproducible worlds, spread adventures, tolerant pack anchors
+
+- **Event history is bounded.** The trim block sat in `MemoryManager.add_observer` instead of `add_event`, so
+  `game_history` grew forever. It now trims (in place) on every add. The away digest used to slice history from a
+  stored length, which only worked unbounded: `away_digest.record` (a memory observer) now copies the lines the
+  digest needs ([Away], [Legend], quests) onto each away hero's snapshot. Tests: `tests/test_history_bound.py`;
+  tests that sliced history by index now use observers.
+- **Reproducible worlds.** 59 `random.Random(seed)` / `random.Random()` sites built their RNG from OS entropy when no
+  seed was given; they now derive from the global `random` stream, and `GameEngine(seed=N)` seeds it. Same seed ->
+  identical terrain, places, people and spawn, in one process and across processes with different
+  PYTHONHASHSEED (`tests/test_world_seed.py`). Unseeded games stay random. The web's World page uses seed 7.
+- **Adventure sites spread out.** New `world/adventure_sites.pick_site` (used by all three seeders): seeded random
+  choice among suitable tiles, 6 apart within an adventure, 12 from other adventures, clustered within 45 of the
+  adventure's first area; swamp adventures fall back to a water shore, else a small painted marsh
+  (`tests/test_adventure_sites.py`). Before, most areas sat side by side on the top edge.
+- **Pack anchors.** New `engine/pack_anchor.resolve_anchor`: a pack structure's missing anchor falls back to a free
+  same-kind building (any farmhouse) or a newly planted one; a structure the Legendarium already knows re-resolves
+  in each world. `smugglers_cache` now loads on the combined world (`tests/test_pack_anchor.py`). The DM charter
+  still refuses unknown anchors for the DM's own structures.

@@ -2,9 +2,8 @@
 
 It builds a real headless `GameEngine(world_kind="combined")` (the game's default New Game world: Oakvale, the
 countryside, Bloodstone Castle, lairs, guild halls, waystones and the five adventures) and reads its map, so the picture
-is exactly what the game generates. Worldgen draws from Python's global `random` (seeded here) but is not fully
-reproducible run to run (location order and some placement vary), so the static site shows one snapshot made at build
-time; the local app can generate fresh ones. Takes ~10 s; results are cached per seed for the server's lifetime.
+is exactly what the game generates. `GameEngine(seed=...)` makes worldgen reproducible, so the static site shows the
+world for a fixed seed (DEFAULT_SEED) and the local app can show any other seed. Takes ~10 s; cached per seed.
 """
 import os
 import random
@@ -34,12 +33,11 @@ def _kind(loc) -> str:
 def world_snapshot(seed: int = DEFAULT_SEED) -> dict:
     os.environ.setdefault("LLM_RPG_DM_LIBRARY", tempfile.mkdtemp(prefix="llmrpg_lib_"))   # never write data/dm_library
     from engine.game_engine import GameEngine
-    state = random.getstate()
+    state = random.getstate()                                # leave the caller's RNG as it was
     # the test suite switches adventurers and module packs off for speed; the web always shows the full New Game world
     saved = {k: os.environ.pop(k) for k in _TEST_SWITCHES if k in os.environ}
-    random.seed(seed)
     try:
-        eng = GameEngine(llm_provider="heuristic", enable_npc_processes=False, world_kind="combined")
+        eng = GameEngine(llm_provider="heuristic", enable_npc_processes=False, world_kind="combined", seed=seed)
         eng.start_game()
     finally:
         random.setstate(state)

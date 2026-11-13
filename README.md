@@ -192,8 +192,8 @@ python run_web.py                    # http://127.0.0.1:8200
   `/intimidate` `/deceive` dice checks. On the static site a JavaScript port runs the same turn in the browser;
   `web/static/talk_engine.test.mjs` replays 700 recorded Python turns and requires every reply to match.
 - **Adventures** — the five authored questlines: rumor, places, cast, foes, quest chain and the three-way finale.
-- **World** — a snapshot of the combined New Game map generated headless by `GameEngine` (the local app can
-  generate other seeds).
+- **World** — the combined New Game map generated headless by `GameEngine(seed=7)`; worldgen is reproducible, so
+  the same seed always gives the same world (the local app can show any other seed).
 - **Compendium** — bestiary, spellbook, armoury & items with the crafting recipes, straight from `data/*.json`.
 
 No LLM is called by default, by the static site, or by the tests. To let an LLM voice the NPC lines in the local

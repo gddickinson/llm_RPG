@@ -42,16 +42,6 @@ function shown(w, on) {
     || (on.buildings && !MARK[p.kind]));
 }
 
-// Honest note: the adventure seeders take the first suitable tile scanning from the top-left, so in this world many
-// adventure sites sit in a row on the map's top edge (reported to the author; not changed here).
-function edgeNote(w) {
-  const edge = w.places.filter(p => p.kind === 'adventure' && p.y <= 1);
-  return edge.length > 2 ? `<p class="callout small">${edge.length} of ${w.places.filter(p => p.kind === 'adventure').length}
-    adventure sites sit in a row along the top edge (${esc(edge.slice(0, 4).map(p => p.name).join(', '))}...): the
-    adventure seeders pick the first suitable tile scanning from the top-left corner, and this world has no marsh for the
-    marsh adventures. That is how the game currently places them, shown as generated.</p>` : '';
-}
-
 route('world', async (args, query) => {
   const seed = query.seed && !isStatic() ? +query.seed : null;
   app().innerHTML = `<p class="kicker">Worldgen</p><h1 class="glow">A generated world</h1>
@@ -74,8 +64,7 @@ route('world', async (args, query) => {
     <div class="legend">${Object.entries(NAMES).map(([k, n]) => `<span style="--c:${COL[k]}">${n}</span>`).join('')}</div>
     <div class="row"><div><label for="seed">Another seed</label><input id="seed" type="number" min="0" max="999999" value="${w.seed}"></div>
       <div><button id="gen">Generate</button></div></div>
-    ${edgeNote(w)}
-    ${isStatic() ? needsServer('Generating a world for another seed') : '<p class="small mute">Worldgen is not fully reproducible run to run, so the same seed can differ slightly between runs.</p>'}`;
+    ${isStatic() ? needsServer('Generating a world for another seed') : '<p class="small mute">The same seed always builds the same world.</p>'}`;
   const cv = $('#map'), tip = $('#tip');
   draw(cv, w, on);
   $('#layers').onchange = e => { on[e.target.dataset.k] = e.target.checked; draw(cv, w, on); };
