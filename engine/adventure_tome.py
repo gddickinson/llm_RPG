@@ -136,34 +136,10 @@ class AdventureTome:
             pass
 
     def _spot(self, near: str, used: set) -> Optional[Tuple[int, int]]:
-        """An open tile of (or beside) `near` terrain, far from the player and
-        from other areas."""
-        wmap = self.engine.world.map
-        try:
-            px, py = self.engine.player.position
-        except Exception:
-            px, py = wmap.width // 2, wmap.height // 2
-        want = getattr(TerrainType, near.upper(), TerrainType.GRASS)
-        best = None
-        for y in range(1, wmap.height - 1):
-            for x in range(1, wmap.width - 1):
-                if wmap.terrain[y][x] in _BAD or (x, y) in wmap.characters \
-                        or (x, y) in used \
-                        or self.engine.world.get_location_at(x, y):
-                    continue
-                if abs(x - px) + abs(y - py) < MIN_DIST:
-                    continue
-                if any(abs(x - ax) + abs(y - ay) < 6 for ax, ay in used):
-                    continue
-                on_want = wmap.terrain[y][x] == want or any(
-                    0 <= x + dx < wmap.width and 0 <= y + dy < wmap.height
-                    and wmap.terrain[y + dy][x + dx] == want
-                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
-                if on_want:
-                    return (x, y)
-                if best is None:
-                    best = (x, y)
-        return best
+        """A spread-out open tile on/beside `near` terrain, far from the
+        player and from other adventures (world/adventure_sites)."""
+        from world.adventure_sites import pick_site
+        return pick_site(self.engine, near, used, MIN_DIST)
 
     def _plant_area(self, spec: dict, spot: Tuple[int, int]) -> None:
         from world.location import Location
