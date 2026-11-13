@@ -34,10 +34,10 @@ class TestCompanionDepth(unittest.TestCase):
 
     def test_banter_is_rare_not_spam(self):
         self.player.metadata["banter_turn"] = self.engine.turn_counter
-        n0 = len(self.engine.memory_manager.game_history)
+        seen = []                        # history is bounded: observe instead
+        self.engine.memory_manager.add_observer(seen.append)
         self.engine.companion_manager.banter_tick()
-        self.assertEqual(len(self.engine.memory_manager.game_history),
-                         n0, "quiet between lines")
+        self.assertEqual(seen, [], "quiet between lines")
 
     def test_orders_hold_and_flee(self):
         cm = self.engine.companion_manager

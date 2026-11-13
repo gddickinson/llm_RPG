@@ -37,6 +37,10 @@ class MemoryManager:
 
         self.game_history.append(timestamped_event)
         logger.debug(f"Added event: {event}")
+        # Keep the history bounded (in place: holders of the list see it).
+        # Observers that need a longer memory keep their own record.
+        if len(self.game_history) > self.max_history:
+            del self.game_history[:-self.max_history]
 
         for observer in ([self.on_event] if self.on_event else []) + \
                 self._observers:
@@ -48,11 +52,6 @@ class MemoryManager:
     def add_observer(self, fn) -> None:
         if fn not in self._observers:
             self._observers.append(fn)
-        
-        # Trim history if needed
-        if len(self.game_history) > self.max_history:
-            self.game_history = self.game_history[-self.max_history:]
-            logger.debug(f"Trimmed history to {self.max_history} items")
     
     def get_recent_history(self, count=10) -> List[str]:
         """Get a list of recent events"""

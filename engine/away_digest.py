@@ -27,6 +27,25 @@ def snapshot(engine, character) -> None:
         pass
 
 
+# What the digest reads back. The event history is bounded, so an away period
+# longer than it would lose these lines: `record` (a memory observer, wired in
+# engine_setup) copies them onto each away hero's snapshot as they happen.
+_KEEP = ("[Away]", "[Legend]", "Quest accepted:", "Quest turned in:")
+_LOG_CAP = 400
+
+
+def record(engine, text: str) -> None:
+    if not any(k in text for k in _KEEP):
+        return
+    roster = getattr(engine, "roster", None)
+    for ch in (roster.characters if roster is not None else [engine.player]):
+        snap = (getattr(ch, "metadata", None) or {}).get("away_snapshot")
+        if snap is not None:
+            log = snap.setdefault("log", [])
+            log.append(text)
+            del log[:-_LOG_CAP]
+
+
 def _log_slice(engine, start: int) -> List[str]:
     out = []
     for e in engine.memory_manager.game_history[start:]:
@@ -46,7 +65,9 @@ def build_digest(engine, character) -> Optional[Tuple[str, List[str]]]:
     snap = meta.pop("away_snapshot", None)
     if snap is None:            # no away period to report — one-shot
         return None
-    log = _log_slice(engine, snap.get("mem_len", 0))
+    log = snap["log"] if "log" in snap else \
+        _log_slice(engine, min(snap.get("mem_len", 0),
+                               len(engine.memory_manager.game_history)))
     deeds = _away_deeds(log)
 
     lines: List[str] = []

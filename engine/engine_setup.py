@@ -137,6 +137,8 @@ def build_subsystems(engine, llm_model=None,
     self.memory_manager.add_observer(self.codex.on_event)
     from engine import world_memory        # T2.1 NPCs ingest world beats
     self.memory_manager.add_observer(world_memory.make_observer(self))
+    from engine import away_digest         # the away digest's own record
+    self.memory_manager.add_observer(lambda t: away_digest.record(self, t))
     from engine.romance import RomanceSystem
     self.romance = RomanceSystem(self)
     self.dm = DMApi(self)

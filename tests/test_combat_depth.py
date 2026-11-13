@@ -172,12 +172,12 @@ class TestCombatDepth(unittest.TestCase):
         # capture the event index BEFORE the action: a fixed last-N window is too
         # small now that advance_turn emits ambient [Town]/wildlife/etc. beats
         # (count varies with global-RNG order → a full-suite flake).
-        n0 = len(self.engine.memory_manager.game_history)
+        seen = []                        # (the history itself is bounded)
+        self.engine.memory_manager.add_observer(seen.append)
         weapon_action(self.engine)
         # the action's own turn tick may roll the flat end-check
         # (unrigged), so assert the wound bled, not that it persists
-        log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[n0:])
+        log = " ".join(seen)
         self.assertIn("red line", log)
         self.assertIn("bleeding", log.lower(),
                       "the wound bled at least once")

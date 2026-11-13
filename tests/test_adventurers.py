@@ -128,11 +128,11 @@ class TestCombatAttribution(_Base):
         from world.monsters import build_monster
         _, adv = self._an_adventurer()
         foe = build_monster("wolf", adv.position)
-        start = len(self.engine.memory_manager.game_history)
+        seen = []                        # history is bounded: observe instead
+        self.engine.memory_manager.add_observer(seen.append)
         with acting_as(self.engine, adv):
             self.engine.combat_system._award_xp(foe)
-        after = " ".join(str(e) for e in
-                         self.engine.memory_manager.game_history[start:])
+        after = " ".join(seen)
         self.assertNotIn("You gain", after)
 
 
