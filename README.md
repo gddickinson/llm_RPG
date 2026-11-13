@@ -93,7 +93,7 @@ the castle's curtain wall.*
 |---|---|
 | **Progression** | 12-skill lattice with geometric XP, tiered gathering & crafting, gear durability + forge repair, magic-item enchanting, a collection log, skilling pets, achievement diaries, quest points → guild ranks, a training/level-up system, earned teleports |
 | **Combat depth** | degrees of success, flanking & opportunity attacks, cover & true line-of-sight, ranged fidelity (ammo, aim, reload), concentration spells, weapon actions, body-part wounds, infection, dying/stabilize, a Souls-like bloodstain on death |
-| **Magic & worldcraft** | 51 spells across schools & tiers, world-altering spells that reshape terrain, shapeshifting (willing & cursed), necromancy & the undead, a unified worldcraft mutation layer, protection-by-power wards, a player build/terraform tool with saveable blueprints |
+| **Magic & worldcraft** | 58 spells across schools & tiers, world-altering spells that reshape terrain, shapeshifting (willing & cursed), necromancy & the undead, a unified worldcraft mutation layer, protection-by-power wards, a player build/terraform tool with saveable blueprints |
 | **Monsters & menace** | dragons + apex tier, overworld lairs with hoards, coordinated packs, tribes that grow & raid, party-scaled elites & warbands, the Shadow-of-Mordor nemesis system, monster goals & tribal agendas |
 | **The living world** | nightly world director, faction ticker with a real Lanchester army model, settlement production + caravans + market prices, five gods with favor & miracles, disease, weather, two moons & conjunctions |
 | **The living society** | NPC needs & schedules, retrieval-scored memory & nightly opinions, gated secrets, bond ceremonies, heart events, a topic journal, ambitions that pay off, a peer social graph of friendships & feuds, and townsfolk who venture out and trade |
@@ -177,6 +177,38 @@ slot); `1-5` **quick-cast** a slotted spell; `V` quick-Heal; `H` drink a potion.
 
 ---
 
+## Web interface
+
+A browser companion to the game, published as a static site at
+**https://gddickinson.github.io/llm_RPG/** and runnable locally:
+
+```bash
+pip install -r requirements-web.txt
+python run_web.py                    # http://127.0.0.1:8200
+```
+
+- **Tavern** — talk to the 25 named NPCs through the game's own offline heuristic mind: replies by class, keywords
+  and goals, the topic journal (topics you *hear* become askable), trust-gated secrets, and `/persuade`
+  `/intimidate` `/deceive` dice checks. On the static site a JavaScript port runs the same turn in the browser;
+  `web/static/talk_engine.test.mjs` replays 700 recorded Python turns and requires every reply to match.
+- **Adventures** — the five authored questlines: rumor, places, cast, foes, quest chain and the three-way finale.
+- **World** — the combined New Game map generated headless by `GameEngine(seed=7)`; worldgen is reproducible, so
+  the same seed always gives the same world (the local app can show any other seed).
+- **Compendium** — bestiary, spellbook, armoury & items with the crafting recipes, straight from `data/*.json`.
+
+No LLM is called by default, by the static site, or by the tests. To let an LLM voice the NPC lines in the local
+app, start it with `LLM_RPG_WEB_PROVIDER=ollama` (or `anthropic` / `openai`, with the game's `requirements.txt`);
+keys stay in the server's environment. The playable game itself (movement, combat, renderers, the DM layer,
+autoplay) stays in the desktop app.
+
+| Home | Tavern |
+|---|---|
+| ![Web home](docs/img/web_home.png) | ![Talking to Goren in the tavern](docs/img/web_tavern.png) |
+| **An adventure** | **A generated world** |
+| ![The Wyrm of Emberfell](docs/img/web_adventure.png) | ![The combined world map](docs/img/web_world.png) |
+
+---
+
 ## Development
 
 - **Branch:** work happens on `v2-development` in small, tested rounds; every green
@@ -204,7 +236,7 @@ Highlights of what's in now:
   the living economy with production & caravans; the tactical battle layer; the
   seven-floor royal castle; the **Monsters & Menace** ecology; and the **Living
   Society & Gods**.
-- **Magic & worldcraft** — 51 spells across schools and tiers, world-altering spells,
+- **Magic & worldcraft** — 58 spells across schools and tiers, world-altering spells,
   shapeshifting, necromancy & a fleshed-out undead world, enchanting, a player
   build/terraform tool with cross-game blueprints, and protection-by-power wards.
 - **One combined world** — a single big map entered at a large, walled, multi-district
@@ -233,4 +265,4 @@ No network is required to play — LLM providers are strictly opt-in.
 
 ## License
 
-See repository for license details.
+MIT — see [`LICENSE`](LICENSE).

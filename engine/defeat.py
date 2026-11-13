@@ -26,7 +26,7 @@ LEFT_FOR_DEAD_HOURS = 6
 def handle_player_defeat(engine, attacker,
                          rng: random.Random = None) -> Tuple[bool, str]:
     """Resolve the player's defeat. Returns (survived, message)."""
-    rng = rng or random.Random()
+    rng = rng or random.Random(random.getrandbits(64))
     player = engine.player
 
     # Inside a dungeon/interior nobody drags you to safety

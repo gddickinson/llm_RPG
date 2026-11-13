@@ -15,6 +15,10 @@ class TestTopicJournal(unittest.TestCase):
         self.tj = self.engine.topic_journal
         self.goren = self.engine.npc_manager.get_npc("tavernkeeper_01")
         self.karim = self.engine.npc_manager.get_npc("guard_01")
+        # world-gen lore lines may pre-teach topics (depends on the global
+        # RNG, i.e. on which tests ran before): start every test from an
+        # empty journal so the learning assertions are order-independent
+        self.player.metadata["topics_known"] = []
 
     def tearDown(self):
         try:
@@ -48,6 +52,19 @@ class TestTopicJournal(unittest.TestCase):
         reply = self.engine.dialog_system.player_to_npc(
             self.karim.id, "What can you tell me about Gorkash?")
         self.assertIn("hunt", reply.lower())
+
+    def test_greeting_does_not_replay_an_earlier_question(self):
+        # A plain greeting (no message) must not answer the topic the
+        # player last raised with SOMEONE ELSE
+        self.tj.known().append("gorkash")
+        px, py = self.player.position
+        self.karim.position = (px + 1, py)
+        self.engine.dialog_system.player_to_npc(
+            self.karim.id, "What can you tell me about Gorkash?")
+        self.karim.position = (px + 30, py + 30)
+        self.goren.position = (px + 1, py)
+        greeting = self.engine.dialog_system.player_to_npc(self.goren.id)
+        self.assertNotIn("keep your voice down", greeting.lower())
 
     def test_unknown_topic_gets_no_answer(self):
         px, py = self.player.position

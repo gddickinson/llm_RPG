@@ -79,6 +79,20 @@ _GOAL_REPLIES = {
 
 _EMOTIONS = ["calm", "wary", "cheerful", "tired", "curious", "suspicious", "angry"]
 
+# Dialog keyword routing for generate_npc_dialog (module-level so the web
+# interface can export the same lines; behaviour unchanged)
+_GREET_WORDS = ("hello", "hi ", "greetings", "hey", "good day", "well met")
+_TRADE_WORDS = ("buy", "sell", "trade", "price", "wares")
+_RUMOR_WORDS = ("quest", "rumor", "news", "trouble", "danger")
+_TRADE_REPLY_MERCHANT = "Aye, I've potions, ale, and trinkets. What catches your eye?"
+_TRADE_REPLY_OTHER = ("I'm not much of a trader, but perhaps the merchant "
+                      "in town can help.")
+_RUMORS = [
+    "Aye, there's a troll on the east road. Gorkash they call him.",
+    "Strange lights in the mountains lately. Some say a wizard returned.",
+    "Bandits attacked a merchant caravan last week. Wasn't pretty.",
+]
+
 
 # ---------------------------------------------------------------------------
 
@@ -89,7 +103,7 @@ class HeuristicProvider(LLMProvider):
     name = "heuristic"
 
     def __init__(self, seed: int = None, **_):
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
 
     # Generic completion -----------------------------------------------------
 
@@ -386,22 +400,18 @@ class HeuristicProvider(LLMProvider):
         klass = getattr(getattr(character, "character_class", None), "value", "villager")
 
         # Greeting detection
-        if any(g in msg for g in ("hello", "hi ", "greetings", "hey", "good day", "well met")):
+        if any(g in msg for g in _GREET_WORDS):
             return self.rng.choice(_GREETINGS.get(klass, _GREETINGS["villager"]))
 
         # Trade
-        if any(g in msg for g in ("buy", "sell", "trade", "price", "wares")):
+        if any(g in msg for g in _TRADE_WORDS):
             if klass == "merchant":
-                return "Aye, I've potions, ale, and trinkets. What catches your eye?"
-            return "I'm not much of a trader, but perhaps the merchant in town can help."
+                return _TRADE_REPLY_MERCHANT
+            return _TRADE_REPLY_OTHER
 
         # Quest / rumor
-        if any(g in msg for g in ("quest", "rumor", "news", "trouble", "danger")):
-            return self.rng.choice([
-                "Aye, there's a troll on the east road. Gorkash they call him.",
-                "Strange lights in the mountains lately. Some say a wizard returned.",
-                "Bandits attacked a merchant caravan last week. Wasn't pretty.",
-            ])
+        if any(g in msg for g in _RUMOR_WORDS):
+            return self.rng.choice(_RUMORS)
 
         # Personal goal reply
         for goal in getattr(character, "goals", []) or []:

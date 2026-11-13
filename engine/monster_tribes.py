@@ -44,7 +44,7 @@ AGENDA_VERB = {
 class MonsterTribeSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.strength: Dict[str, int] = {}
         self.agenda: Dict[str, str] = {}      # tid -> current collective goal
         self._loaded = False

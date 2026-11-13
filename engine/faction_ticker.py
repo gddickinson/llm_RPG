@@ -34,7 +34,7 @@ STRONG = 65
 class FactionTicker:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.state: Dict[str, Dict[str, int]] = {
             k: dict(v) for k, v in DEFAULT_STATE.items()}
 

@@ -7,9 +7,22 @@ import os
 import tempfile
 import unittest
 
-os.environ["LLM_RPG_DM_LIBRARY"] = tempfile.mkdtemp(prefix="llmrpg_bp_")
-
 from engine import blueprint_library as bl
+
+
+def _own_library(case):
+    """Point the library at a fresh tmp dir for this test and RESTORE the previous root afterwards — the suite-wide
+    root (tests/__init__) is what `tests.clean_dm_library()` wipes, so leaving it repointed leaked DM definitions
+    between later tests under pytest (which imports every module at collection)."""
+    prev = os.environ.get("LLM_RPG_DM_LIBRARY")
+    os.environ["LLM_RPG_DM_LIBRARY"] = tempfile.mkdtemp(prefix="llmrpg_bp_")
+
+    def restore():
+        if prev is None:
+            os.environ.pop("LLM_RPG_DM_LIBRARY", None)
+        else:
+            os.environ["LLM_RPG_DM_LIBRARY"] = prev
+    case.addCleanup(restore)
 
 
 class TestSpec(unittest.TestCase):
@@ -30,7 +43,7 @@ class TestSpec(unittest.TestCase):
 
 class TestLibrary(unittest.TestCase):
     def setUp(self):
-        os.environ["LLM_RPG_DM_LIBRARY"] = tempfile.mkdtemp(prefix="llmrpg_bp_")
+        _own_library(self)
 
     def test_save_and_list(self):
         self.assertEqual(bl.count(), 0)
@@ -59,7 +72,7 @@ class TestLibrary(unittest.TestCase):
 
 class TestPlannerIntegration(unittest.TestCase):
     def setUp(self):
-        os.environ["LLM_RPG_DM_LIBRARY"] = tempfile.mkdtemp(prefix="llmrpg_bp_")
+        _own_library(self)
         try:
             import pygame
             pygame.init()

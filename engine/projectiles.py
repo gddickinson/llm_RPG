@@ -102,7 +102,7 @@ class ProjectileManager:
     def __init__(self, engine):
         self.engine = engine
         self.active: List[CombatProjectile] = []
-        self.rng = random.Random()
+        self.rng = random.Random(random.getrandbits(64))
 
     # ------------------------------------------------------------------
 

@@ -109,6 +109,23 @@ def _skip_inherited(module: dict) -> dict:
     return module
 
 
+def _reanchor(engine, sid, spec, registry) -> None:
+    """A pack structure the Legendarium already knows may carry an anchor
+    resolved in ANOTHER world (e.g. "Oakvale Farmhouse 3"): if that place
+    isn't here, resolve the pack's own anchor again for this world."""
+    from engine.pack_anchor import resolve_anchor
+    cur = registry[sid].get("attach_to", "").lower()
+    if cur and any(cur in l.name.lower() for l in engine.world.locations):
+        return
+    anchor = resolve_anchor(engine, spec.get("attach_to", ""))
+    if anchor:
+        registry[sid] = {**registry[sid], "attach_to": anchor}
+        try:
+            engine.structures.build()
+        except Exception as e:
+            logger.warning(f"pack structure '{sid}' re-anchor failed: {e}")
+
+
 def _install_structures(engine, pack) -> int:
     """P14.2b: packs ship whole structures. Each spec goes through
     the DM charter (define_structure: level/grid/monster/value caps)
@@ -117,10 +134,15 @@ def _install_structures(engine, pack) -> int:
     silently; a refused spec is logged, never fatal to the pack."""
     from world.structures import STRUCTURES
     placed = 0
+    from engine.pack_anchor import resolve_anchor
     for sid, spec in pack.get("structures", {}).items():
         if sid in STRUCTURES:
+            _reanchor(engine, sid, spec, STRUCTURES)
             continue
         spent_before = dict(engine.dm._spent)
+        anchor = resolve_anchor(engine, spec.get("attach_to", ""))
+        if anchor:                       # tolerate a world without that place
+            spec = {**spec, "attach_to": anchor}
         ok, note = engine.dm.define_structure(sid, spec)
         engine.dm._spent = spent_before
         if ok:

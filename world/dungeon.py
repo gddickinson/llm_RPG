@@ -101,7 +101,7 @@ def generate_dungeon(name: str = "Cave Tunnels",
                      width: int = 24, height: int = 16,
                      seed: int = None,
                      description: str = "Damp, echoing tunnels.") -> Dungeon:
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     d = Dungeon(name=name, width=width, height=height,
                 description=description)
     # Start with all walls
@@ -151,7 +151,7 @@ def generate_multilevel(name: str, seed: int = None,
 
     GX.5: `depth` forces an exact number of levels (a DEEP delve like the
     Oakvale Deepdelve runs 5-6 floors); omitted, it rolls the classic 2-3."""
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     depth_levels = max(1, depth) if depth else rng.randint(2, 3)
     levels = []
     for i in range(depth_levels):
@@ -201,7 +201,7 @@ def _carve_corridor(d: Dungeon, a: Tuple[int, int],
 
 def populate_dungeon(d: Dungeon, engine, rng: random.Random = None) -> None:
     """Spawn monsters + loot in rooms (except the entrance)."""
-    rng = rng or random.Random()
+    rng = rng or random.Random(random.getrandbits(64))
     if d.spawned or len(d.rooms) <= 1:
         d.spawned = True
         return

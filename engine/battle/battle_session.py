@@ -28,7 +28,7 @@ SIEGE_RANGE = 10         # tiles a bombard-capable engine lobs at a wall
 class BattleSession:
     def __init__(self, field, seed: int = 0):
         self.field = field
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.tick_count = 0
         # ranged shots fired THIS tick, for the screen to draw as
         # tracers: (x0, y0, x1, y1). Refreshed every tick; the sim

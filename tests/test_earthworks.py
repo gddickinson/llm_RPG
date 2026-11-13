@@ -120,6 +120,8 @@ class TestEarthworks(unittest.TestCase):
         self.wmap.terrain[self.oy][self.ox + 1] = TerrainType.MOUNTAIN
         self._put_player(self.ox, self.oy)
         xp0 = self.player.metadata.get("skills", {}).get("mining", 0)
+        seen = []                       # every event from the first swing
+        self.engine.memory_manager.add_observer(seen.append)
         for _ in range(10):
             self.engine.pickup_item()
             if self.wmap.terrain[self.oy][self.ox + 1] != \
@@ -130,8 +132,9 @@ class TestEarthworks(unittest.TestCase):
                          "enough swings cut the mountain through")
         xp1 = self.player.metadata.get("skills", {}).get("mining", 0)
         self.assertGreater(xp1, xp0, "digging trains Mining")
-        log = " ".join(str(e) for e in
-                       self.engine.memory_manager.game_history[-4:])
+        # random world beats (a passing hound, the town) can push the
+        # tunnel line out of the last few history entries
+        log = " ".join(seen)
         self.assertIn("tunnel", log.lower())
 
     def test_no_pickaxe_no_tunnel(self):

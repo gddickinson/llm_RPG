@@ -61,7 +61,7 @@ def disengage_cost(engine) -> None:
 def shove(engine, rng: random.Random = None) -> str:
     """STR contest vs the nearest adjacent hostile; push them one tile
     directly away. Blocked tiles make the shove fail."""
-    rng = rng or random.Random()
+    rng = rng or random.Random(random.getrandbits(64))
     player = engine.player
     hostiles = adjacent_hostiles(engine, player.position)
     if not hostiles:
@@ -180,7 +180,7 @@ def grapple(engine, rng: random.Random = None) -> str:
     """Clinch the nearest adjacent hostile (a STR contest). Win → the foe is
     GRABBED (off-guard; a firm win pins it PRONE) and the player holds the
     clinch; a bad loss throws the player off balance."""
-    rng = rng or random.Random()
+    rng = rng or random.Random(random.getrandbits(64))
     player = engine.player
     hostiles = adjacent_hostiles(engine, player.position)
     if not hostiles:
@@ -214,7 +214,7 @@ def throw(engine, rng: random.Random = None) -> str:
     """Hurl a grappled (or, failing that, the nearest adjacent) foe through the
     air — an amplified shove (up to 2 tiles) + a hard KNOCKDOWN + fall damage.
     A grabbed foe is far easier to throw than a loose one."""
-    rng = rng or random.Random()
+    rng = rng or random.Random(random.getrandbits(64))
     player = engine.player
     gid = (player.metadata or {}).get("grappling")
     target = None

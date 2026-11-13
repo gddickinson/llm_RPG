@@ -34,6 +34,9 @@ class DialogSystem:
             pass
 
         if not message:
+            # A bare greeting raises no topic: don't let the message last
+            # said to SOMEONE ELSE pull their topic answers into this reply
+            self._last_player_message = None
             return self._greet(npc)
 
         # The bond ceremony: /bond, /spend <secret|skill|join> (P12.11)

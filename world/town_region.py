@@ -88,7 +88,7 @@ def _mountains(wm, rng) -> None:
 def build_oakvale_region(world, seed: int = 7) -> dict:
     """Plant the Oakvale region: setting terrain + the big walled town."""
     wm = world.map
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     _fill_grass(wm)
     _forest_ring(wm, rng)
     _river(wm, rng)

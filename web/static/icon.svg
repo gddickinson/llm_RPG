@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><title>LLM-RPG</title>
+<polygon points="32,3 58,18 58,46 32,61 6,46 6,18" fill="#120d1a" stroke="#ffc857" stroke-width="3"/>
+<polygon points="32,14 47,40 17,40" fill="none" stroke="#ff4d6d" stroke-width="3"/>
+<text x="32" y="36" font-family="Menlo,monospace" font-size="13" font-weight="700" fill="#ffc857" text-anchor="middle">20</text>
+</svg>

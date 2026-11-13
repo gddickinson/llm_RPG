@@ -70,7 +70,7 @@ EVENT_POOL = [
 
 
 def simulate(rng: random.Random = None, years: int = 5) -> List[HistoricalEvent]:
-    rng = rng or random.Random()
+    rng = rng or random.Random(random.getrandbits(64))
     n = min(years, len(EVENT_POOL))
     picks = rng.sample(EVENT_POOL, k=n)
     history: List[HistoricalEvent] = []

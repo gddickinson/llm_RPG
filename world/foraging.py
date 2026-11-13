@@ -43,7 +43,7 @@ class ForageManager:
 
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.harvested_at: Dict[Tuple[int, int], int] = {}
 
     def can_forage(self, x: int, y: int) -> bool:

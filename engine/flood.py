@@ -37,7 +37,7 @@ class FloodSystem:
     def __init__(self, engine):
         self.engine = engine
         self.floods = []       # {frontier, flooded, turns_left, max}
-        self.rng = random.Random()
+        self.rng = random.Random(random.getrandbits(64))
 
     # ------------------------------------------------------------ api
 

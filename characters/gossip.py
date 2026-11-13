@@ -50,7 +50,7 @@ def fresh_gossip_about_npcs(memory_manager, exclude_speaker_id: str,
 
 def gossip_for(npc, engine, max_lines: int = 1) -> List[str]:
     """Compose a list of gossip lines for `npc` to share."""
-    rng = random.Random()
+    rng = random.Random(random.getrandbits(64))
     lines = []
 
     # Pull family-related context first if available

@@ -34,7 +34,7 @@ SEED_FRACTION = 0.12        # of matching tiles that become nodes
 class ResourceNodeSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         # (x, y) -> {"kind", "charges", "max", "regrow_day"}
         self.nodes: Dict[tuple, dict] = {}
 

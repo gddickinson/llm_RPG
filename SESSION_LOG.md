@@ -10657,3 +10657,52 @@ self-heal and combat need no movement, so they run first; only a member with not
 otherwise path uselessly against a wall gets pulled out to the leader. Still fixes George's
 recruited-through-a-window trapped-inside bug — new regression test (`test_companion_trapped_on_building_emerges`)
 asserts both directions. Full suite re-run green.
+
+## 2026-11-12 — Web interface + static GitHub Pages site (branch `web-interface`, based on `main`)
+
+`main` is the default branch and holds everything from `v2-development` except one `.gitignore` commit
+("Ignore Finder duplicate copies"), so the web work is based on `main`.
+- **Added `web/`** (FastAPI app on 127.0.0.1:8200 via `run_web.py`; plain ES-module front end; static export by
+  `scripts/build_static.py`, published by `.github/workflows/pages.yml`). Pages: Home, Tavern (talk to the 25 preset
+  NPCs), Adventures (the five questlines with their quest chains and finales), World (a generated combined map),
+  Bestiary, Spellbook, Armoury & items (+ recipes), About. Left out: the playable game itself (movement/combat/turns,
+  renderers, battle layer, colosseum, crafting/shops as actions, DM layer, autoplay, netplay).
+- **Tavern = the real offline code.** `web/talk.py` plays one stateless turn through `HeuristicProvider`,
+  `TopicJournal`, `secrets` and `PersuasionSystem` (seeded per turn); `static/talk_engine.js` + `py_random.js` port it
+  to the browser and `talk_engine.test.mjs` replays 706 recorded Python turns (3534 checks, 0 failures). An LLM can
+  voice the NPC line in the local app only by opting in (`LLM_RPG_WEB_PROVIDER`); tests and the static site never do.
+- Refactor (no behaviour change): `llm/providers/heuristic.py` dialog keyword/rumor lists moved to module constants
+  so the web exports them instead of duplicating text.
+- **Fix:** a bare greeting replayed the topic answers for the last thing the player said to someone ELSE
+  (`DialogSystem._last_player_message` persisted across conversations). Regression test in `tests/test_topics.py`.
+- Docs: README "Web interface" section + screenshots (`docs/img/web_*.png`), spell count 51 → 58 (the data has 58),
+  licence line now points to the MIT `LICENSE`.
+- **Found, not changed (George's call):** the adventure seeders' `_spot` scans row-major from (1,1) and returns the
+  first suitable tile, so in the combined world most adventure areas (Mirefen, Ravenmoor, Yorwin's Refuge, the Ambush
+  Wood, Wychwood Hamlet, ...) land side by side along the top edge; the combined map also has no swamp, so the
+  marsh adventures always fall back. `MemoryManager.add_observer` holds the history-trim code that belongs in
+  `add_event`, so `game_history` is never trimmed. The `smugglers_cache` sample pack is refused on the combined world
+  (no "Old Farmhouse").
+- **Fix (tests only):** `pytest tests` had 13 order-dependent failures on `main` too (DM-library env leaked by
+  `test_blueprint_library`, a too-narrow log window in `test_earthworks`, RNG-pre-taught topics in `test_topics`).
+  Fixed; full suite 3687 passed, 2 skipped, 0 failed.
+
+## 2026-11-12 — Follow-up (George delegated): bounded history, reproducible worlds, spread adventures, tolerant pack anchors
+
+- **Event history is bounded.** The trim block sat in `MemoryManager.add_observer` instead of `add_event`, so
+  `game_history` grew forever. It now trims (in place) on every add. The away digest used to slice history from a
+  stored length, which only worked unbounded: `away_digest.record` (a memory observer) now copies the lines the
+  digest needs ([Away], [Legend], quests) onto each away hero's snapshot. Tests: `tests/test_history_bound.py`;
+  tests that sliced history by index now use observers.
+- **Reproducible worlds.** 59 `random.Random(seed)` / `random.Random()` sites built their RNG from OS entropy when no
+  seed was given; they now derive from the global `random` stream, and `GameEngine(seed=N)` seeds it. Same seed ->
+  identical terrain, places, people and spawn, in one process and across processes with different
+  PYTHONHASHSEED (`tests/test_world_seed.py`). Unseeded games stay random. The web's World page uses seed 7.
+- **Adventure sites spread out.** New `world/adventure_sites.pick_site` (used by all three seeders): seeded random
+  choice among suitable tiles, 6 apart within an adventure, 12 from other adventures, clustered within 45 of the
+  adventure's first area; swamp adventures fall back to a water shore, else a small painted marsh
+  (`tests/test_adventure_sites.py`). Before, most areas sat side by side on the top edge.
+- **Pack anchors.** New `engine/pack_anchor.resolve_anchor`: a pack structure's missing anchor falls back to a free
+  same-kind building (any farmhouse) or a newly planted one; a structure the Legendarium already knows re-resolves
+  in each world. `smugglers_cache` now loads on the combined world (`tests/test_pack_anchor.py`). The DM charter
+  still refuses unknown anchors for the DM's own structures.

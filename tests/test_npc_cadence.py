@@ -26,11 +26,11 @@ class TestNpcCadence(unittest.TestCase):
         """Simulate the 30 FPS GUI loop with a static turn counter:
         NPCs must act at most once (turn tick) — not 100 times."""
         self.engine.turn_counter = 0  # multiple of the interval
-        log_before = len(self.engine.memory_manager.game_history)
+        seen = []                        # history is bounded: observe instead
+        self.engine.memory_manager.add_observer(seen.append)
         for _ in range(100):
             self.engine.process_npc_turns_async()
-        new_events = len(self.engine.memory_manager.game_history) \
-            - log_before
+        new_events = len(seen)
         # One batch of NPC actions max (a few nearby NPCs), not 100
         self.assertLess(new_events, 15,
                         f"{new_events} events from 100 idle frames — "

@@ -75,7 +75,7 @@ class WeatherSystem:
 
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.state = WeatherState()
         # Seed an initial weather appropriate for the starting season
         self._roll()

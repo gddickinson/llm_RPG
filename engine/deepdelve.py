@@ -47,7 +47,7 @@ class DeepdelveSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
         self._seed = seed
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.mouths: List[dict] = []
         self.secret: Optional[dict] = None      # GX.5b the hidden Oakvale stair
         self._seeded = False

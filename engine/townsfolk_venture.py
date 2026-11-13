@@ -57,7 +57,7 @@ def _dist(a, b) -> int:
 class TownsfolkVentureSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.venturing: set = set()      # ids currently away on a venture
 
     # ---- config ----------------------------------------------------

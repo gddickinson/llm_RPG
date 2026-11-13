@@ -43,7 +43,7 @@ class GatheringManager:
 
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         # (skill, x, y) -> world.time of harvest
         self.harvested_at: Dict[Tuple[str, int, int], int] = {}
 

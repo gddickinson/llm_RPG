@@ -82,7 +82,7 @@ def record_bones(engine, slayer=None) -> dict:
 def maybe_load_bones(engine, rng: random.Random = None,
                      chance: float = LOAD_CHANCE) -> Optional[str]:
     """New campaign: 1-in-3, a past failure haunts this world."""
-    rng = rng or random.Random()
+    rng = rng or random.Random(random.getrandbits(64))
     entries = load_all()
     if not entries or rng.random() >= chance:
         return None

@@ -86,7 +86,7 @@ def _street_tiles(engine, cx, cy, radius, n, rng):
 
 def populate_town(engine, town_name: str = "Oakvale", seed: int = 0) -> int:
     """Seat keepers, home-dwellers and street folk. Returns the count."""
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     data = _roles()
     kind_roles = data.get("kind_roles", {})
     town = next((l for l in engine.world.locations

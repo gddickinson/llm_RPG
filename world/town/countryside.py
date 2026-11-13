@@ -60,7 +60,7 @@ def _fields(wm, cx, cy, r) -> None:
 
 def _village_sites(wm, center, radius, seed, n=3):
     """`n` grassy sites out past the town, spread around the compass."""
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     cx, cy = center
     sites, tries = [], 0
     ring = radius + 14

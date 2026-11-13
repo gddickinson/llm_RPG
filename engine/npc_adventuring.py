@@ -40,7 +40,7 @@ _ACT_FLAVOR = ("takes up the trail of", "presses deeper into the hunt for",
 class NpcAdventuringSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.active: dict = {}      # hero_id -> {"adv","act","day"}
 
     # ---- nightly ---------------------------------------------------

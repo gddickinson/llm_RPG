@@ -111,7 +111,7 @@ def giant_tick(engine, giant) -> bool:
 def run_night_labor(engine, rng: random.Random = None) -> int:
     """Villagers clear rubble near their buildings; the forest
     creeps back over scorched ground. Returns acts performed."""
-    rng = rng or random.Random()
+    rng = rng or random.Random(random.getrandbits(64))
     wmap = engine.world.map
     acts = 0
     # 1) work crews clear rubble beside buildings

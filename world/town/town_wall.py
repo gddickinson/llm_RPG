@@ -43,7 +43,7 @@ def wall_polygon(cx: float, cy: float, radius: float, frac: float = 0.5,
                  n: int = 18, seed: int = 0) -> List[Point]:
     """`n` vertices on a jittered, smoothed ring at `frac`·radius — the curtain
     wall around the inner core."""
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     r = radius * frac
     pts = []
     for i in range(n):

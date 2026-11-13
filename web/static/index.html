@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM-RPG</title>
+<meta name="description" content="A D&D-style RPG with a living world, LLM-powered NPCs and heroes that adventure on their own: talk to its townsfolk offline, browse the bestiary, spellbook, armoury and the five authored adventures, and explore a generated world.">
+<link rel="icon" href="static/icon.svg">
+<link rel="stylesheet" href="static/style.css">
+<link rel="stylesheet" href="static/style_app.css">
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<header class="top">
+  <a class="brand" href="#/"><span class="mark"></span>LLM-RPG</a>
+  <nav class="groups">
+    <a href="#/talk" data-nav="talk">Tavern</a>
+    <a href="#/adventures" data-nav="adventures">Adventures</a>
+    <a href="#/world" data-nav="world">World</a>
+    <details><summary>Compendium</summary><div class="menu">
+      <a href="#/bestiary" data-nav="bestiary">Bestiary</a>
+      <a href="#/spells" data-nav="spells">Spellbook</a>
+      <a href="#/items" data-nav="items">Armoury &amp; items</a>
+    </div></details>
+    <a href="#/about" data-nav="about">About</a>
+  </nav>
+  <div class="right"><a class="small mute" href="https://github.com/gddickinson/llm_RPG" target="_blank" rel="noopener">GitHub</a></div>
+</header>
+<main id="app" tabindex="-1"></main>
+<footer class="foot">LLM-RPG · <a href="https://github.com/gddickinson/llm_RPG">source on GitHub</a> · <span id="mode"></span></footer>
+<script type="module" src="static/main.js"></script>
+</body>
+</html>

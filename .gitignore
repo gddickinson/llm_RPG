@@ -36,3 +36,5 @@ screenshots/
 
 # Finder/sync duplicate copies ("name 2.ext")
 * 2.*
+# Web interface: static site build output
+site/
