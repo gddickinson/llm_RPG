@@ -15,6 +15,10 @@ class TestTopicJournal(unittest.TestCase):
         self.tj = self.engine.topic_journal
         self.goren = self.engine.npc_manager.get_npc("tavernkeeper_01")
         self.karim = self.engine.npc_manager.get_npc("guard_01")
+        # world-gen lore lines may pre-teach topics (depends on the global
+        # RNG, i.e. on which tests ran before): start every test from an
+        # empty journal so the learning assertions are order-independent
+        self.player.metadata["topics_known"] = []
 
     def tearDown(self):
         try:
