@@ -196,7 +196,7 @@ def _fill_interior(dp, claimed, buildings, rng, prob=0.55) -> List[BuildingLot]:
 def place_lots(district_plan, street_plan, core_wall=None, seed: int = 0,
                setback: int = 2) -> List[BuildingLot]:
     """Seat the town's buildings: landmarks → street frontage → interior fill."""
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     buildings = _district_buildings()
     claimed = set(street_plan.road_tiles().keys())
     claimed |= set(street_plan.square_tiles())

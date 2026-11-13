@@ -80,7 +80,7 @@ def acting_as(engine, character):
 
 class AgentController:
     def __init__(self, seed: int = 0):
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.goal = None          # a cached destination tile
         self.target_id = None     # the foe we're focusing
         self.home = None          # M.3 potter-around tile while away

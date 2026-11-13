@@ -27,7 +27,7 @@ def elevation_field(w: int, h: int, seed: int = 0) -> list:
     """A height map whose low VALLEY meanders horizontally across the
     map — deterministic from `seed`. Elevation rises away from the
     valley floor, so tracing the minimum per column follows a river."""
-    rng = _random.Random(seed)
+    rng = _random.Random(seed if seed is not None else random.getrandbits(64))
     segments = max(2, w // 12)
     centers = [rng.uniform(h * VALLEY_LO, h * VALLEY_HI)
                for _ in range(segments + 1)]

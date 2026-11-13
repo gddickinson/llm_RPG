@@ -16,7 +16,7 @@ FLOOR, WALL, DOOR = 0, 1, 2
 def subdivide(w, h, seed, min_room=3, max_depth=4):
     """Return (grid, rooms): `grid[y][x]` in {FLOOR, WALL, DOOR}, `rooms` a list of
     (x, y, w, h) leaf rectangles. Every room connects to the rest via a doorway."""
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     grid = [[FLOOR] * w for _ in range(h)]
     for x in range(w):
         grid[0][x] = grid[h - 1][x] = WALL

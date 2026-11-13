@@ -40,7 +40,7 @@ PETS: Dict[str, dict] = _load_pets()
 class PetSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         # Trail position for the follower (lags one step behind)
         self.follow_pos: Optional[Tuple[int, int]] = None
         self._last_player_pos: Optional[Tuple[int, int]] = None

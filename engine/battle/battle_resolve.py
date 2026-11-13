@@ -211,7 +211,7 @@ def resolve(attacker: Army, defender: Army, terrain: str = "plains",
             is_siege: bool = False, seed: int = 0,
             max_rounds: int = 12) -> dict:
     """Fight it out. Deterministic for a given seed."""
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     tmod = terrain_mod(terrain)
     log = []
     rounds = 0

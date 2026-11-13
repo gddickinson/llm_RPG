@@ -145,7 +145,7 @@ def plan_districts(cx: float, cy: float, radius: float, seed: int = 0,
     rings = data.get("rings") or {}
     if n_wards is None:
         n_wards = (data.get("ward_seeds") or {}).get(size, 22)
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     seeds = sunflower_seeds(cx, cy, radius, n_wards, rng)
     seeds = lloyd_relax(cx, cy, radius, seeds, iterations=3)
     ward_map = assign_wards(cx, cy, radius, seeds)

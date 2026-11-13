@@ -15,7 +15,7 @@ class CombatSystem:
 
     def __init__(self, engine):
         self.engine = engine
-        self.rng = random.Random()
+        self.rng = random.Random(random.getrandbits(64))
 
     # --------------------------------------------------------- player attack
 

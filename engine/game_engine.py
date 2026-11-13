@@ -14,6 +14,7 @@ This file binds them together and exposes the high-level API used by UIs.
 """
 
 import logging
+import random
 from typing import Any, Dict, List, Optional
 
 import config
@@ -49,7 +50,10 @@ class GameEngine(GameAPIMixin):
                  player_spec=None,
                  start_tutorial: bool = False,
                  enable_dm_bridge: bool = False,
-                 world_kind: str = "default"):
+                 world_kind: str = "default",
+                 seed: Optional[int] = None):
+        if seed is not None:   # reproducible world: unseeded RNGs derive from `random`
+            random.seed(seed)
         # Core systems --------------------------------------------------
         # OAKVALE T5b: a big-town world gets a larger map so the whole town +
         # its countryside fit (the classic world stays its default size).

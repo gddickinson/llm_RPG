@@ -103,7 +103,7 @@ class HeuristicProvider(LLMProvider):
     name = "heuristic"
 
     def __init__(self, seed: int = None, **_):
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
 
     # Generic completion -----------------------------------------------------
 

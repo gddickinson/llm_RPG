@@ -45,7 +45,7 @@ _NEAR = {"mountain": TerrainType.MOUNTAIN, "forest": TerrainType.FOREST,
 class LairSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.lairs: List[dict] = []
         self._seeded = False
         # P37.6c: {template_id: multiplier<1.0} — a cleared camp/lair thins the

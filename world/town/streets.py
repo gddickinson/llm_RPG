@@ -115,7 +115,7 @@ class StreetPlan:
 def plan_streets(cx: float, cy: float, radius: float, size: str = "town",
                  seed: int = 0) -> StreetPlan:
     """Lay a town's streets by size template. Deterministic in `seed`."""
-    rng = random.Random(seed)
+    rng = random.Random(seed if seed is not None else random.getrandbits(64))
     segs: List[Segment] = []
     R = radius
     # 1) main boulevards — N-S and E-W (+ a slight jitter to the axis angle)

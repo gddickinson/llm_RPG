@@ -31,7 +31,7 @@ class WorldGenerator(WorldGenExtrasMixin):
         self.world = world
         self.seed = seed
         self.mode = mode                       # "classic" | "realistic" (P36.1)
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.w = world.map.width
         self.h = world.map.height
         self.elevation = None

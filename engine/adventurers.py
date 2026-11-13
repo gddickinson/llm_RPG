@@ -36,7 +36,7 @@ _WALKABLE = {TerrainType.GRASS, TerrainType.FOREST, TerrainType.ROAD,
 class AdventurerSystem:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
         self.controllers: Dict[str, object] = {}   # adventurer id -> brain
         self._seeded = False
 

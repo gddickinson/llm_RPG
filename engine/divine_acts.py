@@ -28,7 +28,7 @@ logger = logging.getLogger("llm_rpg.divine_acts")
 class DivineActs:
     def __init__(self, engine, seed: int = None):
         self.engine = engine
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed if seed is not None else random.getrandbits(64))
 
     def _cfg(self) -> dict:
         from items.data_loader import load_data_file

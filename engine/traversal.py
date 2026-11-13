@@ -58,7 +58,7 @@ class TraversalSystem:
     def __init__(self, engine):
         self.engine = engine
         self.rules = _load_rules()
-        self.rng = random.Random()
+        self.rng = random.Random(random.getrandbits(64))
 
     # ------------------------------------------------------- queries
 
